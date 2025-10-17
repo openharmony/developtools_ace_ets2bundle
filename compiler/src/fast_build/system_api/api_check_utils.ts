@@ -50,7 +50,7 @@ import {
   FORM_TAG_CHECK_ERROR,
   FIND_MODULE_WARNING,
   CROSSPLATFORM_TAG_CHECK_NAME,
-  CROSSPLATFORM_TAG_CHECK_ERROER,
+  CROSSPLATFORM_TAG_CHECK_ERROR,
   DEPRECATED_TAG_CHECK_NAME,
   DEPRECATED_TAG_CHECK_WARNING,
   FA_TAG_CHECK_NAME,
@@ -62,7 +62,7 @@ import {
   STAGE_COMPILE_MODE,
   ATOMICSERVICE_BUNDLE_TYPE,
   ATOMICSERVICE_TAG_CHECK_NAME,
-  ATOMICSERVICE_TAG_CHECK_ERROER,
+  ATOMICSERVICE_TAG_CHECK_ERROR,
   ATOMICSERVICE_TAG_CHECK_VERSION,
   RUNTIME_OS_OH,
   CONSTANT_STEP_0,
@@ -71,7 +71,7 @@ import {
   CONSTANT_STEP_3,
   GLOBAL_DECLARE_WHITE_LIST,
   SINCE_TAG_NAME,
-  SINCE_TAG_CHECK_ERROER,
+  SINCE_TAG_CHECK_ERROR,
   VERSION_CHECK_FUNCTION_NAME,
   ComparisonResult,
   BuildDiagnosticInfo,
@@ -357,7 +357,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROER, false, ts.DiagnosticCategory.Warning,
+      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
       VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
     // TODO: the third param is to be opened
     if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
@@ -387,7 +387,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       needCheckResult = true;
       const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROR,
         false, logType, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
@@ -403,7 +403,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROR,
         false, ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
   }
@@ -611,7 +611,7 @@ function checkSinceValue(
     return false;
   }
 
-  config.message = SINCE_TAG_CHECK_ERROER
+  config.message = SINCE_TAG_CHECK_ERROR
     .replace('$SINCE1', apiMinVersion)
     .replace('$SINCE2', projectTargetVersion);
 
@@ -883,7 +883,7 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
   if (hasSince && comparePointVersion(compatibleSdkVersion, minVersion) === -1) {
     result.valid = false;
     result.type = ts.DiagnosticCategory.Warning;
-    result.message = SINCE_TAG_CHECK_ERROER.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
+    result.message = SINCE_TAG_CHECK_ERROR.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
   }
   return result;
 }
