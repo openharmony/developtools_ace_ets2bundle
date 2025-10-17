@@ -38,7 +38,7 @@ mocha.describe('test main file api', function () {
         expect(projectConfig.entryArrayForObf[3]).to.equal('');
     });
 
-    mocha.it('1-2: test setStartupPagesForObf', function () {
+    mocha.it('1-2: test setStartupPagesForObf withTask', function () {
         projectConfig.aceModuleJsonPath = path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile/ark_module.json');
         projectConfig.aceProfilePath =  path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile');
         projectConfig.entryArrayForObf = [];
@@ -47,5 +47,16 @@ mocha.describe('test main file api', function () {
         expect(projectConfig.entryArrayForObf[1]).to.equal('pages/test0');
         expect(projectConfig.entryArrayForObf[2]).to.equal('pages/test1');
         expect(projectConfig.entryArrayForObf[3]).to.equal('pages/test2');
+    });
+
+    mocha.it('1-2: test setStartupPagesForObf noTask', function () {
+        projectConfig.aceModuleJsonPath = path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile/ark_module_noTask.json');
+        projectConfig.aceProfilePath =  path.join(__dirname, '../../test/ark_compiler_ut/testdata/obfuscation/collectEntryFile_noTask');
+        projectConfig.entryArrayForObf = [];
+        setStartupPagesForObf(projectConfig);
+        expect(projectConfig.entryArrayForObf.includes('pages/mainPage')).be.false;
+        expect(projectConfig.entryArrayForObf.includes('pages/test0')).be.false;
+        expect(projectConfig.entryArrayForObf.includes('pages/test1')).be.false;
+        expect(projectConfig.entryArrayForObf.includes('pages/test2')).be.false;
     });
 });
