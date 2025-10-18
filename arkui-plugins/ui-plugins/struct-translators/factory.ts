@@ -580,7 +580,7 @@ export class factory {
         if (isDecl) {
             return [this.createCustomDialogMethod(isDecl)];
         }
-        const dialogControllerProperty: arkts.ClassProperty | undefined = body.find(
+        const dialogControllerProperty: arkts.ClassProperty | undefined = body.findLast(
             (item: arkts.AstNode) => arkts.isClassProperty(item) && getCustomDialogController(item).length > 0
         ) as arkts.ClassProperty | undefined;
         if (!!dialogControllerProperty) {
