@@ -1,0 +1,29 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../dist-test",
+    "types": [
+      "node",
+      "mocha",
+      "chai"
+    ]
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/**/*.ts"
+  ],
+  "exclude": [
+    "../node_modules",
+    "../dist",
+    "../dist-test",
+    "./build_delete_noninterop",
+    "./build_add_import",
+    "./build_sample",
+    "./build_sample_result",
+    "./source",
+    "./ut",
+    "./target",
+    "./sample"
+  ]
+}
