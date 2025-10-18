@@ -784,6 +784,31 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
   }
   
 }
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  
+  @memo() public build() {}
+  
+  public constructor() {}
+  
+}
+
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._instantiateImpl(undefined, (() => {
+      return new MyStateSample();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+}
 `;
 
 function testObservedOnlyTransformer(this: PluginTestContext): void {

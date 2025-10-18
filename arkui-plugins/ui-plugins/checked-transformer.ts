@@ -192,8 +192,7 @@ export class CheckedTransformer extends AbstractVisitor {
         ) {
             return structFactory.transformCustomDialogController(node);
         }
-
-        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
+        if (arkts.isEtsScript(node) && !node.isNamespace && ImportCollector.getInstance().importInfos.length > 0) {
             const newScript = structFactory.insertClassInEtsScript(node);
             ImportCollector.getInstance().insertCurrentImports(this.program);
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);

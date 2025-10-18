@@ -67,10 +67,6 @@ import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
   
 }
 
-@Entry() @Component() export interface __Options_MyStateSample {
-
-}
-
 class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample();
@@ -87,6 +83,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/entry-only",
   integratedHsp: "false",
 } as NavInterface))
+
+@Entry() @Component() export interface __Options_MyStateSample {
+  
+}
 `;
 
 function testEntryTransformer(this: PluginTestContext): void {

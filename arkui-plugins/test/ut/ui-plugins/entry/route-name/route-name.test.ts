@@ -87,6 +87,10 @@ __EntryWrapper.RegisterNamedRouter("MyPage", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/route-name/route-name",
   integratedHsp: "false",
 } as NavInterface))
+
+@Entry({routeName:"MyPage"}) @Component() export interface __Options_MyStateSample {
+ 
+}
 `;
 
 function testEntryTransformer(this: PluginTestContext): void {
