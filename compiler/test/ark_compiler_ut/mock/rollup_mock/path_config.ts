@@ -71,6 +71,7 @@ export const ENTRY_LIST: string ="--npm-module-entry-list";
 export const OUTPUT: string ="--output";
 export const FILE_THREADS: string ="--file-threads";
 export const MERGE_ABC: string ="--merge-abc";
+export const REMOVE_REDUNDANT_FILE: string ="--remove-redundant-file";
 export const ENABLE_ABC_INPUT: string ="--enable-abc-input";
 export const CACHE_FILE: string ="--cache-file";
 export const SIMBOL_TABLE: string ="--dump-symbol-table";
