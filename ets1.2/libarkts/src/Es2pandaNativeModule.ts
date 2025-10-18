@@ -95,6 +95,10 @@ export class Es2pandaNativeModule {
     _ProceedToState(context: KPtr, state: number): void {
         throw new Error('Not implemented');
     }
+    _FreeCompilerPartMemory(context: KPtr): void
+    {
+        throw new Error('Not implemented');
+    }
     _CheckerStartChecker(context: KPtr): KBoolean {
         throw new Error('Not implemented');
     }
