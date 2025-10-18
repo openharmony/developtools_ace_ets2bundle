@@ -608,7 +608,7 @@ function checkAvailableDecorator(
   declaration?: ts.Declaration
 ): boolean {
   // If there is no node, we cannot perform any check
-  if (!node) {
+  if (!projectConfig.compatibleSdkVersion || !node) {
     return false;
   }
 
@@ -661,7 +661,7 @@ function checkSinceValue(
   config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node
 ): boolean {
-  if (!jsDocTags[0]?.parent?.parent || !node) {
+  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node) {
     return false;
   }
 
