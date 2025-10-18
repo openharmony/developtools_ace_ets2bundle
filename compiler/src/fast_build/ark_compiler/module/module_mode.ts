@@ -123,6 +123,7 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+import { ModuleSourceFile } from './module_source_file';
 
 export class ModuleInfo {
   filePath: string;
@@ -595,7 +596,9 @@ export class ModuleMode extends CommonMode {
     }
     if (this.abcPaths.length > 0 && !this.byteCodeHar) {
       this.cmdArgs.push('--enable-abc-input');
-      this.cmdArgs.push('--remove-redundant-file');
+      if (!ModuleSourceFile.getNeedProcessMock()) {
+        this.cmdArgs.push('--remove-redundant-file');
+      }
     }
     if (this.customizedHar) {
       this.cmdArgs.push('--enable-abc-input');
