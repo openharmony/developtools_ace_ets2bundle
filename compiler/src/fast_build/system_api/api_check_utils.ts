@@ -82,7 +82,8 @@ import {
   VersionValidationResult,
   ValueCheckerFunction,
   FormatCheckerFunction,
-  comparisonFunctions
+  comparisonFunctions,
+  AVAILABLE_FILE_NAME
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -367,9 +368,11 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       ts.DiagnosticCategory.Warning, '', false));
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SYSTEM_API_TAG_CHECK_NAME], SYSTEM_API_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
-      VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
+    if (sourceBaseName !== AVAILABLE_FILE_NAME) {
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
+        SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
+        VERSION_CHECK_FUNCTION_NAME, false, undefined, checkSinceValue));
+    }
     // TODO: the third param is to be opened
     if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
       const fileContent: string = fs.readFileSync(fileName, { encoding: 'utf-8' });
