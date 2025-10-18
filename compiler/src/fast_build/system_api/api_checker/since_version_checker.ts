@@ -70,10 +70,9 @@ export class SinceJSDocChecker extends BaseVersionChecker {
     // Config: "apiCheckPlugin" → "type": "CompatibilityCheck" → "checkSinceValue"
     // This function compares two versions and returns VersionValidationResult
     const valueChecker = getValueChecker(SINCE_TAG_NAME);
-    if (valueChecker) {
-      this.versionCompareFunction = valueChecker;
-    } else {
-      this.versionCompareFunction = defaultValueChecker;
+    this.versionCompareFunction = valueChecker;
+    if (this.versionCompareFunction === defaultValueChecker) {
+      this.sdkVersion = projectConfig.compatibleSdkVersion.toString();
     }
 
     // Load format checker (validation function) for @since tag

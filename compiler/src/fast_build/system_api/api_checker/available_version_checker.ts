@@ -26,7 +26,8 @@ import {
   getValueChecker, 
   getFormatChecker,
   isOpenHarmonyRuntime,
-  defaultFormatCheckerWithoutMSF 
+  defaultFormatCheckerWithoutMSF,
+  defaultValueChecker
 } from '../api_check_utils';
 import { BaseVersionChecker, ParsedVersion } from './base_version_checker';
 
@@ -67,8 +68,9 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
     // Load value checker (comparison function) for @Available tag
     // This function compares two versions and returns VersionValidationResult
     const valueChecker = getValueChecker(AVAILABLE_TAG_NAME);
-    if (valueChecker) {
-      this.versionCompareFunction = valueChecker;
+    this.versionCompareFunction = valueChecker;
+    if (this.versionCompareFunction === defaultValueChecker) {
+      this.sdkVersion = projectConfig.compatibleSdkVersion.toString();
     }
 
     // Load format checker (validation function) for @Available tag
@@ -152,7 +154,7 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       // Validate version format using loaded format checker
       // For OpenHarmony: uses integer-only format (e.g., "21")
       // For other OS: uses format checker from external plugin or default
-      const isValidFormat = (isOpenHarmonyRuntime() && minApi.os === RUNTIME_OS_OH)
+      const isValidFormat = minApi.os === RUNTIME_OS_OH
         ? defaultFormatCheckerWithoutMSF(minApi.version)
         : this.formatChecker(minApi.raw);
 
