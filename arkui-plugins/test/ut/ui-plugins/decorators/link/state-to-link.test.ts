@@ -226,6 +226,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    ParentComponent._instantiateImpl(undefined, (() => {
+      return new ParentComponent();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Component() export interface __Options_DateComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
@@ -238,18 +249,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}
   
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    ParentComponent._invoke(@memo() ((instance: ParentComponent): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-  }
-
-  public constructor() {}
-
 }
 `;
 

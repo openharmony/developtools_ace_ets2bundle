@@ -310,6 +310,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 }
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    Parent._instantiateImpl(undefined, (() => {
+      return new Parent();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Component() export interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
@@ -325,18 +336,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}
   
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    Parent._invoke(@memo() ((instance: Parent): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-  }
-
-  public constructor() {}
-
 }
 `;
 

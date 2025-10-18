@@ -86,18 +86,6 @@ import hilog from "@ohos.hilog";
 
 }
 
-@Entry() @Component() export interface __Options_A {
-  ${ignoreNewLines(`
-  a?: string;
-  @State() __backing_a?: string;
-  __options_has_a?: boolean;
-  b?: string;
-  @PropRef() __backing_b?: string;
-  __options_has_b?: boolean;
-  `)}
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   public entry(): void {
     A();
@@ -113,6 +101,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/imports/kit-import",
   integratedHsp: "false",
   } as NavInterface))
+
+@Entry() @Component() export interface __Options_A {
+  ${ignoreNewLines(`
+  a?: string;
+  @State() __backing_a?: string;
+  __options_has_a?: boolean;
+  b?: string;
+  @PropRef() __backing_b?: string;
+  __options_has_b?: boolean;
+  `)}
+  
+}
 `;
 
 const expectedCheckedScript: string = `
@@ -237,17 +237,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_b', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_b', '(boolean | undefined)')}
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     A._invoke(@memo() ((instance: A): void => {
@@ -258,6 +247,17 @@ class __EntryWrapper extends EntryPoint {
 
   public constructor() {}
 
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_b', '(IPropRefDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_b', '(boolean | undefined)')}
+  
 }
 `;
 

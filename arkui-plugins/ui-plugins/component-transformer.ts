@@ -58,6 +58,7 @@ import {
     ReuseNames,
 } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
+import { NamespaceProcessor } from './namespace-processor';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -104,6 +105,7 @@ export class ComponentTransformer extends AbstractVisitor {
         this.scopeInfos = [];
         this.componentInterfaceCollection = [];
         this.entryAnnoInfo = [];
+        NamespaceProcessor.getInstance().reset();
         this.structMembersMap = new Map();
         this.shouldAddLinkIntrinsic = false;
         this.componentType = {
@@ -177,7 +179,7 @@ export class ComponentTransformer extends AbstractVisitor {
         return updateStatements;
     }
 
-    processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+    processRootEtsScript(node: arkts.EtsScript): arkts.EtsScript {
         if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = EntryFactory.createNavInterface();
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
@@ -192,9 +194,10 @@ export class ComponentTransformer extends AbstractVisitor {
                 EntryFactory.createNavigationModuleInfo(this.externalSourceName),
             ]);
         }
-        if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryAnnoInfo.length === 0) {
+        if (this.isExternal && NamespaceProcessor.getInstance().totalInterfacesCnt === 0 && this.entryAnnoInfo.length === 0) {
             return node;
         }
+        this.insertComponentImport();
         const updateStatements: arkts.AstNode[] = this.getUpdateStatements();
         if (updateStatements.length > 0) {
             return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
@@ -307,7 +310,7 @@ export class ComponentTransformer extends AbstractVisitor {
             node.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT,
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
-        this.componentInterfaceCollection.push(customComponentInterface);
+        NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
         if (!!scopeInfo.annotations?.entry) {
             this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
@@ -450,9 +453,19 @@ export class ComponentTransformer extends AbstractVisitor {
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
+        if (arkts.isEtsScript(node)) {
+            NamespaceProcessor.getInstance().enter();
+        }
         const newNode = this.visitEachChild(node);
         if (arkts.isEtsScript(newNode)) {
-            return this.processEtsScript(newNode);
+            let res: arkts.EtsScript;
+            if (newNode.isNamespace) {
+                res = NamespaceProcessor.getInstance().updateCurrentNamespace(newNode);
+            } else {
+                res = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootEtsScript(newNode));
+            }
+            NamespaceProcessor.getInstance().exit();
+            return res;
         }
         if (
             arkts.isCallExpression(node) &&

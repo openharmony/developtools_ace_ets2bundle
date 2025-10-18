@@ -347,6 +347,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._instantiateImpl(undefined, (() => {
+      return new MyStateSample();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'stateOnChange' })])}
@@ -382,18 +393,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-  }
-  
-  public constructor() {}
   
 }
 `;

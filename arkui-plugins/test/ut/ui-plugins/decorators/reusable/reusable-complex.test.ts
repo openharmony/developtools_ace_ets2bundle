@@ -227,6 +227,17 @@ class Message {
   
 }
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    Index._instantiateImpl(undefined, (() => {
+      return new Index();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
@@ -238,18 +249,6 @@ class Message {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    Index._invoke(@memo() ((instance: Index): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-  }
-  
-  public constructor() {}
   
 }
 `;
