@@ -97,7 +97,7 @@ export class factory {
     ): arkts.Es2pandaModifierFlags {
         let _modifiers = modifiers;
         if (
-            (modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT) ===
+            (modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT) ===
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT
         ) {
             _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT;
