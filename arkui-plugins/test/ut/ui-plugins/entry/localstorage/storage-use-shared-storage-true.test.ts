@@ -61,10 +61,6 @@ const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:true}) @Component() export interface __Options_MyStateSample {
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample();
@@ -81,6 +77,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/localstorage/storage-use-shared-storage-true",
   integratedHsp: "false",
 } as NavInterface))
+
+@Entry({storage:"myStorage",useSharedStorage:true}) @Component() export interface __Options_MyStateSample {
+}
 `;
 
 function testEntryTransformer(this: PluginTestContext): void {

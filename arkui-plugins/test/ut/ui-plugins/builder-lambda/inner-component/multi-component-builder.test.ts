@@ -97,10 +97,7 @@ function main() {}
     }
     public constructor() {}
 }
-
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
-}
-
+    
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
         A._instantiateImpl(undefined, (() => {
@@ -108,6 +105,9 @@ class __EntryWrapper extends EntryPoint {
         }), undefined, undefined, undefined);
     }
     public constructor() {}
+}
+
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
 }
 `;
 

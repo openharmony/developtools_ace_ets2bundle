@@ -110,11 +110,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
     public constructor() {}
 }
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-}
+
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
         Index._instantiateImpl(undefined, (() => {
@@ -122,6 +118,12 @@ class __EntryWrapper extends EntryPoint {
         }), undefined, undefined, undefined);
     }
     public constructor() {}
+}
+
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 `;
 
@@ -284,11 +286,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
     public constructor() {}
 }
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-}
+    
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
@@ -305,6 +303,12 @@ class __EntryWrapper extends EntryPoint {
         }
     }
     public constructor() {}
+}
+
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 `;
 

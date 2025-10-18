@@ -53,6 +53,7 @@ import {
     NavigationNames,
     EntryWrapperNames,
 } from '../common/predefines';
+import { NamespaceProcessor } from './namespace-processor';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -72,7 +73,6 @@ export interface InteropContext {
 
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
     private entryNames: string[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private isCustomComponentImported: boolean = false;
@@ -99,8 +99,8 @@ export class ComponentTransformer extends AbstractVisitor {
 
     reset(): void {
         super.reset();
+        NamespaceProcessor.getInstance().reset();
         this.scopeInfos = [];
-        this.componentInterfaceCollection = [];
         this.entryNames = [];
         this.structMembersMap = new Map();
         this.isCustomComponentImported = false;
@@ -194,23 +194,22 @@ export class ComponentTransformer extends AbstractVisitor {
         );
     }
 
-    processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+    processRootEtsScript(node: arkts.EtsScript): arkts.EtsScript {
         if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = entryFactory.createNavInterface();
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
         }
-        if (this.isExternal && this.componentInterfaceCollection.length === 0 && this.entryNames.length === 0) {
+        if (this.isExternal && this.entryNames.length === 0 && NamespaceProcessor.getInstance().totalInterfacesCnt === 0) {
             return node;
         }
+
+        this.insertComponentImport();
+
         const updateStatements: arkts.AstNode[] = [];
         if (this.shouldAddLinkIntrinsic) {
             const expr = arkts.factory.createIdentifier(DecoratorIntrinsicNames.LINK);
             updateStatements.push(factory.createIntrinsicAnnotationDeclaration({ expr }));
-        }
-        if (this.componentInterfaceCollection.length > 0) {
-            this.insertComponentImport();
-            updateStatements.push(...this.componentInterfaceCollection);
         }
 
         if (this.entryNames.length > 0) {
@@ -326,7 +325,7 @@ export class ComponentTransformer extends AbstractVisitor {
             structFactory.copyStructModifierFlagsToOptionsInterface(node.modifiers),
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
-        this.componentInterfaceCollection.push(customComponentInterface);
+        NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (!!scopeInfo.annotations?.entry) {
@@ -476,9 +475,19 @@ export class ComponentTransformer extends AbstractVisitor {
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.enter(node);
+        if (arkts.isEtsScript(node)) {
+            NamespaceProcessor.getInstance().enter();
+        }
         const newNode = this.visitEachChild(node);
         if (arkts.isEtsScript(newNode)) {
-            return this.processEtsScript(newNode);
+            let res: arkts.EtsScript;
+            if (newNode.isNamespace) {
+                res = NamespaceProcessor.getInstance().updateCurrentNamespace(newNode);
+            } else {
+                res = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootEtsScript(newNode));
+            }
+            NamespaceProcessor.getInstance().exit();
+            return res;
         }
         if (
             arkts.isStructDeclaration(newNode) &&
