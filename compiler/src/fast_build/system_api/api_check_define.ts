@@ -47,6 +47,7 @@ export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 export const AVAILABLE_TAG_NAME: string = 'available';
 export const AVAILABLE_DECORATOR_WARNING: string =  "The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
