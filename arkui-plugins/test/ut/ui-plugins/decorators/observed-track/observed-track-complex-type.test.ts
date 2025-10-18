@@ -816,10 +816,6 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
@@ -829,6 +825,9 @@ class __EntryWrapper extends EntryPoint {
   
   public constructor() {}
   
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
 }
 `;
 

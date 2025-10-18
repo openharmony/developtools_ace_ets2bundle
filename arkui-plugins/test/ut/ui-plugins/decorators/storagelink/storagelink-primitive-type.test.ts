@@ -104,6 +104,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._instantiateImpl(undefined, (() => {
+      return new MyStateSample();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numA', '(IStorageLinkDecoratedVariable<number> | undefined)')}
@@ -116,17 +127,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanA', '(IStorageLinkDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanA', '(boolean | undefined)')}
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._instantiateImpl(undefined, (() => {
-      return new MyStateSample();
-    }), undefined, undefined, undefined);
-  }
-  
-  public constructor() {}
   
 }
 `;
