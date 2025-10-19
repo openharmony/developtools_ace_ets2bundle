@@ -78,44 +78,19 @@ function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_str1 = ((({let gensym___147578113 = initializers;
+    this.str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
-    this.__backing_str2 = ((({let gensym___220149772 = initializers;
+    this.str2 = ((({let gensym___220149772 = initializers;
     (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("app.photo2.png"));
-    this.__backing_numbers = ((({let gensym___<some_random_number> = initializers;
+    this.numbers = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.numbers)})) ?? (["0", "1", "3", "5", "8"]));
   }
   
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
   
-  private __backing_str1?: string;
-  
-  public get str1(): string {
-    return (this.__backing_str1 as string);
-  }
-  
-  public set str1(value: string) {
-    this.__backing_str1 = value;
-  }
-  
-  private __backing_str2?: string;
-  
-  public get str2(): string {
-    return (this.__backing_str2 as string);
-  }
-  
-  public set str2(value: string) {
-    this.__backing_str2 = value;
-  }
-  private __backing_numbers?: Array<string>;
-
-  public get numbers(): Array<string> {
-    return (this.__backing_numbers as Array<string>);
-  }
-
-  public set numbers(value: Array<string>) {
-    this.__backing_numbers = value;
-  }
+  public str1!: string;
+  public str2!: string;
+  public numbers!: Array<string>;
   
   public async test_0(res: Resource) {
     return res;

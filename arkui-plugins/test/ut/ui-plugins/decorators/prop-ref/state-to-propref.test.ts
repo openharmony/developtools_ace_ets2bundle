@@ -75,7 +75,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
-    this.__backing_costOfOneAttempt = ((({let gensym___88948111 = initializers;
+    this.costOfOneAttempt = ((({let gensym___88948111 = initializers;
     (((gensym___88948111) == (null)) ? undefined : gensym___88948111.costOfOneAttempt)})) ?? (1));
   }
   
@@ -96,15 +96,7 @@ function main() {}
     this.__backing_count!.set(value);
   }
   
-  private __backing_costOfOneAttempt?: number;
-  
-  public get costOfOneAttempt(): number {
-    return (this.__backing_costOfOneAttempt as number);
-  }
-  
-  public set costOfOneAttempt(value: number) {
-    this.__backing_costOfOneAttempt = value;
-  }
+  public costOfOneAttempt!: number;
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {

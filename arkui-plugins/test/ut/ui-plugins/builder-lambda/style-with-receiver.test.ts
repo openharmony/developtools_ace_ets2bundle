@@ -51,7 +51,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { Memo as Memo } from "@ohos.arkui.stateManagement";
+import { memo as memo } from "@ohos.arkui.stateManagement";
 
 import { Text as Text, TextAttribute as TextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
 
@@ -60,13 +60,13 @@ import hilog from "@ohos.hilog";
 function main() {}
 
 
-@Memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
+@memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(str);
   return this;
 }
 
-@Memo() function style22(this: TextAttribute): TextAttribute {
+@memo() function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
