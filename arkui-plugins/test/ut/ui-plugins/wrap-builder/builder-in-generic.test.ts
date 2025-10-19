@@ -140,7 +140,7 @@ import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { TextAttribute as TextAttribute } from \"arkui.component.text\";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";

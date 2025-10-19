@@ -58,46 +58,22 @@ function main() {}
 i = _r(16777216, 10003, "com.example.mock", "entry");
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_str = ((({let gensym___42103502 = initializers;
+    this.str = ((({let gensym___42103502 = initializers;
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
-    this.__backing_icon = ((({let gensym___38135554 = initializers;
+    this.icon = ((({let gensym___38135554 = initializers;
     (((gensym___38135554) == (null)) ? undefined : gensym___38135554.icon)})) ?? (_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")));
-    this.__backing_varOne = ((({let gensym___101675829 = initializers;
+    this.varOne = ((({let gensym___101675829 = initializers;
     (((gensym___101675829) == (null)) ? undefined : gensym___101675829.varOne)})) ?? ("default value"));
-    this.__backing_lambdaOne = ((({let gensym___62262103 = initializers;
+    this.lambdaOne = ((({let gensym___62262103 = initializers;
     (((gensym___62262103) == (null)) ? undefined : gensym___62262103.lambdaOne)})) ?? ((() => {
       this.varOne = _r(16777219, 10003, "com.example.mock", "entry");
     })));
   }
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
-  private __backing_str?: Resource;
-  public get str(): Resource {
-    return (this.__backing_str as Resource);
-  }
-  public set str(value: Resource) {
-    this.__backing_str = value;
-  }
-  private __backing_icon?: Resource;
-  public get icon(): Resource {
-    return (this.__backing_icon as Resource);
-  }
-  public set icon(value: Resource) {
-    this.__backing_icon = value;
-  }
-  private __backing_varOne?: (Resource | string);
-  public get varOne(): (Resource | string) {
-    return (this.__backing_varOne as (Resource | string));
-  }
-  public set varOne(value: (Resource | string)) {
-    this.__backing_varOne = value;
-  }
-  private __backing_lambdaOne?: (()=> void);
-  public get lambdaOne(): (()=> void) {
-    return (this.__backing_lambdaOne as (()=> void));
-  }
-  public set lambdaOne(value: (()=> void)) {
-    this.__backing_lambdaOne = value;
-  }
+  private str!: Resource;
+  private icon!: Resource;
+  private varOne!: (Resource | string);
+  public lambdaOne!: (()=> void);
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {

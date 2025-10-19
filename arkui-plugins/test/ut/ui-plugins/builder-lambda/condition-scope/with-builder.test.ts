@@ -44,7 +44,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
@@ -64,7 +64,7 @@ function main() {}
     }));
 }
 @Memo() function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
-    let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((() => {
+    let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (() => {
         ConditionScope(@Memo() (() => {
             if (true) {
                 ConditionBranch(@Memo() (() => {
@@ -75,7 +75,7 @@ function main() {}
                 }));
             }
         }));
-    }) as (()=> void)));
+    }));
     param();
 }
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
@@ -189,7 +189,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
@@ -245,7 +245,7 @@ function main() {}
     }
 }
 @Memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -292,7 +292,7 @@ function main() {}
             __memo_scope.recache();
             return;
         }
-    }) as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)));
+    }));
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;

@@ -714,7 +714,7 @@ export class factory {
             ? [
                   arkts.factory.createExpressionStatement(
                       arkts.factory.createAssignmentExpression(
-                          generateThisBacking(backingField(controller)),
+                          generateThisBacking(controller),
                           arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
                           arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER)
                       )

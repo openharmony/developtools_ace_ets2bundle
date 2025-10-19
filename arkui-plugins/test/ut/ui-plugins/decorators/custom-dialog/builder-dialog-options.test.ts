@@ -121,7 +121,7 @@ function main() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___51459619 = initializers;
+    this.dialogController = ((({let gensym___51459619 = initializers;
     (((gensym___51459619) == (null)) ? undefined : gensym___51459619.dialogController)})) ?? (({let gensym___203542966: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() (() => {
@@ -134,15 +134,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
   
-  private __backing_dialogController?: (CustomDialogController | null);
-  
-  public get dialogController(): (CustomDialogController | null) {
-    return (this.__backing_dialogController as (CustomDialogController | null));
-  }
-  
-  public set dialogController(value: (CustomDialogController | null)) {
-    this.__backing_dialogController = value;
-  }
+  public dialogController: (CustomDialogController | null) = null;
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -157,7 +149,7 @@ function main() {}
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___176924847 = initializers;
+    this.dialogController = ((({let gensym___176924847 = initializers;
     (((gensym___176924847) == (null)) ? undefined : gensym___176924847.dialogController)})) ?? (({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController({
       builder: builder2,
@@ -168,15 +160,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser2 | undefined)): void {}
   
-  private __backing_dialogController?: (CustomDialogController | null);
-  
-  public get dialogController(): (CustomDialogController | null) {
-    return (this.__backing_dialogController as (CustomDialogController | null));
-  }
-  
-  public set dialogController(value: (CustomDialogController | null)) {
-    this.__backing_dialogController = value;
-  }
+  public dialogController: (CustomDialogController | null) = null;
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
