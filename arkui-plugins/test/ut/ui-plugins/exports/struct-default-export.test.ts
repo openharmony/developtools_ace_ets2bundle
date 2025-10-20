@@ -48,9 +48,6 @@ import { Component as Component, Entry as Entry } from \"@ohos.arkui.component\"
     public constructor() {}
 }
 
-@Entry() @Component() export interface __Options_A {
-}
-
 class __EntryWrapper extends EntryPoint {
     public entry(): void {
         A();
@@ -65,6 +62,9 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/exports/struct-default-export\",
     integratedHsp: \"false\",
 } as NavInterface))
+
+@Entry() @Component() export interface __Options_A {
+}
 `;
 
 function testExportParsed(this: PluginTestContext): void {
