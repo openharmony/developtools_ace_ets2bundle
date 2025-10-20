@@ -63,6 +63,7 @@ import {
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
+  COMPONENTV2_ONCE_DECORATOR,
   COMPONENTV2_PARAM_DECORATOR,
   COMPONENTV2_EVENT_DECORATOR,
   VIEWSTACKPROCESSOR,
@@ -374,7 +375,7 @@ class ChildAndParentComponentInfo {
   forbiddenInitPropsV2: string[];
   updatePropsForV1Parent: string[];
   updatePropsForV2Parent: string[];
-  forbiddenInitPropsV1: Map<string, string[]>;
+  forbiddenInitPropsV1: Map<string[], string[]>;
   constructor(childName: string, childNode: ts.CallExpression, propsAndObjectLinks: string[]) {
     this.childName = childName;
     this.propsAndObjectLinks = propsAndObjectLinks;
@@ -431,20 +432,30 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   }
 }
 
-function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string {
-  let typeName: string = COMPONENT_NON_DECORATOR;
+function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string[] {
+  const typeNames: string[] = [];
   if (info.childStructInfo.localDecoratorSet.has(itemName)) {
-    typeName = COMPONENTV2_LOCAL_DECORATOR;
-  } else if (info.childStructInfo.consumerDecoratorSet.has(itemName)) {
-    typeName = COMPONENTV2_CONSUMER_DECORATOR;
-  } else if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
-    typeName = COMPONENTV2_PROVIDER_DECORATOR;
-  } else if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
-    typeName = COMPONENTV2_PARAM_DECORATOR;
-  } else if (info.childStructInfo.eventDecoratorMap.has(itemName)) {
-    typeName = COMPONENTV2_EVENT_DECORATOR;
+    typeNames.push(COMPONENTV2_LOCAL_DECORATOR);
   }
-  return typeName;
+  if (info.childStructInfo.consumerDecoratorSet.has(itemName)) {
+    typeNames.push(COMPONENTV2_CONSUMER_DECORATOR);
+  }
+  if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
+    typeNames.push(COMPONENTV2_PROVIDER_DECORATOR);
+  }
+  if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
+    typeNames.push(COMPONENTV2_PARAM_DECORATOR);
+  }
+  if (info.childStructInfo.onceDecoratorSet.has(itemName)) {
+    typeNames.push(COMPONENTV2_ONCE_DECORATOR);
+  }
+  if (info.childStructInfo.eventDecoratorMap.has(itemName)) {
+    typeNames.push(COMPONENTV2_EVENT_DECORATOR);
+  }
+  if (typeNames.length === 0) {
+    typeNames.push(COMPONENT_NON_DECORATOR);
+  }
+  return typeNames;
 }
 
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string, childParam: ts.PropertyAssignment[],
@@ -464,7 +475,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
   }
   if (info.childStructInfo.isComponentV2) {
     if (info.forbiddenInitPropsV2.includes(itemName)) {
-      const propType: string = getForbbidenInitPropsV2Type(itemName, info);
+      const propType: string[] = getForbbidenInitPropsV2Type(itemName, info);
       log.push({
         type: LogType.ERROR,
         message: `The '${propType}' property '${itemName}' in the custom component '${info.childName}'` +
@@ -493,8 +504,8 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string, ch
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
 }
 
-function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyName: string; parentPropertyKind: string } {
-  const result = { parentPropertyName: "", parentPropertyKind: "regular" };
+function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyName: string; parentPropertyKind: string[] } {
+  const result = { parentPropertyName: "", parentPropertyKind: [] as string[] };
   if (!ts.isPropertyAccessExpression(item.initializer)) {
     return result;
   }
@@ -511,12 +522,14 @@ function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyNam
   if (symbol.valueDeclaration.modifiers) {
     for (const decorator of symbol.valueDeclaration.modifiers) {
       if (ts.isDecorator(decorator)) {
+        let decoratorName: string | undefined;
         if (ts.isIdentifier(decorator.expression)) {
-          result.parentPropertyKind = decorator.expression.escapedText.toString();
-          break;
+          decoratorName = decorator.expression.escapedText.toString();
         } else if (ts.isCallExpression(decorator.expression) && ts.isIdentifier(decorator.expression.expression)) {
-          result.parentPropertyKind = decorator.expression.expression.escapedText.toString();
-          break;
+          decoratorName = decorator.expression.expression.escapedText.toString();
+        }
+        if (decoratorName) {
+          result.parentPropertyKind.push(decoratorName);
         }
       }
     }
@@ -525,14 +538,16 @@ function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyNam
 }
 
 function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string, 
-  parentPropertyKind: string, info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+  parentPropertyKind: string[], info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
   if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
-    const propType: string = getForbbidenInitPropsV2Type(itemName, info);
-    const symbol = parentPropertyKind === "regular" ? "" : "@";
+    const propTypes: string[] = getForbbidenInitPropsV2Type(itemName, info);
+    const parentKindStr = parentPropertyKind.length
+      ? parentPropertyKind.map(kind => kind === "regular" ? kind : `@${kind}`).join(', ') : 'regular';
+    const propTypesStr = propTypes.join(', ');
     log.push({
       type: LogType.ERROR,
-      message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
-          ` ${propType} property ${itemName} when interop.`,
+      message: `The ${parentKindStr} property ${parentPropertyName} cannot be assigned to the` +
+          ` ${propTypesStr} properties ${itemName} when interop.`,
       pos: item.getStart(),
       code: '10905501'
     });
@@ -541,24 +556,38 @@ function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string
   return false;
 }
 
-function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string,
-  parentPropertyKind: string, info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+function handleV2ParentWithV1Child(
+  item: ts.PropertyAssignment,
+  itemName: string,
+  parentPropertyName: string,
+  parentPropertyKind: string[],
+  info: ChildAndParentComponentInfo,
+  log: LogInfo[]
+): boolean {
   if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
     if (!info.forbiddenInitPropsV1 || info.forbiddenInitPropsV1.size === 0) {
       return true;
     }
-    const symbol = parentPropertyKind === "regular" ? "" : "@";
-    for (const [key, arr] of info.forbiddenInitPropsV1) {
+
+    const parentKindStr = parentPropertyKind.length 
+      ? parentPropertyKind.map(kind => kind === "regular" ? kind : `@${kind}`).join(', ') : 'regular';
+    const matchedKeyArrays: string[][] = [];
+    for (const [keyArr, arr] of info.forbiddenInitPropsV1) {
       if (arr.includes(itemName)) {
-        log.push({
-          type: LogType.ERROR,
-          message: `The ${symbol}${parentPropertyKind} property ${parentPropertyName} cannot be assigned to the` +
-              ` ${key} property ${itemName} when interop.`,
-          pos: item.getStart(),
-          code: '10905501'
-        });
-        return true;
+        matchedKeyArrays.push(keyArr);
       }
+    }
+    if (matchedKeyArrays.length > 0) {
+      const allMatchedKeys = Array.from(new Set(matchedKeyArrays.flat()));
+      
+      log.push({
+        type: LogType.ERROR,
+        message: `The ${parentKindStr} property ${parentPropertyName} cannot be assigned to the` +
+            ` ${allMatchedKeys.join(', ')} properties ${itemName} when interop.`,
+        pos: item.getStart(),
+        code: '10905501'
+      });
+      return true;
     }
   }
   return false;

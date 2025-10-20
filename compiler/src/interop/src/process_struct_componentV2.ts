@@ -71,10 +71,11 @@ export class StructInfo {
   isReusableV2: boolean = false;
   structName: string = '';
   updatePropsDecoratorsV1: string[] = [];
-  updatePropsDecoratorsV1Map: Map<string, string[]> = new Map();
+  updatePropsDecoratorsV1Map: Map<string[], string[]> = new Map();
   linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorMap: Map<string, ts.PropertyDeclaration> = new Map();
+  onceDecoratorSet: Set<string> = new Set();
   localDecoratorSet: Set<string> = new Set();
   providerDecoratorSet: Set<string> = new Set();
   consumerDecoratorSet: Set<string> = new Set();
@@ -542,8 +543,10 @@ function parseRequireDecorator(propertyDecorator: PropertyDecorator, member: ts.
   structInfo.paramDecoratorMap.set(member.name.getText(), paramDecoratorInfo);
 }
 
-function parseOnceDecorator(propertyDecorator: PropertyDecorator): void {
+function parseOnceDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+  structInfo: StructInfo): void {
   propertyDecorator.hasOnce = true;
+  structInfo.onceDecoratorSet.add(member.name.getText());
 }
 
 function parseLocalDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
