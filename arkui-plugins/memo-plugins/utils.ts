@@ -276,15 +276,6 @@ export function castIdentifier(value: arkts.AstNode | undefined): arkts.Identifi
     return value as unknown as arkts.Identifier;
 }
 
-/**
- * es2panda API is weird here
- *
- * @deprecated
- */
-export function castOverloadsToMethods(overloads: arkts.AstNode[]): readonly arkts.MethodDefinition[] {
-    return overloads as unknown as readonly arkts.MethodDefinition[];
-}
-
 export function isStandaloneArrowFunction(node: arkts.AstNode): node is arkts.ArrowFunctionExpression {
     if (!arkts.isArrowFunctionExpression(node)) return false;
 
