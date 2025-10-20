@@ -59,7 +59,7 @@ class MyStateSample {
 
 function testMemoTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { memo as memo } from "arkui.stateManagement.runtime";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";

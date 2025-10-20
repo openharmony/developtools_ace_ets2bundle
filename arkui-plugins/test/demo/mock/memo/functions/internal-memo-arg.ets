@@ -13,9 +13,26 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "arkui.stateManagement.runtime";
-import { IncrementalNode } from "@koalaui.runtime.tree.IncrementalNode";
-import { ControlledScope, StateManager } from "@koalaui.runtime.states.State";
+import { memo } from "arkui.stateManagement.runtime";
+import { __memo_context_type, __memo_id_type } from "arkui.incremental.runtime.state";
+import { StateContext, IncrementalScope } from "arkui.incremental.runtime.state";
+
+export declare class IncrementalNode { }
+export declare interface ControlledScope { }
+export declare interface StateManager extends StateContext { 
+  readonly node: IncrementalNode | undefined;
+  valueBy<Value>(name: string, global?: boolean): Value;
+  scopeEx<Value>(
+    id: int,
+    paramCount?: int,
+    create?: () => IncrementalNode,
+    compute?: () => Value,
+    cleanup?: (value: Value | undefined) => void,
+    once?: boolean,
+    reuseKey?: string
+  ): IncrementalScope<Value>;
+  controlledScope(id: int, invalidate: () => void): ControlledScope;
+}
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 @Retention({policy:"SOURCE"}) @interface memo_entry {}
@@ -51,7 +68,7 @@ export class MemoCallbackContext {
 }
 
 @memo_intrinsic() export function contextLocalValue<Value>(name: string): Value {
-  return __context().valueBy<Value>(name);
+  return (__context() as StateManager).valueBy<Value>(name);
 }
 
 @memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @memo() content: (()=> void)) {
@@ -66,16 +83,16 @@ export class MemoCallbackContext {
 }
 
 @memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(create: (()=> Node), @memo() update: ((node: Node)=> void), reuseKey?: string): void {
-  const scope = __context().scope<undefined>(__id(), 0, create, undefined, undefined, undefined, reuseKey);
+  const scope = (__context() as StateManager).scopeEx<undefined>(__id(), 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
   } else {
     try {
       if (!reuseKey) {
-        update((__context().node as Node))
+        update(((__context() as StateManager).node as Node))
       } else {
         memoEntry(__context(), 0, (() => {
-          update((__context().node as Node));
+          update(((__context() as StateManager).node as Node));
         }))
       }
     } finally {
@@ -85,7 +102,7 @@ export class MemoCallbackContext {
 }
 
 @memo_intrinsic() export function rememberControlledScope(invalidate: (()=> void)): ControlledScope {
-  return __context().controlledScope(__id(), invalidate);
+  return (__context() as StateManager).controlledScope(__id(), invalidate);
 }
 
 @memo() export function Repeat(count: int, @memo() action: ((index: int)=> void)) {
