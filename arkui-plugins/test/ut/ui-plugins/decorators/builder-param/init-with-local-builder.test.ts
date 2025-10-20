@@ -130,7 +130,7 @@ function main() {}
 `;
 
 const expectedAfterMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
 import { memo as memo } from "arkui.stateManagement.runtime";
