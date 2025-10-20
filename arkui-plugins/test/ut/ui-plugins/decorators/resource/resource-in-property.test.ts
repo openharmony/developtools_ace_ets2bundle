@@ -38,23 +38,40 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
 import { ImageAttribute as ImageAttribute } from "arkui.component.image";
+
 import { ImageImpl as ImageImpl } from "arkui.component.image";
-import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
 import { _rawfile as _rawfile } from "arkui.component.resources";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { _r as _r } from "arkui.component.resources";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, Resource as Resource } from "@ohos.arkui.component";
 
-let i: Resource;
+const i: Resource = _r(16777216, 10003, "com.example.mock", "entry");
 
 function main() {}
 
-i = _r(16777216, 10003, "com.example.mock", "entry");
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
     this.__backing_str = ((({let gensym___42103502 = initializers;
@@ -78,6 +95,17 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
     this.__backing_icon = value;
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
+      return new ResourceComponent(false, ({let gensym___46528967 = storage;
+      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -97,7 +125,18 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
       }), undefined);
     }));
   }
-  public constructor() {}
+
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 

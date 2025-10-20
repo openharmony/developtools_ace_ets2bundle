@@ -80,7 +80,8 @@ import {
   FILE_THREADS,
   MERGE_ABC,
   CACHE_FILE,
-  TARGET_API_VERSION
+  TARGET_API_VERSION,
+  REMOVE_REDUNDANT_FILE
 } from '../mock/rollup_mock/path_config';
 import {
   scanFiles,
@@ -102,7 +103,7 @@ import {
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
 
-function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
+function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean, NeedProcessMock: boolean = false): void {
   const fileThreads: number = cpus();
 
   expect(cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
@@ -112,6 +113,11 @@ function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersi
     expect(cmdArgs[3] === `\"${fileThreads}\"`).to.be.true;
     expect(cmdArgs[4] === MERGE_ABC).to.be.true;
     expect(cmdArgs[5].indexOf(compatibleSdkVersion) > 0).to.be.true;
+    if (NeedProcessMock) {
+      expect(cmdArgs.every(arg => !arg.includes(REMOVE_REDUNDANT_FILE))).to.be.true;
+    } else {
+      expect(cmdArgs.some(arg => arg.includes(REMOVE_REDUNDANT_FILE))).to.be.true;
+    }
   }
   expect(cmdArgs[1] === ENTRY_LIST).to.be.true;
   expect(cmdArgs[2] === OUTPUT).to.be.true;
@@ -1707,9 +1713,29 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar, true);
   });
-  mocha.it('10-4: test generateEs2AbcCmd with enable column', function () {
+
+  mocha.it('10-4: test generateEs2AbcCmd under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    const compatibleSdkVersion = `${TARGET_API_VERSION}${this.rollup.share.projectConfig.compatibleSdkVersion}`;
+    moduleMode.generateEs2AbcCmd();
+    moduleMode.byteCodeHar = true;
+
+    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
+    moduleMode.cmdArgs.splice(1, 1);
+    expect(moduleMode.cmdArgs[1].indexOf(PREVIEW_DEBUG_INFO) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(1, 1);
+    expect(moduleMode.cmdArgs[2].indexOf(PREVIEW_DEBUG_NPM) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(2, 1);
+    expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(3, 1);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar, false);
+  });
+
+  mocha.it('10-5: test generateEs2AbcCmd with enable column', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.enableColumnNum = true;
     const moduleMode = new ModuleHotreloadMode(this.rollup);

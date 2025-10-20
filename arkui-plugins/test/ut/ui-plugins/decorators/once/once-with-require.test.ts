@@ -40,6 +40,12 @@ const pluginTester = new PluginTester('test @Once Decorator with @Require', buil
 const expectedParsedScript: string = `
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2, Column as Column, Text as Text, Button as Button } from "@ohos.arkui.component";
 
 import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace, Require as Require, Local as Local } from "@ohos.arkui.stateManagement";
@@ -52,6 +58,10 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @Param() @Once() public onceParamNum: number = 0;
 
   @Param() @Once() @Require() public onceParamInfo!: Info;
@@ -71,6 +81,10 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+
   @Local() public localNum: number = 10;
 
   @Local() public localInfo: Info = new Info();
@@ -114,6 +128,8 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 const expectedCheckedScript: string = `
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
@@ -122,13 +138,13 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -146,13 +162,17 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { ComponentV2 as ComponentV2, Column as Column, Text as Text, Button as Button } from "@ohos.arkui.component";
 
 import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace, Require as Require, Local as Local } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 @ObservedV2() class Info implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
@@ -225,6 +245,16 @@ function main() {}
     this.__backing_onceParamInfo!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -279,6 +309,16 @@ function main() {}
     this.__backing_localInfo!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -292,14 +332,17 @@ function main() {}
         instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), {
-        onceParamNum: this.localNum,
-        __options_has_onceParamNum: true,
-        onceParamInfo: this.localInfo,
-        __options_has_onceParamInfo: true,
-      }, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          onceParamNum: this.localNum,
+          __options_has_onceParamNum: true,
+          onceParamInfo: this.localInfo,
+          __options_has_onceParamInfo: true,
+        };
+      }), undefined, undefined, undefined);
     }));
   }
 

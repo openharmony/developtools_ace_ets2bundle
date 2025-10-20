@@ -40,6 +40,8 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorator";
@@ -52,13 +54,13 @@ import { DatePickerAttribute as DatePickerAttribute } from "arkui.component.date
 
 import { DatePickerImpl as DatePickerImpl } from "arkui.component.datePicker";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -67,6 +69,12 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -102,6 +110,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_selectedDate!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<DateComponent, __Options_DateComponent>(style, ((): DateComponent => {
+      return new DateComponent(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): DateComponent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -130,7 +149,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -150,6 +179,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public set parentSelectedDate(value: Date) {
     this.__backing_parentSelectedDate!.set(value);
+  }
+
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
+      return new ParentComponent(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ParentComponent {
+    throw new Error("Declare interface");
   }
 
   @memo() public build() {
@@ -177,16 +217,29 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         }).applyAttributesFinish();
         return;
       }), undefined);
-      DateComponent._instantiateImpl(undefined, (() => {
-        return new DateComponent();
-      }), {
-        __backing_selectedDate: this.__backing_parentSelectedDate,
-        __options_has_selectedDate: true,
-      }, undefined, undefined);
+      DateComponent._invoke(@memo() ((instance: DateComponent): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          __backing_selectedDate: this.__backing_parentSelectedDate,
+          __options_has_selectedDate: true,
+        };
+      }), undefined, undefined, undefined);
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -220,9 +273,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    ParentComponent._instantiateImpl(undefined, (() => {
-      return new ParentComponent();
-    }), undefined, undefined, undefined);
+    ParentComponent._invoke(@memo() ((instance: ParentComponent): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
 
   public constructor() {}

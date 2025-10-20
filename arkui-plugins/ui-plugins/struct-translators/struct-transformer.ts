@@ -31,7 +31,6 @@ import { isEntryWrapperClass } from '../entry-translators/utils';
 import { factory as entryFactory } from '../entry-translators/factory';
 import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { generateArkUICompatible } from '../interop/interop';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 
 export class StructTransformer extends AbstractVisitor {

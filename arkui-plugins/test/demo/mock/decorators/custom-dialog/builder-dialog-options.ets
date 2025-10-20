@@ -14,7 +14,7 @@
  */
 
 import { Text, Column, Component, Builder } from "@ohos.arkui.component"
-import { CustomDialog, CustomDialogController, CustomDialogControllerOptions } from "@kit.ArkUI"
+import { CustomDialog, CustomDialogController, CustomDialogControllerOptions } from "@ohos.arkui.component"
 import hilog from '@ohos.hilog'
 
 @Builder function builder1(str: string) {}

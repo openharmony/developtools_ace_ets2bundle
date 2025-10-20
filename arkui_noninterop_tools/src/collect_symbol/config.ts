@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,24 +13,5 @@
  * limitations under the License.
  */
 
-import { Text, Column, Component, Entry, Button, ClickEvent } from "@ohos.arkui.component"
-import { ClassB } from "./testb";
-
-export class ClassA {
-  name: string;
-  classMember: ClassB;
-
-  constructor(name: string) {
-    this.name = name;
-    this.classMember = new ClassB('123', 11);
-  }
-}
-@Component
-export struct Main {
-  build() {
-    Column() {
-    }
-    .width('100%')
-    .height(150)
-  }
-}
+export const input: string = '';
+export const output: string = './export.ts';

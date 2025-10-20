@@ -748,5 +748,9 @@ export class ModuleSourceFile {
     ModuleSourceFile.moduleIdMap = new Map();
     ModuleSourceFile.isEnvInitialized = false;
   }
+
+  public static getNeedProcessMock(): boolean {
+    return ModuleSourceFile.needProcessMock;
+  }
 }
 

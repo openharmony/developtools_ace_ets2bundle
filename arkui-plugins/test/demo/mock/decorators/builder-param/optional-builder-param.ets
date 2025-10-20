@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, Entry, Builder, BuilderParam, Column, Text, Row } from "@kit.ArkUI"
+import { Component, Entry, Builder, BuilderParam, Column, Text, Row } from "@ohos.arkui.component"
 
 @Builder
 function showTextBuilder() {

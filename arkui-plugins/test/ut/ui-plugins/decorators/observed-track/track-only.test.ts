@@ -38,9 +38,6 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test track only transform', buildConfig);
 
 const expectedScript: string = `
-
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -55,14 +52,9 @@ import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
-import { Component as Component } from "@ohos.arkui.component";
-
 import { Track as Track } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
 
 
 class C implements IObservedObject, ISubscribedWatches {
@@ -112,21 +104,6 @@ class C implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("trackC");
     }
   }
-  
-}
-
-@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
-  
-  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  
-  @memo() public build() {}
-  
-  public constructor() {}
-  
-}
-
-@Component() export interface __Options_MyStateSample {
   
 }
 `;

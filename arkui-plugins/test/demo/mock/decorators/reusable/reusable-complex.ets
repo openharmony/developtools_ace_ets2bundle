@@ -37,6 +37,8 @@ struct Index {
         .onClick((e: ClickEvent) => {
           this.display = !this.display;
         })
+      Child({ message: new Message('Child') })
+        .reuseId('res')
       if (this.display) {
         Child({ message: new Message('Child') })
       }
