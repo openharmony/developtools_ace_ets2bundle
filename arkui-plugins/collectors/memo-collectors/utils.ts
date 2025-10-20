@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { annotation, forEachArgWithParam, isDecoratorAnnotation } from '../../common/arkts-utils';
 import { ImportCollector } from '../../common/import-collector';
-import { DecoratorNames, GenSymPrefix, MEMO_IMPORT_SOURCE_NAME } from '../../common/predefines';
+import { DecoratorNames, GenSymPrefix, MEMO_IMPORT_SOURCE_NAME, MEMO_SKIP_UI_IMPORT_SOURCE_NAME } from '../../common/predefines';
 import { AstNodeRevisitCache } from '../../common/cache/astNodeRevisitCache';
 import { MemoFunctionCollector } from './function-collector';
 
@@ -190,7 +190,11 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
+    if (memoName == MemoNames.MEMO_SKIP_UI) {
+        ImportCollector.getInstance().collectSource(memoName, MEMO_SKIP_UI_IMPORT_SOURCE_NAME);
+    } else {
+        ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);
+    }
 }
 
 export function collectMemoableInfoInUnionType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {

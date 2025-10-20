@@ -81,7 +81,7 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 

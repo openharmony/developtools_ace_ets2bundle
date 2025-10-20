@@ -17,13 +17,13 @@ import { memo } from "arkui.stateManagement.runtime";
 
 (arg: (()=>void)) => {}(() => {});
 
-(arg: @memo (()=>void)) => {}(@memo () => {});
+(arg: @memo() (()=>void)) => {}(@memo() () => {});
 
-(arg: @memo (()=>void) = () => {}) => {}(@memo () => {});
+(arg: @memo() (()=>void) = () => {}) => {}(@memo() () => {});
 
 @memo
 () => {
-  (@memo (arg: @memo (()=>void) = () => {}) => {})(@memo () => {});
+  (@memo() (arg: @memo() (()=>void) = () => {}) => {})(@memo() () => {});
 }
 
 @memo
@@ -34,7 +34,7 @@ import { memo } from "arkui.stateManagement.runtime";
 }
 
 () => {
-    let foo = (arg: @memo (()=>void) = () => {}) => {}
+    let foo = (arg: @memo() (()=>void) = () => {}) => {}
 
     foo(@memo () => {});
 }

@@ -39,7 +39,7 @@ const expectedScript: string = `
 
 import { makeBuilderParameterProxy as makeBuilderParameterProxy } from "arkui.component.builder";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { RowAttribute as RowAttribute } from "arkui.component.row";
 

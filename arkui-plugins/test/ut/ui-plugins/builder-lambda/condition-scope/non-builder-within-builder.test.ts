@@ -41,7 +41,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
