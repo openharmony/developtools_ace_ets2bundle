@@ -75,7 +75,8 @@ export class ForUpdateStatement extends LoopStatement {
         return unpackNode(global.generatedEs2panda._ForUpdateStatementTest(global.context, this.peer));
     }
     get update(): Expression | undefined {
-        return unpackNode(global.generatedEs2panda._ForUpdateStatementUpdateConst(global.context, this.peer));
+        // XXX: panda method's name is changed
+        return unpackNode(global.generatedEs2panda._ForUpdateStatementUpdateExpressionConst(global.context, this.peer));
     }
     get body(): Statement | undefined {
         return unpackNode(global.generatedEs2panda._ForUpdateStatementBody(global.context, this.peer));
