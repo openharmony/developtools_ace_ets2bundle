@@ -429,7 +429,7 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
 }
 
 export function getHasAnnotationObserved(node: arkts.ClassProperty, annotationObserved: string): boolean {
-    let typeIdentifiers: any[] = [];
+    let typeIdentifiers: string[] = [];
     extractTypeIdentifiers(node.typeAnnotation, annotationObserved, typeIdentifiers);
     return typeIdentifiers.length > 0;
 }
@@ -437,26 +437,26 @@ export function getHasAnnotationObserved(node: arkts.ClassProperty, annotationOb
 function extractTypeIdentifiers(
     typeNode: arkts.AstNode | undefined,
     annotationObserved: string,
-    typeIdentifiers: any[]
+    typeIdentifiers: string[]
 ): void {
     if (!typeNode) {
         return;
     }
     if (arkts.isETSTypeReference(typeNode) && typeNode.part && arkts.isETSTypeReferencePart(typeNode.part)) {
-        if (checkObservedForm1_1(typeNode.part.name, annotationObserved)) {
+        if (checkObservedFormDynamic(typeNode.part.name, annotationObserved)) {
             typeIdentifiers.push(typeNode.part.name);
             return;
         }
-        const typeParams = typeNode.part.typeParams;
+        const typeParams: arkts.AstNode = typeNode.part.typeParams;
         if (typeParams && arkts.isTSTypeParameterInstantiation(typeParams) && typeParams.params) {
-            typeParams.params.forEach((param) => extractTypeIdentifiers(param, annotationObserved, typeIdentifiers));
+            typeParams.params.forEach((param: arkts.AstNode) => extractTypeIdentifiers(param, annotationObserved, typeIdentifiers));
         }
     } else if (arkts.isETSUnionType(typeNode)) {
-        typeNode.types.forEach((subType) => extractTypeIdentifiers(subType, annotationObserved, typeIdentifiers));
+        typeNode.types.forEach((subType: arkts.AstNode) => extractTypeIdentifiers(subType, annotationObserved, typeIdentifiers));
     }
 }
 
-function checkObservedForm1_1(typeNode: arkts.AstNode, annotationObserved: string): boolean {
+function checkObservedFormDynamic(typeNode: arkts.AstNode, annotationObserved: string): boolean {
     const typeDecl = arkts.getDecl(typeNode);
     if (!typeDecl || !typeDecl.annotations) {
         return false;

@@ -93,8 +93,8 @@ function checkArgsV1InteropV2(
     isV2: boolean
 ): void {
     const valueProperty = arkts.getDecl(value);
-    let ketType = 'regular';
-    let valueType = 'regular';
+    let keyTypes: string[] = [];
+    let valueTypes: string[] = [];
     if (!(value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression)) {
         return;
     }
@@ -102,31 +102,44 @@ function checkArgsV1InteropV2(
     let isComponentV2forParent = false;
     if (valueProperty) {
         isComponentV2forParent = valueProperty.parent?.annotations?.some(
-            (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
+            (annotation: arkts.AnnotationUsage) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
         );
-    }
-    if (valueProperty && arkts.isMethodDefinition(valueProperty)) {
-        valueProperty.scriptFunction.annotations.forEach((annotations) => (valueType = getPropertyType(annotations)));
-    }
-    if (valueProperty && arkts.isClassProperty(valueProperty)) {
-        valueProperty.annotations.forEach((annotations) => (valueType = getPropertyType(annotations)));
+        if (arkts.isMethodDefinition(valueProperty) || arkts.isClassProperty(valueProperty)) {
+            valueTypes = getAnnotationTypes(valueProperty);
+        }
     }
     if (keyProperty && keyProperty.annotations) {
-        keyProperty.annotations.forEach((annotations) => (ketType = getPropertyType(annotations)));
+        keyProperty.annotations.forEach((annotations: arkts.AnnotationUsage) => {
+            const type = getPropertyType(annotations);
+            keyTypes.push(type);
+        });
     }
+    const keyTypeStr = keyTypes.join(', ');
+    const valueTypeStr = valueTypes.join(', ');
+    const errorMessage = `The ${valueTypeStr} property '${valueName}' cannot be assigned to the ${keyTypeStr} property '${keyName}' when interop`;
     if (isV2) {
         if (!isComponentV2forParent) {
-            let errorMessage = `The ${valueType} property '${valueName}' cannot be assigned to the ${ketType} property '${keyName}' when interop`;
             logDiagnostic(errorMessage, node);
         }
     } else {
         if (isComponentV2forParent) {
             if (keyProperty.annotations && keyProperty.annotations.length !== 0) {
-                let errorMessage = `The ${valueType} property '${valueName}' cannot be assigned to the ${ketType} property '${keyName}' when interop`;
                 logDiagnostic(errorMessage, node);
             }
         }
     }
+}
+
+function getAnnotationTypes(node: arkts.MethodDefinition | arkts.ClassProperty): string[] {
+    const types: string[] = [];
+    const annotations = node instanceof arkts.MethodDefinition 
+        ? node.scriptFunction.annotations 
+        : node.annotations;
+    annotations?.forEach(anno => {
+        const type = getPropertyType(anno);
+        types.push(type);
+    });
+    return types;
 }
 
 export function getPropertyType(anno: arkts.AnnotationUsage): string {
@@ -161,11 +174,11 @@ export function createVariableLet(varName: string, expression: arkts.AstNode): a
 function createBackingFieldExpression(varName: string): arkts.TSNonNullExpression {
     return arkts.factory.createTSNonNullExpression(
         arkts.factory.createMemberExpression(
-        arkts.factory.createThisExpression(),
-        arkts.factory.createIdentifier(backingField(varName)),
-        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-        false,
-        false
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(backingField(varName)),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
         )
     );
 }
@@ -303,7 +316,7 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
     const needUpdate: boolean = checkUpdatable(value);
     const newValue = arkts.factory.createCallExpression(
         needUpdate ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
-        arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+            arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
         undefined,
         [
             value
