@@ -82,8 +82,7 @@
         }
       },
       "wayPoints": {
-        "description": "途经点列表，最多传5个。",
-        "maxLength": 5,
+        "description": "途经点列表",
         "type": "array",
         "items": {
           "type": "object",
