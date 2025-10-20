@@ -480,8 +480,6 @@ function collectCompiledModuleName(rollupObject: Object): void {
     const metaInfo: Object = moduleInfo.meta;
     if (metaInfo && metaInfo.pkgPath) {
       reservedFilePath.add(metaInfo.pkgPath);
-    } else {
-      reservedFilePath.add(moduleId);
     }
   }
   addReservedFileNames([...reservedFilePath]);
