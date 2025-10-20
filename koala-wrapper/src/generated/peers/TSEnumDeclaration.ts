@@ -70,9 +70,6 @@ export class TSEnumDeclaration extends TypedStatement {
     get isConst(): boolean {
         return global.generatedEs2panda._TSEnumDeclarationIsConstConst(global.context, this.peer)
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._TSEnumDeclarationDecoratorsConst(global.context, this.peer))
-    }
 }
 export function isTSEnumDeclaration(node: AstNode): node is TSEnumDeclaration {
     return node instanceof TSEnumDeclaration

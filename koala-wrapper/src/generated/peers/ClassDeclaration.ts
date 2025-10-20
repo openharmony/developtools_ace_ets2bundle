@@ -47,9 +47,6 @@ export class ClassDeclaration extends Statement {
     get definition(): ClassDefinition | undefined {
         return unpackNode(global.generatedEs2panda._ClassDeclarationDefinitionConst(global.context, this.peer))
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._ClassDeclarationDecoratorsConst(global.context, this.peer))
-    }
 }
 export function isClassDeclaration(node: AstNode): node is ClassDeclaration {
     return node instanceof ClassDeclaration
