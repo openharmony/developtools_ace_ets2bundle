@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { backingField, expectName } from '../../common/arkts-utils';
+import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames } from '../../common/predefines';
 import { createGetter, createSetter, generateThisBacking, hasDecorator, removeDecorator } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
@@ -112,7 +112,7 @@ export class BuilderParamInterfaceTranslator<T extends InterfacePropertyTypes> e
     translateProperty(): T {
         if (arkts.isMethodDefinition(this.property)) {
             this.modified = true;
-            return this.updateBuilderParamMethodInInterface(this.property) as T;
+            return flatVisitMethodWithOverloads(this.property, this.updateBuilderParamMethodInInterface) as T;
         } else if (arkts.isClassProperty(this.property)) {
             this.modified = true;
             return this.updateBuilderParamPropertyInInterface(this.property) as T;
@@ -140,13 +140,6 @@ export class BuilderParamInterfaceTranslator<T extends InterfacePropertyTypes> e
             if (!!type && (arkts.isETSFunctionType(type) || arkts.isETSUnionType(type))) {
                 addMemoAnnotation(type);
             }
-            const newOverLoads = method.overloads.map((overload) => {
-                if (arkts.isMethodDefinition(overload)) {
-                    return this.updateBuilderParamMethodInInterface(overload);
-                }
-                return overload;
-            });
-            method.setOverloads(newOverLoads);
             removeDecorator(method, DecoratorNames.BUILDER_PARAM);
             arkts.NodeCache.getInstance().collect(method, { isGetter: true });
         } else if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {

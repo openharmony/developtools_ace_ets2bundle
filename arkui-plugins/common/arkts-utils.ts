@@ -17,6 +17,27 @@ import * as arkts from '@koalaui/libarkts';
 import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 
+/**
+ * Visit base method and all its overloads with visitor.
+ * 
+ * @param method base method AstNode
+ * @param visitor rewrite visitor for each method AstNode
+ * @returns new base method AstNode with new overloads
+ */
+export function flatVisitMethodWithOverloads(
+    method: arkts.MethodDefinition,
+    visitor: (node: arkts.MethodDefinition) => arkts.MethodDefinition
+): arkts.MethodDefinition {
+    const newOverloads: readonly arkts.MethodDefinition[] = method.overloads.map(visitor);
+    const newNode = visitor(method);
+    newNode.setOverloads(newOverloads);
+    newOverloads.forEach((it): void => {
+        it.setBaseOverloadMethod(newNode);
+        it.parent = newNode;
+    });
+    return newNode;
+}
+
 export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T {
     return node as T;
 }

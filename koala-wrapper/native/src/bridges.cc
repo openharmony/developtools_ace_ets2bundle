@@ -810,6 +810,18 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_ScriptFunctionSetParams(
+    KNativePointer context, KNativePointer receiver, KNativePointerArray paramsList, KUInt paramsListSequenceLength)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _paramsList = reinterpret_cast<es2panda_AstNode**>(paramsList);
+    const auto _paramsListSequenceLength = static_cast<KUInt>(paramsListSequenceLength);
+    GetImpl()->ScriptFunctionSetParams(_context, _receiver, _paramsList, _paramsListSequenceLength);
+    return;
+}
+KOALA_INTEROP_V4(ScriptFunctionSetParams, KNativePointer, KNativePointer, KNativePointerArray, KUInt);
+
 static KNativePointer impl_JsdocStringFromDeclaration(KNativePointer contextPtr, KNativePointer decl)
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
