@@ -75,9 +75,6 @@ export class TSInterfaceDeclaration extends TypedStatement {
     get extends(): readonly TSInterfaceHeritage[] {
         return unpackNodeArray(global.generatedEs2panda._TSInterfaceDeclarationExtendsConst(global.context, this.peer))
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._TSInterfaceDeclarationDecoratorsConst(global.context, this.peer))
-    }
     get getAnonClass(): ClassDeclaration | undefined {
         return unpackNode(global.generatedEs2panda._TSInterfaceDeclarationGetAnonClassConst(global.context, this.peer))
     }

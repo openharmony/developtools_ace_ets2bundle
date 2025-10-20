@@ -65,9 +65,6 @@ export class Identifier extends AnnotatedExpression {
         global.generatedEs2panda._IdentifierSetName(global.context, this.peer, newName)
         return this
     }
-    get decorators(): readonly Decorator[] {
-        return unpackNodeArray(global.generatedEs2panda._IdentifierDecoratorsConst(global.context, this.peer))
-    }
     get isErrorPlaceHolder(): boolean {
         return global.generatedEs2panda._IdentifierIsErrorPlaceHolderConst(global.context, this.peer)
     }
