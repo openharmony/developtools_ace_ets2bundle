@@ -1,0 +1,38 @@
+{
+  "name": "arkui_noninterop_tools",
+  "version": "0.1.0",
+  "description": "transform arkui sdk for ArkTS1.2 interop",
+  "keywords": [
+    "interop"
+  ],
+  "scripts": {
+    "compile": "tsc --build --verbose tsconfig.json",
+    "clean": "rimraf dist tsconfig.tsbuildinfo package-lock.json",
+    "build": "npm run clean && npm run compile",
+    "format": "npx prettier --write .",
+    "test:compile": "tsc --build --verbose test/tsconfig.json",
+    "test:clean": "rimraf dist-test test/build_add_import test/build_delete_noninterop",
+    "test:build": "npm run test:clean && npm run test:compile",
+    "build:all": "npm run build && npm run test:build",
+    "test": "npm run build:all && mocha \"dist-test/test/test.js\" --reporter-option maxDiffSize=200000",
+    "sample:clean": "rimraf test/build_sample test/build_sample_result tsconfig.tsbuildinfo",
+    "sample": "npm run sample:clean && npm run test:build && node \"dist-test/test/testSample.js\"",
+    "clean:all": "npm run clean && npm run test:clean && npm run sample:clean && rimraf node_modules"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.2",
+    "@types/chai": "^5.2.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^18.19.122",
+    "chai": "4.3.7",
+    "mocha": "10.2.0",
+    "prettier": "latest",
+    "rimraf": "^6.0.1"
+  },
+    "dependencies": {
+    "commander": "^13.1.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "typescript": "npm:ohos-typescript@4.9.5-r9"
+  }
+}
