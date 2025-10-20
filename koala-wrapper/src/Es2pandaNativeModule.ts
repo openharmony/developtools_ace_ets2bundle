@@ -984,6 +984,15 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _ScriptFunctionSetParams(
+        context: KNativePointer,
+        receiver: KNativePointer,
+        paramsList: BigUint64Array,
+        paramsListSequenceLength: KUInt
+    ): void {
+        throw new Error('ScriptFunctionSetParams was not overloaded by native module initialization');
+    }
+
     _JsdocStringFromDeclaration(context: KNativePointer, decl: KNativePointer): KStringPtr {
         throw new Error('Not implemented');
     }

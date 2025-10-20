@@ -23,7 +23,6 @@ import {
     buildReturnTypeInfo,
     castArrowFunctionExpression,
     castIdentifier,
-    castOverloadsToMethods,
     castParameters,
     findMemoFromTypeAnnotation,
     findThisAttribute,
@@ -298,8 +297,6 @@ export class FunctionTransformer extends AbstractVisitor {
 
     private updateMethodDefinition(node: arkts.MethodDefinition): arkts.MethodDefinition {
         let updateMethod: arkts.MethodDefinition;
-        const that = this;
-        const updateOverloads = node.overloads?.map((overload) => that.visitor(overload)) ?? undefined;
         const isMemo =
             hasMemoAnnotation(node.scriptFunction) ||
             hasMemoIntrinsicAnnotation(node.scriptFunction) ||
@@ -326,9 +323,6 @@ export class FunctionTransformer extends AbstractVisitor {
                 node.modifiers,
                 false
             );
-        }
-        if (!!updateOverloads) {
-            updateMethod.setOverloads(castOverloadsToMethods(updateOverloads));
         }
         this.modified ||= this.signatureTransformer.modified;
         return updateMethod;
