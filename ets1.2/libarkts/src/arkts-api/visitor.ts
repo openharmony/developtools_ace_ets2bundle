@@ -865,7 +865,7 @@ function visitForUpdateStatement(node: ForUpdateStatement, visitor: Visitor): Fo
     global.updateTracker.push();
     const newInit = nodeVisitor(node.init, visitor);
     const newTest = nodeVisitor(node.test, visitor);
-    const newUpdate = nodeVisitor(node.update, visitor);
+    const newUpdate = nodeVisitor(node.updateExpression, visitor);
     const newBody = nodeVisitor(node.body, visitor);
     if (global.updateTracker.check()) {
         const result = factory.createForUpdateStatement(newInit, newTest, newUpdate, newBody);
