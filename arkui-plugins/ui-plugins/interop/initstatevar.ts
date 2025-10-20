@@ -64,7 +64,8 @@ export function initialArgs(
         } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
-        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) || hasDecorator(keyProperty, DecoratorNames.PARAM)) {
+        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) ||
+            hasDecorator(keyProperty, DecoratorNames.PARAM)) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
