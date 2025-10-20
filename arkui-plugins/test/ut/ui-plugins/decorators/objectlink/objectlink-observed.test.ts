@@ -38,20 +38,21 @@ const objectlinkTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test objectlink observed transform', buildConfig);
 
 const expectedScript: string = `
-
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-
-import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -75,6 +76,12 @@ import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
 import { State as State, ObjectLink as ObjectLink, Observed as Observed } from "@ohos.arkui.stateManagement";
@@ -89,7 +96,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface));
 
-@Observed() class DateClass extends Date implements IObservedObject, ISubscribedWatches {
+@Observed() class DateClass implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
@@ -209,6 +216,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     return this.__backing_data!.get();
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -223,7 +241,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -245,19 +273,33 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_newData!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___192738000 = storage;
+      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @memo() (() => {
-      Child._instantiateImpl(undefined, (() => {
-        return new Child();
-      }), {
-        label: "date",
-        __options_has_label: true,
-        data: this.newData.data,
-        __options_has_data: true,
-      }, undefined, undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          label: "date",
+          __options_has_label: true,
+          data: this.newData.data,
+          __options_has_data: true,
+        };
+      }), undefined, undefined, undefined);
       ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
@@ -273,7 +315,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -311,9 +363,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    Parent._instantiateImpl(undefined, (() => {
-      return new Parent();
-    }), undefined, undefined, undefined);
+    Parent._invoke(@memo() ((instance: Parent): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
 
   public constructor() {}

@@ -160,7 +160,7 @@ export function forEachArgWithParam(
 ): void {
     const argLen: number = args.length;
     const paramLen: number = params.length;
-    if (argLen === 0 || paramLen === 0) {
+    if (paramLen === 0) {
         return;
     }
     const hasRestParam: boolean = !!options?.hasRestParameter;

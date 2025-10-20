@@ -14,7 +14,7 @@
  */
 
 import { Text, Column, Component, Entry, Button, ClickEvent } from "@ohos.arkui.component"
-import { CustomDialog, CustomDialogController, CustomDialogControllerOptions } from "@kit.ArkUI"
+import { CustomDialog, CustomDialogController, CustomDialogControllerOptions } from "@ohos.arkui.component"
 
 @CustomDialog
 struct CustomDialogExample {

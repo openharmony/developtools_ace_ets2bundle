@@ -29,8 +29,8 @@ function YourBuilder(value: string, size: number) {
     .fontColor(Color.Pink)
 }
 
-let globalBuilder: (@Builder (value: string, size: number) => void) = MyBuilder;
-let builderArr: (@Builder (value: string, size: number) => void)[] = [MyBuilder, YourBuilder]
+const globalBuilder: (@Builder (value: string, size: number) => void) = MyBuilder;
+const builderArr: (@Builder (value: string, size: number) => void)[] = [MyBuilder, YourBuilder]
 
 @Entry
 @Component

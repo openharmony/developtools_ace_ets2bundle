@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { Component } from "@ohos.arkui.component"
 import { Observed, Track } from "@ohos.arkui.stateManagement"
 
 @Retention({policy: "SOURCE"})
@@ -29,9 +28,4 @@ class testJSONStringifyIgnore {
   @JSONStringifyIgnore @TestDecor var6: number = 6
   @TestDecor @Track var7: number = 7
   @JSONStringifyIgnore @TestDecor @Track var8: number = 8
-}
-
-@Component
-struct MyStateSample {
-  build() {}
 }

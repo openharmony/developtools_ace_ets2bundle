@@ -42,11 +42,21 @@ const pluginTester = new PluginTester('test import transform', buildConfig);
 const expectedParsedScript: string = `
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
 import { Component as Component, Text as Text } from "@ohos.arkui.component";
 
 import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() content?: (()=> void)): ImportStruct {
+    throw new Error("Declare interface");
+  }
+
   public build() {
     SimpleStruct();
     SimpleStruct({
@@ -57,7 +67,9 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
     };
   }
 
-  public constructor() {}
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
 
 }
 
@@ -67,13 +79,21 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 `;
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Component as Component, Text as Text } from "@ohos.arkui.component";
 
@@ -81,34 +101,58 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 function main() {}
 
-
-
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
+      return new ImportStruct(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ImportStruct {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
-    SimpleStruct._instantiateImpl(undefined, (() => {
-      return new SimpleStruct();
+    SimpleStruct._invoke(@memo() ((instance: SimpleStruct): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
+    SimpleStruct._invoke(@memo() ((instance: SimpleStruct): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), (() => {
+      return {
+        message: "str1",
+        __options_has_message: true,
+      };
     }), undefined, undefined, undefined);
-    SimpleStruct._instantiateImpl(undefined, (() => {
-      return new SimpleStruct();
-    }), {
-      message: "str1",
-      __options_has_message: true,
-    }, undefined, undefined);
-    SimpleStruct._instantiateImpl(undefined, (() => {
-      return new SimpleStruct();
-    }), undefined, undefined, @memo() (() => {
+    SimpleStruct._invoke(@memo() ((instance: SimpleStruct): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, @memo() (() => {
       TextImpl(@memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("a", undefined).applyAttributesFinish();
         return;
       }), undefined);
     }));
   }
-
-  public constructor() {}
+  
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
 
 }
 

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -38,21 +38,27 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
 import { Provider as Provider } from "@ohos.arkui.stateManagement";
 
 function main() {}
-
-
 
 class Per {
   public num: number;
@@ -258,6 +264,16 @@ final class StateType extends BaseEnum<int> {
     this.__backing_paramVar12!.set(value);
   }
 
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build() {}
 
   public constructor() {}
@@ -374,9 +390,9 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Provider decorated variables transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
-        'checked:struct-no-recheck': [testCheckedTransformer],
+        'checked:ui-no-recheck': [testCheckedTransformer],
     },
     {
         stopAfter: 'checked',

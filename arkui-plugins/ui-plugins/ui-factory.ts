@@ -23,6 +23,7 @@ import {
     hasPropertyInAnnotation,
     optionsHasField,
 } from './utils';
+import { GenSymGenerator } from '../common/gensym-generator';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
 import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
 import { needDefiniteOrOptionalModifier } from './property-translators/utils';
@@ -88,29 +89,33 @@ export class factory {
     }
 
     /**
-     * create `style: ((instance: <typeName>) => void) | undefined` as identifier
+     * create `<identName>: <typeNode>` as identifier. If it is optional, then create `<identName>: <typeNode> | undefined`.
      */
-    static createStyleIdentifier(typeName: string): arkts.Identifier {
-        return arkts.factory.createIdentifier(
-            BuilderLambdaNames.STYLE_PARAM_NAME,
-            arkts.factory.createUnionType([
-                factory.createStyleLambdaFunctionType(typeName),
-                arkts.factory.createETSUndefinedType(),
-            ])
-        );
+    static createIdentifierWithType(
+        identName: string,
+        typeNode: arkts.TypeNode,
+        isOptional?: boolean
+    ): arkts.Identifier {
+        const type: arkts.TypeNode = isOptional
+            ? arkts.factory.createUnionType([typeNode, arkts.factory.createETSUndefinedType()])
+            : typeNode;
+        return arkts.factory.createIdentifier(identName, type);
     }
 
     /**
-     * create `initializers: <optionsName> | undefined` as identifier
+     * create `<identName>: <typeNode>` as parameter. If it is optional, then create `<identName>?: <typeNode>`.
      */
-    static createInitializerOptionsIdentifier(optionsName: string): arkts.Identifier {
-        return arkts.factory.createIdentifier(
-            CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-            arkts.factory.createUnionType([
-                factory.createTypeReferenceFromString(optionsName),
-                arkts.factory.createETSUndefinedType(),
-            ])
-        );
+    static createParameterWithType(
+        identName: string,
+        typeNode: arkts.TypeNode,
+        isOptional?: boolean
+    ): arkts.ETSParameterExpression {
+        const ident = factory.createIdentifierWithType(identName, typeNode);
+        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(ident, undefined);
+        if (isOptional) {
+            param.setOptional(true);
+        }
+        return param;
     }
 
     /**
@@ -118,18 +123,12 @@ export class factory {
      */
     static createInitializersOptionsParameter(optionsName: string): arkts.ETSParameterExpression {
         return arkts.factory.createParameterDeclaration(
-            factory.createInitializerOptionsIdentifier(optionsName),
+            factory.createIdentifierWithType(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                factory.createTypeReferenceFromString(optionsName),
+                true
+            ),
             undefined
-        );
-    }
-
-    /**
-     * create `content: (() => void) | undefined` as identifier
-     */
-    static createContentIdentifier(): arkts.Identifier {
-        return arkts.factory.createIdentifier(
-            BuilderLambdaNames.CONTENT_PARAM_NAME,
-            arkts.factory.createUnionType([factory.createLambdaFunctionType(), arkts.factory.createETSUndefinedType()])
         );
     }
 
@@ -137,7 +136,11 @@ export class factory {
      * create `@memo() content: (() => void) | undefined` as parameter
      */
     static createContentParameter(): arkts.ETSParameterExpression {
-        const contentParam: arkts.Identifier = factory.createContentIdentifier();
+        const contentParam: arkts.Identifier = factory.createIdentifierWithType(
+            BuilderLambdaNames.CONTENT_PARAM_NAME,
+            factory.createLambdaFunctionType(),
+            true
+        );
         const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(contentParam, undefined);
         addMemoAnnotation(param);
         return param;
@@ -162,7 +165,10 @@ export class factory {
     /**
      * create complex type from string and type parameter, e.g. `Set<T>`
      */
-    static createComplexTypeFromStringAndTypeParameter(name: string, params: readonly arkts.TypeNode[]): arkts.TypeNode {
+    static createComplexTypeFromStringAndTypeParameter(
+        name: string,
+        params: readonly arkts.TypeNode[]
+    ): arkts.TypeNode {
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
                 arkts.factory.createIdentifier(name),
@@ -208,7 +214,7 @@ export class factory {
     ): arkts.ScriptFunction {
         const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
             original,
-            config.body ?? original.body,
+            Object.hasOwn(config, 'body') ? config.body : original.body,
             arkts.factory.createFunctionSignature(
                 config.typeParams ?? original.typeParams,
                 config.params ?? original.params,
@@ -365,7 +371,7 @@ export class factory {
     /**
      * add optional or definite modifier for class property needs initializing without assignment.
      */
-    static PreprocessClassPropertyModifier(st: arkts.AstNode, isDecl: boolean): arkts.AstNode {
+    static preprocessClassPropertyModifier(st: arkts.AstNode, isDecl: boolean): arkts.AstNode {
         if (!isDecl && arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
             if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
@@ -510,5 +516,64 @@ export class factory {
         );
         arkts.classPropertySetOptional(optionsHasMember, true);
         return optionsHasMember;
+    }
+
+    /**
+     * create `<callee>?.<typeArgs>(<args>)` or `{let _tmp = <callee>; _tmp == null ? undefined : _tmp<typeArgs>(<args>)}` from given `isLowered` flag.
+     */
+    static createOptionalCall(
+        callee: arkts.Expression,
+        typeArgs: readonly arkts.TypeNode[] | undefined,
+        args: readonly arkts.AstNode[] | undefined,
+        isLowered?: boolean,
+    ): arkts.Expression {
+        if (!isLowered) {
+            return arkts.factory.createCallExpression(callee, typeArgs, args, true);
+        }
+        const id = GenSymGenerator.getInstance().id();
+        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), typeArgs, args);
+        const statements: arkts.Statement[] = [
+            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), callee),
+            factory.generateTernaryExpression(id, alternate),
+        ];
+        return arkts.factory.createBlockExpression(statements);
+    }
+
+    /**
+     * generate a variable declaration, e.g. `let <left> = <right>`;
+     *
+     * @param left left expression.
+     * @param right right expression.
+     */
+    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
+        return arkts.factory.createVariableDeclaration(
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+            [
+                arkts.factory.createVariableDeclarator(
+                    arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                    left,
+                    right
+                ),
+            ]
+        );
+    }
+
+    /**
+     * generate a ternary expression, e.g. `<testLeft> ? undefined : <alternate>`;
+     *
+     * @param testLeft the left hand of the test condition.
+     * @param alternate the alternate of the ternary expression
+     */
+    static generateTernaryExpression(testLeft: string, alternate: arkts.Expression): arkts.ExpressionStatement {
+        const test = arkts.factory.createBinaryExpression(
+            arkts.factory.createIdentifier(testLeft),
+            arkts.factory.createNullLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EQUAL
+        );
+        const consequent: arkts.Expression = arkts.factory.createUndefinedLiteral();
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createConditionalExpression(test, consequent, alternate)
+        );
     }
 }

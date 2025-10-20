@@ -42,6 +42,8 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -52,13 +54,13 @@ import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -67,6 +69,14 @@ import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent"
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
+import { ReuseOptions as ReuseOptions } from "arkui.component.common";
 
 import { Component as Component, Entry as Entry, Reusable as Reusable, Column as Column, Text as Text, Button as Button, ClickEvent as ClickEvent, FontWeight as FontWeight } from "@ohos.arkui.component";
 
@@ -109,6 +119,17 @@ class Message {
     this.__backing_display!.set(value);
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+  
   @memo() public build() {
     ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
@@ -120,22 +141,44 @@ class Message {
         })).applyAttributesFinish();
         return;
       }), undefined);
+      Child._invoke(@memo() ((instance: Child): void => {
+        instance.reuseId("res").applyAttributesFinish();
+        return;
+      }), (() => {
+        return {
+          message: new Message("Child"),
+          __options_has_message: true,
+        };
+      }), undefined, "res", undefined);
       ConditionScope(@memo() (() => {
         if (this.display) {
           ConditionBranch(@memo() (() => {
-            Child._instantiateImpl(undefined, (() => {
-              return new Child();
-            }), {
-              message: new Message("Child"),
-              __options_has_message: true,
-            }, "Child", undefined);
+            Child._invoke(@memo() ((instance: Child): void => {
+              instance.applyAttributesFinish();
+              return;
+            }), (() => {
+              return {
+                message: new Message("Child"),
+                __options_has_message: true,
+              };
+            }), undefined, "Child", undefined);
           }));
         }
       }));
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -164,6 +207,17 @@ class Message {
     this.__backing_message!.set(value);
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+  
   public aboutToReuse(params: Record<string, ESObject>) {}
   
   @memo() public build() {
@@ -178,7 +232,17 @@ class Message {
     }));
   }
   
-  public constructor() {}
+  constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+  
+  constructor() {
+    this(undefined, undefined);
+  }
+  
+  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
   
 }
 
@@ -210,9 +274,10 @@ class Message {
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    Index._instantiateImpl(undefined, (() => {
-      return new Index();
-    }), undefined, undefined, undefined);
+    Index._invoke(@memo() ((instance: Index): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

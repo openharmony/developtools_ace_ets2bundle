@@ -16,7 +16,9 @@
 import { Text, Entry, Column, Component, $$, Grid, GridItem } from "@ohos.arkui.component"
 import { State } from "@ohos.arkui.stateManagement"
 
-let c: boolean = false
+class CC {
+  static c: boolean = true
+}
 
 @Entry
 @Component
@@ -30,7 +32,7 @@ struct MyStateSample {
         }.selected($$(this.boo))
         GridItem() {
           Text('nihao')
-        }.selected($$(c))
+        }.selected($$(CC.c))
       }
     }
   }

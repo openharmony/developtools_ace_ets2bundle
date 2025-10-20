@@ -38,20 +38,34 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
-import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Component as Component, Column as Column, Text as Text } from \"@ohos.arkui.component\";
-import hilog from \"@ohos.hilog\";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
+import hilog from "@ohos.hilog";
 function main() {}
 @Component() final struct A extends CustomComponent<A, __Options_A> {
     public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
+    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+      CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
+        return new A(false, ({let gensym___203542966 = storage;
+        (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+      }), initializers, reuseId, content);
+    }
+    
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): A {
+      throw new Error("Declare interface");
+    }
     @memo() public build() {
         ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -97,7 +111,17 @@ function main() {}
             }));
         }));
     }
-    public constructor() {}
+    constructor(useSharedStorage: (boolean | undefined)) {
+      this(useSharedStorage, undefined);
+    }
+    
+    constructor() {
+      this(undefined, undefined);
+    }
+    
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+      super(useSharedStorage, storage);
+    }
 }
 @Component() export interface __Options_A {
 }
@@ -108,21 +132,35 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
-import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Component as Component, Column as Column, Text as Text } from \"@ohos.arkui.component\";
-import hilog from \"@ohos.hilog\";
+import { memo as memo } from "arkui.stateManagement.runtime";
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+import { Builder as Builder } from "arkui.component.builder";
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
+import hilog from "@ohos.hilog";
 function main() {}
 @Component() final struct A extends CustomComponent<A, __Options_A> {
     public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+      CustomComponent._invokeImpl<A, __Options_A>(__memo_context, ((__memo_id) + (47330804)), style, ((): A => {
+        return new A(false, ({let gensym___203542966 = storage;
+        (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+      }), initializers, reuseId, content);
+    }
+    
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): A {
+      throw new Error("Declare interface");
+    }
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
@@ -303,7 +341,17 @@ function main() {}
             return;
         }
     }
-    public constructor() {}
+    constructor(useSharedStorage: (boolean | undefined)) {
+      this(useSharedStorage, undefined);
+    }
+    
+    constructor() {
+      this(undefined, undefined);
+    }
+    
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+      super(useSharedStorage, storage);
+    }
 }
 @Component() export interface __Options_A {
 }

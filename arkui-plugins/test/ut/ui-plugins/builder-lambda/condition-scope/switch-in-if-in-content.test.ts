@@ -38,15 +38,32 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
-import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
+import { Text as Text, Column as Column, Component as Component } from "@ohos.arkui.component";
+
 function main() {}
 @Component() final struct SwitchInIf extends CustomComponent<SwitchInIf, __Options_SwitchInIf> {
     public __initializeStruct(initializers: (__Options_SwitchInIf | undefined), @memo() content: ((()=> void) | undefined)): void {
@@ -60,6 +77,16 @@ function main() {}
     }
     public set num(value: string) {
         this.__backing_num = value;
+    }
+    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: SwitchInIf)=> void), initializers: ((()=> __Options_SwitchInIf) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+      CustomComponent._invokeImpl<SwitchInIf, __Options_SwitchInIf>(style, ((): SwitchInIf => {
+        return new SwitchInIf(false, ({let gensym___149025070 = storage;
+        (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+      }), initializers, reuseId, content);
+    }
+    
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_SwitchInIf, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): SwitchInIf {
+      throw new Error("Declare interface");
     }
     @memo() public build() {
         ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
@@ -86,7 +113,17 @@ function main() {}
             }));
         }));
     }
-    public constructor() {}
+    constructor(useSharedStorage: (boolean | undefined)) {
+      this(useSharedStorage, undefined);
+    }
+    
+    constructor() {
+      this(undefined, undefined);
+    }
+    
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+      super(useSharedStorage, storage);
+    }
 }
 @Component() export interface __Options_SwitchInIf {
   set num(num: (string | undefined))
@@ -104,16 +141,34 @@ function testUITransformer(this: PluginTestContext): void {
 }
 
 const expectedMemoScript: string = `
-import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.stateManagement.runtime\";
+import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.stateManagement.runtime";
+
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
-import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+
+import { ConditionScope as ConditionScope } from "arkui.component.builder";
+
+import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
+
 import { TextAttribute as TextAttribute } from "arkui.component.text";
+
 import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
-import { Text as Text, Column as Column, Component as Component } from \"@ohos.arkui.component\";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+
+import { Text as Text, Column as Column, Component as Component } from "@ohos.arkui.component";
+
 function main() {}
 @Component() final struct SwitchInIf extends CustomComponent<SwitchInIf, __Options_SwitchInIf> {
     public __initializeStruct(initializers: (__Options_SwitchInIf | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -127,6 +182,16 @@ function main() {}
     }
     public set num(value: string) {
         this.__backing_num = value;
+    }
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: SwitchInIf)=> void), initializers: ((()=> __Options_SwitchInIf) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+      CustomComponent._invokeImpl<SwitchInIf, __Options_SwitchInIf>(__memo_context, ((__memo_id) + (47330804)), style, ((): SwitchInIf => {
+        return new SwitchInIf(false, ({let gensym___149025070 = storage;
+        (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+      }), initializers, reuseId, content);
+    }
+    
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_SwitchInIf, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): SwitchInIf {
+      throw new Error("Declare interface");
     }
     @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
@@ -225,7 +290,17 @@ function main() {}
             return;
         }
     }
-    public constructor() {}
+    constructor(useSharedStorage: (boolean | undefined)) {
+      this(useSharedStorage, undefined);
+    }
+    
+    constructor() {
+      this(undefined, undefined);
+    }
+    
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+      super(useSharedStorage, storage);
+    }
 }
 @Component() export interface __Options_SwitchInIf {
   set num(num: (string | undefined))

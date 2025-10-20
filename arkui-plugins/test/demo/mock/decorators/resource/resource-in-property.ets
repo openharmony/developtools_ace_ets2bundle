@@ -15,7 +15,7 @@
 
 import { Component, $r, $rawfile, Column, Text, Image, Resource } from "@ohos.arkui.component"
 
-let i: Resource = $r('app.string.app_name');
+const i: Resource = $r('app.string.app_name');
 
 @Component
 struct ResourceComponent {
