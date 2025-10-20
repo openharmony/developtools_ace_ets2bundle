@@ -32,7 +32,7 @@ import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
 import { BuilderFactory } from '../builder-lambda-translators/builder-factory';
-import { annotation, backingField, collect, filterDefined } from '../../common/arkts-utils';
+import { annotation, backingField, collect, filterDefined, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import {
     classifyInObservedClass,
     classifyPropertyInInterface,
@@ -184,12 +184,17 @@ export class factory {
     }
 
     static transformControllerInterfaceType(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-        if (!node.body || node.body.body.length <= 0 || !arkts.isMethodDefinition(node.body.body[0])) {
+        if (!node.body) {
+            return node;
+        }
+        const nodeBody = node.body.body;
+        const firstGetter = nodeBody.at(0);
+        if (!firstGetter || !arkts.isMethodDefinition(firstGetter)) {
             return node;
         }
         const updatedBody = arkts.factory.updateInterfaceBody(node.body, [
-            this.updateBuilderType(node.body.body[0]),
-            ...node.body.body.slice(1),
+            flatVisitMethodWithOverloads(firstGetter, this.updateBuilderType),
+            ...nodeBody.slice(1),
         ]);
         return arkts.factory.updateInterfaceDeclaration(
             node,

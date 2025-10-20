@@ -60,14 +60,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [this.testAnnotation()];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([this.testAnnotation()]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.addTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([this.testAnnotation()]);
         }
@@ -78,14 +70,6 @@ class AnnotationVisitor extends AbstractVisitor {
             node.annotations = [];
         } else if (arkts.isMethodDefinition(node)) {
             node.scriptFunction.setAnnotations([]);
-            node.setOverloads(
-                node.overloads.map((ov) => {
-                    if (this.isAnnotationNode(ov)) {
-                        this.removeTestAnnotation(ov);
-                    }
-                    return ov;
-                })
-            );
         } else {
             node.setAnnotations([]);
         }

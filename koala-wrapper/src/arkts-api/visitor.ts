@@ -80,6 +80,7 @@ import {
 import { classDefinitionFlags } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
 import { updateFunctionExpression } from './node-utilities/FunctionExpression';
+import { MethodDefinition } from './types';
 
 type Visitor = (node: AstNode) => AstNode;
 
@@ -287,6 +288,24 @@ function visitDeclaration(node: AstNode, visitor: Visitor): AstNode {
     return node;
 }
 
+function visitMethodDefinition(node: MethodDefinition, visitor: Visitor): MethodDefinition {
+    const newOverloads: readonly MethodDefinition[] = nodesVisitor(node.overloads, visitor);
+    const newNode = factory.updateMethodDefinition(
+        node,
+        node.kind,
+        node.name,
+        nodeVisitor(node.scriptFunction, visitor),
+        node.modifiers,
+        false
+    );
+    node.setOverloads(newOverloads);
+    newOverloads.forEach((it): void => {
+        it.setBaseOverloadMethod(node);
+        it.parent = node;
+    });
+    return newNode;
+}
+
 function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
@@ -308,14 +327,7 @@ function visitDefinition(node: AstNode, visitor: Visitor): AstNode {
     }
     if (isMethodDefinition(node)) {
         updated = true;
-        return factory.updateMethodDefinition(
-            node,
-            node.kind,
-            node.name,
-            nodeVisitor(node.scriptFunction, visitor),
-            node.modifiers,
-            false
-        );
+        return visitMethodDefinition(node, visitor);
     }
     if (isTSInterfaceBody(node)) {
         updated = true;

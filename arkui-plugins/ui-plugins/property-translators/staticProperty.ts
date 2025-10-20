@@ -18,7 +18,7 @@ import * as arkts from '@koalaui/libarkts';
 import { createGetter, createSetter, hasDecorator } from './utils';
 import { PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
+import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { isStatic } from '../../ui-plugins/utils';
 import { DecoratorNames } from '../../common/predefines';
 

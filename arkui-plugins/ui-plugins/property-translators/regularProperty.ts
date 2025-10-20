@@ -18,7 +18,7 @@ import * as arkts from '@koalaui/libarkts';
 import { createGetter, generateToRecord, generateThisBacking, createSetter2, isCustomDialogController } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
-import { backingField, expectName } from '../../common/arkts-utils';
+import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { factory } from './factory';
 import { CustomComponentNames } from '../utils';
 import { PropertyCache } from './cache/propertyCache';
