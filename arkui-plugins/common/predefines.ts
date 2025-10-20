@@ -177,7 +177,7 @@ export enum DecoratorNames {
 
 export enum TypeNames {
     ERROR = 'Error',
-    NULLISH_TYPE = 'NullishType',
+    NULLISH_TYPE = 'Any',
     ANY = 'Any',
     ARRAY = 'Array',
     MAP = 'Map',
