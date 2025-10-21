@@ -28,7 +28,7 @@ export const RUNTIME_OS_OH: string = 'OpenHarmony';
 export const FORM_TAG_CHECK_NAME: string = 'form';
 export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
 export const CROSSPLATFORM_TAG_CHECK_NAME: string = 'crossplatform';
-export const CROSSPLATFORM_TAG_CHECK_ERROER: string = "'{0}' can't support crossplatform application.";
+export const CROSSPLATFORM_TAG_CHECK_ERROR: string = "'{0}' can't support crossplatform application.";
 export const DEPRECATED_TAG_CHECK_NAME: string = 'deprecated';
 export const DEPRECATED_TAG_CHECK_WARNING: string = "'{0}' has been deprecated.";
 export const FA_TAG_CHECK_NAME: string = 'famodelonly';
@@ -40,7 +40,7 @@ export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mod
 export const STAGE_COMPILE_MODE: string = 'moduleJson';
 export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
 export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
-export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
+export const ATOMICSERVICE_TAG_CHECK_ERROR: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
 export const SINCE_TAG_CHECK_ERROR: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
@@ -148,58 +148,58 @@ export class BuildDiagnosticInfo implements BuildDiagnosticInterface {
   message: string;
   solutions: string[];
 
-  setCode(code: number) {
+  setCode(code: number): BuildDiagnosticInfo {
     this.code = code;
     return this;
   }
 
-  getCode() {
+  getCode(): number {
     return this.code;
   }
 
-  setDescription(description: string) {
+  setDescription(description: string): BuildDiagnosticInfo {
     this.description = description;
     return this;
   }
 
-  getDescription() {
+  getDescription(): string {
     return this.description;
   }
 
-  setPositionMessage(positionMessage: string) {
+  setPositionMessage(positionMessage: string): BuildDiagnosticInfo {
     this.positionMessage = positionMessage;
     return this;
   }
 
-  getPositionMessage() {
+  getPositionMessage(): string {
     return this.positionMessage;
   }
 
-  setMessage(message: string) {
+  setMessage(message: string): BuildDiagnosticInfo {
     this.message = message;
     return this;
   }
 
-  getMessage() {
+  getMessage(): string {
     return this.message;
   }
 
-  setSolutions(solutions: string[]) {
+  setSolutions(solutions: string[]): BuildDiagnosticInfo {
     this.solutions = solutions;
     return this;
   }
 
-  getSolutions() {
+  getSolutions(): string[] {
     return this.solutions;
   }
 }
 
 export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>> = new Map([
-  [FORM_TAG_CHECK_ERROR, { code: "11706006", description: "can't support form application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }],
-  [CROSSPLATFORM_TAG_CHECK_ERROER, { code: "11706007", description: "can't support crossplatform application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }],
-  [FA_TAG_CHECK_ERROR, { code: "11706008", description: "FA model interface used in Stage projects.", solutions: ["Check the official API reference documentation,and switch to the supported Stage model interfaces."] }],
-  [STAGE_TAG_CHECK_ERROR, { code: "11706009", description: "Stage model interface used in FA projects.", solutions: ["Check the official API reference documentation,and switch to the supported FA model interfaces."] }],
-  [ATOMICSERVICE_TAG_CHECK_ERROER, { code: "11706010", description: "can't support atomicservice application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }]
+  [FORM_TAG_CHECK_ERROR, { code: '11706006', description: 'can\'t support form application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation,and switch to the supported Stage model interfaces.'] }],
+  [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation,and switch to the supported FA model interfaces.'] }],
+  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
 ])
 
 /**
