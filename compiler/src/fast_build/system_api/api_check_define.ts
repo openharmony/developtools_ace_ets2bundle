@@ -245,6 +245,13 @@ export const comparisonFunctions = {
 
 export enum ComparisonSenario {
   Trigger = 0,
-  SuppressWithoutMSF = 1,
-  SuppressWithMSF = 2,
+  SuppressByOHVersion = 1,
+  SuppressByOtherOSVersion = 2,
+}
+
+export interface ParsedVersion {
+  os?: string;       // Optional OS name (e.g., OpenHarmony and OtherOS)
+  version: string;   // Version number (e.g., "21")
+  formatVersion: string;       // raw string (e.g., "21", "OpenHarmony 21")
+  raw: string;       // raw string (e.g., "21", "OpenHarmony 21")
 }

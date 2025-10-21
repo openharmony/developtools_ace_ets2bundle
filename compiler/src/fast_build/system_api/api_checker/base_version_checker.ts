@@ -18,12 +18,14 @@ import {
   projectConfig
 } from '../../../../main';
 import {
-  RUNTIME_OS_OH,
-  ComparisonSenario, FormatCheckerFunction, ValueCheckerFunction
+  ComparisonSenario,
+  FormatCheckerFunction,
+  ValueCheckerFunction
 } from '../api_check_define';
 import { 
   defaultFormatCheckerWithoutMSF,
-  defaultValueChecker
+  defaultValueChecker,
+  parseVersionString
 } from '../api_check_utils';
 
 /**
@@ -45,21 +47,6 @@ export interface ComparisonStrategy {
    * @returns Version string (e.g., "21", "5.0.0", "5.0.3(22)")
    */
   getMinApiVersion(): string;
-}
-
-/**
- * Parsed representation of a version string.
- * Supports both plain numbers and OS-prefixed versions.
- * 
- * Examples:
- * - { version: "21" }
- * - { version: "21.0.1" }
- * - { os: "OpenHarmony", version: "21" }
- */
-export interface ParsedVersion {
-  os?: string;       // Optional OS name (e.g., OpenHarmony and OtherOS)
-  version: string;   // Version number (e.g., "21")
-  raw: string;       // raw string (e.g., "21", "OpenHarmony 21")
 }
 
 /**
@@ -128,7 +115,7 @@ export abstract class BaseVersionChecker implements ComparisonStrategy {
    * @returns true if incompatible (project version < target), false if compatible
    */
   protected compare(sdkVersion: string, targetVersion: string): boolean {
-    const target = this._parseVersionString(targetVersion);
+    const target = parseVersionString(targetVersion);
 
     if (!target) {
       return false;
@@ -140,91 +127,6 @@ export abstract class BaseVersionChecker implements ComparisonStrategy {
     // Trigger scenario: 0 = generating warning
     const compareResult = this.versionCompareFunction(target.version, sdkVersion, ComparisonSenario.Trigger);
     return !compareResult.result;
-  }
-
-  /**
-   * Build a dotted path string from AST nodes.
-   * 
-   * This is used to generate context names like:
-   * - "myFunction"
-   * - "MyClass.myMethod"
-   * - "obj.prop.method"
-   * - "obj[key]"
-   * 
-   * @param node - AST node to traverse
-   * @returns Dotted path string representing the context
-   */
-  protected _getFullAccessPath(node: ts.Node): string {
-    if (ts.isIdentifier(node)) {
-      return node.text;
-    }
-    if (ts.isPropertyAccessExpression(node)) {
-      return `${this._getFullAccessPath(node.expression)}.${node.name.text}`;
-    }
-    if (ts.isElementAccessExpression(node)) {
-      return `${this._getFullAccessPath(node.expression)}[${this._getFullAccessPath(node.argumentExpression)}]`;
-    }
-    if (ts.isThis(node)) {
-      return 'this';
-    }
-    return 'unknown';
-  }
-
-  /**
-   * Parse a version string into structured format.
-   * 
-   * Supported formats:
-   * - Plain number: "21" → { version: "21" }
-   * - Dotted: "5.0.0" → { version: "5.0.0" }
-   * - With parentheses: "5.0.3(22)" → { version: "5.0.3(22)" }
-   * - OS-prefixed: "OpenHarmony 21" → { os: "OpenHarmony", version: "21" }
-   * - Combined: "OpenHarmony 22.0.0" → { os: "OpenHarmony", version: "22.0.0" }
-   * 
-   * @param raw - Raw version string to parse
-   * @returns Parsed version object, or null if format is invalid
-   */
-  protected _parseVersionString(raw: string): ParsedVersion | null {
-    const trimmed = raw.trim();
-  
-    // Format: "21", "5.0.0", "5.0.3(22)"
-    if (/^\d+(\.\d+)*(\(\d+\))?$/.test(trimmed)) {
-      return { os: RUNTIME_OS_OH, version: trimmed, raw: raw };
-    }
-  
-    // Format: "OpenHarmony 22.0.0" or "OpenHarmony 22" or "OpenHarmony 5.0.3(22)"
-    const match = /^(?<os>[A-Za-z]+(?:\s?[A-Za-z]+)*)\s+(?<version>\d+(?:\.\d+)*(?:\(\d+\))?)$/.exec(trimmed);
-    if (match?.groups) {
-      return {
-        os: match.groups.os,
-        version: match.groups.version,
-        raw: raw
-      };
-    }
-  
-    return null;
-  }
-
-  /**
-   * Traverse upwards in the AST to find the closest CallExpression node.
-   * 
-   * This is useful for finding the call expression that contains a decorator
-   * or other annotation. The traversal stops when a CallExpression is found
-   * or when we've visited all parent nodes.
-   * 
-   * @param node - Starting node for traversal
-   * @returns Closest CallExpression ancestor, or null if not found
-   */
-  protected _getCallExpressionNode(node: ts.Node): ts.CallExpression | null {
-    const visited = new Set<ts.Node>();
-    let current: ts.Node | undefined = node;
-    while (current && !visited.has(current)) {
-      visited.add(current);
-      if (ts.isCallExpression(current)) {
-        return current;
-      }
-      current = current.parent;
-    }
-    return null;
   }
 
   // ============================================================================
