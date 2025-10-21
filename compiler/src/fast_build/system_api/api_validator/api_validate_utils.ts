@@ -252,8 +252,8 @@ export class SdkComparisonHelper {
     // - openSourceDeviceInfo (sdkApiVersion) → SuppressWithoutMSF (1)
     // - otherSourceDeviceInfo (distributionOSApiVersion) → SuppressWithMSF (2)
     const scenario = matchedApi === this.openSourceDeviceInfo 
-      ? ComparisonSenario.SuppressWithoutMSF 
-      : ComparisonSenario.SuppressWithMSF;
+      ? ComparisonSenario.SuppressByOHVersion 
+      : ComparisonSenario.SuppressByOtherOSVersion;
     
     // Use centralized value checker
     const validationResult = this.valueChecker(

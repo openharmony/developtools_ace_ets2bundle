@@ -21,6 +21,10 @@ import {
   SdkComparisonValidator,
 } from './api_validate_node';
 
+import {
+  ParsedVersion
+} from "../api_check_define"
+
 /**
  * Suppressor for @available annotations.
  * Only supports SDK version comparison suppression strategy.
@@ -33,13 +37,15 @@ export class AvailableWarningSuppressor {
   constructor(
     projectCompatibleSdkVersion: string,
     minRequiredVersion: string,
+    minAvaileableVersion: ParsedVersion,
     typeChecker?: ts.TypeChecker
   ) {
     this.validator = new CompositeValidator([
       new AvailableComparisonValidator(
         projectCompatibleSdkVersion,
         minRequiredVersion,
-        typeChecker
+        typeChecker,
+        minAvaileableVersion
       ),
       new SdkComparisonValidator(
         projectCompatibleSdkVersion,
