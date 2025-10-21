@@ -50,7 +50,7 @@ import {
   FORM_TAG_CHECK_ERROR,
   FIND_MODULE_WARNING,
   CROSSPLATFORM_TAG_CHECK_NAME,
-  CROSSPLATFORM_TAG_CHECK_ERROER,
+  CROSSPLATFORM_TAG_CHECK_ERROR,
   DEPRECATED_TAG_CHECK_NAME,
   DEPRECATED_TAG_CHECK_WARNING,
   FA_TAG_CHECK_NAME,
@@ -62,7 +62,7 @@ import {
   STAGE_COMPILE_MODE,
   ATOMICSERVICE_BUNDLE_TYPE,
   ATOMICSERVICE_TAG_CHECK_NAME,
-  ATOMICSERVICE_TAG_CHECK_ERROER,
+  ATOMICSERVICE_TAG_CHECK_ERROR,
   ATOMICSERVICE_TAG_CHECK_VERSION,
   RUNTIME_OS_OH,
   CONSTANT_STEP_0,
@@ -402,7 +402,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       needCheckResult = true;
       const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROER,
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROR,
         false, logType, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
@@ -418,7 +418,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
-      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROER,
+      checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROR,
         false, ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
     }
   } else if (!systemModules.includes(apiName) && path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)) {
@@ -1156,7 +1156,7 @@ let errorCodeMessage: Object | undefined;
  * save rollup share Object
  * @param { Object | undefined } share
  */
-export function saveRollupShareObject(share: Object | undefined) {
+export function saveRollupShareObject(share: Object | undefined): void {
   errorCodeMessage = share;
 }
 
