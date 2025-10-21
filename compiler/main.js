@@ -514,6 +514,10 @@ function setAbilityFile(projectConfig, abilityPages) {
       projectConfig.entryObj[entryPageKey] = projectAbilityPath + '?entry';
       setEntryArrayForObf(entryPageKey);
     } else {
+      const projectAbilityDeclFilePath = projectAbilityPath.replace(/\.ts$/, '.d.ts').replace(/\.ets$/, '.d.ets');
+      if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
+        return;
+      }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
