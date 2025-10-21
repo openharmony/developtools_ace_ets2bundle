@@ -42,12 +42,9 @@ export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
 export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
 export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
-export const SINCE_TAG_CHECK_ERROR: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const SINCE_TAG_CHECK_ERROER: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
-export const AVAILABLE_TAG_NAME: string = 'available';
-export const AVAILABLE_DECORATOR_WARNING: string =  "The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
-export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
@@ -201,50 +198,3 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [STAGE_TAG_CHECK_ERROR, { code: "11706009", description: "Stage model interface used in FA projects.", solutions: ["Check the official API reference documentation,and switch to the supported FA model interfaces."] }],
   [ATOMICSERVICE_TAG_CHECK_ERROER, { code: "11706010", description: "can't support atomicservice application.", solutions: ["Check the official API reference documentation,and switch to the supported interfaces."] }]
 ])
-
-/**
- * Version validation result structure
- */
-export interface VersionValidationResult {
-  result: boolean;
-  message: string;
-}
-
-/**
- * Value checker function type
- * @param sinceVersion - Required API version
- * @param targetVersion - Available/current version
- * @param triggerScene - Trigger scenario (0: warning, 1: suppress with open source target, 2: suppress with other target)
- */
-export type ValueCheckerFunction = (
-  sinceVersion: string,
-  targetVersion: string,
-  triggerScene: number
-) => VersionValidationResult;
-
-/**
- * Format checker function type
- * @param version - Version string to validate
- */
-export type FormatCheckerFunction = (version: string) => boolean;
-
-/**
- * Runtime OS constants
- */
-export const RUNTIME_OS = {
-  OPEN_HARMONY: 'OpenHarmony'
-} as const;
-
-/**
- * Comparison functions cache
- */
-export const comparisonFunctions = {
-  valueChecker: new Map<string, ValueCheckerFunction>(), 
-  formatChecker: new Map<string, FormatCheckerFunction>()
-};
-
-export enum ComparisonSenario {
-  Trigger = 0,
-  SuppressWithoutMSF = 1,
-  SuppressWithMSF = 2,
-}
