@@ -26,7 +26,7 @@ import { AVAILABLE_TAG_NAME,
   ValueCheckerFunction,
   FormatCheckerFunction
 } from '../api_check_define';
-import {fileDeviceCheckPlugin} from '../../../../main';
+import {fileDeviceCheckPlugin, fileAvailableCheckPlugin} from '../../../../main';
 import fs from 'fs';
 
 /**
@@ -519,7 +519,28 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
       if (this.isValidating) {
         return true;
       }
-      
+      const nodeSourceFile = node.getSourceFile()?.fileName;
+      if (!nodeSourceFile) {
+        return false;
+      }
+      // Check device info cache
+      if (fileAvailableCheckPlugin.has(nodeSourceFile)) {
+        const hasDeviceInfo = fileAvailableCheckPlugin.get(nodeSourceFile)!;
+        if (!hasDeviceInfo) {
+          return false;
+        }
+      } else {
+        try {
+          const fileContent: string = fs.readFileSync(nodeSourceFile, { encoding: 'utf-8' });
+          const availableContentChecker = /Available/.test(fileContent);
+          fileAvailableCheckPlugin.set(nodeSourceFile, availableContentChecker);
+          if (!availableContentChecker) {
+            return false;
+          }
+        } catch (error) {
+          return false;
+        }
+      }
       // Set flag BEFORE any type checker calls
       this.isValidating = true;
       

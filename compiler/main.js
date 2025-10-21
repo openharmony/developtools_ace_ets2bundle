@@ -75,6 +75,7 @@ let allModulesPaths = [];
 let externalApiCheckPlugin = new Map();
 let externalApiMethodPlugin = new Map();
 let fileDeviceCheckPlugin = new Map();
+let fileAvailableCheckPlugin = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -1198,6 +1199,7 @@ function resetMain() {
   externalApiCheckPlugin = new Map();
   externalApiMethodPlugin = new Map();
   fileDeviceCheckPlugin = new Map();
+  fileAvailableCheckPlugin = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1291,4 +1293,5 @@ exports.setIntentEntryPages = setIntentEntryPages;
 exports.externalApiCheckPlugin = externalApiCheckPlugin;
 exports.externalApiMethodPlugin = externalApiMethodPlugin;
 exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
+exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.setStartupPagesForObf = setStartupPagesForObf;
