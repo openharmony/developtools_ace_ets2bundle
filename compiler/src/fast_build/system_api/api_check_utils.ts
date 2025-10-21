@@ -619,7 +619,7 @@ function checkAvailableDecorator(
   if (availableNodeCheckConfigCache.has(key)) {
     return false;
   } else {
-    availableNodeCheckConfigCache.set(key, "");
+    availableNodeCheckConfigCache.set(key, '');
   }
   
   const typeChecker = CurrentProcessFile.getChecker();
@@ -1228,7 +1228,7 @@ export function getAvailableDecoratorFromDeclaration(decl: ts.Node): ts.Decorato
 
   // Create temp source code
   const tempSource = ts.createSourceFile(
-    "temp.ts",
+    'temp.ts',
     `${decorator[0]}`,
     ts.ScriptTarget.ESNext,
     true,
