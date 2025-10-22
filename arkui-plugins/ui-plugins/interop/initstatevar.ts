@@ -20,7 +20,8 @@ import { BuilderMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecorator } from '../property-translators/utils';
-import { DecoratorNames } from '../../common/predefines';
+import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
+import { FileManager } from '../../common/file-manager';
 
 
 export function initialArgs(
@@ -303,6 +304,18 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
     return result;
 }
 
+function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
+    if (!decl || !arkts.isMethodDefinition(decl)) {
+        return false;
+    }
+    const path = arkts.getProgramFromAstNode(decl).absName;
+    const fileManager = FileManager.getInstance();
+    if (fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
+        return false;
+    }
+    return true;
+}
+
 /**
  * 
  * @param keyName 
@@ -314,14 +327,13 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
  */
 export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
-    const needUpdate: boolean = checkUpdatable(value);
-    const newValue = arkts.factory.createCallExpression(
-        needUpdate ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
+    const decl = arkts.getDecl(value);
+    const isDynamic = isDynamicBuilder(decl);
+    const newValue = isDynamic ? value : arkts.factory.createCallExpression(
+        checkUpdatable(value) ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
             arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
         undefined,
-        [
-            value
-        ]
+        [value]
     );
     const setProperty = setPropertyESValue(
         InteroperAbilityNames.PARAM,
