@@ -315,7 +315,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
         }
         const builderParamDecorator = findDecorator(item, PresetDecorators.BUILDER_PARAM);
         if (item.value && !arkts.isMemberExpression(item.value) && !arkts.isIdentifier(item.value) &&
-            builderParamDecorator) {
+            !arkts.isArrowFunctionExpression(item.value) && builderParamDecorator) {
             this.reportInvalidBuilderParamInitialized(item.key);
         } else if (item.value && arkts.isMemberExpression(item.value) && builderParamDecorator) {
             this.checkValidMemberExpressionUsage(item.value, item.key);
@@ -324,6 +324,10 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
                 !this.builderFunctionName.includes(item.value.name)) {
                 this.reportInvalidBuilderParamInitialized(item.key);
             }
+        } else if (item.value && arkts.isArrowFunctionExpression(item.value) && builderParamDecorator) {
+            // Allow the initilization of the @BuilderParam property with a lambda since
+            // such lambdas are implicitly treated as a @Builder function
+            return;
         }
     }
 
