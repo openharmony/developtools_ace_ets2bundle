@@ -18,7 +18,8 @@ import {
   projectConfig
 } from '../../../../main';
 import {
-  SINCE_TAG_NAME
+  SINCE_TAG_NAME,
+  ComparisonSenario
 } from '../api_check_define';
 import { BaseVersionChecker } from './base_version_checker';
 import { 
@@ -143,6 +144,30 @@ export class SinceJSDocChecker extends BaseVersionChecker {
     }
 
     return false;
+  }
+
+  /**
+   * Compare two version strings (SDK version vs. required version).
+   * 
+   * This method is protected (not in the public interface) because:
+   * - All subclasses use the same implementation
+   * - It's an internal detail, not part of the public API
+   * - Only subclasses should call it
+   * 
+   * The comparison is delegated to versionCompareFunction,
+   * which checks if the project's configured version is compatible with the target version.
+   * 
+   * Trigger scenario is 0 (generating warning).
+   * 
+   * @returns true if incompatible (project version < target), false if compatible
+   */
+  protected compare(): boolean {
+    // versionCompareFunction returns { result: boolean, message: string }
+    // result is true if compatible (sdk >= target)
+    // We negate it to return true for incompatibility
+    // Trigger scenario: 0 = generating warning
+    const compareResult = this.versionCompareFunction(this.minApiVersion, this.sdkVersion, ComparisonSenario.Trigger);
+    return !compareResult.result;
   }
 
   /**

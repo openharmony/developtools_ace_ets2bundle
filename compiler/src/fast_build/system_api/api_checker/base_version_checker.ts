@@ -24,8 +24,7 @@ import {
 } from '../api_check_define';
 import { 
   defaultFormatCheckerWithoutMSF,
-  defaultValueChecker,
-  parseVersionString
+  defaultValueChecker
 } from '../api_check_utils';
 
 /**
@@ -110,24 +109,9 @@ export abstract class BaseVersionChecker implements ComparisonStrategy {
    * 
    * Trigger scenario is 0 (generating warning).
    * 
-   * @param sdkVersion - Current project SDK version
-   * @param targetVersion - Required version extracted from the annotation
    * @returns true if incompatible (project version < target), false if compatible
    */
-  protected compare(sdkVersion: string, targetVersion: string): boolean {
-    const target = parseVersionString(targetVersion);
-
-    if (!target) {
-      return false;
-    }
-
-    // versionCompareFunction returns { result: boolean, message: string }
-    // result is true if compatible (sdk >= target)
-    // We negate it to return true for incompatibility
-    // Trigger scenario: 0 = generating warning
-    const compareResult = this.versionCompareFunction(target.version, sdkVersion, ComparisonSenario.Trigger);
-    return !compareResult.result;
-  }
+  protected abstract compare(): boolean
 
   // ============================================================================
   // PUBLIC API METHODS - Defined by ComparisonStrategy interface
@@ -159,7 +143,7 @@ export abstract class BaseVersionChecker implements ComparisonStrategy {
     }
 
     // Step 2: Compare with SDK version
-    return this.compare(this.sdkVersion, this.getMinApiVersion());
+    return this.compare();
   }
 
   /**
