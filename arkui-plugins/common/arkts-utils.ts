@@ -216,3 +216,22 @@ export function readFirstLineSync(filePath: string): string | null {
 
     return firstLine;
 }
+
+/**
+ * find the last property element in array.
+ *
+ * @param arr array.
+ * @param callback selected condition.
+ */
+export function findLastPropertyElement<T>(arr: Array<T>, callback: (item: T) => boolean): T | undefined {
+    if (arr.length <= 0) {
+        return undefined;
+    }
+    for (let index = arr.length - 1; index >= 0; index--) {
+        const item: T = arr[index];
+        if (callback(item)) {
+            return item;
+        }
+    }
+    return undefined;
+}
