@@ -22,7 +22,8 @@ import {
   defaultFormatCheckerWithoutMSF,
   defaultValueChecker,
   getAvailableDecoratorFromNode,
-  extractMinApiFromDecorator
+  extractMinApiFromDecorator,
+  getVersionByValueChecker
 } from '../api_check_utils';
 import {
   AVAILABLE_TAG_NAME,
@@ -341,7 +342,8 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
   constructor(
     private readonly compatibleSdkVersion: string,
     private readonly minRequiredVersion: string,
-    private readonly typeChecker?: ts.TypeChecker
+    private readonly typeChecker?: ts.TypeChecker,
+    private readonly minAvailableVersion?: ParsedVersion
   ) {
     super();
     this.deviceInfoChecker = new Map([
@@ -352,6 +354,7 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
       compatibleSdkVersion,
       minRequiredVersion,
       typeChecker,
+      minAvailableVersion,
       this.deviceInfoChecker,
       SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
       SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
@@ -544,18 +547,15 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
     }
 
     try {
-      const curAvailableVersion = this.findParentVersion(node);
+      const curAvailableVersion = this.checkParentVersion(node);
 
       // Version requirement exists but no parent wrapper → show warning
-      if (!curAvailableVersion) {
-        return false;
+      if (curAvailableVersion) {
+        return true;
       }
-
-      // Compare versions: parent must be >= target to suppress warning
-      return this.compareVersions(curAvailableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion);
-
+      
+      return false;
     } catch (error) {
-      // On error, suppress warning to avoid false positives
       return false;
     }
   }
@@ -567,29 +567,31 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
    * @param node - The usage node to find target version for
    * @returns The highest version requirement, or undefined if none found
    */
-  private findParentVersion(node: ts.Node): ParsedVersion | null {
+  private checkParentVersion(node: ts.Node): ParsedVersion | null {
     if (!node) {
       return null;
     }
-
-    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node);
+    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node, 1);
 
     // Extract minApiVersion from @Available decorators
     for (const dec of decorators) {
-      const minApi = extractMinApiFromDecorator(dec);
-      if (!minApi) {
+      const availableVersion = extractMinApiFromDecorator(dec);
+      if (!availableVersion) {
         continue;
       }
 
       // Validate version format using loaded format checker
       // For OpenHarmony: uses integer-only format (e.g., "21")
       // For other OS: uses format checker from external plugin or default
-      const isValidFormat = minApi.os === RUNTIME_OS_OH
-        ? defaultFormatCheckerWithoutMSF(minApi.version)
-        : this.formatChecker(minApi.raw);
+      const isValidFormat = availableVersion.os === RUNTIME_OS_OH
+        ? defaultFormatCheckerWithoutMSF(availableVersion.version)
+        : this.formatChecker(availableVersion.raw);
 
-      if (isValidFormat) {
-        return minApi; // Found valid @Available decorator
+      if (!isValidFormat || !isValidFormat.result) {
+        continue;
+      }
+      if (this.compareVersions(availableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion)) {
+        return availableVersion;
       }
     }
 
@@ -614,9 +616,10 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
 
       let result: VersionValidationResult;
       if (typeof minRequiredVersion === 'string') {
-        result = this.valueChecker(minRequiredVersion , curAvailableVersion.formatVersion, scenario);
+        result = this.valueChecker(minRequiredVersion, getVersionByValueChecker(curAvailableVersion, this.valueChecker), scenario);
       } else {
-        result = this.valueChecker(minRequiredVersion.formatVersion, curAvailableVersion.formatVersion, scenario);
+        result = this.valueChecker(getVersionByValueChecker(minRequiredVersion, this.valueChecker),
+         getVersionByValueChecker(curAvailableVersion, this.valueChecker), scenario);
       }
 
       if (result) {

@@ -23,7 +23,7 @@ import {
 
 import {
   ParsedVersion
-} from "../api_check_define"
+} from '../api_check_define'
 
 /**
  * Suppressor for @available annotations.
@@ -50,7 +50,8 @@ export class AvailableWarningSuppressor {
       new SdkComparisonValidator(
         projectCompatibleSdkVersion,
         minRequiredVersion,
-        typeChecker
+        typeChecker,
+        minAvaileableVersion
       )
     ]);
   }

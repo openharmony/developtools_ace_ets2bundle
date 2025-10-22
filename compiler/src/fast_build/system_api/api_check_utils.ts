@@ -84,7 +84,9 @@ import {
   FormatCheckerFunction,
   comparisonFunctions,
   AVAILABLE_FILE_NAME,
-  ParsedVersion
+  ParsedVersion,
+  AVAILABLE_VERSION_FORMAT_ERROR_PREFIX,
+  AVAILABLE_VERSION_FORMAT_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -612,7 +614,7 @@ function checkAvailableDecorator(
   declaration?: ts.Declaration
 ): boolean {
   // If there is no node, we cannot perform any check
-  if (!projectConfig.compatibleSdkVersion || !node) {
+  if (!projectConfig.compatibleSdkVersion || !node || !declaration) {
     return false;
   }
 
@@ -622,7 +624,15 @@ function checkAvailableDecorator(
   } else {
     availableNodeCheckConfigCache.set(key, '');
   }
-  
+  const sourcefile = node.getSourceFile();
+  if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
+
+  const declSourcefile = declaration.getSourceFile();
+  if (!declSourcefile || !declSourcefile.fileName || !path.normalize(declSourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
   const typeChecker = CurrentProcessFile.getChecker();
   
   const checker = new AvailableAnnotationChecker(typeChecker);
@@ -637,8 +647,8 @@ function checkAvailableDecorator(
   const suppressor = new AvailableWarningSuppressor(
     checker.getSdkVersion(),
     minApiVersion,
-    typeChecker,
-    checker.getAvailableVersion()
+    checker.getAvailableVersion(),
+    typeChecker
   );
   
   if (suppressor.isApiVersionHandled(node)) {
@@ -674,7 +684,10 @@ function checkSinceValue(
   if (!jsDocNode?.jsDoc) {
     return false;
   }
-
+  const sourcefile = node.getSourceFile();
+  if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
   const typeChecker = CurrentProcessFile.getChecker();
 
   const checker = new SinceJSDocChecker(typeChecker);
@@ -764,8 +777,17 @@ export function defaultFormatChecker(since: string): boolean {
  * @param since - Version string to validate
  * @returns true if format is valid
  */
-export function defaultFormatCheckerWithoutMSF(since: string): boolean {
-  return /^[1-9]\d{0,2}$/.test(since);
+export function defaultFormatCheckerWithoutMSF(since: string): VersionValidationResult {
+  if (/^[1-9]\d{0,2}$/.test(since)) {
+    return {
+      result: true
+    }
+  } else {
+    return {
+      result: false,
+      message: AVAILABLE_VERSION_FORMAT_ERROR
+    }
+  }
 }
 
 
@@ -1208,7 +1230,7 @@ function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo): SdkHvigorErrorI
 /**
  * reset api_check_utils global object
  */
-export function resetApiCheckUtils() {
+export function resetApiCheckUtils(): void {
   positionMessageInfo = [];
   errorCodeMessage = undefined;
 }
@@ -1229,28 +1251,23 @@ export function resetApiCheckUtils() {
 export function parseVersionString(raw: string): ParsedVersion | null {
   const trimmed = raw.trim();
 
-  // Format: "21", "5.0.0", "5.0.3(22)"
-  if (/^\d+(\.\d+)*(\(\d+\))?$/.test(trimmed)) {
+  const hasSpacesInRaw = /\s+/.test(trimmed);
+
+  if (!hasSpacesInRaw) {
     return { 
       os: RUNTIME_OS_OH, 
       version: trimmed, 
       raw: raw,
       formatVersion: `${RUNTIME_OS_OH} ${trimmed}`
     };
-  }
-
-  // Format: "OpenHarmony 22.0.0" or "OpenHarmony 22" or "OpenHarmony 5.0.3(22)"
-  const match = /^(?<os>[A-Za-z]+(?:\s?[A-Za-z]+)*)\s+(?<version>\d+(?:\.\d+)*(?:\(\d+\))?)$/.exec(trimmed);
-  if (match?.groups) {
+  } else {
     return {
-      os: match.groups.os,
-      version: match.groups.version,
+      os: trimmed.split(/\s+/, 2)[0],
+      version: trimmed.split(/\s+/, 2)[1],
       raw: raw,
-      formatVersion: `${match.groups.os} ${match.groups.version}`
+      formatVersion: `${trimmed.split(/\s+/, 2)[0]} ${trimmed.split(/\s+/, 2)[1]}`
     };
   }
-
-  return null;
 }
 
 /**
@@ -1332,11 +1349,11 @@ export function processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | 
       const value = prop.initializer;
       // Handle string literal: "21", "5.0.0", etc.
       if (ts.isStringLiteral(value)) {
-        return this._parseVersionString(value.text);
+        return parseVersionString(value.text);
       }
       // Handle numeric literal: 21 (converted to string)
       if (ts.isNumericLiteral(value)) {
-        return this._parseVersionString(value.text.toString());
+        return parseVersionString(value.text.toString());
       }
     }
   }
@@ -1348,7 +1365,7 @@ export function processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | 
  * @param node declaration
  * @returns The array of @Available decorators found; if none exist, return an empty array.
  */
-export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration): ts.Decorator[] {
+export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration, searchMode?: number): ts.Decorator[] {
   const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
     if (ts.isCallExpression(decorator.expression)) {
       return ts.isIdentifier(decorator.expression.expression) &&
@@ -1366,15 +1383,89 @@ export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration): t
   if (ts.canHaveIllegalDecorators(node)) {
     decoratorArray.push(...(ts.getAnnotationsFromIllegalDecorators(node)) || []);
   }
-  
-  if (decoratorArray.length > 0) {
-    // filter @Available decorator
-    const availableDecorators = decoratorArray.filter(isAvailableDecorator);
-    if (availableDecorators.length > 0) {
-      return availableDecorators;
+  const currentAvailableDecorators = decoratorArray.filter(isAvailableDecorator);
+  const parentNode = node.parent;
+
+  if (searchMode === 0) {
+    if (currentAvailableDecorators.length > 0) {
+      return currentAvailableDecorators;
+    }
+    return parentNode ? getAvailableDecoratorFromNode(parentNode, 0) : [];
+  } else {
+    // 模式 1：收集当前节点的符合条件装饰器，继续查父节点并合并结果
+    const parentAvailable = parentNode ? getAvailableDecoratorFromNode(parentNode, 1) : [];
+    return [...currentAvailableDecorators, ...parentAvailable];
+  }
+}
+
+  /**
+   * The extension method must be converted to full format.The local default method does not support format conversion, so the converted version field is used for comparison.
+   * @param curAvailableVersion 
+   * @returns 
+   */
+  export function getVersionByValueChecker(curAvailableVersion: ParsedVersion, checker: ValueCheckerFunction): string {
+    if (checker === defaultValueChecker) {
+      return curAvailableVersion.version;
+    } else {
+      return curAvailableVersion.formatVersion;
     }
   }
-  // findParent
-  const parentNode = node.parent;
-  return parentNode ? this.getAvailableDecoratorFromNode(parentNode) : [];
+
+export function isAvailableDeclarationValid(annoDecl: ts.AnnotationDeclaration): boolean {
+  if (!annoDecl) {
+    return false;
+  }
+  if (ts.isIdentifier(annoDecl.name) && annoDecl.name.escapedText.toString() !== 'Available') {
+    return false;
+  }
+
+  const fileName: string = path.normalize(annoDecl.getSourceFile()?.fileName);
+  if (fileName.endsWith(AVAILABLE_FILE_NAME)) {
+    return true;
+  }
+  return false;
+}
+
+export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheckResult {
+  let result:ts.ConditionCheckResult = {
+    valid: false,
+    message: '@Availale annotation are not valid here',
+    type: ts.DiagnosticCategory.Error
+  }
+  if (!annotation || !annotation.annotationDeclaration) {
+    return result;
+  }
+  if (!ts.isCallExpression(annotation.expression) || !ts.isObjectLiteralExpression(annotation.expression.arguments[0])) {
+    return result;
+  }
+  const arg = annotation.expression.arguments[0];
+  for(const prop of arg.properties) {
+    if (!ts.isPropertyAssignment(prop)) {
+      continue;
+    }
+    let propName = (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) ? prop.name.text : prop.name.getText().replace(/['"]/g, '');
+    if (propName === 'minApiVersion' && ts.isStringLiteral(prop.initializer)) {
+      const minApiVersion = prop.initializer.text;
+      let parseVersion = parseVersionString(minApiVersion);
+      let checkResult: VersionValidationResult;
+      if (parseVersion.os === RUNTIME_OS_OH) {
+        checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
+      } else {
+        checkResult = getFormatChecker()(parseVersion.formatVersion);
+      }
+      if (checkResult && !checkResult.result) {
+        let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
+          .replace('$RUNTIMEOS', projectConfig.runtimeOS)
+          .replace('$VERSION', parseVersion.raw);
+        return {
+          valid: false,
+          message: checkResult.message ? `${msg} ${checkResult.message}` : `${msg}`,
+          type: ts.DiagnosticCategory.Error
+        }
+      }
+    }
+  }
+  return {
+    valid: true
+  }
 }

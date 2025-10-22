@@ -21,7 +21,8 @@ import {
   RUNTIME_OS_OH,
   AVAILABLE_TAG_NAME,
   FormatCheckerFunction,
-  ParsedVersion
+  ParsedVersion,
+  ComparisonSenario
 } from '../api_check_define';
 import { 
   getValueChecker, 
@@ -29,7 +30,8 @@ import {
   defaultFormatCheckerWithoutMSF,
   defaultValueChecker,
   getAvailableDecoratorFromNode,
-  extractMinApiFromDecorator
+  extractMinApiFromDecorator,
+  getVersionByValueChecker
 } from '../api_check_utils';
 import { BaseVersionChecker } from './base_version_checker';
 
@@ -123,7 +125,7 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
         ? defaultFormatCheckerWithoutMSF(minApi.version)
         : this.formatChecker(minApi.raw);
 
-      if (isValidFormat) {
+      if (isValidFormat && isValidFormat.result) {
         // Set instance variable for later retrieval
         this.minApiVersion = minApi.version;
         this.availableVersion = minApi;
@@ -133,6 +135,33 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
 
     return false; // No valid @Available decorator found
   }
+
+  /**
+   * Compare two version strings (SDK version vs. required version).
+   * 
+   * This method is protected (not in the public interface) because:
+   * - All subclasses use the same implementation
+   * - It's an internal detail, not part of the public API
+   * - Only subclasses should call it
+   * 
+   * The comparison is delegated to versionCompareFunction,
+   * which checks if the project's configured version is compatible with the target version.
+   * 
+   * Trigger scenario is 0 (generating warning).
+   * 
+   * @returns true if incompatible (project version < target), false if compatible
+   */
+  protected compare(): boolean {
+   // versionCompareFunction returns { result: boolean, message: string }
+   // result is true if compatible (sdk >= target)
+   // We negate it to return true for incompatibility
+   // Trigger scenario: 0 = generating warning
+   const compareResult = this.versionCompareFunction(getVersionByValueChecker(this.availableVersion, this.versionCompareFunction),
+    this.sdkVersion, ComparisonSenario.Trigger);
+   return !compareResult.result;
+  }
+
+    
   /**
    * 
    * @returns AvailableMinApi
@@ -140,4 +169,6 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
   public getAvailableVersion(): ParsedVersion {
     return this.availableVersion;
   }
+
+  
 }
