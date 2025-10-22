@@ -840,3 +840,10 @@ void impl_ScriptFunctionSetParams(
     return;
 }
 KOALA_INTEROP_V4(ScriptFunctionSetParams, KNativePointer, KNativePointer, KNativePointerArray, KUInt);
+
+void impl_FreeCompilerPartMemory(KNativePointer context)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    GetImpl()->FreeCompilerPartMemory(_context);
+}
+KOALA_INTEROP_V1(FreeCompilerPartMemory, KNativePointer);
