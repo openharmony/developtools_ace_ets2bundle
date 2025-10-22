@@ -875,6 +875,9 @@ export class factory {
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
         if (isFunctionCall) {
             ComponentAttributeCache.getInstance().collect(node);
+            for (const overload of node.overloads) {
+                ComponentAttributeCache.getInstance().collect(overload);
+            }
         }
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
         const newNode = this.updateBuilderLambdaMethodDecl(
