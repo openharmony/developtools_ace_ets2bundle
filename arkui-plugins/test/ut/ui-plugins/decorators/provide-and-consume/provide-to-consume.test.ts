@@ -119,7 +119,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 const expectedCheckedScript: string = `
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 

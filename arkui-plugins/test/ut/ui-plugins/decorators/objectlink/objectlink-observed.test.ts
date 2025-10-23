@@ -40,7 +40,7 @@ const pluginTester = new PluginTester('test objectlink observed transform', buil
 const expectedScript: string = `
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 

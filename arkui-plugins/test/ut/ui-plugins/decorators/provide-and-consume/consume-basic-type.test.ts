@@ -94,7 +94,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 `;
 
 const expectedCheckedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 

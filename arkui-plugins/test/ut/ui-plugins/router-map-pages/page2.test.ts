@@ -40,7 +40,7 @@ const parsedTransform: Plugins = {
 const expectedCheckedScript: string = `
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { wrapBuilder as wrapBuilder } from "arkui.component.builder";
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 import { RelativeContainerAttribute as RelativeContainerAttribute } from "arkui.component.relativeContainer";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";

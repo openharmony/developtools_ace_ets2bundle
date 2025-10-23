@@ -38,7 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
@@ -165,7 +165,7 @@ function testUITransformer(this: PluginTestContext): void {
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 

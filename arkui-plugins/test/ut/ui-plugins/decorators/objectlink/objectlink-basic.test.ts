@@ -38,7 +38,7 @@ const objectlinkTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test objectlink basic transform', buildConfig);
 
 const expectedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 

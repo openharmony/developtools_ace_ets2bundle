@@ -38,7 +38,7 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test basic type @Once decorated variables transformation', buildConfig);
 
 const expectedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 

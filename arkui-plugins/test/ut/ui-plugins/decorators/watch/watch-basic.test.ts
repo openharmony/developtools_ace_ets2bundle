@@ -40,7 +40,7 @@ const pluginTester = new PluginTester('test basic watch transform', buildConfig)
 const expectedScript: string = `
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 

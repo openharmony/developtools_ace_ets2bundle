@@ -38,7 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
 

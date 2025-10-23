@@ -40,7 +40,7 @@ const parsedTransform: Plugins = {
 const expectedUIScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
@@ -222,7 +222,7 @@ const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
