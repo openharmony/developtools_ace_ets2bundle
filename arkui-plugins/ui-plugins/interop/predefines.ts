@@ -24,21 +24,20 @@ export enum InteroperAbilityNames {
     REUSEID = 'reuseId',
     CONTENT = 'content',
     ELMTID = 'elmtId',
-    NUMBER = 'number',
-    PARENT = 'parent',
-    INSTANCE = 'instance',
-    PARAM = 'param',
-    EXTRAINFO = 'extraInfo',
-    COMPONENT = 'component',
     CONSTRUCTOR = 'constructor',
-    MODULE = 'module',
-    STRUCTOBJECT = 'structObject',
-    GLOBAL = 'global',
-    PARAMSLAMBDA = 'paramsLambda',
-    INTEROPCOMPONENT = 'interopComponent',
     GETCOMPATIBLESTATE = 'getCompatibleState',
-    CREATESTATE = 'createStateVariable',
     INTEROP = 'arkui.component.interop',
+}
+
+export enum InteropInternalNames {
+    PARENT = '__Interop_Parent_Internal',
+    INSTANCE = '__Interop_Instance_Internal',
+    PARAM = '__Interop_Param_Internal',
+    EXTRAINFO = '__Interop_ExtraInfo_Internal',
+    COMPONENT = '__Interop_Component_Internal',
+    GLOBAL = '__Interop_Global_Internal',
+    PARAMSLAMBDA = '__Interop_Paramslambda_Internal',
+    VIEWSTACKPROCESSOR = '__Interop_ViewStackProcessor_Internal',
 }
 
 
@@ -55,15 +54,6 @@ export enum ESValueMethodNames {
     WRAPINT = 'wrapInt',
     WRAPSTRING = 'wrapString',
     UNWRAP = 'unwrap',
-}
-
-export enum InteropProvideNames {
-    STATICPROVIDE = 'provide',
-    FINDPROVIDE = 'findProvide',
-    PROVIDEDPROPNAME = 'providedPropName',
-    SETFINDPROVIDE = 'setFindProvideInterop',
-    SETVIEWPUFINDPROVIDE = 'setViewPUFindProvideInterop',
-    FINDPROVIDECALLBACK = 'findProvideInterop',
 }
 
 export enum BuilderMethodNames {
