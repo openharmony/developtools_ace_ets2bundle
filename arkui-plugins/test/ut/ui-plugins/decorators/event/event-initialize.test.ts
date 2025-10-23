@@ -125,7 +125,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 const expectedCheckedScript: string = `
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 

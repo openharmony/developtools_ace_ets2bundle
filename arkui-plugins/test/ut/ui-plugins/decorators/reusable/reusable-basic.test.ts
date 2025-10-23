@@ -44,7 +44,7 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 

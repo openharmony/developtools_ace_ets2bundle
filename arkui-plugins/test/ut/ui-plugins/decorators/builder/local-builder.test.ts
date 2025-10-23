@@ -36,13 +36,13 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 

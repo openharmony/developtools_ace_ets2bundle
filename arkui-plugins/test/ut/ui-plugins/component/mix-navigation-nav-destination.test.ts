@@ -38,7 +38,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -56,7 +56,7 @@ import { NavigationImpl as NavigationImpl } from "arkui.component.navigation";
 
 import { NavDestinationImpl as NavDestinationImpl } from "arkui.component.navDestination";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 

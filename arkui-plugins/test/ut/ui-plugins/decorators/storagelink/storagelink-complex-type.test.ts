@@ -38,7 +38,7 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink complex type transform', buildConfig);
 
 const expectedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.stateManagement.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { memo as memo } from "arkui.stateManagement.runtime";
