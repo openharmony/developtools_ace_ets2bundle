@@ -98,6 +98,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
         }
         const metaField = this.metaField(originalName);
         metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        backingField.range = this.property.range;
         return [backingField, metaField];
     }
 
