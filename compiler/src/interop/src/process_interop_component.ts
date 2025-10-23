@@ -16,7 +16,7 @@
 import ts from 'typescript';
 import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
 import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER } from './pre_define';
-import { INTEROP_TRAILING_LAMBDA } from './component_map'
+import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map'
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -265,11 +265,13 @@ function makeStaticFactory(name: string): ts.ArrowFunction {
  * @returns (...args) => __Interop_transferCompatibleDynamicBuilder_Internal(this.builder1)(...args)
  */
 function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
-  const transferCall = ts.factory.createCallExpression(
-    ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
-    undefined,
-    [initializer]
-  );
+  const transferCall = ts.isIdentifier(initializer) && STATIC_BUILDER.has(initializer.escapedText.toString()) 
+    ? initializer
+    : ts.factory.createCallExpression(
+      ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
+      undefined,
+      [initializer]
+    );
   
   return ts.factory.createArrowFunction(
     undefined,
