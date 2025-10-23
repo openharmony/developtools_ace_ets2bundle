@@ -32,7 +32,14 @@ import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
 import { BuilderFactory } from '../builder-lambda-translators/builder-factory';
-import { annotation, backingField, collect, filterDefined, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
+import {
+    annotation,
+    backingField,
+    collect,
+    filterDefined,
+    findLastPropertyElement,
+    flatVisitMethodWithOverloads,
+} from '../../common/arkts-utils';
 import {
     classifyInObservedClass,
     classifyPropertyInInterface,
@@ -615,8 +622,11 @@ export class factory {
         if (isDecl) {
             return [this.createCustomDialogMethod(isDecl)];
         }
-        const dialogControllerProperty: arkts.ClassProperty | undefined = body.find(
-            (item: arkts.AstNode) => arkts.isClassProperty(item) && getCustomDialogController(item).length > 0
+        const dialogControllerProperty: arkts.ClassProperty | undefined = findLastPropertyElement(
+            body as arkts.AstNode[],
+            (item: arkts.AstNode) => {
+                return arkts.isClassProperty(item) && getCustomDialogController(item).length > 0;
+            }
         ) as arkts.ClassProperty | undefined;
         if (!!dialogControllerProperty) {
             return [this.createCustomDialogMethod(isDecl, getCustomDialogController(dialogControllerProperty))];

@@ -199,3 +199,22 @@ export function forEachArgWithParam(
     const lastArg = args.at(lastIndex);
     callbackFn(lastArg, lastParam, maxLen - 1);
 }
+
+/**
+ * find the last property element in array.
+ *
+ * @param arr array.
+ * @param filter selected condition.
+ */
+export function findLastPropertyElement<T>(arr: Array<T>, filter: (item: T) => boolean): T | undefined {
+    if (arr.length <= 0) {
+        return undefined;
+    }
+    for (let index = arr.length - 1; index >= 0; index--) {
+        const item: T = arr[index];
+        if (filter(item)) {
+            return item;
+        }
+    }
+    return undefined;
+}

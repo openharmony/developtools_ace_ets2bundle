@@ -89,6 +89,7 @@ import {
     TSThisType,
     TSQualifiedName,
     ThrowStatement,
+    UnaryExpression,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateCallExpression } from '../node-utilities/CallExpression';
@@ -158,6 +159,7 @@ import { updateETSNullType } from '../node-utilities/ETSNullType';
 import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
 import { updateThrowStatement } from '../node-utilities/ThrowStatement';
+import { updateUnaryExpression } from '../node-utilities/UnaryExpression';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -658,6 +660,12 @@ export const factory = {
     },
     get updateETSNullType(): (...args: Parameters<typeof updateETSNullType>) => ETSNullType {
         return updateETSNullType;
+    },
+    get createUnaryExpression(): (...args: Parameters<typeof UnaryExpression.createUnaryExpression>) => UnaryExpression {
+        return UnaryExpression.createUnaryExpression;
+    },
+    get updateUnaryExpression(): (...args: Parameters<typeof updateUnaryExpression>) => UnaryExpression {
+        return updateUnaryExpression;
     },
     get createTSThisType(): (...args: Parameters<typeof TSThisType.createTSThisType>) => TSThisType {
         return TSThisType.createTSThisType;
