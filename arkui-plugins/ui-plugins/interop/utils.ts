@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { BuilderLambdaNames } from '../utils';
 import { ImportCollector } from '../../common/import-collector';
 
@@ -138,15 +138,15 @@ export function stateProxy(stateVarName: string): string {
 /**
  * get elmtId
  * @returns         
- *      let viewStackProcessor = global.getProperty("ViewStackProcessor");
- *      let createId = viewStackProcessor.getProperty("AllocateNewElmetIdForNextComponent");
+ *      let __Interop_ViewStackProcessor_Internal = global.getProperty("ViewStackProcessor");
+ *      let createId = __Interop_ViewStackProcessor_Internal.getProperty("AllocateNewElmetIdForNextComponent");
  *      let elmtId = createId.invoke();
  */
 export function createELMTID(): arkts.Statement[] {
     const body: arkts.Statement[] = [];
-    const viewStackProcessor = getPropertyESValue('viewStackProcessor', InteroperAbilityNames.GLOBAL, 'ViewStackProcessor');
+    const viewStackProcessor = getPropertyESValue(InteropInternalNames.VIEWSTACKPROCESSOR, InteropInternalNames.GLOBAL, 'ViewStackProcessor');
     body.push(viewStackProcessor);
-    const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
+    const createId = getPropertyESValue('createId', InteropInternalNames.VIEWSTACKPROCESSOR, 'AllocateNewElmetIdForNextComponent');
     body.push(createId);
     const elmtId = arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
@@ -185,8 +185,8 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [
                 arkts.Property.createProperty(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT),
-                    arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
+                    arkts.factory.createIdentifier('component'),
+                    arkts.factory.createIdentifier(InteropInternalNames.COMPONENT)
                 ),
                 arkts.Property.createProperty(
                     arkts.factory.createIdentifier('name'),
@@ -208,7 +208,7 @@ export function createGlobal(): arkts.Statement {
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [arkts.factory.createVariableDeclarator(
             arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
+            arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
                     arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),

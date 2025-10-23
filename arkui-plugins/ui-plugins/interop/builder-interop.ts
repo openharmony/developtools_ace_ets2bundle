@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ESValueMethodNames, BuilderMethodNames, InteroperAbilityNames, BuilderParams } from './predefines';
+import { ESValueMethodNames, BuilderMethodNames, InteroperAbilityNames, BuilderParams, InteropInternalNames } from './predefines';
 import { 
     createELMTID, 
     createEmptyESValue, 
@@ -73,19 +73,19 @@ function invokeRunPendingJobs(): arkts.Statement {
 }
 
 function invokeComponent(): arkts.Statement[] {
-    const viewPU = getPropertyESValue('viewPUCreate', InteroperAbilityNames.GLOBAL, 'viewPUCreate');
+    const viewPU = getPropertyESValue('viewPUCreate', InteropInternalNames.GLOBAL, 'viewPUCreate');
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier('viewPUCreate'),
-                arkts.factory.createIdentifier('invoke'),
+                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
             ),
             undefined,
             [
-                arkts.factory.createIdentifier(InteroperAbilityNames.COMPONENT)
+                arkts.factory.createIdentifier(InteropInternalNames.COMPONENT)
             ]
         )
     );
@@ -97,9 +97,9 @@ function createBuilderInitializer(className: string, functionName: string, param
         [
             createGlobal(),
             ...createELMTID(),
-            getPropertyESValue(BuilderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.GLOBAL, functionName),
+            getPropertyESValue(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.GLOBAL, functionName),
             ...param.paramsInfo,
-            invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteroperAbilityNames.COMPONENT, className, param.args),
+            invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.COMPONENT, className, param.args),
             ...invokeComponent(),
             createInitReturn(className)
         ]
@@ -134,7 +134,7 @@ function getInstanceParam(): arkts.Statement {
                 arkts.factory.createTSAsExpression(
                     arkts.factory.createCallExpression(
                         arkts.factory.createMemberExpression(
-                            arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE),
+                            arkts.factory.createIdentifier(InteropInternalNames.INSTANCE),
                             arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
                             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                             false,
@@ -379,7 +379,7 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
     let body: arkts.Statement[] = [];
     let argument = node.arguments[0];
     if (arkts.isObjectExpression(argument)) {
-        body?.push(getPropertyESValue('param', InteroperAbilityNames.INSTANCE, 'arg1'));
+        body?.push(getPropertyESValue(InteropInternalNames.PARAM, InteropInternalNames.INSTANCE, 'arg1'));
         for (const property of argument.properties) {
             if (!(property instanceof arkts.Property)) {
                 continue;
@@ -389,13 +389,13 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
             if (!(key instanceof arkts.Identifier) || value === undefined) {
                 throw Error('Error arguments in Legacy Builder Function');
             }
-            body?.push(setPropertyESValue('param', key.name, getWrapValue(value)));
+            body?.push(setPropertyESValue(InteropInternalNames.PARAM, key.name, getWrapValue(value)));
         }
         const endBody =
             [
                 createGlobal(),
                 getPropertyESValue(BuilderMethodNames.RUNPENDINGJOBS,
-                    InteroperAbilityNames.GLOBAL,
+                    InteropInternalNames.GLOBAL,
                     BuilderMethodNames.RUNPENDINGJOBS),
                 invokeRunPendingJobs()
             ];
@@ -410,7 +410,7 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
             getWhile(),
             createGlobal(),
             getPropertyESValue(BuilderMethodNames.RUNPENDINGJOBS,
-                InteroperAbilityNames.GLOBAL,
+                InteropInternalNames.GLOBAL,
                 BuilderMethodNames.RUNPENDINGJOBS),
             invokeRunPendingJobs()
         ];
@@ -432,7 +432,7 @@ function createBuilderUpdate(node: arkts.CallExpression): arkts.ArrowFunctionExp
                 undefined,
                 [
                     arkts.factory.createParameterDeclaration(
-                        arkts.factory.createIdentifier(InteroperAbilityNames.INSTANCE,
+                        arkts.factory.createIdentifier(InteropInternalNames.INSTANCE,
                             arkts.factory.createTypeReference(
                                 arkts.factory.createTypeReferencePart(
                                     arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE)

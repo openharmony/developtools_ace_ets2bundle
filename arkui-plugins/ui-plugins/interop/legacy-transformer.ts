@@ -20,7 +20,7 @@ import { getInteropPath } from '../../path';
 const interop = require(getInteropPath());
 const nullptr = interop.nullptr;
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
-import { InteroperAbilityNames } from './predefines';
+import { InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { factory } from '../ui-factory';
 import { createAndInsertImportDeclaration } from '../../common/arkts-utils';
@@ -217,11 +217,11 @@ export class LegacyTransformer extends AbstractVisitor {
             body: arkts.factory.createBlock([]),
             params: [
                 arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.PARENT, valueType),
+                    arkts.factory.createIdentifier(InteropInternalNames.PARENT, valueType),
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.PARAM, valueType),
+                    arkts.factory.createIdentifier(InteropInternalNames.PARAM, valueType),
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(
@@ -233,11 +233,11 @@ export class LegacyTransformer extends AbstractVisitor {
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.PARAMSLAMBDA, valueType),
+                    arkts.factory.createIdentifier(InteropInternalNames.PARAMSLAMBDA, valueType),
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO, valueType),
+                    arkts.factory.createIdentifier(InteropInternalNames.EXTRAINFO, valueType),
                     undefined,
                 ).setOptional(true),
             ],
