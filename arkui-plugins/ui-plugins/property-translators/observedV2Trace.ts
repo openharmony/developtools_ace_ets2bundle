@@ -100,6 +100,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         removeDecorator(backingField, DecoratorNames.TRACE);
         const metaField = this.metaField(originalName);
         metaField.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE)]);
+        backingField.range = this.property.range;
         return [backingField, metaField];
     }
 
