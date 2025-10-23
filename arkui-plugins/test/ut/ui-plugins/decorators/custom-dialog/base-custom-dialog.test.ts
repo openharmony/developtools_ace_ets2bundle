@@ -80,10 +80,13 @@ function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___45519047 = initializers;
-    (((gensym___45519047) == (null)) ? undefined : gensym___45519047.aaController)})) {
-      this.__backing_aaController = ((({let gensym___180078470 = initializers;
-      (((gensym___180078470) == (null)) ? undefined : gensym___180078470.aaController)})) ?? (undefined));
+    if (({let gensym___231706081 = initializers;
+    (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
+      this.__backing_aaController = initializers!.aaController
+    } else {
+      if (!(this.__backing_aaController)) {
+        this.__backing_aaController = undefined
+      }
     }
     this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
     (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));

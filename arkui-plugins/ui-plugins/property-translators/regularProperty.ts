@@ -20,8 +20,9 @@ import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator
 import { GetterSetter, InitializerConstructor } from './types';
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { factory } from './factory';
-import { CustomComponentNames } from '../utils';
 import { PropertyCache } from './cache/propertyCache';
+import { factory as UIFactory } from '../ui-factory';
+import { CustomComponentNames, optionsHasField } from '../utils';
 
 export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
@@ -34,12 +35,13 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
     cacheTranslatedInitializer(newName: string, originalName: string): void {
         const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
         let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
         if (
             !!this.propertyType &&
             !!this.structInfo.annotations.customDialog &&
             isCustomDialogController(this.propertyType)
         ) {
-            initializeStruct = this.generateControllerInit(originalName, initializeStruct);
+            initializeStruct = this.generateControllerInit(originalName, thisValue, value);
         }
         initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
@@ -107,13 +109,37 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
         return arkts.factory.createExpressionStatement(assign);
     }
 
-    generateControllerInit(originalName: string, initializeStruct: arkts.AstNode): arkts.AstNode {
+    generateControllerInit(originalName: string, thisValue: arkts.Expression, value: arkts.AstNode): arkts.AstNode {
         return arkts.factory.createIfStatement(
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                originalName
+                optionsHasField(originalName)
             ),
-            arkts.factory.createBlock([initializeStruct])
+            arkts.factory.createBlock([
+                arkts.factory.createAssignmentExpression(
+                    thisValue,
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                    UIFactory.generateMemberExpression(
+                        arkts.factory.createTSNonNullExpression(
+                            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME)
+                        ),
+                        originalName
+                    )
+                ),
+            ]),
+            arkts.factory.createBlock([
+                arkts.factory.createIfStatement(
+                    arkts.factory.createUnaryExpression(
+                        thisValue,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EXCLAMATION_MARK
+                    ),
+                    arkts.factory.createAssignmentExpression(
+                        thisValue,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                        value
+                    )
+                ),
+            ])
         );
     }
 }
