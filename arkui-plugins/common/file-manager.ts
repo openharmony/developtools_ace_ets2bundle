@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-import * as path from 'path';
 import { LANGUAGE_VERSION } from './predefines';
-import { readFirstLineSync, toUnixPath } from './arkts-utils';
 import { BuildConfig, DependentModuleConfig } from './plugin-context';
 
 
