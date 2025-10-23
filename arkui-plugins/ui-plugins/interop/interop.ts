@@ -337,7 +337,7 @@ function generateVarMap(context: InteropContext, decl: arkts.ClassDefinition): M
     return result;
 }
 
-export function processArgumens(arg: arkts.Expression): arkts.ObjectExpression {
+export function processArguments(arg: arkts.Expression): arkts.ObjectExpression {
     if (!arkts.isObjectExpression(arg)) {
         throw new Error('Cannot find arguments for InteropComponent');
     }
@@ -363,6 +363,17 @@ export function processArgumens(arg: arkts.Expression): arkts.ObjectExpression {
     );
 }
 
+function getProperParams(args: arkts.Expression[]): [arkts.AstNode | undefined, arkts.AstNode | undefined] {
+    if (args.length < 2) {
+        return [undefined, undefined];
+    } else if (args.length === 2) {
+        if (args[1] instanceof arkts.ArrowFunctionExpression) {
+            return [undefined, args[1]];
+        }
+        return [processArguments(args[1]), undefined];
+    }
+    return [processArguments(args[1]), args[2]];
+}
 
 /**
  * 
@@ -378,8 +389,8 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     }
     const filePath = arkts.getProgramFromAstNode(decl).moduleName;
     const args = node.arguments;
-    const options = args.length < 2 || arkts.isUndefinedLiteral(args[1]) ? undefined : processArgumens(args[1]);
-    const content = args.length < 3 || arkts.isUndefinedLiteral(args[2]) ? undefined : args[2];
+    const [options, content] = getProperParams(args);
+
     if (!!content) {
         arkts.NodeCache.getInstance().collect(content);
     }
