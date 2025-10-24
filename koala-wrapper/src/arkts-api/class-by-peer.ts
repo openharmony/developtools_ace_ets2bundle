@@ -22,6 +22,7 @@ import { AstNode, UnsupportedNode } from './peers/AstNode';
 type AstNodeConstructor = new (peer: KNativePointer) => AstNode;
 export const nodeByType = new Map<Es2pandaAstNodeType, AstNodeConstructor>([]);
 
+const MAX_SIZE = 2 ** 24;
 const cache = new Map<KNativePointer, AstNode>();
 export function clearNodeCache(): void {
     cache.clear();
@@ -33,7 +34,9 @@ export function getOrPut(peer: KNativePointer, create: (peer: KNativePointer) =>
     }
 
     const newNode = create(peer);
-    cache.set(peer, newNode);
+    if (cache.size < MAX_SIZE) {
+        cache.set(peer, newNode);
+    }
     return newNode;
 }
 
