@@ -30,6 +30,8 @@ class CheckPropertyModifiersRule extends AbstractUISyntaxRule {
         PresetDecorators.STORAGE_PROP_REF,
         PresetDecorators.STORAGE_LINK,
         PresetDecorators.LOCAL_STORAGE_LINK,
+        PresetDecorators.CONSUME,
+        PresetDecorators.LOCAL_STORAGE_PROP_REF
     ];
 
     private static readonly noPrivateDecorators: string[] = [
