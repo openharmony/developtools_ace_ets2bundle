@@ -15,11 +15,13 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    getClassPropertyAnnotationNames, PresetDecorators, getAnnotationUsage, getClassPropertyName, getIdentifierName
+    getClassPropertyAnnotationNames, getMethodAnnotationNames, PresetDecorators, getAnnotationUsage, getClassPropertyName, getIdentifierName
 } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-const builtInDecorators = [PresetDecorators.LOCAL, PresetDecorators.PARAM, PresetDecorators.EVENT];
+const MAX_DECORATORS_PER_MEMBER = 1;
+const builtInDecorators = [PresetDecorators.LOCAL, PresetDecorators.PARAM, PresetDecorators.ONCE, PresetDecorators.STYLES, PresetDecorators.EVENT, PresetDecorators.PROVIDER,
+PresetDecorators.CONSUMER, PresetDecorators.BUILDER_PARAM, PresetDecorators.COMPUTED, PresetDecorators.MONITOR];
 
 class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
     private componentV2PropertyMap: Map<string, Map<string, string>> = new Map();
@@ -54,16 +56,16 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         if (!arkts.isStructDeclaration(node)) {
             return;
         }
-        this.validateClassPropertyDecorators(node);
+        this.validateStructMemberDecorators(node);
     }
 
     private hasComponentV2Annotation = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
         PresetDecorators.COMPONENT_V2);
 
-    private checkMultipleBuiltInDecorators(member: arkts.ClassProperty,
+    private checkMultipleBuiltInPropertyDecorators(member: arkts.ClassProperty,
         propertyDecorators: string[]): void {
         const appliedBuiltInDecorators = propertyDecorators.filter(d => builtInDecorators.includes(d));
-        if (appliedBuiltInDecorators.length > 1) {
+        if (appliedBuiltInDecorators.length > MAX_DECORATORS_PER_MEMBER) {
             member.annotations.forEach(annotation => {
                 if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
                     const annotationsName = annotation.expr.name;
@@ -164,23 +166,43 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         });
     }
 
-    private validateClassPropertyDecorators(node: arkts.StructDeclaration): void {
+    private validateStructMemberDecorators(node: arkts.StructDeclaration): void {
         this.checkuseStateDecoratorsWithProperty(node.definition);
         const isComponentV2 = this.hasComponentV2Annotation(node);
         node.definition.body.forEach(member => {
-            if (!arkts.isClassProperty(member)) {
-                return;
+            if (arkts.isClassProperty(member)) {
+                const propertyDecorators = getClassPropertyAnnotationNames(member);
+                // Rule 1: Multiple built-in decorators for Property Decorators
+                this.checkMultipleBuiltInPropertyDecorators(member, propertyDecorators);
+
+                // Rule 2: @Param without default value must be combined with @Require
+                this.checkParamRequiresRequire(member, propertyDecorators);
+
+                // Rule 3: @Require must be used together with @Param
+                this.checkRequireOnlyWithParam(member, propertyDecorators, isComponentV2);
             }
-            const propertyDecorators = getClassPropertyAnnotationNames(member);
-            // Rule 1: Multiple built-in decorators
-            this.checkMultipleBuiltInDecorators(member, propertyDecorators);
-
-            // Rule 2: @Param without default value must be combined with @Require
-            this.checkParamRequiresRequire(member, propertyDecorators);
-
-            // Rule 3: @Require must be used together with @Param
-            this.checkRequireOnlyWithParam(member, propertyDecorators, isComponentV2);
+            else if (arkts.isMethodDefinition(member)) {
+                // Rule 1: Multiple built-in decorators for Method Decorators
+                this.checkMethodDecorators(member);
+            }
         });
+    }
+
+    private checkMethodDecorators(method: arkts.MethodDefinition): void {
+        const methodDecorators = getMethodAnnotationNames(method);
+        this.checkMultipleBuiltInMethodDecorators(method, methodDecorators);
+    }
+
+    private checkMultipleBuiltInMethodDecorators(method: arkts.MethodDefinition, methodDecorators: string[]): void {
+        const appliedBuiltInDecorators = methodDecorators.filter(d => builtInDecorators.includes(d));
+        if (appliedBuiltInDecorators.length > MAX_DECORATORS_PER_MEMBER) {
+            method.scriptFunction.annotations?.forEach(annotation => {
+                if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
+                    const annotationsName = annotation.expr.name;
+                    this.reportMultipleBuiltInDecoratorsError(annotation, annotationsName, builtInDecorators);
+                }
+            });
+        }
     }
 
     private checkDecorator(annoArray: readonly arkts.AnnotationUsage[], decorator: string): boolean {
@@ -354,6 +376,6 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             });
         }
     }
-};
+}
 
 export default ComponentV2StateUsageValidationRule;
