@@ -1608,16 +1608,16 @@ export function getComponentSet(node: ts.StructDeclaration, uiCheck: boolean = f
 
 export function updateStructInfoWithDecorators(structInfo: StructInfo, componentSet: IComponentSet): void {
   structInfo.linkDecoratorsV1.push(...componentSet.links);
-    structInfo.updatePropsDecoratorsV1Map.set(['@State'], [...componentSet.states]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@Link'], [...componentSet.links]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@Prop'], [...componentSet.props]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@Provide'], [...componentSet.provides]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@Consume'], [...componentSet.consumes]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@ObjectLink'], [...componentSet.objectLinks]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@StorageLink'], [...componentSet.storageLinks]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@StorageProp'], [...componentSet.storageProps]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@LocalStorageLink'], [...componentSet.localStorageLink.keys()]);
-  structInfo.updatePropsDecoratorsV1Map.set(['@LocalStorageProp'], [...componentSet.localStorageProp.keys()]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@State']), [...componentSet.states]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@Link']), [...componentSet.links]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@Prop']), [...componentSet.props]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@Provide']), [...componentSet.provides]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@Consume']), [...componentSet.consumes]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@ObjectLink']), [...componentSet.objectLinks]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@StorageLink']), [...componentSet.storageLinks]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@StorageProp']), [...componentSet.storageProps]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@LocalStorageLink']), [...componentSet.localStorageLink.keys()]);
+  structInfo.updatePropsDecoratorsV1Map.set(JSON.stringify(['@LocalStorageProp']), [...componentSet.localStorageProp.keys()]);
 }
 
 class RecordRequire {
