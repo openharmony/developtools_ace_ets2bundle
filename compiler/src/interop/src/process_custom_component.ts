@@ -375,7 +375,7 @@ class ChildAndParentComponentInfo {
   forbiddenInitPropsV2: string[];
   updatePropsForV1Parent: string[];
   updatePropsForV2Parent: string[];
-  forbiddenInitPropsV1: Map<string[], string[]>;
+  forbiddenInitPropsV1: Map<string, string[]>;
   constructor(childName: string, childNode: ts.CallExpression, propsAndObjectLinks: string[]) {
     this.childName = childName;
     this.propsAndObjectLinks = propsAndObjectLinks;
@@ -393,7 +393,14 @@ class ChildAndParentComponentInfo {
     this.updatePropsForV2Parent = [...this.parentStructInfo.localDecoratorSet,
       ...this.parentStructInfo.paramDecoratorMap.keys(), ...this.parentStructInfo.providerDecoratorSet,
       ...this.parentStructInfo.consumerDecoratorSet];
-    this.forbiddenInitPropsV1 = this.childStructInfo?.updatePropsDecoratorsV1Map || new Map();
+    if (this.childStructInfo?.updatePropsDecoratorsV1Map) {
+      this.forbiddenInitPropsV1 = new Map(
+        Array.from(this.childStructInfo.updatePropsDecoratorsV1Map.entries())
+          .map(([keyArr, value]) => [keyArr, value] as [string, string[]])
+      );
+    } else {
+      this.forbiddenInitPropsV1 = new Map();
+    }
   }
 }
 
@@ -556,34 +563,30 @@ function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string
   return false;
 }
 
-function handleV2ParentWithV1Child(
-  item: ts.PropertyAssignment,
-  itemName: string,
-  parentPropertyName: string,
-  parentPropertyKind: string[],
-  info: ChildAndParentComponentInfo,
-  log: LogInfo[]
-): boolean {
+function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string,
+  parentPropertyKind: string[], info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
   if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
     if (!info.forbiddenInitPropsV1 || info.forbiddenInitPropsV1.size === 0) {
       return true;
     }
-
-    const parentKindStr = parentPropertyKind.length 
+    const parentKindStr = parentPropertyKind.length
       ? parentPropertyKind.map(kind => kind === "regular" ? kind : `@${kind}`).join(', ') : 'regular';
-    const matchedKeyArrays: string[][] = [];
-    for (const [keyArr, arr] of info.forbiddenInitPropsV1) {
-      if (arr.includes(itemName)) {
-        matchedKeyArrays.push(keyArr);
+    const matchedDecorators = new Set<string>();
+    for (const [keyStr, arr] of info.forbiddenInitPropsV1) {
+      const keyArr = JSON.parse(keyStr) as string[];
+      if (Array.isArray(keyArr) && arr.includes(itemName)) {
+        keyArr.forEach(decorator => {
+          matchedDecorators.add(decorator);
+        });
       }
     }
-    if (matchedKeyArrays.length > 0) {
-      const allMatchedKeys = Array.from(new Set(matchedKeyArrays.flat()));
-      
+
+    if (matchedDecorators.size > 0) {
+      const allMatchedKeys = Array.from(matchedDecorators);
       log.push({
         type: LogType.ERROR,
         message: `The ${parentKindStr} property ${parentPropertyName} cannot be assigned to the` +
-            ` ${allMatchedKeys.join(', ')} properties ${itemName} when interop.`,
+          ` ${allMatchedKeys.join(', ')} properties ${itemName} when interop.`,
         pos: item.getStart(),
         code: '10905501'
       });

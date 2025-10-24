@@ -71,7 +71,7 @@ export class StructInfo {
   isReusableV2: boolean = false;
   structName: string = '';
   updatePropsDecoratorsV1: string[] = [];
-  updatePropsDecoratorsV1Map: Map<string[], string[]> = new Map();
+  updatePropsDecoratorsV1Map: Map<string, string[]> = new Map();
   linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorMap: Map<string, ts.PropertyDeclaration> = new Map();
