@@ -22,6 +22,7 @@ import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda/condition-scope';
 
@@ -111,17 +112,7 @@ function main() {}
             }));
         }));
     }
-    constructor(useSharedStorage: (boolean | undefined)) {
-      this(useSharedStorage, undefined);
-    }
-    
-    constructor() {
-      this(undefined, undefined);
-    }
-    
-    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-      super(useSharedStorage, storage);
-    }
+    ${dumpConstructor()}
 }
 @Component() export interface __Options_A {
 }
@@ -341,17 +332,7 @@ function main() {}
             return;
         }
     }
-    constructor(useSharedStorage: (boolean | undefined)) {
-      this(useSharedStorage, undefined);
-    }
-    
-    constructor() {
-      this(undefined, undefined);
-    }
-    
-    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-      super(useSharedStorage, storage);
-    }
+    ${dumpConstructor()}
 }
 @Component() export interface __Options_A {
 }

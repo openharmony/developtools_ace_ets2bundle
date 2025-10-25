@@ -768,15 +768,6 @@ export class MethodDefinition extends AstNode {
         return this;
     }
 
-    setBaseOverloadMethod(baseOverloadMethod?: MethodDefinition): this {
-        global.generatedEs2panda._MethodDefinitionSetBaseOverloadMethod(
-            global.context,
-            this.peer,
-            passNode(baseOverloadMethod)
-        );
-        return this;
-    }
-
     readonly kind: Es2pandaMethodDefinitionKind;
     readonly scriptFunction: ScriptFunction;
     readonly name: Identifier;

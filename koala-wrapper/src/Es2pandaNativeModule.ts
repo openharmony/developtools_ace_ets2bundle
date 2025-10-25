@@ -992,6 +992,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _GetCompilationMode(configPtr: KNativePointer): KInt {
+        throw new Error('Not implemented');
+    }
+
     _ScriptFunctionSetParams(
         context: KNativePointer,
         receiver: KNativePointer,

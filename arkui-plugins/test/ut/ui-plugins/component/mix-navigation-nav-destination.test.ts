@@ -22,6 +22,7 @@ import { recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
+import { dumpConstructor } from '../../../utils/simplify-dump';
 
 const COMPONENT_DIR_PATH: string = 'component';
 
@@ -210,17 +211,7 @@ function main() {}
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
   public static _buildCompatibleNode(options: __Options_SubNavigation): void {
     return;
@@ -359,19 +350,20 @@ export class MyNavPathStack extends NavPathStack {
 }
 
 interface NavPathStackOperate {
-  set onSystemPop(onSystemPop: (()=> void))
-  
   get onSystemPop(): (()=> void)
+
+  set onSystemPop(onSystemPop: (()=> void))
   
 }
 
 interface MultiNavPathStackOperate {
+  get onPrimaryPop(): (()=> void)
+
   set onPrimaryPop(onPrimaryPop: (()=> void))
   
-  get onPrimaryPop(): (()=> void)
-  set onSecondaryPop(onSecondaryPop: (()=> void))
-  
   get onSecondaryPop(): (()=> void)
+
+  set onSecondaryPop(onSecondaryPop: (()=> void))
   
 }
 
@@ -382,63 +374,65 @@ type OnHomeShowOnTopCallback = ((name: string)=> void);
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_SubNavigation {
+  @__Link_intrinsic() get isPortrait(): (boolean | undefined)
+
   @__Link_intrinsic() set isPortrait(isPortrait: (boolean | undefined))
   
-  @__Link_intrinsic() get isPortrait(): (boolean | undefined)
+  get __backing_isPortrait(): (LinkSourceType<boolean> | undefined)
+
   set __backing_isPortrait(__backing_isPortrait: (LinkSourceType<boolean> | undefined))
   
-  get __backing_isPortrait(): (LinkSourceType<boolean> | undefined)
+  get __options_has_isPortrait(): (boolean | undefined)
   set __options_has_isPortrait(__options_has_isPortrait: (boolean | undefined))
   
-  get __options_has_isPortrait(): (boolean | undefined)
+  get displayMode(): (number | undefined)
   set displayMode(displayMode: (number | undefined))
   
-  get displayMode(): (number | undefined)
+  get __backing_displayMode(): (IStateDecoratedVariable<number> | undefined)
   set __backing_displayMode(__backing_displayMode: (IStateDecoratedVariable<number> | undefined))
   
-  get __backing_displayMode(): (IStateDecoratedVariable<number> | undefined)
+  get __options_has_displayMode(): (boolean | undefined)
   set __options_has_displayMode(__options_has_displayMode: (boolean | undefined))
   
-  get __options_has_displayMode(): (boolean | undefined)
+  get navDestination(): ((((name: String, param: (Object | undefined))=> void) | undefined) | undefined)
   set navDestination(navDestination: ((((name: String, param: (Object | undefined))=> void) | undefined) | undefined))
   
-  get navDestination(): ((((name: String, param: (Object | undefined))=> void) | undefined) | undefined)
+  get __options_has_navDestination(): (boolean | undefined)
   set __options_has_navDestination(__options_has_navDestination: (boolean | undefined))
   
-  get __options_has_navDestination(): (boolean | undefined)
+  get primaryWidth(): ((number | string) | undefined)
   set primaryWidth(primaryWidth: ((number | string) | undefined))
   
-  get primaryWidth(): ((number | string) | undefined)
+  get __backing_primaryWidth(): (IStateDecoratedVariable<(number | string)> | undefined)
   set __backing_primaryWidth(__backing_primaryWidth: (IStateDecoratedVariable<(number | string)> | undefined))
   
-  get __backing_primaryWidth(): (IStateDecoratedVariable<(number | string)> | undefined)
+  get __options_has_primaryWidth(): (boolean | undefined)
   set __options_has_primaryWidth(__options_has_primaryWidth: (boolean | undefined))
   
-  get __options_has_primaryWidth(): (boolean | undefined)
+  get onNavigationModeChange(): ((OnNavigationModeChangeCallback | undefined) | undefined)
   set onNavigationModeChange(onNavigationModeChange: ((OnNavigationModeChangeCallback | undefined) | undefined))
   
-  get onNavigationModeChange(): ((OnNavigationModeChangeCallback | undefined) | undefined)
+  get __options_has_onNavigationModeChange(): (boolean | undefined)
   set __options_has_onNavigationModeChange(__options_has_onNavigationModeChange: (boolean | undefined))
   
-  get __options_has_onNavigationModeChange(): (boolean | undefined)
+  get primaryStack(): (MyNavPathStack | undefined)
   set primaryStack(primaryStack: (MyNavPathStack | undefined))
   
-  get primaryStack(): (MyNavPathStack | undefined)
+  get __backing_primaryStack(): (IStateDecoratedVariable<MyNavPathStack> | undefined)
   set __backing_primaryStack(__backing_primaryStack: (IStateDecoratedVariable<MyNavPathStack> | undefined))
   
-  get __backing_primaryStack(): (IStateDecoratedVariable<MyNavPathStack> | undefined)
+  get __options_has_primaryStack(): (boolean | undefined)
   set __options_has_primaryStack(__options_has_primaryStack: (boolean | undefined))
   
-  get __options_has_primaryStack(): (boolean | undefined)
+  get secondaryStack(): (MyNavPathStack | undefined)
   set secondaryStack(secondaryStack: (MyNavPathStack | undefined))
   
-  get secondaryStack(): (MyNavPathStack | undefined)
+  get __backing_secondaryStack(): (IStateDecoratedVariable<MyNavPathStack> | undefined)
   set __backing_secondaryStack(__backing_secondaryStack: (IStateDecoratedVariable<MyNavPathStack> | undefined))
   
-  get __backing_secondaryStack(): (IStateDecoratedVariable<MyNavPathStack> | undefined)
+  get __options_has_secondaryStack(): (boolean | undefined)
   set __options_has_secondaryStack(__options_has_secondaryStack: (boolean | undefined))
   
-  get __options_has_secondaryStack(): (boolean | undefined)
   
 }
 `;
