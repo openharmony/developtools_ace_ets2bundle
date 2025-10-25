@@ -793,23 +793,6 @@ void impl_MemoryTrackerPrintCurrent(KNativePointer context)
 }
 KOALA_INTEROP_V1(MemoryTrackerPrintCurrent, KNativePointer);
 
-KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePointer nodePtr)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _nodePtr = reinterpret_cast<es2panda_AstNode*>(nodePtr);
-    auto _tsType = GetImpl()->TypedTsType(_context, _nodePtr);
-    if (_tsType == nullptr) {
-        _tsType = GetImpl()->ExpressionTsType(_context, _nodePtr);
-    }
-    if (_tsType == nullptr) {
-        return nullptr;
-    }
-    const auto _nodeTsType = reinterpret_cast<es2panda_Type*>(_tsType);
-    auto _typeAnnotation = GetImpl()->CreateOpaqueTypeNode(_context, _nodeTsType);
-    return _typeAnnotation;
-}
-KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
-
 void impl_ScriptFunctionSetParams(
     KNativePointer context, KNativePointer receiver, KNativePointerArray paramsList, KUInt paramsListSequenceLength)
 {
@@ -866,15 +849,3 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     return _typeAnnotation;
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
-
-void impl_ScriptFunctionSetParams(
-    KNativePointer context, KNativePointer receiver, KNativePointerArray paramsList, KUInt paramsListSequenceLength)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    const auto _paramsList = reinterpret_cast<es2panda_AstNode**>(paramsList);
-    const auto _paramsListSequenceLength = static_cast<KUInt>(paramsListSequenceLength);
-    GetImpl()->ScriptFunctionSetParams(_context, _receiver, _paramsList, _paramsListSequenceLength);
-    return;
-}
-KOALA_INTEROP_V4(ScriptFunctionSetParams, KNativePointer, KNativePointer, KNativePointerArray, KUInt);

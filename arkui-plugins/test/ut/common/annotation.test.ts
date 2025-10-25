@@ -189,7 +189,8 @@ import { Component as Component, ResourceStr as ResourceStr, Builder as Builder 
     @TestAnno() public constructor() {}
 }
 @TestAnno() interface __A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'prop', 'number', [dumpAnnotation('TestAnno')])}
+    @TestAnno() get prop(): number
+    @TestAnno() set prop(@TestAnno() prop: number)
 }
 `;
 

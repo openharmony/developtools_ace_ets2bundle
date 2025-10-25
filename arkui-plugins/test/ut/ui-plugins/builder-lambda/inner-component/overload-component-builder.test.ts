@@ -22,6 +22,7 @@ import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
 const INNER_COMPONENT_DIR_PATH: string = 'inner-component';
@@ -82,13 +83,13 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A) => void), initializer:((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+     @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
         CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
             return new A(false, ({let gensym___<some_random_number> = storage;
-                (((gensym___<some_random_number>) == (null)) ? undefined: gensym___<some_random_number>())}));
+                (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
         }), initializers, reuseId, content);
     }
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (() => void)): A {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): A {
         throw new Error("Declare interface");
     }
     @memo() public build() {
@@ -105,15 +106,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }), @memo() (() => {}));
     }
-    constructor(useSharedStorage: (boolean | undefined) {
-        this(useSharedStorage, undefined);
-    }
-    constructor() {
-        this(undefined, undefined);
-    }
-    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-        super(useSharedStorage, storage);
-    }
+    ${dumpConstructor()}
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
@@ -136,19 +129,21 @@ import { memo as memo, ComponentBuilder as ComponentBuilder } from "arkui.stateM
 
 function main() {}
 
-@memo() @ComponentBuilder() export function FakeComponent(options?: FakeOptions, @memo() content_?: (()=> void)): FakeComponentAttribute
-@memo() @ComponentBuilder() export function FakeComponent(@memo() content_?: (()=> void)): FakeComponentAttribute
 @memo() export function FakeComponent(style: @memo() ((instance: FakeComponentAttribute)=> void), str: string, @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: @memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: @memo() ((instance: FakeComponentAttribute)=> void), @memo() content_?: (()=> void)): void
 
 @memo() export function FakeComponentImpl(style: @memo() ((instance: FakeComponentAttribute)=> void), content?: @memo() (()=> void)): void
 
 interface FakeOptions {
-    set str(str: (string | undefined))
     get str(): (string | undefined)
+    set str(str: (string | undefined))
 }
 
 interface FakeComponentAttribute {
   setFakeComponentOptions(str: string): this
+  setFakeComponentOptions(options?: FakeOptions): this
+  setFakeComponentOptions(): this
   
 }
 `;

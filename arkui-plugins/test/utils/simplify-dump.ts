@@ -56,4 +56,19 @@ function ignoreNewLines(dumpStr: string): string {
     return dumpStr.replaceAll(/\n[\s]+/g, '');
 }
 
-export { GetSetDumper, dumpGetterSetter, dumpAnnotation, ignoreNewLines };
+function dumpConstructor(): string {
+    return `
+    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+    super(useSharedStorage, storage);
+  }
+
+    public constructor(useSharedStorage: (boolean | undefined)) {
+    this(useSharedStorage, undefined);
+  }
+    
+  public constructor() {
+    this(undefined, undefined);
+  }`
+}
+
+export { GetSetDumper, dumpGetterSetter, dumpAnnotation, ignoreNewLines, dumpConstructor };
