@@ -115,7 +115,7 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -152,7 +152,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
     this.__backing_b = STATE_MGMT_FACTORY.makePropRef<string>(this, "b", (initializers!.b as string));
@@ -185,16 +185,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_b!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("button", undefined).onClick(((e: ClickEvent) => {})).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("text", undefined).fontSize(20).applyAttributesFinish();
         return;
       }), undefined);
@@ -206,7 +206,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     A._instantiateImpl(undefined, (() => {
       return new A();
     }), undefined, undefined, undefined);

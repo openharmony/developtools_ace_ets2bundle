@@ -47,7 +47,7 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -56,26 +56,26 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.customBuilder))
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam?: @memo() (()=> void);
+  private __backing_customBuilderParam?: @Memo() (()=> void);
   
-  public get customBuilderParam(): @memo() (()=> void) {
+  public get customBuilderParam(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam!;
   }
   
-  public set customBuilderParam(value: @memo() (()=> void)) {
+  public set customBuilderParam(value: @Memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
   
-  @memo() public customBuilder() {}
+  @Memo() public customBuilder() {}
   
-  @memo() public build() {
+  @Memo() public build() {
     this.customBuilderParam();
   }
   
@@ -84,22 +84,22 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @memo() public componentBuilder() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public componentBuilder() {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -109,15 +109,15 @@ function main() {}
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
-        customBuilderParam: @memo() (() => {
+        customBuilderParam: @Memo() (() => {
           this.componentBuilder();
         }),
         __options_has_customBuilderParam: true,
       }, undefined, undefined);
       Child._instantiateImpl(undefined, (() => {
         return new Child();
-      }), undefined, undefined, @memo() (() => {
-        TextImpl(@memo() ((instance: TextAttribute): void => {
+      }), undefined, undefined, @Memo() (() => {
+        TextImpl(@Memo() ((instance: TextAttribute): void => {
           instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
           return;
         }), undefined);
@@ -130,7 +130,7 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   
 }
@@ -146,31 +146,31 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, Entry as Entry, Builder as Builder, BuilderParam as BuilderParam, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((((({let gensym___169376706 = initializers;
     (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (content))) ?? (this.customBuilder))
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   
-  private __backing_customBuilderParam?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
   
-  public get customBuilderParam(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam!;
   }
   
-  public set customBuilderParam(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam = value;
   }
   
-  @memo() public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (252759234)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -182,7 +182,7 @@ function main() {}
     }
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (209256344)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -200,17 +200,17 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (219399173)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (137225318)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    TextImpl(__memo_context, ((__memo_id) + (137225318)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -229,13 +229,13 @@ function main() {}
     }
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (135515930)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (136716185)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (136716185)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -247,7 +247,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -262,7 +262,7 @@ function main() {}
       Child._instantiateImpl(__memo_context, ((__memo_id) + (218979098)), undefined, (() => {
         return new Child();
       }), {
-        customBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        customBuilderParam: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 0);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -278,13 +278,13 @@ function main() {}
       }, undefined, undefined);
       Child._instantiateImpl(__memo_context, ((__memo_id) + (213687742)), undefined, (() => {
         return new Child();
-      }), undefined, undefined, @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      }), undefined, undefined, @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (192802443)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
-        TextImpl(__memo_context, ((__memo_id) + (223657391)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        TextImpl(__memo_context, ((__memo_id) + (223657391)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
           const __memo_parameter_instance = __memo_scope.param(0, instance);
           if (__memo_scope.unchanged) {
@@ -318,7 +318,7 @@ function main() {}
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   
 }

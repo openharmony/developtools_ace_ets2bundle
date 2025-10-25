@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -54,7 +54,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
-  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
     this.__backing_provideVar2 = STATE_MGMT_FACTORY.makeProvide<number>(this, "provideVar2", "provideVar2", ((({let gensym___143944235 = initializers;
@@ -119,7 +119,7 @@ function main() {}
     this.__backing_provideVar5!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

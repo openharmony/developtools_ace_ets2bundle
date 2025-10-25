@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Component as Component, CustomDialog as CustomDialog, CustomDialogController as CustomDialogController } from "@ohos.arkui.component";
@@ -47,7 +47,7 @@ import { Component as Component, CustomDialog as CustomDialog, CustomDialogContr
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -70,7 +70,7 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
@@ -80,11 +80,11 @@ function main() {}
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___95501822 = initializers;
     (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___46528967 as CustomDialogController));
@@ -111,7 +111,7 @@ function main() {}
   public updateController1() {
     this.dialogController = ({let gensym___17371929: Any;
     gensym___17371929 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___17371929 as CustomDialogController));
@@ -127,7 +127,7 @@ function main() {}
   public updateController2() {
     let temp = ({let gensym___90667230: Any;
     gensym___90667230 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___90667230 as CustomDialogController));
@@ -141,7 +141,7 @@ function main() {}
     this.dialogController = temp;
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

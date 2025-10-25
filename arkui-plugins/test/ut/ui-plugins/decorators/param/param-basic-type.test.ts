@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -54,7 +54,7 @@ import { Param as Param } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeParam<string>(this, "paramVar1", ((({let gensym___264789668 = initializers;
     (((gensym___264789668) == (null)) ? undefined : gensym___264789668.paramVar1)})) ?? ("stateVar1")));
     this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeParam<number>(this, "paramVar2", ((({let gensym___171906071 = initializers;
@@ -120,7 +120,7 @@ function main() {}
     return this.__backing_paramVar5!.get();
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

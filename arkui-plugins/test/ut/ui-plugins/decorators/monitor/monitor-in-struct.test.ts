@@ -47,7 +47,7 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -66,7 +66,7 @@ function main() {}
 
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
     this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
@@ -127,12 +127,12 @@ function main() {}
     }));
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("change string", undefined).onClick(((e) => {
           this.message += "!";
           this.name = "Jack";

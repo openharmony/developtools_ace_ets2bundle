@@ -95,7 +95,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 `;
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -110,7 +110,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
-  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));
     this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<(number | undefined)>(this, "propVar2", (initializers!.propVar2 as (number | undefined)));
     this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<boolean>(this, "propVar3", (initializers!.propVar3 as boolean));
@@ -221,7 +221,7 @@ function main() {}
     this.__backing_propVar7!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

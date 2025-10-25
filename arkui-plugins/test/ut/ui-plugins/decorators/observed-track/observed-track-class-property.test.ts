@@ -39,7 +39,7 @@ const pluginTester = new PluginTester('test observed track transform with class 
 
 const expectedScript: string = `
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -184,11 +184,11 @@ class E implements IObservedObject, ISubscribedWatches {
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

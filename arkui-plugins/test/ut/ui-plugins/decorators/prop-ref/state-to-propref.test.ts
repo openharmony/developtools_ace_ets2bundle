@@ -55,7 +55,7 @@ import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -72,7 +72,7 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 function main() {}
 
 @Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
-  public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
     this.__backing_costOfOneAttempt = ((({let gensym___88948111 = initializers;
@@ -106,29 +106,29 @@ function main() {}
     this.__backing_costOfOneAttempt = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ConditionScope(@memo() (() => {
+    }), @Memo() (() => {
+      ConditionScope(@Memo() (() => {
         if (((this.count) > (0))) {
-          ConditionBranch(@memo() (() => {
-            TextImpl(@memo() ((instance: TextAttribute): void => {
+          ConditionBranch(@Memo() (() => {
+            TextImpl(@Memo() ((instance: TextAttribute): void => {
               instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined).applyAttributesFinish();
               return;
             }), undefined);
           }));
         } else {
-          ConditionBranch(@memo() (() => {
-            TextImpl(@memo() ((instance: TextAttribute): void => {
+          ConditionBranch(@Memo() (() => {
+            TextImpl(@Memo() ((instance: TextAttribute): void => {
               instance.setTextOptions("Game over!", undefined).applyAttributesFinish();
               return;
             }), undefined);
           }));
         }
       }));
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Try again", undefined).onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
         })).applyAttributesFinish();
@@ -142,7 +142,7 @@ function main() {}
 }
 
 @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
-  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___249912438 = initializers;
     (((gensym___249912438) == (null)) ? undefined : gensym___249912438.countDownStartValue)})) ?? (10)));
   }
@@ -159,22 +159,22 @@ function main() {}
     this.__backing_countDownStartValue!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions((((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("+1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("-1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
         })).applyAttributesFinish();

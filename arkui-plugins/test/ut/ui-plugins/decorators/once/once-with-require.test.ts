@@ -127,7 +127,7 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -202,7 +202,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
     (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
     this.__backing_onceParamInfo = STATE_MGMT_FACTORY.makeParamOnce<Info>(this, "onceParamInfo", (initializers!.onceParamInfo as Info));
@@ -230,20 +230,20 @@ function main() {}
     this.__backing_onceParamInfo!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child onceParamNum: \${this.onceParamNum}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changeOnceParamNum", undefined).onClick(((e) => {
           (this.onceParamNum++);
         })).applyAttributesFinish();
@@ -257,7 +257,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localNum = STATE_MGMT_FACTORY.makeLocal<number>(this, "localNum", 10);
     this.__backing_localInfo = STATE_MGMT_FACTORY.makeLocal<Info>(this, "localInfo", new Info());
   }
@@ -284,16 +284,16 @@ function main() {}
     this.__backing_localInfo!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Parent localNum: \${this.localNum}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);

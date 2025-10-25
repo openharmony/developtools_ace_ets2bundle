@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -133,7 +133,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeConsumer<Per>(this, "paramVar1", "paramVar1", new Per(6));
     this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeConsumer<Array<number>>(this, "paramVar2", "paramVar2", new Array<number>(3, 6, 8));
     this.__backing_paramVar3 = STATE_MGMT_FACTORY.makeConsumer<StateType>(this, "paramVar3", "paramVar3", StateType.TYPE3);
@@ -259,7 +259,7 @@ final class StateType extends BaseEnum<int> {
     this.__backing_paramVar12!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

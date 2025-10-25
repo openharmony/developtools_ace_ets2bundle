@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -56,7 +56,7 @@ import { Monitor as Monitor, Local as Local, IMonitor as IMonitor } from "@ohos.
 function main() {}
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
     this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
@@ -145,7 +145,7 @@ function main() {}
     }));
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

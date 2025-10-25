@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -56,7 +56,7 @@ import { Link as Link } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
-  public __initializeStruct(initializers: (__Options_LinkParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_LinkParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
@@ -131,7 +131,7 @@ function main() {}
     this.__backing_linkVar5!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

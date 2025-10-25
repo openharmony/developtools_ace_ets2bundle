@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -54,7 +54,7 @@ import { Local as Local } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localVar1 = STATE_MGMT_FACTORY.makeLocal<string>(this, "localVar1", "stateVar1");
     this.__backing_localVar2 = STATE_MGMT_FACTORY.makeLocal<number>(this, "localVar2", 50);
     this.__backing_localVar3 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "localVar3", true);
@@ -114,7 +114,7 @@ function main() {}
     this.__backing_localVar5!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

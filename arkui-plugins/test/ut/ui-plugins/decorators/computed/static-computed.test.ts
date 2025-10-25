@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -135,7 +135,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
@@ -167,7 +167,7 @@ function main() {}
     return Parent.__computed_fullName.get();
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
@@ -177,7 +177,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Parent2 extends CustomComponentV2<Parent2, __Options_Parent2> {
-  public __initializeStruct(initializers: (__Options_Parent2 | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent2 | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent2 | undefined)): void {}
   
@@ -197,7 +197,7 @@ function main() {}
     return Parent2.__computed_fullName2.get();
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

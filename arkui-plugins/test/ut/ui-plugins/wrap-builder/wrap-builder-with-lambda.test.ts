@@ -64,7 +64,7 @@ import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -85,12 +85,12 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
-  ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+@Memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
+  ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
     instance.setColumnOptions(undefined).applyAttributesFinish();
     return;
-  }), @memo() (() => {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  }), @Memo() (() => {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined).applyAttributesFinish();
       return;
     }), undefined);
@@ -145,10 +145,10 @@ function main() {}
   
 }
 
-@memo() type MyBuilderFuncType = @Builder() ((param: (()=> Tmp))=> void);
+@Memo() type MyBuilderFuncType = @Builder() ((param: (()=> Tmp))=> void);
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", ((({let gensym___171896504 = initializers;
     (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? (new Tmp())));
   }
@@ -165,17 +165,17 @@ function main() {}
     this.__backing_label!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       wBuilder.builder((() => {
         return {
           paramA2: this.label.paramA2,
         };
       }));
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
         })).applyAttributesFinish();
@@ -228,7 +228,7 @@ import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -249,13 +249,13 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
+@Memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (133793681)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  ColumnImpl(__memo_context, ((__memo_id) + (241913892)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+  ColumnImpl(__memo_context, ((__memo_id) + (241913892)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -267,13 +267,13 @@ function main() {}
       __memo_scope.recache();
       return;
     }
-  }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+  }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (175145513)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (47330804)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    TextImpl(__memo_context, ((__memo_id) + (47330804)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -345,10 +345,10 @@ function main() {}
   
 }
 
-@memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, param: (()=> Tmp))=> void);
+@Memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, param: (()=> Tmp))=> void);
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", ((({let gensym___171896504 = initializers;
     (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? (new Tmp())));
   }
@@ -365,13 +365,13 @@ function main() {}
     this.__backing_label!.set(value);
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (69406103)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (218979098)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (218979098)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -383,7 +383,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -394,7 +394,7 @@ function main() {}
           paramA2: this.label.paramA2,
         };
       }));
-      ButtonImpl(__memo_context, ((__memo_id) + (46726221)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ButtonAttribute): void => {
+      ButtonImpl(__memo_context, ((__memo_id) + (46726221)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ButtonAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213104625)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {

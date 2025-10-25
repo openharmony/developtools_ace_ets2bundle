@@ -46,7 +46,7 @@ import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "ar
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -180,7 +180,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_label = ((({let gensym___171896504 = initializers;
     (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? ("date"));
     this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___209155591 = initializers;
@@ -210,12 +210,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     return this.__backing_data!.get();
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child increase the day by 1", undefined).onClick(((e: ClickEvent) => {
           this.data.setDate(((this.data.getDate()) + (1)));
         })).applyAttributesFinish();
@@ -229,7 +229,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___225289068 = initializers;
     (((gensym___225289068) == (null)) ? undefined : gensym___225289068.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
   }
@@ -246,11 +246,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_newData!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
@@ -259,13 +259,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         data: this.newData.data,
         __options_has_data: true,
       }, undefined, undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))", undefined).onClick(((e: ClickEvent) => {
           this.newData = new NewDate(new DateClass("2023-08-20"));
         })).applyAttributesFinish();
@@ -279,7 +279,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     Parent._instantiateImpl(undefined, (() => {
       return new Parent();
     }), undefined, undefined, undefined);

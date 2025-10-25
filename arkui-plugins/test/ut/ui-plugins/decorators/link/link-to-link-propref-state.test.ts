@@ -51,7 +51,7 @@ import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateMan
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
 
@@ -69,7 +69,7 @@ function main() {}
 
 
 @Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
-  public __initializeStruct(initializers: (__Options_Parant | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parant | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___194626867 = initializers;
     (((gensym___194626867) == (null)) ? undefined : gensym___194626867.__options_has_text1)})) {
       this.__backing_text1 = STATE_MGMT_FACTORY.makeLink<string>(this, "text1", initializers!.__backing_text1!);
@@ -88,12 +88,12 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+    }), @Memo() (() => {
+      TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: this.text1,
         }).applyAttributesFinish();
@@ -119,7 +119,7 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___55490166 = initializers;
     (((gensym___55490166) == (null)) ? undefined : gensym___55490166.__options_has_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
@@ -182,8 +182,8 @@ function main() {}
     this.__backing_childText4!.set(value);
   }
   
-  @memo() public build() {
-    TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+  @Memo() public build() {
+    TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,
       }).applyAttributesFinish();

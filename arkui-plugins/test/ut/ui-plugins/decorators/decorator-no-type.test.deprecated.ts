@@ -49,7 +49,7 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -256,7 +256,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", (((({let gensym___213853607 = initializers;
     (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))) as Per));
     this.__backing_stateVar2 = STATE_MGMT_FACTORY.makePropRef<Array<Double>>(this, "stateVar2", (((({let gensym___113574154 = initializers;
@@ -362,14 +362,14 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11115!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 @ComponentV2() final struct V2Parent extends CustomComponentV2<V2Parent, __Options_V2Parent> {
-  public __initializeStruct(initializers: (__Options_V2Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_V2Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___73118717 = initializers;
     (((gensym___73118717) == (null)) ? undefined : gensym___73118717.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<String>));
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
@@ -513,14 +513,14 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11112!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 @CustomDialog() final struct CC extends BaseCustomDialog<CC, __Options_CC> {
-  public __initializeStruct(initializers: (__Options_CC | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CC | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<String>>(this, "stateVar4", (((({let gensym___177598336 = initializers;
     (((gensym___177598336) == (null)) ? undefined : gensym___177598336.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<String>));
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
@@ -664,7 +664,7 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11112!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

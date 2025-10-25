@@ -53,7 +53,7 @@ import { DividerAttribute as DividerAttribute } from "arkui.component.divider";
 
 import { DividerImpl as DividerImpl } from "arkui.component.divider";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -71,7 +71,7 @@ function main() {}
 
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__computed_fullName.setOwner(this);
     this.__backing_firstName = STATE_MGMT_FACTORY.makeLocal<string>(this, "firstName", "Li");
     this.__backing_lastName = STATE_MGMT_FACTORY.makeLocal<string>(this, "lastName", "Hua");
@@ -120,38 +120,38 @@ function main() {}
     return this.__computed_fullName!.get();
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      DividerImpl(@memo() ((instance: DividerAttribute): void => {
+      DividerImpl(@Memo() ((instance: DividerAttribute): void => {
         instance.setDividerOptions().applyAttributesFinish();
         return;
       }));
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changed lastName", undefined).onClick(((e) => {
           this.lastName += "a";
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changed age", undefined).onClick(((e) => {
           (this.age++);
         })).applyAttributesFinish();

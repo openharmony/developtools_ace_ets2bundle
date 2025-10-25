@@ -85,7 +85,7 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -102,7 +102,7 @@ function main() {}
   
   @State() public code: number;
   
-  @Builder() @memo() public build(): void
+  @Builder() @Memo() public build(): void
   
   public constructor() {}
   

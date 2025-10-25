@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -56,7 +56,7 @@ function main() {}
 
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_providerVar1 = STATE_MGMT_FACTORY.makeProvider<string>(this, "providerVar1", "providerVar1", "propVar1");
     this.__backing_providerVar2 = STATE_MGMT_FACTORY.makeProvider<number>(this, "providerVar2", "providerVar2", 50);
     this.__backing_providerVar3 = STATE_MGMT_FACTORY.makeProvider<boolean>(this, "providerVar3", "providerVar3", true);
@@ -116,7 +116,7 @@ function main() {}
     this.__backing_providerVar5!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

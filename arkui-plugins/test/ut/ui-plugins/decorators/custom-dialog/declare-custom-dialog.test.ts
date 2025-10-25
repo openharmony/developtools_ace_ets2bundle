@@ -40,7 +40,7 @@ const parsedTransform: Plugins = {
 
 const expectedCheckedScript: string = `
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -56,7 +56,7 @@ function main() {}
   
   public hh: string;
   
-  @Builder() @memo() public build(): void
+  @Builder() @Memo() public build(): void
   
   public constructor() {}
   
@@ -65,11 +65,11 @@ function main() {}
 }
 
 @Component() final struct CustomDialogUserV1 extends CustomComponent<CustomDialogUserV1, __Options_CustomDialogUserV1> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUserV1 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUserV1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___51459619 = initializers;
     (((gensym___51459619) == (null)) ? undefined : gensym___51459619.dialogController)})) ?? (({let gensym___203542966: Any;
     gensym___203542966 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___203542966 as CustomDialogController));
@@ -93,18 +93,18 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 @ComponentV2() final struct CustomDialogUserV2 extends CustomComponentV2<CustomDialogUserV2, __Options_CustomDialogUserV2> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUserV2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUserV2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___176924847 = initializers;
     (((gensym___176924847) == (null)) ? undefined : gensym___176924847.dialogController)})) ?? (({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___46528967 as CustomDialogController));
@@ -128,7 +128,7 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

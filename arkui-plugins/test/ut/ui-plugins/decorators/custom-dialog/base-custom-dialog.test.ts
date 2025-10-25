@@ -49,7 +49,7 @@ import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -72,7 +72,7 @@ import hilog from "@ohos.hilog";
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -143,16 +143,16 @@ function main() {}
     this.__backing_hh!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("CustomDialog One", undefined).fontSize(30).height(100).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Close", undefined).onClick(((e: ClickEvent) => {
           if (((this.aaController) != (undefined))) {
             this.aaController!.close();
@@ -171,11 +171,11 @@ function main() {}
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___56650533 = initializers;
     (((gensym___56650533) == (null)) ? undefined : gensym___56650533.dialogController)})) ?? (({let gensym___249621102: Any;
     gensym___249621102 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___249621102 as CustomDialogController));
@@ -237,12 +237,12 @@ function main() {}
     console.info("Click the callback in the blank area");
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();
