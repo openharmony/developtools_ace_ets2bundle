@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderMethodNames, InteroperAbilityNames } from './predefines';
+import { BuilderMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecorator } from '../property-translators/utils';
@@ -222,7 +222,7 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * param.setProperty("b", param0);
  */
 function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[], keyName: string): void {
-    if (curParam !== InteroperAbilityNames.PARAM) {
+    if (curParam !== InteropInternalNames.PARAM) {
         const createParam = createEmptyESValue(curParam);
         result.push(createParam);
     }
@@ -273,7 +273,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
             result.push(getProxy);
         }
         const setParam = setPropertyESValue(
-            'param',
+            InteropInternalNames.PARAM,
             keyName,
             arkts.factory.createIdentifier(proxyName)
         );
@@ -292,10 +292,10 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     if (arkts.isObjectExpression(value)) {
-        processObjectLiteral(value, InteroperAbilityNames.PARAM, result, keyName);
+        processObjectLiteral(value, InteropInternalNames.PARAM, result, keyName);
     } else {
         const setProperty = setPropertyESValue(
-            InteroperAbilityNames.PARAM,
+            InteropInternalNames.PARAM,
             keyName,
             getWrapValue(value)
         );
@@ -336,7 +336,7 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
         [value]
     );
     const setProperty = setPropertyESValue(
-        InteroperAbilityNames.PARAM,
+        InteropInternalNames.PARAM,
         keyName,
         newValue
     );
