@@ -45,7 +45,7 @@ import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
@@ -60,7 +60,7 @@ import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogCon
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -83,11 +83,11 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {}));
+    }), @Memo() (() => {}));
   }
   
   public constructor() {}
@@ -118,13 +118,13 @@ class DialogControllerV3 extends DialogControllerV2 {
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___176924847 = initializers;
     (((gensym___176924847) == (null)) ? undefined : gensym___176924847.dialogController)})) ?? ((({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController(({
       gridCount: 4,
       showInSubWindow: true,
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._instantiateImpl(undefined, (() => {
           const instance = new CustomDialogExample();
           instance.__setDialogController__((gensym___46528967 as CustomDialogController));
@@ -148,12 +148,12 @@ class DialogControllerV3 extends DialogControllerV2 {
     this.__backing_dialogController = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();

@@ -42,7 +42,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -57,29 +57,29 @@ function main() {}
 
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @memo() public showTextBuilder() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public showTextBuilder() {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public showTextValueBuilder(@MemoSkip() param: string) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public showTextValueBuilder(@MemoSkip() param: string) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
     }));

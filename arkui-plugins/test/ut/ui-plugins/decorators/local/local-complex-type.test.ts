@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -131,7 +131,7 @@ final class StateType extends BaseEnum<int> {
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localVar1 = STATE_MGMT_FACTORY.makeLocal<Per>(this, "localVar1", new Per(6));
     this.__backing_localVar2 = STATE_MGMT_FACTORY.makeLocal<Array<number>>(this, "localVar2", new Array<number>(3, 6, 8));
     this.__backing_localVar3 = STATE_MGMT_FACTORY.makeLocal<StateType>(this, "localVar3", StateType.TYPE3);
@@ -257,7 +257,7 @@ final class StateType extends BaseEnum<int> {
     this.__backing_localVar12!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
