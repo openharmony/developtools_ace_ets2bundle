@@ -121,12 +121,17 @@ export function checkErrors() {
     if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         traceGlobal(() => `Terminated due to compilation errors occured`);
         console.log(unpackString(global.generatedEs2panda._GetAllErrorMessages(global.context)));
-        // global.es2panda._DestroyConfig(global.config)
         throw new Error("ArkTS compilation failed")
     }
 }
 
 export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativePointer, ignoreErrors = false): void {
+    if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        NodeCache.clear();
+        if (!ignoreErrors) {
+            checkErrors();
+        }
+    }
     if (state <= global.es2panda._ContextState(global.context)) {
         return;
     }
