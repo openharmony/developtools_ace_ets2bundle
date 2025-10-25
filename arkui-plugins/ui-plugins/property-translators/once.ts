@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentNames } from '../utils';
 import {
     createGetter,
     createSetter2,
@@ -25,6 +24,7 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
+    findCachedMemoMetadata,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -60,6 +60,12 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         field.range = this.property.range;
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -80,10 +86,6 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
     }
 
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const outInitialize: arkts.Expression = factory.createBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName
-        );
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             factory.generateInitializeValue(this.property, this.propertyType, originalName),
@@ -92,7 +94,13 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_PARAM_ONCE, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_PARAM_ONCE,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -126,7 +134,8 @@ export class OnceInterfaceTranslator<T extends InterfacePropertyTypes> extends I
      * @param method expecting getter with `@Once` and a setter with `@Once` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.ONCE);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.ONCE, metadata);
     }
 
     /**
