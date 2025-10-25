@@ -22,6 +22,7 @@ import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
 const INNER_COMPONENT_DIR_PATH: string = 'inner-component';
@@ -108,17 +109,7 @@ function main() {}
             return;
         }), @memo() (() => {}));
     }
-    constructor(useSharedStorage: (boolean | undefined)) {
-      this(useSharedStorage, undefined);
-    }
-    
-    constructor() {
-      this(undefined, undefined);
-    }
-    
-    public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-      super(useSharedStorage, storage);
-    }
+    ${dumpConstructor()}
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
@@ -150,8 +141,8 @@ function main() {}
 @memo() export function FakeComponentCImpl(style: @memo() ((instance: FakeComponentCAttribute)=> void), content?: @memo() (()=> void)): void
 
 interface FakeOptions {
-    set str(str: (string | undefined))
     get str(): (string | undefined)
+    set str(str: (string | undefined))
 }
 
 interface FakeComponentAAttribute {

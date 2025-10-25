@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -302,17 +303,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
@@ -350,99 +341,47 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @memo() public build() {}
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set statevar(statevar: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'stateOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_statevar', '(boolean | undefined)')}
 
-  get statevar(): (string | undefined)
-  @Watch({value:"stateOnChange"}) set __backing_statevar(__backing_statevar: (IStateDecoratedVariable<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propvar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propvar', '(boolean | undefined)')}
 
-  @Watch({value:"stateOnChange"}) get __backing_statevar(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_statevar(__options_has_statevar: (boolean | undefined))
-  
-  get __options_has_statevar(): (boolean | undefined)
-  set propvar(propvar: (string | undefined))
-  
-  get propvar(): (string | undefined)
-  @Watch({value:"propOnChange"}) set __backing_propvar(__backing_propvar: (IPropRefDecoratedVariable<string> | undefined))
-  
-  @Watch({value:"propOnChange"}) get __backing_propvar(): (IPropRefDecoratedVariable<string> | undefined)
-  set __options_has_propvar(__options_has_propvar: (boolean | undefined))
-  
-  get __options_has_propvar(): (boolean | undefined)
-  @__Link_intrinsic() set linkvar(linkvar: (string | undefined))
-  
-  @__Link_intrinsic() get linkvar(): (string | undefined)
-  @Watch({value:"linkOnChange"}) set __backing_linkvar(__backing_linkvar: (LinkSourceType<string> | undefined))
-  
-  @Watch({value:"linkOnChange"}) get __backing_linkvar(): (LinkSourceType<string> | undefined)
-  set __options_has_linkvar(__options_has_linkvar: (boolean | undefined))
-  
-  get __options_has_linkvar(): (boolean | undefined)
-  set storagelinkvar(storagelinkvar: (string | undefined))
-  
-  get storagelinkvar(): (string | undefined)
-  @Watch({value:"storageLinkOnChange"}) set __backing_storagelinkvar(__backing_storagelinkvar: (IStorageLinkDecoratedVariable<string> | undefined))
-  
-  @Watch({value:"storageLinkOnChange"}) get __backing_storagelinkvar(): (IStorageLinkDecoratedVariable<string> | undefined)
-  set __options_has_storagelinkvar(__options_has_storagelinkvar: (boolean | undefined))
-  
-  get __options_has_storagelinkvar(): (boolean | undefined)
-  set storagepropvar(storagepropvar: (string | undefined))
-  
-  get storagepropvar(): (string | undefined)
-  @Watch({value:"storagePropOnChange"}) set __backing_storagepropvar(__backing_storagepropvar: (IStoragePropRefDecoratedVariable<string> | undefined))
-  
-  @Watch({value:"storagePropOnChange"}) get __backing_storagepropvar(): (IStoragePropRefDecoratedVariable<string> | undefined)
-  set __options_has_storagepropvar(__options_has_storagepropvar: (boolean | undefined))
-  
-  get __options_has_storagepropvar(): (boolean | undefined)
-  set objectlinkvar(objectlinkvar: (A | undefined))
-  
-  get objectlinkvar(): (A | undefined)
-  @Watch({value:"objectLinkOnChange"}) set __backing_objectlinkvar(__backing_objectlinkvar: (IObjectLinkDecoratedVariable<A> | undefined))
-  
-  @Watch({value:"objectLinkOnChange"}) get __backing_objectlinkvar(): (IObjectLinkDecoratedVariable<A> | undefined)
-  set __options_has_objectlinkvar(__options_has_objectlinkvar: (boolean | undefined))
-  
-  get __options_has_objectlinkvar(): (boolean | undefined)
-  set providevar(providevar: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)', [dumpAnnotation('Watch', { value: 'linkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkvar', '(boolean | undefined)')}
 
-  get providevar(): (string | undefined)
-  @Watch({value:"ProvideOnChange"}) set __backing_providevar(__backing_providevar: (IProvideDecoratedVariable<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagelinkvar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagelinkvar', '(IStorageLinkDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storageLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagelinkvar', '(boolean | undefined)')}
 
-  @Watch({value:"ProvideOnChange"}) get __backing_providevar(): (IProvideDecoratedVariable<string> | undefined)
-  set __options_has_providevar(__options_has_providevar: (boolean | undefined))
-  
-  get __options_has_providevar(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagepropvar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagepropvar', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)', [dumpAnnotation('Watch', { value: 'objectLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  set providevar(providevar: (string | undefined))
-
-  get providevar(): (string | undefined)
-  @Watch({value:"ConsumeOnChange"}) set __backing_providevar(__backing_providevar: (IConsumeDecoratedVariable<string> | undefined))
-
-  @Watch({value:"ConsumeOnChange"}) get __backing_providevar(): (IConsumeDecoratedVariable<string> | undefined)
-  set __options_has_providevar(__options_has_providevar: (boolean | undefined))
-  
-  get __options_has_providevar(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
 

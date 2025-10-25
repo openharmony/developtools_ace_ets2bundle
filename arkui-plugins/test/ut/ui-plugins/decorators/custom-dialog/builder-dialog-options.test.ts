@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -97,14 +98,18 @@ import hilog from "@ohos.hilog";
 }
 
 @Component() export interface __Options_CustomDialogUser {
+  ${ignoreNewLines(`
   dialogController?: (CustomDialogController | null);
   __options_has_dialogController?: boolean;
+  `)}
   
 }
 
 @Component() export interface __Options_CustomDialogUser2 {
+  ${ignoreNewLines(`
   dialogController?: (CustomDialogController | null);
   __options_has_dialogController?: boolean;
+  `)}
   
 }
 `;
@@ -183,17 +188,7 @@ function main() {}
     }), @memo() (() => {}));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
@@ -238,37 +233,19 @@ function main() {}
     }), @memo() (() => {}));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_CustomDialogUser {
-  set dialogController(dialogController: ((CustomDialogController | null) | undefined))
-
-  get dialogController(): ((CustomDialogController | null) | undefined)
-  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
-  
-  get __options_has_dialogController(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_CustomDialogUser2 {
-  set dialogController(dialogController: ((CustomDialogController | null) | undefined))
-
-  get dialogController(): ((CustomDialogController | null) | undefined)
-  set __options_has_dialogController(__options_has_dialogController: (boolean | undefined))
-  
-  get __options_has_dialogController(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 `;

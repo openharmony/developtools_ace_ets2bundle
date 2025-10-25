@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -139,66 +140,30 @@ function main() {}
 
   @memo() public build() {}
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_Parent {
-  set stateVar1(stateVar1: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
 
-  get stateVar1(): (string | undefined)
-  set __backing_stateVar1(__backing_stateVar1: (IStateDecoratedVariable<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IStateDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
-  get __backing_stateVar1(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_stateVar1(__options_has_stateVar1: (boolean | undefined))
-  
-  get __options_has_stateVar1(): (boolean | undefined)
-  set stateVar2(stateVar2: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IStateDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
-  get stateVar2(): (number | undefined)
-  set __backing_stateVar2(__backing_stateVar2: (IStateDecoratedVariable<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IStateDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  get __backing_stateVar2(): (IStateDecoratedVariable<number> | undefined)
-  set __options_has_stateVar2(__options_has_stateVar2: (boolean | undefined))
-  
-  get __options_has_stateVar2(): (boolean | undefined)
-  set stateVar3(stateVar3: (boolean | undefined))
-
-  get stateVar3(): (boolean | undefined)
-  set __backing_stateVar3(__backing_stateVar3: (IStateDecoratedVariable<boolean> | undefined))
-
-  get __backing_stateVar3(): (IStateDecoratedVariable<boolean> | undefined)
-  set __options_has_stateVar3(__options_has_stateVar3: (boolean | undefined))
-  
-  get __options_has_stateVar3(): (boolean | undefined)
-  set stateVar4(stateVar4: (undefined | undefined))
-
-  get stateVar4(): (undefined | undefined)
-  set __backing_stateVar4(__backing_stateVar4: (IStateDecoratedVariable<undefined> | undefined))
-
-  get __backing_stateVar4(): (IStateDecoratedVariable<undefined> | undefined)
-  set __options_has_stateVar4(__options_has_stateVar4: (boolean | undefined))
-  
-  get __options_has_stateVar4(): (boolean | undefined)
-  set stateVar5(stateVar5: (null | undefined))
-
-  get stateVar5(): (null | undefined)
-  set __backing_stateVar5(__backing_stateVar5: (IStateDecoratedVariable<null> | undefined))
-
-  get __backing_stateVar5(): (IStateDecoratedVariable<null> | undefined)
-  set __options_has_stateVar5(__options_has_stateVar5: (boolean | undefined))
-  
-  get __options_has_stateVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(IStateDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
   
 }
 `;

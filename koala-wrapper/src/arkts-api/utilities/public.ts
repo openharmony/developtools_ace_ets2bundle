@@ -43,15 +43,16 @@ import { clearNodeCache } from '../class-by-peer';
 import { SourcePosition } from '../peers/SourcePosition';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
+import { Debugger } from "./debugger";
 
 export function proceedToState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
-    console.log('[TS WRAPPER] PROCEED TO STATE: ', getEnumName(Es2pandaContextState, state));
+    Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] PROCEED TO STATE: ${getEnumName(Es2pandaContextState, state)}`);
     if (global.es2panda._ContextState(context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         clearNodeCache();
         processErrorState(state, context, forceDtsEmit);
     }
     if (state <= global.es2panda._ContextState(context)) {
-        console.log('[TS WRAPPER] PROCEED TO STATE: SKIPPING');
+        Debugger.getInstance().phasesDebugLog(`[TS WRAPPER] PROCEED TO STATE: SKIPPING`);
         return;
     }
     clearNodeCache();

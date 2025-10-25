@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { GetSetDumper, dumpGetterSetter, dumpAnnotation, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -149,17 +150,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
@@ -229,45 +220,23 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_DateComponent {
-  @__Link_intrinsic() set selectedDate(selectedDate: (Date | undefined))
-
-  @__Link_intrinsic() get selectedDate(): (Date | undefined)
-  set __backing_selectedDate(__backing_selectedDate: (LinkSourceType<Date> | undefined))
-
-  get __backing_selectedDate(): (LinkSourceType<Date> | undefined)
-  set __options_has_selectedDate(__options_has_selectedDate: (boolean | undefined))
-  
-  get __options_has_selectedDate(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
-  set parentSelectedDate(parentSelectedDate: (Date | undefined))
-
-  get parentSelectedDate(): (Date | undefined)
-  set __backing_parentSelectedDate(__backing_parentSelectedDate: (IStateDecoratedVariable<Date> | undefined))
-
-  get __backing_parentSelectedDate(): (IStateDecoratedVariable<Date> | undefined)
-  set __options_has_parentSelectedDate(__options_has_parentSelectedDate: (boolean | undefined))
-  
-  get __options_has_parentSelectedDate(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}
   
 }
 

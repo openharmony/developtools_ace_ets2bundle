@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -123,17 +124,7 @@ class Per {
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
@@ -173,43 +164,21 @@ class Per {
     }), undefined);
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
 @Component() export interface __Options_Parent {
-  set parentVar1(parentVar1: (Per | undefined))
-
-  get parentVar1(): (Per | undefined)
-  set __backing_parentVar1(__backing_parentVar1: (IStateDecoratedVariable<Per> | undefined))
-
-  get __backing_parentVar1(): (IStateDecoratedVariable<Per> | undefined)
-  set __options_has_parentVar1(__options_has_parentVar1: (boolean | undefined))
-  
-  get __options_has_parentVar1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentVar1', '(IStateDecoratedVariable<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentVar1', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  set childVar1(childVar1: (Per | undefined))
-
-  get childVar1(): (Per | undefined)
-  set __backing_childVar1(__backing_childVar1: (IStateDecoratedVariable<Per> | undefined))
-
-  get __backing_childVar1(): (IStateDecoratedVariable<Per> | undefined)
-  set __options_has_childVar1(__options_has_childVar1: (boolean | undefined))
-  
-  get __options_has_childVar1(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childVar1', '(IStateDecoratedVariable<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childVar1', '(boolean | undefined)')}
   
 }
 `;

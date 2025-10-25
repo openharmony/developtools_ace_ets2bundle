@@ -80,6 +80,7 @@ export * from './types';
 export * from './utilities/private';
 export * from './utilities/public';
 export * from './utilities/performance';
+export * from './utilities/debugger';
 export * from './utilities/nodeCache';
 export * from './factory/nodeFactory';
 export * from './factory/nodeTests';

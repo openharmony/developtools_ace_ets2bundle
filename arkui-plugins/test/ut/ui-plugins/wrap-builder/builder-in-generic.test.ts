@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -119,23 +120,12 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
       }));
     }));
   }
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  constructor() {
-    this(undefined, undefined);
-  }
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
-    set __options_has_message(__options_has_message: (boolean | undefined))
-    get __options_has_message(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
@@ -319,25 +309,12 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }
     }
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    set message(message: (string | undefined))
-    get message(): (string | undefined)
-    set __backing_message(__backing_message: (IStateDecoratedVariable<string> | undefined))
-    get __backing_message(): (IStateDecoratedVariable<string> | undefined)
-    set __options_has_message(__options_has_message: (boolean | undefined))
-    get __options_has_message(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {

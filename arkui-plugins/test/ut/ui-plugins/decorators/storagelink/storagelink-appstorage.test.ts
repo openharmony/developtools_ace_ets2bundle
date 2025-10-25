@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -135,39 +136,18 @@ class Data {
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  set storageLink(storageLink: (number | undefined))
-  
-  get storageLink(): (number | undefined)
-  set __backing_storageLink(__backing_storageLink: (IStorageLinkDecoratedVariable<number> | undefined))
-  
-  get __backing_storageLink(): (IStorageLinkDecoratedVariable<number> | undefined)
-  set __options_has_storageLink(__options_has_storageLink: (boolean | undefined))
-  
-  get __options_has_storageLink(): (boolean | undefined)
-  set storageLinkObject(storageLinkObject: (Data | undefined))
-  
-  get storageLinkObject(): (Data | undefined)
-  set __backing_storageLinkObject(__backing_storageLinkObject: (IStorageLinkDecoratedVariable<Data> | undefined))
-  
-  get __backing_storageLinkObject(): (IStorageLinkDecoratedVariable<Data> | undefined)
-  set __options_has_storageLinkObject(__options_has_storageLinkObject: (boolean | undefined))
-  
-  get __options_has_storageLinkObject(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLinkObject', '(IStorageLinkDecoratedVariable<Data> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLinkObject', '(boolean | undefined)')}
   
 }
 

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -151,17 +152,7 @@ function main() {}
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
@@ -207,44 +198,20 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 }
 
 @CustomDialog() export interface __Options_CustomDialogExample {
-  set aaController(aaController: ((CustomDialogController | undefined) | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
 
-  get aaController(): ((CustomDialogController | undefined) | undefined)
-  set __options_has_aaController(__options_has_aaController: (boolean | undefined))
-  
-  get __options_has_aaController(): (boolean | undefined)
-  set text(text: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)')}
 
-  get text(): (string | undefined)
-  set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined))
-
-  get __backing_text(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_text(__options_has_text: (boolean | undefined))
-  
-  get __options_has_text(): (boolean | undefined)
-  set hh(hh: (string | undefined))
-
-  get hh(): (string | undefined)
-  set __backing_hh(__backing_hh: (IStateDecoratedVariable<string> | undefined))
-
-  get __backing_hh(): (IStateDecoratedVariable<string> | undefined)
-  set __options_has_hh(__options_has_hh: (boolean | undefined))
-  
-  get __options_has_hh(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_hh', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)')}
   
 }
 

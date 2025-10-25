@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -102,6 +103,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 }
 
 @ComponentV2() export interface __Options_Child {
+  ${ignoreNewLines(`
   index?: number;
   @Param() __backing_index?: number;
   __options_has_index?: boolean;
@@ -111,14 +113,17 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
   __options_has_testEvent?: boolean;
   testEvent2?: ((val: number)=> number);
   __options_has_testEvent2?: boolean;
+  `)}
   
 }
 
 @ComponentV2() export interface __Options_Index {
+  ${ignoreNewLines(`
   index?: number;
   @Local() __backing_index?: number;
   __options_has_index?: boolean;
-  
+  `)}
+
 }
 `;
 
@@ -295,46 +300,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Child {
-  set index(index: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IParamDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
 
-  get index(): (number | undefined)
-  set __backing_index(__backing_index: (IParamDecoratedVariable<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'changeIndex', '(((val: number)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_changeIndex', '(boolean | undefined)')}
 
-  get __backing_index(): (IParamDecoratedVariable<number> | undefined)
-  set __options_has_index(__options_has_index: (boolean | undefined))
-  
-  get __options_has_index(): (boolean | undefined)
-  set changeIndex(changeIndex: (((val: number)=> void) | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent', '(((val: number)=> number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent', '(boolean | undefined)')}
 
-  get changeIndex(): (((val: number)=> void) | undefined)
-  set __options_has_changeIndex(__options_has_changeIndex: (boolean | undefined))
-  
-  get __options_has_changeIndex(): (boolean | undefined)
-  set testEvent(testEvent: (((val: number)=> number) | undefined))
-
-  get testEvent(): (((val: number)=> number) | undefined)
-  set __options_has_testEvent(__options_has_testEvent: (boolean | undefined))
-  
-  get __options_has_testEvent(): (boolean | undefined)
-  set testEvent2(testEvent2: (((val: number)=> number) | undefined))
-
-  get testEvent2(): (((val: number)=> number) | undefined)
-  set __options_has_testEvent2(__options_has_testEvent2: (boolean | undefined))
-  
-  get __options_has_testEvent2(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent2', '(((val: number)=> number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent2', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Index {
-  set index(index: (number | undefined))
-
-  get index(): (number | undefined)
-  set __backing_index(__backing_index: (ILocalDecoratedVariable<number> | undefined))
-
-  get __backing_index(): (ILocalDecoratedVariable<number> | undefined)
-  set __options_has_index(__options_has_index: (boolean | undefined))
-  
-  get __options_has_index(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(ILocalDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
   
 }
 `;

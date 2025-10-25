@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -96,22 +97,26 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 }
 
 @Component() export interface __Options_Child {
+  ${ignoreNewLines(`
   num?: number;
   @Consume() __backing_num?: number;
   __options_has_num?: boolean;
   str?: string;
   @Consume({value:"ss"}) __backing_str?: string;
   __options_has_str?: boolean;
+  `)}
   
 }
 
 @Component() export interface __Options_Parent {
+  ${ignoreNewLines(`
   num?: number;
   @Provide({alias:"num"}) __backing_num?: number;
   __options_has_num?: boolean;
   str?: string;
   @Provide({alias:"ss"}) __backing_str?: string;
   __options_has_str?: boolean;
+  `)}
   
 }
 `;
@@ -204,17 +209,7 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
@@ -279,61 +274,29 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_Child {
-  set num(num: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IConsumeDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  get num(): (number | undefined)
-  set __backing_num(__backing_num: (IConsumeDecoratedVariable<number> | undefined))
-
-  get __backing_num(): (IConsumeDecoratedVariable<number> | undefined)
-  set __options_has_num(__options_has_num: (boolean | undefined))
-  
-  get __options_has_num(): (boolean | undefined)
-  set str(str: (string | undefined))
-
-  get str(): (string | undefined)
-  set __backing_str(__backing_str: (IConsumeDecoratedVariable<string> | undefined))
-
-  get __backing_str(): (IConsumeDecoratedVariable<string> | undefined)
-  set __options_has_str(__options_has_str: (boolean | undefined))
-  
-  get __options_has_str(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IConsumeDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Parent {
-  set num(num: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IProvideDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  get num(): (number | undefined)
-  set __backing_num(__backing_num: (IProvideDecoratedVariable<number> | undefined))
-
-  get __backing_num(): (IProvideDecoratedVariable<number> | undefined)
-  set __options_has_num(__options_has_num: (boolean | undefined))
-  
-  get __options_has_num(): (boolean | undefined)
-  set str(str: (string | undefined))
-
-  get str(): (string | undefined)
-  set __backing_str(__backing_str: (IProvideDecoratedVariable<string> | undefined))
-
-  get __backing_str(): (IProvideDecoratedVariable<string> | undefined)
-  set __options_has_str(__options_has_str: (boolean | undefined))
-  
-  get __options_has_str(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IProvideDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
   
 }
 `;
