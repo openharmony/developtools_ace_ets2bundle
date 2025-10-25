@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -26,6 +25,7 @@ import {
     generateGetOrSetCall,
     hasDecorator,
     collectStateManagementTypeImport,
+    findCachedMemoMetadata,
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -65,6 +65,12 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         field.range = this.property.range;
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
         return [field, getter, setter];
     }
 
@@ -94,7 +100,13 @@ export class StateTranslator extends PropertyTranslator implements InitializerCo
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_STATE, this.propertyType, args, true)
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_STATE,
+                this.propertyType?.clone(),
+                args,
+                true,
+                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
+            )
         );
         return arkts.factory.createExpressionStatement(assign);
     }
@@ -128,7 +140,8 @@ export class StateInterfaceTranslator<T extends InterfacePropertyTypes> extends 
      * @param method expecting getter with `@State` and a setter with `@State` in the overloads.
      */
     private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STATE);
+        const metadata = findCachedMemoMetadata(method);
+        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.STATE, metadata);
     }
 
     /**
