@@ -16,8 +16,11 @@
 import { KNativePointer } from '@koalaui/interop';
 import { AstNode } from './peers/AstNode';
 
+type NodeCacheClearHook = () => void
+
 export class NodeCache {
     private static cache = new Map<KNativePointer, AstNode>();
+    private static onClearHooks: NodeCacheClearHook[] = []
 
     static cached<T extends AstNode>(pointer: KNativePointer, factory: (pointer: KNativePointer) => AstNode): T {
         const cached = NodeCache.cache.get(pointer);
@@ -37,7 +40,14 @@ export class NodeCache {
         NodeCache.cache.set(pointer, node);
     }
 
+    public static addOnClearHook(hook: NodeCacheClearHook) {
+        NodeCache.onClearHooks.push(hook)
+    }
+
     public static clear(): void {
         NodeCache.cache.clear();
+        for (const hook of NodeCache.onClearHooks) {
+            hook()
+        }
     }
 }
