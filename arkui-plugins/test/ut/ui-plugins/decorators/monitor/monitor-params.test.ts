@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -334,33 +335,17 @@ class GGG {
 }
 
 @ComponentV2() export interface __Options_Index {
-  set per(per: (EEE | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}
 
-  get per(): (EEE | undefined)
-  set __backing_per(__backing_per: (ILocalDecoratedVariable<EEE> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'v1', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_v1', '(ILocalDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_v1', '(boolean | undefined)')}
 
-  get __backing_per(): (ILocalDecoratedVariable<EEE> | undefined)
-  set __options_has_per(__options_has_per: (boolean | undefined))
-  
-  get __options_has_per(): (boolean | undefined)
-  set v1(v1: (boolean | undefined))
-
-  get v1(): (boolean | undefined)
-  set __backing_v1(__backing_v1: (ILocalDecoratedVariable<boolean> | undefined))
-
-  get __backing_v1(): (ILocalDecoratedVariable<boolean> | undefined)
-  set __options_has_v1(__options_has_v1: (boolean | undefined))
-  
-  get __options_has_v1(): (boolean | undefined)
-  set numArr(numArr: (Array<string> | undefined))
-
-  get numArr(): (Array<string> | undefined)
-  set __backing_numArr(__backing_numArr: (ILocalDecoratedVariable<Array<string>> | undefined))
-
-  get __backing_numArr(): (ILocalDecoratedVariable<Array<string>> | undefined)
-  set __options_has_numArr(__options_has_numArr: (boolean | undefined))
-  
-  get __options_has_numArr(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numArr', '(Array<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numArr', '(ILocalDecoratedVariable<Array<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numArr', '(boolean | undefined)')}
   
 }
 `;

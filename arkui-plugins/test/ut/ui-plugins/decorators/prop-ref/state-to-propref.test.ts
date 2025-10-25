@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -155,17 +156,7 @@ function main() {}
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
@@ -233,49 +224,24 @@ function main() {}
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_CountDownComponent {
-  set count(count: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IPropRefDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
 
-  get count(): (number | undefined)
-  set __backing_count(__backing_count: (IPropRefDecoratedVariable<number> | undefined))
-
-  get __backing_count(): (IPropRefDecoratedVariable<number> | undefined)
-  set __options_has_count(__options_has_count: (boolean | undefined))
-  
-  get __options_has_count(): (boolean | undefined)
-  set costOfOneAttempt(costOfOneAttempt: (number | undefined))
-
-  get costOfOneAttempt(): (number | undefined)
-  set __options_has_costOfOneAttempt(__options_has_costOfOneAttempt: (boolean | undefined))
-  
-  get __options_has_costOfOneAttempt(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'costOfOneAttempt', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_costOfOneAttempt', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_ParentComponent {
-  set countDownStartValue(countDownStartValue: (number | undefined))
-
-  get countDownStartValue(): (number | undefined)
-  set __backing_countDownStartValue(__backing_countDownStartValue: (IStateDecoratedVariable<number> | undefined))
-
-  get __backing_countDownStartValue(): (IStateDecoratedVariable<number> | undefined)
-  set __options_has_countDownStartValue(__options_has_countDownStartValue: (boolean | undefined))
-  
-  get __options_has_countDownStartValue(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_countDownStartValue', '(IStateDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_countDownStartValue', '(boolean | undefined)')}
   
 }
 `;

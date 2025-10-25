@@ -21,8 +21,10 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda/condition-scope';
 
@@ -181,27 +183,13 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_SwitchCase {
-  set num(num: (int | undefined))
-
-  get num(): (int | undefined)
-  set __options_has_num(__options_has_num: (boolean | undefined))
-  
-  get __options_has_num(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(int | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
   
 }
 `;
@@ -530,27 +518,13 @@ function main() {}
     }
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_SwitchCase {
-  set num(num: (int | undefined))
-
-  get num(): (int | undefined)
-  set __options_has_num(__options_has_num: (boolean | undefined))
-  
-  get __options_has_num(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(int | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
   
 }
 `;

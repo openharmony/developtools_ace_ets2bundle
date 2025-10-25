@@ -38,7 +38,7 @@ export function unmemoizeTransform(): Plugins {
 }
 
 function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    console.log('[MEMO PLUGIN] AFTER CHECKED ENTER');
+    arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
@@ -80,10 +80,10 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Recheck');
         arkts.Performance.getInstance().stopMemRecord('Node:ArkTS:Recheck');
         arkts.Performance.getInstance().memoryTrackerPrintCurrent('UIPlugin:End');
-        console.log('[MEMO PLUGIN] AFTER CHECKED EXIT');
+        arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
-    console.log('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    arkts.Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
     return undefined;
 }
 

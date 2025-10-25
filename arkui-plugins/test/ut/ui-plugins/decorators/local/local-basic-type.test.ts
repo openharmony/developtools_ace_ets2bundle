@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -138,51 +139,25 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set localVar1(localVar1: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}
 
-  get localVar1(): (string | undefined)
-  set __backing_localVar1(__backing_localVar1: (ILocalDecoratedVariable<string> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar2', '(ILocalDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar2', '(boolean | undefined)')}
 
-  get __backing_localVar1(): (ILocalDecoratedVariable<string> | undefined)
-  set __options_has_localVar1(__options_has_localVar1: (boolean | undefined))
-  
-  get __options_has_localVar1(): (boolean | undefined)
-  set localVar2(localVar2: (number | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar3', '(ILocalDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar3', '(boolean | undefined)')}
 
-  get localVar2(): (number | undefined)
-  set __backing_localVar2(__backing_localVar2: (ILocalDecoratedVariable<number> | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar4', '(ILocalDecoratedVariable<undefined> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar4', '(boolean | undefined)')}
 
-  get __backing_localVar2(): (ILocalDecoratedVariable<number> | undefined)
-  set __options_has_localVar2(__options_has_localVar2: (boolean | undefined))
-  
-  get __options_has_localVar2(): (boolean | undefined)
-  set localVar3(localVar3: (boolean | undefined))
-
-  get localVar3(): (boolean | undefined)
-  set __backing_localVar3(__backing_localVar3: (ILocalDecoratedVariable<boolean> | undefined))
-
-  get __backing_localVar3(): (ILocalDecoratedVariable<boolean> | undefined)
-  set __options_has_localVar3(__options_has_localVar3: (boolean | undefined))
-  
-  get __options_has_localVar3(): (boolean | undefined)
-  set localVar4(localVar4: (undefined | undefined))
-
-  get localVar4(): (undefined | undefined)
-  set __backing_localVar4(__backing_localVar4: (ILocalDecoratedVariable<undefined> | undefined))
-
-  get __backing_localVar4(): (ILocalDecoratedVariable<undefined> | undefined)
-  set __options_has_localVar4(__options_has_localVar4: (boolean | undefined))
-  
-  get __options_has_localVar4(): (boolean | undefined)
-  set localVar5(localVar5: (null | undefined))
-
-  get localVar5(): (null | undefined)
-  set __backing_localVar5(__backing_localVar5: (ILocalDecoratedVariable<null> | undefined))
-
-  get __backing_localVar5(): (ILocalDecoratedVariable<null> | undefined)
-  set __options_has_localVar5(__options_has_localVar5: (boolean | undefined))
-  
-  get __options_has_localVar5(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar5', '(ILocalDecoratedVariable<null> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar5', '(boolean | undefined)')}
   
 }
 `;

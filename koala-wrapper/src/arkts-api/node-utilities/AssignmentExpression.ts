@@ -16,8 +16,8 @@
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { AssignmentExpression } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
 import { Es2pandaTokenType } from '../../generated/Es2pandaEnums';
+import { Expression } from "../../generated/peers/Expression";
 
 export function updateAssignmentExpression(
     original: AssignmentExpression,
@@ -33,6 +33,8 @@ export function updateAssignmentExpression(
         return original;
     }
 
-    const update = updateThenAttach(AssignmentExpression.update, attachModifiers);
-    return update(original, left, assignmentOperator, right);
+    original.setOperatorType(assignmentOperator);
+    original.setLeft(left as Expression);
+    original.setRight(right as Expression);
+    return original;
 }

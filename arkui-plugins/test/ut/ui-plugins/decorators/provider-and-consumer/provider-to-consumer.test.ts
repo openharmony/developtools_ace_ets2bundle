@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -284,25 +285,17 @@ function main() {}
 }
 
 @ComponentV2() export interface __Options_Parent {
-  set users(users: (Array<User> | undefined))
-  
-  get users(): (Array<User> | undefined)
-  set __backing_users(__backing_users: (IProviderDecoratedVariable<Array<User>> | undefined))
-  
-  get __backing_users(): (IProviderDecoratedVariable<Array<User>> | undefined)
-  set __options_has_users(__options_has_users: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
   get __options_has_users(): (boolean | undefined)
 }
 
 @ComponentV2() export interface __Options_Child {
-  set users(users: (Array<User> | undefined))
-  
-  get users(): (Array<User> | undefined)
-  set __backing_users(__backing_users: (IConsumerDecoratedVariable<Array<User>> | undefined))
-  
-  get __backing_users(): (IConsumerDecoratedVariable<Array<User>> | undefined)
-  set __options_has_users(__options_has_users: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
   get __options_has_users(): (boolean | undefined)
 }

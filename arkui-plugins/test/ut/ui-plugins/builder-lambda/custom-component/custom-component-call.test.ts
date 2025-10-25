@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -99,8 +100,10 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 }
 
 @Component() export interface __Options_CustomContainer {
+  ${ignoreNewLines(`
   @BuilderParam() closer?: (()=> void);
   __options_has_closer?: boolean;
+  `)}
   
 }
 
@@ -172,17 +175,7 @@ function main() {}
 
   @memo() public build() {}
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
@@ -243,27 +236,13 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_CustomContainer {
-  set closer(closer: (@memo() (()=> void) | undefined))
-
-  get closer(): (@memo() (()=> void) | undefined)
-  set __options_has_closer(__options_has_closer: (boolean | undefined))
-  
-  get __options_has_closer(): (boolean | undefined)
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@memo() (()=> void) | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
   
 }
 

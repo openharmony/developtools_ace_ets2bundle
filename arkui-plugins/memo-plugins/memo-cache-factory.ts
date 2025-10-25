@@ -215,7 +215,7 @@ export class RewriteFactory {
         const _hasMemoIntrinsic = !!metadata?.hasMemoIntrinsic;
         const _internalsTransformer = metadata?.internalsTransformer;
         const _isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const newParams: readonly arkts.Expression[] = prepareRewriteScriptFunctionParameters(
+        const newParams = prepareRewriteScriptFunctionParameters(
             node,
             _isSetter,
             _isGetter,
@@ -251,7 +251,7 @@ export class RewriteFactory {
     static rewriteMethodDefinition(node: arkts.MethodDefinition, metadata?: CachedMetadata): arkts.MethodDefinition {
         const isSetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
         const isGetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
-        return arkts.factory.updateMethodDefinition(
+        const newNode = arkts.factory.updateMethodDefinition(
             node,
             node.kind,
             node.name,
@@ -264,6 +264,10 @@ export class RewriteFactory {
             node.modifiers,
             false
         );
+        if (node.overloads.length > 0) {
+            newNode.setOverloads(node.overloads.map((o) => RewriteFactory.rewriteMethodDefinition(o, metadata)));
+        }
+        return newNode;
     }
 
     static rewriteCallExpression(node: arkts.CallExpression, metadata?: CachedMetadata): arkts.CallExpression {

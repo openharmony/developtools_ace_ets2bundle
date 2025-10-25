@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -68,6 +69,7 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 }
 
 @Component() export declare interface __Options_SwipeRefresher {
+  ${ignoreNewLines(`
   content?: (ResourceStr | undefined);
   @PropRef() __backing_content?: (ResourceStr | undefined);
   __options_has_content?: boolean;
@@ -77,6 +79,7 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
   code?: number;
   @State() __backing_code?: number;
   __options_has_code?: boolean;
+  `)}
   
 }
 `;
@@ -132,33 +135,17 @@ function main() {}
 }
 
 @Component() export declare interface __Options_SwipeRefresher {
-  set content(content: ((ResourceStr | undefined) | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)')}
 
-  get content(): ((ResourceStr | undefined) | undefined)
-  set __backing_content(__backing_content: (IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined))
-  
-  get __backing_content(): (IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)
-  set __options_has_content(__options_has_content: (boolean | undefined))
-  
-  get __options_has_content(): (boolean | undefined)
-  set isLoading(isLoading: (boolean | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isLoading', '(IPropRefDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isLoading', '(boolean | undefined)')}
 
-  get isLoading(): (boolean | undefined)
-  set __backing_isLoading(__backing_isLoading: (IPropRefDecoratedVariable<boolean> | undefined))
-  
-  get __backing_isLoading(): (IPropRefDecoratedVariable<boolean> | undefined)
-  set __options_has_isLoading(__options_has_isLoading: (boolean | undefined))
-  
-  get __options_has_isLoading(): (boolean | undefined)
-  set code(code: (number | undefined))
-
-  get code(): (number | undefined)
-  set __backing_code(__backing_code: (IStateDecoratedVariable<number> | undefined))
-
-  get __backing_code(): (IStateDecoratedVariable<number> | undefined)
-  set __options_has_code(__options_has_code: (boolean | undefined))
-  
-  get __options_has_code(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'code', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_code', '(IStateDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_code', '(boolean | undefined)')}
   
 }
 `;

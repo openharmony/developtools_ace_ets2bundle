@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -241,17 +242,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
@@ -315,49 +306,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_Child {
-  set label(label: (string | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
-  get label(): (string | undefined)
-  set __options_has_label(__options_has_label: (boolean | undefined))
-  
-  get __options_has_label(): (boolean | undefined)
-  set data(data: (DateClass | undefined))
-
-  get data(): (DateClass | undefined)
-  set __backing_data(__backing_data: (IObjectLinkDecoratedVariable<DateClass> | undefined))
-
-  get __backing_data(): (IObjectLinkDecoratedVariable<DateClass> | undefined)
-  set __options_has_data(__options_has_data: (boolean | undefined))
-  
-  get __options_has_data(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', '(DateClass | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_data', '(IObjectLinkDecoratedVariable<DateClass> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_data', '(boolean | undefined)')}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
-  set newData(newData: (NewDate | undefined))
-
-  get newData(): (NewDate | undefined)
-  set __backing_newData(__backing_newData: (IStateDecoratedVariable<NewDate> | undefined))
-
-  get __backing_newData(): (IStateDecoratedVariable<NewDate> | undefined)
-  set __options_has_newData(__options_has_newData: (boolean | undefined))
-  
-  get __options_has_newData(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}
   
 }
 

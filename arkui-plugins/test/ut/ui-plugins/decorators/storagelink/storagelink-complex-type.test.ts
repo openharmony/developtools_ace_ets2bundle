@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -233,84 +234,38 @@ final class Status extends BaseEnum<int> {
   
   @memo() public build() {}
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  set arrayA(arrayA: (Array<number> | undefined))
-  
-  get arrayA(): (Array<number> | undefined)
-  set __backing_arrayA(__backing_arrayA: (IStorageLinkDecoratedVariable<Array<number>> | undefined))
-  
-  get __backing_arrayA(): (IStorageLinkDecoratedVariable<Array<number>> | undefined)
-  set __options_has_arrayA(__options_has_arrayA: (boolean | undefined))
-  
-  get __options_has_arrayA(): (boolean | undefined)
-  set objectA(objectA: (Object | undefined))
-  
-  get objectA(): (Object | undefined)
-  set __backing_objectA(__backing_objectA: (IStorageLinkDecoratedVariable<Object> | undefined))
-  
-  get __backing_objectA(): (IStorageLinkDecoratedVariable<Object> | undefined)
-  set __options_has_objectA(__options_has_objectA: (boolean | undefined))
-  
-  get __options_has_objectA(): (boolean | undefined)
-  set dateA(dateA: (Date | undefined))
-  
-  get dateA(): (Date | undefined)
-  set __backing_dateA(__backing_dateA: (IStorageLinkDecoratedVariable<Date> | undefined))
-  
-  get __backing_dateA(): (IStorageLinkDecoratedVariable<Date> | undefined)
-  set __options_has_dateA(__options_has_dateA: (boolean | undefined))
-  
-  get __options_has_dateA(): (boolean | undefined)
-  set setA(setA: (Set<number> | undefined))
-  
-  get setA(): (Set<number> | undefined)
-  set __backing_setA(__backing_setA: (IStorageLinkDecoratedVariable<Set<number>> | undefined))
-  
-  get __backing_setA(): (IStorageLinkDecoratedVariable<Set<number>> | undefined)
-  set __options_has_setA(__options_has_setA: (boolean | undefined))
-  
-  get __options_has_setA(): (boolean | undefined)
-  set mapA(mapA: (Map<number, string> | undefined))
-  
-  get mapA(): (Map<number, string> | undefined)
-  set __backing_mapA(__backing_mapA: (IStorageLinkDecoratedVariable<Map<number, string>> | undefined))
-  
-  get __backing_mapA(): (IStorageLinkDecoratedVariable<Map<number, string>> | undefined)
-  set __options_has_mapA(__options_has_mapA: (boolean | undefined))
-  
-  get __options_has_mapA(): (boolean | undefined)
-  set classA(classA: (Person | undefined))
-  
-  get classA(): (Person | undefined)
-  set __backing_classA(__backing_classA: (IStorageLinkDecoratedVariable<Person> | undefined))
-  
-  get __backing_classA(): (IStorageLinkDecoratedVariable<Person> | undefined)
-  set __options_has_classA(__options_has_classA: (boolean | undefined))
-  
-  get __options_has_classA(): (boolean | undefined)
-  set enumA(enumA: (Status | undefined))
-  
-  get enumA(): (Status | undefined)
-  set __backing_enumA(__backing_enumA: (IStorageLinkDecoratedVariable<Status> | undefined))
-  
-  get __backing_enumA(): (IStorageLinkDecoratedVariable<Status> | undefined)
-  set __options_has_enumA(__options_has_enumA: (boolean | undefined))
-  
-  get __options_has_enumA(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayA', '(IStorageLinkDecoratedVariable<Array<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectA', '(Object | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectA', '(IStorageLinkDecoratedVariable<Object> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateA', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateA', '(IStorageLinkDecoratedVariable<Date> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'setA', '(Set<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setA', '(IStorageLinkDecoratedVariable<Set<number>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapA', '(Map<number, string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapA', '(IStorageLinkDecoratedVariable<Map<number, string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'classA', '(Person | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classA', '(IStorageLinkDecoratedVariable<Person> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classA', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumA', '(Status | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumA', '(IStorageLinkDecoratedVariable<Status> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumA', '(boolean | undefined)')}
   
 }
 

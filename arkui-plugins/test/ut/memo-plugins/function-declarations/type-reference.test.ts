@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { beforeMemoNoRecheck, memoNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'memo/functions';
 
@@ -55,8 +56,7 @@ function main() {}
 }
 @memo() type ItemBuilder<T> = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>)=> void);
 interface Item<T> {
-    set item(item: T)
-    get item(): T
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'item', 'T')}
 }
 interface Attribute<T> {
     @memo() each<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() itemGenerator: ItemBuilder<T>): Attribute<T>

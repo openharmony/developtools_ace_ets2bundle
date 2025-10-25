@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -78,6 +79,12 @@ function main() {}
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
     this.__backing_icon = ((({let gensym___38135554 = initializers;
     (((gensym___38135554) == (null)) ? undefined : gensym___38135554.icon)})) ?? (_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")));
+    this.__backing_varOne = ((({let gensym___101675829 = initializers;
+    (((gensym___101675829) == (null)) ? undefined : gensym___101675829.varOne)})) ?? ("default value"));
+    this.__backing_lambdaOne = ((({let gensym___62262103 = initializers;
+    (((gensym___62262103) == (null)) ? undefined : gensym___62262103.lambdaOne)})) ?? ((() => {
+      this.varOne = _r(16777219, 10003, "com.example.mock", "entry");
+    })));
   }
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
   private __backing_str?: Resource;
@@ -94,14 +101,27 @@ function main() {}
   public set icon(value: Resource) {
     this.__backing_icon = value;
   }
-
+  private __backing_varOne?: (Resource | string);
+  public get varOne(): (Resource | string) {
+    return (this.__backing_varOne as (Resource | string));
+  }
+  public set varOne(value: (Resource | string)) {
+    this.__backing_varOne = value;
+  }
+  private __backing_lambdaOne?: Any;
+  public get lambdaOne(): () => void {
+    return (this.__backing_lambdaOne as () => void);
+  }
+  public set lambdaOne(value: () => void) {
+    this.__backing_lambdaOne = value;
+  }
   @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
-      return new ResourceComponent(false, ({let gensym___46528967 = storage;
-      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    return new ResourceComponent(false, ({let gensym___<some_random_number> = storage;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
-  }
-  
+    }
+
   @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
@@ -126,34 +146,22 @@ function main() {}
     }));
   }
 
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
 
 }
 
 @Component() export interface __Options_ResourceComponent {
-  set str(str: (Resource | undefined))
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(Resource | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'icon', '(Resource | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_icon', '(boolean | undefined)')}
   
-  get str(): (Resource | undefined)
-  set __options_has_str(__options_has_str: (boolean | undefined))
-  
-  get __options_has_str(): (boolean | undefined)
-  set icon(icon: (Resource | undefined))
-  
-  get icon(): (Resource | undefined)
-  set __options_has_icon(__options_has_icon: (boolean | undefined))
-  
-  get __options_has_icon(): (boolean | undefined)
-  
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'varOne', '((Resource | string) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varOne', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'lambdaOne', '(Any | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_lambdaOne', '(boolean | undefined)')}
 }
 `;
 

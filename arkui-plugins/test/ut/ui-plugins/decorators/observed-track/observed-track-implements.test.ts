@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -57,16 +58,12 @@ import { Observed as Observed } from "@ohos.arkui.stateManagement";
 function main() {}
 
 interface PropInterface {
-  set propF(propF: number)
-  
-  get propF(): number
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propF', 'number')}
   
 }
 
 interface trackInterface {
-  set trackF(trackF: number)
-  
-  get trackF(): number
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'trackF', 'number')}
   
 }
 
@@ -105,7 +102,12 @@ interface trackInterface {
   
   public constructor() {}
   
-  set propF(newValue: number) {
+  public get propF(): number {
+    this.conditionalAddRef(this.__meta);
+    return this.__backing_propF;
+  }
+
+  public set propF(newValue: number) {
     if (((this.__backing_propF) !== (newValue))) {
       this.__backing_propF = newValue;
       this.__meta.fireChange();
@@ -113,22 +115,17 @@ interface trackInterface {
     }
   }
   
-  public get propF(): number {
+  public get trackF(): number {
     this.conditionalAddRef(this.__meta);
-    return this.__backing_propF;
+    return this.__backing_trackF;
   }
   
-  set trackF(newValue: number) {
+  public set trackF(newValue: number) {
     if (((this.__backing_trackF) !== (newValue))) {
       this.__backing_trackF = newValue;
       this.__meta.fireChange();
       this.executeOnSubscribingWatches("trackF");
     }
-  }
-  
-  public get trackF(): number {
-    this.conditionalAddRef(this.__meta);
-    return this.__backing_trackF;
   }
   
 }

@@ -20,6 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config'
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -168,17 +169,7 @@ class Message {
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+  ${dumpConstructor()}
   
 }
 
@@ -232,43 +223,21 @@ class Message {
     }));
   }
   
-  constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  
-  constructor() {
-    this(undefined, undefined);
-  }
-  
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
+ ${dumpConstructor()}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  set display(display: (boolean | undefined))
-  
-  get display(): (boolean | undefined)
-  set __backing_display(__backing_display: (IStateDecoratedVariable<boolean> | undefined))
-  
-  get __backing_display(): (IStateDecoratedVariable<boolean> | undefined)
-  set __options_has_display(__options_has_display: (boolean | undefined))
-  
-  get __options_has_display(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_display', '(boolean | undefined)')}
   
 }
 
 @Reusable() @Component() export interface __Options_Child {
-  set message(message: (Message | undefined))
-  
-  get message(): (Message | undefined)
-  set __backing_message(__backing_message: (IStateDecoratedVariable<Message> | undefined))
-  
-  get __backing_message(): (IStateDecoratedVariable<Message> | undefined)
-  set __options_has_message(__options_has_message: (boolean | undefined))
-  
-  get __options_has_message(): (boolean | undefined)
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
   
 }
 
