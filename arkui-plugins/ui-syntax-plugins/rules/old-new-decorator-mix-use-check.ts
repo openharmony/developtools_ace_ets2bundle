@@ -18,7 +18,7 @@ import { PresetDecorators, getAnnotationName, getAnnotationUsage, getIdentifierN
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
-    private static readonly oldV1Decorators: string[] = [
+    private oldV1Decorators: string[] = [
         PresetDecorators.STATE,
         PresetDecorators.PROP_REF,
         PresetDecorators.LINK,
@@ -31,7 +31,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         PresetDecorators.OBJECT_LINK,
     ];
 
-    private static readonly newV2decorators: string[] = [
+    private newV2decorators: string[] = [
         PresetDecorators.LOCAL,
         PresetDecorators.PARAM,
         PresetDecorators.ONCE,
@@ -42,7 +42,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         PresetDecorators.COMPUTED,
     ];
 
-    private static readonly notAllowedInClass: string[] = [
+    private notAllowedInClass: string[] = [
         PresetDecorators.LOCAL,
         PresetDecorators.PARAM,
     ];
@@ -69,8 +69,8 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             if (!arkts.isClassProperty(property)) {
                 return;
             }
-            const newDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.newV2decorators);
-            const oldDecorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.oldV1Decorators);
+            const newDecorator = this.findPropertyDecorator(property, this.newV2decorators);
+            const oldDecorator = this.findPropertyDecorator(property, this.oldV1Decorators);
             // Check that the new decorator is used for component v2
             if (newDecorator && !componentV2Decorator && componentDecorator) {
                 this.reportErrorAndChangeDecorator(newDecorator, componentDecorator, PresetDecorators.COMPONENT_V2);
@@ -90,7 +90,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             if (!arkts.isClassProperty(property)) {
                 return;
             }
-            const decorator = this.findPropertyDecorator(property, OldNewDecoratorMixUseCheckRule.notAllowedInClass);
+            const decorator = this.findPropertyDecorator(property, this.notAllowedInClass);
             if (decorator) {
                 this.reportError(decorator, PresetDecorators.COMPONENT_V2);
             }
