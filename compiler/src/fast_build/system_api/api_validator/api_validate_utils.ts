@@ -21,7 +21,9 @@ import {
 } from '../api_check_utils';
 import { SINCE_TAG_NAME,
   ComparisonSenario,
-  ValueCheckerFunction
+  ValueCheckerFunction,
+  ParsedVersion,
+  VersionValidationResult
 } from '../api_check_define';
 
 /**
@@ -44,6 +46,7 @@ export class SdkComparisonHelper {
     private readonly compatibleSdkVersion: string,
     private readonly minRequiredVersion: string,
     private readonly typeChecker: ts.TypeChecker | undefined,
+    private readonly minAvailableVersion: ParsedVersion | undefined,
     deviceInfoMap: Map<string, string[]>,
     otherSourceDeviceInfo: string,
     openSourceDeviceInfo: string,
@@ -252,15 +255,24 @@ export class SdkComparisonHelper {
     // - openSourceDeviceInfo (sdkApiVersion) → SuppressWithoutMSF (1)
     // - otherSourceDeviceInfo (distributionOSApiVersion) → SuppressWithMSF (2)
     const scenario = matchedApi === this.openSourceDeviceInfo 
-      ? ComparisonSenario.SuppressWithoutMSF 
-      : ComparisonSenario.SuppressWithMSF;
+      ? ComparisonSenario.SuppressByOHVersion 
+      : ComparisonSenario.SuppressByOtherOSVersion;
     
     // Use centralized value checker
-    const validationResult = this.valueChecker(
-      this.minRequiredVersion, 
-      assignedSdkVersion.toString(), 
-      scenario
-    );
+    let validationResult: VersionValidationResult;
+    if (this.minAvailableVersion) {
+      validationResult = this.valueChecker(
+        this.minAvailableVersion.formatVersion, 
+        assignedSdkVersion.toString(), 
+        scenario
+      );
+    } else {
+      validationResult = this.valueChecker(
+        this.minRequiredVersion, 
+        assignedSdkVersion.toString(), 
+        scenario
+      );
+    }
     
     return validationResult.result;
   }
