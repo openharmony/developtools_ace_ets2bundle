@@ -20,16 +20,20 @@ import {
 import {
   RUNTIME_OS_OH,
   AVAILABLE_TAG_NAME,
-  FormatCheckerFunction
+  FormatCheckerFunction,
+  ParsedVersion,
+  ComparisonSenario
 } from '../api_check_define';
 import { 
   getValueChecker, 
   getFormatChecker,
-  isOpenHarmonyRuntime,
   defaultFormatCheckerWithoutMSF,
-  defaultValueChecker
+  defaultValueChecker,
+  getAvailableDecoratorFromNode,
+  extractMinApiFromDecorator,
+  getVersionByValueChecker
 } from '../api_check_utils';
-import { BaseVersionChecker, ParsedVersion } from './base_version_checker';
+import { BaseVersionChecker } from './base_version_checker';
 
 /**
  * Checker for the @Available annotation.
@@ -41,7 +45,7 @@ import { BaseVersionChecker, ParsedVersion } from './base_version_checker';
  */
 export class AvailableAnnotationChecker extends BaseVersionChecker {
   private formatChecker: FormatCheckerFunction;
-
+  private availableVersion: ParsedVersion;
   constructor(typeChecker?: ts.TypeChecker) {
     super(typeChecker);
     this.init();
@@ -87,43 +91,6 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
   }
 
   /**
-   * Recursively search for decorators named @Available in the node and its parent node.
-   * @param node declaration
-   * @returns The array of @Available decorators found; if none exist, return an empty array.
-   */
-  getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration): ts.Decorator[] {
-    const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
-      if (ts.isCallExpression(decorator.expression)) {
-        return ts.isIdentifier(decorator.expression.expression) &&
-          decorator.expression.expression.text === 'Available';
-      } else if (ts.isIdentifier(decorator.expression)) {
-        return decorator.expression.text === 'Available';
-      }
-      return false;
-    };
-    
-    const decoratorArray = [];
-    if (ts.canHaveDecorators(node)) {
-      decoratorArray.push(...(ts.getAnnotations(node)) || []);
-    }
-    if (ts.canHaveIllegalDecorators(node)) {
-      decoratorArray.push(...(ts.getAnnotationsFromIllegalDecorators(node)) || []);
-    }
-    
-    if (decoratorArray.length > 0) {
-      // filter @Available decorator
-      const availableDecorators = decoratorArray.filter(isAvailableDecorator);
-      if (availableDecorators.length > 0) {
-        return availableDecorators;
-      }
-    }
-
-    // findParent
-    const parentNode = node.parent;
-    return parentNode ? this.getAvailableDecoratorFromNode(parentNode) : [];
-  }
-
-  /**
    * Extract @Available decorator from a TypeScript node.
    * 
    * This method implements the abstract parseVersion() from BaseVersionChecker.
@@ -142,11 +109,11 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       return false;
     }
 
-    const decorators: ts.Decorator[] = this.getAvailableDecoratorFromNode(node);
+    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node);
 
     // Extract minApiVersion from @Available decorators
     for (const dec of decorators) {
-      const minApi = this._extractMinApiFromDecorator(dec);
+      const minApi = extractMinApiFromDecorator(dec);
       if (!minApi) {
         continue;
       }
@@ -158,9 +125,10 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
         ? defaultFormatCheckerWithoutMSF(minApi.version)
         : this.formatChecker(minApi.raw);
 
-      if (isValidFormat) {
+      if (isValidFormat && isValidFormat.result) {
         // Set instance variable for later retrieval
         this.minApiVersion = minApi.version;
+        this.availableVersion = minApi;
         return true; // Found valid @Available decorator
       }
     }
@@ -169,104 +137,38 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
   }
 
   /**
-   * Extract the minApiVersion property from an @Available decorator.
+   * Compare two version strings (SDK version vs. required version).
    * 
-   * This method parses the decorator's object literal to find the minApiVersion property.
+   * This method is protected (not in the public interface) because:
+   * - All subclasses use the same implementation
+   * - It's an internal detail, not part of the public API
+   * - Only subclasses should call it
    * 
-   * Supported decorator formats:
-   * ```typescript
-   * @Available({ minApiVersion: "21" })
-   * @Available({ minApiVersion: "5.0.0" })
-   * @Available({ minApiVersion: "5.0.3(22)" })
-   * @Available({ minApiVersion: "OpenHarmony 5.0.3(22)" })
-   * ```
+   * The comparison is delegated to versionCompareFunction,
+   * which checks if the project's configured version is compatible with the target version.
    * 
-   * The method handles edge cases:
-   * - Empty properties array (tries parsing raw text)
-   * - String literal property names vs identifiers
-   * - Numeric literals vs string literals for version values
+   * Trigger scenario is 0 (generating warning).
    * 
-   * @param dec - The decorator node to extract from
-   * @returns Parsed version object, or null if not an @Available decorator
+   * @returns true if incompatible (project version < target), false if compatible
    */
-  private _extractMinApiFromDecorator(dec: ts.Decorator): ParsedVersion | null {
-    // Verify it's a call expression: @Available({ ... })
-    if (!ts.isCallExpression(dec.expression)) {
-      return null;
-    }
-
-    const callExpr = dec.expression;
-
-    // Verify the decorator name is an identifier
-    if (!ts.isIdentifier(callExpr.expression)) {
-      return null;
-    }
-
-    // Check if it's specifically @Available
-    if (callExpr.expression.text !== 'Available') {
-      return null;
-    }
-
-    // Verify there's at least one argument (the config object)
-    if (callExpr.arguments.length === 0) {
-      return null;
-    }
-
-    const arg = callExpr.arguments[0];
-
-    // The argument must be an object literal expression
-    if (!ts.isObjectLiteralExpression(arg)) {
-      return null;
-    }
-
-    // Edge case: If properties array is empty (malformed AST), try parsing raw text
-    // This can happen with certain TypeScript compiler configurations
-    if (arg.properties.length === 0) {
-      const text = arg.getText();
-      const match = /minApiVersion:\s*['"]([^'"]+)['"]/i.exec(text);
-      if (match) {
-        return this._parseVersionString(match[1]);
-      }
-      return null;
-    }
-
-    // Normal case: Parse properties from the object literal
-    for (const prop of arg.properties) {
-      const res = this.processProp(prop);
-      if (res) {
-        return res;
-      }
-    }
-
-    return null; // minApiVersion property not found
+  protected compare(): boolean {
+   // versionCompareFunction returns { result: boolean, message: string }
+   // result is true if compatible (sdk >= target)
+   // We negate it to return true for incompatibility
+   // Trigger scenario: 0 = generating warning
+   const compareResult = this.versionCompareFunction(getVersionByValueChecker(this.availableVersion, this.versionCompareFunction),
+    this.sdkVersion, ComparisonSenario.Trigger);
+   return !compareResult.result;
   }
 
-  private processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | null {
-    // Only process property assignments (key: value)
-    if (ts.isPropertyAssignment(prop)) {
-      // Extract property name - handle both identifier and string literal names
-      const propName = ts.isIdentifier(prop.name)
-        ? prop.name.text
-        : ts.isStringLiteral(prop.name)
-          ? prop.name.text
-          : prop.name.getText().replace(/['"]/g, '');
-
-      // Check if this is the minApiVersion property
-      if (propName === 'minApiVersion') {
-        const value = prop.initializer;
-
-        // Handle string literal: "21", "5.0.0", etc.
-        if (ts.isStringLiteral(value)) {
-          return this._parseVersionString(value.text);
-        }
-
-        // Handle numeric literal: 21 (converted to string)
-        if (ts.isNumericLiteral(value)) {
-          return this._parseVersionString(value.text.toString());
-        }
-      }
-    }
-
-    return null;
+    
+  /**
+   * 
+   * @returns AvailableMinApi
+   */
+  public getAvailableVersion(): ParsedVersion {
+    return this.availableVersion;
   }
+
+  
 }

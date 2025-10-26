@@ -83,7 +83,10 @@ import {
   ValueCheckerFunction,
   FormatCheckerFunction,
   comparisonFunctions,
-  AVAILABLE_FILE_NAME
+  AVAILABLE_FILE_NAME,
+  ParsedVersion,
+  AVAILABLE_VERSION_FORMAT_ERROR_PREFIX,
+  AVAILABLE_VERSION_FORMAT_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -611,7 +614,7 @@ function checkAvailableDecorator(
   declaration?: ts.Declaration
 ): boolean {
   // If there is no node, we cannot perform any check
-  if (!projectConfig.compatibleSdkVersion || !node) {
+  if (!projectConfig.compatibleSdkVersion || !node || !declaration) {
     return false;
   }
 
@@ -621,7 +624,15 @@ function checkAvailableDecorator(
   } else {
     availableNodeCheckConfigCache.set(key, '');
   }
-  
+  const sourcefile = node.getSourceFile();
+  if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
+
+  const declSourcefile = declaration.getSourceFile();
+  if (!declSourcefile || !declSourcefile.fileName || !path.normalize(declSourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
   const typeChecker = CurrentProcessFile.getChecker();
   
   const checker = new AvailableAnnotationChecker(typeChecker);
@@ -634,8 +645,9 @@ function checkAvailableDecorator(
   const minApiVersion = checker.getMinApiVersion();  // Minimum required API version
 
   const suppressor = new AvailableWarningSuppressor(
-    checker.getSdkVersion(), 
+    checker.getSdkVersion(),
     minApiVersion,
+    checker.getAvailableVersion(),
     typeChecker
   );
   
@@ -644,7 +656,7 @@ function checkAvailableDecorator(
   }
   
   config.message = AVAILABLE_DECORATOR_WARNING
-    .replace('$SINCE1', minApiVersion.toString())  // Minimum required API version
+    .replace('$SINCE1', checker.getAvailableVersion()?.raw || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
   
   return true;
@@ -672,7 +684,10 @@ function checkSinceValue(
   if (!jsDocNode?.jsDoc) {
     return false;
   }
-
+  const sourcefile = node.getSourceFile();
+  if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
+    return false;
+  }
   const typeChecker = CurrentProcessFile.getChecker();
 
   const checker = new SinceJSDocChecker(typeChecker);
@@ -682,12 +697,10 @@ function checkSinceValue(
     return false;
   }
 
-  const minApiVersion = checker.getMinApiVersion();
-
   // Use SinceWarningSuppressor with all three strategies
   const suppressor = new SinceWarningSuppressor(
     checker.getSdkVersion(), 
-    minApiVersion, 
+    checker.getMinApiVersion(), 
     typeChecker
   );
 
@@ -696,7 +709,7 @@ function checkSinceValue(
   }
 
   config.message = SINCE_TAG_CHECK_ERROR
-    .replace('$SINCE1', minApiVersion)
+    .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
 
   return true;
@@ -764,8 +777,17 @@ export function defaultFormatChecker(since: string): boolean {
  * @param since - Version string to validate
  * @returns true if format is valid
  */
-export function defaultFormatCheckerWithoutMSF(since: string): boolean {
-  return /^[1-9]\d{0,2}$/.test(since);
+export function defaultFormatCheckerWithoutMSF(since: string): VersionValidationResult {
+  if (/^[1-9]\d{0,2}$/.test(since)) {
+    return {
+      result: true
+    }
+  } else {
+    return {
+      result: false,
+      message: AVAILABLE_VERSION_FORMAT_ERROR
+    }
+  }
 }
 
 
@@ -824,29 +846,28 @@ export function initValueChecker(osName: string, tag: string): void {
   }
 
   // Try new format first: {osName}/{tag}/CompatibilityCheck
-  const newFormatKey = `${osName}/${tag}/CompatibilityCheck`;
-  let plugins = externalApiCheckPlugin.get(newFormatKey);
+  let formatKey = `${osName}/${tag}/CompatibilityCheck`;
+  if (!externalApiCheckPlugin.has(formatKey)) {
+    formatKey = `${osName}/${tag}`;
+  }
+  let plugins = externalApiCheckPlugin.get(formatKey);
   
   if (!plugins || plugins.length === 0) {
-    // Try old format: {osName}/{tag}
-    const oldFormatKey = `${osName}/${tag}`;
-    plugins = externalApiCheckPlugin.get(oldFormatKey);
+    comparisonFunctions.valueChecker.set(cacheKey, defaultValueChecker);
+    return;
   }
   
   // Try to load external plugin
-  if (plugins && plugins.length > 0) {
-    for (const plugin of plugins) {
-      try {
-        const externalModule = require(plugin.path);
-        const externalMethod = externalModule[plugin.functionName];
-        
-        if (typeof externalMethod === 'function') {
-          comparisonFunctions.valueChecker.set(cacheKey, externalMethod);
-          return;
-        }
-      } catch (error) {
-        // Silent fail, will use default
+  for (const plugin of plugins) {
+    try {
+      const externalModule = require(plugin.path);
+      const externalMethod = externalModule[plugin.functionName];
+      
+      if (typeof externalMethod === 'function') {
+        comparisonFunctions.valueChecker.set(cacheKey, externalMethod);
+        return;
       }
+    } catch (error) {
     }
   }
   
@@ -866,25 +887,25 @@ export function initFormatChecker(osName: string, tag: string): void {
   
   // Try to load external plugin
   const plugins = externalApiCheckPlugin.get(pluginKey);
-  
-  if (plugins && plugins.length > 0) {
-    for (const plugin of plugins) {
-      try {
-        const externalModule = require(plugin.path);
-        const externalMethod = externalModule[plugin.functionName];
-        
-        if (typeof externalMethod === 'function') {
-          comparisonFunctions.formatChecker.set(cacheKey, externalMethod);
-          return;
-        }
-      } catch (error) {
+  if (!plugins || plugins.length === 0) {
+    comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerWithoutMSF);
+    return;
+  }
+  for (const plugin of plugins) {
+    try {
+      const externalModule = require(plugin.path);
+      const externalMethod = externalModule[plugin.functionName];
+      
+      if (typeof externalMethod === 'function') {
+        comparisonFunctions.formatChecker.set(cacheKey, externalMethod);
+        return;
       }
+    } catch (error) {
     }
   }
   
   // Fallback to default
-  const defaultChecker = defaultFormatCheckerWithoutMSF;
-  comparisonFunctions.formatChecker.set(cacheKey, defaultChecker);
+  comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerWithoutMSF);
 }
 
 /**
@@ -1209,45 +1230,242 @@ function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo): SdkHvigorErrorI
 /**
  * reset api_check_utils global object
  */
-export function resetApiCheckUtils() {
+export function resetApiCheckUtils(): void {
   positionMessageInfo = [];
   errorCodeMessage = undefined;
 }
 
-export function getAvailableDecoratorFromDeclaration(decl: ts.Node): ts.Decorator[] {
-  const declarationText = decl.getText();
-  const regex = /@\s*Available\s*\(\s*\{\s*minApiVersion\s*:\s*(['"])[^'"]*\1\s*\}\s*\)/;
-  const decorator = declarationText.match(regex);
-  if (!decorator){
-    return [];
+/**
+ * Parse a version string into structured format.
+ * 
+ * Supported formats:
+ * - Plain number: "21" → { version: "21" }
+ * - Dotted: "5.0.0" → { version: "5.0.0" }
+ * - With parentheses: "5.0.3(22)" → { version: "5.0.3(22)" }
+ * - OS-prefixed: "OpenHarmony 21" → { os: "OpenHarmony", version: "21" }
+ * - Combined: "OpenHarmony 22.0.0" → { os: "OpenHarmony", version: "22.0.0" }
+ * 
+ * @param raw - Raw version string to parse
+ * @returns Parsed version object, or null if format is invalid
+ */
+export function parseVersionString(raw: string): ParsedVersion | null {
+  const trimmed = raw.trim();
+
+  const hasSpacesInRaw = /\s+/.test(trimmed);
+
+  if (!hasSpacesInRaw) {
+    return { 
+      os: RUNTIME_OS_OH, 
+      version: trimmed, 
+      raw: raw,
+      formatVersion: `${RUNTIME_OS_OH} ${trimmed}`
+    };
+  } else {
+    return {
+      os: trimmed.split(/\s+/, 2)[0],
+      version: trimmed.split(/\s+/, 2)[1],
+      raw: raw,
+      formatVersion: `${trimmed.split(/\s+/, 2)[0]} ${trimmed.split(/\s+/, 2)[1]}`
+    };
   }
+}
 
-  decorator[0] = decorator[0].replace('@', '');
-
-  const decorators: ts.Decorator[] = [];
-
-  // Create temp source code
-  const tempSource = ts.createSourceFile(
-    'temp.ts',
-    `${decorator[0]}`,
-    ts.ScriptTarget.ESNext,
-    true,
-    ts.ScriptKind.TS
-  );
-
-  let callExpr: ts.CallExpression | null = null;
-  ts.forEachChild(tempSource, (stmt) => {
-    if (
-      ts.isExpressionStatement(stmt) &&
-      ts.isCallExpression(stmt.expression)
-    ) {
-      callExpr = stmt.expression;
+/**
+ * Extract the minApiVersion property from an @Available decorator.
+ * 
+ * This method parses the decorator's object literal to find the minApiVersion property.
+ * 
+ * Supported decorator formats:
+ * ```typescript
+ * @Available({ minApiVersion: "21" })
+ * @Available({ minApiVersion: "5.0.0" })
+ * @Available({ minApiVersion: "5.0.3(22)" })
+ * @Available({ minApiVersion: "OpenHarmony 5.0.3(22)" })
+ * ```
+ * 
+ * The method handles edge cases:
+ * - Empty properties array (tries parsing raw text)
+ * - String literal property names vs identifiers
+ * - Numeric literals vs string literals for version values
+ * 
+ * @param dec - The decorator node to extract from
+ * @returns Parsed version object, or null if not an @Available decorator
+ */
+export function extractMinApiFromDecorator(dec: ts.Decorator): ParsedVersion | null {
+  // Verify it's a call expression: @Available({ ... })
+  if (!ts.isCallExpression(dec.expression)) {
+    return null;
+  }
+  const callExpr = dec.expression;
+  // Verify the decorator name is an identifier
+  if (!ts.isIdentifier(callExpr.expression)) {
+    return null;
+  }
+  // Check if it's specifically @Available
+  if (callExpr.expression.text !== 'Available') {
+    return null;
+  }
+  // Verify there's at least one argument (the config object)
+  if (callExpr.arguments.length === 0) {
+    return null;
+  }
+  const arg = callExpr.arguments[0];
+  // The argument must be an object literal expression
+  if (!ts.isObjectLiteralExpression(arg)) {
+    return null;
+  }
+  // Edge case: If properties array is empty (malformed AST), try parsing raw text
+  // This can happen with certain TypeScript compiler configurations
+  if (arg.properties.length === 0) {
+    const text = arg.getText();
+    // Allow leading spaces, consecutive spaces in the middle, and trailing spaces.
+    const match = /\s*minApiVersion\s*:\s*['"]([^'"]+)['"]\s*/.exec(text);
+    if (match) {
+      return parseVersionString(match[1]);
     }
-  });
+    return null;
+  }
+  // Normal case: Parse properties from the object literal
+  for (const prop of arg.properties) {
+    const res = processProp(prop);
+    if (res) {
+      return res;
+    }
+  }
+  return null; // minApiVersion property not found
+}
 
-  if (callExpr) {
-    decorators.push(ts.factory.createDecorator(callExpr));
+export function processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | null {
+  // Only process property assignments (key: value)
+  if (ts.isPropertyAssignment(prop)) {
+    // Extract property name - handle both identifier and string literal names
+    const propName = ts.isIdentifier(prop.name)
+      ? prop.name.text
+      : ts.isStringLiteral(prop.name)
+        ? prop.name.text
+        : prop.name.getText().replace(/['"]/g, '');
+    // Check if this is the minApiVersion property
+    if (propName === 'minApiVersion') {
+      const value = prop.initializer;
+      // Handle string literal: "21", "5.0.0", etc.
+      if (ts.isStringLiteral(value)) {
+        return parseVersionString(value.text);
+      }
+      // Handle numeric literal: 21 (converted to string)
+      if (ts.isNumericLiteral(value)) {
+        return parseVersionString(value.text.toString());
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Recursively search for decorators named @Available in the node and its parent node.
+ * @param node declaration
+ * @returns The array of @Available decorators found; if none exist, return an empty array.
+ */
+export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration, searchMode?: number): ts.Decorator[] {
+  const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
+    if (ts.isCallExpression(decorator.expression)) {
+      return ts.isIdentifier(decorator.expression.expression) &&
+        decorator.expression.expression.text === 'Available';
+    } else if (ts.isIdentifier(decorator.expression)) {
+      return decorator.expression.text === 'Available';
+    }
+    return false;
+  };
+  
+  const decoratorArray = [];
+  if (ts.canHaveDecorators(node)) {
+    decoratorArray.push(...(ts.getAnnotations(node)) || []);
+  }
+  if (ts.canHaveIllegalDecorators(node)) {
+    decoratorArray.push(...(ts.getAnnotationsFromIllegalDecorators(node)) || []);
+  }
+  const currentAvailableDecorators = decoratorArray.filter(isAvailableDecorator);
+  const parentNode = node.parent;
+
+  if (searchMode === 0) {
+    if (currentAvailableDecorators.length > 0) {
+      return currentAvailableDecorators;
+    }
+    return parentNode ? getAvailableDecoratorFromNode(parentNode, 0) : [];
+  } else {
+    // 模式 1：收集当前节点的符合条件装饰器，继续查父节点并合并结果
+    const parentAvailable = parentNode ? getAvailableDecoratorFromNode(parentNode, 1) : [];
+    return [...currentAvailableDecorators, ...parentAvailable];
+  }
+}
+
+  /**
+   * The extension method must be converted to full format.The local default method does not support format conversion, so the converted version field is used for comparison.
+   * @param curAvailableVersion 
+   * @returns 
+   */
+  export function getVersionByValueChecker(curAvailableVersion: ParsedVersion, checker: ValueCheckerFunction): string {
+    if (checker === defaultValueChecker) {
+      return curAvailableVersion.version;
+    } else {
+      return curAvailableVersion.formatVersion;
+    }
   }
 
-  return decorators;
+export function isAvailableDeclarationValid(annoDecl: ts.AnnotationDeclaration): boolean {
+  if (!annoDecl) {
+    return false;
+  }
+  if (ts.isIdentifier(annoDecl.name) && annoDecl.name.escapedText.toString() !== 'Available') {
+    return false;
+  }
+
+  const fileName: string = path.normalize(annoDecl.getSourceFile()?.fileName);
+  if (fileName.endsWith(AVAILABLE_FILE_NAME)) {
+    return true;
+  }
+  return false;
+}
+
+export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheckResult {
+  let result:ts.ConditionCheckResult = {
+    valid: false,
+    message: '@Availale annotation are not valid here',
+    type: ts.DiagnosticCategory.Error
+  }
+  if (!annotation || !annotation.annotationDeclaration) {
+    return result;
+  }
+  if (!ts.isCallExpression(annotation.expression) || !ts.isObjectLiteralExpression(annotation.expression.arguments[0])) {
+    return result;
+  }
+  const arg = annotation.expression.arguments[0];
+  for(const prop of arg.properties) {
+    if (!ts.isPropertyAssignment(prop)) {
+      continue;
+    }
+    let propName = (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) ? prop.name.text : prop.name.getText().replace(/['"]/g, '');
+    if (propName === 'minApiVersion' && ts.isStringLiteral(prop.initializer)) {
+      const minApiVersion = prop.initializer.text;
+      let parseVersion = parseVersionString(minApiVersion);
+      let checkResult: VersionValidationResult;
+      if (parseVersion.os === RUNTIME_OS_OH) {
+        checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
+      } else {
+        checkResult = getFormatChecker()(parseVersion.formatVersion);
+      }
+      if (checkResult && !checkResult.result) {
+        let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
+          .replace('$RUNTIMEOS', projectConfig.runtimeOS)
+          .replace('$VERSION', parseVersion.raw);
+        return {
+          valid: false,
+          message: checkResult.message ? `${msg} ${checkResult.message}` : `${msg}`,
+          type: ts.DiagnosticCategory.Error
+        }
+      }
+    }
+  }
+  return {
+    valid: true
+  }
 }

@@ -48,6 +48,8 @@ export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 export const AVAILABLE_TAG_NAME: string = 'available';
 export const AVAILABLE_DECORATOR_WARNING: string =  "The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
 export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
+export const AVAILABLE_VERSION_FORMAT_ERROR_PREFIX: string = 'The runtime OS for the current project is $RUNTIMEOS. The OS version number $VERSION is invalid.';
+export const AVAILABLE_VERSION_FORMAT_ERROR: string = 'The OpenHarmony version must be an integer between 1 and 999.'
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
@@ -207,7 +209,7 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
  */
 export interface VersionValidationResult {
   result: boolean;
-  message: string;
+  message?: string;
 }
 
 /**
@@ -226,7 +228,7 @@ export type ValueCheckerFunction = (
  * Format checker function type
  * @param version - Version string to validate
  */
-export type FormatCheckerFunction = (version: string) => boolean;
+export type FormatCheckerFunction = (version: string) => VersionValidationResult;
 
 /**
  * Runtime OS constants
@@ -245,6 +247,13 @@ export const comparisonFunctions = {
 
 export enum ComparisonSenario {
   Trigger = 0,
-  SuppressWithoutMSF = 1,
-  SuppressWithMSF = 2,
+  SuppressByOHVersion = 1,
+  SuppressByOtherOSVersion = 2,
+}
+
+export interface ParsedVersion {
+  os?: string;       // Optional OS name (e.g., OpenHarmony and OtherOS)
+  version: string;   // Version number (e.g., "21")
+  formatVersion: string;       // raw string (e.g., "21", "OpenHarmony 21")
+  raw: string;       // raw string (e.g., "21", "OpenHarmony 21")
 }
