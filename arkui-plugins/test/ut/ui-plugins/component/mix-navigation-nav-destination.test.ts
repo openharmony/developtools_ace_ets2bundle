@@ -121,7 +121,7 @@ function main() {}
   private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
   
   public get navDestination(): (@memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
-    return this.__backing_navDestination!;
+    return this.__backing_navDestination;
   }
   
   public set navDestination(value: (@memo() ((name: String, param: (Object | undefined))=> void) | undefined)) {
