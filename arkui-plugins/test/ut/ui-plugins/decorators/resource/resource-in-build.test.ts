@@ -134,6 +134,9 @@ function main() {}
   @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
+  public async test_0(res: Resource) {
+    return res;
+  }
 
   public aboutToAppear() {
     let arr: Array<Resource> = new Array<Resource>();

@@ -56,7 +56,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.incremental.annotation\";
 import { FakeComponentAttribute as FakeComponentAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentImpl as FakeComponentImpl } from \"${utilExternalSourceName}\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
