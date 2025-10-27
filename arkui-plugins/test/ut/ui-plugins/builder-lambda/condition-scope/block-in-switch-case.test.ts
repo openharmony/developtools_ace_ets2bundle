@@ -43,7 +43,7 @@ const expectedUIScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -53,7 +53,7 @@ import { Text as Text, Column as Column, Component as Component } from "@ohos.ar
 function main() {}
 
 @Component() final struct SwitchCase extends CustomComponent<SwitchCase, __Options_SwitchCase> {
-  public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (2));
   }
@@ -70,28 +70,28 @@ function main() {}
     this.__backing_num = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ConditionScope(@memo() (() => {
+    }), @Memo() (() => {
+      ConditionScope(@Memo() (() => {
         switch (this.num) {
           case 0: {
             break;
           }
           case 1: {
-            ConditionBranch(@memo() (() => {
-              TextImpl(@memo() ((instance: TextAttribute): void => {
+            ConditionBranch(@Memo() (() => {
+              TextImpl(@Memo() ((instance: TextAttribute): void => {
                 instance.setTextOptions("111", undefined).applyAttributesFinish();
                 return;
               }), undefined);
             }));
           }
           case 2: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("111", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
@@ -99,24 +99,24 @@ function main() {}
             }));
           }
           case 3: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("111", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
               }
             }));
             break;
-            TextImpl(@memo() ((instance: TextAttribute): void => {
+            TextImpl(@Memo() ((instance: TextAttribute): void => {
               instance.setTextOptions("111", undefined).applyAttributesFinish();
               return;
             }), undefined);
           }
           case 4: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("111", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
@@ -126,9 +126,9 @@ function main() {}
             break;
           }
           case 5: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("111", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
@@ -137,7 +137,7 @@ function main() {}
             break;
           }
           case 6: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
                 return;
               }
@@ -145,10 +145,10 @@ function main() {}
             break;
           }
           case 7: {
-            ConditionBranch(@memo() (() => {
+            ConditionBranch(@Memo() (() => {
               {
                 return;
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("111", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
@@ -161,7 +161,7 @@ function main() {}
           }
         }
       }));
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("hello world", undefined).applyAttributesFinish();
         return;
       }), undefined);
@@ -188,7 +188,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -198,7 +198,7 @@ import { Text as Text, Column as Column, Component as Component } from "@ohos.ar
 function main() {}
 
 @Component() final struct SwitchCase extends CustomComponent<SwitchCase, __Options_SwitchCase> {
-  public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_num = ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (2));
   }
@@ -215,13 +215,13 @@ function main() {}
     this.__backing_num = value;
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (261239291)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -233,13 +233,13 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (147868395)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      ConditionScope(__memo_context, ((__memo_id) + (186113)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      ConditionScope(__memo_context, ((__memo_id) + (186113)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (186336799)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
@@ -250,13 +250,13 @@ function main() {}
             break;
           }
           case 1: {
-            ConditionBranch(__memo_context, ((__memo_id) + (27357263)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (27357263)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (78642435)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
-              TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+              TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                 if (__memo_scope.unchanged) {
@@ -276,14 +276,14 @@ function main() {}
             }));
           }
           case 2: {
-            ConditionBranch(__memo_context, ((__memo_id) + (220977109)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (220977109)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (91459184)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
               {
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -304,14 +304,14 @@ function main() {}
             }));
           }
           case 3: {
-            ConditionBranch(__memo_context, ((__memo_id) + (143235624)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (143235624)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (214575380)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
               {
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -331,7 +331,7 @@ function main() {}
               }
             }));
             break;
-            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
               const __memo_parameter_instance = __memo_scope.param(0, instance);
               if (__memo_scope.unchanged) {
@@ -346,14 +346,14 @@ function main() {}
             }), undefined);
           }
           case 4: {
-            ConditionBranch(__memo_context, ((__memo_id) + (7513933)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (7513933)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (235688754)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
               {
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -372,14 +372,14 @@ function main() {}
             break;
           }
           case 5: {
-            ConditionBranch(__memo_context, ((__memo_id) + (58475451)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (58475451)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (257250368)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
               {
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -401,7 +401,7 @@ function main() {}
             break;
           }
           case 6: {
-            ConditionBranch(__memo_context, ((__memo_id) + (60292460)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (60292460)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (21099142)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -414,7 +414,7 @@ function main() {}
             break;
           }
           case 7: {
-            ConditionBranch(__memo_context, ((__memo_id) + (34940192)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (34940192)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (15961624)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -422,7 +422,7 @@ function main() {}
               }
               {
                 return;
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -452,7 +452,7 @@ function main() {}
           return;
         }
       }));
-      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {

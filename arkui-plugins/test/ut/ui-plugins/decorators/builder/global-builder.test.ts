@@ -45,7 +45,7 @@ import { RowAttribute as RowAttribute } from "arkui.component.row";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -58,19 +58,19 @@ import { Component as Component, Row as Row, Builder as Builder, Text as Text } 
 function main() {}
 
 
-@memo() function showTextBuilder() {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function showTextBuilder() {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@memo() function overBuilder(@MemoSkip() params: Tmp) {
-  RowImpl(@memo() ((instance: RowAttribute): void => {
+@Memo() function overBuilder(@MemoSkip() params: Tmp) {
+  RowImpl(@Memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
-  }), @memo() (() => {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  }), @Memo() (() => {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions((("UseStateVarByReference: ") + (params.paramA1)), undefined).applyAttributesFinish();
       return;
     }), undefined);
@@ -86,15 +86,15 @@ class Tmp {
 }
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @memo() public build() {
-    RowImpl(@memo() ((instance: RowAttribute): void => {
+  @Memo() public build() {
+    RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       showTextBuilder();
       overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", ((): Any => {
         return "Hello";

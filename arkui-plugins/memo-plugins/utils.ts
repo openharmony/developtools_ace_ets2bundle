@@ -23,6 +23,7 @@ export enum RuntimeNames {
     __KEY = '__key',
     ANNOTATION_BUILDER = 'Builder',
     ANNOTATION = 'memo',
+    ANNOTATION_UI = 'Memo',
     ANNOTATION_ENTRY = 'memo_entry',
     ANNOTATION_INTRINSIC = 'memo_intrinsic',
     ANNOTATION_STABLE = 'memo_stable',
@@ -136,7 +137,7 @@ export type MemoAstNode =
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
     return node.annotations.some((it) =>
-        isMemoAnnotation(it, [RuntimeNames.ANNOTATION, RuntimeNames.ANNOTATION_BUILDER])
+        isMemoAnnotation(it, [RuntimeNames.ANNOTATION, RuntimeNames.ANNOTATION_BUILDER, RuntimeNames.ANNOTATION_UI])
     );
 }
 
@@ -160,7 +161,7 @@ export function hasMemoSkipAnnotation(node: arkts.ETSParameterExpression): boole
 
 export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
     const newAnnotations: arkts.AnnotationUsage[] = node.annotations.filter(
-        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE)
+        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_UI)
     );
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;

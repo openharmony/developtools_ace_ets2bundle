@@ -686,7 +686,7 @@ export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpress
         if (!expr || !arkts.isIdentifier(expr)) {
             return false;
         }
-        return expr.name === DecoratorNames.BUILDER || expr.name === 'memo';
+        return expr.name === DecoratorNames.BUILDER || expr.name === 'memo' || expr.name === 'Memo';
     });
     if (!hasBuilderAnnotation) {
         return false;

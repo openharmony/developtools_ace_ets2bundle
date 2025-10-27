@@ -42,7 +42,7 @@ const expectedScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ImageAttribute as ImageAttribute } from "arkui.component.image";
 import { ImageImpl as ImageImpl } from "arkui.component.image";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -57,7 +57,7 @@ function main() {}
 
 i = _r(16777216, 10003, "com.example.mock", "entry");
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
-  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_str = ((({let gensym___42103502 = initializers;
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
     this.__backing_icon = ((({let gensym___38135554 = initializers;
@@ -99,20 +99,20 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
     this.__backing_lambdaOne = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(this.str, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(i, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+      ImageImpl(@Memo() ((instance: ImageAttribute): void => {
         instance.setImageOptions(this.icon, undefined).applyAttributesFinish();
         return;
       }), undefined);

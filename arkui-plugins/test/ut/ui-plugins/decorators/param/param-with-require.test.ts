@@ -171,7 +171,7 @@ import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
@@ -209,7 +209,7 @@ class Info {
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_infoList = STATE_MGMT_FACTORY.makeLocal<Array<Info>>(this, "infoList", [new Info("Alice", 8, 0, 0), new Info("Barry", 10, 1, 20), new Info("Cindy", 18, 24, 40)]);
   }
   
@@ -224,15 +224,15 @@ class Info {
     this.__backing_infoList!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ForEachImpl<Info>(@memo() ((instance: ForEachAttribute): void => {
+    }), @Memo() (() => {
+      ForEachImpl<Info>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Info>((() => {
           return this.infoList;
-        }), @memo() ((info: Info) => {
+        }), @Memo() ((info: Info) => {
           MiddleComponent._instantiateImpl(undefined, (() => {
             return new MiddleComponent();
           }), {
@@ -242,7 +242,7 @@ class Info {
         }), undefined);
         return;
       }));
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("change", undefined).onClick(((e) => {
           this.infoList[0] = new Info("Atom", 40, 27, 90);
           this.infoList[1].name = "Bob";
@@ -258,7 +258,7 @@ class Info {
 }
 
 @ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
-  public __initializeStruct(initializers: (__Options_MiddleComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MiddleComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_info = STATE_MGMT_FACTORY.makeParam<Info>(this, "info", (initializers!.info as Info));
   }
   
@@ -274,16 +274,16 @@ class Info {
     return this.__backing_info!.get();
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`name: \${this.info.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`age: \${this.info.age}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
@@ -301,7 +301,7 @@ class Info {
 }
 
 @ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
-  public __initializeStruct(initializers: (__Options_SubComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_SubComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_region = STATE_MGMT_FACTORY.makeParam<Region>(this, "region", (initializers!.region as Region));
   }
   
@@ -317,12 +317,12 @@ class Info {
     return this.__backing_region!.get();
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`region: \${this.region.x}-\${this.region.y}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);

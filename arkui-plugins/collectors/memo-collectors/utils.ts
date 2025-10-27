@@ -26,6 +26,7 @@ export enum MemoNames {
     MEMO_SKIP_UI = 'MemoSkip',
     MEMO_INTRINSIC = 'memo_intrinsic',
     MEMO_ENTRY = 'memo_entry',
+    MEMO_UI = 'Memo',
 }
 
 export type MemoAstNode =
@@ -65,7 +66,7 @@ export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: MemoName
 }
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some((it) => isMemoAnnotation(it, MemoNames.MEMO));
+    return node.annotations.some((it) => (isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI)));
 }
 
 function insertMemoAnnotationImport(memoName: MemoNames): void {
@@ -92,7 +93,7 @@ function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): 
 
 function addMemoAnnotationInScriptFunction(
     node: arkts.ScriptFunction,
-    memoName: MemoNames = MemoNames.MEMO,
+    memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): arkts.ScriptFunction {
     const newAnnotations: arkts.AnnotationUsage[] = [
@@ -110,7 +111,7 @@ function addMemoAnnotationInScriptFunction(
 
 function addMemoAnnotationInUnionType(
     node: arkts.ETSUnionType,
-    memoName: MemoNames = MemoNames.MEMO,
+    memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): arkts.ETSUnionType {
     return arkts.factory.updateUnionType(
@@ -126,7 +127,7 @@ function addMemoAnnotationInUnionType(
 
 function collectMemoAstNode(
     node: arkts.AstNode, 
-    memoName: MemoNames = MemoNames.MEMO,
+    memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): void {
     if (!skipNames.includes(memoName)) {
@@ -136,7 +137,7 @@ function collectMemoAstNode(
 
 export function addMemoAnnotation<T extends MemoAstNode>(
     node: T,
-    memoName: MemoNames = MemoNames.MEMO,
+    memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): T {
     insertMemoAnnotationImport(memoName);
@@ -170,7 +171,7 @@ export function hasMemoableAnnotation<T extends MemoAstNode>(node: T): MemoableA
     node.annotations.forEach((it) => {
         hasBuilder ||= isDecoratorAnnotation(it, DecoratorNames.BUILDER);
         hasBuilderParam ||= isDecoratorAnnotation(it, DecoratorNames.BUILDER_PARAM);
-        hasMemo ||= isMemoAnnotation(it, MemoNames.MEMO);
+        hasMemo ||= isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI);
         hasMemoSkip ||= isMemoAnnotation(it, MemoNames.MEMO_SKIP);
         hasMemoIntrinsic ||= isMemoAnnotation(it, MemoNames.MEMO_INTRINSIC);
         hasMemoEntry ||= isMemoAnnotation(it, MemoNames.MEMO_ENTRY);
@@ -190,7 +191,7 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    if (memoName == MemoNames.MEMO_SKIP_UI) {
+    if (memoName == MemoNames.MEMO_SKIP_UI || memoName == MemoNames.MEMO_UI) {
         ImportCollector.getInstance().collectSource(memoName, MEMO_SKIP_UI_IMPORT_SOURCE_NAME);
     } else {
         ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);

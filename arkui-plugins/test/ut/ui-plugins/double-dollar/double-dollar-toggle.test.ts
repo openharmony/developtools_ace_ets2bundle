@@ -42,7 +42,7 @@ const expectedScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
 import { Bindable as Bindable } from "arkui.component.common";
 import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
@@ -65,7 +65,7 @@ class BooleanClass {
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_boo = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "boo", ((({let gensym___9142460 = initializers;
     (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? ([true, false, true])));
     this.__backing_booClass = STATE_MGMT_FACTORY.makeState<BooleanClass>(this, "booClass", ((({let gensym___145381365 = initializers;
@@ -94,12 +94,12 @@ class BooleanClass {
     this.__backing_booClass!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+    }), @Memo() (() => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({
@@ -111,7 +111,7 @@ class BooleanClass {
         }).applyAttributesFinish();
         return;
       }), undefined);
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({
@@ -123,7 +123,7 @@ class BooleanClass {
         }).applyAttributesFinish();
         return;
       }), undefined);
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({

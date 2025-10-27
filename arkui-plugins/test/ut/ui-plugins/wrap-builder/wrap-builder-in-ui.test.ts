@@ -48,7 +48,7 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -63,43 +63,43 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
+@Memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @memo() public testBuilder() {
-    ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+  @Memo() public testBuilder() {
+    ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
-      }), @memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
         item.builder("hello world", 39);
       }), undefined);
       return;
     }));
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       this.testBuilder();
     }));
   }
@@ -130,7 +130,7 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -145,13 +145,13 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (52041161)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (175145513)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (47330804)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -170,13 +170,13 @@ function main() {}
   }
 }
 
-@memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151467670)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (211301233)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -195,20 +195,20 @@ function main() {}
   }
 }
 
-@memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+@Memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (102938669)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ForEachImpl(__memo_context, ((__memo_id) + (223657391)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+    ForEachImpl(__memo_context, ((__memo_id) + (223657391)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (218979098)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -217,7 +217,7 @@ function main() {}
       }
       __memo_parameter_instance.value.setForEachOptions((() => {
         return globalBuilderArr;
-      }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {
@@ -241,13 +241,13 @@ function main() {}
     }
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -259,7 +259,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;

@@ -59,7 +59,7 @@ import { FakeComponentCAttribute as FakeComponentCAttribute } from \"${utilExter
 import { FakeComponentCImpl as FakeComponentCImpl } from \"${utilExternalSourceName}\";
 import { FakeComponentBAttribute as FakeComponentBAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentBImpl as FakeComponentBImpl } from \"${utilExternalSourceName}\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { FakeComponentAAttribute as FakeComponentAAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentAImpl as FakeComponentAImpl } from \"${utilExternalSourceName}\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
@@ -79,27 +79,27 @@ function main() {}
 } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
-    public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {}
+    public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-    @memo() public build() {
-        FakeComponentAImpl(@memo() ((instance: FakeComponentAAttribute): void => {
+    @Memo() public build() {
+        FakeComponentAImpl(@Memo() ((instance: FakeComponentAAttribute): void => {
             instance.setFakeComponentAOptions(\"fake-component\");
             return;
         }), undefined);
-        FakeComponentBImpl(@memo() ((instance: FakeComponentBAttribute): void => {
+        FakeComponentBImpl(@Memo() ((instance: FakeComponentBAttribute): void => {
             instance.setFakeComponentBOptions({});
             return;
         }), undefined);
-        FakeComponentCImpl(@memo() ((instance: FakeComponentCAttribute): void => {
+        FakeComponentCImpl(@Memo() ((instance: FakeComponentCAttribute): void => {
             instance.setFakeComponentCOptions();
             return;
-        }), @memo() (() => {}));
+        }), @Memo() (() => {}));
     }
     public constructor() {}
 }
     
 class __EntryWrapper extends EntryPoint {
-    @memo() public entry(): void {
+    @Memo() public entry(): void {
         A._instantiateImpl(undefined, (() => {
             return new A();
         }), undefined, undefined, undefined);
@@ -112,18 +112,18 @@ class __EntryWrapper extends EntryPoint {
 `;
 
 const expectedUIHeaderScript: string = `
-import { memo as memo } from \"arkui.stateManagement.runtime\";
-import { memo as memo, ComponentBuilder as ComponentBuilder } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
 
 function main() {}
 
-@memo() export function FakeComponentA(style: (@memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentB(style: (@memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentC(style: (@memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentA(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentB(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentC(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
 
-@memo() export function FakeComponentAImpl(style: (@memo() ((instance: FakeComponentAAttribute)=> void) | undefined), content?: @memo() (()=> void)): void
-@memo() export function FakeComponentBImpl(style: (@memo() ((instance: FakeComponentBAttribute)=> void) | undefined), content?: @memo() (()=> void)): void
-@memo() export function FakeComponentCImpl(style: (@memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @memo() (()=> void)): void
+@Memo() export function FakeComponentAImpl(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
+@Memo() export function FakeComponentBImpl(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
+@Memo() export function FakeComponentCImpl(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
     get str(): (string | undefined) {

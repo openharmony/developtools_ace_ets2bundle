@@ -67,7 +67,7 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 `;
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -84,11 +84,11 @@ function main() {}
 
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @memo() public build() {
+  @Memo() public build() {
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
     }), undefined, undefined, undefined);
@@ -100,8 +100,8 @@ function main() {}
     }, undefined, undefined);
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
-    }), undefined, undefined, @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), undefined, undefined, @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("a", undefined).applyAttributesFinish();
         return;
       }), undefined);

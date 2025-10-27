@@ -39,7 +39,7 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test @StoragePropRef primitive type transform', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -54,7 +54,7 @@ import { StoragePropRef as StoragePropRef } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43)
     this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB")
     this.__backing_booleanB = STATE_MGMT_FACTORY.makeStoragePropRef<boolean>(this, "Prop3", "booleanB", false)
@@ -114,7 +114,7 @@ function main() {}
     this.__backing_nullB!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
