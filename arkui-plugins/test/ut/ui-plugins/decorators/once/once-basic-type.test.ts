@@ -39,7 +39,7 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test basic type @Once decorated variables transformation', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -54,7 +54,7 @@ import { Param as Param, Once as Once } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", ((({let gensym___35048285 = initializers;
     (((gensym___35048285) == (null)) ? undefined : gensym___35048285.onceVar1)})) ?? ("stateVar1")));
     this.__backing_onceVar2 = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceVar2", ((({let gensym___241100287 = initializers;
@@ -119,7 +119,7 @@ function main() {}
     this.__backing_onceVar5!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

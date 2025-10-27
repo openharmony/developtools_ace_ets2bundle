@@ -49,7 +49,7 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -72,7 +72,7 @@ import hilog from "@ohos.hilog";
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -119,12 +119,12 @@ function main() {}
     this.__backing_hh!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("CustomDialog One", undefined).applyAttributesFinish();
         return;
       }), undefined);
@@ -139,20 +139,20 @@ function main() {}
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           let dialogController: (CustomDialogController | undefined) = ({let gensym___90667230: Any;
           gensym___90667230 = new CustomDialogController({
-            builder: @memo() (() => {
+            builder: @Memo() (() => {
               CustomDialogExample._instantiateImpl(undefined, (() => {
                 const instance = new CustomDialogExample();
                 instance.__setDialogController__((gensym___90667230 as CustomDialogController));

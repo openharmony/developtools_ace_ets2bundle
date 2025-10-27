@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -59,7 +59,7 @@ class ABB {
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
@@ -93,7 +93,7 @@ class ABB {
     Parent.__backing_localVar3.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

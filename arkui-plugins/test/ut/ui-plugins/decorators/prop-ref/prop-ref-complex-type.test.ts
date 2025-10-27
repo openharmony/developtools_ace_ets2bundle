@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -131,7 +131,7 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<Per>(this, "propVar1", ((({let gensym___95172135 = initializers;
     (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? (new Per(6))));
     this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<Array<number>>(this, "propVar2", ((({let gensym___222490386 = initializers;
@@ -329,7 +329,7 @@ final class PropType extends BaseEnum<int> {
     this.__backing_propVar12!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

@@ -140,7 +140,7 @@ enum PropType {
 `;
 
 const expectedCheckedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -234,7 +234,7 @@ final class PropType extends BaseEnum<int> {
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<Per>(this, "conVar1", "conVar1");
     this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<Array<number>>(this, "conVar2", "conVar2");
     this.__backing_conVar3 = STATE_MGMT_FACTORY.makeConsume<PropType>(this, "conVar3", "conVar3");
@@ -382,7 +382,7 @@ final class PropType extends BaseEnum<int> {
     this.__backing_conVar13!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

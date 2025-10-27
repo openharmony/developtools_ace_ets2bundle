@@ -45,7 +45,7 @@ import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { RowImpl as RowImpl } from "arkui.component.row";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -53,15 +53,15 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@memo() function showTextBuilder() {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function showTextBuilder() {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((((({let gensym___103851375 = initializers;
     (((gensym___103851375) == (null)) ? undefined : gensym___103851375.customBuilderParam2)})) ?? (content))) ?? (undefined))
     this.__backing_customBuilderParam1 = ((((({let gensym___20169645 = initializers;
@@ -72,39 +72,39 @@ function main() {}
   
   private __backing_customBuilderParam2?: ((()=> void) | undefined);
   
-  public get customBuilderParam2(): (@memo() (()=> void) | undefined) {
+  public get customBuilderParam2(): (@Memo() (()=> void) | undefined) {
     return this.__backing_customBuilderParam2;
   }
   
-  public set customBuilderParam2(value: (@memo() (()=> void) | undefined)) {
+  public set customBuilderParam2(value: (@Memo() (()=> void) | undefined)) {
     this.__backing_customBuilderParam2 = value;
   }
   
-  private __backing_customBuilderParam1?: @memo() (()=> void);
+  private __backing_customBuilderParam1?: @Memo() (()=> void);
   
-  public get customBuilderParam1(): @memo() (()=> void) {
+  public get customBuilderParam1(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam1!;
   }
   
-  public set customBuilderParam1(value: @memo() (()=> void)) {
+  public set customBuilderParam1(value: @Memo() (()=> void)) {
     this.__backing_customBuilderParam1 = value;
   }
   
-  @memo() public build() {
-    RowImpl(@memo() ((instance: RowAttribute): void => {
+  @Memo() public build() {
+    RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ConditionScope(@memo() (() => {
+    }), @Memo() (() => {
+      ConditionScope(@Memo() (() => {
         if (this.customBuilderParam2) {
-          ConditionBranch(@memo() (() => {
+          ConditionBranch(@Memo() (() => {
             (this.customBuilderParam2 as (()=> void))();
           }));
         }
       }));
-      ConditionScope(@memo() (() => {
+      ConditionScope(@Memo() (() => {
         if (this.customBuilderParam2) {
-          ConditionBranch(@memo() (() => {
+          ConditionBranch(@Memo() (() => {
             this.customBuilderParam2!();
           }));
         }
@@ -118,26 +118,26 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @memo() public componentBuilder() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public componentBuilder() {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {
-        customBuilderParam2: @memo() (() => {
+        customBuilderParam2: @Memo() (() => {
           this.componentBuilder();
         }),
         __options_has_customBuilderParam2: true,
@@ -153,7 +153,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(((()=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
   
 }
@@ -171,7 +171,7 @@ import { RowAttribute as RowAttribute } from "arkui.component.row";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { RowImpl as RowImpl } from "arkui.component.row";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -179,13 +179,13 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@memo() function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+@Memo() function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (183537441)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -205,7 +205,7 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((((({let gensym___103851375 = initializers;
     (((gensym___103851375) == (null)) ? undefined : gensym___103851375.customBuilderParam2)})) ?? (content))) ?? (undefined))
     this.__backing_customBuilderParam1 = ((((({let gensym___20169645 = initializers;
@@ -216,31 +216,31 @@ function main() {}
   
   private __backing_customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   
-  public get customBuilderParam2(): (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
+  public get customBuilderParam2(): (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
     return this.__backing_customBuilderParam2;
   }
   
-  public set customBuilderParam2(value: (@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)) {
+  public set customBuilderParam2(value: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)) {
     this.__backing_customBuilderParam2 = value;
   }
   
-  private __backing_customBuilderParam1?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam1?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
   
-  public get customBuilderParam1(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+  public get customBuilderParam1(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam1!;
   }
   
-  public set customBuilderParam1(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+  public set customBuilderParam1(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam1 = value;
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (234402485)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+    RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -252,20 +252,20 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213104625)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
         if (this.customBuilderParam2) {
-          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -283,14 +283,14 @@ function main() {}
           return;
         }
       }));
-      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
         if (this.customBuilderParam2) {
-          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -325,17 +325,17 @@ function main() {}
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179117969)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -354,13 +354,13 @@ function main() {}
     }
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+    ColumnImpl(__memo_context, ((__memo_id) + (78055758)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -372,7 +372,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -381,7 +381,7 @@ function main() {}
       Child._instantiateImpl(__memo_context, ((__memo_id) + (54078781)), undefined, (() => {
         return new Child();
       }), {
-        customBuilderParam2: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        customBuilderParam2: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 0);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -414,7 +414,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
   
 }

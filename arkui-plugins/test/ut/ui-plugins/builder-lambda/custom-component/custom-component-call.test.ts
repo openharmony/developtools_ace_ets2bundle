@@ -109,7 +109,7 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
@@ -121,49 +121,49 @@ function main() {}
 
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
-  public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
     (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
   }
   
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
   
-  private __backing_closer?: @memo() (()=> void);
+  private __backing_closer?: @Memo() (()=> void);
   
-  public get closer(): @memo() (()=> void) {
+  public get closer(): @Memo() (()=> void) {
     return this.__backing_closer!;
   }
   
-  public set closer(value: @memo() (()=> void)) {
+  public set closer(value: @Memo() (()=> void)) {
     this.__backing_closer = value;
   }
   
-  @memo() public closerBuilder() {}
+  @Memo() public closerBuilder() {}
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
-  public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), undefined, undefined, @memo() (() => {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      }), undefined, undefined, @Memo() (() => {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
           instance.setColumnOptions(undefined).applyAttributesFinish();
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() (() => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions("hello", undefined).applyAttributesFinish();
             return;
           }), undefined);
@@ -171,15 +171,15 @@ function main() {}
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), {}, undefined, @memo() (() => {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      }), {}, undefined, @Memo() (() => {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
           instance.setColumnOptions(undefined).applyAttributesFinish();
           return;
-        }), @memo() (() => {}));
+        }), @Memo() (() => {}));
       }));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
-      }), undefined, undefined, @memo() (() => {}));
+      }), undefined, undefined, @Memo() (() => {}));
       CustomContainer._instantiateImpl(undefined, (() => {
         return new CustomContainer();
       }), undefined, undefined, undefined);
@@ -191,7 +191,7 @@ function main() {}
 }
 
 @Component() export interface __Options_CustomContainer {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@memo() (()=> void) | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
   
 }

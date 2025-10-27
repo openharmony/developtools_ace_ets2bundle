@@ -39,7 +39,7 @@ const storageLinkTransform: Plugins = {
 const pluginTester = new PluginTester('test storagelink primitive type transform', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
@@ -60,7 +60,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_numA = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "Prop1", "numA", 33)
     this.__backing_stringA = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "Prop2", "stringA", "AA")
     this.__backing_booleanA = STATE_MGMT_FACTORY.makeStorageLink<boolean>(this, "Prop3", "booleanA", true)
@@ -98,14 +98,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_booleanA!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
     }), undefined, undefined, undefined);

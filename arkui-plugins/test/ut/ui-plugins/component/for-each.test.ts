@@ -43,7 +43,7 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -73,7 +73,7 @@ class AB {
 }
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_arr = ((({let gensym___244068973 = initializers;
     (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
   }
@@ -99,65 +99,65 @@ class AB {
     } as Person));
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+    }), @Memo() (() => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.arr;
-        }), @memo() ((item: string) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: string) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.getArray();
-        }), @memo() ((item: Person) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: Person) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item.name, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @memo() ((item: string) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: string) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @memo() (() => {}), undefined);
+        }), @Memo() (() => {}), undefined);
         return;
       }));
-      ForEachImpl<Person>(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl<Person>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Person>((() => {
           return this.getArray();
-        }), @memo() (() => {}), undefined);
+        }), @Memo() (() => {}), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new Array<string>("1", "2");
-        }), @memo() (() => {
-          ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        }), @Memo() (() => {
+          ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
             instance.setForEachOptions((() => {
               return new Array<string>("1", "2");
-            }), @memo() ((item: string) => {
-              TextImpl(@memo() ((instance: TextAttribute): void => {
+            }), @Memo() ((item: string) => {
+              TextImpl(@Memo() ((instance: TextAttribute): void => {
                 instance.setTextOptions(item, undefined).applyAttributesFinish();
                 return;
               }), undefined);

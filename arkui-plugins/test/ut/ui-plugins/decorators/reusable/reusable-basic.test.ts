@@ -45,7 +45,7 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -56,11 +56,11 @@ import { State as State, PropRef as PropRef } from "@ohos.arkui.stateManagement"
 function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @memo() public build() {
+  @Memo() public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }), {
@@ -74,7 +74,7 @@ function main() {}
 }
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
     this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
@@ -116,7 +116,7 @@ function main() {}
     this.__backing_num1!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

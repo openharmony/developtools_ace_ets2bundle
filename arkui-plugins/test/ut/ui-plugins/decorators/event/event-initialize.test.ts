@@ -122,7 +122,7 @@ import { IParamDecoratedVariable as IParamDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -139,7 +139,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 function main() {}
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_index = STATE_MGMT_FACTORY.makeParam<number>(this, "index", ((({let gensym___23942905 = initializers;
     (((gensym___23942905) == (null)) ? undefined : gensym___23942905.index)})) ?? (0)));
     this.__backing_changeIndex = ((({let gensym___204042774 = initializers;
@@ -195,12 +195,12 @@ function main() {}
     this.__backing_testEvent2 = value;
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child index: \${this.index}\`, undefined).onClick(((e) => {
           this.changeIndex(20);
           console.log(\`after changeIndex \${this.index}\`);
@@ -215,7 +215,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_index = STATE_MGMT_FACTORY.makeLocal<number>(this, "index", 0);
   }
   
@@ -231,11 +231,11 @@ function main() {}
     this.__backing_index!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), {

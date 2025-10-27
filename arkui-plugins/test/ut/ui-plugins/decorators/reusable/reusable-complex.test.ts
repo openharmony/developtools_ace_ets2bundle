@@ -53,7 +53,7 @@ import { ConditionScope as ConditionScope } from "arkui.component.builder";
 
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -93,7 +93,7 @@ class Message {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
     (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
   }
@@ -110,20 +110,20 @@ class Message {
     this.__backing_display!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Hello", undefined).fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ConditionScope(@memo() (() => {
+      ConditionScope(@Memo() (() => {
         if (this.display) {
-          ConditionBranch(@memo() (() => {
+          ConditionBranch(@Memo() (() => {
             Child._instantiateImpl(undefined, (() => {
               return new Child();
             }), {
@@ -141,7 +141,7 @@ class Message {
 }
 
 @Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___91869411 = initializers;
     (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
   }
@@ -167,12 +167,12 @@ class Message {
   
   public aboutToReuse(params: Record<string, ESObject>) {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).borderWidth(1).height(100).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(this.message.value, undefined).fontSize(30).applyAttributesFinish();
         return;
       }), undefined);
@@ -184,7 +184,7 @@ class Message {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
     }), undefined, undefined, undefined);

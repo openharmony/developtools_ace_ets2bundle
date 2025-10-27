@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -233,7 +233,7 @@ final class MonitorNames extends BaseEnum<String> {
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_varF = STATE_MGMT_FACTORY.makeLocal<FFF>(this, "varF", new FFF());
     this.__monitor_changeEEE = STATE_MGMT_FACTORY.makeMonitor([{
       path: "varF.ff",
@@ -262,7 +262,7 @@ final class MonitorNames extends BaseEnum<String> {
   
   @Monitor({value:[MonitorNames.name4]}) public changeEEE(monitor: IMonitor) {}
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

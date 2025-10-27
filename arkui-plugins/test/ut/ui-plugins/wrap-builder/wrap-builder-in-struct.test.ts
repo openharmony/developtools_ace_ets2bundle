@@ -83,7 +83,7 @@ import { RowImpl as RowImpl } from "arkui.component.row";
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -97,7 +97,7 @@ import { Local as Local, Param as Param, Provider as Provider, Once as Once, Con
 
 function main() {}
 
-@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (93169018)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -109,7 +109,7 @@ function main() {}
   }
 }
 
-@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (258460786)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -123,7 +123,7 @@ function main() {}
 
 
 @ComponentV2() final struct Index2 extends CustomComponentV2<Index2, __Options_Index2> {
-  public __initializeStruct(initializers: (__Options_Index2 | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index2 | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderRegular = ((({let gensym___265903007 = initializers;
     (((gensym___265903007) == (null)) ? undefined : gensym___265903007.builderRegular)})) ?? (MyBuilder));
     this.__backing_builderRegular2 = ((({let gensym___143278645 = initializers;
@@ -318,13 +318,13 @@ function main() {}
     this.__backing_builderConsumer3!.set(value);
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (75236795)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    RowImpl(__memo_context, ((__memo_id) + (173773669)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+    RowImpl(__memo_context, ((__memo_id) + (173773669)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (241913892)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -336,7 +336,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (262314519)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -344,7 +344,7 @@ function main() {}
       }
       this.builderRegular(__memo_context, ((__memo_id) + (137225318)), "Hello World", 50);
       this.builderRegular2.builder(__memo_context, ((__memo_id) + (211301233)), "Hello World", 50);
-      ForEachImpl(__memo_context, ((__memo_id) + (218979098)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      ForEachImpl(__memo_context, ((__memo_id) + (218979098)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76711614)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
@@ -353,7 +353,7 @@ function main() {}
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -373,7 +373,7 @@ function main() {}
       }));
       this.builderProvider(__memo_context, ((__memo_id) + (223657391)), "Hello World", 50);
       this.builderProvider2.builder(__memo_context, ((__memo_id) + (192802443)), "Hello World", 50);
-      ForEachImpl(__memo_context, ((__memo_id) + (78055758)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      ForEachImpl(__memo_context, ((__memo_id) + (78055758)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
@@ -382,7 +382,7 @@ function main() {}
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderProvider3;
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -416,7 +416,7 @@ function main() {}
 }
 
 @Component() final struct Index extends CustomComponent<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderRegular = ((({let gensym___133415523 = initializers;
     (((gensym___133415523) == (null)) ? undefined : gensym___133415523.builderRegular)})) ?? (MyBuilder));
     this.__backing_builderRegular2 = ((({let gensym___182042467 = initializers;
@@ -755,13 +755,13 @@ function main() {}
     this.__backing_builderLocalStoragePropRef3!.set(value);
   }
   
-  @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (187581126)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    RowImpl(__memo_context, ((__memo_id) + (136286509)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+    RowImpl(__memo_context, ((__memo_id) + (136286509)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151409217)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
@@ -773,7 +773,7 @@ function main() {}
         __memo_scope.recache();
         return;
       }
-    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (225484108)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -781,7 +781,7 @@ function main() {}
       }
       this.builderRegular(__memo_context, ((__memo_id) + (238360624)), "Hello World", 50);
       this.builderRegular2.builder(__memo_context, ((__memo_id) + (234157464)), "Hello World", 50);
-      ForEachImpl(__memo_context, ((__memo_id) + (72614054)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      ForEachImpl(__memo_context, ((__memo_id) + (72614054)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (204012763)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
@@ -790,7 +790,7 @@ function main() {}
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (18973066)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -810,7 +810,7 @@ function main() {}
       }));
       this.builderLocalStorageLink(__memo_context, ((__memo_id) + (172290133)), "Hello World", 50);
       this.builderLocalStorageLink2.builder(__memo_context, ((__memo_id) + (5605714)), "Hello World", 50);
-      ForEachImpl(__memo_context, ((__memo_id) + (157355641)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+      ForEachImpl(__memo_context, ((__memo_id) + (157355641)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (27183850)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
@@ -819,7 +819,7 @@ function main() {}
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderLocalStorageLink3;
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (139295044)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {

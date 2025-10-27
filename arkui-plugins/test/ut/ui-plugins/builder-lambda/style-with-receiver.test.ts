@@ -41,7 +41,7 @@ const expectedScript: string = `
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -51,7 +51,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { Memo as Memo } from "@ohos.arkui.stateManagement";
 
 import { Text as Text, TextAttribute as TextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
 
@@ -60,33 +60,33 @@ import hilog from "@ohos.hilog";
 function main() {}
 
 
-@memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
+@Memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(str);
   return this;
 }
 
-@memo() function style22(this: TextAttribute): TextAttribute {
+@Memo() function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
 
 
 @Component() final struct MM extends CustomComponent<MM, __Options_MM> {
-  public __initializeStruct(initializers: (__Options_MM | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_MM | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         style22(cardStyle(instance.setTextOptions("hello world", undefined).height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         cardStyle(instance.setTextOptions("hello world", undefined), 600, "#eeeeee").applyAttributesFinish();
         return;
       }), undefined);

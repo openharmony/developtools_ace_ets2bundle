@@ -57,7 +57,7 @@ import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
@@ -147,7 +147,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_users = STATE_MGMT_FACTORY.makeProvider<Array<User>>(this, "users", "data", data);
   }
   
@@ -162,27 +162,27 @@ function main() {}
     this.__backing_users!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       Child._instantiateImpl(undefined, (() => {
         return new Child();
       }), undefined, undefined, undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("add new user", undefined).onClick(((e) => {
           this.users.push(new User("Molly", 18));
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("age++", undefined).onClick(((e) => {
           (this.users[0].age++);
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("change name", undefined).onClick(((e) => {
           this.users[0].name = "Shelly";
         })).applyAttributesFinish();
@@ -196,7 +196,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_users = STATE_MGMT_FACTORY.makeConsumer<Array<User>>(this, "users", "data", []);
   }
   
@@ -211,28 +211,28 @@ function main() {}
     this.__backing_users!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ForEachImpl<User>(@memo() ((instance: ForEachAttribute): void => {
+    }), @Memo() (() => {
+      ForEachImpl<User>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<User>((() => {
           return this.users;
-        }), @memo() ((item: User) => {
-          ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+        }), @Memo() ((item: User) => {
+          ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
-          }), @memo() (() => {
-            TextImpl(@memo() ((instance: TextAttribute): void => {
+          }), @Memo() (() => {
+            TextImpl(@Memo() ((instance: TextAttribute): void => {
               instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30).applyAttributesFinish();
               return;
             }), undefined);
-            TextImpl(@memo() ((instance: TextAttribute): void => {
+            TextImpl(@Memo() ((instance: TextAttribute): void => {
               instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30).applyAttributesFinish();
               return;
             }), undefined);
-            DividerImpl(@memo() ((instance: DividerAttribute): void => {
+            DividerImpl(@Memo() ((instance: DividerAttribute): void => {
               instance.setDividerOptions().applyAttributesFinish();
               return;
             }));

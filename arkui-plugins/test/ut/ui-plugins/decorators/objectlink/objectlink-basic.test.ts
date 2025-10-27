@@ -39,7 +39,7 @@ const objectlinkTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test objectlink basic transform', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -132,7 +132,7 @@ function main() {}
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
     (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)}) as A))
   }
@@ -150,14 +150,14 @@ function main() {}
     return this.__backing_objectlinkvar!.get();
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
-  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
     (((gensym___219806589) == (null)) ? undefined : gensym___219806589.objectlinkvar1)}) as (A | undefined)))
     this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
@@ -199,7 +199,7 @@ function main() {}
     return this.__backing_objectlinkvar3!.get();
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

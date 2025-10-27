@@ -39,7 +39,7 @@ const storagePropTransform: Plugins = {
 const pluginTester = new PluginTester('test @LocalStoragePropRef complex type transform', buildConfig);
 
 const expectedScript: string = `
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
@@ -129,7 +129,7 @@ final class Status extends BaseEnum<int> {
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_arrayB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3])
     this.__backing_objectB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Object>(this, "Prop2", "objectB", {})
     this.__backing_dateB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Date>(this, "Prop3", "dateB", new Date("2021-09-09"))
@@ -211,7 +211,7 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumB!.set(value);
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   public constructor() {}
   

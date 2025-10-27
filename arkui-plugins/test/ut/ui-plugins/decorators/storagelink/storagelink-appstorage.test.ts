@@ -42,7 +42,7 @@ const expectedScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStorageLinkDecoratedVariable as IStorageLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -74,7 +74,7 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
     this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
   }
@@ -101,18 +101,18 @@ class Data {
     this.__backing_storageLinkObject!.set(value);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLink}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLink += 1;
         })).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLinkObject.code}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
         })).applyAttributesFinish();
@@ -126,7 +126,7 @@ class Data {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
     }), undefined, undefined, undefined);

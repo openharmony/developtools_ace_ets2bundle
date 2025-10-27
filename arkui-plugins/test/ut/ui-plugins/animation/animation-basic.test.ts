@@ -40,7 +40,7 @@ const pluginTester = new PluginTester('test basic animation transform', buildCon
 const expectedScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -72,16 +72,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("AnimatableProperty", undefined).animationStart({
           duration: 2000,
           curve: Curve.Ease,
@@ -105,7 +105,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
+  @Memo() public entry(): void {
     AnimatablePropertyExample._instantiateImpl(undefined, (() => {
       return new AnimatablePropertyExample();
     }), undefined, undefined, undefined);
