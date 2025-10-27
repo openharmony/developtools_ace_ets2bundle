@@ -116,7 +116,7 @@ ArkTSRecordFunc({a: 1});
 `;
 
 const IMPORT_ARKTS_EVO_RECORD_CODE_EXPECT: string = `import { ArkTSRecordFunc } from "arkTSEvo";
-let tmpRecord = globalThis.Panda.getInstance("Lescompat/Record;");
+let tmpRecord = globalThis.Panda.getInstance("Lstd.core.Record;");
 ArkTSRecordFunc((tmpRecord["a"] = 1, tmpRecord));
 `;
 
