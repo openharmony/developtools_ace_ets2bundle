@@ -23,9 +23,9 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
 
     public setup(): Record<string, string> {
         return {
-            onlyOnGetter: `@Computed can only decorate 'GetAccessor'.`,
+            onlyOnGetter: `'@Computed' can only decorate 'GetAccessor'.`,
             onlyInObservedV2: `The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.`,
-            componentV2InStruct: `The '@Computed' annotation can only be used in a 'struct' decorated with ComponentV2.`,
+            componentV2InStruct: `The '@Computed' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
             noTwoWayBinding: `A property decorated by '@Computed' cannot be used with two-way bind syntax.`,
             computedMethodDefineSet: `A property decorated by '@Computed' cannot define a set method.`
         };
@@ -203,8 +203,12 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         const observedDecorator = getClassAnnotationUsage(node, PresetDecorators.OBSERVED_V1);
 
         node.definition?.body.forEach((member) => {
-            if (arkts.isMethodDefinition(member)) {
+            if (arkts.isClassProperty(member)) {
+                this.validateComputedOnClassProperty(member);
+                return;
+            }
 
+            if (arkts.isMethodDefinition(member)) {
                 this.validateComputedInClass(node, member, observedV2Decorator, observedDecorator);
                 const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
                 if (!arkts.isIdentifier(member.name)) {
