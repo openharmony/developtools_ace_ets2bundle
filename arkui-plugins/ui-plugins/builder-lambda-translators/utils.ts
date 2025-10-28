@@ -22,6 +22,7 @@ import {
     ARKUI_IMPORT_PREFIX_NAMES,
     ARKUI_NAV_DESTINATION_SOURCE_NAME,
     ARKUI_NAVIGATION_SOURCE_NAME,
+    DecoratorNames,
     Dollars,
     InnerComponentAttributes,
     InnerComponentNames,
@@ -683,43 +684,73 @@ export function flatObjectExpressionToEntries(
     return entries;
 }
 
-function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined): boolean {
+export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpression, ignoreDecl: boolean = false): boolean {
+    const hasBuilderAnnotation = node.annotations.find((anno) => {
+        const expr = anno.expr;
+        if (!expr || !arkts.isIdentifier(expr)) {
+            return false;
+        }
+        return expr.name === DecoratorNames.BUILDER || expr.name === 'memo';
+    });
+    if (!hasBuilderAnnotation) {
+        return false;
+    }
+    return true;
+}
+
+export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, ignoreDecl: boolean = false, shouldIgnoreAnnotation: boolean = false): boolean {
     if (!typeNode) {
         return false;
     }
-    if (arkts.isETSFunctionType(typeNode)) {
-        return typeNode.params.length === 0 && !!typeNode.returnType && typeNode.returnType.dumpSrc() === 'void';
-    }
-    if (arkts.isETSUnionType(typeNode)) {
-        let hasTrailingLambdaType: boolean = false;
-        let hasOtherNonUndefinedTypes: boolean = false;
-        for (const t of typeNode.types) {
-            if ((hasTrailingLambdaType && !arkts.isETSUndefinedType(t)) || hasOtherNonUndefinedTypes) {
-                hasOtherNonUndefinedTypes = true;
-                break;
+    const queue: arkts.AstNode[] = [typeNode];
+    const visitedNames: AstNodePointer[] = [];
+    let hasTrailingLambdaType: boolean = false;
+    let hasBuilderAnnotation: boolean = shouldIgnoreAnnotation;
+    let otherTypeLength: number = 0;
+    while (queue.length > 0 && otherTypeLength === 0 && !(hasTrailingLambdaType && hasBuilderAnnotation)) {
+        const node = queue.shift()!;
+        if (arkts.isETSFunctionType(node)) {
+            hasTrailingLambdaType ||= node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void';
+            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+            if (!hasTrailingLambdaType && !hasBuilderAnnotation) {
+                otherTypeLength ++;
             }
-            hasTrailingLambdaType ||= checkIsTrailingLambdaType(t);
-            hasOtherNonUndefinedTypes ||= !hasTrailingLambdaType && !arkts.isETSUndefinedType(t);
+        } else if (arkts.isETSUnionType(node)) {
+            queue.push(...node.types);
+            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+        } else if (arkts.isETSTypeReference(node)) {
+            const name = expectNameInTypeReference(node);
+            if (!name) {
+                continue;
+            }
+            const decl = !!name ? arkts.getDecl(name) : undefined;
+            if (!decl || !arkts.isTSTypeAliasDeclaration(decl) || visitedNames.includes(decl.peer)) {
+                continue;
+            }
+            visitedNames.push(decl.peer);
+            const type = decl.typeAnnotation;
+            if (!type) {
+                continue;
+            }
+            queue.push(type);
+            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
+        } else if (!arkts.isETSUndefinedType(node)) {
+            otherTypeLength ++;
         }
-        return hasTrailingLambdaType && !hasOtherNonUndefinedTypes;
     }
-    if (arkts.isETSTypeReference(typeNode)) {
-        const name = expectNameInTypeReference(typeNode);
-        const decl = !!name ? arkts.getDecl(name) : undefined;
-        return checkIsTrailingLambdaType(decl);
-    }
-    return false;
+    return hasTrailingLambdaType && hasBuilderAnnotation && otherTypeLength === 0;
 }
 
 /**
  * check whether the last parameter is trailing lambda in components.
  */
-export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expression[]): boolean {
+export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expression[], ignoreDecl: boolean = false): boolean {
     if (params.length === 0) {
         return false;
     }
     const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
-    return hasMemoAnnotation(lastParam) && checkIsTrailingLambdaType(lastParam.type);
+    const hasBuilder = findBuilderName(lastParam, ignoreDecl);
+    return checkIsTrailingLambdaType(lastParam.type, ignoreDecl, hasBuilder);
 }
 
 /**
