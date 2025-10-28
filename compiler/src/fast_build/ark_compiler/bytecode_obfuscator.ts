@@ -310,6 +310,7 @@ export class BytecodeObfuscator {
     const sourceMapUpdated: Object = updateSourceMap(sourceMap, nameMapping);
     fs.writeFileSync(sourceMapPath, JSON.stringify(sourceMapUpdated, null, 2));
     fs.writeFileSync(souceMapJsonPath, SourceMapGenerator.getInstance().convertSourceMapToCache(sourceMapUpdated));
+    fs.copyFileSync(sourceMapPath, souceMapJsonPath);
     const nameCacheUpdated: Object = this.bytecodeObfuscateConfig.obfuscationRules.compact ?
       nameCache : processNameCache(nameCache, sourceMap);
     fs.writeFileSync(this.nameCachePath, JSON.stringify(nameCacheUpdated, null, 2));
