@@ -130,7 +130,7 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
     annotationName: string
   ): void {
     if (arkts.isClassProperty(node)) {
-      this.processNode(node, annotationName);
+      this.checkClassProperty(node);
     }
 
     for (const child of node.getChildren()) {
@@ -138,42 +138,31 @@ class ComponentComponentV2MixUseCheckRule extends AbstractUISyntaxRule {
     }
   }
 
-  private processNode(
-    node: arkts.ClassProperty,
-    annotationName: string
+  private checkClassProperty(
+    node: arkts.ClassProperty
   ): void {
-    const queue: Array<arkts.AstNode> = [node];
-    while (queue.length > 0) {
-      const currentNode: arkts.AstNode = queue.shift() as arkts.AstNode;
-      if (arkts.isIdentifier(currentNode)) {
-        const name = getIdentifierName(currentNode);
-
-        if (
-          annotationName === PresetDecorators.COMPONENT_V1 &&
-          this.observedV2Names.has(name)
-        ) {
-          this.checkObservedConflict(node, v1ComponentDecorators);
-          break;
-        }
-      }
-      const children = currentNode.getChildren();
-      for (const child of children) {
-        queue.push(child);
-      }
+    const typeAnnotation = node.typeAnnotation;
+    if (!typeAnnotation || !arkts.isETSTypeReference(typeAnnotation)) {
+      return;
     }
-  }
 
-  private checkObservedConflict(
-    node: arkts.ClassProperty,
-    componentDecorators: string[]
-  ): void {
+    const identifier = typeAnnotation.part?.name;
+    if (!identifier || !arkts.isIdentifier(identifier)) {
+      return;
+    }
+
+    const typeName = identifier.name;
+    if (!this.observedV2Names.has(typeName)) {
+      return;
+    }
+
     node.annotations.forEach((anno) => {
       if (!anno.expr) {
         return;
       }
 
       const annotationName = getIdentifierName(anno.expr);
-      if (annotationName && componentDecorators.includes(annotationName)) {
+      if (annotationName && v1ComponentDecorators.includes(annotationName)) {
         this.report({
           node: anno,
           message: this.messages.observedv2_v1,
