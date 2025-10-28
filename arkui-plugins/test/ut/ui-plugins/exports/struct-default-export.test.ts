@@ -42,13 +42,19 @@ import { NavInterface as NavInterface } from \"arkui.component.customComponent\"
 import { PageLifeCycle as PageLifeCycle } from \"arkui.component.customComponent\";
 import { EntryPoint as EntryPoint } from \"arkui.component.customComponent\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
+import { Builder as Builder } from \"arkui.component.builder\";
+import { LocalStorage as LocalStorage } from \"arkui.stateManagement.storage.localStorage\";
+import { ComponentBuilder as ComponentBuilder } from \"arkui.stateManagement.runtime\";
 import { Component as Component, Entry as Entry } from \"@ohos.arkui.component\";
 @Entry() @Component() export default final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
+        throw new Error("Declare interface");
+    }
     public build() {}
-    public constructor() {}
-}
+    public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+        super(useSharedStorage, storage);
+    }
 
-@Entry() @Component() export interface __Options_A {
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -65,6 +71,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/exports/struct-default-export\",
     integratedHsp: \"false\",
 } as NavInterface))
+@Entry() @Component() export interface __Options_A {
+}
 `;
 
 function testExportParsed(this: PluginTestContext): void {

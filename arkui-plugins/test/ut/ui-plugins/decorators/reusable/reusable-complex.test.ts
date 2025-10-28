@@ -229,9 +229,10 @@ class Message {
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    Index._instantiateImpl(undefined, (() => {
-      return new Index();
-    }), undefined, undefined, undefined);
+    Index._invoke(@memo() ((instance: Index): void => {
+    instance.applyAttributesFinish();
+    return;
+    }), undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

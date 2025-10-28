@@ -121,9 +121,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    MyStateSample._instantiateImpl(undefined, (() => {
-      return new MyStateSample();
-    }), undefined, undefined, undefined);
+    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+    instance.applyAttributesFinish();
+    return;
+    }), undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}
