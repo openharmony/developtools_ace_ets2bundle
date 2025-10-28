@@ -673,7 +673,7 @@ export class factory {
     static wrapStateManagementTypeToMethodInInterface(
         method: arkts.MethodDefinition,
         decorator: DecoratorNames,
-        metadata?: arkts.AstNodeCacheValueMetadata,
+        metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.MethodDefinition {
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
             const func = method.scriptFunction;
@@ -681,13 +681,6 @@ export class factory {
                 func.returnTypeAnnotation,
                 decorator
             );
-            const newOverLoads = method.overloads.map((overload) => {
-                if (arkts.isMethodDefinition(overload)) {
-                    return factory.wrapStateManagementTypeToMethodInInterface(overload, decorator);
-                }
-                return overload;
-            });
-            method.setOverloads(newOverLoads);
             removeDecorator(method, decorator);
             if (!!newType) {
                 if (!!metadata) {
@@ -695,7 +688,10 @@ export class factory {
                 }
                 func.setReturnTypeAnnotation(newType);
             }
-        } else if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            return method;
+        }
+        if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            const func = method.scriptFunction;
             const newParam: arkts.Expression | undefined = factory.wrapStateManagementTypeToParam(
                 method.scriptFunction.params.at(0),
                 decorator,
@@ -703,8 +699,9 @@ export class factory {
             );
             removeDecorator(method, decorator);
             if (!!newParam) {
-                return UIFactory.updateMethodDefinition(method, { function: { params: [newParam] } });
+                func.setParams([newParam]);
             }
+            return method;
         }
         return method;
     }
