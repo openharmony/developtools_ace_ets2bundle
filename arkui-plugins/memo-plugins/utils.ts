@@ -665,8 +665,9 @@ export function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunc
     if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
         return false;
     }
-    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    const isGetterSetter =
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     if (!isGetterSetter) {
         return false;
     }

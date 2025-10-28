@@ -25,7 +25,7 @@ function dumpGetterSetter(
     type: string,
     annotations: string[] = [],
     paramAnnotations: string[] = [],
-    hasBody: boolean = true,
+    hasBody: boolean = false,
     body: string | undefined = undefined
 ): string {
     if (getOrSet === GetSetDumper.BOTH) {

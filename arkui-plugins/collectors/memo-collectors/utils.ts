@@ -79,8 +79,9 @@ function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): 
     if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
         return false;
     }
-    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    const isGetterSetter =
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     if (!isGetterSetter) {
         return false;
     }
@@ -784,7 +785,6 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
         !hasMemoEntry && !hasMemoIntrinsic,
         shouldEnforceMemoSkip
     );
-    // const isFromInterfaceGetterSetter = node.
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
     if (isMemo && !arkts.NodeCache.getInstance().has(node)) {
         const metadata = collectMetadataInMethod(node);
