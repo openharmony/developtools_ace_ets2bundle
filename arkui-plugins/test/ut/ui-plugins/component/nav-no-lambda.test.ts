@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedCheckedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.runtime";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 

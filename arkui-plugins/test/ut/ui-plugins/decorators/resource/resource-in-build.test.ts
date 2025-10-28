@@ -134,6 +134,9 @@ function main() {}
   @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
+  public async test_0(res: Resource) {
+    return res;
+  }
 
   public aboutToAppear() {
     let arr: Array<Resource> = new Array<Resource>();
@@ -143,6 +146,7 @@ function main() {}
     for (let item of this.numbers) {
       arr.push(_r(16777216, 10003, "com.example.mock", "entry"));
     }
+    const a2 = await this.test_0(_r(16777216, 10003, "com.example.mock", "entry"));
   }
   
   @memo() public build() {

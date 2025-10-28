@@ -176,13 +176,6 @@ class CC {
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
@@ -193,6 +186,13 @@ class __EntryWrapper extends EntryPoint {
 
   public constructor() {}
 
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
+  
 }
 `;
 
