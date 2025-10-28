@@ -56,7 +56,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from \"arkui.stateManagement.runtime\";
+import { MemoIntrinsic as MemoIntrinsic } from \"arkui.incremental.annotation\";
 import { FakeComponentAttribute as FakeComponentAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentImpl as FakeComponentImpl } from \"${utilExternalSourceName}\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
@@ -109,9 +109,6 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     ${dumpConstructor()}
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
-}
-
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
         A._invoke(@memo() ((instance: A): void => {
@@ -120,6 +117,9 @@ class __EntryWrapper extends EntryPoint {
         }), undefined, undefined, undefined, undefined);
     }
     public constructor() {}
+}
+
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_A {
 }
 `;
 

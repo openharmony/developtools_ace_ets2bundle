@@ -70,10 +70,6 @@ const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
 
 }
 
-@Entry({storage:"myStorage"}) @Component() export interface __Options_MyStateSample {
-
-}
-
 class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample();
@@ -90,6 +86,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/localstorage/storage",
   integratedHsp: "false",
 } as NavInterface))
+
+@Entry({storage:"myStorage"}) @Component() export interface __Options_MyStateSample {
+
+}
 `;
 
 function testEntryStorageTransformer(this: PluginTestContext): void {

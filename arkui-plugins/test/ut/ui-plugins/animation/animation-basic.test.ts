@@ -121,10 +121,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_AnimatablePropertyExample {
-  
-}
-
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
     AnimatablePropertyExample._invoke(@memo() ((instance: AnimatablePropertyExample): void => {
@@ -134,6 +130,10 @@ class __EntryWrapper extends EntryPoint {
   }
   
   public constructor() {}
+  
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_AnimatablePropertyExample {
   
 }
 `;

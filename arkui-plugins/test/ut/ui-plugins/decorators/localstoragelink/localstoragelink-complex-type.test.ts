@@ -260,6 +260,17 @@ final class Status extends BaseEnum<int> {
   ${dumpConstructor()}
 }
 
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._instantiateImpl(undefined, (() => {
+      return new MyStateSample();
+    }), undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayA', '(ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)')}
@@ -293,18 +304,6 @@ final class Status extends BaseEnum<int> {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumA', '(ILocalStorageLinkDecoratedVariable<Status> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumA', '(boolean | undefined)')}
   
-}
-
-class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-  }
-
-  public constructor() {}
-
 }
 `;
 
