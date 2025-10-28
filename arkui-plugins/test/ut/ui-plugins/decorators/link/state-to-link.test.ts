@@ -228,9 +228,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 class __EntryWrapper extends EntryPoint {
   @memo() public entry(): void {
-    ParentComponent._instantiateImpl(undefined, (() => {
-      return new ParentComponent();
-    }), undefined, undefined, undefined);
+    ParentComponent._invoke(@memo() ((instance: ParentComponent): void => {
+    instance.applyAttributesFinish();
+    return;
+    }), undefined, undefined, undefined, undefined);
+
   }
   
   public constructor() {}

@@ -123,12 +123,12 @@ function main() {}
   @State() public code: number;
   
   @memo() public build(): void
-  
-  constructor(useSharedStorage: (boolean | undefined))
-  
-  constructor()
-  
+
   public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
+  
+  public constructor(useSharedStorage: (boolean | undefined))
+  
+  public constructor()
   
   public static _buildCompatibleNode(options: __Options_SwipeRefresher): void
 
