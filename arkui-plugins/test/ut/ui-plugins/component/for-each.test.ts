@@ -130,7 +130,7 @@ class AB {
       return;
     }), @memo() (() => {
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<string> => {
+        instance.setForEachOptions((() => {
           return this.arr;
         }), @memo() ((item: string) => {
           TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -141,7 +141,7 @@ class AB {
         return;
       }));
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<Person> => {
+        instance.setForEachOptions((() => {
           return this.getArray();
         }), @memo() ((item: Person) => {
           TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -152,7 +152,7 @@ class AB {
         return;
       }));
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<string> => {
+        instance.setForEachOptions((() => {
           return new AB().bar;
         }), @memo() ((item: string) => {
           TextImpl(@memo() ((instance: TextAttribute): void => {
@@ -163,23 +163,23 @@ class AB {
         return;
       }));
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<String> => {
+        instance.setForEachOptions((() => {
           return new AB().bar;
         }), @memo() (() => {}), undefined);
         return;
       }));
       ForEachImpl<Person>(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions<Person>(((): Array<Person> => {
+        instance.setForEachOptions<Person>((() => {
           return this.getArray();
         }), @memo() (() => {}), undefined);
         return;
       }));
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<String> => {
+        instance.setForEachOptions((() => {
           return new Array<string>("1", "2");
         }), @memo() (() => {
           ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-            instance.setForEachOptions(((): Array<string> => {
+            instance.setForEachOptions((() => {
               return new Array<string>("1", "2");
             }), @memo() ((item: string) => {
               TextImpl(@memo() ((instance: TextAttribute): void => {

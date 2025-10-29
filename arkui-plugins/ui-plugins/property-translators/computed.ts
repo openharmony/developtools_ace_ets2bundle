@@ -36,9 +36,6 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     translateMember(): arkts.AstNode[] {
         const originalName: string = expectName(this.method.name);
         const newName: string = computedField(originalName);
-        if (!this.returnType) {
-            this.returnType = getGetterReturnType(this.method);
-        }
         if (this.classInfo.isFromStruct && !this.isStatic) {
             this.cacheTranslatedInitializer(newName);
         }
@@ -61,7 +58,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
                         UIFactory.createScriptFunction({
                             body: this.method.scriptFunction.body?.clone(),
                             modifiers: modifiers,
-                            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                            flags:
+                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
                         })
                     ),
                     arkts.factory.createStringLiteral(originalName),
@@ -76,6 +75,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
         const originGetter: arkts.MethodDefinition = UIFactory.updateMethodDefinition(this.method, {
             function: {
                 returnTypeAnnotation: this.returnType,
+                flags:
+                    this.method.scriptFunction.flags |
+                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
                 body: arkts.factory.createBlock([
                     arkts.factory.createReturnStatement(this.generateComputedGet(newName)),
                 ]),

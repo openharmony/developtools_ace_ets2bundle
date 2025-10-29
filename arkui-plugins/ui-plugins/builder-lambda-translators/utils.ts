@@ -510,17 +510,20 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
 export function isDoubleDollarCall(
     value: arkts.Expression,
     ignoreDecl: boolean = false
-): value is arkts.CallExpression {
-    if (!arkts.isCallExpression(value)) {
+): value is arkts.CallExpression | arkts.TSAsExpression {
+    let _value: arkts.Expression = value;
+    if (arkts.isTSAsExpression(value)) {
+        _value = value.expr!;
+    }
+    if (!arkts.isCallExpression(_value)) {
         return false;
     }
-    if (
-        !(!!value.expression && arkts.isIdentifier(value.expression) && value.expression.name === Dollars.DOLLAR_DOLLAR)
-    ) {
+    const expr = _value.expression;
+    if (!expr || !arkts.isIdentifier(expr) || expr.name !== Dollars.DOLLAR_DOLLAR) {
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(value.expression);
+        const decl = arkts.getDecl(expr);
         if (!decl) {
             return false;
         }
@@ -537,6 +540,7 @@ export function isDoubleDollarCall(
  * get declaration type from function call argument `fun(<arg>)`.
  *
  * @param arg first argument in call expression.
+ * @deprecated
  */
 export function getArgumentType(arg: arkts.Expression): arkts.TypeNode | undefined {
     const decl: arkts.AstNode | undefined = arkts.getDecl(arg);
@@ -571,6 +575,7 @@ export function isArrayType(type: arkts.TypeNode): boolean {
  * get element type from array type node `<arrayType>`.
  *
  * @param arrayType array type node
+ * @deprecated
  */
 export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNode | undefined {
     if (arkts.isTSArrayType(arrayType)) {
