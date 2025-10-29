@@ -20,7 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
+import { dumpAnnotation, dumpConstructor, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -61,6 +61,8 @@ import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.st
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
+
 import { IConsumerDecoratedVariable as IConsumerDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IProviderDecoratedVariable as IProviderDecoratedVariable } from "arkui.stateManagement.decorator";
@@ -81,13 +83,19 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
 
-import { MemoSkip as MemoSkip } from "arkui.stateManagement.runtime";
+import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
 import { memo as memo } from "arkui.stateManagement.runtime";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
 
 import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Component as Component, ComponentV2 as ComponentV2, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
 
@@ -318,6 +326,26 @@ function main() {}
     this.__backing_builderConsumer3!.set(value);
   }
   
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (258012771)), 5);
+    const __memo_parameter_style = __memo_scope.param(0, style), __memo_parameter_initializers = __memo_scope.param(1, initializers), __memo_parameter_storage = __memo_scope.param(2, storage), __memo_parameter_reuseId = __memo_scope.param(3, reuseId), __memo_parameter_content = __memo_scope.param(4, content);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    CustomComponentV2._invokeImpl<Index2, __Options_Index2>(__memo_context, ((__memo_id) + (241913892)), style, ((): Index2 => {
+      return new Index2();
+    }), initializers, reuseId, content);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index2, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index2 {
+    throw new Error("Declare interface");
+  }
+
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (75236795)), 0);
     if (__memo_scope.unchanged) {
@@ -754,6 +782,27 @@ function main() {}
   public set builderLocalStoragePropRef3(value: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) {
     this.__backing_builderLocalStoragePropRef3!.set(value);
   }
+
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (93292242)), 5);
+    const __memo_parameter_style = __memo_scope.param(0, style), __memo_parameter_initializers = __memo_scope.param(1, initializers), __memo_parameter_storage = __memo_scope.param(2, storage), __memo_parameter_reuseId = __memo_scope.param(3, reuseId), __memo_parameter_content = __memo_scope.param(4, content);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
+      return;
+    }
+    CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (234157464)), style, ((): Index => {
+      return new Index(false, ({let gensym___153895230 = storage;
+      (((gensym___153895230) == (null)) ? undefined : gensym___153895230())}));
+    }), initializers, reuseId, content);
+    {
+      __memo_scope.recache();
+      return;
+    }
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
+    throw new Error("Declare interface");
+  }
   
   @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (187581126)), 0);
@@ -848,7 +897,7 @@ function main() {}
     }
   }
   
-  public constructor() {}
+  ${dumpConstructor()}
   
 }
 

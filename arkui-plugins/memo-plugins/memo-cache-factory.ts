@@ -364,7 +364,7 @@ export class RewriteFactory {
     }
 }
 
-function prepareRewriteScriptFunctionParameters(
+export function prepareRewriteScriptFunctionParameters(
     node: arkts.ScriptFunction,
     isSetter?: boolean,
     isGetter?: boolean,
@@ -388,7 +388,7 @@ function prepareRewriteScriptFunctionParameters(
     return newParams;
 }
 
-function prepareRewriteScriptFunctionReturnType(
+export function prepareRewriteScriptFunctionReturnType(
     node: arkts.ScriptFunction,
     isGetter?: boolean,
     hasReceiver?: boolean,
