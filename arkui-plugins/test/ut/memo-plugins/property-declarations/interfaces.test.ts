@@ -81,11 +81,11 @@ function main() {}
     }
 });
 interface A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg', '(()=> void)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_arg', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')])}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg', '(()=> void)', [], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_arg', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')], [], false)}
     ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_optional_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('memo')])}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('memo')])}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg_memo_type', '@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('memo')], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg_memo_type', '@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [], [], false)}
 }
 `;
 

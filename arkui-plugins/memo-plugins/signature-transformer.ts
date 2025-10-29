@@ -20,28 +20,10 @@ import {
     hasMemoIntrinsicAnnotation,
     parametrizedNodeHasReceiver,
     isMemoTSTypeAliasDeclaration,
+    isScriptFunctionFromGetter,
+    isScriptFunctionFromSetter
 } from './utils';
 import { AbstractVisitor } from '../common/abstract-visitor';
-
-function isScriptFunctionFromGetter(node: arkts.ScriptFunction): boolean {
-    return (
-        !!node.parent &&
-        !!node.parent.parent &&
-        arkts.isFunctionExpression(node.parent) &&
-        arkts.isMethodDefinition(node.parent.parent) &&
-        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-    );
-}
-
-function isScriptFunctionFromSetter(node: arkts.ScriptFunction): boolean {
-    return (
-        !!node.parent &&
-        !!node.parent.parent &&
-        arkts.isFunctionExpression(node.parent) &&
-        arkts.isMethodDefinition(node.parent.parent) &&
-        node.parent.parent.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET
-    );
-}
 
 export class SignatureTransformer extends AbstractVisitor {
     /* Tracking whether should import `__memo_context_type` and `__memo_id_type` */
