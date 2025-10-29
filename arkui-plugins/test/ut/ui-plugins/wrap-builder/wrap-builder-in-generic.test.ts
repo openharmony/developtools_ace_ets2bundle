@@ -126,13 +126,6 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-  
-}
-
 class __EntryWrapper extends EntryPoint {
     @memo() public entry(): void {
         Index._invoke(@memo() ((instance: Index): void => {
@@ -344,13 +337,6 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
 
     ${dumpConstructor()}
-}
-
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-  
 }
 
 class __EntryWrapper extends EntryPoint {

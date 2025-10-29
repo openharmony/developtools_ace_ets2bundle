@@ -68,7 +68,6 @@ export function __id(): __memo_id_type
 
 @memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
   const scope = __memo_context.scope<undefined>(__memo_id, 1);
-  scope.param<Value>(0, value, undefined, name, true);
   if (scope.unchanged) {
     scope.cached;
   } else {
@@ -78,7 +77,7 @@ export function __id(): __memo_id_type
 }
 
 @memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, create: (()=> Node), @memo() update: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, node: Node)=> void), reuseKey?: string): void {
-  const scope = (__memo_context as StateManager).scope<undefined>(__memo_id, 0, create, undefined, undefined, undefined, reuseKey);
+  const scope = (__memo_context as StateManager).scopeEx<undefined>(__memo_id, 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
   } else {

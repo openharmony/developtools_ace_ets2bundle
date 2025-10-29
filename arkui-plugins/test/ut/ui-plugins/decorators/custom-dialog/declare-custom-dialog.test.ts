@@ -70,9 +70,9 @@ function main() {}
   @State() public text: string;
   public hh: string;
   @memo() public build(): void
-  constructor(useSharedStorage: (boolean | undefined))
-  constructor()
   public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
+  public constructor(useSharedStorage: (boolean | undefined))
+  public constructor()
   public static _buildCompatibleNode(options: __Options_CustomDialogExample): void
   public __setDialogController__(controller: CustomDialogController): void
 

@@ -39,7 +39,7 @@ const parsedTransform: Plugins = {
 const pluginTester = new PluginTester('test only @Once decorated variables transformation', buildConfig);
 
 const expectedScript: string = `
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotoation";
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
