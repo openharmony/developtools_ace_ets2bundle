@@ -312,10 +312,13 @@ export class ComponentTransformer extends AbstractVisitor {
         );
         NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
+        const needStorageSuperCall: boolean = !!scopeInfo.annotations.component || !!scopeInfo.annotations.customDialog;
         if (!!scopeInfo.annotations?.entry) {
             this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
             const { storage, useSharedStorage, routeName } = getEntryParams(definition);
-            EntryFactory.transformStorageParams(storage, useSharedStorage, definition);
+            if (needStorageSuperCall) {
+                EntryFactory.transformStorageParams(storage, useSharedStorage, definition);
+            }
             if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
                 this.entryRouteName = routeName.value.str;
             }
