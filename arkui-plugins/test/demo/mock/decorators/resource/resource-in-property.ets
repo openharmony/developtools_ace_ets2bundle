@@ -22,7 +22,7 @@ struct ResourceComponent {
   private str: Resource  = $r('app.string.app_name');
   private icon: Resource  = $rawfile('app.mock.txt');
   private varOne: Resource | string = 'default value';
-  lambdaOne = () => {
+  lambdaOne: (() => void) = () => {
     this.varOne = $r('app.string.EntryAbility_label');
   }
 
