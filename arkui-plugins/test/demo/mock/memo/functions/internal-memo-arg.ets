@@ -73,7 +73,6 @@ export class MemoCallbackContext {
 
 @memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @memo() content: (()=> void)) {
   const scope = __context().scope<undefined>(__id(), 1);
-  scope.param<Value>(0, value, undefined, name, true);
   if (scope.unchanged) {
     scope.cached;
   } else {

@@ -408,16 +408,12 @@ class Info {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
-  get __options_has_infoList(): (boolean | undefined)
-  
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'info', '(Info | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
-  
-  get __options_has_info(): (boolean | undefined)
   
 }
 
@@ -426,7 +422,6 @@ class Info {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
   
-  get __options_has_region(): (boolean | undefined)
 }
 `;
 

@@ -289,7 +289,6 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
-  get __options_has_users(): (boolean | undefined)
 }
 
 @ComponentV2() export interface __Options_Child {
@@ -297,7 +296,6 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
-  get __options_has_users(): (boolean | undefined)
 }
 `;
 
