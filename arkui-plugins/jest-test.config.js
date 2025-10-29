@@ -16,7 +16,7 @@
 const path = require('path');
 
 const rootPath = path.resolve(__dirname, '../../../');
-const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/ets1.2');
+const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/static');
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
 const apiPath = path.resolve(sdkPath, './api');
 const kitPath = path.resolve(sdkPath, './kits');
