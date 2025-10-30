@@ -91,7 +91,7 @@ export class ConsumerTranslator extends PropertyTranslator implements Initialize
             arkts.factory.create1StringLiteral(
                 getValueInAnnotation(this.property, DecoratorNames.CONSUMER) ?? originalName
             ),
-            this.property.value!,
+            this.property.value ?? arkts.factory.createUndefinedLiteral(),
         ];
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
