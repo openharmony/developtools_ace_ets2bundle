@@ -139,12 +139,12 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_hello = ((({let gensym___159351621 = initializers;
+    this.hello = ((({let gensym___159351621 = initializers;
     (((gensym___159351621) == (null)) ? undefined : gensym___159351621.hello)})) ?? ("hello"));
     this.__backing_state1 = STATE_MGMT_FACTORY.makeState<boolean>(this, "state1", ((({let gensym___152317197 = initializers;
     (((gensym___152317197) == (null)) ? undefined : gensym___152317197.state1)})) ?? (false)));
-    this.__backing_select100 = ((({let gensym___257385749 = initializers;
-    (((gensym___257385749) == (null)) ? undefined : gensym___257385749.select100)})) ?? (undefined));
+    this.select100 = ((({let gensym___257385749 = initializers;
+    (((gensym___257385749) == (null)) ? undefined : gensym___257385749.select100)})) ?? (this.select100));
     this.__backing_select0 = STATE_MGMT_FACTORY.makeState<number>(this, "select0", (initializers!.select0 as number));
     this.__backing_select3 = STATE_MGMT_FACTORY.makeState<(number | null)>(this, "select3", (initializers!.select3 as (number | null)));
     this.__backing_select4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "select4", (initializers!.select4 as undefined));
@@ -162,15 +162,7 @@ function main() {}
     }
   }
   
-  private __backing_hello?: string;
-  
-  public get hello(): string {
-    return (this.__backing_hello as string);
-  }
-  
-  public set hello(value: string) {
-    this.__backing_hello = value;
-  }
+  public hello!: string;
   
   private __backing_state1?: IStateDecoratedVariable<boolean>;
   
@@ -182,15 +174,7 @@ function main() {}
     this.__backing_state1!.set(value);
   }
   
-  private __backing_select100?: string;
-  
-  public get select100(): string {
-    return (this.__backing_select100 as string);
-  }
-  
-  public set select100(value: string) {
-    this.__backing_select100 = value;
-  }
+  public select100!: string;
   
   private __backing_select0?: IStateDecoratedVariable<number>;
   
