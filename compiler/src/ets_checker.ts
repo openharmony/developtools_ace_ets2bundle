@@ -108,6 +108,8 @@ import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 import { ATOMICSERVICE_BUNDLE_TYPE } from './fast_build/system_api/api_check_define';
+import { sdkBuildErrorInfoFromDiagnostic } from './fast_build/system_api/api_check_utils';
+import { DIAGNOSTIC_SDK_CODE_MAP, SdkHvigorErrorInfo } from './fast_build/system_api/api_check_define';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -1120,8 +1122,12 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   // Check for ArkUI error codes
   if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
     validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
-    const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
-      diagnostic.code, positionMessage, message);
+    let uiErrorInfo: HvigorErrorInfo | SdkHvigorErrorInfo | undefined;
+    if (DIAGNOSTIC_SDK_CODE_MAP.get(String(diagnostic.code))) {
+      uiErrorInfo = sdkBuildErrorInfoFromDiagnostic(positionMessage, message);
+    } else {
+      uiErrorInfo = buildErrorInfoFromDiagnostic(diagnostic.code, positionMessage, message);
+    }
     if (!uiErrorInfo) {
       etsCheckerLogger.error('\u001b[31m' + logMessage);
     } else {

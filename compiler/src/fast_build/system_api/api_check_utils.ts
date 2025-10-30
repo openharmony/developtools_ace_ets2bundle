@@ -77,7 +77,7 @@ import {
   BuildDiagnosticInfo,
   ERROR_CODE_INFO,
   SdkHvigorErrorInfo,
-  ERROR_DESCRIPTION,
+  SdkHvigorLogInfo,
   AVAILABLE_DECORATOR_WARNING,
   VersionValidationResult,
   ValueCheckerFunction,
@@ -398,30 +398,30 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     if (isCardFile(fileName)) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FORM_TAG_CHECK_NAME], FORM_TAG_CHECK_ERROR, false,
-        ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
+        ts.DiagnosticCategory.Error, '', true));
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([CROSSPLATFORM_TAG_CHECK_NAME], CROSSPLATFORM_TAG_CHECK_ERROR,
-        false, logType, '', true, undefined, undefined, undefined, hvigorErrorLogger));
+        false, logType, '', true));
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Error, '', false, undefined, undefined, undefined, hvigorErrorLogger));
+        FA_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Error, '', false));
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
         STAGE_TAG_CHECK_ERROR, false,
-        ts.DiagnosticCategory.Error, '', false, undefined, undefined, undefined, hvigorErrorLogger));
+        ts.DiagnosticCategory.Error, '', false));
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROR,
-        false, ts.DiagnosticCategory.Error, '', true, undefined, undefined, undefined, hvigorErrorLogger));
+        false, ts.DiagnosticCategory.Error, '', true));
     }
   } else if (!systemModules.includes(apiName) && path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)) {
     needCheckResult = true;
@@ -1172,31 +1172,24 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
   return ComparisonResult.Equal;
 }
 
-let positionMessageInfo: string[] = [];
-let errorCodeMessage: Object | undefined;
-/**
- * save rollup share Object
- * @param { Object | undefined } share
- */
-export function saveRollupShareObject(share: Object | undefined): void {
-  errorCodeMessage = share;
-}
-
 /**
  * build error diagnostic
  * @param { JsDocNodeCheckConfig } config
  * @param { DiagnosticWithLocation } diagnostic
  * @returns { BuildDiagnosticInfo }
  */
-function buildErrorDiagnostic(config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): BuildDiagnosticInfo {
-  const { line, character }: ts.LineAndCharacter = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-  const positionMessage: string = `File: ${diagnostic.file.fileName}:${line + 1}:${character + 1}`;
+function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo {
+  const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
+  const diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined = ERROR_CODE_INFO.get(messageRegex);
+  if (!diagnosticInfo || !diagnosticInfo.code) {
+    return undefined;
+  }
   return new BuildDiagnosticInfo()
-    .setCode(Number(ERROR_CODE_INFO.get(config.message).code))
-    .setDescription(ERROR_CODE_INFO.get(config.message).description)
+    .setCode(Number(diagnosticInfo.code))
+    .setDescription(diagnosticInfo.description)
     .setPositionMessage(positionMessage)
-    .setMessage(String(diagnostic.messageText))
-    .setSolutions(ERROR_CODE_INFO.get(config.message).solutions)
+    .setMessage(message)
+    .setSolutions(diagnosticInfo.solutions);
 }
 
 /**
@@ -1205,12 +1198,8 @@ function buildErrorDiagnostic(config: ts.JsDocNodeCheckConfigItem, diagnostic: t
  * @param { DiagnosticWithLocation } diagnostic
  * @returns { void }
  */
-function hvigorErrorLogger(config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): void {
-  const errorInfo: SdkHvigorErrorInfo = sdkTransfromErrorCode(buildErrorDiagnostic(config, diagnostic));
-  if (errorCodeMessage && !(positionMessageInfo.includes(errorInfo.getPosition()))) {
-    positionMessageInfo.push(errorInfo.getPosition());
-    errorCodeMessage.printError(errorInfo);
-  }
+export function sdkBuildErrorInfoFromDiagnostic(positionMessage: string, message: string): SdkHvigorErrorInfo {
+  return sdkTransfromErrorCode(buildErrorDiagnostic(positionMessage, message));
 }
 
 /**
@@ -1218,21 +1207,16 @@ function hvigorErrorLogger(config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.D
  * @param { BuildDiagnosticInfo } diagnostic
  * @returns { SdkHvigorErrorInfo }
  */
-function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo): SdkHvigorErrorInfo {
+function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo | undefined): SdkHvigorErrorInfo {
+  if (!diagnostic || !diagnostic.code) {
+    return undefined;
+  }
   return new SdkHvigorErrorInfo()
     .setCode(String(diagnostic.getCode()))
     .setDescription(diagnostic.description)
     .setCause(diagnostic.getMessage())
     .setPosition(diagnostic.getPositionMessage())
     .setSolutions(diagnostic.getSolutions());
-}
-
-/**
- * reset api_check_utils global object
- */
-export function resetApiCheckUtils(): void {
-  positionMessageInfo = [];
-  errorCodeMessage = undefined;
 }
 
 /**
