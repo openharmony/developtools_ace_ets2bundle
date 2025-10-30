@@ -14,66 +14,33 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators, isInStructContext } from '../utils';
+import { PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 // Can only be used with decorators for struct
 const structOnlyDecorators = [
-    // componentDecorators
+    PresetDecorators.REUSABLE_V1,
+    PresetDecorators.REUSABLE_V2,
+    PresetDecorators.COMPONENT_V1,
+    PresetDecorators.COMPONENT_V2,
     PresetDecorators.ENTRY,
     PresetDecorators.PREVIEW,
-    PresetDecorators.COMPONENT_V1,
     PresetDecorators.CUSTOM_DIALOG,
-    PresetDecorators.REUSABLE_V1,
-    PresetDecorators.COMPONENT_V2,
-    PresetDecorators.REUSABLE_V2,
-
-    // componentMemberDecorators
-    PresetDecorators.STATE,
-    PresetDecorators.PROP_REF,
-    PresetDecorators.LINK,
-    PresetDecorators.STORAGE_PROP_REF,
-    PresetDecorators.STORAGE_LINK,
-    PresetDecorators.PROVIDE,
-    PresetDecorators.CONSUME,
-    PresetDecorators.OBJECT_LINK,
-    PresetDecorators.WATCH,
-    PresetDecorators.BUILDER_PARAM,
-    PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL_STORAGE_PROP_REF,
-    PresetDecorators.REQUIRE,
-
-    // componentV2MemberDecorators
-    PresetDecorators.LOCAL,
-    PresetDecorators.PARAM,
-    PresetDecorators.ONCE,
-    PresetDecorators.EVENT,
-    PresetDecorators.PROVIDER,
-    PresetDecorators.CONSUMER,
 ];
 
-// Property decorators
+// Can only be used with decorators for property
 const propertyOnlyDecorators = [
     PresetDecorators.STATE,
     PresetDecorators.PROP_REF,
     PresetDecorators.LINK,
-    PresetDecorators.STORAGE_PROP_REF,
-    PresetDecorators.STORAGE_LINK,
     PresetDecorators.PROVIDE,
     PresetDecorators.CONSUME,
-    PresetDecorators.OBJECT_LINK,
-    PresetDecorators.WATCH,
+    PresetDecorators.STORAGE_LINK,
+    PresetDecorators.STORAGE_PROP_REF,
     PresetDecorators.LOCAL_STORAGE_LINK,
-    PresetDecorators.LOCAL_STORAGE_PROP_REF,
+    PresetDecorators.WATCH,
     PresetDecorators.REQUIRE,
-    PresetDecorators.LOCAL,
-    PresetDecorators.PARAM,
-    PresetDecorators.ONCE,
-    PresetDecorators.EVENT,
-    PresetDecorators.PROVIDER,
-    PresetDecorators.CONSUMER,
-    PresetDecorators.ENV,
-    PresetDecorators.MONITOR,
+    PresetDecorators.OBJECT_LINK,
 ];
 
 class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
@@ -86,7 +53,10 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
 
     public parsed(node: arkts.AstNode): void {
         this.validateDecoratorPropertyOnly(node);
-        this.validateDecoratorStructOnly(node);
+
+        if (!arkts.isStructDeclaration(node)) {
+            this.validateDecoratorStructOnly(node);
+        }
     }
 
     private validateDecoratorPropertyOnly(
@@ -101,10 +71,6 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
     }
 
     private validateDecoratorStructOnly(node: arkts.AstNode): void {
-        // If it's not inside a struct don't check it
-        if (isInStructContext(node)) {
-            return;
-        }
         // class
         if (arkts.isClassDeclaration(node)) {
             node.definition?.annotations?.forEach((annotation) => {

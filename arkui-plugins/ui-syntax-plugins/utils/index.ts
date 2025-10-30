@@ -41,12 +41,6 @@ export const SINGLE_CHILD_COMPONENT: number = 1;
 export const MAX_ENTRY_DECORATOR_COUNT: number = 1;
 export const MAX_PREVIEW_DECORATOR_COUNT: number = 10;
 
-/**
- * Maximum depth to traverse up the AST tree when checking for struct context.
- * This limit prevents infinite loops in case of circular references or malformed AST structures.
- */
-const MAX_TRAVERSAL_DEPTH = 100;
-
 export const COMPONENT_REPEAT: string = 'Repeat';
 export const TEMPLATE: string = 'template';
 
@@ -123,10 +117,6 @@ export const PresetDecorators = {
     VARIABLE: 'variable',
     PARAMETER: 'parameter',
     ANIMATABLE_EXTEND: 'AnimatableExtend',
-    LOCAL_STORAGE_PROP_REF: 'LocalStoragePropRef',
-    ENV: 'Env',
-    STYLES: 'Styles',
-
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
@@ -212,16 +202,6 @@ export function getClassPropertyAnnotation(
         arkts.isIdentifier(annotation.expr) &&
         annotation.expr.name === decoratorName
     );
-}
-
-export function getMethodAnnotationNames(method: arkts.MethodDefinition): string[] {
-    const decorators: string[] = [];
-    method.scriptFunction.annotations?.forEach(annotation => {
-        if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
-            decorators.push(annotation.expr.name);
-        }
-    });
-    return decorators;
 }
 
 export function getClassDeclarationAnnotation(
@@ -517,20 +497,6 @@ export function isStructClassDeclaration(node: arkts.AstNode): node is arkts.Cla
     return (
         arkts.isClassDeclaration(node) && !!node.definition && arkts.classDefinitionIsFromStructConst(node.definition)
     );
-}
-
-export function isInStructContext(node: arkts.AstNode): boolean {
-    let current = node.parent;
-    let depth = 0;
-
-    while (current && depth < MAX_TRAVERSAL_DEPTH) {
-        if (arkts.isStructDeclaration(current)) {
-            return true;
-        }
-        current = current.parent;
-        depth++;
-    }
-    return false;
 }
 
 export function getFunctionAnnotationUsage(
