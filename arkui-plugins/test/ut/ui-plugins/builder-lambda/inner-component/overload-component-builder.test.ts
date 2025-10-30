@@ -55,7 +55,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { FakeComponentAttribute as FakeComponentAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentImpl as FakeComponentImpl } from \"${utilExternalSourceName}\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
@@ -110,13 +110,14 @@ class __EntryWrapper extends EntryPoint {
 
 const expectedUIHeaderScript: string = `
 import { Memo as Memo } from "arkui.incremental.annotation";
+import { memo as memo } from "arkui.stateManagement.runtime";
 import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 function main() {}
 
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
+@memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
 
 @Memo() export function FakeComponentImpl(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 

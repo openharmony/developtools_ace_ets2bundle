@@ -53,7 +53,7 @@ export function cb(callback?: (()=> void)) {
 }
 
 @memo_intrinsic() export function impl<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() style: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<T>)=> void) | undefined), arr: SimpleArray<T>, gensym%%_1?: string): void {
-  let err: string = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : ("error message" as string));
+  let err: string = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : "error message");
   const s = factory(__memo_context, ((__memo_id) + (90010973)), (() => {
     return new A<T>();
   }));

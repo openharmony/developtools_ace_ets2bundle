@@ -75,17 +75,18 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.aaController = (initializers!.aaController as (CustomDialogController | undefined))
     } else {
-      if (!(this.__backing_aaController)) {
-        this.__backing_aaController = undefined
+      if (!(this.aaController)) {
+        this.aaController = this.aaController = ((({let gensym___<some_random_number> = initializers;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aaController)})) ?? (this.aaController))
       }
     }
     this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
     (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));
-    this.__backing_cancel = ((({let gensym___25471281 = initializers;
+    this.cancel = ((({let gensym___25471281 = initializers;
     (((gensym___25471281) == (null)) ? undefined : gensym___25471281.cancel)})) ?? ((() => {})));
-    this.__backing_confirm = ((({let gensym___213253394 = initializers;
+    this.confirm = ((({let gensym___213253394 = initializers;
     (((gensym___213253394) == (null)) ? undefined : gensym___213253394.confirm)})) ?? ((() => {})));
     this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___210200872 = initializers;
     (((gensym___210200872) == (null)) ? undefined : gensym___210200872.hh)})) ?? ("nihao")));
@@ -93,15 +94,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
   
-  private __backing_aaController?: (CustomDialogController | undefined);
-  
-  public get aaController(): (CustomDialogController | undefined) {
-    return (this.__backing_aaController as (CustomDialogController | undefined));
-  }
-  
-  public set aaController(value: (CustomDialogController | undefined)) {
-    this.__backing_aaController = value;
-  }
+  public aaController?: (CustomDialogController | undefined);
   
   private __backing_text?: IStateDecoratedVariable<string>;
   
@@ -113,25 +106,9 @@ function main() {}
     this.__backing_text!.set(value);
   }
   
-  private __backing_cancel?: (()=> void);
+  public cancel!: (()=> void);
   
-  public get cancel(): (()=> void) {
-    return (this.__backing_cancel as (()=> void));
-  }
-  
-  public set cancel(value: (()=> void)) {
-    this.__backing_cancel = value;
-  }
-  
-  private __backing_confirm?: (()=> void);
-  
-  public get confirm(): (()=> void) {
-    return (this.__backing_confirm as (()=> void));
-  }
-  
-  public set confirm(value: (()=> void)) {
-    this.__backing_confirm = value;
-  }
+  public confirm!: (()=> void);
   
   private __backing_hh?: IStateDecoratedVariable<string>;
   
@@ -166,13 +143,13 @@ function main() {}
   public constructor() {}
   
   public __setDialogController__(controller: CustomDialogController): void {
-    this.__backing_aaController = controller;
+    this.aaController = controller;
   }
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___56650533 = initializers;
+    this.dialogController = ((({let gensym___56650533 = initializers;
     (((gensym___56650533) == (null)) ? undefined : gensym___56650533.dialogController)})) ?? (({let gensym___249621102: Any;
     gensym___249621102 = new CustomDialogController({
       builder: @Memo() (() => {
@@ -211,15 +188,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
   
-  private __backing_dialogController?: (CustomDialogController | null);
-  
-  public get dialogController(): (CustomDialogController | null) {
-    return (this.__backing_dialogController as (CustomDialogController | null));
-  }
-  
-  public set dialogController(value: (CustomDialogController | null)) {
-    this.__backing_dialogController = value;
-  }
+  public dialogController: (CustomDialogController | null) = null;
   
   public aboutToDisappear() {
     this.dialogController = null;

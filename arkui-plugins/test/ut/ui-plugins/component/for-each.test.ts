@@ -74,20 +74,13 @@ class AB {
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arr = ((({let gensym___244068973 = initializers;
+    this.arr = ((({let gensym___244068973 = initializers;
     (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
   }
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  private __backing_arr?: Array<string>;
-  public get arr(): Array<string> {
-    return (this.__backing_arr as Array<string>);
-  }
-  
-  public set arr(value: Array<string>) {
-    this.__backing_arr = value;
-  }
+  public arr!: Array<string>;
   
   public getArray() {
     return new Array<Person>(({

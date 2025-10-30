@@ -49,17 +49,17 @@ export class NamespaceProcessor {
         this.componentInterfacesStack_.pop();
     }
 
-    public get currentNamepaceInterfaces(): arkts.TSInterfaceDeclaration[] {
+    private get currentNamespaceInterfaces(): arkts.TSInterfaceDeclaration[] {
         return this.componentInterfacesStack_[this.componentInterfacesStack_.length - 1];
     }
 
     public addInterfaceToCurrentNamespace(interf: arkts.TSInterfaceDeclaration): void {
-        this.currentNamepaceInterfaces.push(interf);
+        this.currentNamespaceInterfaces.push(interf);
         ++this.totalInterfacesCnt_;
     }
 
     public updateCurrentNamespace(node: arkts.EtsScript): arkts.EtsScript {
-        return arkts.factory.updateEtsScript(node, [...node.statements, ...this.currentNamepaceInterfaces]);
+        return arkts.factory.updateEtsScript(node, [...node.statements, ...this.currentNamespaceInterfaces]);
     }
 }
     
