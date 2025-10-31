@@ -2518,7 +2518,7 @@ function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.Pro
   return ts.factory.updatePropertyAssignment(property, property.name,
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        property.initializer.expression,
+        isStaticBuilder(property.initializer) ? transferCompatibleBuilder(property.initializer): property.initializer.expression,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
