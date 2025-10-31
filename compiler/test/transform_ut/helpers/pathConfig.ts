@@ -339,7 +339,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validateForEachParser',
   'Decorators/vaildate_ui_syntax/validateRepeatParser',
   'Decorators/vaildate_ui_syntax/validateLazyForEachParser',
-  'Decorators/vaildate_ui_syntax/validateStaticBlock'
+  'Decorators/vaildate_ui_syntax/validateStaticBlock',
+  'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithDecorator'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
