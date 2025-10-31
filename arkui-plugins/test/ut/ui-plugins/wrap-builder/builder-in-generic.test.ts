@@ -111,7 +111,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }), @memo() (() => {
       globalBuilder(this.message, 50);
       ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
-        instance.setForEachOptions(((): Array<@Builder() ((value: string, size: number)=> void)> => {
+        instance.setForEachOptions((() => {
           return builderArr;
         }), @memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
           item("Hello World", 30);
