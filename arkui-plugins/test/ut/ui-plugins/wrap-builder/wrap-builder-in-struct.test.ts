@@ -327,19 +327,9 @@ function main() {}
   }
   
   @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (258012771)), 5);
-    const __memo_parameter_style = __memo_scope.param(0, style), __memo_parameter_initializers = __memo_scope.param(1, initializers), __memo_parameter_storage = __memo_scope.param(2, storage), __memo_parameter_reuseId = __memo_scope.param(3, reuseId), __memo_parameter_content = __memo_scope.param(4, content);
-    if (__memo_scope.unchanged) {
-      __memo_scope.cached;
-      return;
-    }
     CustomComponentV2._invokeImpl<Index2, __Options_Index2>(__memo_context, ((__memo_id) + (241913892)), style, ((): Index2 => {
       return new Index2();
     }), initializers, reuseId, content);
-    {
-      __memo_scope.recache();
-      return;
-    }
   }
   
   @ComponentBuilder() public static $_invoke(initializers?: __Options_Index2, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index2 {
@@ -784,20 +774,10 @@ function main() {}
   }
 
   @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (93292242)), 5);
-    const __memo_parameter_style = __memo_scope.param(0, style), __memo_parameter_initializers = __memo_scope.param(1, initializers), __memo_parameter_storage = __memo_scope.param(2, storage), __memo_parameter_reuseId = __memo_scope.param(3, reuseId), __memo_parameter_content = __memo_scope.param(4, content);
-    if (__memo_scope.unchanged) {
-      __memo_scope.cached;
-      return;
-    }
     CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (234157464)), style, ((): Index => {
       return new Index(false, ({let gensym___153895230 = storage;
       (((gensym___153895230) == (null)) ? undefined : gensym___153895230())}));
     }), initializers, reuseId, content);
-    {
-      __memo_scope.recache();
-      return;
-    }
   }
   
   @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {

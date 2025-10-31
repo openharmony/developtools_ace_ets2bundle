@@ -105,6 +105,17 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     this.__backing_message!.set(value);
   }
   
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index(false, ({let gensym___<some_random_number> = storage;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+    throw new Error(\"Declare interface\");
+  }
+
   @memo() public build() {
     RowImpl(@memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
@@ -122,7 +133,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }));
   }
   
-  public constructor() {}
+  ${dumpConstructor()}
   
 }
 
@@ -270,15 +281,6 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setForEachOptions((() => {
-          return builderArr;
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
-          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
-          const __memo_parameter_item = __memo_scope.param(0, item);
-          if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-        }
         RowImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
@@ -305,7 +307,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
                     __memo_scope.cached;
                     return;
                 }
-                __memo_parameter_instance.value.setForEachOptions(((): Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> => {
+                __memo_parameter_instance.value.setForEachOptions((() => {
                     return builderArr;
                 }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
