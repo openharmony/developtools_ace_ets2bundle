@@ -119,7 +119,7 @@ ArkTSRecordFunc({a: 1});
 `;
 
 const IMPORT_ARKTS_EVO_RECORD_CODE_EXPECT: string = `import { ArkTSRecordFunc } from "arkTSEvo";
-let tmpRecord = globalThis.Panda.getInstance("Lescompat/Record;");
+let tmpRecord = globalThis.Panda.getInstance("Lstd.core.Record;");
 ArkTSRecordFunc((tmpRecord["a"] = 1, tmpRecord));
 `;
 
@@ -128,7 +128,7 @@ const a: ArkTSRecordType = {a: 1};
 `;
 
 const IMPORT_ARKTS_EVO_RECORD_ALIAS_NAME_CODE_EXPECT: string = `import { ArkTSRecordType } from "arkTSEvo";
-let tmpRecord = globalThis.Panda.getInstance("Lescompat/Record;");
+let tmpRecord = globalThis.Panda.getInstance("Lstd.core.Record;");
 const a: ArkTSRecordType = (tmpRecord["a"] = 1, tmpRecord);
 `;
 
