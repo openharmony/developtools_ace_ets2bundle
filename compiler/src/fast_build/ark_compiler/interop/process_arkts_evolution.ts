@@ -469,7 +469,7 @@ function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): bo
 
 function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
   if (isRecordType) {
-    return 'Lescompat/Record;';
+    return 'Lstd.core.Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
   return ts.isInterfaceDeclaration(decl) ? 
