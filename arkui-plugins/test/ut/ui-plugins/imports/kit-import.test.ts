@@ -39,7 +39,10 @@ const importParsed: Plugins = {
 const pluginTester = new PluginTester('test import transform', buildConfig);
 
 const expectedParsedScript: string = `
+<<<<<<< HEAD
 
+=======
+>>>>>>> 80b1c945 (update 54 files)
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";

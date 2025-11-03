@@ -1260,6 +1260,11 @@
     ],
     "v2ToV1ComponentValidate": [
         {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'func_value1'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
             "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
             "type": "ERROR",
             "code": "10905213"
@@ -1542,6 +1547,63 @@
             "message": "The reuseId attribute is not applicable to custom components decorated with both '@ComponentV2' and '@ReusableV2'.",
             "type": "ERROR",
             "code": "10905249"
+        }
+    ],
+    "validateNonFunctionTypeWithDecorator": [
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'message1'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'func4'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'builder1'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'func3'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'func4'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'builder5'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'builder6'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'storageLink4'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'storageProp33'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'a12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'builder1'.",
+            "type": "ERROR",
+            "code": "10905363"
         }
     ]
 }

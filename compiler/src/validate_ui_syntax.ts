@@ -69,7 +69,8 @@ import {
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   COMPONENT_DECORATOR_REUSABLE_V2,
   MAIN_COMPONENT_DECORATORS,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  NON_FUNCTION_TYPE_WITH_V1_DECORATORS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1530,6 +1531,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
               setPrivateCollection(componentSet, accessQualifierResult, propertyName, decoratorName);
               validateAccessQualifier(item, propertyName, decoratorName, accessQualifierResult,
                 recordRequire, uiCheck, hasValidatePrivate);
+              validateNonFunctionTypeWithDecorator(item, propertyName, decoratorName);
               hasValidatePrivate = true;
             }
           }
@@ -1549,6 +1551,30 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
     collectCurrentClassMethod(node, currentMethodCollection);
   }
   isStaticViewCollection.set(node.name.getText(), isStatic);
+}
+
+function validateNonFunctionTypeWithDecorator(
+  node: ts.PropertyDeclaration,
+  propertyName: string,
+  decoratorName: string
+): void {
+  if (
+    NON_FUNCTION_TYPE_WITH_V1_DECORATORS.has(decoratorName) &&
+    node.type &&
+    ts.isTypeReferenceNode(node.type) &&
+    node.type.typeName &&
+    ts.isIdentifier(node.type.typeName)
+  ) {
+    const escapedText = node.type.typeName.escapedText?.toString();
+    if (escapedText && escapedText === 'Function') {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        code: '10905363',
+        message: `The V1 decorator '${decoratorName}' cannot be applied to a Function-type variable '${propertyName}'.`,
+        pos: node.getStart(),
+      });
+    }
+  }
 }
 
 function collectCurrentClassMethod(node: ts.StructDeclaration, currentMethodCollection: Set<string>): void {
