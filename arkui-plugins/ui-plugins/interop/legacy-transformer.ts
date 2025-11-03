@@ -229,7 +229,7 @@ export class LegacyTransformer extends AbstractVisitor {
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(
-                    arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID, valueType),
+                    arkts.factory.createIdentifier(InteropInternalNames.ELMTID, valueType),
                     undefined,
                 ).setOptional(true),
                 arkts.factory.createParameterDeclaration(

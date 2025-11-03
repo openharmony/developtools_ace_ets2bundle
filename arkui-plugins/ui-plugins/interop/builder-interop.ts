@@ -48,7 +48,7 @@ function invokeFunctionWithParam(functionName: string, result: string, className
                 undefined,
                 [
                     getWrapValue(arkts.factory.createIdentifier(className)),
-                    arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
+                    arkts.factory.createIdentifier(InteropInternalNames.ELMTID),
                     ...args
                 ]
             )
@@ -77,8 +77,18 @@ function invokeComponent(): arkts.Statement[] {
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier('viewPUCreate'),
-                arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
+                        arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    [arkts.factory.create1StringLiteral('viewPUCreate')]
+                ),
+                arkts.factory.createIdentifier('invoke'),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
@@ -96,7 +106,7 @@ function createBuilderInitializer(className: string, functionName: string, param
     const block = arkts.factory.createBlock(
         [
             createGlobal(),
-            ...createELMTID(),
+            createELMTID(),
             getPropertyESValue(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.GLOBAL, functionName),
             ...param.paramsInfo,
             invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.COMPONENT, className, param.args),
