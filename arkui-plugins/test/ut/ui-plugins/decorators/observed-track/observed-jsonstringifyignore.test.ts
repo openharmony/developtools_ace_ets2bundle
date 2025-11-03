@@ -61,7 +61,7 @@ function main() {}
 @Retention({policy:"SOURCE"}) export declare @interface TestDecor {}
 
 @Observed() class testJSONStringifyIgnore implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -75,7 +75,7 @@ function main() {}
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
 
-  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -91,7 +91,7 @@ function main() {}
 
   @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
 
-  @JSONStringifyIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() public var3: number = 3;
 
@@ -99,17 +99,17 @@ function main() {}
 
   @JSONStringifyIgnore() private __backing_var5: number = 5;
 
-  @JSONStringifyIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() @TestDecor() public var6: number = 6;
 
   @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
 
-  @JSONStringifyIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() @TestDecor() private __backing_var8: number = 8;
 
-  @JSONStringifyIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   public constructor() {}
 

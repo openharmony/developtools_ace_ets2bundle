@@ -59,7 +59,7 @@ function main() {}
 @Retention({policy:"SOURCE"}) export declare @interface TestDecor {}
 
 @ObservedV2() class testJSONStringifyIgnore implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -83,7 +83,7 @@ function main() {}
 
   @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
 
-  @JSONStringifyIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() public var3: number = 3;
 
@@ -91,17 +91,17 @@ function main() {}
 
   @JSONStringifyIgnore() private __backing_var5: number = 5;
 
-  @JSONStringifyIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() @TestDecor() public var6: number = 6;
 
   @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
 
-  @JSONStringifyIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONStringifyIgnore() @TestDecor() private __backing_var8: number = 8;
 
-  @JSONStringifyIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   public get var2(): number {
     this.conditionalAddRef(this.__meta_var2);
@@ -160,7 +160,7 @@ function main() {}
 }
 
 @ObservedV2() class testJsonRename implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -184,7 +184,7 @@ function main() {}
 
   @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
 
-  @JSONStringifyIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONRename({value:"name3"}) public var3: number = 3;
 
@@ -192,17 +192,17 @@ function main() {}
 
   @JSONRename({value:"name5"}) private __backing_var5: number = 5;
 
-  @JSONStringifyIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
 
   @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
 
-  @JSONStringifyIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONRename({value:"name8"}) @TestDecor() private __backing_var8: number = 8;
 
-  @JSONStringifyIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   public get var2(): number {
     this.conditionalAddRef(this.__meta_var2);
