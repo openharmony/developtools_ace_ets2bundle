@@ -1178,7 +1178,7 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
  * @param { DiagnosticWithLocation } diagnostic
  * @returns { BuildDiagnosticInfo }
  */
-function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo {
+function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
   const diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined = ERROR_CODE_INFO.get(messageRegex);
   if (!diagnosticInfo || !diagnosticInfo.code) {
@@ -1198,7 +1198,7 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
  * @param { DiagnosticWithLocation } diagnostic
  * @returns { void }
  */
-export function sdkBuildErrorInfoFromDiagnostic(positionMessage: string, message: string): SdkHvigorErrorInfo {
+export function sdkBuildErrorInfoFromDiagnostic(positionMessage: string, message: string): SdkHvigorErrorInfo | undefined {
   return sdkTransfromErrorCode(buildErrorDiagnostic(positionMessage, message));
 }
 
@@ -1207,7 +1207,7 @@ export function sdkBuildErrorInfoFromDiagnostic(positionMessage: string, message
  * @param { BuildDiagnosticInfo } diagnostic
  * @returns { SdkHvigorErrorInfo }
  */
-function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo | undefined): SdkHvigorErrorInfo {
+function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo | undefined): SdkHvigorErrorInfo | undefined {
   if (!diagnostic || !diagnostic.code) {
     return undefined;
   }
