@@ -571,33 +571,6 @@ export class factory {
         return method;
     }
 
-    static createStorageLinkStateValue(
-        property: arkts.ClassProperty,
-        localStorageporpValueStr: string
-    ): arkts.MemberExpression {
-        return arkts.factory.createMemberExpression(
-            arkts.factory.createCallExpression(
-                arkts.factory.createIdentifier(StateManagementTypes.STORAGE_LINK_STATE),
-                property.typeAnnotation ? [property.typeAnnotation] : [],
-                [
-                    arkts.factory.createMemberExpression(
-                        arkts.factory.createThisExpression(),
-                        arkts.factory.createIdentifier('_entry_local_storage_'),
-                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                        false,
-                        false
-                    ),
-                    arkts.factory.createStringLiteral(localStorageporpValueStr),
-                    property.value ?? arkts.factory.createUndefinedLiteral(),
-                ]
-            ),
-            arkts.factory.createIdentifier('value'),
-            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-            false,
-            false
-        );
-    }
-
     /**
      * wrap interface non-undefined property type `T` to `<wrapTypeName><T>`.
      */
