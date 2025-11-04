@@ -108,7 +108,8 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         (hasDecoratorName(st, DecoratorNames.PROP_REF) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.PARAM) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value) ||
-        (hasDecoratorName(st, DecoratorNames.REQUIRE) && !st.value)
+        (hasDecoratorName(st, DecoratorNames.REQUIRE) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.BUILDER_PARAM) && !st.value)
     );
 }
 
