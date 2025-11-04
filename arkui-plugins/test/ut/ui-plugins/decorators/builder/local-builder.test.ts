@@ -49,7 +49,7 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -57,47 +57,47 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Column as Column, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
       return new BuilderDemo(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): BuilderDemo {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
     throw new Error("Declare interface");
   }
   
-  @memo() public showTextBuilder() {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public showTextBuilder() {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public showTextValueBuilder(@MemoSkip() param: string) {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  @Memo() public showTextValueBuilder(@MemoSkip() param: string) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       this.showTextBuilder();
       this.showTextValueBuilder("Hello @Builder");
     }));

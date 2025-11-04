@@ -47,7 +47,7 @@ import { LinkSourceType as LinkSourceType } from "arkui.stateManagement.decorato
 
 import { ILinkDecoratedVariable as ILinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -55,7 +55,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -64,7 +64,7 @@ import { Link as Link } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
-  public __initializeStruct(initializers: (__Options_LinkParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_LinkParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
@@ -139,18 +139,18 @@ function main() {}
     this.__backing_linkVar5!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: LinkParent)=> void), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: LinkParent)=> void), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<LinkParent, __Options_LinkParent>(style, ((): LinkParent => {
       return new LinkParent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_LinkParent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): LinkParent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_LinkParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): LinkParent {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   ${dumpConstructor()}
 

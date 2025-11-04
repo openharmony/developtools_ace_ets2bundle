@@ -45,21 +45,21 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from "@ohos.arkui.component";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@memo() function MyBuilder(): void {
-    ConditionScope(@memo() (() => {
+@Memo() function MyBuilder(): void {
+    ConditionScope(@Memo() (() => {
         if (true) {
-            ConditionBranch(@memo() (() => {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+            ConditionBranch(@Memo() (() => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                     instance.setTextOptions("within Builder function", undefined).applyAttributesFinish();
                     return;
                 }), undefined);
@@ -67,12 +67,12 @@ function main() {}
         }
     }));
 }
-@memo() function ParamBuilder(@Builder() @memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
+@Memo() function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
     let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((() => {
-        ConditionScope(@memo() (() => {
+        ConditionScope(@Memo() (() => {
             if (true) {
-                ConditionBranch(@memo() (() => {
-                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                ConditionBranch(@Memo() (() => {
+                    TextImpl(@Memo() ((instance: TextAttribute): void => {
                         instance.setTextOptions("within Builder parameter", undefined).applyAttributesFinish();
                         return;
                     }), undefined);
@@ -83,23 +83,23 @@ function main() {}
     param();
 }
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
-    public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
+    public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
-    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
       CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(style, ((): MyStruct => {
         return new MyStruct(false, ({let gensym___203542966 = storage;
         (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStruct {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStruct {
       throw new Error("Declare interface");
     }
-    @memo() public myBuilderMethod() {
-        ConditionScope(@memo() (() => {
+    @Memo() public myBuilderMethod() {
+        ConditionScope(@Memo() (() => {
             if (true) {
-                ConditionBranch(@memo() (() => {
-                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                ConditionBranch(@Memo() (() => {
+                    TextImpl(@Memo() ((instance: TextAttribute): void => {
                         instance.setTextOptions("within Builder method", undefined).applyAttributesFinish();
                         return;
                     }), undefined);
@@ -107,16 +107,16 @@ function main() {}
             }
         }));
     }
-    @memo() public build() {
-      ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    @Memo() public build() {
+      ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
         instance.setColumnOptions(undefined).applyAttributesFinish();
         return;
-      }), @memo() (() => {
+      }), @Memo() (() => {
         wBuilder.builder(@Builder() (() => {
-          ConditionScope(@memo() (() => {
+          ConditionScope(@Memo() (() => {
             if (true) {
-              ConditionBranch(@memo() (() => {
-                TextImpl(@memo() ((instance: TextAttribute): void => {
+              ConditionBranch(@Memo() (() => {
+                TextImpl(@Memo() ((instance: TextAttribute): void => {
                   instance.setTextOptions("with Builder lambda", undefined).applyAttributesFinish();
                   return;
                 }), undefined);
@@ -124,16 +124,16 @@ function main() {}
             }
           }));
         }));
-        Child._invoke(@memo() ((instance: Child): void => {
+        Child._invoke(@Memo() ((instance: Child): void => {
           instance.applyAttributesFinish();
           return;
         }), (() => {
           return {
-            myBuilderParam: @memo() (() => {
-              ConditionScope(@memo() (() => {
+            myBuilderParam: @Memo() (() => {
+              ConditionScope(@Memo() (() => {
                 if (true) {
-                  ConditionBranch(@memo() (() => {
-                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                  ConditionBranch(@Memo() (() => {
+                    TextImpl(@Memo() ((instance: TextAttribute): void => {
                       instance.setTextOptions("within Builder property", undefined).applyAttributesFinish();
                       return;
                     }), undefined);
@@ -151,13 +151,13 @@ function main() {}
     ${dumpConstructor()}
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-    public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+    public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
         this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
             (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? ((() => {
-                ConditionScope(@memo() (() => {
+                ConditionScope(@Memo() (() => {
                     if (true) {
-                    ConditionBranch(@memo() (() => {
-                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                    ConditionBranch(@Memo() (() => {
+                        TextImpl(@Memo() ((instance: TextAttribute): void => {
                             instance.setTextOptions("within BuilderParam property", undefined).applyAttributesFinish();
                             return;
                         }), undefined);
@@ -167,28 +167,28 @@ function main() {}
         })))
     }
     public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-    private __backing_myBuilderParam?: @memo() (()=> void);
-    public get myBuilderParam(): @memo() (()=> void) {
+    private __backing_myBuilderParam?: @Memo() (()=> void);
+    public get myBuilderParam(): @Memo() (()=> void) {
         return this.__backing_myBuilderParam!;
     }
-    public set myBuilderParam(value: @memo() (()=> void)) {
+    public set myBuilderParam(value: @Memo() (()=> void)) {
         this.__backing_myBuilderParam = value;
     }
-    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
       CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
         return new Child(false, ({let gensym___46528967 = storage;
         (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
       throw new Error("Declare interface");
     }
-    @memo() public build() {
-        ConditionScope(@memo() (() => {
+    @Memo() public build() {
+        ConditionScope(@Memo() (() => {
             if (true) {
-                ConditionBranch(@memo() (() => {
-                    TextImpl(@memo() ((instance: TextAttribute): void => {
+                ConditionBranch(@Memo() (() => {
+                    TextImpl(@Memo() ((instance: TextAttribute): void => {
                         instance.setTextOptions("within struct build", undefined).applyAttributesFinish();
                         return;
                     }), undefined);
@@ -201,7 +201,7 @@ function main() {}
 @Component() export interface __Options_MyStruct {
 }
 @Component() export interface __Options_Child {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@memo() (()=> void) | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }
 `;
@@ -218,36 +218,36 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 import { ConditionScope as ConditionScope } from "arkui.component.builder";
 import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from "@ohos.arkui.component";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
-    ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
         if (true) {
-            ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
                     return;
                 }
-                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                     const __memo_parameter_instance = __memo_scope.param(0, instance);
                     if (__memo_scope.unchanged) {
@@ -276,27 +276,27 @@ function main() {}
         return;
     }
 }
-@memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@Memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
             if (true) {
-                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                     if (__memo_scope.unchanged) {
                         __memo_scope.cached;
                         return;
                     }
-                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                         const __memo_parameter_instance = __memo_scope.param(0, instance);
                         if (__memo_scope.unchanged) {
@@ -337,38 +337,38 @@ function main() {}
     }
 }
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
-    public __initializeStruct(initializers: (__Options_MyStruct | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+    public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
-    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
       CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(__memo_context, ((__memo_id) + (173773669)), style, ((): MyStruct => {
         return new MyStruct(false, ({let gensym___203542966 = storage;
         (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStruct, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): MyStruct {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStruct, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): MyStruct {
       throw new Error("Declare interface");
     }
-    @memo() public myBuilderMethod(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public myBuilderMethod(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
             if (true) {
-                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                     if (__memo_scope.unchanged) {
                         __memo_scope.cached;
                         return;
                     }
-                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                         const __memo_parameter_instance = __memo_scope.param(0, instance);
                         if (__memo_scope.unchanged) {
@@ -397,13 +397,13 @@ function main() {}
             return;
         }
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54808714)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
-        ColumnImpl(__memo_context, ((__memo_id) + (77657771)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+        ColumnImpl(__memo_context, ((__memo_id) + (77657771)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (72614054)), 1);
           const __memo_parameter_instance = __memo_scope.param(0, instance);
           if (__memo_scope.unchanged) {
@@ -415,7 +415,7 @@ function main() {}
             __memo_scope.recache();
             return;
           }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (125892063)), 0);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -427,20 +427,20 @@ function main() {}
               __memo_scope.cached;
               return;
             }
-            ConditionScope(__memo_context, ((__memo_id) + (157355641)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionScope(__memo_context, ((__memo_id) + (157355641)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (27183850)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
             if (true) {
-              ConditionBranch(__memo_context, ((__memo_id) + (139295044)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              ConditionBranch(__memo_context, ((__memo_id) + (139295044)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (257873411)), 0);
                 if (__memo_scope.unchanged) {
                   __memo_scope.cached;
                   return;
                 }
-                TextImpl(__memo_context, ((__memo_id) + (5605714)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                TextImpl(__memo_context, ((__memo_id) + (5605714)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (172290133)), 1);
                   const __memo_parameter_instance = __memo_scope.param(0, instance);
                   if (__memo_scope.unchanged) {
@@ -469,7 +469,7 @@ function main() {}
             return;
           }
         }));
-        Child._invoke(__memo_context, ((__memo_id) + (79161746)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
+        Child._invoke(__memo_context, ((__memo_id) + (79161746)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (203810821)), 1);
           const __memo_parameter_instance = __memo_scope.param(0, instance);
           if (__memo_scope.unchanged) {
@@ -483,26 +483,26 @@ function main() {}
           }
         }), (() => {
           return {
-            myBuilderParam: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            myBuilderParam: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (34887364)), 0);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
-              ConditionScope(__memo_context, ((__memo_id) + (219763513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              ConditionScope(__memo_context, ((__memo_id) + (219763513)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (53444768)), 0);
                 if (__memo_scope.unchanged) {
                   __memo_scope.cached;
                   return;
                 }
                 if (true) {
-                  ConditionBranch(__memo_context, ((__memo_id) + (55686085)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                  ConditionBranch(__memo_context, ((__memo_id) + (55686085)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (120719913)), 0);
                     if (__memo_scope.unchanged) {
                       __memo_scope.cached;
                       return;
                     }
-                    TextImpl(__memo_context, ((__memo_id) + (163744638)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                    TextImpl(__memo_context, ((__memo_id) + (163744638)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (215219604)), 1);
                       const __memo_parameter_instance = __memo_scope.param(0, instance);
                       if (__memo_scope.unchanged) {
@@ -549,7 +549,7 @@ function main() {}
     ${dumpConstructor()}
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-    public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
             (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
@@ -557,20 +557,20 @@ function main() {}
                     __memo_scope.cached;
                     return;
                 }
-                ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                     if (__memo_scope.unchanged) {
                         __memo_scope.cached;
                         return;
                     }
                     if (true) {
-                        ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                        ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                             if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
                                 return;
                             }
-                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                            TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                                 if (__memo_scope.unchanged) {
@@ -601,43 +601,43 @@ function main() {}
             })))
     }
     public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-    private __backing_myBuilderParam?: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-    public get myBuilderParam(): @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    private __backing_myBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+    public get myBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
         return this.__backing_myBuilderParam!;
     }
-    public set myBuilderParam(value: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    public set myBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
         this.__backing_myBuilderParam = value;
     }
-    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
       CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (6301141)), style, ((): Child => {
         return new Child(false, ({let gensym___46528967 = storage;
         (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
       throw new Error("Declare interface");
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
             if (true) {
-                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                     if (__memo_scope.unchanged) {
                         __memo_scope.cached;
                         return;
                     }
-                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                         const __memo_parameter_instance = __memo_scope.param(0, instance);
                         if (__memo_scope.unchanged) {
@@ -671,7 +671,7 @@ function main() {}
 @Component() export interface __Options_MyStruct {
 }
 @Component() export interface __Options_Child {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }
 `;

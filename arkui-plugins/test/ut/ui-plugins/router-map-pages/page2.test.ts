@@ -46,24 +46,24 @@ import { RelativeContainerAttribute as RelativeContainerAttribute } from "arkui.
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { RelativeContainerImpl as RelativeContainerImpl } from "arkui.component.relativeContainer";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, RelativeContainer as RelativeContainer, Builder as Builder, Column as Column, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
-@memo() function builderTwo() {
-  Page2._invoke(@memo() ((instance: Page2): void => {
+@Memo() function builderTwo() {
+  Page2._invoke(@Memo() ((instance: Page2): void => {
     instance.applyAttributesFinish();
     return;
   }), undefined, undefined, undefined, undefined);
 }
 
 @Component() final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
-  public __initializeStruct(initializers: (__Options_Page2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Page2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = ((({let gensym___117212394 = initializers;
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World"));
   }
@@ -79,23 +79,23 @@ function main() {}
     this.__backing_message = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Page2, __Options_Page2>(style, ((): Page2 => {
       return new Page2(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Page2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Page2 {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Page2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Page2 {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {
-    RelativeContainerImpl(@memo() ((instance: RelativeContainerAttribute): void => {
+  @Memo() public build() {
+    RelativeContainerImpl(@Memo() ((instance: RelativeContainerAttribute): void => {
       instance.setRelativeContainerOptions().height("100%").width("100%").applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(this.message, undefined).applyAttributesFinish();
         return;
       }), undefined);

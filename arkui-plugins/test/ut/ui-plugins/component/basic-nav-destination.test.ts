@@ -53,7 +53,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavDestinationImpl as NavDestinationImpl } from "arkui.component.navDestination";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -61,40 +61,40 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Column as Column, Button as Button, NavDestination as NavDestination } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
-  public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: NavDestinationStruct)=> void), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: NavDestinationStruct)=> void), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<NavDestinationStruct, __Options_NavDestinationStruct>(style, ((): NavDestinationStruct => {
       return new NavDestinationStruct(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): NavDestinationStruct {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): NavDestinationStruct {
     throw new Error("Declare interface");
   }
-  @memo() public build() {
-    NavDestinationImpl(@memo() ((instance: NavDestinationAttribute): void => {
+  @Memo() public build() {
+    NavDestinationImpl(@Memo() ((instance: NavDestinationAttribute): void => {
       instance.setNavDestinationOptions({
         moduleName: "entry",
         pagePath: "mock/component/basic-nav-destination",
       }).width(80).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    }), @Memo() (() => {
+      ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
         instance.setColumnOptions(undefined).applyAttributesFinish();
         return;
-      }), @memo() (() => {
-        ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      }), @Memo() (() => {
+        ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
           instance.setButtonOptions("abc", undefined).applyAttributesFinish();
           return;
         }), undefined);
