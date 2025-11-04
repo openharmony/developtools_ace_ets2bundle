@@ -258,6 +258,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       this.report({
         node: property,
         message: this.messages.parameterIsBuilderParam,
+        level: 'warn',
         data: {
           parameterName: childName,
         },
