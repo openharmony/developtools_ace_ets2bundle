@@ -125,11 +125,7 @@ export class ProgramVisitor extends AbstractVisitor {
         cachePath?: string
     ): void {
         const extensionName: string = program.fileNameWithExtension;
-        this.dumpExternalSource(currProgram.astNode, name, cachePath, 'ORI', extensionName);
-        const script = this.visitor(currProgram.astNode, currProgram, name);
-        if (script) {
-            this.dumpExternalSource(script, name, cachePath, this.pluginName, extensionName);
-        }
+        this.visitor(currProgram.astNode, currProgram, name, cachePath, extensionName);
     }
 
     private visitNextProgramInQueue(
@@ -154,10 +150,7 @@ export class ProgramVisitor extends AbstractVisitor {
         return false;
     }
 
-    private visitExternalSources(
-        program: arkts.Program,
-        programQueue: arkts.Program[]
-    ): void {
+    private visitExternalSources(program: arkts.Program, programQueue: arkts.Program[]): void {
         const visited = new Set();
         const queue: arkts.Program[] = programQueue;
         while (queue.length > 0) {
@@ -168,8 +161,13 @@ export class ProgramVisitor extends AbstractVisitor {
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
                 const cachePath: string | undefined = this.pluginContext?.getProjectConfig()?.cachePath;
-                if (this.pluginContext && 'getFileManager' in this.pluginContext && this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED &&
-                    this.pluginName === 'uiTransform' && this.isLegacyFile(currProgram.absName)) {
+                if (
+                    this.pluginContext &&
+                    'getFileManager' in this.pluginContext &&
+                    this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED &&
+                    this.pluginName === 'uiTransform' &&
+                    this.isLegacyFile(currProgram.absName)
+                ) {
                     this.visitLegacyInExternalSource(currProgram, name);
                 } else {
                     this.visitNonLegacyInExternalSource(program, currProgram, name, cachePath);
@@ -229,7 +227,13 @@ export class ProgramVisitor extends AbstractVisitor {
         }
     }
 
-    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
+    visitor(
+        node: arkts.AstNode,
+        program?: arkts.Program,
+        externalSourceName?: string,
+        cachePath?: string,
+        extensionName?: string
+    ): arkts.EtsScript {
         if (!this.isFrameworkMode && ProgramSkipper.canSkipProgram(program)) {
             debugLog('can skip file: ', program?.absName);
             return node as arkts.EtsScript;
@@ -247,7 +251,7 @@ export class ProgramVisitor extends AbstractVisitor {
         this.preVisitor(hook, node, program, externalSourceName);
 
         for (const transformer of this.visitors) {
-            this.visitTransformer(transformer, script, externalSourceName, program);
+            this.visitTransformer(transformer, script, externalSourceName, program, cachePath, extensionName);
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
                 debugDumpAstNode(
@@ -270,13 +274,17 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer: AbstractVisitor,
         script: arkts.EtsScript,
         externalSourceName?: string,
-        program?: arkts.Program
+        program?: arkts.Program,
+        cachePath?: string,
+        extensionName?: string
     ): arkts.EtsScript {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
         transformer.init();
+        this.dumpExternalSource(script, externalSourceName!, `${cachePath}/BEFORE`, this.pluginName, extensionName!);
         const newScript = transformer.visitor(script) as arkts.EtsScript;
+        this.dumpExternalSource(newScript, externalSourceName!, `${cachePath}/AFTER`, this.pluginName, extensionName!);
         transformer.reset();
         return newScript;
     }
