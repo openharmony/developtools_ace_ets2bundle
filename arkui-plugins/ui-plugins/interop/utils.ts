@@ -142,40 +142,45 @@ export function stateProxy(stateVarName: string): string {
  *      let createId = __Interop_ViewStackProcessor_Internal.getProperty("AllocateNewElmetIdForNextComponent");
  *      let elmtId = createId.invoke();
  */
-export function createELMTID(): arkts.Statement[] {
-    const body: arkts.Statement[] = [];
-    const viewStackProcessor = getPropertyESValue(InteropInternalNames.VIEWSTACKPROCESSOR, InteropInternalNames.GLOBAL, 'ViewStackProcessor');
-    body.push(viewStackProcessor);
-    const createId = getPropertyESValue('createId', InteropInternalNames.VIEWSTACKPROCESSOR, 'AllocateNewElmetIdForNextComponent');
-    body.push(createId);
-    const elmtId = arkts.factory.createVariableDeclaration(
+export function createELMTID(): arkts.Statement {
+    return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [arkts.factory.createVariableDeclarator(
             arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
+            arkts.factory.createIdentifier(InteropInternalNames.ELMTID),
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier('createId'),
-                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
+                    arkts.factory.createCallExpression(
+                        arkts.factory.createMemberExpression(
+                            arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
+                            arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false
+                        ),
+                        undefined,
+                        [arkts.factory.create1StringLiteral('ViewStackProcessor')]
+                    ),
+                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
                     false
                 ),
                 undefined,
-                undefined
+                [
+                    arkts.factory.createStringLiteral('AllocateNewElmetIdForNextComponent')
+                ]
             )
         )]
     );
-    body.push(elmtId);
-    return body;
 }
 
 /**
  * 
  * @param componentName 
  * @returns return {
- *              component: component,
+ *              component: __Interop_Component_Internal,
  *              name: componentName,
  *          };
  */

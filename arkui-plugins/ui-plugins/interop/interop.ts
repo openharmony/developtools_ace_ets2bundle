@@ -121,7 +121,7 @@ function newComponent(className: string): arkts.Statement {
                     generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
                     generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
                     arkts.factory.createUndefinedLiteral(),
-                    generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)),
+                    generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createArrowFunction(
                             arkts.factory.createScriptFunction(
@@ -151,16 +151,25 @@ function newComponent(className: string): arkts.Statement {
 }
 
 function createComponent(className: string, isV2: boolean): arkts.Statement[] {
-    let viewCreateMethod = 'viewPUCreate';
+    let viewCreateMethod: string = 'viewPUCreate';
     if (isV2) {
         viewCreateMethod = 'viewV2Create';
     }
     const component = newComponent(className);
-    const View = getPropertyESValue(viewCreateMethod, InteropInternalNames.GLOBAL, viewCreateMethod);
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
-                arkts.factory.createIdentifier(viewCreateMethod),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
+                        arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    [arkts.factory.create1StringLiteral(viewCreateMethod)]
+                ),
                 arkts.factory.createIdentifier('invoke'),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
@@ -172,7 +181,7 @@ function createComponent(className: string, isV2: boolean): arkts.Statement[] {
             ]
         )
     );
-    return [component, View, create];
+    return [component, create];
 }
 
 
@@ -196,7 +205,7 @@ function createWrapperBlock(
         ...initial,
         ...initialArgsStatement,
         ...createExtraInfo(['page'], [path]),
-        ...createELMTID(),
+        createELMTID(),
         ...createComponent(className, isV2),
         createInitReturn(className),
     ]);

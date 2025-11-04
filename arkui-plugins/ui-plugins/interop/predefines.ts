@@ -23,7 +23,6 @@ export enum InteroperAbilityNames {
     INITIALIZERS = 'initializers',
     REUSEID = 'reuseId',
     CONTENT = 'content',
-    ELMTID = 'elmtId',
     CONSTRUCTOR = 'constructor',
     GETCOMPATIBLESTATE = 'getCompatibleState',
     INTEROP = 'arkui.component.interop',
@@ -37,7 +36,7 @@ export enum InteropInternalNames {
     COMPONENT = '__Interop_Component_Internal',
     GLOBAL = '__Interop_Global_Internal',
     PARAMSLAMBDA = '__Interop_Paramslambda_Internal',
-    VIEWSTACKPROCESSOR = '__Interop_ViewStackProcessor_Internal',
+    ELMTID = '__Interop_ElmtId_Internal',
 }
 
 
