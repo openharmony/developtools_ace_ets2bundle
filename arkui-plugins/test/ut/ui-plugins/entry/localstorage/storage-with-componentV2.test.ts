@@ -38,6 +38,11 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
@@ -56,26 +61,10 @@ import { ComponentV2 as ComponentV2, Entry as Entry } from "@ohos.arkui.componen
 
 import { LocalStorage as LocalStorage } from "@ohos.arkui.stateManagement";
 
-const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
-@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() final struct MyStateSample extends CustomComponentV2<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
-    throw new Error("Declare interface");
-  }
-  
-  public build() {}
-  
-  public constructor() {}
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  public entry(): void {
-    MyStateSample();
-  }
-  
-  public constructor() {}
-  
-}
+const myStorage: (()=> LocalStorage) = (() => {
+  return new LocalStorage();
+});
+function main() {}
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
@@ -83,8 +72,43 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pagePath: "../../../entry/localstorage/storage-with-componentV2",
   pageFullPath: "test/demo/mock/entry/localstorage/storage-with-componentV2",
   integratedHsp: "false",
-} as NavInterface))
-@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() export interface __Options_MyStateSample {
+} as NavInterface));
+@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @ComponentV2() final struct MyStateSample extends CustomComponentV2<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample();
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+  
+  @memo() public build() {}
+  
+  public constructor() {}
+  
+}
+
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, (() => {
+      return myStorage();
+    }), undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
+@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @ComponentV2() export interface __Options_MyStateSample {
   
 }
 `;
@@ -97,9 +121,9 @@ pluginTester.run(
     'test entry with only useSharedStorage false',
     [parsedTransform, uiNoRecheck, recheck],
     {
-        'parsed': [testEntryTransformer],
+        'checked': [testEntryTransformer],
     },
     {
-        stopAfter: 'parsed',
+        stopAfter: 'checked',
     }
 );

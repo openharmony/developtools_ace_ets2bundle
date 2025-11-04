@@ -22,18 +22,19 @@ import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'entry/localstorage';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'storage-use-shared-storage-false.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, FUNCTION_DIR_PATH, 'storage-in-component-call.ets'),
 ];
 
-const pluginTester = new PluginTester('test entry with storage and useSharedStorage false', buildConfig);
+const pluginTester = new PluginTester('test storage in component call', buildConfig);
 
 const parsedTransform: Plugins = {
-    name: 'entry with storage',
+    name: 'parsedTransform',
     parsed: uiTransform().parsed,
 };
 
@@ -68,18 +69,18 @@ function main() {}
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
-  pagePath: "../../../entry/localstorage/storage-use-shared-storage-false",
-  pageFullPath: "test/demo/mock/entry/localstorage/storage-use-shared-storage-false",
+  pagePath: "../../../entry/localstorage/storage-in-component-call",
+  pageFullPath: "test/demo/mock/entry/localstorage/storage-in-component-call",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({storage:"myStorage",useSharedStorage:true,routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___203542966 = storage;
+      return new MyStateSample(true, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
@@ -88,7 +89,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {}
+  @memo() public build() {
+    Child._invoke(@memo() ((instance: Child): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), (() => {
+      return {};
+    }), (() => {
+      return myStorage();
+    }), undefined, undefined);
+  }
   
   public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
     super(useSharedStorage, storage);
@@ -99,6 +109,28 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public constructor() {
     this(undefined, undefined);
   }
+  
+}
+
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___149025070 = storage;
+      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+  
+  @memo() public build() {}
+  
+  ${dumpConstructor()}
   
 }
 
@@ -116,7 +148,11 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({storage:"myStorage",useSharedStorage:true,routeName:""}) @Component() export interface __Options_MyStateSample {
+  
+}
+
+@Component() export interface __Options_Child {
   
 }
 `;
@@ -126,7 +162,7 @@ function testEntryTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test entry with storage and useSharedStorage false',
+    'test storage in component call',
     [parsedTransform, uiNoRecheck, recheck],
     {
         'checked': [testEntryTransformer],

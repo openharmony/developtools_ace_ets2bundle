@@ -257,10 +257,10 @@ function testCustomComponentTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test custom component call transformation',
-    [parsedTransform, recheck, uiNoRecheck, recheck],
+    [parsedTransform, uiNoRecheck, recheck],
     {
         parsed: [testParedTransformer],
-        'checked:ui-no-recheck': [testCustomComponentTransformer],
+        checked: [testCustomComponentTransformer],
     },
     {
         stopAfter: 'checked',

@@ -22,6 +22,7 @@ import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'entry/localstorage';
 
@@ -38,6 +39,10 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
+
+import { memo as memo } from "arkui.stateManagement.runtime";
+
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
@@ -56,28 +61,10 @@ import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 
 import { LocalStorage as LocalStorage } from "@ohos.arkui.stateManagement";
 
-const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
-@Entry({useSharedStorage:true}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
-    throw new Error("Declare interface");
-  }
-  
-  public build() {}
-  
-  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
-    super(useSharedStorage, storage);
-  }
-  
-}
-
-class __EntryWrapper extends EntryPoint {
-  public entry(): void {
-    MyStateSample();
-  }
-
-  public constructor() {}
-
-}
+const myStorage: (()=> LocalStorage) = (() => {
+  return new LocalStorage();
+});
+function main() {}
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
@@ -85,10 +72,44 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pagePath: "../../../entry/localstorage/use-shared-storage-true",
   pageFullPath: "test/demo/mock/entry/localstorage/use-shared-storage-true",
   integratedHsp: "false",
-} as NavInterface))
+} as NavInterface));
 
-@Entry({useSharedStorage:true}) @Component() export interface __Options_MyStateSample {
- 
+@Entry({useSharedStorage:true,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  
+  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(true, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+  
+  @memo() public build() {}
+  
+  ${dumpConstructor()}
+  
+}
+
+class __EntryWrapper extends EntryPoint {
+  @memo() public entry(): void {
+    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+      instance.applyAttributesFinish();
+      return;
+    }), undefined, undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
+@Entry({useSharedStorage:true,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+  
 }
 `;
 
@@ -100,9 +121,9 @@ pluginTester.run(
     'test entry with only useSharedStorage true',
     [parsedTransform, uiNoRecheck, recheck],
     {
-        'parsed': [testEntryTransformer],
+        'checked': [testEntryTransformer],
     },
     {
-        stopAfter: 'parsed',
+        stopAfter: 'checked',
     }
 );

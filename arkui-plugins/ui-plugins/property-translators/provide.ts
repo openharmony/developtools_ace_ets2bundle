@@ -94,13 +94,13 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
 
     generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
         const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
-        const alias: string = options?.alias ?? originalName;
-        const allowOverride: boolean = options?.allowOverride ?? false;
+        const alias = options?.alias ?? arkts.factory.create1StringLiteral(originalName);
+        const allowOverride = options?.allowOverride ?? arkts.factory.createBooleanLiteral(false);
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            arkts.factory.create1StringLiteral(alias),
+            alias,
             factory.generateInitializeValue(this.property, this.propertyType, originalName),
-            arkts.factory.createBooleanLiteral(allowOverride),
+            allowOverride,
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(

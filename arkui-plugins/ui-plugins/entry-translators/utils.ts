@@ -30,25 +30,21 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
  *
  * @param node class definition node
  */
-export function getEntryParams(node: arkts.ClassDefinition): Record<EntryParamNames, arkts.ClassProperty | undefined> {
+export function getEntryRouteParam(node: arkts.ClassDefinition): arkts.ClassProperty | undefined {
     const annotation = node.annotations.find((anno) => isAnnotation(anno, StructDecoratorNames.ENTRY));
-    const result = {
-        storage: undefined,
-        useSharedStorage: undefined,
-        routeName: undefined,
-    } as Record<EntryParamNames, arkts.ClassProperty | undefined>;
+    let routeName: arkts.ClassProperty | undefined = undefined;
     if (!annotation || !annotation.properties) {
-        return result;
+        return routeName;
     }
     for (const prop of annotation.properties) {
         if (arkts.isClassProperty(prop) && prop.key && arkts.isIdentifier(prop.key)) {
-            const name = prop.key.name as EntryParamNames;
-            if (name in result) {
-                result[name] = prop;
+            const name = prop.key.name;
+            if (name === EntryParamNames.ENTRY_ROUTE_NAME) {
+                routeName = prop;
             }
         }
     }
-    return result;
+    return routeName;
 }
 
 /**
