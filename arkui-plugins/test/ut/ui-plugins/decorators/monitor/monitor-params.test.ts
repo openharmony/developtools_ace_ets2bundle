@@ -43,7 +43,7 @@ import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -67,7 +67,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2, Column as Column, Button as Button } from "@ohos.arkui.component";
 
@@ -255,7 +255,7 @@ class GGG {
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<EEE>(this, "per", new EEE());
     this.__backing_v1 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "v1", true);
     this.__backing_numArr = STATE_MGMT_FACTORY.makeLocal<Array<string>>(this, "numArr", ["1", "3", "5"]);
@@ -316,19 +316,19 @@ class GGG {
 
   private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
   @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) public onPerChange(monitor: IMonitor) {}
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   public constructor() {}
 

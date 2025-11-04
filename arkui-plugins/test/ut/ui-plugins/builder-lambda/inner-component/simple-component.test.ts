@@ -39,17 +39,17 @@ const pluginTester = new PluginTester('test builder-lambda simple component', bu
 function testBuilderLambdaTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { memo as memo } from \"@ohos.arkui.stateManagement\";
+import { memo as memo } from "@ohos.arkui.stateManagement";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
     @memo() public build() {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
-        }), @memo() (() => {}));
+        }), @Memo() (() => {}));
     }
     public constructor() {}
 }
@@ -61,9 +61,9 @@ function testMemoTransformer(this: PluginTestContext): void {
     const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { memo as memo } from \"@ohos.arkui.stateManagement\";
+import { memo as memo } from "@ohos.arkui.stateManagement";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
@@ -73,7 +73,7 @@ class MyStateSample {
             __memo_scope.cached;
             return;
         }
-        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
@@ -85,7 +85,7 @@ class MyStateSample {
                 __memo_scope.recache();
                 return;
             }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (147296800)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;

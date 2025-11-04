@@ -47,7 +47,7 @@ import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateM
 
 import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -55,7 +55,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
@@ -64,7 +64,7 @@ import { Monitor as Monitor, Local as Local, IMonitor as IMonitor } from "@ohos.
 function main() {}
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
     this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
@@ -129,13 +129,13 @@ function main() {}
     this.__backing_age!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
@@ -163,7 +163,7 @@ function main() {}
     }));
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   public constructor() {}
 

@@ -43,7 +43,7 @@ import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { IObjectLinkDecoratedVariable as IObjectLinkDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -65,7 +65,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -140,7 +140,7 @@ function main() {}
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
     (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)}) as A))
   }
@@ -158,25 +158,25 @@ function main() {}
     return this.__backing_objectlinkvar!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   ${dumpConstructor()}
 
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
-  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
     (((gensym___219806589) == (null)) ? undefined : gensym___219806589.objectlinkvar1)}) as (A | undefined)))
     this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
@@ -218,18 +218,18 @@ function main() {}
     return this.__backing_objectlinkvar3!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
       return new MyStateSample2(false, ({let gensym___64599093 = storage;
       (((gensym___64599093) == (null)) ? undefined : gensym___64599093())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample2 {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   ${dumpConstructor()}
 

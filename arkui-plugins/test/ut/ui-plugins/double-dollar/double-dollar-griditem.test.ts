@@ -63,7 +63,7 @@ import { GridImpl as GridImpl } from "arkui.component.grid";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -77,7 +77,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Entry as Entry, Column as Column, Component as Component, $$ as $$, Grid as Grid, GridItem as GridItem } from "@ohos.arkui.component";
 
@@ -103,7 +103,7 @@ class CC {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_boo = STATE_MGMT_FACTORY.makeState<boolean>(this, "boo", ((({let gensym___9142460 = initializers;
     (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? (true)));
   }
@@ -120,27 +120,27 @@ class CC {
     this.__backing_boo!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      GridImpl(@memo() ((instance: GridAttribute): void => {
+    }), @Memo() (() => {
+      GridImpl(@Memo() ((instance: GridAttribute): void => {
         instance.setGridOptions(undefined, undefined).applyAttributesFinish();
         return;
-      }), @memo() (() => {
-        GridItemImpl(@memo() ((instance: GridItemAttribute): void => {
+      }), @Memo() (() => {
+        GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
           instance.setGridItemOptions(undefined).selected(({
             value: this.boo,
             onChange: ((value: boolean) => {
@@ -148,13 +148,13 @@ class CC {
             }),
           } as Bindable<boolean>)).applyAttributesFinish();
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() (() => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions("nihao", undefined).applyAttributesFinish();
             return;
           }), undefined);
         }));
-        GridItemImpl(@memo() ((instance: GridItemAttribute): void => {
+        GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
           instance.setGridItemOptions(undefined).selected(({
             value: CC.c,
             onChange: ((value: boolean) => {
@@ -162,8 +162,8 @@ class CC {
             }),
           } as Bindable<boolean>)).applyAttributesFinish();
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() (() => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions("nihao", undefined).applyAttributesFinish();
             return;
           }), undefined);
@@ -177,8 +177,8 @@ class CC {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+  @Memo() public entry(): void {
+    MyStateSample._invoke(@Memo() ((instance: MyStateSample): void => {
       instance.applyAttributesFinish();
       return;
     }), undefined, undefined, undefined, undefined);
