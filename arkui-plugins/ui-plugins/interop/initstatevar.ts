@@ -87,49 +87,84 @@ export function initialArgs(
     return result;
 }
 
+interface parentPropertyInfo {
+    isComponentV2forParent: boolean;
+    valueName: string;
+    valueTypes: string;
+}
+interface childPropertyInfo {
+    childComponentName: string;
+    keyTypes: string;
+}
 function checkArgsV1InteropV2(
     keyName: string,
     keyProperty: arkts.ClassProperty,
     value: arkts.AstNode,
     node: arkts.CallExpression,
-    isV2: boolean
+    isComponentV2ForChild: boolean
 ): void {
-    const valueProperty = arkts.getDecl(value);
-    let keyTypes: string[] = [];
-    let valueTypes: string[] = [];
-    if (!(value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression)) {
-        return;
-    }
-    let valueName = value.property.name;
-    let isComponentV2forParent = false;
-    if (valueProperty) {
-        isComponentV2forParent = valueProperty.parent?.annotations?.some(
-            (annotation: arkts.AnnotationUsage) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
-        );
-        if (arkts.isMethodDefinition(valueProperty) || arkts.isClassProperty(valueProperty)) {
-            valueTypes = getAnnotationTypes(valueProperty);
-        }
-    }
-    if (keyProperty && keyProperty.annotations) {
-        keyProperty.annotations.forEach((annotations: arkts.AnnotationUsage) => {
-            const type = getPropertyType(annotations);
-            keyTypes.push(type);
-        });
-    }
-    const keyTypeStr = keyTypes.join(', ');
-    const valueTypeStr = valueTypes.join(', ');
-    const errorMessage = `The ${valueTypeStr} property '${valueName}' cannot be assigned to the ${keyTypeStr} property '${keyName}' when interop`;
-    if (isV2) {
-        if (!isComponentV2forParent) {
+    const isThisExpressionForParentParam =
+        value instanceof arkts.MemberExpression && value.object instanceof arkts.ThisExpression;
+    let parentInfo: parentPropertyInfo = handleParentProperty(value, isThisExpressionForParentParam);
+    let childInfo: childPropertyInfo = handleChildProperty(keyProperty);
+    const errorMessage = `The ${parentInfo.valueTypes} property '${parentInfo.valueName}' cannot be assigned to the ${childInfo.keyTypes} property '${keyName}' when interop`;
+    if (isComponentV2ForChild) {
+        if (!parentInfo.isComponentV2forParent && isThisExpressionForParentParam) {
             logDiagnostic(errorMessage, node);
         }
+        const decoratorNameForParam = '@' + DecoratorNames.PARAM;
+        const decoratorNameForEvent = '@' + DecoratorNames.EVENT;
+        if (
+            !parentInfo.isComponentV2forParent &&
+            !isThisExpressionForParentParam &&
+            !childInfo.keyTypes.includes(decoratorNameForParam) &&
+            !childInfo.keyTypes.includes(decoratorNameForEvent)
+        ) {
+            const errorInfo = `The '${childInfo.keyTypes}' property '${keyName}' in the custom component '${childInfo.childComponentName}' cannot be initialized here (forbidden to specify).`;
+            logDiagnostic(errorInfo, node);
+        }
     } else {
-        if (isComponentV2forParent) {
+        if (parentInfo.isComponentV2forParent && isThisExpressionForParentParam) {
             if (keyProperty.annotations && keyProperty.annotations.length !== 0) {
                 logDiagnostic(errorMessage, node);
             }
         }
     }
+}
+
+function handleParentProperty(value: arkts.AstNode, isThisExpressionForParentParam: boolean): parentPropertyInfo {
+    let valueName: string = '';
+    let isComponentV2: boolean = false;
+    let valueTypes: string[] = [];
+    if (isThisExpressionForParentParam && arkts.isIdentifier(value.property)) {
+        valueName = value.property.name;
+    }
+    const valueProperty = arkts.getDecl(value);
+    if (valueProperty) {
+        isComponentV2 = valueProperty.parent?.annotations?.some(
+            (annotation: arkts.AnnotationUsage) =>
+                annotation.expr instanceof arkts.Identifier && annotation.expr.name === 'ComponentV2'
+        );
+        if (arkts.isMethodDefinition(valueProperty) || arkts.isClassProperty(valueProperty)) {
+            valueTypes = getAnnotationTypes(valueProperty);
+        }
+    }
+    const valueTypesStr = valueTypes.length === 0 ? 'regular' : valueTypes.join(', ');
+    return { isComponentV2forParent: isComponentV2, valueName: valueName, valueTypes: valueTypesStr };
+}
+
+function handleChildProperty(keyProperty: arkts.ClassProperty): childPropertyInfo {
+    let childComponentName: string = '';
+    let keyTypes: string[] = [];
+    if (keyProperty) {
+        childComponentName = keyProperty.parent?.ident?.name;
+        keyProperty.annotations?.forEach((annotations: arkts.AnnotationUsage) => {
+            const type = getPropertyType(annotations);
+            keyTypes.push(type);
+        });
+    }
+    const keyTypesStr = keyTypes.length === 0 ? 'regular' : keyTypes.join(', ');
+    return { childComponentName: childComponentName, keyTypes: keyTypesStr };
 }
 
 function getAnnotationTypes(node: arkts.MethodDefinition | arkts.ClassProperty): string[] {
