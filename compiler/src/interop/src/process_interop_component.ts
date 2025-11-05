@@ -15,7 +15,7 @@
 
 import ts from 'typescript';
 import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
-import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER } from './pre_define';
+import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER, BUILDER_ATTR_BIND } from './pre_define';
 import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map'
 
 function generateGetClassStatements(): ts.Statement[] {
@@ -270,7 +270,16 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
     : ts.factory.createCallExpression(
       ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
       undefined,
-      [initializer]
+      [
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            initializer,
+            ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+          ),
+          undefined,
+          [ts.factory.createThis()]
+        )
+      ]
     );
   
   return ts.factory.createArrowFunction(
