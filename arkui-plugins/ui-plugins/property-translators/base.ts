@@ -44,8 +44,12 @@ export abstract class PropertyTranslator {
         if (structInfo.annotations.component) {
             const isObservedV2From1_1 = getHasAnnotationObserved(property, 'ObservedV2');
             if (isObservedV2From1_1) {
-                let decoratorType = 'regular';
-                property?.annotations?.some((annotations) => (decoratorType = getPropertyType(annotations)));
+                const decoratorTypes: string[] = [];
+                property?.annotations?.forEach((anno) => {
+                    const type = getPropertyType(anno);
+                    decoratorTypes.push(type);
+                });
+                const decoratorType = decoratorTypes.length === 0 ? 'regular' : decoratorTypes.join(', ');
                 const errorMessage = `The type of the ${decoratorType} property can not be a class decorated with @ObservedV2 when interop`;
                 logDiagnostic(errorMessage, property);
             }
@@ -53,8 +57,12 @@ export abstract class PropertyTranslator {
         if (structInfo.annotations.componentV2) {
             const isObservedFrom1_1 = getHasAnnotationObserved(property, 'Observed');
             if (isObservedFrom1_1) {
-                let decoratorType = 'regular';
-                property?.annotations?.some((annotations) => (decoratorType = getPropertyType(annotations)));
+                const decoratorTypes: string[] = [];
+                property?.annotations?.forEach((anno) => {
+                    const type = getPropertyType(anno);
+                    decoratorTypes.push(type);
+                });
+                const decoratorType = decoratorTypes.length === 0 ? 'regular' : decoratorTypes.join(', ');
                 const errorMessage = `The type of the ${decoratorType} property can not be a class decorated with @Observed when interop`;
                 logDiagnostic(errorMessage, property);
             }
