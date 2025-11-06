@@ -162,6 +162,7 @@ export enum DecoratorNames {
     TRACK = 'Track',
     TRACE = 'Trace',
     JSONSTRINGIFYIGNORE = 'JSONStringifyIgnore',
+    JSONPARSEIGNORE = 'JSONParseIgnore',
     JSONRENAME = 'JSONRename',
     ANIMATABLE_EXTEND = 'AnimatableExtend',
     PROP_REF = 'PropRef',
