@@ -42,7 +42,6 @@ import { ProviderInterfaceTranslator, ProviderTranslator } from './provider';
 import { ConsumerInterfaceTranslator, ConsumerTranslator } from './consumer';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
-import { EventPropertyTranslator } from './event';
 
 export { PropertyTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
@@ -141,9 +140,6 @@ export function classifyV2Property(
     }
     if (hasDecorator(property, DecoratorNames.CONSUMER)) {
         return new ConsumerTranslator({ property, structInfo });
-    }
-    if (hasDecorator(property, DecoratorNames.EVENT)) {
-        return new EventPropertyTranslator({property, structInfo})
     }
 
     return undefined;

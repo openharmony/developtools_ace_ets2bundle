@@ -59,7 +59,7 @@ import { FakeComponentCAttribute as FakeComponentCAttribute } from \"${utilExter
 import { FakeComponentCImpl as FakeComponentCImpl } from \"${utilExternalSourceName}\";
 import { FakeComponentBAttribute as FakeComponentBAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentBImpl as FakeComponentBImpl } from \"${utilExternalSourceName}\";
-import { Memo as Memo } from \"arkui.incremental.annotation\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { FakeComponentAAttribute as FakeComponentAAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentAImpl as FakeComponentAImpl } from \"${utilExternalSourceName}\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
@@ -112,15 +112,15 @@ class __EntryWrapper extends EntryPoint {
 `;
 
 const expectedUIHeaderScript: string = `
-import { Memo as Memo } from "arkui.incremental.annotation";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
 
 function main() {}
 
-@memo() export function FakeComponentA(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentB(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentC(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentA(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentB(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentC(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
+
 @Memo() export function FakeComponentAImpl(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() export function FakeComponentBImpl(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() export function FakeComponentCImpl(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void

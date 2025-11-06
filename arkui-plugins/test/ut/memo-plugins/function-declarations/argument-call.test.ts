@@ -71,15 +71,15 @@ function main() {}
     }
 }
 @memo() function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
-    let arg1: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : 10);
-    let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    let arg1: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (10 as int));
+    let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<int>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             return __memo_scope.cached;
         }
         return __memo_scope.recache(20);
-    }));
-    let arg3: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : arg1);
+    }) as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int)));
+    let arg3: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (arg1 as int));
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 4);
     const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_arg3 = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4);
     if (__memo_scope.unchanged) {
