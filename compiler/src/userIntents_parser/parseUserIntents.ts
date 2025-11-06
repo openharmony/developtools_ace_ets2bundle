@@ -1820,9 +1820,11 @@ class ParseIntent {
         if (fs.existsSync(intentDataSourcePath)) {
           harIntentData = JSON.parse(fs.readFileSync(intentDataSourcePath, 'utf8')) as object;
         }
-        Object.assign(harIntentDataObj, {
-          harName: harIntentData
-        });
+        if (Object.keys(harIntentData).length !== 0) {
+          Object.assign(harIntentDataObj, {
+            harName: harIntentData
+          });
+        }
       });
     }
     return harIntentDataObj;
