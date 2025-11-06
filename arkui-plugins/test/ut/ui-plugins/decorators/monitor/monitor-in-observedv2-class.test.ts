@@ -211,13 +211,21 @@ function main() {}
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.info = ((({let gensym___130514200 = initializers;
+    this.__backing_info = ((({let gensym___130514200 = initializers;
     (((gensym___130514200) == (null)) ? undefined : gensym___130514200.info)})) ?? (new Info()));
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  public info!: Info;
+  private __backing_info?: Info;
+  
+  public get info(): Info {
+    return (this.__backing_info as Info);
+  }
+  
+  public set info(value: Info) {
+    this.__backing_info = value;
+  }
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
