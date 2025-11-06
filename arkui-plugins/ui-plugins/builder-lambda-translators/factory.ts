@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import path from 'path';
-import { BuilderLambdaNames, optionsHasField, inferTypeFromValue } from '../utils';
+import { BuilderLambdaNames, optionsHasField, inferTypeFromValue, CustomComponentNames } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -136,7 +136,7 @@ export class factory {
     /**
      * transform arguments in style node.
      */
-   static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
+    static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
         const decl = arkts.getDecl(call.expression);
         if (!decl || !arkts.isMethodDefinition(decl)) {
             return call.arguments.map((arg) => ({ arg }));
@@ -229,6 +229,7 @@ export class factory {
             initCallPtr: undefined,
             reuseId: undefined,
             defaultReuseId: undefined,
+            structEntryStroage: undefined,
         };
         const structInfo = !isFunctionCall ? getStructCalleeInfoFromCallee(leaf.expression) : {};
         if (!!structInfo?.isFromCustomDialog) {
@@ -236,6 +237,9 @@ export class factory {
         }
         if (!!structInfo?.isFromReuse && !!structInfo?.structName) {
             lambdaBodyInfo.defaultReuseId = arkts.factory.createStringLiteral(structInfo.structName);
+        }
+        if (!!structInfo?.structEntryStroage && arkts.isStringLiteral(structInfo.structEntryStroage)) {
+            lambdaBodyInfo.structEntryStroage = structInfo.structEntryStroage.str;
         }
         const lambdaBody = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
         arkts.NodeCache.getInstance().collect(lambdaBody);
@@ -541,7 +545,7 @@ export class factory {
         declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
         const { params, returnType } = declInfo;
-        const { lambdaBody, reuseId, defaultReuseId } = lambdaBodyInfo;
+        const { lambdaBody, reuseId, defaultReuseId, structEntryStroage } = lambdaBodyInfo;
         const args: Array<arkts.AstNode | undefined> = [];
         const isTrailingCall = leaf.isTrailingCall;
         forEachArgWithParam(
@@ -551,9 +555,10 @@ export class factory {
                 const fallback = arkts.factory.createUndefinedLiteral();
                 let modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
                 if (index !== params.length - 1) {
-                    modifiedArg = arkts.isUndefinedLiteral(modifiedArg)
+                    const processedArg = factory.preprocessArgWithParamName(param, modifiedArg, structEntryStroage);
+                    modifiedArg = arkts.isUndefinedLiteral(processedArg)
                         ? modifiedArg
-                        : this.rewriteArgumentToLambda(modifiedArg as arkts.Expression);
+                        : this.rewriteArgumentToLambda(processedArg as arkts.Expression);
                 } else {
                     const reuseIdArg = reuseId?.clone() ?? defaultReuseId ?? arkts.factory.createUndefinedLiteral();
                     args.push(reuseIdArg);
@@ -568,6 +573,21 @@ export class factory {
             args.unshift(styleArg);
         }
         return args;
+    }
+
+    static preprocessArgWithParamName(
+        param: arkts.Expression,
+        arg: arkts.AstNode,
+        name: string | undefined
+    ): arkts.AstNode {
+        if (!arkts.isEtsParameterExpression(param)) {
+            return arg;
+        }
+        const paramName: string = param.identifier.name;
+        if (paramName === BuilderLambdaNames.STORAGE_PARAM_NAME) {
+            return name ? arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, []) : arg;
+        }
+        return arg;
     }
 
     /**

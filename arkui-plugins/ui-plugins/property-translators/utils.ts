@@ -28,7 +28,7 @@ import {
     findCanAddMemoFromParameter,
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
-import { CustomDialogNames } from '../utils';
+import { CustomDialogNames, getValueInObjectAnnotation } from '../utils';
 import { ReturnTransformer } from './return-transformer';
 
 export interface DecoratorInfo {
@@ -328,8 +328,8 @@ export function getValueInAnnotation(node: arkts.ClassProperty, decoratorName: D
 }
 
 export interface ProvideOptions {
-    alias: string | undefined;
-    allowOverride: boolean;
+    alias?: arkts.Expression;
+    allowOverride?: arkts.Expression;
 }
 
 export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideOptions | undefined {
@@ -337,46 +337,12 @@ export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideO
     for (let i = 0; i < annotations.length; i++) {
         const anno: arkts.AnnotationUsage = annotations[i];
         if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.PROVIDE) {
-            const alias = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias') as string | undefined;
-            const allowOverride: boolean = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride')
-                ? true
-                : false;
+            const alias = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias');
+            const allowOverride = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride');
             return { alias, allowOverride };
         }
     }
     return undefined;
-}
-
-function getValueInObjectAnnotation(
-    anno: arkts.AnnotationUsage,
-    decoratorName: DecoratorNames,
-    key: string
-): string | boolean | undefined {
-    const isSuitableAnnotation: boolean =
-        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
-    if (!isSuitableAnnotation) {
-        return undefined;
-    }
-    const keyItem: arkts.AstNode | undefined = anno.properties.find(
-        (annoProp: arkts.AstNode) =>
-            arkts.isClassProperty(annoProp) &&
-            annoProp.key &&
-            arkts.isIdentifier(annoProp.key) &&
-            annoProp.key.name === key
-    );
-    if (keyItem && arkts.isClassProperty(keyItem) && keyItem.value) {
-        return getDifferentAnnoTypeValue(keyItem.value);
-    }
-    return undefined;
-}
-
-function getDifferentAnnoTypeValue(value: arkts.Expression): string | boolean {
-    if (arkts.isBooleanLiteral(value)) {
-        return value.value;
-    } else if (arkts.isStringLiteral(value)) {
-        return value.str;
-    }
-    return value.dumpSrc();
 }
 
 export function generateGetOrSetCall(beforCall: arkts.AstNode, type: GetSetTypes) {

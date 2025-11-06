@@ -23,6 +23,7 @@ import {
     getGettersFromClassDecl,
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
+    getValueInObjectAnnotation,
     isCustomComponentInterface,
     isCustomDialogControllerOptions,
     isKnownMethodDefinition,
@@ -91,6 +92,7 @@ import {
     UIClass,
     ARKUI_LOCAL_STORAGE_SOURCE_NAME,
     MEMO_IMPORT_SOURCE_NAME,
+    StructDecoratorNames,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
@@ -1579,8 +1581,16 @@ export class factory {
             restIdents.splice(1, 0, arkts.factory.createIdentifier(BuilderLambdaNames.REUSE_ID_PARAM_NAME));
         }
         let factoryParams: arkts.Expression[] = [];
+        let useSharedStorage: arkts.Expression | undefined = undefined;
+        if (!!scopeInfo.annotations.entry) {
+            useSharedStorage = getValueInObjectAnnotation(
+                scopeInfo.annotations.entry,
+                StructDecoratorNames.ENTRY,
+                BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME
+            );
+        }
         if (isFromCustomDialog || isFromComponent) {
-            factoryParams.push(arkts.factory.createBooleanLiteral(false));
+            factoryParams.push(useSharedStorage ?? arkts.factory.createBooleanLiteral(false));
             factoryParams.push(
                 UIFactory.createOptionalCall(
                     arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
