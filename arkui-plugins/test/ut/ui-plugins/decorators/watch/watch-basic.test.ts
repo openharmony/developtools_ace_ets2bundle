@@ -108,7 +108,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Observed() class A implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -122,7 +122,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -138,7 +138,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONRename({newName:"trackA"}) private __backing_trackA: string = "world";
   
-  @JSONStringifyIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   

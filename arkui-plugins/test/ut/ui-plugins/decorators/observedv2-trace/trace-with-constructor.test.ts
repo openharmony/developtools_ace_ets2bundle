@@ -57,7 +57,7 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 function main() {}
 
 @ObservedV2() class FF implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -81,11 +81,11 @@ function main() {}
 
   @JSONRename({newName:"traceE"}) private __backing_traceE: number = 2;
 
-  @JSONStringifyIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONRename({newName:"vv"}) private __backing_vv?: string;
 
-  @JSONStringifyIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   public get traceE(): number {
     this.conditionalAddRef(this.__meta_traceE);

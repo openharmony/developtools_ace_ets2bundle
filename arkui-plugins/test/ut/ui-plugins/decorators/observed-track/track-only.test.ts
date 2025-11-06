@@ -58,7 +58,7 @@ function main() {}
 
 
 class C implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -72,7 +72,7 @@ class C implements IObservedObject, ISubscribedWatches {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
   
-  @JSONStringifyIgnore() private ____V1RenderId: RenderIdType = 0;
+  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
@@ -88,7 +88,7 @@ class C implements IObservedObject, ISubscribedWatches {
   
   @JSONRename({newName:"trackC"}) private __backing_trackC: number = 2;
   
-  @JSONStringifyIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public constructor() {}
   
