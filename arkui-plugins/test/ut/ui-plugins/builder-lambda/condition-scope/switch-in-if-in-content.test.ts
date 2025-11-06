@@ -42,7 +42,7 @@ const expectedUIScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremental.annotation\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -51,11 +51,17 @@ import { Text as Text, Column as Column, Component as Component } from \"@ohos.a
 function main() {}
 @Component() final struct SwitchInIf extends CustomComponent<SwitchInIf, __Options_SwitchInIf> {
     public __initializeStruct(initializers: (__Options_SwitchInIf | undefined), @Memo() content: ((()=> void) | undefined)): void {
-        this.num = ((({let gensym___<some_random_number> = initializers;
+        this.__backing_num = ((({let gensym___<some_random_number> = initializers;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (\"1\"));
     }
     public __updateStruct(initializers: (__Options_SwitchInIf | undefined)): void {}
-    public num!: string;
+    private __backing_num?: string;
+    public get num(): string {
+        return (this.__backing_num as string);
+    }
+    public set num(value: string) {
+        this.__backing_num = value;
+    }
     @Memo() public build() {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
@@ -99,7 +105,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremental.annotation\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -108,11 +114,17 @@ import { Text as Text, Column as Column, Component as Component } from \"@ohos.a
 function main() {}
 @Component() final struct SwitchInIf extends CustomComponent<SwitchInIf, __Options_SwitchInIf> {
     public __initializeStruct(initializers: (__Options_SwitchInIf | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-        this.num = ((({let gensym___<some_random_number> = initializers;
+        this.__backing_num = ((({let gensym___<some_random_number> = initializers;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (\"1\"));
     }
     public __updateStruct(initializers: (__Options_SwitchInIf | undefined)): void {}
-    public num!: string;
+    private __backing_num?: string;
+    public get num(): string {
+        return (this.__backing_num as string);
+    }
+    public set num(value: string) {
+        this.__backing_num = value;
+    }
     @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {

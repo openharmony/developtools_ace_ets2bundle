@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime"
-import { ComponentBuilder } from "arkui.component.builder"
+import { memo, ComponentBuilder } from "arkui.stateManagement.runtime"
 
 interface FakeOptions {
     str?: string;

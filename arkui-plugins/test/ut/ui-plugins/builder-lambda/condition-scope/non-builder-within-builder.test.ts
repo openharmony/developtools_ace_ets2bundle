@@ -42,7 +42,7 @@ const parsedTransform: Plugins = {
 
 const expectedUIScript: string = `
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
-import { Memo as Memo } from \"arkui.incremental.annotation\";
+import { Memo as Memo } from \"arkui.incremenal.annotation\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
 function main() {}

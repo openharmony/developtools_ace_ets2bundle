@@ -54,13 +54,21 @@ function main() {}
 
 @Component() final struct SwitchCase extends CustomComponent<SwitchCase, __Options_SwitchCase> {
   public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.num = ((({let gensym___83257243 = initializers;
+    this.__backing_num = ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (2));
   }
   
   public __updateStruct(initializers: (__Options_SwitchCase | undefined)): void {}
   
-  public num!: int;
+  private __backing_num?: int;
+  
+  public get num(): int {
+    return (this.__backing_num as int);
+  }
+  
+  public set num(value: int) {
+    this.__backing_num = value;
+  }
   
   @Memo() public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -191,13 +199,21 @@ function main() {}
 
 @Component() final struct SwitchCase extends CustomComponent<SwitchCase, __Options_SwitchCase> {
   public __initializeStruct(initializers: (__Options_SwitchCase | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.num = ((({let gensym___83257243 = initializers;
+    this.__backing_num = ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (2));
   }
   
   public __updateStruct(initializers: (__Options_SwitchCase | undefined)): void {}
   
-  public num!: int;
+  private __backing_num?: int;
+  
+  public get num(): int {
+    return (this.__backing_num as int);
+  }
+  
+  public set num(value: int) {
+    this.__backing_num = value;
+  }
   
   @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (261239291)), 0);

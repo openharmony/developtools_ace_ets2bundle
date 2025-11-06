@@ -15,114 +15,110 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { generateToRecord, generateThisBacking, isCustomDialogController } from './utils';
+import { createGetter, generateToRecord, generateThisBacking, createSetter2, isCustomDialogController, findCachedMemoMetadata } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { expectName } from '../../common/arkts-utils';
+import { GetterSetter, InitializerConstructor } from './types';
+import { backingField, expectName } from '../../common/arkts-utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { factory as UIFactory } from '../ui-factory';
-import {
-    CustomComponentNames,
-    optionsHasField,
-    hasNullOrUndefinedType,
-    isClassPropertyOptional,
-    hasNullType,
-} from '../utils';
+import { CustomComponentNames, optionsHasField } from '../utils';
 
-export class RegularPropertyTranslator extends PropertyTranslator {
+export class RegularPropertyTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
     translateMember(): arkts.AstNode[] {
-        if (
-            (this.property.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY) ===
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY
-        ) {
-            // readonly
-            return [this.property];
-        }
-
-        const name: string = expectName(this.property.key);
-        this.cacheTranslatedInitializer(name);
-        var modifiers;
-        var value;
-        if (this.propertyCanBeNullish(this.property)) {
-            modifiers = this.property.modifiers;
-            if (!!this.propertyType && hasNullType(this.propertyType)) {
-                value = arkts.factory.createNullLiteral();
-            }
-        } else {
-            modifiers = this.property.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
-        }
-        return [
-            arkts.factory.createClassProperty(
-                this.property.key,
-                value,
-                this.propertyType,
-                modifiers,
-                this.property.isComputed
-            ),
-        ];
+        const originalName: string = expectName(this.property.key);
+        const newName: string = backingField(originalName);
+        this.cacheTranslatedInitializer(newName, originalName);
+        return this.translateWithoutInitializer(newName, originalName);
     }
 
-    propertyCanBeNullish(property: arkts.ClassProperty): boolean {
-        if (isClassPropertyOptional(property)) {
-            return true;
-        }
-        if (!!property.typeAnnotation && hasNullOrUndefinedType(property.typeAnnotation)) {
-            return true;
-        }
-        return false;
-    }
-
-    cacheTranslatedInitializer(name: string): void {
+    cacheTranslatedInitializer(newName: string, originalName: string): void {
         const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
-        const thisValue: arkts.Expression = generateThisBacking(name, false, false);
-        let initializeStruct: arkts.AstNode = this.generateInitializeStruct(name, value);
+        let initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName, value);
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
         if (
             !!this.propertyType &&
             !!this.structInfo.annotations.customdialog &&
             isCustomDialogController(this.propertyType)
         ) {
-            initializeStruct = this.generateControllerInit(name, thisValue, initializeStruct);
+            initializeStruct = this.generateControllerInit(originalName, thisValue, value);
         }
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
         if (!!this.structInfo.annotations?.reusable) {
-            const toRecord = generateToRecord(name, name);
+            const toRecord = generateToRecord(newName, originalName);
             PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
         }
     }
 
-    generateInitializeStruct(name: string, value: arkts.Expression): arkts.AstNode {
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
+            newName,
+            this.property,
+            undefined,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
+        );
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                thisValue,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                arkts.factory.createIdentifier('value')
+            )
+        );
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, this.getGetterReturnValue(thisValue));
+        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
+        if (this.isMemoCached) {
+            const metadata = findCachedMemoMetadata(this.property, false);
+            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
+            arkts.NodeCache.getInstance().collect(getter, metadata);
+            arkts.NodeCache.getInstance().collect(setter, metadata);
+        }
+        return [field, getter, setter];
+    }
+
+    getGetterReturnValue(thisValue: arkts.Expression): arkts.Expression {
+        if (!this.propertyType) {
+            return thisValue;
+        }
+        const returnVale = arkts.factory.createTSAsExpression(thisValue, this.propertyType, false);
+        if (arkts.NodeCache.getInstance().has(this.property)) {
+            const metadata = arkts.NodeCache.getInstance().get(this.property)?.metadata;
+            arkts.NodeCache.getInstance().collect(returnVale, { ...metadata, isWithinTypeParams: true });
+        }
+        return returnVale;
+    }
+
+    translateGetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        returnValue: arkts.Expression
+    ): arkts.MethodDefinition {
+        return createGetter(originalName, typeAnnotation, returnValue);
+    }
+
+    translateSetter(
+        originalName: string,
+        typeAnnotation: arkts.TypeNode | undefined,
+        statement: arkts.AstNode
+    ): arkts.MethodDefinition {
+        return createSetter2(originalName, typeAnnotation, statement);
+    }
+
+    generateInitializeStruct(newName: string, originalName: string, value: arkts.Expression): arkts.AstNode {
         const binaryItem = arkts.factory.createBinaryExpression(
             factory.createBlockStatementForOptionalExpression(
                 arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-                name
+                originalName
             ),
-            this.hasValue(value)
-                ? value
-                : arkts.factory.createMemberExpression(
-                      arkts.factory.createThisExpression(),
-                      arkts.factory.createIdentifier(name),
-                      arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                      this.property.isComputed,
-                      false
-                  ),
+            value ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(name),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                this.property.isComputed,
-                false
-            ),
+            generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
             binaryItem
         );
         return arkts.factory.createExpressionStatement(assign);
-    }
-
-    hasValue(value: arkts.Expression): boolean {
-        return !!value && !arkts.isUndefinedLiteral(value);
     }
 
     generateControllerInit(originalName: string, thisValue: arkts.Expression, value: arkts.AstNode): arkts.AstNode {
@@ -135,15 +131,11 @@ export class RegularPropertyTranslator extends PropertyTranslator {
                 arkts.factory.createAssignmentExpression(
                     thisValue,
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                    arkts.factory.createTSAsExpression(
-                        UIFactory.generateMemberExpression(
-                            arkts.factory.createTSNonNullExpression(
-                                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME)
-                            ),
-                            originalName
+                    UIFactory.generateMemberExpression(
+                        arkts.factory.createTSNonNullExpression(
+                            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME)
                         ),
-                        this.propertyType,
-                        false
+                        originalName
                     )
                 ),
             ]),
