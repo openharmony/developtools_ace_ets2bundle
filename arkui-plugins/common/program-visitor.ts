@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from './abstract-visitor';
 import { matchPrefix } from './arkts-utils';
-import { debugDump, debugLog, getDumpFileName } from './debug';
+import { debugDumpAstNode, debugLog, getDumpFileName } from './debug';
 import { PluginContext } from './plugin-context';
 import { LegacyTransformer } from '../ui-plugins/interop/legacy-transformer';
 import { ProgramSkipper } from './program-skipper';
@@ -102,10 +102,9 @@ export class ProgramVisitor extends AbstractVisitor {
         prefixName: string,
         extensionName: string
     ): void {
-        debugDump(
-            script.dumpSrc(),
+        debugDumpAstNode(
+            script,
             getDumpFileName(this.state, prefixName, undefined, name),
-            true,
             cachePath,
             extensionName
         );
@@ -255,10 +254,9 @@ export class ProgramVisitor extends AbstractVisitor {
             this.visitTransformer(transformer, script, externalSourceName, program, cachePath, extensionName);
             arkts.setAllParents(script);
             if (!transformer.isExternal) {
-                debugDump(
-                    script.dumpSrc(),
+                debugDumpAstNode(
+                    script,
                     getDumpFileName(this.state, this.pluginName, count, transformer.constructor.name),
-                    true,
                     this.pluginContext?.getProjectConfig()?.cachePath,
                     program!.fileNameWithExtension
                 );
@@ -284,7 +282,7 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
         transformer.init();
-        this.dumpExternalSource(script, externalSourceName!, `${cachePath}/BEFORE`, 'ORI', extensionName!);
+        this.dumpExternalSource(script, externalSourceName!, `${cachePath}/BEFORE`, this.pluginName, extensionName!);
         const newScript = transformer.visitor(script) as arkts.EtsScript;
         this.dumpExternalSource(newScript, externalSourceName!, `${cachePath}/AFTER`, this.pluginName, extensionName!);
         transformer.reset();

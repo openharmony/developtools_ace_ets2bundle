@@ -36,14 +36,14 @@ function mkDir(filePath: string): void {
     fs.mkdirSync(filePath);
 }
 
-export function debugDump(
-    content: string,
+export function debugDumpAstNode(
+    node: arkts.AstNode,
     fileName: string,
-    isInit: boolean,
     cachePath: string | undefined,
-    programFileName: string
-): void {
-    if (!isDebugDump) return;
+    programFileName: string): void {
+    if (!isDebugDump) {
+        return;
+    } 
     const currentDirectory = process.cwd();
     const modifiedFileName = programFileName.replaceAll('.', '_');
     const outputDir: string = cachePath
@@ -54,16 +54,7 @@ export function debugDump(
         mkDir(outputDir);
     }
     try {
-        if (!isInit && fs.existsSync(filePath)) {
-            const existingContent = fs.readFileSync(filePath, 'utf8');
-            const newContent =
-                existingContent && !existingContent.endsWith('\n')
-                    ? existingContent + '\n' + content
-                    : existingContent + content;
-            fs.writeFileSync(filePath, newContent, 'utf8');
-        } else {
-            fs.writeFileSync(filePath, content, 'utf8');
-        }
+        fs.writeFileSync(filePath, node.dumpSrc(), 'utf8');
     } catch (error) {
         console.error('文件操作失败:', error);
     }
