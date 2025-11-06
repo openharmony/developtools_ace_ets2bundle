@@ -1368,36 +1368,8 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
             node, propertyName, curPropertyKind, parentPropertyName, parentPropertyKind, log, LogType.WARN);
         }
       }
-      validateLinkVariableSourceData(node, curPropertyKind, log);
     }
   }
-}
-
-function validateLinkVariableSourceData(node: ts.ObjectLiteralElementLike, curPropertyKind: string,
-  log: LogInfo[]): void {
-  if (curPropertyKind === COMPONENT_LINK_DECORATOR && isInitFromMismatchSourceData(node)) {
-    log.push({
-      type: LogType.ERROR,
-      message: `The type of the parent component's state variable initializing the '@Link' variable ` +
-      `'${node.name.getText()}' must match the '@Link' variable's declared type.`,
-      pos: node.getStart(),
-      code: '10905364'
-    });
-  }
-}
-
-function isInitFromMismatchSourceData(node: ts.ObjectLiteralElementLike): boolean {
-  if (!ts.isPropertyAssignment(node)) {
-    return false;
-  }
-  if (ts.isPropertyAccessExpression(node.initializer)) {
-    const isInitFromBuildDollar = ts.isIdentifier(node.initializer?.expression) &&
-      node.initializer.expression.getText() === $$;
-    return !isInitFromBuildDollar;
-  } else if (ts.isElementAccessExpression(node.initializer)) {
-    return true;
-  }
-  return false;
 }
 
 function judgeStructAssignedDollar(node: ts.ObjectLiteralElementLike): boolean {

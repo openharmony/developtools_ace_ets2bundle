@@ -268,7 +268,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_custom_component/validateForbiddenToInitViaParam',
   'Decorators/process_custom_component/validateIllegalInitFromParent',
   'Decorators/process_custom_component/validateInitDecorator',
-  'Decorators/process_custom_component/validateLinkVariableSourceData',
   'Decorators/process_custom_component/validateMandatoryToInitViaParam',
   'Decorators/process_custom_component/validateNonLinkWithDollar',
   'Decorators/process_custom_component/validateParamTwoWayBind',
