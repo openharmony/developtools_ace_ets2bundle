@@ -60,7 +60,7 @@ export enum BuilderLambdaNames {
     STYLE_ARROW_PARAM_NAME = 'instance',
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
-    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish'
 }
 
 // IMPORT
@@ -414,18 +414,4 @@ export function expectNameInTypeReference(node: arkts.TypeNode | undefined): ark
         return undefined;
     }
     return nameNode;
-}
-
-export function isClassPropertyOptional(node: arkts.ClassProperty): boolean {
-    return arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL);
-}
-
-export function hasNullType(typeNode: arkts.TypeNode): boolean {
-    if (arkts.isETSUnionType(typeNode) && typeNode.types.some((t) => arkts.isETSNullType(t))) {
-        return true;
-    }
-    if (arkts.isETSNullType(typeNode)) {
-        return true;
-    }
-    return false;
 }

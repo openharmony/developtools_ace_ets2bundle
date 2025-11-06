@@ -146,7 +146,7 @@ function main() {}
     this.__computed_num5.setOwner(this);
     this.__backing_firstName = STATE_MGMT_FACTORY.makeLocal<string>(this, "firstName", "Li");
     this.__backing_lastName = STATE_MGMT_FACTORY.makeLocal<string>(this, "lastName", "Hua");
-    this.age = ((({let gensym___216981064 = initializers;
+    this.__backing_age = ((({let gensym___216981064 = initializers;
     (((gensym___216981064) == (null)) ? undefined : gensym___216981064.age)})) ?? (20));
   }
   
@@ -172,7 +172,15 @@ function main() {}
     this.__backing_lastName!.set(value);
   }
   
-  public age!: number;
+  private __backing_age?: number;
+  
+  public get age(): number {
+    return (this.__backing_age as number);
+  }
+  
+  public set age(value: number) {
+    this.__backing_age = value;
+  }
   
   private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
     if (((this.age) >= (20))) {

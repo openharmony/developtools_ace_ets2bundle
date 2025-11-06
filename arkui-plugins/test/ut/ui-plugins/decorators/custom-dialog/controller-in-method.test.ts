@@ -50,31 +50,38 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
-      this.aaController = (initializers!.aaController as (CustomDialogController | undefined))
+      this.__backing_aaController = initializers!.aaController
     } else {
-      if (!(this.aaController)) {
-         this.aaController = this.aaController = ((({let gensym___<some_random_number> = initializers;
-          (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aaController)})) ?? (this.aaController))
+      if (!(this.__backing_aaController)) {
+        this.__backing_aaController = undefined
       }
     }
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
   
-  public aaController?: (CustomDialogController | undefined);
+  private __backing_aaController?: (CustomDialogController | undefined);
+  
+  public get aaController(): (CustomDialogController | undefined) {
+    return (this.__backing_aaController as (CustomDialogController | undefined));
+  }
+  
+  public set aaController(value: (CustomDialogController | undefined)) {
+    this.__backing_aaController = value;
+  }
   
   @Memo() public build() {}
   
   public constructor() {}
   
   public __setDialogController__(controller: CustomDialogController): void {
-    this.aaController = controller;
+    this.__backing_aaController = controller;
   }
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.dialogController = ((({let gensym___95501822 = initializers;
+    this.__backing_dialogController = ((({let gensym___95501822 = initializers;
     (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController({
       builder: @Memo() (() => {
@@ -91,7 +98,15 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
   
-  public dialogController: (CustomDialogController | null) = null;
+  private __backing_dialogController?: (CustomDialogController | null);
+  
+  public get dialogController(): (CustomDialogController | null) {
+    return (this.__backing_dialogController as (CustomDialogController | null));
+  }
+  
+  public set dialogController(value: (CustomDialogController | null)) {
+    this.__backing_dialogController = value;
+  }
   
   public updateController1() {
     this.dialogController = ({let gensym___17371929: Any;
