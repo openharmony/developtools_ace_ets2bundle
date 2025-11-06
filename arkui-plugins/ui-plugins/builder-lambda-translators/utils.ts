@@ -15,7 +15,12 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
-import { BuilderLambdaNames, expectNameInTypeReference, isCustomComponentAnnotation } from '../utils';
+import {
+    BuilderLambdaNames,
+    expectNameInTypeReference,
+    getValueInObjectAnnotation,
+    isCustomComponentAnnotation,
+} from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
     ARKUI_FOREACH_SOURCE_NAME,
@@ -29,7 +34,6 @@ import {
     StructDecoratorNames,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
-import { hasMemoAnnotation } from '../../collectors/memo-collectors/utils';
 import { AstNodePointer } from '../../common/safe-types';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
@@ -48,6 +52,7 @@ export type BuilderLambdaStyleBodyInfo = {
     initCallPtr: AstNodePointer | undefined;
     reuseId: arkts.AstNode | undefined;
     defaultReuseId: arkts.AstNode | undefined;
+    structEntryStroage: string | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -76,6 +81,7 @@ export type StructCalleeInfo = {
     isFromCustomDialog?: boolean;
     isFromReuse?: boolean;
     structName?: string;
+    structEntryStroage?: arkts.Expression;
 };
 
 export function getStructCalleeInfoFromCallee(
@@ -97,6 +103,11 @@ export function getStructCalleeInfoFromCallee(
             anno,
             StructDecoratorNames.CUSTOMDIALOG,
             shouldIgnoreDecl
+        );
+        info.structEntryStroage ||= getValueInObjectAnnotation(
+            anno,
+            StructDecoratorNames.ENTRY,
+            BuilderLambdaNames.STORAGE_PARAM_NAME
         );
     }
     info.structName = decl.ident?.name;

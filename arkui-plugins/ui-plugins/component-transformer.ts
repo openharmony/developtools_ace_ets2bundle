@@ -39,7 +39,7 @@ import {
     isDecoratorAnnotation,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
-import { getEntryParams } from './entry-translators/utils';
+import { getEntryRouteParam } from './entry-translators/utils';
 import { factory as EntryFactory } from './entry-translators/factory';
 import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
 import { factory as UIFactory } from './ui-factory';
@@ -312,13 +312,9 @@ export class ComponentTransformer extends AbstractVisitor {
         );
         NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
-        const needStorageSuperCall: boolean = !!scopeInfo.annotations.component || !!scopeInfo.annotations.customDialog;
         if (!!scopeInfo.annotations?.entry) {
             this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
-            const { storage, useSharedStorage, routeName } = getEntryParams(definition);
-            if (needStorageSuperCall) {
-                EntryFactory.transformStorageParams(storage, useSharedStorage, definition);
-            }
+            const routeName = getEntryRouteParam(definition);
             if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
                 this.entryRouteName = routeName.value.str;
             }

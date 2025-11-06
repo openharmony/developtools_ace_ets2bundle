@@ -423,3 +423,32 @@ export function expectNameInTypeReference(node: arkts.TypeNode | undefined): ark
     }
     return nameNode;
 }
+
+/**
+ * Get the value of the corresponding property from the annotation.
+ * @param anno annotation.
+ * @param decoratorName annotation name.
+ * @param key property key name.
+ */
+export function getValueInObjectAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: string,
+    key: string
+): arkts.Expression | undefined {
+    const isSuitableAnnotation: boolean =
+        !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
+    if (!isSuitableAnnotation) {
+        return undefined;
+    }
+    const keyItem: arkts.AstNode | undefined = anno.properties.find(
+        (annoProp: arkts.AstNode) =>
+            arkts.isClassProperty(annoProp) &&
+            annoProp.key &&
+            arkts.isIdentifier(annoProp.key) &&
+            annoProp.key.name === key
+    );
+    if (keyItem && arkts.isClassProperty(keyItem)) {
+        return keyItem.value;
+    }
+    return undefined;
+}

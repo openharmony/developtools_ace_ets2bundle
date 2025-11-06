@@ -56,7 +56,7 @@ import { ObservedV2 as ObservedV2, Trace as Trace } from "@ohos.arkui.stateManag
 
 function main() {}
 
-@Retention({policy:"SOURCE"}) export declare @interface TestDecor {}
+@Retention({policy:"SOURCE"}) export @interface TestDecor {}
 
 @ObservedV2() class testJSONStringifyIgnore implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();

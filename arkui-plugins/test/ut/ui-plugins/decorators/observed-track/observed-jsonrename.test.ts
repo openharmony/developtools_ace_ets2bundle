@@ -58,7 +58,7 @@ function main() {}
 
 
 
-@Retention({policy:"SOURCE"}) export declare @interface TestDecor {}
+@Retention({policy:"SOURCE"}) export @interface TestDecor {}
 
 @Observed() class testJsonRename implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
