@@ -63,7 +63,8 @@ import {
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  MAX_LINK_SOURCE_DATA_NESTING_LEVEL
 } from './pre_define';
 import {
   stateCollection,
@@ -1359,7 +1360,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
           log.push({
             type: LogType.WARN,
             message: `Unrecognized property '${parentPropertyName}', make sure it can be assigned to ` +
-              `${curPropertyKind} property '${propertyName}' by yourself.`,
+              `'${curPropertyKind}' property '${propertyName}' by yourself.`,
             // @ts-ignore
             pos: node.initializer ? node.initializer.getStart() : node.getStart()
           });
@@ -1369,7 +1370,32 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         }
       }
     }
+    if (!isBuilder && ts.isPropertyAssignment(node) && curPropertyKind === COMPONENT_LINK_DECORATOR) {
+      validateLinkVariableSourceData(node, log);
+    }
   }
+}
+
+function validateLinkVariableSourceData(node: ts.PropertyAssignment, log: LogInfo[]): void {
+  if (isInitFromMismatchSourceData(node)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The type of the parent component's state variable initializing the '@Link' variable ` +
+      `'${node.name.getText()}' must match the '@Link' variable's declared type.`,
+      pos: node.getStart(),
+      code: '10905364'
+    });
+  }
+}
+
+function isInitFromMismatchSourceData(node: ts.PropertyAssignment): boolean {
+  let curNode = node.initializer;
+  let nestingLevel = 0;
+  while (ts.isPropertyAccessExpression(curNode) || ts.isElementAccessExpression(curNode)) {
+    curNode = curNode.expression;
+    nestingLevel++;
+  }
+  return nestingLevel >= MAX_LINK_SOURCE_DATA_NESTING_LEVEL && curNode.kind === ts.SyntaxKind.ThisKeyword;
 }
 
 function judgeStructAssignedDollar(node: ts.ObjectLiteralElementLike): boolean {
