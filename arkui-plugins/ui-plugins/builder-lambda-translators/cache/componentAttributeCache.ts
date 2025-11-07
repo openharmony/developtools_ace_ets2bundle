@@ -46,7 +46,7 @@ function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition)
     const type = component.scriptFunction.returnTypeAnnotation;
     const name = expectNameInTypeReference(type);
     if (!name) {
-        return;
+        return undefined;
     }
     return {
         name: name.name,

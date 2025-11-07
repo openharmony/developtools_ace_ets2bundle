@@ -191,7 +191,7 @@ export function collectMemoAnnotationImport(memoName: MemoNames = MemoNames.MEMO
 }
 
 export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO): void {
-    if (memoName == MemoNames.MEMO_SKIP_UI || memoName == MemoNames.MEMO_UI) {
+    if (memoName === MemoNames.MEMO_SKIP_UI || memoName === MemoNames.MEMO_UI) {
         ImportCollector.getInstance().collectSource(memoName, MEMO_SKIP_UI_IMPORT_SOURCE_NAME);
     } else {
         ImportCollector.getInstance().collectSource(memoName, MEMO_IMPORT_SOURCE_NAME);

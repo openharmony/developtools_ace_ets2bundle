@@ -161,8 +161,8 @@ export function hasMemoSkipAnnotation(node: arkts.ETSParameterExpression): boole
 
 export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
     const newAnnotations: arkts.AnnotationUsage[] = node.annotations.filter(
-        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_UI)
-    );
+        (it) => !isMemoAnnotation(it, RuntimeNames.ANNOTATION) && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE) &&
+            !isMemoAnnotation(it, RuntimeNames.ANNOTATION_UI));
     if (arkts.isEtsParameterExpression(node)) {
         node.annotations = newAnnotations;
         return node;
@@ -666,8 +666,8 @@ export function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunc
     if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
         return false;
     }
-    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET
-        || methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
+    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     if (!isGetterSetter) {
         return false;
     }
