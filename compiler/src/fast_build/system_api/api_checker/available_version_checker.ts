@@ -109,7 +109,7 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       return false;
     }
 
-    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node);
+    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node, 1);
 
     // Extract minApiVersion from @Available decorators
     for (const dec of decorators) {
@@ -123,7 +123,7 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       // For other OS: uses format checker from external plugin or default
       const isValidFormat = minApi.os === RUNTIME_OS_OH
         ? defaultFormatCheckerWithoutMSF(minApi.version)
-        : this.formatChecker(minApi.raw);
+        : this.formatChecker(minApi.formatVersion);
 
       if (isValidFormat && isValidFormat.result) {
         // Set instance variable for later retrieval
