@@ -213,11 +213,14 @@ export class ComponentTransformer extends AbstractVisitor {
         }
 
         if (this.entryNames.length > 0) {
-            if (!this.isEntryPointImported) entryFactory.createAndInsertEntryPointImport(this.program);
+            if (!this.isEntryPointImported) {
+                entryFactory.createAndInsertEntryPointImport(this.program);
+            }
             // normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.
-            if (!this.isPageLifeCycleImported)
+            if (!this.isPageLifeCycleImported) {
                 this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
+            }
             updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
             updateStatements.push(
                 entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
