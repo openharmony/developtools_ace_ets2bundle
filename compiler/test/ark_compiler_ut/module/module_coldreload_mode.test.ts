@@ -150,7 +150,6 @@ mocha.describe('test module_coldreload_mode file api', function () {
     const moduleMode = new ModuleColdreloadMode(this.rollup);
     moduleMode.isFirstBuild = false;
     moduleMode.addColdReloadArgs();
-    console.log(" 3333", moduleMode.cmdArgs);
     expect(moduleMode.cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
     expect(moduleMode.cmdArgs[1] === CACHE_FILE).to.be.true;
     expect(moduleMode.cmdArgs[3] === SIMBOL_TABLE).to.be.true;

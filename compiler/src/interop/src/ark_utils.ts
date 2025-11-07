@@ -120,14 +120,14 @@ export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
-  const { pkgName, pkgPath, isRecordName, omitModuleName } = pkgParams;
+  let { pkgName, pkgPath, isRecordName, omitModuleName, moduleName } = pkgParams;
   const { projectFilePath, pkgInfo } = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
   const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
     // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
     return recordName;
   }
-  const moduleName: string = omitModuleName ? '' : pkgInfo.moduleName;
+  moduleName = omitModuleName ? '' : (moduleName ? moduleName : pkgInfo.moduleName);
   return `${pkgInfo.isSO ? 'Y' : 'N'}&${moduleName}&${recordName}`;
 }
 
