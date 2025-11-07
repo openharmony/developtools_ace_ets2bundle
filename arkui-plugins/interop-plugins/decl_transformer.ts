@@ -135,11 +135,19 @@ export class DeclTransformer extends AbstractVisitor {
     }
 
     transformWrappedBuilderVarDecl(node: arkts.VariableDeclarator): arkts.VariableDeclarator {
-        const typeAnn = node?.name?.typeAnnotation;
-        if (!typeAnn || !arkts.isETSTypeReference(typeAnn)) {
+        const typeAnn = node?.name?.typeAnnotation!;
+        let isArray = false;
+        let typeRef = typeAnn;
+        if (arkts.isTSArrayType(typeAnn)) {
+            isArray = true;
+            if (!arkts.isETSTypeReference(typeAnn.elementType!)) {
+                return node;
+            }
+            typeRef = typeAnn.elementType;
+        } else if (!arkts.isETSTypeReference(typeAnn)) {
             return node;
         }
-        const part = typeAnn.part;
+        const part = (typeRef as arkts.ETSTypeReference).part;
         if (!part?.name || !arkts.isIdentifier(part?.name) || part?.name.name !== 'WrappedBuilder') {
             return node;
         }
@@ -158,8 +166,11 @@ export class DeclTransformer extends AbstractVisitor {
 
         const newTypeParams = arkts.factory.updateTSTypeParameterInstantiation(part.typeParams, [tuple]);
         const newPart = arkts.factory.updateTypeReferencePart(part, part.name, newTypeParams, part.previous);
-        const newTypeRef = arkts.factory.updateTypeReference(typeAnn, newPart);
-        const newId = arkts.factory.updateIdentifier(node.name, node.name.name, newTypeRef);
+        const newTypeRef = arkts.factory.updateTypeReference(typeRef as arkts.ETSTypeReference, newPart);
+        let newTypeAnn = isArray
+            ? arkts.TSArrayType.updateTSArrayType(typeAnn as arkts.TSArrayType, newTypeRef)
+            : newTypeRef;
+        const newId = arkts.factory.updateIdentifier(node.name, node.name.name, newTypeAnn);
         return arkts.factory.updateVariableDeclarator(node, node.flag, newId, node.initializer);
     }
 }
