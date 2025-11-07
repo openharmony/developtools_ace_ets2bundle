@@ -26,7 +26,8 @@ import {
   getValueChecker, 
   getFormatChecker,
   defaultFormatCheckerWithoutMSF,
-  defaultValueChecker
+  defaultValueChecker,
+  defaultFormatChecker
 } from '../api_check_utils';
 
 /*
@@ -198,7 +199,9 @@ export class SinceJSDocChecker extends BaseVersionChecker {
         if (!versionString) {
           continue;
         }
-
+        if (!defaultFormatChecker(versionString.trim())) {
+          return false;
+        }
         this.minApiVersion = versionString;
         return true; // Found valid @since, stop processing
       }

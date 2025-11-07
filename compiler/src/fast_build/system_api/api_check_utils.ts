@@ -86,7 +86,11 @@ import {
   AVAILABLE_FILE_NAME,
   ParsedVersion,
   AVAILABLE_VERSION_FORMAT_ERROR_PREFIX,
-  AVAILABLE_VERSION_FORMAT_ERROR
+  AVAILABLE_VERSION_FORMAT_ERROR,
+  AVAILABLE_OSNAME_ERROR,
+  ComparisonSenario,
+  AVAILABLE_TAG_NAME,
+  AVAILABLE_SCOPE_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -656,7 +660,7 @@ function checkAvailableDecorator(
   }
   
   config.message = AVAILABLE_DECORATOR_WARNING
-    .replace('$SINCE1', checker.getAvailableVersion()?.raw || checker.getSdkVersion())  // Minimum required API version
+    .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
   
   return true;
@@ -760,7 +764,8 @@ export function defaultValueChecker(
  * @returns true if format is valid
  */
 export function defaultFormatChecker(since: string): boolean {
-  return /^(?!0\d)[1-9]\d{0,2}(?:\.[1-9]\d{0,2}|\.0){0,2}$/.test(since);
+  const regex = /^(?:[1-9]\d{0,2}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}\([1-9]\d{0,2}\))$/;
+  return regex.test(since);
 }
 
 /**
@@ -1235,23 +1240,19 @@ function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo | undefined): Sdk
 export function parseVersionString(raw: string): ParsedVersion | null {
   const trimmed = raw.trim();
 
-  const hasSpacesInRaw = /\s+/.test(trimmed);
+  // 分割前两个元素（无论是否有空格，统一处理）
+  const [firstPart, secondPart] = trimmed.split(/\s+/, 2);
 
-  if (!hasSpacesInRaw) {
-    return { 
-      os: RUNTIME_OS_OH, 
-      version: trimmed, 
-      raw: raw,
-      formatVersion: `${RUNTIME_OS_OH} ${trimmed}`
-    };
-  } else {
-    return {
-      os: trimmed.split(/\s+/, 2)[0],
-      version: trimmed.split(/\s+/, 2)[1],
-      raw: raw,
-      formatVersion: `${trimmed.split(/\s+/, 2)[0]} ${trimmed.split(/\s+/, 2)[1]}`
-    };
-  }
+  // 处理无空格的情况（secondPart 会是 undefined）
+  const os = secondPart ? firstPart : RUNTIME_OS_OH;
+  const version = secondPart ?? firstPart; // 无空格时用整个 trimmed 作为版本
+
+  return {
+    os: os,
+    version: version,
+    raw: raw,
+    formatVersion: `${os} ${version}`
+  };
 }
 
 /**
@@ -1275,7 +1276,7 @@ export function parseVersionString(raw: string): ParsedVersion | null {
  * @param dec - The decorator node to extract from
  * @returns Parsed version object, or null if not an @Available decorator
  */
-export function extractMinApiFromDecorator(dec: ts.Decorator): ParsedVersion | null {
+export function extractMinApiFromDecorator(dec: ts.Decorator | ts.Annotation): ParsedVersion | null {
   // Verify it's a call expression: @Available({ ... })
   if (!ts.isCallExpression(dec.expression)) {
     return null;
@@ -1347,6 +1348,7 @@ export function processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | 
 /**
  * Recursively search for decorators named @Available in the node and its parent node.
  * @param node declaration
+ * @param searchMode 0: Return upon locating the decorator 1：After querying all parent nodes, all decorators will be returned.
  * @returns The array of @Available decorators found; if none exist, return an empty array.
  */
 export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration, searchMode?: number): ts.Decorator[] {
@@ -1422,34 +1424,115 @@ export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheck
   if (!ts.isCallExpression(annotation.expression) || !ts.isObjectLiteralExpression(annotation.expression.arguments[0])) {
     return result;
   }
-  const arg = annotation.expression.arguments[0];
-  for(const prop of arg.properties) {
-    if (!ts.isPropertyAssignment(prop)) {
-      continue;
-    }
-    let propName = (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) ? prop.name.text : prop.name.getText().replace(/['"]/g, '');
-    if (propName === 'minApiVersion' && ts.isStringLiteral(prop.initializer)) {
-      const minApiVersion = prop.initializer.text;
-      let parseVersion = parseVersionString(minApiVersion);
-      let checkResult: VersionValidationResult;
-      if (parseVersion.os === RUNTIME_OS_OH) {
-        checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
-      } else {
-        checkResult = getFormatChecker()(parseVersion.formatVersion);
-      }
-      if (checkResult && !checkResult.result) {
-        let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
-          .replace('$RUNTIMEOS', projectConfig.runtimeOS)
-          .replace('$VERSION', parseVersion.raw);
-        return {
-          valid: false,
-          message: checkResult.message ? `${msg} ${checkResult.message}` : `${msg}`,
-          type: ts.DiagnosticCategory.Error
-        }
-      }
+  let parseVersion = extractMinApiFromDecorator(annotation);
+  let checkResult = checkFormatResult(parseVersion);
+  if (checkResult) {
+    return checkResult;
+  }
+  // Verify the nearest parent node of the current child node that utilises the `@available` annotation.
+  // Check whether the parent node's version number is lower than that of the child node. If higher, trigger an alert.
+  
+  let higherVersion = hasLargerVersionInParentNode(annotation.parent, parseVersion);
+  if (higherVersion) {
+    let msg = AVAILABLE_SCOPE_ERROR
+      .replace('$VERSION', higherVersion.version);
+    return {
+      valid: false,
+      message: msg,
+      type: ts.DiagnosticCategory.Warning
     }
   }
+
   return {
     valid: true
+  }
+}
+/**
+ * Check whether a higher version exists in the parent node
+ * @param node check node
+ * @param curAvailableVersion currrent version
+ * @returns true if higher version exist.
+ */
+function hasLargerVersionInParentNode(node: ts.Node, curAvailableVersion: ParsedVersion): ParsedVersion | null {
+  if (!node || !node.parent) {
+    return null;
+  }
+  const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node.parent, 1);
+
+  for (const dec of decorators) {
+    const availableVersion = extractMinApiFromDecorator(dec);
+    if (!availableVersion) {
+      continue;
+    }
+    const isValidFormat = availableVersion.os === RUNTIME_OS_OH
+      ? defaultFormatCheckerWithoutMSF(availableVersion.version)
+      : getFormatChecker()(availableVersion.formatVersion);
+
+    if (!isValidFormat || !isValidFormat.result) {
+      continue;
+    }
+    if (!compareVersions(availableVersion, curAvailableVersion)) {
+      return availableVersion;
+    }
+    return null;
+  }
+
+  return null; // No valid @Available decorator found
+}
+
+/**
+ * Verify that the format complies with business requirements.
+ * @param parseVersion Version numbers requiring verification
+ * @returns check result that contains message and diagnosticCategory
+ */
+export function checkFormatResult(parseVersion: ParsedVersion | null): ts.ConditionCheckResult | null {
+  let checkResult: VersionValidationResult;
+  if (parseVersion.os === RUNTIME_OS_OH) {
+    checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
+  } else if (parseVersion.os === projectConfig.runtimeOS){
+    checkResult = getFormatChecker()(parseVersion.formatVersion);
+  } else {
+    let msg = AVAILABLE_OSNAME_ERROR
+      .replace('$RUNTIMEOS', projectConfig.runtimeOS)
+      .replace('$OSNAME', parseVersion.os);
+    return {
+      valid: false,
+      message: msg,
+      type: ts.DiagnosticCategory.Error
+    }
+  }
+  if (checkResult && !checkResult.result) {
+    let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
+      .replace('$RUNTIMEOS', projectConfig.runtimeOS)
+      .replace('$VERSION', parseVersion.version);
+    return {
+      valid: false,
+      message: checkResult.message ? `${msg} ${checkResult.message}` : `${msg}`,
+      type: ts.DiagnosticCategory.Error
+    }
+  }
+  return null;
+}
+
+export function compareVersions(parentAvailableVersion: ParsedVersion, curAvailableVersion: ParsedVersion): boolean {
+  try {
+    // Determine scenario based on version format
+    if (!parentAvailableVersion || !curAvailableVersion) {
+      return false;
+    }
+    const scenario = curAvailableVersion.os === RUNTIME_OS_OH ? ComparisonSenario.SuppressByOHVersion : ComparisonSenario.SuppressByOtherOSVersion;
+
+    let valueResult: VersionValidationResult;
+    let valueChecker = getValueChecker(AVAILABLE_TAG_NAME);
+    if (valueChecker === defaultValueChecker) {
+      valueResult = valueChecker(parentAvailableVersion.version, curAvailableVersion.version, scenario);
+    } else {
+      valueResult = valueChecker(parentAvailableVersion.formatVersion, curAvailableVersion.formatVersion, scenario);
+    }
+
+    return valueResult ? valueResult.result : false;
+
+  } catch (error) {
+    return false;
   }
 }
