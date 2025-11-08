@@ -30,6 +30,7 @@ import {
 } from './utils';
 import { InternalsTransformer } from './internal-transformer';
 import { GenSymPrefix } from '../common/predefines';
+import { isArrowFunctionAsValue } from '../collectors/memo-collectors/utils';
 
 export interface CachedMetadata extends arkts.AstNodeCacheValueMetadata {
     internalsTransformer?: InternalsTransformer;
@@ -37,9 +38,12 @@ export interface CachedMetadata extends arkts.AstNodeCacheValueMetadata {
 
 export class RewriteFactory {
     static rewriteTsAsExpression(node: arkts.TSAsExpression, metadata?: CachedMetadata): arkts.TSAsExpression {
+        const newExpr = !!node.expr && arkts.isArrowFunctionExpression(node.expr)
+            ? RewriteFactory.rewriteArrowFunction(node.expr)
+            : node.expr;
         return arkts.factory.updateTSAsExpression(
             node,
-            node.expr,
+            newExpr,
             RewriteFactory.rewriteType(node.typeAnnotation, metadata),
             node.isConst
         );
@@ -133,10 +137,17 @@ export class RewriteFactory {
     }
 
     static rewriteProperty(node: arkts.Property, metadata?: CachedMetadata): arkts.Property {
-        if (!node.value || !arkts.isArrowFunctionExpression(node.value)) {
+        const value: arkts.Expression | undefined = node.value;
+        if (!value) {
             return node;
         }
-        return arkts.factory.updateProperty(node, node.key, RewriteFactory.rewriteArrowFunction(node.value, metadata));
+        if (arkts.isArrowFunctionExpression(value)) {
+            return arkts.factory.updateProperty(node, node.key, RewriteFactory.rewriteArrowFunction(value, metadata));
+        }
+        if (isArrowFunctionAsValue(value)) {
+            return arkts.factory.updateProperty(node, node.key, RewriteFactory.rewriteTsAsExpression(value, metadata));
+        }
+        return node;
     }
 
     static rewriteClassProperty(node: arkts.ClassProperty, metadata?: CachedMetadata): arkts.ClassProperty {
