@@ -55,7 +55,7 @@ const parsedTransform: Plugins = {
 };
 
 const expectedUIScript: string = `
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { FakeComponentAttribute as FakeComponentAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentImpl as FakeComponentImpl } from \"${utilExternalSourceName}\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
