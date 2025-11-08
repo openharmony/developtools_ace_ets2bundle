@@ -1304,22 +1304,27 @@ export class factory {
                 ])
             )
         );
-        const newMapArg = arkts.factory.createArrayExpression(
-            entries.map(([k, v]) => {
-                const name = k.name;
-                const key = arkts.factory.createStringLiteral(name);
-                const value = this.prepareBuilderParameterPropertyValue(v);
-                const arrowFunc = arkts.factory.createArrowFunction(
-                    UIFactory.createScriptFunction({
-                        body: arkts.factory.createBlock([arkts.factory.createReturnStatement(value)]),
-                        returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
-                        flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+        let newMapArgs: arkts.Expression[] = [];
+        if (entries.length > 0) {
+            newMapArgs.push(
+                arkts.factory.createArrayExpression(
+                    entries.map(([k, v]) => {
+                        const name = k.name;
+                        const key = arkts.factory.createStringLiteral(name);
+                        const value = this.prepareBuilderParameterPropertyValue(v);
+                        const arrowFunc = arkts.factory.createArrowFunction(
+                            UIFactory.createScriptFunction({
+                                body: arkts.factory.createBlock([arkts.factory.createReturnStatement(value)]),
+                                returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                            })
+                        );
+                        return arkts.factory.createArrayExpression([key, arrowFunc]);
                     })
-                );
-                return arkts.factory.createArrayExpression([key, arrowFunc]);
-            })
-        );
-        return arkts.factory.createETSNewClassInstanceExpression(newMapName, [newMapArg]);
+                )
+            );
+        }
+        return arkts.factory.createETSNewClassInstanceExpression(newMapName, newMapArgs);
     }
 
     /**
