@@ -41,7 +41,7 @@ const expectedUIScript: string = `
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
@@ -130,7 +130,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { ConditionScope as ConditionScope } from \"arkui.component.builder\";
 import { ConditionBranch as ConditionBranch } from \"arkui.component.builder\";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
