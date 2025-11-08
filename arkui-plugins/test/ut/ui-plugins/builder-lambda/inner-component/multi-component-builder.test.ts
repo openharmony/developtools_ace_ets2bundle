@@ -59,7 +59,7 @@ import { FakeComponentCAttribute as FakeComponentCAttribute } from \"${utilExter
 import { FakeComponentCImpl as FakeComponentCImpl } from \"${utilExternalSourceName}\";
 import { FakeComponentBAttribute as FakeComponentBAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentBImpl as FakeComponentBImpl } from \"${utilExternalSourceName}\";
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { FakeComponentAAttribute as FakeComponentAAttribute } from \"${utilExternalSourceName}\";
 import { FakeComponentAImpl as FakeComponentAImpl } from \"${utilExternalSourceName}\";
 import { NavInterface as NavInterface } from \"arkui.component.customComponent\";
@@ -112,7 +112,7 @@ class __EntryWrapper extends EntryPoint {
 `;
 
 const expectedUIHeaderScript: string = `
-import { Memo as Memo } from \"arkui.incremenal.annotation\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
 
 function main() {}

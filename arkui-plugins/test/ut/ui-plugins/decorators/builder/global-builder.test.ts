@@ -77,11 +77,27 @@ function main() {}
   }));
 }
 
+@Memo() function globalBuilder(@MemoSkip() param: Person) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
+    return;
+  }), undefined);
+}
 
 class Tmp {
   public paramA1: string = "";
   
   public constructor() {}
+  
+}
+
+interface Person {
+  get age(): (number | undefined) {
+    return undefined;
+  }
+  set age(age: (number | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
   
 }
 
@@ -101,6 +117,12 @@ class Tmp {
       })]]), ((gensym___<some_random_number>: Tmp) => {
         gensym___<some_random_number>.paramA1 = "Hello";
       })));
+      globalBuilder(makeBuilderParameterProxy<Person>({
+        age: 18,
+      }, new Map<string, (()=> Any)>([["age", ((): Any => {
+        return 18;
+      })]]), ((gensym___149025070: Person) => {})));
+      globalBuilder(makeBuilderParameterProxy<Person>({}, new Map<string, (()=> Any)>(), ((gensym___46528967: Person) => {})));
     }));
   }
   
