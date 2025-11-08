@@ -85,12 +85,22 @@ function main() {}
   }));
 }
 
+@memo() function globalBuilder(@MemoSkip() param: Person) {
+  TextImpl(@memo() ((instance: TextAttribute): void => {
+    instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
+    return;
+  }), undefined);
+}
 
 class Tmp {
   public paramA1: string = "";
-
   public constructor() {}
+}
 
+interface Person {
+  get age(): (number | undefined)
+  set age(age: (number | undefined))
+  
 }
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
@@ -120,6 +130,12 @@ class Tmp {
       })]]), ((gensym___203542966: Tmp) => {
         gensym___203542966.paramA1 = "Hello";
       })));
+      globalBuilder(makeBuilderParameterProxy<Person>({
+        age: 18,
+      }, new Map<string, (()=> Any)>([["age", ((): Any => {
+        return 18;
+      })]]), ((gensym___149025070: Person) => {})));
+      globalBuilder(makeBuilderParameterProxy<Person>({}, new Map<string, (()=> Any)>(), ((gensym___46528967: Person) => {})));
     }));
   }
   

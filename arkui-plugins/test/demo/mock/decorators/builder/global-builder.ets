@@ -30,12 +30,22 @@ class Tmp {
   }
 }
 
+interface Person {
+  age?: number;
+}
+
+@Builder function globalBuilder(param: Person) {
+  Text('globalBuilder')
+}
+
 @Component
 struct BuilderDemo {
   build() {
     Row() {
       showTextBuilder()
       overBuilder({ paramA1: 'Hello' })
+      globalBuilder({ age: 18 })
+      globalBuilder({})
     }
   }
 }
