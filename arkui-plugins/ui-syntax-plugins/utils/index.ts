@@ -41,6 +41,9 @@ export const SINGLE_CHILD_COMPONENT: number = 1;
 export const MAX_ENTRY_DECORATOR_COUNT: number = 1;
 export const MAX_PREVIEW_DECORATOR_COUNT: number = 10;
 
+export const $_INVOKE: string = '$_invoke';
+export const COMPONENT_BUILDER: string = 'ComponentBuilder';
+
 export const COMPONENT_REPEAT: string = 'Repeat';
 export const TEMPLATE: string = 'template';
 
@@ -100,6 +103,7 @@ export const PresetDecorators = {
     STORAGE_PROP_REF: 'StoragePropRef',
     STORAGE_LINK: 'StorageLink',
     LOCAL_STORAGE_LINK: 'LocalStorageLink',
+    LOCAL_STORAGE_PROP_REF: 'LocalStoragePropRef',
     REQUIRE: 'Require',
     REUSABLE_V1: 'Reusable',
     REUSABLE_V2: 'ReusableV2',
