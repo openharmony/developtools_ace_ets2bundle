@@ -69,27 +69,22 @@ export class SourceMapGenerator {
 
   private projectConfig: Object;
   private sourceMapPath: string;
-  private sourceMapPathTmp: string;
   private cacheSourceMapPath: string;
   private sourceMapForMergePath: string;
+  private sourceMapsResult: Object = {};
   private triggerAsync: Object;
   private triggerEndSignal: Object;
   private sourceMaps: Object = {};
-  private sourceMapKeys: Set<string> = new Set([]);
   private isNewSourceMap: boolean = true;
   private keyCache: Map<string, string> = new Map();
   private logger: CommonLogger;
-  private isFirstAppend: boolean = true;
   private isCompileSingle: boolean = false;
-  private originFileEdited: boolean = false;
-  private tempFileEdited: boolean = false;
 
   public sourceMapKeyMappingForObf: Map<string, string> = new Map();
 
   constructor(rollupObject: Object) {
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.sourceMapPath = this.getSourceMapSavePath();
-    this.sourceMapPathTmp = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON + '.tmp');
     this.cacheSourceMapPath = path.join(this.projectConfig.cachePath, SOURCEMAPS_JSON);
     this.sourceMapForMergePath = this.cacheSourceMapPath.replace('.json', 'Merge.json');
     this.triggerAsync = rollupObject.async;
@@ -202,7 +197,7 @@ export class SourceMapGenerator {
     }
     const pkgInfo = this.getPkgInfoByModuleId(moduleId, shouldObfuscateFileName);
     if (pkgInfo.dependency) {
-      key = `${pkgInfo.entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
+      key = `${pkgInfo.  entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
     } else {
       key = `${pkgInfo.entry.name}|${pkgInfo.entry.name}|${pkgInfo.entry.version}|${pkgInfo.modulePath}`;
     }
@@ -220,62 +215,6 @@ export class SourceMapGenerator {
       path.join(this.projectConfig.cachePath, SOURCEMAPS);
   }
 
-  public formatOrigin(key: string, val: object): string {
-    return `  "${key}": ${JSON.stringify(val, null, 2).replace(/\n/g, '\n  ')}`;
-  }
-
-  public formatTemp(key: string, val: object): string {
-    return `{"key": "${key}", "val": ${JSON.stringify(val)}}`;
-  }
-
-  public writeOrigin(content: string): void {
-    if (!this.originFileEdited) {
-      if (fs.existsSync(this.sourceMapPath)) {
-        fs.unlinkSync(this.sourceMapPath);
-      }
-      const sourceMapPathDir: string = path.dirname(this.sourceMapPath);
-      if (!fs.existsSync(sourceMapPathDir)) {
-        fs.mkdirSync(sourceMapPathDir, { recursive: true });
-      }
-      this.originFileEdited = true;
-    }
-    fs.appendFileSync(this.sourceMapPath, content, 'utf8');
-  }
-
-  public writeTemp(content: string): void {
-    if (!this.tempFileEdited) {
-      if (fs.existsSync(this.sourceMapPathTmp)) {
-        fs.unlinkSync(this.sourceMapPathTmp);
-      }
-      const sourceMapPathTmpDir: string = path.dirname(this.sourceMapPathTmp);
-      if (!fs.existsSync(sourceMapPathTmpDir)) {
-        fs.mkdirSync(sourceMapPathTmpDir, { recursive: true });
-      }
-      this.tempFileEdited = true;
-    }
-    fs.appendFileSync(this.sourceMapPathTmp, content, 'utf8');
-  }
-
-  public resetFileEdited(): void {
-    this.originFileEdited = false;
-    this.tempFileEdited = false;
-  }
-
-  public convertSourceMapToCache(maps: Object): string {
-    let isFirstLine: boolean = true;
-    let cacheContent: string = '';
-    Object.keys(maps).forEach(key => {
-      let contentTmp: string = this.formatTemp(key, maps[key]);
-      if (isFirstLine) {
-        isFirstLine = false;
-        cacheContent = contentTmp;
-      } else {
-        cacheContent += `\n${contentTmp}`;
-      }
-    });
-    return cacheContent;
-  }
-
   public writeModifiedSourceMapToFile(parentEvent: CompileEvent | undefined): void {
     const eventWriteCachedSourceMaps = createAndStartEvent(parentEvent, 'write source maps');
     Object.keys(this.sourceMaps).forEach(key => {
@@ -285,18 +224,7 @@ export class SourceMapGenerator {
       } else {
         keyChanged = key;
       }
-      this.sourceMapKeys.add(keyChanged);
-
-      let contentJson: string = this.formatOrigin(keyChanged, this.sourceMaps[key]);
-      let contentTmp: string = this.formatTemp(keyChanged, this.sourceMaps[key]);
-      if (this.isFirstAppend) {
-        this.isFirstAppend = false;
-        this.writeOrigin(`{\n${contentJson}`);
-        this.writeTemp(`${contentTmp}`);
-      } else {
-        this.writeOrigin(`,\n${contentJson}`);
-        this.writeTemp(`\n${contentTmp}`);
-      }
+      this.sourceMapsResult[keyChanged] = this.sourceMaps[key];
     });
     this.sourceMaps = {};
     this.sourceMapKeyMappingForObf.clear();
@@ -304,21 +232,14 @@ export class SourceMapGenerator {
   }
 
   public checkAndWriteEnd(): void {
-    if (!this.isFirstAppend) {
-      this.writeOrigin('\n}');
+    if (fs.existsSync(this.sourceMapPath)) {
+      fs.unlinkSync(this.sourceMapPath);
     }
-    //no collect sourcemap
-    if (!fs.existsSync(this.sourceMapPath)) {
-      this.writeOrigin('{}');
-    }
-    if (!fs.existsSync(this.sourceMapPathTmp)) {
-      this.writeTemp('');
-    }
-    this.resetFileEdited();
+    fs.writeFileSync(this.sourceMapPath, JSON.stringify(this.sourceMapsResult, null, 2));
     if (fs.existsSync(this.cacheSourceMapPath)) {
       fs.unlinkSync(this.cacheSourceMapPath);
     }
-    fs.renameSync(this.sourceMapPathTmp, this.cacheSourceMapPath);
+    fs.copyFileSync(this.sourceMapPath, this.cacheSourceMapPath);
   }
 
   public writeUsedAndUnmodifiedSourceMapToFile(parentEvent: CompileEvent | undefined): void {
@@ -331,28 +252,13 @@ export class SourceMapGenerator {
     }
 
     const cacheFileContent: string = fs.readFileSync(toUnixPath(cacheSourceMapInfo.path)).toString();
-    let lines: string[] = cacheFileContent.split(/\r?\n/);
-    if (lines.length > 0) {
-      let compileFileList: Set<string> = this.getCompileFileList();
-      for (const line of lines) {
-        if (line.trim() === '') {
-          continue;
-        }
-        let smObj: Object = JSON.parse(line.trim());
-        if (!compileFileList.has(smObj.key) || this.sourceMapKeys.has(smObj.key)) {
-          // skip unuse or uncompile in cache
-          continue;
-        }
-        if (this.isFirstAppend) {
-          this.isFirstAppend = false;
-          this.writeOrigin(`{\n${this.formatOrigin(smObj.key, smObj.val)}`);
-          this.writeTemp(`${this.formatTemp(smObj.key, smObj.val)}`);
-        } else {
-          this.writeOrigin(`,\n${this.formatOrigin(smObj.key, smObj.val)}`);
-          this.writeTemp(`\n${this.formatTemp(smObj.key, smObj.val)}`);
-        }
+    let cacheFileJson: Object = JSON.parse(cacheFileContent);
+    let compileFileList: Set<string> = this.getCompileFileList();
+    Object.keys(cacheFileJson).forEach(key => { 
+      if (!(!compileFileList.has(key) || this.sourceMapsResult[key])) {
+        this.sourceMapsResult[key] = cacheFileJson[key];
       }
-    }
+    });  
     this.checkAndWriteEnd();
     stopEvent(eventMergeCachedSourceMaps);
   }
@@ -394,7 +300,6 @@ export class SourceMapGenerator {
     if (this.isNewSourceMap) {
       this.writeModifiedSourceMapToFile(parentEvent);
       this.writeUsedAndUnmodifiedSourceMapToFile(parentEvent);
-      this.checkSourceMapFormat();
       return;
     }
 
@@ -621,7 +526,6 @@ export class SourceMapGenerator {
 
   public static cleanSourceMapObject(): void {
     if (this.instance) {
-      this.instance.resetFileEdited();
       this.instance.keyCache.clear();
       this.instance.sourceMaps = undefined;
       this.instance = undefined;
@@ -649,29 +553,5 @@ export class SourceMapGenerator {
       SourceMapGenerator.init(rollupObject);
     }
     return SourceMapGenerator.getInstance();
-  }
-
-  public checkSourceMapFormat(): void {
-    if (!fs.existsSync(this.sourceMapPath)) {
-      const errInfo: LogData = LogDataFactory.newInstance(
-        ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
-        ArkTSInternalErrorDescription,
-        `SourceMap file not exist, path: ${this.sourceMapPath}`
-      );
-      this.logger.printErrorAndExit(errInfo);
-      return;
-    }
-
-    try {
-      const content: string = fs.readFileSync(toUnixPath(this.sourceMapPath)).toString();
-      JSON.parse(content);
-    } catch (e) {
-      const errInfo: LogData = LogDataFactory.newInstance(
-        ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
-        ArkTSInternalErrorDescription,
-        `SourceMap content format error, path: ${this.sourceMapPath}`
-      );
-      this.logger.printErrorAndExit(errInfo);
-    }
   }
 }
