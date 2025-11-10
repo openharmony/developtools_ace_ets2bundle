@@ -11185,14 +11185,14 @@ KNativePointer impl_ForUpdateStatementTestConst(KNativePointer context, KNativeP
 }
 KOALA_INTEROP_2(ForUpdateStatementTestConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_ForUpdateStatementUpdateConst(KNativePointer context, KNativePointer receiver)
+KNativePointer impl_ForUpdateStatementUpdateExpressionConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ForUpdateStatementUpdateConst(_context, _receiver);
+    auto result = GetImpl()->ForUpdateStatementUpdateExpressionConst(_context, _receiver);
     return (void*)result;
 }
-KOALA_INTEROP_2(ForUpdateStatementUpdateConst, KNativePointer, KNativePointer, KNativePointer);
+KOALA_INTEROP_2(ForUpdateStatementUpdateExpressionConst, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_ForUpdateStatementBody(KNativePointer context, KNativePointer receiver)
 {
