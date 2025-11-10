@@ -117,10 +117,6 @@ export interface checkConditionValidCallbackInterface {
   (node: ts.CallExpression, specifyFuncName: string, importSymbol: string, jsDocs?: ts.JSDoc[]): boolean;
 }
 
-export interface checkHvigorLoggerValidCallbackInterface {
-  (config: ts.JsDocNodeCheckConfigItem, diagnostic: ts.DiagnosticWithLocation): void
-}
-
 interface HasJSDocNode extends ts.Node {
   jsDoc?: ts.JSDoc[];
 }
@@ -303,8 +299,7 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
   type: ts.DiagnosticCategory, specifyCheckConditionFuncName: string,
   tagNameShouldExisted: boolean, checkValidCallback?: CheckValidCallbackInterface,
   checkJsDocSpecialValidCallback?: CheckJsDocSpecialValidCallbackInterface,
-  checkConditionValidCallback?: checkConditionValidCallbackInterface,
-  checkHvigorLoggerValidCallback?: checkHvigorLoggerValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
+  checkConditionValidCallback?: checkConditionValidCallbackInterface): ts.JsDocNodeCheckConfigItem {
   return {
     tagName: tagName,
     message: message,
@@ -314,8 +309,7 @@ function getJsDocNodeCheckConfigItem(tagName: string[], message: string, needCon
     tagNameShouldExisted: tagNameShouldExisted,
     checkValidCallback: checkValidCallback,
     checkJsDocSpecialValidCallback: checkJsDocSpecialValidCallback,
-    checkConditionValidCallback: checkConditionValidCallback,
-    checkHvigorLoggerValidCallback: checkHvigorLoggerValidCallback
+    checkConditionValidCallback: checkConditionValidCallback
   };
 }
 
