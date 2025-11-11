@@ -585,7 +585,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
       // For other OS: uses format checker from external plugin or default
       const isValidFormat = availableVersion.os === RUNTIME_OS_OH
         ? defaultFormatCheckerWithoutMSF(availableVersion.version)
-        : this.formatChecker(availableVersion.raw);
+        : this.formatChecker(availableVersion.formatVersion);
 
       if (!isValidFormat || !isValidFormat.result) {
         continue;
