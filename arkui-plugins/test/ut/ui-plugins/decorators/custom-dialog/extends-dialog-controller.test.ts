@@ -49,7 +49,7 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
@@ -59,7 +59,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, Entry as Entry, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -68,7 +68,7 @@ import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogCon
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -91,7 +91,7 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void {
     BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
       const instance = new CustomDialogExample(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -100,15 +100,15 @@ function main() {}
     }), initializers, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogExample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {}));
+    }), @Memo() (() => {}));
   }
   
   ${dumpConstructor()}
@@ -139,13 +139,13 @@ class DialogControllerV3 extends DialogControllerV2 {
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___220374545 = initializers;
     (((gensym___220374545) == (null)) ? undefined : gensym___220374545.dialogController)})) ?? ((({let gensym___17371929: Any;
     gensym___17371929 = new CustomDialogController(({
       gridCount: 4,
       showInSubWindow: true,
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._invoke(undefined, undefined, (gensym___17371929 as CustomDialogController), undefined);
       }),
       baseComponent: this,
@@ -165,23 +165,23 @@ class DialogControllerV3 extends DialogControllerV2 {
     this.__backing_dialogController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
       return new CustomDialogUser(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogUser {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();

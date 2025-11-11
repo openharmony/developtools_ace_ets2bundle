@@ -45,7 +45,7 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IParamOnceDecoratedVariable as IParamOnceDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -53,7 +53,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
@@ -62,7 +62,7 @@ import { Once as Once } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
     (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
     this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<string>>(this, "onceVar4", ((({let gensym___71001521 = initializers;
@@ -91,17 +91,17 @@ function main() {}
     this.__backing_onceVar4!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   public constructor() {}
 

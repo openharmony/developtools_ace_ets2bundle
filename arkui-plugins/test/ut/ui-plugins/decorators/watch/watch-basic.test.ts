@@ -63,7 +63,7 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -91,7 +91,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Entry as Entry, Column as Column } from "@ohos.arkui.component";
 
@@ -158,7 +158,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
     (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
@@ -266,14 +266,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_providevar!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___92334354 = storage;
       (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
 
@@ -291,12 +291,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public ProvideOnChange(propName: string) {}
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      Child._invoke(@memo() ((instance: Child): void => {
+    }), @Memo() (() => {
+      Child._invoke(@Memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
       }), undefined, undefined, undefined, undefined);
@@ -308,7 +308,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_providevar = STATE_MGMT_FACTORY.makeConsume<string>(this, "providevar", "providevar", ((_: string): void => {
       this.ConsumeOnChange(_);
     }));
@@ -326,20 +326,20 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_providevar!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
   
   public ConsumeOnChange(propName: string) {}
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   ${dumpConstructor()}
   
@@ -348,8 +348,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    MyStateSample._invoke(@memo() ((instance: MyStateSample): void => {
+  @Memo() public entry(): void {
+    MyStateSample._invoke(@Memo() ((instance: MyStateSample): void => {
     instance.applyAttributesFinish();
     return;
     }), undefined, undefined, undefined, undefined);

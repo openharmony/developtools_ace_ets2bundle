@@ -45,7 +45,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2, Column as Column, Text as Text, Button as Button } from "@ohos.arkui.component";
 
@@ -149,7 +149,7 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
@@ -171,7 +171,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2, Column as Column, Text as Text, Button as Button } from "@ohos.arkui.component";
 
@@ -222,7 +222,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
     (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
     this.__backing_onceParamInfo = STATE_MGMT_FACTORY.makeParamOnce<Info>(this, "onceParamInfo", (initializers!.onceParamInfo as Info));
@@ -250,30 +250,30 @@ function main() {}
     this.__backing_onceParamInfo!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child onceParamNum: \${this.onceParamNum}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changeOnceParamNum", undefined).onClick(((e) => {
           (this.onceParamNum++);
         })).applyAttributesFinish();
@@ -287,7 +287,7 @@ function main() {}
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localNum = STATE_MGMT_FACTORY.makeLocal<number>(this, "localNum", 10);
     this.__backing_localInfo = STATE_MGMT_FACTORY.makeLocal<Info>(this, "localInfo", new Info());
   }
@@ -314,30 +314,30 @@ function main() {}
     this.__backing_localInfo!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Parent localNum: \${this.localNum}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined).applyAttributesFinish();
         return;
       }), undefined);
-      Child._invoke(@memo() ((instance: Child): void => {
+      Child._invoke(@Memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
       }), (() => {

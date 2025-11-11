@@ -45,7 +45,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -103,7 +103,7 @@ import { IConsumeDecoratedVariable as IConsumeDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -111,7 +111,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -120,7 +120,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
-  public __initializeStruct(initializers: (__Options_PropParent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<string>(this, "conVar1", "conVar1");
     this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<number>(this, "conVar2", "conVar2");
     this.__backing_conVar3 = STATE_MGMT_FACTORY.makeConsume<boolean>(this, "conVar3", "conVar3");
@@ -180,18 +180,18 @@ function main() {}
     this.__backing_conVar5!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
       return new PropParent(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): PropParent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): PropParent {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {}
+  @Memo() public build() {}
   
   ${dumpConstructor()}
 

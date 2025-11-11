@@ -47,7 +47,7 @@ import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
@@ -56,21 +56,21 @@ import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
-@memo() const globalBuilder: @Builder() ((value: string, size: number)=> void) = MyBuilder;
+@Memo() const globalBuilder: @Builder() ((value: string, size: number)=> void) = MyBuilder;
 const builderArr: Array<@Builder() ((value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
-@memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
     return;
   }), undefined);
@@ -83,7 +83,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     integratedHsp: \"false\",
 } as NavInterface));
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
   }
@@ -95,25 +95,25 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   public set message(value: string) {
     this.__backing_message!.set(value);
   }
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
-  @memo() public build() {
-    RowImpl(@memo() ((instance: RowAttribute): void => {
+  @Memo() public build() {
+    RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       globalBuilder(this.message, 50);
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return builderArr;
-        }), @memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
+        }), @Memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
           item("Hello World", 30);
         }), undefined);
         return;
@@ -124,8 +124,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    Index._invoke(@memo() ((instance: Index): void => {
+  @Memo() public entry(): void {
+    Index._invoke(@Memo() ((instance: Index): void => {
       instance.applyAttributesFinish();
       return;
     }), undefined, undefined, undefined, undefined);
@@ -154,7 +154,7 @@ import { ForEachAttribute as ForEachAttribute } from "arkui.component.forEach";
 import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 import { RowImpl as RowImpl } from "arkui.component.row";
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
@@ -163,20 +163,20 @@ import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Builder as Builder, Text as Text, Color as Color, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder, Entry as Entry, Component as Component, Row as Row, ForEach as ForEach } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
-@memo() const globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) = MyBuilder;
+@Memo() const globalBuilder: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) = MyBuilder;
 const builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
 
-@memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (241300838)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (175145513)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (175145513)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (47330804)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -195,13 +195,13 @@ function main() {}
   }
 }
 
-@memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (160135018)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  TextImpl(__memo_context, ((__memo_id) + (211301233)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+  TextImpl(__memo_context, ((__memo_id) + (211301233)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 1);
     const __memo_parameter_instance = __memo_scope.param(0, instance);
     if (__memo_scope.unchanged) {
@@ -227,7 +227,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     integratedHsp: \"false\",
 } as NavInterface));
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-    public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
     }
@@ -239,23 +239,23 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public set message(value: string) {
         this.__backing_message!.set(value);
     }
-    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
       CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (46726221)), style, ((): Index => {
         return new Index(false, ({let gensym___149025070 = storage;
         (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
       }), initializers, reuseId, content);
     }
 
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
       throw new Error("Declare interface");
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        RowImpl(__memo_context, ((__memo_id) + (136716185)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
+        RowImpl(__memo_context, ((__memo_id) + (136716185)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: RowAttribute): void => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
           const __memo_parameter_instance = __memo_scope.param(0, instance);
           if (__memo_scope.unchanged) {
@@ -267,14 +267,14 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             __memo_scope.recache();
             return;
           }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 0);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
           }
           globalBuilder(__memo_context, ((__memo_id) + (76711614)), this.message, 50);
-          ForEachImpl(__memo_context, ((__memo_id) + (213687742)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
+          ForEachImpl(__memo_context, ((__memo_id) + (213687742)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ForEachAttribute): void => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (192802443)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
@@ -283,7 +283,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             }
             __memo_parameter_instance.value.setForEachOptions((() => {
               return builderArr;
-            }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
+            }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
               const __memo_parameter_item = __memo_scope.param(0, item);
               if (__memo_scope.unchanged) {
@@ -315,13 +315,13 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
     
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+  @Memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (81582415)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    Index._invoke(__memo_context, ((__memo_id) + (155886964)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index): void => {
+    Index._invoke(__memo_context, ((__memo_id) + (155886964)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index): void => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (173773669)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {

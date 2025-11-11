@@ -46,14 +46,14 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
 import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Entry as Entry, Column as Column, Text as Text, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 import { StorageLink as StorageLink, AppStorage as AppStorage } from "@ohos.arkui.stateManagement";
 
@@ -78,7 +78,7 @@ class Data {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_Index | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
     this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
   }
@@ -105,29 +105,29 @@ class Data {
     this.__backing_storageLinkObject!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Index {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLink}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLink += 1;
         })).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLinkObject.code}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
         })).applyAttributesFinish();
@@ -141,8 +141,8 @@ class Data {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    Index._invoke(@memo() ((instance: Index): void => {
+  @Memo() public entry(): void {
+    Index._invoke(@Memo() ((instance: Index): void => {
       instance.applyAttributesFinish();
       return;
     }), undefined, undefined, undefined, undefined);

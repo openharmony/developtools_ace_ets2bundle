@@ -49,7 +49,7 @@ import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -57,7 +57,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { memo as memo } from "@ohos.arkui.stateManagement";
 
@@ -80,30 +80,30 @@ function main() {}
 
 
 @Component() final struct MM extends CustomComponent<MM, __Options_MM> {
-  public __initializeStruct(initializers: (__Options_MM | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_MM | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MM)=> void), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MM)=> void), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MM, __Options_MM>(style, ((): MM => {
       return new MM(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MM, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MM {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MM, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MM {
     throw new Error("Declare interface");
   }
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         style22(cardStyle(instance.setTextOptions("hello world", undefined).height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         cardStyle(instance.setTextOptions("hello world", undefined), 600, "#eeeeee").applyAttributesFinish();
         return;
       }), undefined);

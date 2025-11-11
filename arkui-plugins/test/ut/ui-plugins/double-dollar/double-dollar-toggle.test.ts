@@ -55,7 +55,7 @@ import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -63,7 +63,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, $$ as $$, Toggle as Toggle, ToggleType as ToggleType } from "@ohos.arkui.component";
 
@@ -81,7 +81,7 @@ class BooleanClass {
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_boo = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "boo", ((({let gensym___9142460 = initializers;
     (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? ([true, false, true])));
     this.__backing_booClass = STATE_MGMT_FACTORY.makeState<BooleanClass>(this, "booClass", ((({let gensym___145381365 = initializers;
@@ -110,23 +110,23 @@ class BooleanClass {
     this.__backing_booClass!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+    }), @Memo() (() => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({
@@ -138,7 +138,7 @@ class BooleanClass {
         }).applyAttributesFinish();
         return;
       }), undefined);
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({
@@ -150,7 +150,7 @@ class BooleanClass {
         }).applyAttributesFinish();
         return;
       }), undefined);
-      ToggleImpl(@memo() ((instance: ToggleAttribute): void => {
+      ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
           isOn: ({

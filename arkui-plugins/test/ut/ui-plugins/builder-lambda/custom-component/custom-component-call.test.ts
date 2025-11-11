@@ -52,7 +52,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
@@ -127,7 +127,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -135,7 +135,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
@@ -143,93 +143,93 @@ function main() {}
 
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
-  public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
     (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
 
-  private __backing_closer?: @memo() (()=> void);
+  private __backing_closer?: @Memo() (()=> void);
 
-  public get closer(): @memo() (()=> void) {
+  public get closer(): @Memo() (()=> void) {
     return this.__backing_closer!;
   }
 
-  public set closer(value: @memo() (()=> void)) {
+  public set closer(value: @Memo() (()=> void)) {
     this.__backing_closer = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CustomContainer)=> void), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomContainer)=> void), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainer, __Options_CustomContainer>(style, ((): CustomContainer => {
       return new CustomContainer(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomContainer {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainer {
     throw new Error("Declare interface");
   }
 
-  @memo() public closerBuilder() {}
+  @Memo() public closerBuilder() {}
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   ${dumpConstructor()}
 
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
-  public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CustomContainerUser)=> void), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomContainerUser)=> void), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainerUser, __Options_CustomContainerUser>(style, ((): CustomContainerUser => {
       return new CustomContainerUser(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomContainerUser {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainerUser {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      CustomContainer._invoke(@memo() ((instance: CustomContainer): void => {
+    }), @Memo() (() => {
+      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
         instance.applyAttributesFinish();
         return;
-      }), undefined, undefined, undefined, @memo() (() => {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      }), undefined, undefined, undefined, @Memo() (() => {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
           instance.setColumnOptions(undefined).applyAttributesFinish();
           return;
-        }), @memo() (() => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() (() => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions("hello", undefined).applyAttributesFinish();
             return;
           }), undefined);
         }));
       }));
-      CustomContainer._invoke(@memo() ((instance: CustomContainer): void => {
+      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
         instance.applyAttributesFinish();
         return;
       }), (() => {
         return {};
-      }), undefined, undefined, @memo() (() => {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+      }), undefined, undefined, @Memo() (() => {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
           instance.setColumnOptions(undefined).applyAttributesFinish();
           return;
-        }), @memo() (() => {}));
+        }), @Memo() (() => {}));
       }));
-      CustomContainer._invoke(@memo() ((instance: CustomContainer): void => {
+      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
         instance.applyAttributesFinish();
         return;
-      }), undefined, undefined, undefined, @memo() (() => {}));
-      CustomContainer._invoke(@memo() ((instance: CustomContainer): void => {
+      }), undefined, undefined, undefined, @Memo() (() => {}));
+      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
         instance.applyAttributesFinish();
         return;
       }), undefined, undefined, undefined, undefined);
@@ -241,7 +241,7 @@ function main() {}
 }
 
 @Component() export interface __Options_CustomContainer {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@memo() (()=> void) | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
   
 }

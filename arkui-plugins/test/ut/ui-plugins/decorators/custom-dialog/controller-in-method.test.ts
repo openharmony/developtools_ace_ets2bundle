@@ -41,7 +41,7 @@ const parsedTransform: Plugins = {
 const expectedScript: string = `
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { BaseCustomDialog as BaseCustomDialog } from "arkui.component.customComponent";
 
@@ -51,14 +51,14 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, CustomDialog as CustomDialog, CustomDialogController as CustomDialogController } from "@ohos.arkui.component";
 
 function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___231706081 = initializers;
     (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
@@ -81,7 +81,7 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void {
     BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
       const instance = new CustomDialogExample(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -90,11 +90,11 @@ function main() {}
     }), initializers, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogExample {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
   
   ${dumpConstructor()}
   
@@ -104,11 +104,11 @@ function main() {}
 }
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___95501822 = initializers;
     (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___46528967: Any;
     gensym___46528967 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._invoke((() => {
           return {};
         }), undefined, (gensym___46528967 as CustomDialogController), undefined);
@@ -130,21 +130,21 @@ function main() {}
     this.__backing_dialogController = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
       return new CustomDialogUser(false, ({let gensym___249621102 = storage;
       (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): CustomDialogUser {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
     throw new Error("Declare interface");
   }
 
   public updateController1() {
     this.dialogController = ({let gensym___17371929: Any;
     gensym___17371929 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._invoke((() => {
           return {};
         }), undefined, (gensym___17371929 as CustomDialogController), undefined);
@@ -158,7 +158,7 @@ function main() {}
   public updateController2() {
     let temp = ({let gensym___90667230: Any;
     gensym___90667230 = new CustomDialogController({
-      builder: @memo() (() => {
+      builder: @Memo() (() => {
         CustomDialogExample._invoke((() => {
           return {};
         }), undefined, (gensym___90667230 as CustomDialogController), undefined);
@@ -170,7 +170,7 @@ function main() {}
     this.dialogController = temp;
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   ${dumpConstructor()}
 

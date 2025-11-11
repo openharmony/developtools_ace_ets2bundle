@@ -61,7 +61,7 @@ import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -75,7 +75,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Entry as Entry, Column as Column, Button as Button, DatePicker as DatePicker, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
@@ -92,7 +92,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   } as NavInterface));
 
 @Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
-  public __initializeStruct(initializers: (__Options_DateComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_DateComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___27735436 = initializers;
     (((gensym___27735436) == (null)) ? undefined : gensym___27735436.__options_has_selectedDate)})) {
       this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
@@ -111,35 +111,35 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_selectedDate!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<DateComponent, __Options_DateComponent>(style, ((): DateComponent => {
       return new DateComponent(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): DateComponent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): DateComponent {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child increase the year by 1", undefined).onClick(((e: ClickEvent) => {
           this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.selectedDate = new Date("2023-09-09");
         })).applyAttributesFinish();
         return;
       }), undefined);
-      DatePickerImpl(@memo() ((instance: DatePickerAttribute): void => {
+      DatePickerImpl(@Memo() ((instance: DatePickerAttribute): void => {
         instance.setDatePickerOptions({
           start: new Date("1970-1-1"),
           end: new Date("2100-1-1"),
@@ -155,7 +155,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
-  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
@@ -172,35 +172,35 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_parentSelectedDate!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
       return new ParentComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ParentComponent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent increase the month by 1", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate = new Date("2023-07-07");
         })).applyAttributesFinish();
         return;
       }), undefined);
-      DatePickerImpl(@memo() ((instance: DatePickerAttribute): void => {
+      DatePickerImpl(@Memo() ((instance: DatePickerAttribute): void => {
         instance.setDatePickerOptions({
           start: new Date("1970-1-1"),
           end: new Date("2100-1-1"),
@@ -208,7 +208,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         }).applyAttributesFinish();
         return;
       }), undefined);
-      DateComponent._invoke(@memo() ((instance: DateComponent): void => {
+      DateComponent._invoke(@Memo() ((instance: DateComponent): void => {
         instance.applyAttributesFinish();
         return;
       }), (() => {
@@ -227,8 +227,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
-  @memo() public entry(): void {
-    ParentComponent._invoke(@memo() ((instance: ParentComponent): void => {
+  @Memo() public entry(): void {
+    ParentComponent._invoke(@Memo() ((instance: ParentComponent): void => {
     instance.applyAttributesFinish();
     return;
     }), undefined, undefined, undefined, undefined);

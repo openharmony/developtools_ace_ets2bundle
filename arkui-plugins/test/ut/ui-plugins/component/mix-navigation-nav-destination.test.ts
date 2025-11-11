@@ -59,7 +59,7 @@ import { NavDestinationImpl as NavDestinationImpl } from "arkui.component.navDes
 
 import { MemoSkip as MemoSkip } from "arkui.incremental.annotation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -67,7 +67,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, BuilderParam as BuilderParam, Builder as Builder, Component as Component, NavPathStack as NavPathStack, Navigation as Navigation, NavPathInfo as NavPathInfo, NavDestination as NavDestination, NavigationMode as NavigationMode } from "@ohos.arkui.component";
 
@@ -77,7 +77,7 @@ function main() {}
 
 
 @Component() export final struct SubNavigation extends CustomComponent<SubNavigation, __Options_SubNavigation> {
-  public __initializeStruct(initializers: (__Options_SubNavigation | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_SubNavigation | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___214357609 = initializers;
     (((gensym___214357609) == (null)) ? undefined : gensym___214357609.__options_has_isPortrait)})) {
       this.__backing_isPortrait = STATE_MGMT_FACTORY.makeLink<boolean>(this, "isPortrait", initializers!.__backing_isPortrait!);
@@ -120,11 +120,11 @@ function main() {}
   
   private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
   
-  public get navDestination(): (@memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
+  public get navDestination(): (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
     return this.__backing_navDestination;
   }
   
-  public set navDestination(value: (@memo() ((name: String, param: (Object | undefined))=> void) | undefined)) {
+  public set navDestination(value: (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined)) {
     this.__backing_navDestination = value;
   }
   
@@ -168,45 +168,45 @@ function main() {}
     this.__backing_secondaryStack!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: SubNavigation)=> void), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: SubNavigation)=> void), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<SubNavigation, __Options_SubNavigation>(style, ((): SubNavigation => {
       return new SubNavigation(false, ({let gensym___92334354 = storage;
       (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_SubNavigation, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): SubNavigation {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_SubNavigation, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): SubNavigation {
     throw new Error("Declare interface");
   }
   
-  @memo() public SubNavDestination(@MemoSkip() name: string, @MemoSkip() param?: object) {
+  @Memo() public SubNavDestination(@MemoSkip() name: string, @MemoSkip() param?: object) {
     this.navDestination!(name, (param as Object));
   }
   
-  @memo() public build() {
-    NavDestinationImpl(@memo() ((instance: NavDestinationAttribute): void => {
+  @Memo() public build() {
+    NavDestinationImpl(@Memo() ((instance: NavDestinationAttribute): void => {
       instance.setNavDestinationOptions({
         moduleName: "entry",
         pagePath: "mock/component/mix-navigation-nav-destination",
       }).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
+    }), @Memo() (() => {
+      NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
         instance.setNavigationOptions(this.secondaryStack, {
           moduleName: "entry",
           pagePath: "mock/component/mix-navigation-nav-destination",
           isUserCreateStack: true,
         }).hideBackButton(true).hideTitleBar(true, true).navDestination(this.SubNavDestination).navBarWidth(this.primaryWidth).applyAttributesFinish();
         return;
-      }), @memo() (() => {
-        NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
+      }), @Memo() (() => {
+        NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
           instance.setNavigationOptions(this.primaryStack, {
             moduleName: "entry",
             pagePath: "mock/component/mix-navigation-nav-destination",
             isUserCreateStack: true,
           }).hideNavBar(true).mode(NavigationMode.Stack).navDestination(this.SubNavDestination).hideTitleBar(true, true).hideToolBar(true, true).hideBackButton(true).applyAttributesFinish();
           return;
-        }), @memo() (() => {}));
+        }), @Memo() (() => {}));
       }));
     }));
   }

@@ -45,7 +45,7 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponentV2 as CustomComponentV2 } from "arkui.component.customComponent";
 
@@ -53,7 +53,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { ComponentV2 as ComponentV2 } from "@ohos.arkui.component";
 
@@ -62,7 +62,7 @@ import { Local as Local } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
-  public __initializeStruct(initializers: (__Options_Parent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localVar1 = STATE_MGMT_FACTORY.makeLocal<string>(this, "localVar1", "stateVar1");
     this.__backing_localVar2 = STATE_MGMT_FACTORY.makeLocal<number>(this, "localVar2", 50);
     this.__backing_localVar3 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "localVar3", true);
@@ -122,17 +122,17 @@ function main() {}
     this.__backing_localVar5!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   public constructor() {}
 

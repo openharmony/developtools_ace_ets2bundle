@@ -91,7 +91,6 @@ import {
     CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
     UIClass,
     ARKUI_LOCAL_STORAGE_SOURCE_NAME,
-    MEMO_IMPORT_SOURCE_NAME,
     StructDecoratorNames,
 } from '../../common/predefines';
 import { ObservedTranslator } from '../property-translators/index';
@@ -1467,7 +1466,7 @@ export class factory {
      * create  `$_invoke` static method in struct
      */
     static createInvokeMethod(structName: string, isDecl: boolean): arkts.MethodDefinition {
-        ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, MEMO_IMPORT_SOURCE_NAME);
+        ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, ARKUI_BUILDER_SOURCE_NAME);
         ImportCollector.getInstance().collectImport(BuilderLambdaNames.ANNOTATION_NAME);
         const componentBuilderAnno = annotation(BuilderLambdaNames.ANNOTATION_NAME);
         const initializerParam = this.createInitializerParamInInvoke(structName);

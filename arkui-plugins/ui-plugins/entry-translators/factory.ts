@@ -250,7 +250,7 @@ export class factory {
                 arkts.isIdentifier(member.key) &&
                 member.key.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.setAnnotations([annotation('memo')]);
+                member.setAnnotations([annotation('Memo')]);
             }
         });
     }
