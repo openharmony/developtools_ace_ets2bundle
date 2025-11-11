@@ -102,7 +102,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }), undefined);
         FakeComponentImpl(@memo() ((instance: FakeComponentAttribute): void => {
-            instance.setFakeComponentOptions();
+            instance.setFakeComponentOptions(undefined);
             return;
         }), @memo() (() => {}));
     }

@@ -26,6 +26,7 @@ import {
     findCanAddMemoFromTypeAlias,
 } from './utils';
 import { coerceToAstNode } from '../../common/arkts-utils';
+import { isArrowFunctionAsValue } from './utils';
 
 export type RewriteAfterFoundFn<T extends arkts.AstNode = arkts.AstNode> = (
     node: T,
@@ -55,7 +56,10 @@ export class factory {
         let found: boolean = false;
         if (findCanAddMemoFromProperty(node)) {
             found = true;
-            addMemoAnnotation(node.value! as arkts.ArrowFunctionExpression);
+            const value = (
+                isArrowFunctionAsValue(node.value!) ? node.value.expr : node.value
+            ) as arkts.ArrowFunctionExpression;
+            addMemoAnnotation(value);
         }
         if (found && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY);

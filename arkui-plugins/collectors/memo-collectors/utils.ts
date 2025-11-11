@@ -412,14 +412,16 @@ export function collectMemoableInfoInProperty(node: arkts.AstNode, info?: Memoab
         currInfo = { ...currInfo, ...newInfo };
     }
     currInfo.hasProperType = false;
-    if (!!node.value && arkts.isArrowFunctionExpression(node.value)) {
-        currInfo.hasProperType = true;
-        currInfo = {
-            ...currInfo,
-            ...collectMemoableInfoInScriptFunction(node.value.scriptFunction),
-        };
+    const value: arkts.Expression | undefined = node.value;
+    if (!value) {
+        return currInfo;
     }
+    currInfo.hasProperType = arkts.isArrowFunctionExpression(value) || isArrowFunctionAsValue(value);
     return currInfo;
+}
+
+export function isArrowFunctionAsValue(value: arkts.Expression): value is arkts.TSAsExpression {
+    return arkts.isTSAsExpression(value) && !!value.expr && arkts.isArrowFunctionExpression(value.expr);
 }
 
 export function collectMemoableInfoInClassProperty(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
