@@ -295,15 +295,15 @@ export function getEndPosition(node: AstNode): SourcePosition {
     return new SourcePosition(global.es2panda._AstNodeEndConst(global.context, node.peer));
 }
 
-export function MemInitialize(): void {
+export function memInitialize(): void {
     global.es2panda._MemInitialize();
 }
 
-export function MemFinalize(): void {
+export function memFinalize(): void {
     global.es2panda._MemFinalize();
 }
 
-export function CreateGlobalContext(
+export function createGlobalContext(
     config: KNativePointer,
     externalFileList: string[],
     fileNum: KInt,
@@ -312,11 +312,11 @@ export function CreateGlobalContext(
     return global.es2panda._CreateGlobalContext(config, passStringArray(externalFileList), fileNum, lspUsage);
 }
 
-export function DestroyGlobalContext(context: KNativePointer): void {
+export function destroyGlobalContext(context: KNativePointer): void {
     global.es2panda._DestroyGlobalContext(context);
 }
 
-export function CreateCacheContextFromFile(
+export function createCacheContextFromFile(
     configPtr: KNativePointer,
     filename: string,
     globalContext: KNativePointer,
