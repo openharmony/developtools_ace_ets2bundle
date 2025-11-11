@@ -59,7 +59,7 @@ import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -67,7 +67,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Column as Column, TextInput as TextInput } from "@ohos.arkui.component";
 
@@ -77,7 +77,7 @@ function main() {}
 
 
 @Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
-  public __initializeStruct(initializers: (__Options_Parant | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Parant | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___194626867 = initializers;
     (((gensym___194626867) == (null)) ? undefined : gensym___194626867.__options_has_text1)})) {
       this.__backing_text1 = STATE_MGMT_FACTORY.makeLink<string>(this, "text1", initializers!.__backing_text1!);
@@ -96,29 +96,29 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Parant)=> void), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parant)=> void), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parant, __Options_Parant>(style, ((): Parant => {
       return new Parant(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Parant {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parant {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+    }), @Memo() (() => {
+      TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: this.text1,
         }).applyAttributesFinish();
         return;
       }), undefined);
-      Child._invoke(@memo() ((instance: Child): void => {
+      Child._invoke(@Memo() ((instance: Child): void => {
         instance.applyAttributesFinish();
         return;
       }), (() => {
@@ -141,7 +141,7 @@ function main() {}
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  public __initializeStruct(initializers: (__Options_Child | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___55490166 = initializers;
     (((gensym___55490166) == (null)) ? undefined : gensym___55490166.__options_has_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
@@ -204,19 +204,19 @@ function main() {}
     this.__backing_childText4!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Child {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+  @Memo() public build() {
+    TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,
       }).applyAttributesFinish();

@@ -42,7 +42,7 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
 @Component() final struct Main extends CustomComponent<Main, __Options_Main> {

@@ -53,7 +53,7 @@ import { ForEachImpl as ForEachImpl } from "arkui.component.forEach";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -61,7 +61,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Text as Text, WrappedBuilder as WrappedBuilder, Column as Column, ForEach as ForEach } from "@ohos.arkui.component";
 
@@ -87,7 +87,7 @@ class AB {
 }
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_arr = ((({let gensym___244068973 = initializers;
     (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
   }
@@ -103,14 +103,14 @@ class AB {
     this.__backing_arr = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ImportStruct {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
     throw new Error("Declare interface");
   }
 
@@ -124,65 +124,65 @@ class AB {
     } as Person));
   }
 
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+    }), @Memo() (() => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.arr;
-        }), @memo() ((item: string) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: string) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return this.getArray();
-        }), @memo() ((item: Person) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: Person) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item.name, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @memo() ((item: string) => {
-          TextImpl(@memo() ((instance: TextAttribute): void => {
+        }), @Memo() ((item: string) => {
+          TextImpl(@Memo() ((instance: TextAttribute): void => {
             instance.setTextOptions(item, undefined).applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new AB().bar;
-        }), @memo() (() => {}), undefined);
+        }), @Memo() (() => {}), undefined);
         return;
       }));
-      ForEachImpl<Person>(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl<Person>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Person>((() => {
           return this.getArray();
-        }), @memo() (() => {}), undefined);
+        }), @Memo() (() => {}), undefined);
         return;
       }));
-      ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+      ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return new Array<string>("1", "2");
-        }), @memo() (() => {
-          ForEachImpl(@memo() ((instance: ForEachAttribute): void => {
+        }), @Memo() (() => {
+          ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
             instance.setForEachOptions((() => {
               return new Array<string>("1", "2");
-            }), @memo() ((item: string) => {
-              TextImpl(@memo() ((instance: TextAttribute): void => {
+            }), @Memo() ((item: string) => {
+              TextImpl(@Memo() ((instance: TextAttribute): void => {
                 instance.setTextOptions(item, undefined).applyAttributesFinish();
                 return;
               }), undefined);

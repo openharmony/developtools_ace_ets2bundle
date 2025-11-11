@@ -45,7 +45,7 @@ import { IProvideDecoratedVariable as IProvideDecoratedVariable } from "arkui.st
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -53,7 +53,7 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component } from "@ohos.arkui.component";
 
@@ -62,7 +62,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 function main() {}
 
 @Component() final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
-  public __initializeStruct(initializers: (__Options_Ancestors | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_Ancestors | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count", "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? ("Child0")), false);
     this.__backing_count1 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count1", "prov1", ((({let gensym___84874570 = initializers;
@@ -163,18 +163,18 @@ function main() {}
     this.__backing_count7!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: Ancestors)=> void), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Ancestors)=> void), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Ancestors, __Options_Ancestors>(style, ((): Ancestors => {
       return new Ancestors(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): Ancestors {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Ancestors {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {}
+  @Memo() public build() {}
 
   ${dumpConstructor()}
 

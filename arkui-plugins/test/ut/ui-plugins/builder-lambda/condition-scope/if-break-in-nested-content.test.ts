@@ -46,51 +46,51 @@ import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 import hilog from "@ohos.hilog";
 function main() {}
 @Component() final struct A extends CustomComponent<A, __Options_A> {
-    public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: ((()=> void) | undefined)): void {}
+    public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-    @MemoIntrinsic() public static _invoke(style: @memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
       CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
         return new A(false, ({let gensym___203542966 = storage;
         (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): A {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
       throw new Error("Declare interface");
     }
-    @memo() public build() {
-        ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    @Memo() public build() {
+        ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
-        }), @memo() (() => {
-            ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+        }), @Memo() (() => {
+            ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
                 instance.setColumnOptions(undefined).applyAttributesFinish();
                 return;
-            }), @memo() (() => {
-                ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+            }), @Memo() (() => {
+                ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
                     instance.setColumnOptions(undefined).applyAttributesFinish();
                     return;
-                }), @memo() (() => {
-                    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+                }), @Memo() (() => {
+                    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
                         instance.setColumnOptions(undefined).applyAttributesFinish();
                         return;
-                    }), @memo() (() => {
-                        ConditionScope(@memo() (() => {
+                    }), @Memo() (() => {
+                        ConditionScope(@Memo() (() => {
                             if (false) {
-                                ConditionBranch(@memo() (() => {
+                                ConditionBranch(@Memo() (() => {
                                     hilog.info(0x0000, \"very inside\", \"1\");
                                 }));
                                 return;
-                                TextImpl(@memo() ((instance: TextAttribute): void => {
+                                TextImpl(@Memo() ((instance: TextAttribute): void => {
                                     instance.setTextOptions("1", undefined).applyAttributesFinish();
                                     return;
                                 }), undefined);
@@ -99,11 +99,11 @@ function main() {}
                     }));
                 }));
             }));
-            ConditionScope(@memo() (() => {
+            ConditionScope(@Memo() (() => {
                 if (true) {
-                    ConditionBranch(@memo() (() => {
+                    ConditionBranch(@Memo() (() => {
                         hilog.info(0x0000, \"outside column\", \"2\");
-                        TextImpl(@memo() ((instance: TextAttribute): void => {
+                        TextImpl(@Memo() ((instance: TextAttribute): void => {
                             instance.setTextOptions("1", undefined).applyAttributesFinish();
                             return;
                         }), undefined);
@@ -131,34 +131,34 @@ import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 import { TextImpl as TextImpl } from "arkui.component.text";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 import { Builder as Builder } from "arkui.component.builder";
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 import hilog from "@ohos.hilog";
 function main() {}
 @Component() final struct A extends CustomComponent<A, __Options_A> {
-    public __initializeStruct(initializers: (__Options_A | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
+    public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
       CustomComponent._invokeImpl<A, __Options_A>(__memo_context, ((__memo_id) + (47330804)), style, ((): A => {
         return new A(false, ({let gensym___203542966 = storage;
         (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
       }), initializers, reuseId, content);
     }
     
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): A {
+    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): A {
       throw new Error("Declare interface");
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+        ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
@@ -170,13 +170,13 @@ function main() {}
                 __memo_scope.recache();
                 return;
             }
-        }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
             }
-            ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+            ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                 if (__memo_scope.unchanged) {
@@ -188,13 +188,13 @@ function main() {}
                     __memo_scope.recache();
                     return;
                 }
-            }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
                     return;
                 }
-                ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+                ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                     const __memo_parameter_instance = __memo_scope.param(0, instance);
                     if (__memo_scope.unchanged) {
@@ -206,13 +206,13 @@ function main() {}
                         __memo_scope.recache();
                         return;
                     }
-                }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                     if (__memo_scope.unchanged) {
                         __memo_scope.cached;
                         return;
                     }
-                    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+                    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                         const __memo_parameter_instance = __memo_scope.param(0, instance);
                         if (__memo_scope.unchanged) {
@@ -224,20 +224,20 @@ function main() {}
                             __memo_scope.recache();
                             return;
                         }
-                    }), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                         if (__memo_scope.unchanged) {
                             __memo_scope.cached;
                             return;
                         }
-                        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                        ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                             if (__memo_scope.unchanged) {
                                 __memo_scope.cached;
                                 return;
                             }
                             if (false) {
-                                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                                ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                                     if (__memo_scope.unchanged) {
                                         __memo_scope.cached;
@@ -250,7 +250,7 @@ function main() {}
                                     }
                                 }));
                                 return;
-                                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                                TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                                     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                                     const __memo_parameter_instance = __memo_scope.param(0, instance);
                                     if (__memo_scope.unchanged) {
@@ -284,21 +284,21 @@ function main() {}
                     return;
                 }
             }));
-            ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            ConditionScope(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
                     return;
                 }
                 if (true) {
-                    ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+                    ConditionBranch(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                         if (__memo_scope.unchanged) {
                             __memo_scope.cached;
                             return;
                         }
                         hilog.info(0x0000, \"outside column\", \"2\");
-                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
                             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                             const __memo_parameter_instance = __memo_scope.param(0, instance);
                             if (__memo_scope.unchanged) {

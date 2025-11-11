@@ -53,7 +53,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { NavigationImpl as NavigationImpl } from "arkui.component.navigation";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -61,14 +61,14 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Navigation as Navigation, NavPathStack as NavPathStack, Column as Column, Button as Button } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component() final struct MyStateSample1 extends CustomComponent<MyStateSample1, __Options_MyStateSample1> {
-  public __initializeStruct(initializers: (__Options_MyStateSample1 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___1107384 = initializers;
     (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
   }
@@ -85,30 +85,30 @@ function main() {}
     this.__backing_pathStack = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample1)=> void), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample1)=> void), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample1, __Options_MyStateSample1>(style, ((): MyStateSample1 => {
       return new MyStateSample1(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample1 {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample1 {
     throw new Error("Declare interface");
   }
-  @memo() public build() {
-    NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
+  @Memo() public build() {
+    NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(this.pathStack, {
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
         isUserCreateStack: true,
       }).width(80).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    }), @Memo() (() => {
+      ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
         instance.setColumnOptions(undefined).applyAttributesFinish();
         return;
-      }), @memo() (() => {
-        ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      }), @Memo() (() => {
+        ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
           instance.setButtonOptions("abc", undefined).width(100).height(300).applyAttributesFinish();
           return;
         }), undefined);
@@ -121,7 +121,7 @@ function main() {}
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
-  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___199081302 = initializers;
     (((gensym___199081302) == (null)) ? undefined : gensym___199081302.pathStack)})) ?? (new NavPathStack()));
   }
@@ -138,31 +138,31 @@ function main() {}
     this.__backing_pathStack = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
       return new MyStateSample2(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): MyStateSample2 {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
     throw new Error("Declare interface");
   }
 
-  @memo() public build() {
-    NavigationImpl(@memo() ((instance: NavigationAttribute): void => {
+  @Memo() public build() {
+    NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(undefined, {
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
         isUserCreateStack: false,
       }).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+    }), @Memo() (() => {
+      ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
         instance.setColumnOptions(undefined).applyAttributesFinish();
         return;
-      }), @memo() (() => {
-        ButtonImpl(@memo() ((instance: ButtonAttribute): void => {
+      }), @Memo() (() => {
+        ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
           instance.setButtonOptions("abc", undefined).applyAttributesFinish();
           return;
         }), undefined);

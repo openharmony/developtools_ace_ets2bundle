@@ -69,7 +69,7 @@ import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { _r as _r } from "arkui.component.resources";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
 
@@ -77,14 +77,14 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Column, Text as Text, Image as Image, TextInput as TextInput, Select as Select, SelectOption as SelectOption, Margin as Margin, ImageAnimator as ImageAnimator, Resource as Resource } from "@ohos.arkui.component";
 
 function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
-  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @memo() content: ((()=> void) | undefined)): void {
+  public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
     this.__backing_str2 = ((({let gensym___220149772 = initializers;
@@ -124,14 +124,14 @@ function main() {}
     this.__backing_numbers = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
       return new ResourceComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): ResourceComponent {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
   public async test_0(res: Resource) {
@@ -149,34 +149,34 @@ function main() {}
     const a2 = await this.test_0(_r(16777216, 10003, "com.example.mock", "entry"));
   }
   
-  @memo() public build() {
-    ColumnImpl(@memo() ((instance: ColumnAttribute): void => {
+  @Memo() public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(_r(16777216, 10003, "com.example.mock", "entry"), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+      ImageImpl(@Memo() ((instance: ImageAttribute): void => {
         instance.setImageOptions(_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextInputImpl(@memo() ((instance: TextInputAttribute): void => {
+      TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: _r(16777220, 10003, "com.example.mock", "entry"),
         }).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str1), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      TextImpl(@memo() ((instance: TextAttribute): void => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str2), undefined).applyAttributesFinish();
         return;
       }), undefined);
-      SelectImpl(@memo() ((instance: SelectAttribute): void => {
+      SelectImpl(@Memo() ((instance: SelectAttribute): void => {
         instance.setSelectOptions(new Array<SelectOption>({
           value: "aaa",
           icon: _r(16777223, 20000, "com.example.mock", "entry"),
@@ -192,14 +192,14 @@ function main() {}
         })).applyAttributesFinish();
         return;
       }), undefined);
-      ImageImpl(@memo() ((instance: ImageAttribute): void => {
+      ImageImpl(@Memo() ((instance: ImageAttribute): void => {
         instance.setImageOptions(_r(16777217, 20000, "com.example.mock", "entry"), undefined).margin(({
           top: _r(16777222, 10002, "com.example.mock", "entry"),
           bottom: _r(16777222, 10002, "com.example.mock", "entry"),
         } as Margin)).applyAttributesFinish();
         return;
       }), undefined);
-      ImageAnimatorImpl(@memo() ((instance: ImageAnimatorAttribute): void => {
+      ImageAnimatorImpl(@Memo() ((instance: ImageAnimatorAttribute): void => {
         instance.setImageAnimatorOptions().images([{
           src: _r(16777217, 20000, "com.example.mock", "entry"),
         }, {

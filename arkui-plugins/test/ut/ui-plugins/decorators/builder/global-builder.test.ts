@@ -47,7 +47,7 @@ import { RowAttribute as RowAttribute } from "arkui.component.row";
 
 import { RowImpl as RowImpl } from "arkui.component.row";
 
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextAttribute as TextAttribute } from "arkui.component.text";
 
@@ -59,34 +59,34 @@ import { Builder as Builder } from "arkui.component.builder";
 
 import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
 
-import { ComponentBuilder as ComponentBuilder } from "arkui.stateManagement.runtime";
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Component as Component, Row as Row, Builder as Builder, Text as Text } from "@ohos.arkui.component";
 
 function main() {}
 
 
-@memo() function showTextBuilder() {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function showTextBuilder() {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@memo() function overBuilder(@MemoSkip() params: Tmp) {
-  RowImpl(@memo() ((instance: RowAttribute): void => {
+@Memo() function overBuilder(@MemoSkip() params: Tmp) {
+  RowImpl(@Memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
-  }), @memo() (() => {
-    TextImpl(@memo() ((instance: TextAttribute): void => {
+  }), @Memo() (() => {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions((("UseStateVarByReference: ") + (params.paramA1)), undefined).applyAttributesFinish();
       return;
     }), undefined);
   }));
 }
 
-@memo() function globalBuilder(@MemoSkip() param: Person) {
-  TextImpl(@memo() ((instance: TextAttribute): void => {
+@Memo() function globalBuilder(@MemoSkip() param: Person) {
+  TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
     return;
   }), undefined);
@@ -104,26 +104,26 @@ interface Person {
 }
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
-  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @memo() content: ((()=> void) | undefined)): void {}
+  public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
       return new BuilderDemo(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @memo() content?: (()=> void)): BuilderDemo {
+  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
     throw new Error("Declare interface");
   }
   
-  @memo() public build() {
-    RowImpl(@memo() ((instance: RowAttribute): void => {
+  @Memo() public build() {
+    RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
-    }), @memo() (() => {
+    }), @Memo() (() => {
       showTextBuilder();
       overBuilder(makeBuilderParameterProxy<Tmp>({}, new Map<string, (()=> Any)>([["paramA1", ((): Any => {
         return "Hello";
