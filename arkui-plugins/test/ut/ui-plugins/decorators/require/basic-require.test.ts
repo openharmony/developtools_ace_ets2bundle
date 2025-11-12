@@ -79,7 +79,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
   public build() {}
 
-  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 
@@ -94,7 +94,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
   public build() {}
 
-  public constructor() {}
+  private constructor() {}
 
 }
 

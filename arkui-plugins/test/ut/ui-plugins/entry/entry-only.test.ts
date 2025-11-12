@@ -61,7 +61,7 @@ import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
   
   public build() {}
   
-  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
   
