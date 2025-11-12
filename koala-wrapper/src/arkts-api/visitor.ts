@@ -60,7 +60,7 @@ import {
     isSpreadElement,
     isClassStaticBlock,
     isFunctionExpression,
-    FunctionExpression,
+    FunctionExpression
 } from '../generated';
 import {
     isEtsScript,
@@ -221,6 +221,16 @@ function visitInnerExpression(node: AstNode, visitor: Visitor): AstNode {
 function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
+    }
+    if (
+        global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer) ===
+        Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION
+    ) {
+        updated = true;
+        return factory.updateFunctionExpression(
+            node as FunctionExpression,
+            nodeVisitor((node as FunctionExpression).scriptFunction, visitor)
+        );
     }
     if (isBinaryExpression(node)) {
         updated = true;
@@ -487,14 +497,11 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.isComputed
         );
     }
-    if (isClassStaticBlock(node) && !!node.value) {
+    if (isClassStaticBlock(node)) {
         updated = true;
         return factory.updateClassStaticBlock(
             node,
-            updateFunctionExpression(
-                node.value as FunctionExpression,
-                nodeVisitor(node.function, visitor)
-            )
+            nodeVisitor(node.value, visitor)
         );
     }
     // TODO
