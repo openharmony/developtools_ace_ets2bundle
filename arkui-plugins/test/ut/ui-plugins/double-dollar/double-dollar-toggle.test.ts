@@ -49,7 +49,7 @@ import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
 
-import { Bindable as Bindable } from "arkui.component.common";
+import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
 
@@ -129,36 +129,27 @@ class BooleanClass {
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: this.boo[0],
-            onChange: ((value: boolean) => {
-              this.boo[0] = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(this.boo[0], ((value) => {
+            this.boo[0] = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: this.booClass.isOn,
-            onChange: ((value: boolean) => {
-              this.booClass.isOn = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(this.booClass.isOn, ((value) => {
+            this.booClass.isOn = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: c[1],
-            onChange: ((value: boolean) => {
-              c[1] = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(c[1], ((value) => {
+            c[1] = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
