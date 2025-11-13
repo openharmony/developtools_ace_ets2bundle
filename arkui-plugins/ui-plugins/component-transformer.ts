@@ -28,6 +28,9 @@ import {
     isCustomDialogControllerOptions,
     getComponentExtendsName,
     ComponentType,
+    EntryInfo,
+    StructType,
+    StructInfo,
 } from './utils';
 import {
     backingField,
@@ -39,9 +42,9 @@ import {
     isDecoratorAnnotation,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
-import { getEntryParams } from './entry-translators/utils';
+import { getEntryParamsFromAnnotation } from './entry-translators/utils';
 import { factory as entryFactory } from './entry-translators/factory';
-import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
+import { hasDecoratorName, findDecoratorInfos } from './property-translators/utils';
 import { factory } from './ui-factory';
 import { factory as propertyFactory } from './property-translators/factory';
 import { factory as structFactory } from './struct-translators/factory';
@@ -51,7 +54,9 @@ import {
     DECORATOR_TYPE_MAP,
     NavigationNames,
     EntryWrapperNames,
+    LogType,
 } from '../common/predefines';
+import { LogCollector } from '../common/log-collector';
 import { NamespaceProcessor } from './namespace-processor';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
@@ -72,10 +77,9 @@ export interface InteropContext {
 
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    private entryNames: string[] = [];
+    private entryInfos: EntryInfo[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private projectConfig: ProjectConfig | undefined;
-    private entryRouteName: string | undefined;
     private componentType: ComponentType = {
         hasComponent: false,
         hasComponentV2: false,
@@ -93,7 +97,7 @@ export class ComponentTransformer extends AbstractVisitor {
         super.reset();
         NamespaceProcessor.getInstance().reset();
         this.scopeInfos = [];
-        this.entryNames = [];
+        this.entryInfos = [];
         this.structMembersMap = new Map();
         this.componentType = {
             hasComponent: false,
@@ -101,6 +105,42 @@ export class ComponentTransformer extends AbstractVisitor {
             hasCustomDialog: false,
             hasCustomLayout: false,
         };
+        if (LogCollector.getInstance().logInfos.length > 0) {
+            LogCollector.getInstance().emitLogInfo();
+            LogCollector.getInstance().reset();
+        }
+    }
+
+    private generateStatementsForEntry(): arkts.AstNode[] {
+        if (this.entryInfos.length === 0) {
+            return [];
+        }
+        this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
+        if (this.entryInfos.length > 1) {
+            this.entryInfos.forEach((info) => {
+                LogCollector.getInstance().collectLogInfo({
+                    node: info.annotation,
+                    message: `A page can't contain more than one '@Entry' annotation.`,
+                    level: LogType.ERROR,
+                });
+            });
+            return [];
+        }
+        const { className, annotation, definition } = this.entryInfos.at(0)!;
+        const { storage, useSharedStorage, routeName } = getEntryParamsFromAnnotation(annotation);
+        let entryRouteName: string | undefined;
+        entryFactory.transformStorageParams(storage, useSharedStorage, definition);
+        if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
+            entryRouteName = routeName.value.str;
+        }
+        const updateStatements: arkts.AstNode[] = [];
+        entryFactory.createAndInsertEntryPointImport(this.program);
+        updateStatements.push(entryFactory.generateEntryWrapper(className));
+        updateStatements.push(
+            entryFactory.callRegisterNamedRouter(entryRouteName, this.projectConfig, this.program?.absName)
+        );
+        this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
+        return updateStatements;
     }
 
     enterStruct(node: arkts.StructDeclaration): void {
@@ -146,29 +186,15 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         if (
             this.isExternal &&
-            this.entryNames.length === 0 &&
+            this.entryInfos.length === 0 &&
             NamespaceProcessor.getInstance().totalInterfacesCnt === 0
         ) {
             return node;
         }
-
         this.insertComponentImport();
-
-        const updateStatements: arkts.AstNode[] = [];
-
-        if (this.entryNames.length > 0) {
-            entryFactory.createAndInsertEntryPointImport(this.program);
-            // normally, we should only have at most one @Entry component in a single file.
-            // probably need to handle error message here.
-            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, CustomComponentNames.PAGE_LIFE_CYCLE);
-            updateStatements.push(...this.entryNames.map(entryFactory.generateEntryWrapper));
-            updateStatements.push(
-                entryFactory.callRegisterNamedRouter(this.entryRouteName, this.projectConfig, this.program?.absName)
-            );
-            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
-        }
+        const updateStatements = this.generateStatementsForEntry();
         if (updateStatements.length > 0) {
-            return arkts.factory.updateEtsScript(node, [...node.statements, ...updateStatements]);
+            return arkts.factory.updateEtsScript(node, collect(node.statements, updateStatements));
         }
         return node;
     }
@@ -260,6 +286,17 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className || scopeInfo?.name !== className) {
             return node;
         }
+        if (scopeInfo.type === StructType.INVALID_STRUCT) {
+            LogCollector.getInstance().collectLogInfo({
+                node: node,
+                message: `Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${className}'.`,
+                level: LogType.ERROR,
+            });
+            return node;
+        }
+        if (scopeInfo.type === StructType.CUSTOM_COMPONENT_DECL) {
+            return node;
+        }
         if (arkts.isStructDeclaration(node)) {
             this.collectComponentMembers(node, className);
         }
@@ -272,18 +309,14 @@ export class ComponentTransformer extends AbstractVisitor {
         const definition: arkts.ClassDefinition = node.definition!;
         const newDefinitionBody: arkts.AstNode[] = [];
         if (!!scopeInfo.annotations?.entry) {
-            this.entryNames.push(className);
-            const { storage, useSharedStorage, routeName } = getEntryParams(definition);
-            entryFactory.transformStorageParams(storage, useSharedStorage, definition);
-            if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
-                this.entryRouteName = routeName.value.str;
-            }
+            this.entryInfos.push({ className, annotation: scopeInfo.annotations.entry, definition });
         }
         const newDefinition: arkts.ClassDefinition = this.createNewDefinition(
             node,
             className,
             definition,
-            newDefinitionBody
+            newDefinitionBody,
+            scopeInfo
         );
 
         if (arkts.isStructDeclaration(node)) {
@@ -302,7 +335,8 @@ export class ComponentTransformer extends AbstractVisitor {
         node: arkts.ClassDeclaration | arkts.StructDeclaration,
         className: string,
         definition: arkts.ClassDefinition,
-        newDefinitionBody: arkts.AstNode[]
+        newDefinitionBody: arkts.AstNode[],
+        scopeInfo: StructInfo
     ): arkts.ClassDefinition {
         const staticMethodBody: arkts.AstNode[] = [];
         const hasExportFlag =
@@ -314,14 +348,13 @@ export class ComponentTransformer extends AbstractVisitor {
                 staticMethodBody.push(buildCompatibleNode);
             }
         }
-        const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
-        const extendsName: string = getComponentExtendsName(scopeInfo.annotations, this.componentType);
+        const extendsName: string = getComponentExtendsName(scopeInfo.annotations!, this.componentType);
         return arkts.factory
             .createClassDefinition(
                 definition.ident,
                 undefined,
                 undefined, // superTypeParams doen't work
-                [...definition.implements, ...factory.generateImplementsForStruct(scopeInfo.annotations)],
+                collect(definition.implements, factory.generateImplementsForStruct(scopeInfo.annotations!)),
                 undefined,
                 arkts.factory.createTypeReference(
                     arkts.factory.createTypeReferencePart(
@@ -334,13 +367,13 @@ export class ComponentTransformer extends AbstractVisitor {
                         ])
                     )
                 ),
-                [
-                    ...newDefinitionBody,
-                    ...definition.body.map((st: arkts.AstNode) =>
+                collect(
+                    newDefinitionBody,
+                    definition.body.map((st: arkts.AstNode) =>
                         factory.PreprocessClassPropertyModifier(st, scopeInfo.isDecl)
                     ),
-                    ...staticMethodBody,
-                ],
+                    staticMethodBody,
+                ),
                 definition.modifiers,
                 arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
             )

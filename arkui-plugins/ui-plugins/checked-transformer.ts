@@ -38,6 +38,7 @@ import {
     CustomDialogNames,
     isCustomComponentClass,
     isSpecificNewClass,
+    StructType,
 } from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
 import { NormalClassInfo, RecordInfo } from '../collectors/ui-collectors/records';
@@ -98,7 +99,7 @@ export class CheckedTransformer extends AbstractVisitor {
     enter(node: arkts.AstNode): void {
         if (arkts.isClassDeclaration(node) && !!node.definition && node.definition.body.length > 0) {
             const customComponentInfo = collectCustomComponentScopeInfo(node);
-            if (!!customComponentInfo) {
+            if (!!customComponentInfo && customComponentInfo.type !== StructType.INVALID_STRUCT) {
                 this.scope.customComponents.push(customComponentInfo);
             }
         }

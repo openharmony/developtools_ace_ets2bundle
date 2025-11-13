@@ -26,7 +26,7 @@ import {
     removeDecorator,
     removeImplementProperty,
 } from './utils';
-import { CustomComponentInfo, ClassInfo } from '../utils';
+import { StructInfo, ClassInfo } from '../utils';
 import {
     CustomComponentNames,
     DecoratorNames,
@@ -252,11 +252,11 @@ export abstract class BasePropertyTranslator {
 }
 
 export interface PropertyTranslatorOptions extends BasePropertyTranslatorOptions {
-    structInfo: CustomComponentInfo;
+    structInfo: StructInfo;
 }
 
 export abstract class PropertyTranslator extends BasePropertyTranslator {
-    protected structInfo: CustomComponentInfo;
+    protected structInfo: StructInfo;
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
@@ -264,7 +264,7 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
         this.checkObservedWhenInterop(this.property, this.structInfo);
     }
 
-    checkObservedWhenInterop(property: arkts.ClassProperty, structInfo: CustomComponentInfo): void {
+    checkObservedWhenInterop(property: arkts.ClassProperty, structInfo: StructInfo): void {
         const hasComponent = !!structInfo.annotations.component;
         const hasComponentV2 = !!structInfo.annotations.componentV2;
         this._checkObservedWhenInterop(property, hasComponent, hasComponentV2);

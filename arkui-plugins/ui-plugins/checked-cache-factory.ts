@@ -89,7 +89,6 @@ import {
     InterfacePropertyCachedTranslator,
     PropertyCachedTranslator,
 } from './property-translators/base';
-import { StructType } from './struct-translators/utils';
 import {
     classifyObservedClassPropertyFromInfo,
     classifyPropertyFromInfo,
@@ -100,6 +99,7 @@ import { ConditionScopeFactory } from './condition-scope-translators/condition-s
 import { generateBuilderCompatible, insertCompatibleImport } from './interop/builder-interop';
 import { insertInteropComponentImports } from './interop/utils';
 import { generateArkUICompatible } from './interop/interop';
+import { StructType } from './utils';
 
 export class RewriteFactory {
     /**

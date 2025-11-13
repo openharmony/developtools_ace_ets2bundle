@@ -16,7 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
-import { CustomComponentInfo, CustomComponentNames, CustomDialogNames, isKnownMethodDefinition } from '../utils';
+import { CustomComponentDeclInfo, CustomComponentNames, CustomDialogNames, isKnownMethodDefinition, StructInfo } from '../utils';
 import { matchPrefix } from '../../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
@@ -25,8 +25,6 @@ import {
     DefaultConfiguration,
     LogType,
     RESOURCE_TYPE,
-    InnerComponentNames,
-    ARKUI_FOREACH_SOURCE_NAME,
     DecoratorNames,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
@@ -34,20 +32,21 @@ import { ProjectConfig, ResourceInfo, ResourceList, ResourceMap } from '../../co
 import { LogCollector } from '../../common/log-collector';
 import { hasDecorator } from '../property-translators/utils';
 
-export enum StructType {
-    STRUCT,
-    CUSTOM_COMPONENT_DECL,
-}
-
 export type ScopeInfoCollection = {
     customComponents: CustomComponentScopeInfo[];
 };
 
-export type CustomComponentScopeInfo = CustomComponentInfo & {
+interface BaseCustomComponentScopeInfo {
     hasInitializeStruct?: boolean;
     hasUpdateStruct?: boolean;
     hasReusableRebind?: boolean;
-};
+}
+
+export interface StructScopeInfo extends StructInfo, BaseCustomComponentScopeInfo {}
+
+export interface CustomComponentDeclScopeInfo extends CustomComponentDeclInfo, BaseCustomComponentScopeInfo {}
+
+export type CustomComponentScopeInfo = StructScopeInfo | CustomComponentDeclScopeInfo;
 
 export interface LoaderJson {
     hspResourcesMap: Record<string, string>;

@@ -148,13 +148,41 @@ export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, prope
 }
 
 // CUSTOM COMPONENT
-export type CustomComponentInfo = {
-    name: string;
-    isDecl: boolean;
-    annotations: CustomComponentAnontations;
-};
+export enum StructType {
+    STRUCT,
+    INVALID_STRUCT,
+    CUSTOM_COMPONENT_DECL,
+}
 
-export type CustomComponentAnontations = {
+interface BaseStructInfo {
+  type: StructType;
+  name: string;
+  isDecl: boolean;
+}
+
+export interface StructInfo extends BaseStructInfo {
+  type: StructType.STRUCT;
+  annotations: CustomComponentAnnotations;
+}
+
+export interface InvalidStructInfo extends BaseStructInfo {
+  type: StructType.INVALID_STRUCT;
+  // No annotations field for invalid structs
+}
+
+export interface CustomComponentDeclInfo extends BaseStructInfo {
+  type: StructType.CUSTOM_COMPONENT_DECL;
+}
+
+export type CustomComponentInfo = StructInfo | InvalidStructInfo | CustomComponentDeclInfo;
+
+export type EntryInfo = {
+    className: string;
+    annotation: arkts.AnnotationUsage;
+    definition: arkts.ClassDefinition;
+}
+
+export type CustomComponentAnnotations = {
     component?: arkts.AnnotationUsage;
     componentV2?: arkts.AnnotationUsage;
     entry?: arkts.AnnotationUsage;
@@ -219,15 +247,16 @@ export function collectCustomComponentScopeInfo(
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClassDecl = !isStruct && isDecl;
     const shouldIgnoreDecl = isStruct || isDecl;
+    const name: string = definition.ident.name;
     if (
         isCustomComponentClassDecl &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME &&
-        definition.ident.name !== CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
+        name !== CustomComponentNames.COMPONENT_CLASS_NAME &&
+        name !== CustomComponentNames.COMPONENT_V2_CLASS_NAME &&
+        name !== CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
     ) {
         return undefined;
     }
-    let annotations: CustomComponentAnontations = {};
+    let annotations: CustomComponentAnnotations = {};
     if (!isCustomComponentClassDecl) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
@@ -246,14 +275,20 @@ export function collectCustomComponentScopeInfo(
             };
         }
         if (!isCustomComponent) {
-            return undefined;
+            return { type: StructType.INVALID_STRUCT, name, isDecl };
         }
-    }
+        return {
+            type: StructType.STRUCT,
+            name,
+            isDecl,
+            annotations: annotations as CustomComponentAnnotations,
+        };
+    } 
     return {
-        name: definition.ident.name,
+        type: StructType.CUSTOM_COMPONENT_DECL,
+        name,
         isDecl,
-        annotations: annotations as CustomComponentAnontations,
-    };
+    }
 }
 
 export function getAnnotationInfoForStruct(
@@ -351,7 +386,7 @@ export function isCustomDialogControllerOptions(
     );
 }
 
-export function getComponentExtendsName(annotations: CustomComponentAnontations, componentType: ComponentType): string {
+export function getComponentExtendsName(annotations: CustomComponentAnnotations, componentType: ComponentType): string {
     if (!!annotations.customLayout) {
         componentType.hasCustomLayout ||= true;
     }

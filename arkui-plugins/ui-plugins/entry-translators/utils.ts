@@ -62,18 +62,28 @@ export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDec
  * get annotation's properties in `@Entry()`: storage, useSharedStorage, routeName.
  *
  * @param node class definition node
+ * @deprecated
  */
 export function getEntryParams(node: arkts.ClassDefinition): Record<EntryParamNames, arkts.ClassProperty | undefined> {
     const annotation = node.annotations.find((anno) => isAnnotation(anno, StructDecoratorNames.ENTRY));
+    return getEntryParamsFromAnnotation(annotation);
+}
+
+/**
+ * get annotation's properties in `@Entry()`: storage, useSharedStorage, routeName.
+ *
+ * @param node `@Entry` annotation, expected from a class defintion.
+ */
+export function getEntryParamsFromAnnotation(node: arkts.AnnotationUsage | undefined): Record<EntryParamNames, arkts.ClassProperty | undefined> {
     const result = {
         storage: undefined,
         useSharedStorage: undefined,
         routeName: undefined,
     } as Record<EntryParamNames, arkts.ClassProperty | undefined>;
-    if (!annotation || !annotation.properties) {
+    if (!node || !node.properties) {
         return result;
     }
-    for (const prop of annotation.properties) {
+    for (const prop of node.properties) {
         if (arkts.isClassProperty(prop) && prop.key && arkts.isIdentifier(prop.key)) {
             const name = prop.key.name as EntryParamNames;
             if (name in result) {
