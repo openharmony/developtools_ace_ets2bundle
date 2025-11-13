@@ -13,40 +13,40 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 import { __memo_context_type, __memo_id_type } from 'arkui.incremental.runtime.state';
 
 export declare function __context(): __memo_context_type
 export declare function __id(): __memo_id_type
-type MemoType = @memo () => void
+type MemoType = @Memo () => void
 
 class Test {
-    @memo void_method(): void {
+    @Memo void_method(): void {
 	}
 
-    @memo internal_call() {
+    @Memo internal_call() {
 		this.void_method()
 	}
 
-    @memo method_with_internals() {
+    @Memo method_with_internals() {
 		__context()
 		__id()
 	}
 
     memo_lambda() {
-		@memo () => {
+		@Memo () => {
 			
 		}
 	}
 
-	@memo memo_variables() {
-		@memo const f = (): number => {
+	@Memo memo_variables() {
+		@Memo const f = (): number => {
 			return 123
 		}, g = (x: number): number => {
 			return 123 + x
 		}
 
-		const h = @memo (): number => {
+		const h = @Memo (): number => {
 			return 1
 		}
 
@@ -55,7 +55,7 @@ class Test {
 		h()
 	}
 
-    @memo args_with_default_values(
+    @Memo args_with_default_values(
 		arg1: int = 10,
 		arg2: () => int = () => { return 20 },
 		arg3: int = arg1,
@@ -65,7 +65,7 @@ class Test {
 		console.log(arg2())
 	}
 
-	@memo optional_args(
+	@Memo optional_args(
 		arg1?: int,
 		arg2?: () => int
 	) {
@@ -74,7 +74,7 @@ class Test {
 		console.log(arg2?.())
 	}
 
-    @memo type_alias(
+    @Memo type_alias(
 		arg: MemoType
 	) {
 		arg()

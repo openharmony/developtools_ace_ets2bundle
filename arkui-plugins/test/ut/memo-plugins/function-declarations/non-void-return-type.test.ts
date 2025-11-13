@@ -35,28 +35,28 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@memo() function funcNum(__memo_context: __memo_context_type, __memo_id: __memo_id_type): number {
+@Memo() function funcNum(__memo_context: __memo_context_type, __memo_id: __memo_id_type): number {
     const __memo_scope = __memo_context.scope<number>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
     return __memo_scope.recache(1);
 }
-@memo() function funcStr(__memo_context: __memo_context_type, __memo_id: __memo_id_type): string {
+@Memo() function funcStr(__memo_context: __memo_context_type, __memo_id: __memo_id_type): string {
     const __memo_scope = __memo_context.scope<string>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
     return __memo_scope.recache(\"1\");
 }
-@memo() function funcBool(__memo_context: __memo_context_type, __memo_id: __memo_id_type): boolean {
+@Memo() function funcBool(__memo_context: __memo_context_type, __memo_id: __memo_id_type): boolean {
     const __memo_scope = __memo_context.scope<boolean>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
     return __memo_scope.recache(false);
 }
-@memo() function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): A {
+@Memo() function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): A {
     const __memo_scope = __memo_context.scope<A>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
@@ -65,21 +65,21 @@ function main() {}
         str: \"1\",
     });
 }
-@memo() function funcB(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
+@Memo() function funcB(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
     const __memo_scope = __memo_context.scope<B>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
     return __memo_scope.recache(((str: string) => {}));
 }
-@memo() function funcC(__memo_context: __memo_context_type, __memo_id: __memo_id_type): C {
+@Memo() function funcC(__memo_context: __memo_context_type, __memo_id: __memo_id_type): C {
     const __memo_scope = __memo_context.scope<C>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
     return __memo_scope.recache(new C(\"1\"));
 }
-@memo() function funcD(__memo_context: __memo_context_type, __memo_id: __memo_id_type): (()=> void) {
+@Memo() function funcD(__memo_context: __memo_context_type, __memo_id: __memo_id_type): (()=> void) {
     const __memo_scope = __memo_context.scope<(()=> void)>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;

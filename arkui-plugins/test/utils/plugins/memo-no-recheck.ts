@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK } from '../../../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK, NodeCacheNames } from '../../../common/predefines';
 import { PositionalIdTracker } from '../../../memo-plugins/utils';
 import { ParameterTransformer } from '../../../memo-plugins/parameter-transformer';
 import { ReturnTransformer } from '../../../memo-plugins/return-transformer';
@@ -51,7 +51,7 @@ export const memoNoRecheck: Plugins = {
                 returnTransformer,
                 signatureTransformer,
                 internalsTransformer,
-                useCache: arkts.NodeCache.getInstance().isCollected()
+                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected()
             });
             const skipPrefixNames = isFrameworkMode
                 ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -64,7 +64,7 @@ export const memoNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            arkts.NodeCache.getInstance().clear();
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
             script = program.astNode;
             return script;
         }

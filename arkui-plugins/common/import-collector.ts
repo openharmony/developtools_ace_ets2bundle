@@ -58,10 +58,14 @@ export class ImportCollector {
     }
 
     reset(): void {
-        this.importInfos = [];
-        this.imported.clear();
         this.localMap.clear();
         this.sourceMap.clear();
+        this.clearImports();
+    }
+
+    clearImports(): void {
+        this.importInfos = [];
+        this.imported.clear();
     }
 
     collectSource(imported: string, source: string): void {

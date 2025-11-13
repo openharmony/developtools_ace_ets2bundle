@@ -21,7 +21,6 @@ import {
     EtsScript,
     ExpressionStatement,
     FunctionDeclaration,
-    IfStatement,
     MethodDefinition,
     StructDeclaration,
     VariableDeclaration,
@@ -45,7 +44,7 @@ export function isFunctionDeclaration(node: AstNode): node is FunctionDeclaratio
 }
 
 export function isMethodDefinition(node: AstNode): node is MethodDefinition {
-    return global.es2panda._IsMethodDefinition(node.peer);
+    return node instanceof MethodDefinition;
 }
 
 export function isEtsScript(node: AstNode): node is EtsScript {
@@ -70,10 +69,6 @@ export function isEtsParameterExpression(node: AstNode): node is ETSParameterExp
 
 export function isVariableDeclaration(node: AstNode): node is VariableDeclaration {
     return node instanceof VariableDeclaration;
-}
-
-export function isIfStatement(node: AstNode): node is IfStatement {
-    return node instanceof IfStatement;
 }
 
 export function isVariableDeclarator(node: AstNode): node is VariableDeclarator {

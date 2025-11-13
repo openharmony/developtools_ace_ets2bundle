@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -132,8 +132,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor() {}
-  
   public get trackA(): string {
     this.conditionalAddRef(this.__meta_trackA);
     return this.__backing_trackA;
@@ -146,7 +144,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.executeOnSubscribingWatches("trackA");
     }
   }
+
+  public constructor() {}
+
+  static {
   
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
@@ -284,7 +287,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -311,10 +317,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() public build() {}
   
   public constructor() {}
-  
-}
 
-@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
+  static {
+  
+  }
+}
 
 class __EntryWrapper extends EntryPoint {
   @Memo() public entry(): void {
@@ -328,39 +335,39 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'stateOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)', [dumpAnnotation('State'), dumpAnnotation('Watch', { value: 'stateOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_statevar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propvar', '(string | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' }), dumpAnnotation('PropRef')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)', [dumpAnnotation('Watch', { value: 'linkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('Link'), dumpAnnotation('Watch', { value: 'linkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagelinkvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagelinkvar', '(IStorageLinkDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storageLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagelinkvar', '(string | undefined)', [dumpAnnotation('StorageLink', { value: 'prop1' }), dumpAnnotation('Watch', { value: 'storageLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagelinkvar', '(IStorageLinkDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagelinkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagepropvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagepropvar', '(string | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' }), dumpAnnotation('StoragePropRef', { value: 'prop2' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagepropvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)', [dumpAnnotation('Watch', { value: 'objectLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)', [dumpAnnotation('ObjectLink'), dumpAnnotation('Watch', { value: 'objectLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Provide', { alias: "providevar", allowOverride: false }), dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" }), dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
@@ -372,7 +379,7 @@ function testWatchTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic watch transform',
-    [watchTransform, uiNoRecheck, recheck],
+    [watchTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testWatchTransformer],
     },

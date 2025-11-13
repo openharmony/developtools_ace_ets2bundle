@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
-@memo
+@Memo
 function func(): void {
   return;
 }

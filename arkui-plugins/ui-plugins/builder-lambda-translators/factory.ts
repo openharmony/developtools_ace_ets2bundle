@@ -46,15 +46,13 @@ import {
     checkIsWithInIfConditionScope,
     BuilderLambdaConditionBranchInfo,
     BuilderLambdaChainingCallArgInfo,
-    getArgumentType,
     BuilderLambdaStyleBodyInfo,
     getDeclaredSetAttribtueMethodName,
-    checkIsTrailingLambdaInLastParam,
     getTransformedComponentName,
     flatObjectExpressionToEntries,
     OptionsPropertyInfo,
 } from './utils';
-import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
+import { checkIsNameStartWithBackingField, hasDecorator } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
 import { BindableFactory } from './bindable-factory';
 import { factory as TypeFactory } from '../type-translators/factory';
@@ -64,8 +62,8 @@ import {
     AnimationNames,
     ARKUI_BUILDER_SOURCE_NAME,
     ConditionNames,
-    DecoratorIntrinsicNames,
     DecoratorNames,
+    NodeCacheNames,
     StateManagementTypes,
     TypeNames,
 } from '../../common/predefines';
@@ -81,9 +79,10 @@ import {
 } from '../../collectors/memo-collectors/utils';
 import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
-import { ConditionBreakCache } from './cache/conditionBreakCache';
+import { ConditionBreakCache } from '../condition-scope-translators/cache/conditionBreakCache';
 import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttributeCache';
-import { isForEach } from './utils';
+import { checkIsTrailingLambdaInLastParam, isForEach } from '../../collectors/ui-collectors/records';
+import { InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 
 export class factory {
     /**
@@ -196,7 +195,7 @@ export class factory {
         let lambdaBody: arkts.Identifier | arkts.CallExpression = arkts.factory.createIdentifier(
             BuilderLambdaNames.STYLE_ARROW_PARAM_NAME
         );
-        arkts.NodeCache.getInstance().collect(lambdaBody);
+        InitialBuilderLambdaBodyCache.getInstance().collect({ node: lambdaBody });
         const methodName = arkts.factory.createIdentifier(getDeclaredSetAttribtueMethodName(name));
         if (!hasReceiver) {
             lambdaBodyInfo.lambdaBody = arkts.factory.createCallExpression(
@@ -251,7 +250,7 @@ export class factory {
         );
 
         const returnStatement = arkts.factory.createReturnStatement();
-        arkts.NodeCache.getInstance().collect(returnStatement);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnStatement);
         const body: arkts.BlockStatement = arkts.factory.createBlock([
             arkts.factory.createExpressionStatement(lambdaBody),
             returnStatement,
@@ -300,7 +299,7 @@ export class factory {
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, optionalFuncType),
             undefined
         );
-        arkts.NodeCache.getInstance().collect(parameter);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter);
         return parameter;
     }
 
@@ -325,7 +324,7 @@ export class factory {
                 undefined
             )
             .setOptional(true);
-        arkts.NodeCache.getInstance().collect(parameter);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter);
         return parameter;
     }
 
@@ -400,17 +399,18 @@ export class factory {
         if (!key || !arkts.isIdentifier(key) || !value) {
             return [prop];
         }
-        const propertyDecl: arkts.AstNode | undefined = arkts.getDecl(key);
+        const propertyDecl: arkts.AstNode | undefined = arkts.getPeerPropertyDecl(prop.peer);
         if (!propertyDecl || !arkts.isMethodDefinition(propertyDecl)) {
             return [prop];
         }
+        const isNotBacking: boolean = !checkIsNameStartWithBackingField(propertyDecl.name);
         let isBuilderParam: boolean = false;
-        let isLinkIntrinsic: boolean = false;
+        let isLink: boolean = false;
         propertyDecl.scriptFunction.annotations.forEach((anno) => {
             isBuilderParam ||= isDecoratorAnnotation(anno, DecoratorNames.BUILDER_PARAM);
-            isLinkIntrinsic ||= isDecoratorIntrinsicAnnotation(anno, DecoratorIntrinsicNames.LINK);
+            isLink ||= isDecoratorAnnotation(anno, DecoratorNames.LINK);
         });
-        return factory.updateSpecificProperties(prop, key, value, { isBuilderParam, isLinkIntrinsic }, declInfo);
+        return factory.updateSpecificProperties(prop, key, value, { isBuilderParam, isLink, isNotBacking }, declInfo);
     }
 
     static updateSpecificProperties(
@@ -428,7 +428,8 @@ export class factory {
             addMemoAnnotation(value);
             newProperty = prop;
         } else if (
-            propertyInfo.isLinkIntrinsic &&
+            propertyInfo.isLink &&
+            propertyInfo.isNotBacking &&
             arkts.isMemberExpression(value) &&
             arkts.isThisExpression(value.object) &&
             arkts.isIdentifier(value.property)
@@ -658,11 +659,9 @@ export class factory {
             const alternate = !!statement.alternate
                 ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap, stopAtBuilderLambda)
                 : statement.alternate;
-            const consequence = this.updateIfElseContentBodyInBuilderLambda(
-                statement.consequent,
-                shouldWrap,
-                stopAtBuilderLambda
-            );
+            const consequence = !!statement.consequent
+                ? this.updateIfElseContentBodyInBuilderLambda(statement.consequent, shouldWrap, stopAtBuilderLambda)
+                : undefined;
             const newStatement = arkts.factory.updateIfStatement(statement, statement.test, consequence!, alternate);
             return !shouldWrap || checkIsWithInIfConditionScope(statement)
                 ? newStatement
@@ -767,7 +766,7 @@ export class factory {
         const newCall = arkts.factory.createCallExpression(arkts.factory.createIdentifier(condition), undefined, [
             contentArg,
         ]);
-        arkts.NodeCache.getInstance().collect(newCall);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newCall);
         ImportCollector.getInstance().collectSource(condition, ARKUI_BUILDER_SOURCE_NAME);
         ImportCollector.getInstance().collectImport(condition);
         return arkts.factory.createExpressionStatement(newCall);
@@ -863,7 +862,7 @@ export class factory {
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
             replaceBuilderLambdaDeclMethodName(nameNode.name)
         );
-        arkts.NodeCache.getInstance().collect(newNode);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
     }
 
@@ -951,7 +950,8 @@ export class factory {
         lambdaBodyInfo.lambdaBody = lambdaBody;
         const args: (arkts.AstNode | undefined)[] = this.generateArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
         const newNode = arkts.factory.updateCallExpression(node, replace, leaf.typeArguments, filterDefined(args));
-        arkts.NodeCache.getInstance().collect(newNode);
+        InitialBuilderLambdaBodyCache.getInstance().updateAll().reset();
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
     }
 
@@ -983,7 +983,6 @@ export class factory {
             undefined
         );
         param.annotations = [annotation(DecoratorNames.BUILDER)];
-        arkts.NodeCache.getInstance().collect(param);
         const method = UIFactory.createMethodDefinition({
             key,
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
@@ -997,7 +996,8 @@ export class factory {
             },
             modifiers,
         });
-        arkts.NodeCache.getInstance().collect(method);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(param);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method);
         return method;
     }
 
@@ -1021,7 +1021,10 @@ export class factory {
     /**
      * add declared set methods in `@ComponentBuilder` Attribute interface
      */
-    static addDeclaredSetMethodsInAttributeInterface(node: arkts.TSInterfaceDeclaration, componentName: string): arkts.TSInterfaceDeclaration {
+    static addDeclaredSetMethodsInAttributeInterface(
+        node: arkts.TSInterfaceDeclaration,
+        componentName: string
+    ): arkts.TSInterfaceDeclaration {
         if (!node.body) {
             return node;
         }
@@ -1163,7 +1166,7 @@ export class factory {
             modifiers,
         });
         addMemoAnnotation(newMethod.scriptFunction);
-        arkts.NodeCache.getInstance().collect(newMethod);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newMethod);
         return newMethod;
     }
 

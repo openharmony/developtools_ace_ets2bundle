@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSInterfaceHeritage extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_HERITAGE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_HERITAGE;
     }
     static createTSInterfaceHeritage(expr?: TypeNode): TSInterfaceHeritage {
         return new TSInterfaceHeritage(global.generatedEs2panda._CreateTSInterfaceHeritage(global.context, passNode(expr)))

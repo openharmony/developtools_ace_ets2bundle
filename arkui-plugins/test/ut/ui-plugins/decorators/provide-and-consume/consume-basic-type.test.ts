@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -64,19 +64,19 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 
 @Component() export interface __Options_PropParent {
   ${ignoreNewLines(`
-  conVar1?: string;
+  @Consume() conVar1?: string;
   @Consume() __backing_conVar1?: string;
   __options_has_conVar1?: boolean;
-  conVar2?: number;
+  @Consume() conVar2?: number;
   @Consume() __backing_conVar2?: number;
   __options_has_conVar2?: boolean;
-  conVar3?: boolean;
+  @Consume() conVar3?: boolean;
   @Consume() __backing_conVar3?: boolean;
   __options_has_conVar3?: boolean;
-  conVar4?: undefined;
+  @Consume() conVar4?: undefined;
   @Consume() __backing_conVar4?: undefined;
   __options_has_conVar4?: boolean;
-  conVar5?: null;
+  @Consume() conVar5?: null;
   @Consume() __backing_conVar5?: null;
   __options_has_conVar5?: boolean;
   `)}
@@ -165,27 +165,30 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar2', '(IConsumeDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(boolean | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar3', '(IConsumeDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(undefined | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar4', '(IConsumeDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(null | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar5', '(IConsumeDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar5', '(boolean | undefined)')}
   
@@ -202,10 +205,10 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Consume decorated variables transformation',
-    [parsedTransform, structNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
-        'checked:struct-no-recheck': [testCheckedTransformer],
+        'checked:ui-no-recheck': [testCheckedTransformer],
     },
     {
         stopAfter: 'checked',

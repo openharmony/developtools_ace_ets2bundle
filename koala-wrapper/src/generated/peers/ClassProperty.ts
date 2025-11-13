@@ -35,10 +35,13 @@ import { TypeNode } from "./TypeNode"
 import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ClassProperty extends ClassElement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY;
     }
     static createClassProperty(key: Expression | undefined, value: Expression | undefined, typeAnnotation: TypeNode | undefined, modifiers: Es2pandaModifierFlags, isComputed: boolean): ClassProperty {
         return new ClassProperty(global.generatedEs2panda._CreateClassProperty(global.context, passNode(key), passNode(value), passNode(typeAnnotation), modifiers, isComputed))

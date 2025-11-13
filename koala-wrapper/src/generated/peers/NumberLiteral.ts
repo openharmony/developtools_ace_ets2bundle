@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class NumberLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL;
     }
 }
 export function isNumberLiteral(node: AstNode): node is NumberLiteral {

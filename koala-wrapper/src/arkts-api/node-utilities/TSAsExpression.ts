@@ -15,7 +15,12 @@
 
 import { Expression, TSAsExpression, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSAsExpression(
     original: TSAsExpression,
@@ -31,6 +36,11 @@ export function updateTSAsExpression(
         return original;
     }
 
-    const update = updateThenAttach(TSAsExpression.updateTSAsExpression, attachModifiers);
+    const update = updateThenAttach(
+        TSAsExpression.updateTSAsExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, expression, typeAnnotation, isConst);
 }

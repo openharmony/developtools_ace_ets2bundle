@@ -18,8 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { ignoreNewLines } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -52,7 +53,6 @@ import { State as State } from "@ohos.arkui.stateManagement";
   }
   
   public constructor() {}
-  
 }
 
 export namespace NS1 {
@@ -77,11 +77,10 @@ export namespace NS1 {
     }
     
     public constructor() {}
-    
+
     public static _buildCompatibleNode(options: __Options_Child): void {
       return;
     }
-    
   }
   
   export namespace NS2 {
@@ -94,7 +93,6 @@ export namespace NS1 {
       }
       
       public constructor() {}
-      
     }
     
     @Component() export interface __Options_NS2_struct {
@@ -106,7 +104,12 @@ export namespace NS1 {
     let s2 = "world"
   }
   @Component() export interface __Options_Child {
-    propVar?: string;@State() __backing_propVar?: string;__options_has_propVar?: boolean;
+    ${ignoreNewLines(`
+    @State() propVar?: string;
+    @State() __backing_propVar?: string;
+    __options_has_propVar?: boolean;
+
+    `)}
   }
   
 }
@@ -121,12 +124,11 @@ function testParsedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test namespace component transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform],
     {
         'parsed': [testParsedTransformer],
     },
     {
-        stopAfter: 'parsed',
-        tracing: { externalSourceNames: ['arkui.component.namespace'] }
+        stopAfter: 'checked',
     }
 );

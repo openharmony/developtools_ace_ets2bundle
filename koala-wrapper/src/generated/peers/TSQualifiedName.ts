@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { Identifier } from "./Identifier"
 export class TSQualifiedName extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_QUALIFIED_NAME)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_QUALIFIED_NAME;
     }
     static createTSQualifiedName(left?: Expression, right?: Identifier): TSQualifiedName {
         return new TSQualifiedName(global.generatedEs2panda._CreateTSQualifiedName(global.context, passNode(left), passNode(right)))

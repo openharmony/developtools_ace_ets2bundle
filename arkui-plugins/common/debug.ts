@@ -19,11 +19,16 @@ import * as arkts from '@koalaui/libarkts';
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
+const isPerformanceDetail: boolean = false;
+const isNodeCacheLogPerformance: boolean = false;
 const enableMemoryTracker: boolean = false;
 const enablePhasesDebug: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
 arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
 arkts.Debugger.getInstance().enablePhasesDebug(enablePhasesDebug);
+arkts.Performance.getInstance().skip(!isPerformance).skipDetail(!isPerformanceDetail);
+arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
+arkts.NodeCacheFactory.getInstance().shouldPerfLog(isNodeCacheLogPerformance);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }
@@ -48,35 +53,11 @@ export function debugDumpAstNode(
     node: arkts.AstNode,
     fileName: string,
     cachePath: string | undefined,
-    programFileName: string): void {
-    if (!isDebugDump) {
-        return;
-    } 
-    const currentDirectory = process.cwd();
-    const modifiedFileName = programFileName.replaceAll('.', '_');
-    const outputDir: string = cachePath
-        ? path.resolve(currentDirectory, cachePath, modifiedFileName)
-        : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
-    const filePath: string = path.resolve(outputDir, fileName);
-    if (!fs.existsSync(outputDir)) {
-        mkDir(outputDir);
-    }
-    try {
-        fs.writeFileSync(filePath, node.dumpSrc(), 'utf8');
-    } catch (error) {
-        console.error('文件操作失败:', error);
-    }
-}
-
-/** @deprecated */
-export function debugDump(
-    content: string,
-    fileName: string,
-    isInit: boolean,
-    cachePath: string | undefined,
     programFileName: string
 ): void {
-    if (!isDebugDump) return;
+    if (!isDebugDump) {
+        return;
+    }
     const currentDirectory = process.cwd();
     const modifiedFileName = programFileName.replaceAll('.', '_');
     const outputDir: string = cachePath
@@ -87,16 +68,7 @@ export function debugDump(
         mkDir(outputDir);
     }
     try {
-        if (!isInit && fs.existsSync(filePath)) {
-            const existingContent = fs.readFileSync(filePath, 'utf8');
-            const newContent =
-                existingContent && !existingContent.endsWith('\n')
-                    ? existingContent + '\n' + content
-                    : existingContent + content;
-            fs.writeFileSync(filePath, newContent, 'utf8');
-        } else {
-            fs.writeFileSync(filePath, content, 'utf8');
-        }
+        fs.writeFileSync(filePath, node.dumpSrc(), 'utf8');
     } catch (error) {
         console.error('文件操作失败:', error);
     }
@@ -109,4 +81,12 @@ export function debugLog(message?: any, ...optionalParams: any[]): void {
 
 export function getDumpFileName(state: number, prefix: string, index: number | undefined, suffix: string): string {
     return `${state}_${prefix}_${index ?? ''}_${suffix}.sts`;
+}
+
+export function getPerfName(level: number[], name: string): string {
+    if (!isPerformanceDetail) {
+        return '';
+    }
+    const levelName: string = level.join('.');
+    return [levelName, name].join(' --- ');
 }

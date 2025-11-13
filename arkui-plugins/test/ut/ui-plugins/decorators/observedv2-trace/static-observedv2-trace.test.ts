@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -87,9 +87,6 @@ function main() {}
   
   @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  static {
-    
-  }
   public static get traceB(): number {
     CC.__meta_traceB.addRef();
     return UIUtils.makeObserved(CC.__backing_traceB);
@@ -104,6 +101,9 @@ function main() {}
   
   public constructor() {}
   
+  static {
+    
+  }
 }
 `;
 
@@ -113,7 +113,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test static @Trace variable case',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

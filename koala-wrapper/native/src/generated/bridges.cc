@@ -405,6 +405,16 @@ KNativePointer impl_IfStatementTest(KNativePointer context, KNativePointer recei
 }
 KOALA_INTEROP_2(IfStatementTest, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_IfStatementSetTest(KNativePointer context, KNativePointer receiver, KNativePointer test)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _test = reinterpret_cast<es2panda_AstNode*>(test);
+    GetImpl()->IfStatementSetTest(_context, _receiver, _test);
+    return ;
+}
+KOALA_INTEROP_V3(IfStatementSetTest, KNativePointer, KNativePointer, KNativePointer);
+
 KNativePointer impl_IfStatementConsequentConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -423,6 +433,16 @@ KNativePointer impl_IfStatementConsequent(KNativePointer context, KNativePointer
 }
 KOALA_INTEROP_2(IfStatementConsequent, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_IfStatementSetConsequent(KNativePointer context, KNativePointer receiver, KNativePointer consequent)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _consequent = reinterpret_cast<es2panda_AstNode*>(consequent);
+    GetImpl()->IfStatementSetConsequent(_context, _receiver, _consequent);
+    return ;
+}
+KOALA_INTEROP_V3(IfStatementSetConsequent, KNativePointer, KNativePointer, KNativePointer);
+
 KNativePointer impl_IfStatementAlternate(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
@@ -440,6 +460,16 @@ KNativePointer impl_IfStatementAlternateConst(KNativePointer context, KNativePoi
     return (void*)result;
 }
 KOALA_INTEROP_2(IfStatementAlternateConst, KNativePointer, KNativePointer, KNativePointer);
+
+void impl_IfStatementSetAlternate(KNativePointer context, KNativePointer receiver, KNativePointer alternate)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    const auto _alternate = reinterpret_cast<es2panda_AstNode*>(alternate);
+    GetImpl()->IfStatementSetAlternate(_context, _receiver, _alternate);
+    return ;
+}
+KOALA_INTEROP_V3(IfStatementSetAlternate, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_CreateTSConstructorType(KNativePointer context, KNativePointer signature, KBoolean abstract)
 {

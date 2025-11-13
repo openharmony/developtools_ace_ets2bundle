@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { StringLiteral } from "./StringLiteral"
 import { ExportSpecifier } from "./ExportSpecifier"
 export class ExportNamedDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_NAMED_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_NAMED_DECLARATION;
     }
     static createExportNamedDeclaration(source: StringLiteral | undefined, specifiers: readonly ExportSpecifier[]): ExportNamedDeclaration {
         return new ExportNamedDeclaration(global.generatedEs2panda._CreateExportNamedDeclaration(global.context, passNode(source), passNodeArray(specifiers), specifiers.length))

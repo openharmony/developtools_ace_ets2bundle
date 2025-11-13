@@ -13,24 +13,16 @@
  * limitations under the License.
  */
 
-
-
 import * as arkts from '@koalaui/libarkts';
-import {
-    BuilderMethodNames,
-    ESValueMethodNames,
-    InteroperAbilityNames,
-    GLOBAL_ANNOTATION_MODULE
-} from './predefines';
+import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames, GLOBAL_ANNOTATION_MODULE } from './predefines';
 import { LANGUAGE_VERSION, DecoratorNames } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
 import { BuilderLambdaNames } from '../utils';
 import { ImportCollector } from '../../common/import-collector';
 
-
 /**
- * 
- * @param result 
+ *
+ * @param result
  * @returns let result = ESValue.instantiateEmptyObject()
  */
 export function createEmptyESValue(result: string): arkts.VariableDeclaration {
@@ -52,14 +44,14 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
                     undefined,
                     undefined
                 )
-            )
+            ),
         ]
     );
 }
 
 /**
- * 
- * @param value 
+ *
+ * @param value
  * @returns ESValue.wrap(value)
  */
 export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
@@ -77,10 +69,10 @@ export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
 }
 
 /**
- * 
- * @param object 
- * @param key 
- * @param value 
+ *
+ * @param object
+ * @param key
+ * @param value
  * @returns object.setProperty(key, value)
  */
 export function setPropertyESValue(object: string, key: string, value: arkts.AstNode): arkts.ExpressionStatement {
@@ -94,19 +86,16 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
                 false
             ),
             undefined,
-            [
-                arkts.factory.createStringLiteral(key),
-                value.clone()
-            ]
+            [arkts.factory.createStringLiteral(key), value.clone()]
         )
     );
 }
 
 /**
- * 
- * @param result 
- * @param obj 
- * @param key 
+ *
+ * @param result
+ * @param obj
+ * @param key
  * @returns let result = object.getProperty(key)
  */
 export function getPropertyESValue(result: string, obj: string, key: string): arkts.VariableDeclaration {
@@ -128,13 +117,13 @@ export function getPropertyESValue(result: string, obj: string, key: string): ar
                     undefined,
                     [arkts.factory.create1StringLiteral(key)]
                 )
-            )
+            ),
         ]
     );
 }
 
 /**
- * 
+ *
  * @param {string} stateVarName - Original state variable name to be proxied.
  * @returns {string} Proxied variable name in the format: "__Proxy_{stateVarName}".
  */
@@ -144,43 +133,49 @@ export function stateProxy(stateVarName: string): string {
 
 /**
  * get elmtId
- * @returns         
+ * @returns
  *      let viewStackProcessor = global.getProperty("ViewStackProcessor");
  *      let createId = viewStackProcessor.getProperty("AllocateNewElmetIdForNextComponent");
  *      let elmtId = createId.invoke();
  */
 export function createELMTID(): arkts.Statement[] {
     const body: arkts.Statement[] = [];
-    const viewStackProcessor = getPropertyESValue('viewStackProcessor', InteroperAbilityNames.GLOBAL, 'ViewStackProcessor');
+    const viewStackProcessor = getPropertyESValue(
+        'viewStackProcessor',
+        InteroperAbilityNames.GLOBAL,
+        'ViewStackProcessor'
+    );
     body.push(viewStackProcessor);
     const createId = getPropertyESValue('createId', 'viewStackProcessor', 'AllocateNewElmetIdForNextComponent');
     body.push(createId);
     const elmtId = arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier('createId'),
-                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )]
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier('createId'),
+                        arkts.factory.createIdentifier(ESValueMethodNames.INVOKE),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    undefined
+                )
+            ),
+        ]
     );
     body.push(elmtId);
     return body;
 }
 
 /**
- * 
- * @param componentName 
+ *
+ * @param componentName
  * @returns return {
  *              component: component,
  *              name: componentName,
@@ -198,39 +193,40 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
                 arkts.Property.createProperty(
                     arkts.factory.createIdentifier('name'),
                     arkts.factory.createStringLiteral(componentName)
-                )
+                ),
             ],
             false
-        ),
+        )
     );
 }
 
 /**
- * createGlobal 
+ * createGlobal
  * @returns let global = ESValue.getGlobal();
  */
 export function createGlobal(): arkts.Statement {
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
-                    arkts.factory.createIdentifier('getGlobal'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
-            )
-        )]
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(InteroperAbilityNames.GLOBAL),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+                        arkts.factory.createIdentifier('getGlobal'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    undefined
+                )
+            ),
+        ]
     );
 }
-
 
 export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
     const property = node.property;
@@ -249,20 +245,32 @@ export function isArkTS1_1(node: arkts.MemberExpression): boolean {
     return true;
 }
 
+export function insertInteropComponentImports(): void {
+    ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
+    ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
+    ImportCollector.getInstance().collectSource(
+        InteroperAbilityNames.GETCOMPATIBLESTATE,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
+    ImportCollector.getInstance().collectSource(
+        BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
+    ImportCollector.getInstance().collectSource(
+        BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
+}
+
 export function isInteropComponent(node: arkts.CallExpression): boolean {
     if (
         arkts.isMemberExpression(node.expression) &&
         isInstantiateImpl(node.expression) &&
         isArkTS1_1(node.expression)
     ) {
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
         return true;
     }
     return false;
@@ -277,11 +285,11 @@ function isDecoratorAnnotation(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
+        const decl = arkts.getPeerIdentifierDecl(anno.expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || moduleName !== GLOBAL_ANNOTATION_MODULE) {
             return false;
         }

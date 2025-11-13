@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -51,7 +51,7 @@ import { CustomComponent as CustomComponent } from \"arkui.component.customCompo
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@Memo() function MyBuilder(): void {
+@Builder() @Memo() function MyBuilder(): void {
     ConditionScope(@Memo() (() => {
         if (true) {
             ConditionBranch(@Memo() (() => {
@@ -63,8 +63,8 @@ function main() {}
         }
     }));
 }
-@Memo() function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
-    let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((() => {
+@Builder() @Memo() function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
+    let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (() => {
         ConditionScope(@Memo() (() => {
             if (true) {
                 ConditionBranch(@Memo() (() => {
@@ -75,7 +75,7 @@ function main() {}
                 }));
             }
         }));
-    }) as (()=> void)));
+    }));
     param();
 }
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
@@ -131,11 +131,15 @@ function main() {}
         }));
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
     public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
         this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
-            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? ((() => {
+            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (@Memo() (() => {
                 ConditionScope(@Memo() (() => {
                     if (true) {
                     ConditionBranch(@Memo() (() => {
@@ -169,6 +173,10 @@ function main() {}
         }));
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_MyStruct {
 }
@@ -196,7 +204,7 @@ import { CustomComponent as CustomComponent } from \"arkui.component.customCompo
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@Builder() @Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -244,8 +252,8 @@ function main() {}
         return;
     }
 }
-@Memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
-    let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+@Builder() @Memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+    let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -292,7 +300,7 @@ function main() {}
             __memo_scope.recache();
             return;
         }
-    }) as ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)));
+}));
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -492,11 +500,15 @@ function main() {}
         }
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
     public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
-            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
                 const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
                 if (__memo_scope.unchanged) {
                     __memo_scope.cached;
@@ -602,6 +614,10 @@ function main() {}
         }
     }
     public constructor() {}
+
+    static {
+
+    }
 }
 @Component() export interface __Options_MyStruct {
 }
@@ -617,7 +633,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test conditionScope within @Builder or @BuilderParam',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

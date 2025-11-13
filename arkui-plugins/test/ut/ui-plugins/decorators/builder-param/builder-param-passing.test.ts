@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -62,6 +62,8 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
+  @Memo() public customBuilder() {}
   
   private __backing_customBuilderParam?: @Memo() (()=> void);
   
@@ -73,14 +75,15 @@ function main() {}
     this.__backing_customBuilderParam = value;
   }
   
-  @Memo() public customBuilder() {}
-  
   @Memo() public build() {
     this.customBuilderParam();
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
@@ -126,7 +129,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -159,17 +165,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
-  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-  
-  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
-    return this.__backing_customBuilderParam!;
-  }
-  
-  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
-    this.__backing_customBuilderParam = value;
-  }
-  
+
   @Memo() public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (252759234)), 0);
     if (__memo_scope.unchanged) {
@@ -180,6 +176,16 @@ function main() {}
       __memo_scope.recache();
       return;
     }
+  }
+
+  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  
+  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    return this.__backing_customBuilderParam!;
+  }
+  
+  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    this.__backing_customBuilderParam = value;
   }
   
   @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
@@ -196,7 +202,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
@@ -314,7 +323,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
@@ -338,7 +350,7 @@ function testMemoCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder param variable passing',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
         'checked:memo-no-recheck': [testMemoCheckedTransformer],

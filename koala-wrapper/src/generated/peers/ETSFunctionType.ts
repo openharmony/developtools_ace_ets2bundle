@@ -36,10 +36,13 @@ import { TSTypeParameterDeclaration } from "./TSTypeParameterDeclaration"
 import { Expression } from "./Expression"
 import { TSInterfaceDeclaration } from "./TSInterfaceDeclaration"
 export class ETSFunctionType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_FUNCTION_TYPE;
     }
     static createETSFunctionType(signature: FunctionSignature | undefined, funcFlags: Es2pandaScriptFunctionFlags): ETSFunctionType {
         return new ETSFunctionType(global.generatedEs2panda._CreateETSFunctionTypeIr(global.context, passNode(signature), funcFlags))

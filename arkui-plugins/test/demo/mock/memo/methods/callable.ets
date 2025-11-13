@@ -13,31 +13,31 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 class A {
-    @memo
+    @Memo
     static $_invoke(): void {}
 }
 
 class B {
-    static $_invoke(@memo p?: () => void): void {}
+    static $_invoke(@Memo p?: () => void): void {}
 }
 
 class C {
-    @memo
+    @Memo
     static $_instantiate(factory: () => C): C {
         return factory();
     }
 }
 
 class D {
-    static $_instantiate(factory: () => D, @memo content?: () => void): D {
+    static $_instantiate(factory: () => D, @Memo content?: () => void): D {
         return factory();
     }
 }
 
-@memo
+@Memo
 () => {
     A();
     B(() => {});

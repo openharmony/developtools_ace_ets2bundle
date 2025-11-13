@@ -16,7 +16,12 @@
 import { LabelPair } from '../../generated/peers/LabelPair';
 import { BlockStatement, CatchClause, Statement, TryStatement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTryStatement(
     original: TryStatement,
@@ -36,6 +41,6 @@ export function updateTryStatement(
         return original;
     }
 
-    const update = updateThenAttach(TryStatement.updateTryStatement, attachModifiers);
+    const update = updateThenAttach(TryStatement.updateTryStatement, attachModifiers, attachParent, refreshNodeCache);
     return update(original, block, catchClauses, finalizer, finalizerInsertionsLabelPair, finalizerInsertionsStatement);
 }

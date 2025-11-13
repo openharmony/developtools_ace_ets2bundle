@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -60,7 +60,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
   public build() {}
   
   public constructor() {}
-  
+
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
@@ -80,7 +80,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
   }
   
   public constructor() {}
-  
+
 }
 
 @Component() export interface __Options_CustomContainer {
@@ -127,6 +127,8 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
+
+  @Memo() public closerBuilder() {}
   
   private __backing_closer?: @Memo() (()=> void);
   
@@ -138,12 +140,13 @@ function main() {}
     this.__backing_closer = value;
   }
   
-  @Memo() public closerBuilder() {}
-  
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
@@ -187,7 +190,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_CustomContainer {
@@ -207,7 +213,7 @@ function testCustomComponentTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test custom component call transformation',
-    [parsedTransform, recheck, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         parsed: [testParedTransformer],
         'checked:ui-no-recheck': [testCustomComponentTransformer],

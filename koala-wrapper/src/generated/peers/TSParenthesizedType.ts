@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSParenthesizedType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARENT_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARENT_TYPE;
     }
     static createTSParenthesizedType(type?: TypeNode): TSParenthesizedType {
         return new TSParenthesizedType(global.generatedEs2panda._CreateTSParenthesizedType(global.context, passNode(type)))

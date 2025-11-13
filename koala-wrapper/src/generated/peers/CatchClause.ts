@@ -33,10 +33,13 @@ import { TypedStatement } from "./TypedStatement"
 import { Expression } from "./Expression"
 import { BlockStatement } from "./BlockStatement"
 export class CatchClause extends TypedStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CATCH_CLAUSE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CATCH_CLAUSE;
     }
     static createCatchClause(param?: Expression, body?: BlockStatement): CatchClause {
         return new CatchClause(global.generatedEs2panda._CreateCatchClause(global.context, passNode(param), passNode(body)))

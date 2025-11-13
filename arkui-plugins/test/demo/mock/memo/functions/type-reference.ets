@@ -13,28 +13,28 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
-@memo type ItemBuilder<T> = (item: Item<T>) => void;
+@Memo type ItemBuilder<T> = (item: Item<T>) => void;
 
 interface Item<T> {
   item: T;
 }
 
 interface Attribute<T> {
-  @memo each<T>(@memo itemGenerator: ItemBuilder<T>): Attribute<T>;
+  @Memo each<T>(@Memo itemGenerator: ItemBuilder<T>): Attribute<T>;
 }
 
-@memo
+@Memo
 export declare function A<T>(): Attribute<T>
 
-@memo
+@Memo
 function func<T>(): ItemBuilder<T> {
   return (item: Item<T>): void => {};
 }
 
 class B {
-  @memo build() {
+  @Memo build() {
     A<string>().each((ri: Item<string>) => {})
   }
 }

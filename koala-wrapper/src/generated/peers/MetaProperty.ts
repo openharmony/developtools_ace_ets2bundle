@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { Es2pandaMetaPropertyKind } from "./../Es2pandaEnums"
 export class MetaProperty extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_META_PROPERTY_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_META_PROPERTY_EXPRESSION;
     }
     static createMetaProperty(kind: Es2pandaMetaPropertyKind): MetaProperty {
         return new MetaProperty(global.generatedEs2panda._CreateMetaProperty(global.context, kind))

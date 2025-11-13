@@ -14,14 +14,9 @@
  */
 
 import { BreakStatement } from '../../generated';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { attachParent, updateThenAttach } from '../utilities/private';
 
 export function updateBreakStatement(original: BreakStatement): BreakStatement {
-    const update = updateThenAttach(BreakStatement.updateBreakStatement, attachModifiers);
-    const newNode = update(original);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(BreakStatement.updateBreakStatement, attachParent);
+    return update(original);
 }

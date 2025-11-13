@@ -18,9 +18,24 @@ import { DeclarationCollector } from './declaration-collector';
 import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 import * as fs from 'fs';
 
+export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
+    if (!node || !arkts.isETSTypeReference(node)) {
+        return undefined;
+    }
+    const part = node.part;
+    if (!part || !arkts.isETSTypeReferencePart(part)) {
+        return undefined;
+    }
+    const nameNode = part.name;
+    if (!nameNode || !arkts.isIdentifier(nameNode)) {
+        return undefined;
+    }
+    return nameNode;
+}
+
 /**
  * Visit base method and all its overloads with visitor.
- * 
+ *
  * @param method base method AstNode
  * @param visitor rewrite visitor for each method AstNode
  * @returns new base method AstNode with new overloads
@@ -91,11 +106,11 @@ export function isDecoratorAnnotation(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
+        const decl = arkts.getPeerIdentifierDecl(anno.expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }

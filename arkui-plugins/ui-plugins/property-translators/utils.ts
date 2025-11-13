@@ -17,11 +17,11 @@ import * as arkts from '@koalaui/libarkts';
 import { ImportCollector } from '../../common/import-collector';
 import { isDecoratorAnnotation } from '../../common/arkts-utils';
 import {
-    DecoratorIntrinsicNames,
     DecoratorNames,
     StateManagementTypes,
     GetSetTypes,
     ObservedNames,
+    NodeCacheNames,
 } from '../../common/predefines';
 import {
     addMemoAnnotation,
@@ -29,7 +29,6 @@ import {
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
 import { CustomDialogNames } from '../utils';
-import { CachedMetadata } from '../../memo-plugins/memo-cache-factory';
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -39,13 +38,6 @@ export interface DecoratorInfo {
 export interface OptionalMemberInfo {
     isCall?: boolean;
     isNumeric?: boolean;
-}
-
-export function isDecoratorIntrinsicAnnotation(
-    anno: arkts.AnnotationUsage,
-    decoratorName: DecoratorIntrinsicNames
-): boolean {
-    return !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
 }
 
 export function removeDecorator(
@@ -156,13 +148,11 @@ export function createGetter(
     name: string,
     type: arkts.TypeNode | undefined,
     returns: arkts.Expression,
-    needMemo: boolean = false,
-    isStatic: boolean = false
+    isMemoCached: boolean = false,
+    isStatic: boolean = false,
+    metadata?: arkts.AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
-    if (needMemo && findCanAddMemoFromTypeAnnotation(returnType)) {
-        addMemoAnnotation(returnType);
-    }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
     const modifiers = isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
@@ -173,13 +163,17 @@ export function createGetter(
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
         modifiers
     );
-    return arkts.factory.createMethodDefinition(
+    const method = arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
         scriptFunction,
         modifiers,
         false
     );
+    if (!!returnType && isMemoCached) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnType, metadata);
+    }
+    return method;
 }
 
 export function createSetter(
@@ -448,7 +442,7 @@ export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | un
 }
 
 function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | undefined {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(node.property);
+    const decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(node.property.peer);
     if (!decl || !arkts.isClassProperty(decl) || !decl.value || !arkts.isETSNewClassInstanceExpression(decl.value)) {
         return undefined;
     }
@@ -459,13 +453,23 @@ function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | und
     return undefined;
 }
 
-export function findCachedMemoMetadata(node: arkts.AstNode, shouldWrapType: boolean = true): arkts.AstNodeCacheValueMetadata | undefined {
-    if (!arkts.NodeCache.getInstance().has(node)) {
+export function findCachedMemoMetadata(
+    node: arkts.AstNode,
+    shouldWrapType: boolean = true
+): arkts.AstNodeCacheValueMetadata | undefined {
+    if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
         return undefined;
     }
-    const metadata = arkts.NodeCache.getInstance().get(node)?.metadata ?? {};
+    const metadata = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata ?? {};
     if (!!shouldWrapType) {
         metadata.isWithinTypeParams = true;
     }
     return metadata;
+}
+
+export function checkIsNameStartWithBackingField(node: arkts.AstNode | undefined): boolean {
+    if (!node || !arkts.isIdentifier(node)) {
+        return false;
+    }
+    return node.name.startsWith(StateManagementTypes.BACKING);
 }

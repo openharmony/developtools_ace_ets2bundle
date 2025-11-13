@@ -14,11 +14,14 @@
  */
 
 import { UndefinedLiteral } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachParent,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateUndefinedLiteral(original: UndefinedLiteral): UndefinedLiteral {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(UndefinedLiteral.updateUndefinedLiteral, attachModifiers);
+    const update = updateThenAttach(UndefinedLiteral.updateUndefinedLiteral, attachParent);
     return update(original);
 }

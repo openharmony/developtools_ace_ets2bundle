@@ -82,14 +82,14 @@ export function getEntryParams(node: arkts.ClassDefinition): Record<EntryParamNa
         }
     }
     return result;
-}   
+}
 
 /**
  * Computes and formats a relative path by removing `.ets` extension and normalizing path separators to `/`.
  */
 export function getRelativePagePath(from: string, to: string): string {
-  return path
-    .relative(from, to)
-    .replace(/\\/g, '/')
-    .replace(/\.ets$/, '');
+    return path
+        .relative(from, to)
+        .replace(/\\/g, '/')
+        .replace(/\.ets$/, '');
 }

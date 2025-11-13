@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -62,13 +62,13 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 
 @Component() export declare interface __Options_SwipeRefresher {
   ${ignoreNewLines(`
-  content?: (ResourceStr | undefined);
+  @PropRef() content?: (ResourceStr | undefined);
   @PropRef() __backing_content?: (ResourceStr | undefined);
   __options_has_content?: boolean;
-  isLoading?: boolean;
+  @PropRef() isLoading?: boolean;
   @PropRef() __backing_isLoading?: boolean;
   __options_has_isLoading?: boolean;
-  code?: number;
+  @State() code?: number;
   @State() __backing_code?: number;
   __options_has_code?: boolean;
   `)}
@@ -102,24 +102,24 @@ function main() {}
   
   @State() public code: number;
   
-  @Builder() @Memo() public build(): void
+  @Memo() public build(): void
   
   public constructor() {}
-  
+
   public static _buildCompatibleNode(options: __Options_SwipeRefresher): void
   
 }
 
 @Component() export declare interface __Options_SwipeRefresher {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)', [dumpAnnotation('PropRef')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)', [dumpAnnotation('PropRef')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isLoading', '(IPropRefDecoratedVariable<boolean> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isLoading', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'code', '(number | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'code', '(number | undefined)', [dumpAnnotation('State')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_code', '(IStateDecoratedVariable<number> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_code', '(boolean | undefined)', [], [], false)}
   
@@ -132,7 +132,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test declare component transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

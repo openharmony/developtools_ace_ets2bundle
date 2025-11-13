@@ -36,14 +36,12 @@ import {
     unpackString,
     updatePeerByNode,
 } from './utilities/private';
-import { proceedToState } from './utilities/public';
+import { proceedToState, setAllParents } from './utilities/public';
 import { Es2pandaAstNodeType } from '../Es2pandaEnums';
 import { AstNode } from './peers/AstNode';
-import { ArktsObject } from './peers/ArktsObject';
 import { Config } from './peers/Config';
 import { Context } from './peers/Context';
-import * as path from 'node:path';
-import { nodeByType } from './class-by-peer';
+import { nodeByType } from './node-by-type';
 import { MemberExpression } from './to-be-generated/MemberExpression';
 import {
     AnnotationUsage,
@@ -53,6 +51,7 @@ import {
     ETSTypeReference,
     ETSTypeReferencePart,
     Expression,
+    FunctionExpression,
     FunctionSignature,
     Identifier,
     ImportSpecifier,
@@ -65,11 +64,16 @@ import {
     TypeNode,
 } from '../generated';
 import { Debugger } from './utilities/debugger';
+import { createFunctionExpression, updateFunctionExpression } from './node-utilities/FunctionExpression';
 
 export class EtsScript extends AstNode {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE);
         super(peer);
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE;
     }
 
     static fromContext(): EtsScript {
@@ -133,6 +137,10 @@ export class ExpressionStatement extends AstNode {
         super(peer);
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EXPRESSION_STATEMENT;
+    }
+
     static create(expression: AstNode): ExpressionStatement {
         return new ExpressionStatement(
             global.generatedEs2panda._CreateExpressionStatement(global.context, expression.peer)
@@ -177,6 +185,10 @@ export class CallExpression extends Expression {
               )
             : undefined;
         this.arguments = unpackNodeArray(global.generatedEs2panda._CallExpressionArguments(global.context, this.peer));
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION;
     }
 
     static create(
@@ -265,6 +277,10 @@ export class AssignmentExpression extends AstNode {
         super(peer);
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ASSIGNMENT_EXPRESSION;
+    }
+
     static create(left: AstNode, assignmentOperator: Es2pandaTokenType, right: AstNode): AssignmentExpression {
         return new AssignmentExpression(
             global.generatedEs2panda._CreateAssignmentExpression(
@@ -305,11 +321,13 @@ export class AssignmentExpression extends AstNode {
     /** @deprecated */
     setRight(expr?: Expression): this {
         global.generatedEs2panda._AssignmentExpressionSetRight(global.context, this.peer, passNode(expr));
+        expr!.parent = this;
         return this;
     }
     /** @deprecated */
     setLeft(expr?: Expression): this {
         global.generatedEs2panda._AssignmentExpressionSetLeft(global.context, this.peer, passNode(expr));
+        expr!.parent = this;
         return this;
     }
     setOperatorType(operatorType: Es2pandaTokenType): this {
@@ -323,6 +341,10 @@ export class TSUnionType extends AstNode {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNION_TYPE);
         super(peer);
         this.types = unpackNodeArray(global.generatedEs2panda._TSUnionTypeTypesConst(global.context, this.peer));
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNION_TYPE;
     }
 
     static create(node: undefined | TSUnionType, types: AstNode[]): TSUnionType {
@@ -344,6 +366,10 @@ export class NumberLiteral extends Literal {
         this.value = 0.0;
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL;
+    }
+
     static create(value: number): NumberLiteral {
         return new NumberLiteral(global.es2panda._CreateNumberLiteral(global.context, value));
     }
@@ -362,6 +388,10 @@ export class ArrowFunctionExpression extends Expression {
         this.scriptFunction = unpackNonNullableNode(
             global.generatedEs2panda._ArrowFunctionExpressionFunction(global.context, this.peer)
         );
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION;
     }
 
     static create(func: ScriptFunction): ArrowFunctionExpression {
@@ -387,7 +417,6 @@ export class ArrowFunctionExpression extends Expression {
             passNodeArray(annotations),
             annotations.length
         );
-
         return this;
     }
 
@@ -413,6 +442,10 @@ export class FunctionDeclaration extends AstNode {
             global.generatedEs2panda._ScriptFunctionReturnTypeAnnotation(global.context, this.scriptFunction.peer)
         );
         this.isAnon = global.generatedEs2panda._FunctionDeclarationIsAnonymousConst(global.context, this.peer);
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION;
     }
 
     static create(
@@ -485,34 +518,14 @@ export class FunctionDeclaration extends AstNode {
     readonly isAnon: boolean;
 }
 
-class FunctionExpression extends AstNode {
-    constructor(peer: KPtr) {
-        assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION);
-        super(peer);
-        this.scriptFunction = unpackNonNullableNode(
-            global.generatedEs2panda._FunctionExpressionFunction(global.context, this.peer)
-        );
-    }
-
-    static create(expression: ScriptFunction): FunctionExpression {
-        return new FunctionExpression(
-            global.generatedEs2panda._CreateFunctionExpression(global.context, passNode(expression))
-        );
-    }
-
-    static update(node: FunctionExpression, expression: ScriptFunction): FunctionExpression {
-        return new FunctionExpression(
-            global.generatedEs2panda._UpdateFunctionExpression(global.context, node.peer, passNode(expression))
-        );
-    }
-
-    readonly scriptFunction: ScriptFunction;
-}
-
 export class ETSParameterExpression extends Expression {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION);
         super(peer);
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION;
     }
 
     static create(identifier: Identifier, initializer: AstNode | undefined): ETSParameterExpression {
@@ -609,45 +622,6 @@ export class ETSParameterExpression extends Expression {
     }
 }
 
-export class IfStatement extends AstNode {
-    constructor(peer: KPtr) {
-        assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_IF_STATEMENT);
-        super(peer);
-        this.test = unpackNonNullableNode(global.generatedEs2panda._IfStatementTest(global.context, this.peer));
-        this.consequent = unpackNonNullableNode(
-            global.generatedEs2panda._IfStatementConsequent(global.context, this.peer)
-        );
-        this.alternate = unpackNode(global.generatedEs2panda._IfStatementAlternate(global.context, this.peer));
-    }
-
-    static create(test: AstNode, consequent: AstNode, alternate?: AstNode): IfStatement {
-        return new IfStatement(
-            global.generatedEs2panda._CreateIfStatement(
-                global.context,
-                passNode(test),
-                passNode(consequent),
-                passNode(alternate)
-            )
-        );
-    }
-
-    static update(node: IfStatement, test: AstNode, consequent: AstNode, alternate?: AstNode): IfStatement {
-        return new IfStatement(
-            global.generatedEs2panda._UpdateIfStatement(
-                global.context,
-                node.peer,
-                passNode(test),
-                passNode(consequent),
-                passNode(alternate)
-            )
-        );
-    }
-
-    test: AstNode;
-    consequent: AstNode;
-    alternate: AstNode | undefined;
-}
-
 export class StructDeclaration extends AstNode {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_STRUCT_DECLARATION);
@@ -656,6 +630,10 @@ export class StructDeclaration extends AstNode {
         this.definition = unpackNonNullableNode(
             global.generatedEs2panda._ClassDeclarationDefinition(global.context, this.peer)
         );
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_STRUCT_DECLARATION;
     }
 
     static create(definition: ClassDefinition): StructDeclaration {
@@ -679,7 +657,7 @@ export class MethodDefinition extends AstNode {
         super(peer);
         this.kind = global.generatedEs2panda._MethodDefinitionKindConst(global.context, this.peer);
         this.funcExpr = unpackNonNullableNode(global.generatedEs2panda._ClassElementValue(global.context, this.peer));
-        this.scriptFunction = this.funcExpr.scriptFunction;
+        this.scriptFunction = this.funcExpr.function!;
         assertValidPeer(this.scriptFunction.peer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION);
 
         // Somehow the scriptFunction cannot attach method's key to its ident after checker
@@ -695,6 +673,10 @@ export class MethodDefinition extends AstNode {
         this.kind = global.generatedEs2panda._MethodDefinitionKindConst(global.context, this.peer);
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION;
+    }
+
     static create(
         kind: Es2pandaMethodDefinitionKind,
         key: AstNode,
@@ -707,7 +689,7 @@ export class MethodDefinition extends AstNode {
                 global.context,
                 kind,
                 passNode(key),
-                passNode(FunctionExpression.create(value)),
+                passNode(createFunctionExpression(value)),
                 modifiers,
                 isComputed
             ),
@@ -729,7 +711,7 @@ export class MethodDefinition extends AstNode {
                 node.peer,
                 kind,
                 passNode(key),
-                passNode(FunctionExpression.update(node.funcExpr, value)),
+                passNode(updateFunctionExpression(node.funcExpr, value)),
                 modifiers,
                 isComputed
             ),
@@ -779,6 +761,10 @@ export class VariableDeclaration extends AstNode {
         this.declarators = unpackNodeArray(
             global.generatedEs2panda._VariableDeclarationDeclaratorsConst(global.context, this.peer)
         );
+    }
+
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION;
     }
 
     static create(
@@ -842,6 +828,10 @@ export class VariableDeclarator extends AstNode {
         this.name = unpackNonNullableNode(global.generatedEs2panda._VariableDeclaratorId(global.context, this.peer));
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR;
+    }
+
     static create(
         flag: Es2pandaVariableDeclaratorFlag,
         name: Identifier,
@@ -896,6 +886,10 @@ export class SuperExpression extends AstNode {
         this.id = unpackNode(global.generatedEs2panda._TSInterfaceDeclarationId(global.context, this.peer));
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_SUPER_EXPRESSION;
+    }
+
     static create(): SuperExpression {
         return new SuperExpression(global.generatedEs2panda._CreateSuperExpression(global.context));
     }
@@ -909,8 +903,16 @@ export class ETSStringLiteralType extends TypeNode {
         super(peer);
     }
 
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE;
+    }
+
     static create(str: string): ETSStringLiteralType {
         return new ETSStringLiteralType(global.es2panda._CreateETSStringLiteralType(global.context, passString(str)));
+    }
+
+    static update(original: ETSStringLiteralType | undefined, value: string): ETSStringLiteralType {
+        return new ETSStringLiteralType(global.es2panda._UpdateETSStringLiteralType(global.context, passNode(original), value));
     }
 }
 
@@ -926,7 +928,6 @@ const pairs: [Es2pandaAstNodeType, { new (peer: KNativePointer): AstNode }][] = 
     [Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_PARAMETER_DECLARATION, TSTypeParameterDeclaration],
     [Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, CallExpression],
     [Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION, MemberExpression],
-    [Es2pandaAstNodeType.AST_NODE_TYPE_IF_STATEMENT, IfStatement],
     [Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION, ArrowFunctionExpression],
     [Es2pandaAstNodeType.AST_NODE_TYPE_STRUCT_DECLARATION, StructDeclaration],
     [Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, MethodDefinition],

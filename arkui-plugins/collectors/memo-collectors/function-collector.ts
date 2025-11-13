@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
+import { NodeCacheNames } from '../../common/predefines';
 import {
     checkIsMemoFromMemoableInfo,
     collectMemoableInfoInFunctionReturnType,
@@ -57,14 +58,14 @@ export class MemoFunctionCollector extends AbstractVisitor {
 
     private collectMemoAstNode(node: arkts.AstNode, info: MemoableInfo): void {
         if (checkIsMemoFromMemoableInfo(info, false)) {
-            arkts.NodeCache.getInstance().collect(node);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
     }
 
     private collectCallWithDeclaredPeerInParamMap(node: arkts.CallExpression, peer: arkts.AstNode['peer']): void {
         const memoableInfo = this.paramMemoableInfoMap!.get(peer)!;
         if (checkIsMemoFromMemoableInfo(memoableInfo, true)) {
-            arkts.NodeCache.getInstance().collect(node);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
     }
 
@@ -73,10 +74,10 @@ export class MemoFunctionCollector extends AbstractVisitor {
         declarator: arkts.VariableDeclarator
     ): void {
         const shouldCollect =
-            arkts.NodeCache.getInstance().has(declarator) ||
-            (!!declarator.initializer && arkts.NodeCache.getInstance().has(declarator.initializer));
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(declarator) ||
+            (!!declarator.initializer && arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(declarator.initializer));
         if (shouldCollect) {
-            arkts.NodeCache.getInstance().collect(node);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
     }
 
@@ -94,15 +95,14 @@ export class MemoFunctionCollector extends AbstractVisitor {
         if (arkts.isArrowFunctionExpression(node.initializer)) {
             const func = node.initializer.scriptFunction;
             const localInfo = collectMemoableInfoInScriptFunction(func);
-            const shouldCollectParameter =
-                (localInfo.hasBuilder || localInfo.hasMemo) && !localInfo.hasMemoEntry && !localInfo.hasMemoIntrinsic;
-            const shouldCollectReturn =
-                localInfo.hasBuilder || localInfo.hasMemo || memoableInfo.hasBuilder || memoableInfo.hasMemo;
+            const hasMemo = checkIsMemoFromMemoableInfo(memoableInfo, false) || localInfo.hasBuilder || localInfo.hasMemo;
+            const shouldCollectParameter = hasMemo && !localInfo.hasMemoEntry && !localInfo.hasMemoIntrinsic;
+            const shouldCollectReturn = hasMemo;
             const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
             collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
             const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(
                 func,
-                shouldCollectParameter
+                !!shouldCollectParameter
             );
             const body = func.body;
             if (!!body && arkts.isBlockStatement(body)) {
@@ -122,7 +122,7 @@ export class MemoFunctionCollector extends AbstractVisitor {
     }
 
     private visitCallExpression(node: arkts.CallExpression): arkts.AstNode {
-        if (arkts.NodeCache.getInstance().has(node)) {
+        if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
             this.disableCollectReturnBeforeCallback(() => {
                 this.visitEachChild(node);
             });
@@ -136,8 +136,8 @@ export class MemoFunctionCollector extends AbstractVisitor {
             });
             return node;
         }
-        if (arkts.NodeCache.getInstance().has(decl)) {
-            arkts.NodeCache.getInstance().collect(node);
+        if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
         if (this.paramMemoableInfoMap?.has(decl.peer)) {
             this.collectCallWithDeclaredPeerInParamMap(node, decl.peer);
@@ -157,10 +157,14 @@ export class MemoFunctionCollector extends AbstractVisitor {
         if (!decl) {
             return node;
         }
+        let memoableInfo: MemoableInfo | undefined;
         if (this.paramMemoableInfoMap?.has(decl.peer)) {
-            arkts.NodeCache.getInstance().collect(node);
+            memoableInfo = this.paramMemoableInfoMap.get(decl.peer);
         } else if (arkts.isEtsParameterExpression(decl) && this.paramMemoableInfoMap?.has(decl.identifier.peer)) {
-            arkts.NodeCache.getInstance().collect(node);
+            memoableInfo = this.paramMemoableInfoMap.get(decl.identifier.peer);
+        }
+        if (!!memoableInfo) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
         return node;
     }
@@ -169,7 +173,7 @@ export class MemoFunctionCollector extends AbstractVisitor {
         if (!!this.returnMemoableInfo && !!node.argument && arkts.isArrowFunctionExpression(node.argument)) {
             this.collectMemoAstNode(node.argument, this.returnMemoableInfo);
         }
-        arkts.NodeCache.getInstance().collect(node);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         this.visitEachChild(node);
         return node;
     }
@@ -216,8 +220,8 @@ export class MemoFunctionCollector extends AbstractVisitor {
         }
         if (
             arkts.isArrowFunctionExpression(node) &&
-            !arkts.NodeCache.getInstance().has(node) &&
-            !arkts.NodeCache.getInstance().has(node.scriptFunction)
+            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node) &&
+            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.scriptFunction)
         ) {
             this.shouldCollectReturn = false;
         }

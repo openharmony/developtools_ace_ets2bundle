@@ -30,9 +30,14 @@ import {
     DecoratorNames,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
-import { ProjectConfig } from '../../common/plugin-context';
+import { ProjectConfig, ResourceInfo, ResourceList, ResourceMap } from '../../common/plugin-context';
 import { LogCollector } from '../../common/log-collector';
-import { hasDecorator } from '../../ui-plugins/property-translators/utils';
+import { hasDecorator } from '../property-translators/utils';
+
+export enum StructType {
+    STRUCT,
+    CUSTOM_COMPONENT_DECL,
+}
 
 export type ScopeInfoCollection = {
     customComponents: CustomComponentScopeInfo[];
@@ -43,17 +48,6 @@ export type CustomComponentScopeInfo = CustomComponentInfo & {
     hasUpdateStruct?: boolean;
     hasReusableRebind?: boolean;
 };
-
-type ResourceMap = Map<string, Record<string, number>>;
-
-export interface ResourceList {
-    [key: string]: ResourceMap;
-}
-
-export interface ResourceInfo {
-    resourcesList: ResourceList;
-    rawfile: Set<string>;
-}
 
 export interface LoaderJson {
     hspResourcesMap: Record<string, string>;
@@ -108,11 +102,11 @@ export function isResourceNode(node: arkts.CallExpression, ignoreDecl: boolean =
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(node.expression);
+        const decl = arkts.getPeerIdentifierDecl(node.expression.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }
@@ -334,7 +328,7 @@ export function checkRawfileResource(
 ): void {
     if (!fromOtherModule && !rawfileSet.has(rawfileStr.str)) {
         LogCollector.getInstance().collectLogInfo({
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             node: resourceNode,
             message: `No such '${rawfileStr.str}' resource in current module.`,
             code: '10904333',
@@ -370,7 +364,7 @@ export function preCheckResourceData(
     }
     if (!!code && !!message) {
         LogCollector.getInstance().collectLogInfo({
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             node: resourceNode,
             message: message,
             code: code,
@@ -445,7 +439,7 @@ function resourceCheck(
     }
     if (!!code && !!message) {
         LogCollector.getInstance().collectLogInfo({
-            type: logType,
+            level: logType,
             node: resourceNode,
             message: message,
             code: code,
@@ -470,8 +464,8 @@ export function generateResourceBundleName(projectConfig: ProjectConfig, isDynam
     return projectConfig.moduleType === ModuleType.HAR
         ? DefaultConfiguration.HAR_DEFAULT_BUNDLE_NAME
         : projectConfig.bundleName
-        ? projectConfig.bundleName
-        : '';
+          ? projectConfig.bundleName
+          : '';
 }
 
 /**
@@ -495,8 +489,8 @@ export function generateResourceModuleName(
     return projectConfig.moduleType === ModuleType.HAR
         ? DefaultConfiguration.HAR_DEFAULT_MODULE_NAME
         : projectConfig.moduleName
-        ? projectConfig.moduleName
-        : '';
+          ? projectConfig.moduleName
+          : '';
 }
 
 /**

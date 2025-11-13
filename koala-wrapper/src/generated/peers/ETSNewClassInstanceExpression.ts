@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class ETSNewClassInstanceExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NEW_CLASS_INSTANCE_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NEW_CLASS_INSTANCE_EXPRESSION;
     }
     static createETSNewClassInstanceExpression(typeReference: Expression | undefined, _arguments: readonly Expression[]): ETSNewClassInstanceExpression {
         return new ETSNewClassInstanceExpression(global.generatedEs2panda._CreateETSNewClassInstanceExpression(global.context, passNode(typeReference), passNodeArray(_arguments), _arguments.length))

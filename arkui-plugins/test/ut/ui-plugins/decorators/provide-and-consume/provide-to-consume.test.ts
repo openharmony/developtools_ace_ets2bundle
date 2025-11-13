@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -80,10 +80,10 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 @Component() export interface __Options_Child {
   ${ignoreNewLines(`
-  num?: number;
+  @Consume() num?: number;
   @Consume() __backing_num?: number;
   __options_has_num?: boolean;
-  str?: string;
+  @Consume({value:"ss"}) str?: string;
   @Consume({value:"ss"}) __backing_str?: string;
   __options_has_str?: boolean;
   `)}
@@ -92,10 +92,10 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 @Component() export interface __Options_Parent {
   ${ignoreNewLines(`
-  num?: number;
+  @Provide({alias:"num"}) num?: number;
   @Provide({alias:"num"}) __backing_num?: number;
   __options_has_num?: boolean;
-  str?: string;
+  @Provide({alias:"ss"}) str?: string;
   @Provide({alias:"ss"}) __backing_str?: string;
   __options_has_str?: boolean;
   `)}
@@ -173,7 +173,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
@@ -226,26 +229,29 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IConsumeDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Consume', { value: "ss" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Provide', { alias: "num", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Provide', { alias: "ss", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
   
@@ -262,7 +268,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test usage of @Provide and @Consume decorator',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

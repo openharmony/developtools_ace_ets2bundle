@@ -15,7 +15,13 @@
 
 import { NumberLiteral } from '../types';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, compose, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    compose,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateNumberLiteral(original: NumberLiteral, value: number): NumberLiteral {
     if (isSameNativeObject(value, original.value)) {
@@ -24,7 +30,9 @@ export function updateNumberLiteral(original: NumberLiteral, value: number): Num
 
     const update = updateThenAttach(
         compose(NumberLiteral.create), // TODO: No UpdateNumberLiteral, need to change this
-        attachModifiers
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
     );
     return update(original, value);
 }

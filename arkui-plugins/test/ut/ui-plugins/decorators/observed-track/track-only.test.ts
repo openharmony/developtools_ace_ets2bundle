@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -98,8 +98,6 @@ class C implements IObservedObject, ISubscribedWatches {
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  public constructor() {}
-  
   public get trackC(): number {
     this.conditionalAddRef(this.__meta_trackC);
     return this.__backing_trackC;
@@ -112,7 +110,12 @@ class C implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("trackC");
     }
   }
+
+  public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -123,7 +126,10 @@ class C implements IObservedObject, ISubscribedWatches {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -137,7 +143,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test track only transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

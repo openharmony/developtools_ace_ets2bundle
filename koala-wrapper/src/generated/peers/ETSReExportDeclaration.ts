@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { ETSImportDeclaration } from "./ETSImportDeclaration"
 export class ETSReExportDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_REEXPORT_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_REEXPORT_STATEMENT;
     }
     get getETSImportDeclarations(): ETSImportDeclaration | undefined {
         return unpackNode(global.generatedEs2panda._ETSReExportDeclarationGetETSImportDeclarationsConst(global.context, this.peer))
