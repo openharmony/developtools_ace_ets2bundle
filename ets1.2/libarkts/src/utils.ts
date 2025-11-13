@@ -161,8 +161,8 @@ function addExports(code: string): string {
 
 function excludePartialInterfaces(code: string): string {
     return code
-        .replaceAll(/export interface %%partial-(.*)<>([\s\S]*?)}/g, '')
-        .replaceAll(/interface %%partial-(.*)<>([\s\S]*?)}/g, '');
+        .replaceAll(/export interface (.*)\$partial<>([\s\S]*?)}/g, '')
+        .replaceAll(/interface (.*)\$partial<>([\s\S]*?)}/g, '');
 }
 
 function fixEnums(code: string) {
