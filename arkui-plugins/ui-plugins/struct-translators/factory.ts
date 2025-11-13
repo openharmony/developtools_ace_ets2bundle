@@ -26,6 +26,7 @@ import {
     isCustomDialogControllerOptions,
     isKnownMethodDefinition,
     isStatic,
+    StructType,
 } from '../utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
@@ -64,6 +65,8 @@ import {
     ObservedAnnoInfo,
     getNoTransformationMembersInClass,
     isComputedMethod,
+    StructScopeInfo,
+    CustomComponentDeclScopeInfo,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { findComponentAttributeInInterface } from '../builder-lambda-translators/utils';
@@ -503,10 +506,10 @@ export class factory {
         if (!scope.hasUpdateStruct) {
             collections.push(this.createUpdateStruct(optionsTypeName, scope));
         }
-        if (!!scope.annotations?.reusable) {
+        if (scope.type === StructType.STRUCT && !!scope.annotations?.reusable) {
             collections.push(this.createToRecord(optionsTypeName, scope));
         }
-        return collect(...collections, ...propertyMembers);
+        return collect(collections, ...propertyMembers);
     }
 
     /**
@@ -541,29 +544,63 @@ export class factory {
         if (!className) {
             throw new Error('Non Empty className expected for Component');
         }
+        let updateClassDef: arkts.ClassDefinition;
+        if (scope.type === StructType.STRUCT) {
+            updateClassDef = this.transformStructMembers(definition, scope, className, classOptionsName);
+        } else {
+            updateClassDef = this.transformCustomComponentDeclMembers(definition, scope, className, classOptionsName);
+        }
+        return arkts.factory.updateClassDeclaration(node, updateClassDef);
+    }
+
+    /**
+     * transform members in custom-component class.
+     */
+    static transformStructMembers(
+        definition: arkts.ClassDefinition,
+        scope: StructScopeInfo,
+        className: string,
+        classOptionsName: string | undefined
+    ): arkts.ClassDefinition {
         const body: readonly arkts.AstNode[] = definition.body;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
             body.map((member) => classifyStructMembers(member, scope))
         );
+        let updateMembers: arkts.AstNode[] = [];
         const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
             propertyTranslators,
             classOptionsName ?? getCustomComponentOptionsName(className),
             scope
         );
-        const updateMembers: arkts.AstNode[] = body
+        updateMembers = body
             .filter((member) => !arkts.isClassProperty(member) && !isComputedMethod(member))
             .map((member: arkts.AstNode) => factory.transformNonPropertyMembersInClass(member, scope.isDecl));
-        const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(
-            definition,
-            factory.addClassStaticBlock([...translatedMembers, ...updateMembers], body)
-        );
-        if (
-            !!scope.annotations.customdialog ||
-            (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME)
-        ) {
+        updateMembers = factory.addClassStaticBlock(collect(translatedMembers, updateMembers), body);
+        const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(definition, updateMembers);
+        if (!!scope.annotations.customdialog) {
             updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
         }
-        return arkts.factory.updateClassDeclaration(node, updateClassDef);
+        return updateClassDef;
+    }
+
+    static transformCustomComponentDeclMembers(
+        definition: arkts.ClassDefinition,
+        scope: CustomComponentDeclScopeInfo,
+        className: string,
+        classOptionsName: string | undefined
+    ): arkts.ClassDefinition {
+        const body: readonly arkts.AstNode[] = definition.body;
+        const translatedMembers: arkts.AstNode[] = this.tranformPropertyMembers(
+            [],
+            classOptionsName ?? getCustomComponentOptionsName(className),
+            scope
+        );
+        const updateMembers: arkts.AstNode[] = collect(translatedMembers, body);
+        const updateClassDef: arkts.ClassDefinition = this.updateCustomComponentClass(definition, updateMembers);
+        if (scope.isDecl && scope.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME) {
+            updateClassDef.addProperties(factory.addControllerSetMethod(scope.isDecl, body));
+        }
+        return updateClassDef;
     }
 
     /**
@@ -1192,7 +1229,7 @@ export class factory {
         let arrowFunc: arkts.ArrowFunctionExpression | undefined;
         let call: arkts.CallExpression | undefined;
         if (arkts.isArrowFunctionExpression(value)) {
-            arrowFunc = value
+            arrowFunc = value;
         } else if (
             arkts.isCallExpression(value) &&
             arkts.isMemberExpression(value.expression) &&
@@ -1202,9 +1239,7 @@ export class factory {
             call = this.transformCustomDialogComponentCall(value, gensymName);
             arrowFunc = arkts.factory.createArrowFunction(
                 UIFactory.createScriptFunction({
-                    body: arkts.factory.createBlock([
-                        arkts.factory.createExpressionStatement(call)
-                    ]),
+                    body: arkts.factory.createBlock([arkts.factory.createExpressionStatement(call)]),
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
                 })
