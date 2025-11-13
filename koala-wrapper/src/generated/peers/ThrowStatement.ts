@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ThrowStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_THROW_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_THROW_STATEMENT;
     }
     static createThrowStatement(argument?: Expression): ThrowStatement {
         return new ThrowStatement(global.generatedEs2panda._CreateThrowStatement(global.context, passNode(argument)))

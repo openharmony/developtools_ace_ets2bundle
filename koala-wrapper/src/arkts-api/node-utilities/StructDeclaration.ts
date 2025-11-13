@@ -16,13 +16,18 @@
 import { ClassDefinition } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { StructDeclaration } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateStructDeclaration(original: StructDeclaration, definition: ClassDefinition): StructDeclaration {
     if (isSameNativeObject(definition, original.definition)) {
         return original;
     }
 
-    const update = updateThenAttach(StructDeclaration.update, attachModifiers);
+    const update = updateThenAttach(StructDeclaration.update, attachModifiers, attachParent, refreshNodeCache);
     return update(original, definition);
 }

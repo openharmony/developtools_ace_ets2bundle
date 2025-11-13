@@ -125,9 +125,9 @@ export interface ProjectConfig {
     moduleRootPath: string;
     aceModuleJsonPath: string;
     ignoreError: boolean;
-    projectPath: string,
-    projectRootPath: string,
-    integratedHsp: boolean
+    projectPath: string;
+    projectRootPath: string;
+    integratedHsp: boolean;
     frameworkMode?: string;
 }
 
@@ -161,4 +161,16 @@ export type PluginExecutor = {
 
 export interface BuildConfig {
     compileFiles: string[];
+}
+
+// RESOURCE TYPES
+export type ResourceMap = Map<string, Record<string, number>>;
+
+export interface ResourceList {
+    [key: string]: ResourceMap;
+}
+
+export interface ResourceInfo {
+    resourcesList: ResourceList;
+    rawfile: Set<string>;
 }

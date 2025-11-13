@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -84,25 +84,7 @@ function main() {}
   @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONStringifyIgnore() public var3: number = 3;
-  
-  @TestDecor() public var4: number = 4;
-  
-  @JSONStringifyIgnore() private __backing_var5: number = 5;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONStringifyIgnore() @TestDecor() public var6: number = 6;
-  
-  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONStringifyIgnore() @TestDecor() private __backing_var8: number = 8;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
+
   public get var2(): number {
     this.conditionalAddRef(this.__meta_var2);
     return UIUtils.makeObserved(this.__backing_var2);
@@ -116,6 +98,14 @@ function main() {}
     }
   }
   
+  @JSONStringifyIgnore() public var3: number = 3;
+  
+  @TestDecor() public var4: number = 4;
+  
+  @JSONStringifyIgnore() private __backing_var5: number = 5;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get var5(): number {
     this.conditionalAddRef(this.__meta_var5);
     return UIUtils.makeObserved(this.__backing_var5);
@@ -129,6 +119,12 @@ function main() {}
     }
   }
   
+  @JSONStringifyIgnore() @TestDecor() public var6: number = 6;
+  
+  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get var7(): number {
     this.conditionalAddRef(this.__meta_var7);
     return UIUtils.makeObserved(this.__backing_var7);
@@ -141,6 +137,10 @@ function main() {}
       this.executeOnSubscribingWatches("var7");
     }
   }
+  
+  @JSONStringifyIgnore() @TestDecor() private __backing_var8: number = 8;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get var8(): number {
     this.conditionalAddRef(this.__meta_var8);
@@ -156,7 +156,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ObservedV2() class testJsonRename implements IObservedObject, ISubscribedWatches {
@@ -185,25 +188,7 @@ function main() {}
   @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({value:"name3"}) public var3: number = 3;
-  
-  @TestDecor() public var4: number = 4;
-  
-  @JSONRename({value:"name5"}) private __backing_var5: number = 5;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
-  
-  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
-  @JSONRename({value:"name8"}) @TestDecor() private __backing_var8: number = 8;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  
+
   public get var2(): number {
     this.conditionalAddRef(this.__meta_var2);
     return UIUtils.makeObserved(this.__backing_var2);
@@ -217,6 +202,14 @@ function main() {}
     }
   }
   
+  @JSONRename({value:"name3"}) public var3: number = 3;
+  
+  @TestDecor() public var4: number = 4;
+  
+  @JSONRename({value:"name5"}) private __backing_var5: number = 5;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get var5(): number {
     this.conditionalAddRef(this.__meta_var5);
     return UIUtils.makeObserved(this.__backing_var5);
@@ -230,6 +223,12 @@ function main() {}
     }
   }
   
+  @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
+  
+  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get var7(): number {
     this.conditionalAddRef(this.__meta_var7);
     return UIUtils.makeObserved(this.__backing_var7);
@@ -242,6 +241,10 @@ function main() {}
       this.executeOnSubscribingWatches("var7");
     }
   }
+  
+  @JSONRename({value:"name8"}) @TestDecor() private __backing_var8: number = 8;
+  
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
   public get var8(): number {
     this.conditionalAddRef(this.__meta_var8);
@@ -257,7 +260,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 `;
 
@@ -267,7 +273,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @ObservedV2 class serialization',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ExpressionStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPRESSION_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EXPRESSION_STATEMENT;
     }
     static createExpressionStatement(expr?: Expression): ExpressionStatement {
         return new ExpressionStatement(global.generatedEs2panda._CreateExpressionStatement(global.context, passNode(expr)))

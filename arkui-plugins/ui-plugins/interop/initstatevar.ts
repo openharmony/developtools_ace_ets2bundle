@@ -13,15 +13,12 @@
  * limitations under the License.
  */
 
-
-
 import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, InteroperAbilityNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecoratorInterop } from './utils';
 import { DecoratorNames } from '../../common/predefines';
-
 
 export function initialArgs(
     args: arkts.ObjectExpression,
@@ -51,8 +48,11 @@ export function initialArgs(
         const annotations = keyProperty.annotations;
         if (annotations.length === 0) {
             const valueProperty = arkts.getDecl(value);
-            if (valueProperty instanceof arkts.ClassProperty && (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
-                hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))) {
+            if (
+                valueProperty instanceof arkts.ClassProperty &&
+                (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
+                    hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))
+            ) {
                 const errorMessage = 'Cannot assign @Provide or @Consume decorated data to regular property.';
                 logDiagnostic(errorMessage, node);
             }
@@ -64,11 +64,17 @@ export function initialArgs(
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
-        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.PROP) || hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK)) {
+        } else if (
+            hasDecoratorInterop(keyProperty, DecoratorNames.PROP) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK)
+        ) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.STATE) || hasDecoratorInterop(keyProperty, DecoratorNames.PROVIDE)) {
+        } else if (
+            hasDecoratorInterop(keyProperty, DecoratorNames.STATE) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.PROVIDE)
+        ) {
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
@@ -145,26 +151,27 @@ export function createVariableLet(varName: string, expression: arkts.AstNode): a
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(varName),
-            expression
-        )]
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(varName),
+                expression
+            ),
+        ]
     );
 }
 
 function createBackingFieldExpression(varName: string): arkts.TSNonNullExpression {
     return arkts.factory.createTSNonNullExpression(
         arkts.factory.createMemberExpression(
-        arkts.factory.createThisExpression(),
-        arkts.factory.createIdentifier(backingField(varName)),
-        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-        false,
-        false
+            arkts.factory.createThisExpression(),
+            arkts.factory.createIdentifier(backingField(varName)),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
         )
     );
 }
-
 
 function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): arkts.Statement {
     return createVariableLet(
@@ -172,26 +179,24 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
         arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.GETCOMPATIBLESTATE),
             undefined,
-            [
-                stateVar()
-            ]
+            [stateVar()]
         )
     );
 }
 
 /**
  * Processes a nested object literal and generates code to instantiate and populate it using ESValue methods.
- * 
+ *
  * Converts a nested object structure into a sequence of statements that:
  * 1. Instantiate empty objects via `ESValue.instantiateEmptyObject()`
  * 2. Sets properties on these objects using `setProperty()`
  * 3. Nests objects by assigning child objects as properties of parent objects
- * 
+ *
  * @param target - A nested object literal (e.g., { b: { c: { d: '1' }, cc: { d: '1' } } })
  * @returns Generated code statements that reconstruct the input object using ESValue APIs
  * @example
  * Input: { b: { c: { d: '1' }, cc: { d: '1' } } }
- * Output: 
+ * Output:
  * let param0 = ESValue.instantiateEmptyObject();
  * let param00 = ESValue.instantiateEmptyObject();
  * param00.setProperty("d", ESValue.wrap("1"));
@@ -201,37 +206,33 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * param0.setProperty("cc", param01);
  * param.setProperty("b", param0);
  */
-function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[], keyName: string): void {
+function processObjectLiteral(
+    target: arkts.ObjectExpression,
+    curParam: string,
+    result: arkts.Statement[],
+    keyName: string
+): void {
     if (curParam !== InteroperAbilityNames.PARAM) {
         const createParam = createEmptyESValue(curParam);
         result.push(createParam);
     }
-    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression; }) => {
+    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression }) => {
         const paramName = curParam + keyName;
         const key = property.key;
         const value = property.value;
         if (arkts.isObjectExpression(value)) {
             processObjectLiteral(value, paramName, result, keyName);
-            const setProperty = setPropertyESValue(
-                curParam,
-                key.name,
-                arkts.factory.createIdentifier(paramName)
-            );
+            const setProperty = setPropertyESValue(curParam, key.name, arkts.factory.createIdentifier(paramName));
             result.push(setProperty);
         } else {
-            const setProperty = setPropertyESValue(
-                curParam,
-                key.name,
-                getWrapValue(value)
-            );
+            const setProperty = setPropertyESValue(curParam, key.name, getWrapValue(value));
             result.push(setProperty);
         }
     });
 }
 
-
 /**
- * 
+ *
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process @Link data interoperability
  * @example
@@ -240,7 +241,12 @@ function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, 
  * let __Proxy_state = getCompatibleState(this.state);
  * param.setProperty("link", __Proxy_state);
  */
-export function processLink(keyName: string, value: arkts.Expression, type: arkts.TypeNode, proxySet: Set<string>): arkts.Statement[] {
+export function processLink(
+    keyName: string,
+    value: arkts.Expression,
+    type: arkts.TypeNode,
+    proxySet: Set<string>
+): arkts.Statement[] {
     const valueDecl = arkts.getDecl(value);
     const result: arkts.Statement[] = [];
     if (valueDecl instanceof arkts.ClassProperty) {
@@ -252,11 +258,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
             const getProxy = getStateProxy(proxyName, stateVar);
             result.push(getProxy);
         }
-        const setParam = setPropertyESValue(
-            'param',
-            keyName,
-            arkts.factory.createIdentifier(proxyName)
-        );
+        const setParam = setPropertyESValue('param', keyName, arkts.factory.createIdentifier(proxyName));
         result.push(setParam);
     } else {
         throw Error('unsupported data for Link');
@@ -265,7 +267,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 }
 
 /**
- * 
+ *
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
@@ -274,20 +276,16 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
     if (arkts.isObjectExpression(value)) {
         processObjectLiteral(value, InteroperAbilityNames.PARAM, result, keyName);
     } else {
-        const setProperty = setPropertyESValue(
-            InteroperAbilityNames.PARAM,
-            keyName,
-            getWrapValue(value)
-        );
+        const setProperty = setPropertyESValue(InteroperAbilityNames.PARAM, keyName, getWrapValue(value));
         result.push(setProperty);
     }
     return result;
 }
 
 /**
- * 
- * @param keyName 
- * @param value 
+ *
+ * @param keyName
+ * @param value
  * @returns generate code to process @BuilderParam interoperability
  * @example
  * Input: {builderParam: this.builder}
@@ -297,18 +295,13 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
     const result: arkts.Statement[] = [];
     const needUpdate: boolean = checkUpdatable(value);
     const newValue = arkts.factory.createCallExpression(
-        needUpdate ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
-        arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+        needUpdate
+            ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER)
+            : arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
         undefined,
-        [
-            value
-        ]
+        [value]
     );
-    const setProperty = setPropertyESValue(
-        InteroperAbilityNames.PARAM,
-        keyName,
-        newValue
-    );
+    const setProperty = setPropertyESValue(InteroperAbilityNames.PARAM, keyName, newValue);
     result.push(setProperty);
     return result;
 }
@@ -316,7 +309,11 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
 function getIdentifier(value: arkts.AstNode): arkts.identifier | undefined {
     if (arkts.isIdentifier(value)) {
         return value;
-    } else if (arkts.isMemberExpression(value) && arkts.isThisExpression(value.object) && arkts.isIdentifier(value.property)) {
+    } else if (
+        arkts.isMemberExpression(value) &&
+        arkts.isThisExpression(value.object) &&
+        arkts.isIdentifier(value.property)
+    ) {
         return value.property;
     } else {
         return undefined;

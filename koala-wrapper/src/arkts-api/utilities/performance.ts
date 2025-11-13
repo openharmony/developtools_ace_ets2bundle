@@ -14,7 +14,7 @@
  */
 
 import * as process from 'process';
-import { global as localGlobal} from '../static/global';
+import { global as localGlobal } from '../static/global';
 
 const BYTES_PER_KIBIBYTE = 1024;
 
@@ -30,11 +30,11 @@ interface MemoryContext {
 }
 
 interface Event {
-    name: string,
-    startTime: number,
-    endTime?: number,
-    parentEvent?: string,
-    duration?: number
+    name: string;
+    startTime: number;
+    endTime?: number;
+    parentEvent?: string;
+    duration?: number;
 }
 
 function formatTime(ms: number): string {
@@ -42,7 +42,7 @@ function formatTime(ms: number): string {
     const seconds = Math.floor((ms / 1000) % 60);
     const minutes = Math.floor((ms / (1000 * 60)) % 60);
     const hours = Math.floor(ms / (1000 * 60 * 60));
-  
+
     return `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}:${pad(milliseconds, 3)}`;
 }
 
@@ -55,22 +55,34 @@ function round(value: number, index: number = 2): number {
     return Math.round(value * factor) / factor;
 }
 
+interface DetailedEventInfo {
+    duration: number;
+    count: number;
+}
+
 export class Performance {
     private static instance: Performance;
     private events: Map<string, Event>;
+    private detailedEvents: Map<string, Event>;
     private historyEvents = new Map<string | null, Event[]>();
     private scopes: string[];
     private shouldSkip: boolean;
+    private shouldSkipDetail: boolean;
     private totalDuration: number;
     private memoryContexts = new Map<string, MemoryContext>();
     private memoryTrackerEnable: boolean;
+    private detailedEventInfos: Map<string, DetailedEventInfo>;
+
     private constructor() {
         this.events = new Map();
+        this.detailedEvents = new Map();
         this.historyEvents = new Map();
         this.scopes = [];
         this.shouldSkip = true;
+        this.shouldSkipDetail = true;
         this.memoryTrackerEnable = false;
         this.totalDuration = 0;
+        this.detailedEventInfos = new Map<string, DetailedEventInfo>();
     }
 
     public static getInstance(): Performance {
@@ -80,8 +92,14 @@ export class Performance {
         return this.instance;
     }
 
-    skip(shouldSkip: boolean = true): void {
+    skip(shouldSkip: boolean = true): this {
         this.shouldSkip = shouldSkip;
+        return this;
+    }
+
+    skipDetail(shouldSkipDetail: boolean = true): this {
+        this.shouldSkipDetail = shouldSkipDetail;
+        return this;
     }
 
     enableMemoryTracker(enableMemoryTracker: boolean = false): void {
@@ -97,6 +115,57 @@ export class Performance {
         this.events.set(name, newEvent);
         this.scopes.push(name);
         return newEvent;
+    }
+
+    logDetailedEventInfos(shouldLog: boolean = false): void {
+        if (!shouldLog) {
+            return;
+        }
+        const sortedEvents = new Map([...this.detailedEventInfos.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+        for (const [key, value] of sortedEvents) {
+            const dura = formatTime(value.duration);
+            const duraRound = round(value.duration);
+            const perDura = formatTime(value.duration / value.count);
+            const duraPerDura = round(value.duration / value.count);
+            console.log(
+                `[PERFORMANCE] name: ${key}, detailed-total-duration: ${dura}(${duraRound}), total-count: ${value.count}, time-per-conversion: ${perDura}(${duraPerDura})`
+            );
+        }
+    }
+
+    createDetailedEvent(name: string) {
+        if (this.shouldSkipDetail) {
+            return { name: '', startTime: 0 };
+        }
+        const startTime: number = performance.now();
+        const newEvent: Event = { name, startTime };
+        this.detailedEvents.set(name, newEvent);
+    }
+
+    stopDetailedEvent(name: string, shouldLog: boolean = false) {
+        if (this.shouldSkipDetail) {
+            return { name: '', startTime: 0 };
+        }
+        if (!this.detailedEvents.has(name)) {
+            throw new Error(`Event ${name} is not created.`);
+        }
+
+        const event: Event = this.detailedEvents.get(name)!;
+        const endTime: number = performance.now();
+        const duration: number = endTime - event.startTime;
+
+        let totalDetailedDuration = duration;
+        let totalDetailedCount = 1;
+        if (this.detailedEventInfos.has(name)) {
+            const lastInfo = this.detailedEventInfos.get(name)!;
+            totalDetailedDuration += lastInfo.duration;
+            totalDetailedCount += lastInfo.count;
+        }
+
+        this.detailedEventInfos.set(name, {
+            duration: totalDetailedDuration,
+            count: totalDetailedCount,
+        });
     }
 
     stopEvent(name: string, shouldLog: boolean = false): Event {
@@ -121,7 +190,9 @@ export class Performance {
 
         if (shouldLog) {
             console.log(
-                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(duration)}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(
+                    duration
+                )}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
             );
         }
 
@@ -136,7 +207,7 @@ export class Performance {
             return { name: '', startTime: 0 };
         }
         if (this.scopes.length === 0) {
-            throw new Error("No last event");
+            throw new Error('No last event');
         }
         const name: string = this.scopes.pop()!;
         if (!this.events.has(name)) {
@@ -153,7 +224,9 @@ export class Performance {
 
         if (shouldLog) {
             console.log(
-                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(duration)}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
+                `[PERFORMANCE] name: ${event.name}, parent: ${parentEvent}, duration: ${formatTime(duration)}(${round(
+                    duration
+                )}), total: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`
             );
         }
 
@@ -167,7 +240,7 @@ export class Performance {
         if (this.shouldSkip) {
             return;
         }
-        for (let i = 0; i < this.scopes.length; i ++) {
+        for (let i = 0; i < this.scopes.length; i++) {
             this.stopLastEvent(shouldLog);
         }
         this.events = new Map();
@@ -175,6 +248,8 @@ export class Performance {
 
     clearTotalDuration(): void {
         this.totalDuration = 0;
+        this.detailedEventInfos.clear();
+        this.detailedEvents.clear();
     }
 
     clearHistory(): void {
@@ -189,8 +264,8 @@ export class Performance {
         function buildVisualization(parentKey: string | null, indentLevel: number): [string, number] {
             const children = that.historyEvents.get(parentKey) || [];
             let result = '';
-    
-            children.forEach(child => {
+
+            children.forEach((child) => {
                 const indent = '  '.repeat(indentLevel);
                 const duration = child.duration ?? 0;
                 const [_result, count] = buildVisualization(child.name, indentLevel + 1);
@@ -203,10 +278,10 @@ export class Performance {
 
         const [finalResult, _] = buildVisualization(null, 0);
         if (shouldLog) {
-          console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
-          console.log(`TOTAL: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`);
-          console.log(finalResult.trimEnd());
-          console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
+            console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
+            console.log(`TOTAL: ${formatTime(this.totalDuration)}(${round(this.totalDuration)})`);
+            console.log(finalResult.trimEnd());
+            console.log(`[PERFORMANCE] ===== FINAL RESULT ====`);
         }
     }
 
@@ -226,8 +301,8 @@ export class Performance {
                 heapTotal: startMemory.heapTotal / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE),
                 heapUsed: startMemory.heapUsed / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE),
                 external: startMemory.external / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE),
-                arrayBuffers: (startMemory.arrayBuffers || 0) / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
-            }
+                arrayBuffers: (startMemory.arrayBuffers || 0) / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE),
+            },
         });
 
         return;
@@ -259,7 +334,9 @@ export class Performance {
             heapTotal: endMemory.heapTotal / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE) - context.startMemory.heapTotal,
             heapUsed: endMemory.heapUsed / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE) - context.startMemory.heapUsed,
             external: endMemory.external / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE) - context.startMemory.external,
-            arrayBuffers: ((endMemory.arrayBuffers || 0) / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)) - context.startMemory.arrayBuffers
+            arrayBuffers:
+                (endMemory.arrayBuffers || 0) / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE) -
+                context.startMemory.arrayBuffers,
         };
         const duration = endTime - context.startTime;
 
@@ -268,12 +345,41 @@ export class Performance {
         console.log('---------------------------------------------------------------');
         console.log('[PERFORMANCE]', `内存类型       | 开始值(MB) | 结束值(MB) | 增量(MB)`);
         console.log('---------------------------------------------------------------');
-        console.log('[PERFORMANCE]', `RSS            | ${context.startMemory.rss.toFixed(2)}    | ${(endMemory.rss / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)).toFixed(2)}    | ${memoryDiff.rss.toFixed(2)}`);
-        console.log('[PERFORMANCE]', `Heap Total     | ${context.startMemory.heapTotal.toFixed(2)}    | ${(endMemory.heapTotal / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)).toFixed(2)}    | ${memoryDiff.heapTotal.toFixed(2)}`);
-        console.log('[PERFORMANCE]', `Heap Used      | ${context.startMemory.heapUsed.toFixed(2)}    | ${(endMemory.heapUsed / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)).toFixed(2)}    | ${memoryDiff.heapUsed.toFixed(2)}`);
-        console.log('[PERFORMANCE]', `External       | ${context.startMemory.external.toFixed(2)}    | ${(endMemory.external / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)).toFixed(2)}    | ${memoryDiff.external.toFixed(2)}`);
+        console.log(
+            '[PERFORMANCE]',
+            `RSS            | ${context.startMemory.rss.toFixed(2)}    | ${(
+                endMemory.rss /
+                (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
+            ).toFixed(2)}    | ${memoryDiff.rss.toFixed(2)}`
+        );
+        console.log(
+            '[PERFORMANCE]',
+            `Heap Total     | ${context.startMemory.heapTotal.toFixed(2)}    | ${(
+                endMemory.heapTotal /
+                (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
+            ).toFixed(2)}    | ${memoryDiff.heapTotal.toFixed(2)}`
+        );
+        console.log(
+            '[PERFORMANCE]',
+            `Heap Used      | ${context.startMemory.heapUsed.toFixed(2)}    | ${(
+                endMemory.heapUsed /
+                (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
+            ).toFixed(2)}    | ${memoryDiff.heapUsed.toFixed(2)}`
+        );
+        console.log(
+            '[PERFORMANCE]',
+            `External       | ${context.startMemory.external.toFixed(2)}    | ${(
+                endMemory.external /
+                (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
+            ).toFixed(2)}    | ${memoryDiff.external.toFixed(2)}`
+        );
         if (endMemory.arrayBuffers !== undefined) {
-            console.log(`Array Buffers  | ${context.startMemory.arrayBuffers.toFixed(2)}    | ${((endMemory.arrayBuffers || 0) / (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)).toFixed(2)}    | ${memoryDiff.arrayBuffers.toFixed(2)}`);
+            console.log(
+                `Array Buffers  | ${context.startMemory.arrayBuffers.toFixed(2)}    | ${(
+                    (endMemory.arrayBuffers || 0) /
+                    (BYTES_PER_KIBIBYTE * BYTES_PER_KIBIBYTE)
+                ).toFixed(2)}    | ${memoryDiff.arrayBuffers.toFixed(2)}`
+            );
         }
         console.log('---------------------------------------------------------------');
         this.memoryContexts.delete(label);

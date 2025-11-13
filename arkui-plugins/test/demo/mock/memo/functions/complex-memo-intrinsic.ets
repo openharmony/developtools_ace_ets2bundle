@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
 
@@ -40,7 +40,7 @@ export function cb(callback?: () => void) {
 
 @memo_intrinsic
 export function impl<T>(
-  @memo
+  @Memo
   style: ((attributes: IA<T>) => void) | undefined,
   arr: SimpleArray<T>,
   err: string = 'error message'
@@ -66,8 +66,8 @@ export function impl<T>(
 }
 
 class Use {
-  @memo test() {
-    const style = @memo (attributes: IA<number>) => {};
+  @Memo test() {
+    const style = @Memo (attributes: IA<number>) => {};
     const arr = [1, 2, 3, 4];
     impl(style, arr);
   }

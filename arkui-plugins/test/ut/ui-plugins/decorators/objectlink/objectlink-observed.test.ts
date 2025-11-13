@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -126,7 +126,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public getDate(): number {
     return 0;
   }
+
+  static {
   
+  }
 }
 
 @Observed() class NewDate implements IObservedObject, ISubscribedWatches {
@@ -160,10 +163,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONRename({newName:"data"}) private __backing_data: DateClass = new DateClass(11);
   
-  public constructor(data: DateClass) {
-    this.data = data;
-  }
-  
   public get data(): DateClass {
     this.conditionalAddRef(this.__meta);
     return this.__backing_data;
@@ -176,7 +175,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.executeOnSubscribingWatches("data");
     }
   }
+
+  public constructor(data: DateClass) {
+    this.data = data;
+  }
+
+  static {
   
+  }
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -225,7 +231,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
@@ -275,7 +284,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -293,14 +305,14 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', '(DateClass | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', '(DateClass | undefined)', [dumpAnnotation('ObjectLink')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_data', '(IObjectLinkDecoratedVariable<DateClass> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_data', '(boolean | undefined)')}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}
   
@@ -313,7 +325,7 @@ function testObjectLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test objectlink observed transform',
-    [objectlinkTrackTransform, uiNoRecheck, recheck],
+    [objectlinkTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObjectLinkTransformer],
     },

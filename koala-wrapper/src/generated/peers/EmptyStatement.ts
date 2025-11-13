@@ -31,10 +31,13 @@ import {
 
 import { Statement } from "./Statement"
 export class EmptyStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EMPTY_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EMPTY_STATEMENT;
     }
     static createEmptyStatement(): EmptyStatement {
         return new EmptyStatement(global.generatedEs2panda._CreateEmptyStatement(global.context))

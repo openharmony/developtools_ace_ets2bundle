@@ -14,6 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { BuiltInNames } from '../common/predefines';
+import { isArrowFunctionAsValue } from '../collectors/memo-collectors/utils';
 import { factory } from './memo-factory';
 import {
     filterMemoSkipParams,
@@ -29,8 +31,6 @@ import {
     PositionalIdTracker,
 } from './utils';
 import { InternalsTransformer } from './internal-transformer';
-import { GenSymPrefix } from '../common/predefines';
-import { isArrowFunctionAsValue } from '../collectors/memo-collectors/utils';
 
 export interface CachedMetadata extends arkts.AstNodeCacheValueMetadata {
     internalsTransformer?: InternalsTransformer;
@@ -142,10 +142,9 @@ export class RewriteFactory {
             return node;
         }
         if (arkts.isArrowFunctionExpression(value)) {
-            return arkts.factory.updateProperty(node, node.key, RewriteFactory.rewriteArrowFunction(value, metadata));
-        }
-        if (isArrowFunctionAsValue(value)) {
-            return arkts.factory.updateProperty(node, node.key, RewriteFactory.rewriteTsAsExpression(value, metadata));
+            node.setValue(RewriteFactory.rewriteArrowFunction(value, metadata));
+        } else if (isArrowFunctionAsValue(value)) {
+            node.setValue(RewriteFactory.rewriteTsAsExpression(value, metadata));
         }
         return node;
     }
@@ -320,7 +319,10 @@ export class RewriteFactory {
         node: arkts.Identifier,
         metadata?: CachedMetadata
     ): arkts.Identifier | arkts.MemberExpression {
-        if (!node.name.startsWith(GenSymPrefix.INTRINSIC) && !node.name.startsWith(GenSymPrefix.UI)) {
+        if (
+            !node.name.startsWith(BuiltInNames.GENSYM_INTRINSIC_PREFIX) && 
+            !node.name.startsWith(BuiltInNames.GENSYM_UI_PREFIX)
+        ) {
             return factory.createMemoParameterAccess(node.name);
         }
         return node;

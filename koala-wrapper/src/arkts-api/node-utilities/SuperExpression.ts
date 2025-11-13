@@ -14,11 +14,21 @@
  */
 
 import { SuperExpression } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateSuperExpression(original: SuperExpression): SuperExpression {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(SuperExpression.updateSuperExpression, attachModifiers);
+    const update = updateThenAttach(
+        SuperExpression.updateSuperExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original);
 }

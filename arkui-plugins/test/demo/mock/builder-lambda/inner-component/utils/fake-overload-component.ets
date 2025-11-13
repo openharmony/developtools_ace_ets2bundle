@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import { memo, ComponentBuilder } from "arkui.stateManagement.runtime"
+import { ComponentBuilder } from "arkui.component.builder"
+import { Memo } from "arkui.incremental.annotation"
 
 interface FakeOptions {
     str?: string;
@@ -23,25 +24,25 @@ interface FakeComponentAttribute {
     
 }
 
-@memo
+@Memo
 @ComponentBuilder
 export declare function FakeComponent(
     str: string,
-    @memo
+    @Memo
     content_?: () => void,
 ): FakeComponentAttribute;
 
-@memo
+@Memo
 @ComponentBuilder
 export declare function FakeComponent(
     options?: FakeOptions, 
-    @memo
+    @Memo
     content_?: () => void,
 ): FakeComponentAttribute;
 
-@memo
+@Memo
 @ComponentBuilder
 export declare function FakeComponent(
-    @memo
+    @Memo
     content_?: () => void,
 ): FakeComponentAttribute;

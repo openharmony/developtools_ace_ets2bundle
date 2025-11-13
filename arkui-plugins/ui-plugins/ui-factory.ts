@@ -24,7 +24,8 @@ import {
     optionsHasField,
 } from './utils';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
-import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
+import { BuiltInNames, DecoratorNames } from '../common/predefines';
+import { GenSymGenerator } from '../common/gensym-generator';
 import { needDefiniteOrOptionalModifier } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 
@@ -161,7 +162,10 @@ export class factory {
     /**
      * create complex type from string and type parameter, e.g. `Set<T>`
      */
-    static createComplexTypeFromStringAndTypeParameter(name: string, params: readonly arkts.TypeNode[]): arkts.TypeNode {
+    static createComplexTypeFromStringAndTypeParameter(
+        name: string,
+        params: readonly arkts.TypeNode[]
+    ): arkts.TypeNode {
         return arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
                 arkts.factory.createIdentifier(name),
@@ -293,6 +297,7 @@ export class factory {
 
     /**
      * create intrinsic `@Retention({policy:"SOURCE"})` AnnotationDeclaration with configurations.
+     * @deprecated
      */
     static createIntrinsicAnnotationDeclaration(
         config: PartialExcept<IntrinsicAnnotationDeclarationConfiguration, 'expr'>
@@ -479,7 +484,7 @@ export class factory {
         return arkts.factory.createClassStaticBlock(
             arkts.factory.createFunctionExpression(
                 factory.createScriptFunction({
-                    key: arkts.factory.createIdentifier(ArkTsDefaultNames.DEFAULT_STATIC_BLOCK_NAME),
+                    key: arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
                     body: arkts.factory.createBlock([]),
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     flags:
@@ -525,5 +530,64 @@ export class factory {
             return undefined;
         }
         return this.createTypeReferenceFromString(typeName);
+    }
+
+    /**
+     * create `<callee>?.<typeArgs>(<args>)` or `{let _tmp = <callee>; _tmp == null ? undefined : _tmp<typeArgs>(<args>)}` from given `isLowered` flag.
+     */
+    static createOptionalCall(
+        callee: arkts.Expression,
+        typeArgs: readonly arkts.TypeNode[] | undefined,
+        args: readonly arkts.AstNode[] | undefined,
+        isLowered?: boolean
+    ): arkts.Expression {
+        if (!isLowered) {
+            return arkts.factory.createCallExpression(callee, typeArgs, args, true);
+        }
+        const id = GenSymGenerator.getInstance().id();
+        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), typeArgs, args);
+        const statements: arkts.Statement[] = [
+            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), callee),
+            factory.generateTernaryExpression(id, alternate),
+        ];
+        return arkts.factory.createBlockExpression(statements);
+    }
+
+    /**
+     * generate a variable declaration, e.g. `let <left> = <right>`;
+     *
+     * @param left left expression.
+     * @param right right expression.
+     */
+    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
+        return arkts.factory.createVariableDeclaration(
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
+            [
+                arkts.factory.createVariableDeclarator(
+                    arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                    left,
+                    right
+                ),
+            ]
+        );
+    }
+
+    /**
+     * generate a ternary expression, e.g. `<testLeft> ? undefined : <alternate>`;
+     *
+     * @param testLeft the left hand of the test condition.
+     * @param alternate the alternate of the ternary expression
+     */
+    static generateTernaryExpression(testLeft: string, alternate: arkts.Expression): arkts.ExpressionStatement {
+        const test = arkts.factory.createBinaryExpression(
+            arkts.factory.createIdentifier(testLeft),
+            arkts.factory.createNullLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EQUAL
+        );
+        const consequent: arkts.Expression = arkts.factory.createUndefinedLiteral();
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createConditionalExpression(test, consequent, alternate)
+        );
     }
 }

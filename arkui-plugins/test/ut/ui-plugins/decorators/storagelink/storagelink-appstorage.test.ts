@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -122,7 +122,10 @@ class Data {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -137,11 +140,11 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "PropA" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)', [dumpAnnotation('StorageLink', { value: "PropB" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLinkObject', '(IStorageLinkDecoratedVariable<Data> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLinkObject', '(boolean | undefined)')}
   
@@ -154,7 +157,7 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink with appstorage',
-    [storageLinkTransform, uiNoRecheck, recheck],
+    [storageLinkTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStorageLinkTransformer],
     },

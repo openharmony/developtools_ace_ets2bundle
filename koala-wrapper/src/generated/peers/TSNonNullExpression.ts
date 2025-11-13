@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class TSNonNullExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_NON_NULL_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_NON_NULL_EXPRESSION;
     }
     static createTSNonNullExpression(expr?: Expression): TSNonNullExpression {
         return new TSNonNullExpression(global.generatedEs2panda._CreateTSNonNullExpression(global.context, passNode(expr)))

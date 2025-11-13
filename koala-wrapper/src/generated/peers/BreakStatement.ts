@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class BreakStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BREAK_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_BREAK_STATEMENT;
     }
     static createBreakStatement(): BreakStatement {
         return new BreakStatement(global.generatedEs2panda._CreateBreakStatement(global.context))

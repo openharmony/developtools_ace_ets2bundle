@@ -17,20 +17,93 @@ import * as arkts from '@koalaui/libarkts';
 
 import { expectName } from '../../common/arkts-utils';
 import { GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { checkIsStructMethodFromInfo } from '../../collectors/ui-collectors/utils';
 import { ClassInfo, computedField } from '../utils';
 import { generateThisBacking, generateGetOrSetCall } from './utils';
-import { MethodTranslator } from './base';
-import { InitializerConstructor } from './types';
+import {
+    BaseMethodTranslator,
+    MethodCacheTranslator,
+    MethodCacheTranslatorOptions,
+    MethodTranslator,
+    MethodTranslatorOptions,
+} from './base';
 import { factory as UIFactory } from '../ui-factory';
 import { factory } from './factory';
 import { ComputedCache } from './cache/computedCache';
 
-export class ComputedTranslator extends MethodTranslator implements InitializerConstructor {
+function fieldWithComputedMethod(
+    this: BaseMethodTranslator,
+    newName: string,
+    originalName: string,
+    modifiers: arkts.Es2pandaModifierFlags
+): arkts.ClassProperty {
+    const field: arkts.ClassProperty = arkts.factory.createClassProperty(
+        arkts.factory.createIdentifier(newName),
+        factory.generateStateMgmtFactoryCall(
+            StateManagementTypes.MAKE_COMPUTED,
+            this.returnType,
+            [
+                arkts.factory.createArrowFunction(
+                    UIFactory.createScriptFunction({
+                        body: this.method.scriptFunction.body?.clone(),
+                        modifiers: modifiers,
+                        flags:
+                            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
+                    })
+                ),
+                arkts.factory.createStringLiteral(originalName),
+            ],
+            false
+        ),
+        undefined,
+        modifiers,
+        false
+    );
+    return field;
+}
+
+function getterWithComputedMethod(
+    this: BaseMethodTranslator,
+    newName: string,
+    className: string,
+    isStatic: boolean
+): arkts.MethodDefinition {
+    const scriptFunction = this.method.scriptFunction;
+    scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN);
+    scriptFunction.setBody(
+        arkts.factory.createBlock([arkts.factory.createReturnStatement(computedGetCall(newName, className, isStatic))])
+    );
+    return this.method;
+}
+
+function computedGetCall(newName: string, className: string, isStatic: boolean): arkts.CallExpression {
+    const thisValue: arkts.Expression = isStatic
+        ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(className), newName)
+        : generateThisBacking(newName, false, true);
+    return generateGetOrSetCall(thisValue, GetSetTypes.GET);
+}
+
+export interface IComputedTranslator {
+    field(newName: string, originalName: string, isStatic: boolean): arkts.ClassProperty;
+    getter(newName: string, isStatic: boolean): arkts.MethodDefinition;
+}
+
+export class ComputedTranslator extends MethodTranslator implements IComputedTranslator {
     private isStatic: boolean;
 
-    constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
-        super(method, classInfo);
+    constructor(options: MethodTranslatorOptions) {
+        super(options);
         this.isStatic = this.method.isStatic;
+    }
+
+    field(newName: string, originalName: string, isStatic: boolean): arkts.ClassProperty {
+        const modifiers = isStatic ? this.method.modifiers : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
+        return fieldWithComputedMethod.bind(this)(newName, originalName, modifiers);
+    }
+
+    getter(newName: string, isStatic: boolean): arkts.MethodDefinition {
+        return getterWithComputedMethod.bind(this)(newName, this.classInfo.className, isStatic);
     }
 
     translateMember(): arkts.AstNode[] {
@@ -47,50 +120,52 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const modifiers = this.isStatic ? this.method.modifiers : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
-        const field: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(newName),
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_COMPUTED,
-                this.returnType,
-                [
-                    arkts.factory.createArrowFunction(
-                        UIFactory.createScriptFunction({
-                            body: this.method.scriptFunction.body?.clone(),
-                            modifiers: modifiers,
-                            flags:
-                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
-                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
-                        })
-                    ),
-                    arkts.factory.createStringLiteral(originalName),
-                ],
-                false
-            ),
-            undefined,
-            modifiers,
-            false
-        );
+        const field = this.field(newName, originalName, this.isStatic);
+        const getter = this.getter(newName, this.isStatic);
+        return [field, getter];
+    }
+}
 
-        const originGetter: arkts.MethodDefinition = UIFactory.updateMethodDefinition(this.method, {
-            function: {
-                returnTypeAnnotation: this.returnType,
-                flags:
-                    this.method.scriptFunction.flags |
-                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
-                body: arkts.factory.createBlock([
-                    arkts.factory.createReturnStatement(this.generateComputedGet(newName)),
-                ]),
-            },
-        });
+export class ComputedCacheTranslator extends MethodCacheTranslator implements IComputedTranslator {
+    private isStatic: boolean;
 
-        return [field, originGetter];
+    constructor(options: MethodCacheTranslatorOptions) {
+        super(options);
+        this.isStatic = this.method.isStatic;
     }
 
-    generateComputedGet(newName: string): arkts.CallExpression {
-        const thisValue: arkts.Expression = this.isStatic
-            ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.classInfo.className), newName)
-            : generateThisBacking(newName, false, true);
-        return generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    field(newName: string, originalName: string, isStatic: boolean): arkts.ClassProperty {
+        const modifiers = isStatic ? this.methodInfo.modifiers! : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
+        return fieldWithComputedMethod.bind(this)(newName, originalName, modifiers);
+    }
+
+    getter(newName: string, isStatic: boolean): arkts.MethodDefinition {
+        let className: string;
+        if (checkIsStructMethodFromInfo(this.methodInfo)) {
+            className = this.methodInfo.structInfo?.name!;
+        } else {
+            className = this.methodInfo.classInfo?.name!;
+        }
+        return getterWithComputedMethod.bind(this)(newName, className, isStatic);
+    }
+
+    translateMember(): arkts.AstNode[] {
+        const originalName: string = this.methodInfo.name!;
+        const newName: string = computedField(originalName);
+        this.cacheTranslatedInitializer(newName);
+        return this.translateWithoutInitializer(newName, originalName);
+    }
+
+    cacheTranslatedInitializer(newName: string): void {
+        if (!checkIsStructMethodFromInfo(this.methodInfo) || this.isStatic) {
+            return;
+        }
+        ComputedCache.getInstance().collectComputed(this.methodInfo.structInfo?.name!, { newName });
+    }
+
+    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
+        const field = this.field(newName, originalName, this.isStatic);
+        const getter = this.getter(newName, this.isStatic);
+        return [field, getter];
     }
 }

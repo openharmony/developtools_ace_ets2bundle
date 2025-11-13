@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -84,12 +84,36 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-  
+
   private __monitor_onStrChange1: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["message", "name"]}) public onStrChange1(monitor: IMonitor) {
+    monitor.dirty.forEach(((path: string) => {
+      console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value(path);
+      (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value(path);
+      (((gensym%%_75) == (null)) ? undefined : gensym%%_75.now)})}\`);
+    }));
+  }
   
   private __monitor_onStrChange2: (IMonitorDecoratedVariable | undefined);
   
+  @Monitor({value:["message", "name"]}) public onStrChange2(monitor: IMonitor) {
+    monitor.dirty.forEach(((path: string) => {
+      console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value(path);
+      (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value(path);
+      (((gensym%%_77) == (null)) ? undefined : gensym%%_77.now)})}\`);
+    }));
+  }
+  
   private __monitor_onStrChange3: (IMonitorDecoratedVariable | undefined);
+  
+  @Monitor({value:["name"]}) public onStrChange3(monitor: IMonitor) {
+    monitor.dirty.forEach(((path: string) => {
+      console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value(path);
+      (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value(path);
+      (((gensym%%_79) == (null)) ? undefined : gensym%%_79.now)})}\`);
+    }));
+  }
   
   private __backing_message?: ILocalDecoratedVariable<string>;
   
@@ -121,46 +145,25 @@ function main() {}
     this.__backing_age!.set(value);
   }
   
-  @Monitor({value:["message", "name"]}) public onStrChange1(monitor: IMonitor) {
-    monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value(path);
-      (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value(path);
-      (((gensym%%_75) == (null)) ? undefined : gensym%%_75.now)})}\`);
-    }));
-  }
-  
-  @Monitor({value:["message", "name"]}) public onStrChange2(monitor: IMonitor) {
-    monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value(path);
-      (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value(path);
-      (((gensym%%_77) == (null)) ? undefined : gensym%%_77.now)})}\`);
-    }));
-  }
-  
-  @Monitor({value:["name"]}) public onStrChange3(monitor: IMonitor) {
-    monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value(path);
-      (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value(path);
-      (((gensym%%_79) == (null)) ? undefined : gensym%%_79.now)})}\`);
-    }));
-  }
-  
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'name', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'name', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_name', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_name', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'age', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'age', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_age', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_age', '(boolean | undefined)')}
   
@@ -173,7 +176,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Monitor method declared before state variables',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

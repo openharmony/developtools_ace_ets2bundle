@@ -16,8 +16,7 @@
 import { KNativePointer } from '@koalaui/interop';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 import { AstNode, UnsupportedNode } from '../peers/AstNode';
-import { global } from '../static/global';
-import { getOrPut, nodeByType } from '../class-by-peer';
+import { getOrPut, nodeByType } from '../node-by-type';
 import { traverseASTSync } from './private';
 
 export interface AstNodeCacheValue {
@@ -26,53 +25,101 @@ export interface AstNodeCacheValue {
     metadata?: AstNodeCacheValueMetadata;
 }
 
-export interface AstNodeCacheValueMetadata {
-    callName?: string;
-    hasReceiver?: boolean;
-    isSetter?: boolean;
-    isGetter?: boolean;
-    forbidTypeRewrite?: boolean;
-    isWithinTypeParams?: boolean;
-    hasMemoSkip?: boolean;
-    hasMemoIntrinsic?: boolean;
-    hasMemoEntry?: boolean;
+export type AstNodeCacheValueMetadata = {
+    [key in string]?: any;
 }
 
 export function copyCacheToClonedNode(original: AstNode, cloned: AstNode, shouldRefresh?: boolean): void {
     const traverseCallbackFn = (_original: AstNode, _cloned: AstNode): boolean => {
-        if (!NodeCache.getInstance().has(_original)) {
+        if (!NodeCacheFactory.currentCacheKey) {
+            return true;
+        }
+        const key: string = NodeCacheFactory.currentCacheKey;
+        const cache: NodeCache = NodeCacheFactory.getInstance().getCache(key);
+        if (!cache.has(_original)) {
             return false;
         }
         if (shouldRefresh) {
-            NodeCache.getInstance().refresh(_original, _cloned);
+            cache.refresh(_original, _cloned);
         } else {
-            const value = NodeCache.getInstance().get(_original)!;
-            NodeCache.getInstance().collect(_cloned, value.metadata);
+            const value = cache.get(_original)!;
+            cache.collect(_cloned, value.metadata);
+
         }
-        return false;
+        return cache.shouldUpdateByPeer(_cloned.peer);
     };
     traverseASTSync(original, cloned, traverseCallbackFn);
 }
 
 export class NodeCache {
+    private _shouldPerfLog: boolean = false;
     private _isCollected: boolean = false;
+    private _shouldCollectUpdate: boolean = false;
+    private _shouldCollect: boolean = true;
     private cacheMap: Map<KNativePointer, AstNodeCacheValue>;
-    private static instance: NodeCache;
+    private nodesToUpdate: Set<KNativePointer>;
 
-    private constructor() {
+    constructor() {
         this.cacheMap = new Map();
+        this.nodesToUpdate = new Set();
     }
 
-    static getInstance(): NodeCache {
-        if (!this.instance) {
-            this.instance = new NodeCache();
-        }
-        return this.instance;
+    shouldPerfLog(shouldLog: boolean): this {
+        this._shouldPerfLog = shouldLog;
+        return this;
+    }
+
+    shouldCollect(shouldCollect: boolean): this {
+        this._shouldCollect = shouldCollect;
+        return this;
+    }
+
+    shouldCollectUpdate(shouldCollectUpdate: boolean): this {
+        this._shouldCollectUpdate = shouldCollectUpdate;
+        return this;
     }
 
     collect(node: AstNode, metadata?: AstNodeCacheValueMetadata): void {
+        if (!this._shouldCollect) {
+            return;
+        }
+        if (this._shouldCollectUpdate) {
+            this._collectNodesToUpdate(node, node.parent);
+        }
+        this._collect(node, metadata);
+    }
+
+    shouldUpdate(node: AstNode): boolean {
+        if (!this._shouldCollectUpdate) {
+            return true;
+        }
+        return this.nodesToUpdate.has(node.peer);
+    }
+
+    shouldUpdateByPeer(peer: KNativePointer): boolean {
+        if (!this._shouldCollectUpdate) {
+            return true;
+        }
+        return this.nodesToUpdate.has(peer);
+    }
+
+    addNodeToUpdate(node: AstNode): void {
+        if (!this._isCollected && !this._shouldCollectUpdate) {
+            return;
+        }
+        this.nodesToUpdate.add(node.peer);
+    }
+
+    addNodeToUpdateByPeer(peer: KNativePointer): void {
+        if (!this._isCollected && !this._shouldCollectUpdate) {
+            return;
+        }
+        this.nodesToUpdate.add(peer);
+    }
+
+    private _collect(node: AstNode, metadata?: AstNodeCacheValueMetadata): void {
         const peer = node.peer;
-        const type = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
+        const type = node.nodeType;
         let currMetadata: AstNodeCacheValueMetadata | undefined = metadata ?? {};
         if (this.cacheMap.has(peer)) {
             const oldMetadata = this.cacheMap.get(peer)!.metadata ?? {};
@@ -83,17 +130,43 @@ export class NodeCache {
         this._isCollected = true;
     }
 
+    private _collectNodesToUpdate(node: AstNode, parent?: AstNode): void {
+        this.nodesToUpdate.add(node.peer);
+        let currParent: AstNode | undefined = parent;
+        while (!!currParent && !this.nodesToUpdate.has(currParent.peer)) {
+            this.nodesToUpdate.add(currParent.peer);
+            currParent = currParent.parent;
+        }
+        this._isCollected = true;
+    }
+
     refresh(original: AstNode, node: AstNode): void {
         let metadata: AstNodeCacheValueMetadata | undefined;
         if (this.has(original)) {
             metadata = this.get(original)?.metadata;
             this.cacheMap.delete(original.peer);
         }
-        this.collect(node, metadata);
+        this._collectNodesToUpdate(node);
+        this._collect(node, metadata);
+    }
+
+    refreshUpdate(original: AstNode, node: AstNode): void {
+        if (this.shouldUpdate(original)) {
+            this.nodesToUpdate.delete(original.peer);
+        }
+        this._collectNodesToUpdate(node, original.parent);
     }
 
     isCollected(): boolean {
         return this._isCollected;
+    }
+
+    isCollectEnabled(): boolean {
+        return this._shouldCollect;
+    }
+
+    isCollectUpdateEnabled(): boolean {
+        return this._shouldCollectUpdate;
     }
 
     has(node: AstNode): boolean {
@@ -106,6 +179,7 @@ export class NodeCache {
 
     clear(): void {
         this.cacheMap.clear();
+        this.nodesToUpdate.clear();
         this._isCollected = false;
     }
 
@@ -113,10 +187,118 @@ export class NodeCache {
         Array.from(this.cacheMap.values()).forEach(({ peer, type, metadata }) => {
             const node = nodeByType.get(type) ?? UnsupportedNode;
             const newNode = getOrPut(peer, (peer) => new node(peer)) as AstNode;
+            const shouldUpdate = this.nodesToUpdate.has(peer);
             console.log(
-                `[NODE CACHE] ptr ${peer}, type: ${type}, metadata: ${JSON.stringify(metadata)}, node: `,
+                `[NODE CACHE] ptr ${peer}, type: ${type}, shouldUpdate: ${shouldUpdate}, metadata: ${JSON.stringify(metadata)}, node: `,
                 newNode.dumpSrc()
             );
         });
+    }
+
+    perfLog(key?: string): void {
+        if (!this._shouldPerfLog) {
+            return;
+        }
+        if (!!key) {
+            console.log("[PERFORMENCE] [NODE CACHE] cache key: ", key);
+        }
+        console.log(`[PERFORMENCE] [NODE CACHE] cached-node count: `, Object.keys(this.cacheMap).length);
+        console.log(`[PERFORMENCE] [NODE CACHE] should-update-node count: `, this.nodesToUpdate.size);
+    }
+}
+
+export class NodeCacheFactory {
+    private _shouldPerfLog: boolean = false;
+    private cacheMap: Map<string, NodeCache>;
+    private static instance: NodeCacheFactory;
+
+    static currentCacheKey: string | undefined;
+
+    private constructor() {
+        this.cacheMap = new Map();
+    }
+
+    static getInstance(): NodeCacheFactory {
+        if (!this.instance) {
+            this.instance = new NodeCacheFactory();
+        }
+        return this.instance;
+    }
+
+    shouldPerfLog(shouldLog: boolean): this {
+        this._shouldPerfLog = shouldLog;
+        return this;
+    }
+
+    getCacheMap(): Map<string, NodeCache> {
+        return this.cacheMap;
+    }
+
+    getCache(key: string): NodeCache {
+        if (!this.cacheMap.has(key)) {
+            this.cacheMap.set(key, new NodeCache());
+        }
+        return this.cacheMap.get(key)!;
+    }
+
+    clear(): void {
+        this.cacheMap.forEach((cache) => {
+            cache.clear();
+        });
+        this.cacheMap = new Map();
+    }
+
+    has(node: AstNode, key?: string): boolean {
+        if (!!key) {
+            return !!this.cacheMap.get(key)?.has(node);
+        }
+        return Array.from(this.cacheMap.values()).some((cache) => cache.has(node));
+    }
+
+    shouldUpdate(node: AstNode, key?: string): boolean {
+        if (!!key) {
+            return !!this.cacheMap.get(key)?.shouldUpdate(node);
+        }
+        return Array.from(this.cacheMap.values()).some((cache) => cache.shouldUpdate(node));
+    }
+
+    refresh(original: AstNode, node: AstNode, key?: string): void {
+        if (!!key) {
+            const cache: NodeCache | undefined = this.cacheMap.get(key);
+            if (!!cache && cache.has(original)) {
+                cache.refresh(original, node);
+            }
+            return;
+        }
+        this.cacheMap.forEach((cache) => {
+            if (cache.has(original)) {
+                cache.refresh(original, node);
+            }
+        });
+    }
+
+    refreshUpdate(original: AstNode, node: AstNode, key?: string): void {
+        if (!!key) {
+            const cache: NodeCache | undefined = this.cacheMap.get(key);
+            if (!!cache && cache.shouldUpdate(original)) {
+                cache.refreshUpdate(original, node);
+            }
+            return;
+        }
+        this.cacheMap.forEach((cache) => {
+            if (cache.shouldUpdate(original)) {
+                cache.refreshUpdate(original, node);
+            }
+        });
+    }
+
+    perfLog(key: string, shouldLog: boolean = false): void {
+        if (!shouldLog) {
+            return;
+        }
+        if (!this.cacheMap.has(key)) {
+            return;
+        }
+        this.cacheMap.get(key)!.shouldPerfLog(this._shouldPerfLog).perfLog(key);
     }
 }

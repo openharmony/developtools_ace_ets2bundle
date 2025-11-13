@@ -87,7 +87,8 @@ export class BuilderFactory {
             return _node;
         }
         const newValue = BuilderFactory.rewriteBuilderArrowFunction(value);
-        return arkts.factory.updateProperty(_node, _node.key, newValue);
+        _node.setValue(newValue);
+        return _node;
     }
 
     /**

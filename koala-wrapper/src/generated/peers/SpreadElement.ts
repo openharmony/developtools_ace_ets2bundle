@@ -40,6 +40,9 @@ export class SpreadElement extends AnnotatedExpression {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SPREAD_ELEMENT);
         super(pointer);
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_SPREAD_ELEMENT;
+    }
     static createSpreadElement(nodeType: Es2pandaAstNodeType, argument?: Expression): SpreadElement {
         const result: SpreadElement = new SpreadElement(
             global.generatedEs2panda._CreateSpreadElement(global.context, nodeType, passNode(argument))

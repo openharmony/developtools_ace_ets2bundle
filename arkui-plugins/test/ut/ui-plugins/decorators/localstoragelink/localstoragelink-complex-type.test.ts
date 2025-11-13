@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -105,7 +105,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): Status {
-    for (let i = 0;((i) < (Status.#NamesArray.length));(++i)) {
+    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#NamesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -114,7 +114,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): Status {
-    for (let i = 0;((i) < (Status.#ValuesArray.length));(++i)) {
+    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (Status.#ValuesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -241,7 +241,10 @@ final class Status extends BaseEnum<int> {
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -256,35 +259,35 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayA', '(ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectA', '(Object | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectA', '(Object | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectA', '(ILocalStorageLinkDecoratedVariable<Object> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateA', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateA', '(Date | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateA', '(ILocalStorageLinkDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setA', '(Set<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'setA', '(Set<number> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setA', '(ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapA', '(Map<number, string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapA', '(Map<number, string> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapA', '(ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'unionA', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'unionA', '((string | undefined) | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop6" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_unionA', '(ILocalStorageLinkDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_unionA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classA', '(Person | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'classA', '(Person | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop7" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classA', '(ILocalStorageLinkDecoratedVariable<Person> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumA', '(Status | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumA', '(Status | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop8" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumA', '(ILocalStorageLinkDecoratedVariable<Status> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumA', '(boolean | undefined)')}
   
@@ -297,7 +300,7 @@ function testLocalStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test LocalStorageLink complex type transform',
-    [localStorageLinkTransform, uiNoRecheck, recheck],
+    [localStorageLinkTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testLocalStorageLinkTransformer],
     },

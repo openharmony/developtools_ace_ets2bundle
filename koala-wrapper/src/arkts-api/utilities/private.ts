@@ -30,6 +30,7 @@ import { classByPeer } from '../class-by-peer';
 import type { AstNode } from '../peers/AstNode';
 import { ArktsObject } from '../peers/ArktsObject';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
+import { NodeCacheFactory } from './nodeCache';
 
 export const arrayOfNullptr = new BigUint64Array([nullptr]);
 
@@ -38,6 +39,7 @@ export const allFlags = Object.values(Es2pandaModifierFlags)
     .reduce((prev, next) => prev | next, 0);
 
 export function assertValidPeer(peer: KPtr, expectedKind: Es2pandaAstNodeType): void {
+    return;
     if (peer === nullptr) {
         throwError(`invalid peer`);
     }
@@ -212,4 +214,15 @@ export function traverseASTSync(
     for (let i = 0; i < leftChildren.length; i++) {
         traverseASTSync(leftChildren[i], rightChildren[i], callbackFn);
     }
+}
+
+export function attachParent<T extends AstNode>(node: T, original: T): T {
+    node.parent = original.parent;
+    return node;
+}
+
+export function refreshNodeCache<T extends AstNode>(node: T, original: T): T {
+    NodeCacheFactory.getInstance().refresh(original, node);
+    NodeCacheFactory.getInstance().refreshUpdate(original, node);
+    return node;
 }

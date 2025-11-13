@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class PrefixAssertionExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_PREFIX_ASSERTION_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_PREFIX_ASSERTION_EXPRESSION;
     }
     static createPrefixAssertionExpression(expr?: Expression, type?: TypeNode): PrefixAssertionExpression {
         return new PrefixAssertionExpression(global.generatedEs2panda._CreatePrefixAssertionExpression(global.context, passNode(expr), passNode(type)))

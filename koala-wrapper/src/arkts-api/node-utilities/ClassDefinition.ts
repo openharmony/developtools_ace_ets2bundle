@@ -24,7 +24,11 @@ import {
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { MethodDefinition } from '../types';
-import { updateThenAttach } from '../utilities/private';
+import {
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaClassDefinitionModifiers, Es2pandaModifierFlags } from '../../generated/Es2pandaEnums';
 import { classDefinitionFlags } from '../utilities/public';
 import { Es2pandaLanguage } from '..';
@@ -59,7 +63,9 @@ export function updateClassDefinition(
 
     const update = updateThenAttach(
         ClassDefinition.update3ClassDefinition,
-        (node: ClassDefinition, original: ClassDefinition) => node.setAnnotations(original.annotations)
+        (node: ClassDefinition, original: ClassDefinition) => node.setAnnotations(original.annotations),
+        attachParent,
+        refreshNodeCache
     );
     return update(
         original,

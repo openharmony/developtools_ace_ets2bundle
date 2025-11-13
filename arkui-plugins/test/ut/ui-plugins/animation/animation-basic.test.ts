@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -101,7 +101,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -132,7 +135,7 @@ function testAnimationTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic animation transform',
-    [animationTransform, uiNoRecheck, recheck],
+    [animationTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         checked: [testAnimationTransformer],
     },

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -91,7 +91,7 @@ class Info {
   }
   
   public constructor() {}
-  
+
 }
 
 @ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
@@ -108,7 +108,7 @@ class Info {
   }
   
   public constructor() {}
-  
+
 }
 
 @ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
@@ -121,12 +121,12 @@ class Info {
   }
   
   public constructor() {}
-  
+
 }
 
 @ComponentV2() export interface __Options_Index {
   ${ignoreNewLines(`
-  infoList?: Info[];
+  @Local() infoList?: Info[];
   @Local() __backing_infoList?: Info[];
   __options_has_infoList?: boolean;
   `)}
@@ -135,8 +135,8 @@ class Info {
 
 @ComponentV2() export interface __Options_MiddleComponent {
   ${ignoreNewLines(`
-  info?: Info;
-  @Require() @Param() __backing_info?: Info;
+  @Param() @Require() info?: Info;
+  @Param() __backing_info?: Info;
   __options_has_info?: boolean;
   `)}
   
@@ -144,8 +144,8 @@ class Info {
 
 @ComponentV2() export interface __Options_SubComponent {
   ${ignoreNewLines(`
-  region?: Region;
-  @Require() @Param() __backing_region?: Region;
+  @Param() @Require() region?: Region;
+  @Param() __backing_region?: Region;
   __options_has_region?: boolean;
   `)}
   
@@ -232,7 +232,7 @@ class Info {
       ForEachImpl<Info>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Info>((() => {
           return this.infoList;
-        }), @Memo() ((info: Info) => {
+        }), ((info: Info) => {
           MiddleComponent._instantiateImpl(undefined, (() => {
             return new MiddleComponent();
           }), {
@@ -254,7 +254,10 @@ class Info {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
@@ -297,7 +300,10 @@ class Info {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
@@ -330,26 +336,29 @@ class Info {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', '(Info | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', '(Info | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', '(Region | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', '(Region | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
   
 }
@@ -365,7 +374,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Param Decorator with @Require',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { structNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, uiNoRecheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -84,30 +84,30 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
   ${ignoreNewLines(`
   hello?: string;
   __options_has_hello?: boolean;
-  state1?: boolean;
+  @State() state1?: boolean;
   @State() __backing_state1?: boolean;
   __options_has_state1?: boolean;
-  select100?: string;
+  @Require() select100?: string;
   __options_has_select100?: boolean;
-  select0?: number;
-  @Require() @State() __backing_select0?: number;
+  @State() @Require() select0?: number;
+  @State() __backing_select0?: number;
   __options_has_select0?: boolean;
-  select3?: (number | null);
-  @Require() @State() __backing_select3?: (number | null);
+  @State() @Require() select3?: (number | null);
+  @State() __backing_select3?: (number | null);
   __options_has_select3?: boolean;
-  select4?: undefined;
-  @Require() @State() __backing_select4?: undefined;
+  @State() @Require() select4?: undefined;
+  @State() __backing_select4?: undefined;
   __options_has_select4?: boolean;
-  select1?: string;
-  @Require() @PropRef() __backing_select1?: string;
+  @PropRef() @Require() select1?: string;
+  @PropRef() __backing_select1?: string;
   __options_has_select1?: boolean;
-  select2?: string[];
-  @Require() @Provide({alias:"15"}) __backing_select2?: string[];
+  @Provide({alias:"15"}) @Require() select2?: string[];
+  @Provide({alias:"15"}) __backing_select2?: string[];
   __options_has_select2?: boolean;
-  select6?: (string[] | undefined | string);
-  @Require() @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
+  @Provide({alias:"t"}) @Require() select6?: (string[] | undefined | string);
+  @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
   __options_has_select6?: boolean;
-  @BuilderParam() builder?: (()=> void);
+  @BuilderParam() @Require() builder?: (()=> void);
   __options_has_builder?: boolean;
   `)}
   
@@ -115,8 +115,8 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 @ComponentV2() export interface __Options_V2222 {
   ${ignoreNewLines(`
-  select1?: string;
-  @Require() @Param() __backing_select1?: string;
+  @Param() @Require() select1?: string;
+  @Param() __backing_select1?: string;
   __options_has_select1?: boolean;
   `)}
   
@@ -265,7 +265,10 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
@@ -289,52 +292,55 @@ function main() {}
   @Memo() public build() {}
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'state1', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'state1', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_state1', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_state1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select100', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select100', '(string | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select100', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select0', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select0', '(IStateDecoratedVariable<number> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select0', '(number | undefined)', [dumpAnnotation('State'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select0', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select0', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select3', '((number | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select3', '(IStateDecoratedVariable<(number | null)> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select3', '((number | null) | undefined)', [dumpAnnotation('State'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select3', '(IStateDecoratedVariable<(number | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select4', '(undefined | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select4', '(IStateDecoratedVariable<undefined> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select4', '(undefined | undefined)', [dumpAnnotation('State'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select4', '(IStateDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)', [dumpAnnotation('PropRef'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', '(Array<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select2', '(IProvideDecoratedVariable<Array<string>> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', '(Array<string> | undefined)', [dumpAnnotation('Provide', { alias: "15", allowOverride: false }), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select2', '(IProvideDecoratedVariable<Array<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '((Array<string> | undefined | string) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '((Array<string> | undefined | string) | undefined)', [dumpAnnotation('Provide', { alias: "t", allowOverride: false }), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '(@Memo() (()=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '(@Memo() (()=> void) | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builder', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_V2222 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', '(string | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
   
 }
@@ -350,7 +356,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Require decorator capability',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

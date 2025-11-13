@@ -22,6 +22,7 @@ import {
     ObservedNames,
     MonitorNames,
     TypeNames,
+    NodeCacheNames,
 } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
 import {
@@ -35,6 +36,7 @@ import {
 import { CustomComponentNames, optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
+import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
 
 export class factory {
     /**
@@ -50,57 +52,12 @@ export class factory {
         info?: OptionalMemberInfo
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key);
+        const alternate = this.generateConditionalAlternate(id, key, info);
         const statements: arkts.Statement[] = [
-            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
-            factory.generateTernaryExpression(id, key, info),
+            UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
+            UIFactory.generateTernaryExpression(id, alternate),
         ];
         return arkts.factory.createBlockExpression(statements);
-    }
-
-    /**
-     * generate a variable declaration, e.g. `let <left> = <right>`;
-     *
-     * @param left left expression.
-     * @param right right expression.
-     */
-    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
-        return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-            [
-                arkts.factory.createVariableDeclarator(
-                    arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-                    left,
-                    right
-                ),
-            ]
-        );
-    }
-
-    /**
-     * generate a ternary expression, e.g. `<test> ? <consequent> : <alternate>`;
-     *
-     * @param testLeft the left hand of the test condition.
-     * @param key item after ?.
-     */
-    static generateTernaryExpression(
-        testLeft: string,
-        key: string,
-        info?: OptionalMemberInfo
-    ): arkts.ExpressionStatement {
-        const test = arkts.factory.createBinaryExpression(
-            arkts.factory.createIdentifier(testLeft),
-            arkts.factory.createNullLiteral(),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_EQUAL
-        );
-        const consequent: arkts.Expression = arkts.factory.createUndefinedLiteral();
-        return arkts.factory.createExpressionStatement(
-            arkts.factory.createConditionalExpression(
-                test,
-                consequent,
-                this.generateConditionalAlternate(testLeft, key, info)
-            )
-        );
     }
 
     static generateConditionalAlternate(testLeft: string, key: string, info?: OptionalMemberInfo): arkts.Expression {
@@ -112,10 +69,10 @@ export class factory {
         return info?.isCall
             ? arkts.factory.createCallExpression(alternate, undefined, undefined)
             : info?.isNumeric
-            ? arkts.factory.createCallExpression(alternate, undefined, [
-                  arkts.factory.createNumericLiteral(Number(key)),
-              ])
-            : alternate;
+              ? arkts.factory.createCallExpression(alternate, undefined, [
+                    arkts.factory.createNumericLiteral(Number(key)),
+                ])
+              : alternate;
     }
 
     /**
@@ -130,9 +87,10 @@ export class factory {
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key1);
         let initial: arkts.Expression = factory.createBlockStatementForOptionalExpression(object, key1);
+        const alternate = this.generateConditionalAlternate(id, key2);
         const statements: arkts.Statement[] = [
-            factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), initial),
-            factory.generateTernaryExpression(id, key2),
+            UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), initial),
+            UIFactory.generateTernaryExpression(id, alternate),
         ];
         return arkts.factory.createBlockExpression(statements);
     }
@@ -262,7 +220,7 @@ export class factory {
     ): arkts.CallExpression {
         collectStateManagementTypeImport(StateManagementTypes.STATE_MANAGEMENT_FACTORY);
         if (!!typeArguments && !!memoMetadata) {
-            arkts.NodeCache.getInstance().collect(typeArguments, memoMetadata);
+            PropertyFactoryCallTypeCache.getInstance().collect({ node: typeArguments, metadata: memoMetadata });
         }
         return arkts.factory.createCallExpression(
             UIFactory.generateMemberExpression(
@@ -311,12 +269,10 @@ export class factory {
         );
     }
 
-    static judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
-        if (hasDecorator(property, DecoratorNames.WATCH)) {
-            const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
-            if (watchStr) {
-                args.push(factory.createWatchCallback(watchStr));
-            }
+    static addWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
+        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
+        if (watchStr) {
+            args.push(factory.createWatchCallback(watchStr));
         }
     }
 
@@ -329,7 +285,7 @@ export class factory {
     ): arkts.ClassProperty {
         const originType = property.typeAnnotation;
         const newType: arkts.TypeNode | undefined = !stageManagementType
-            ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY)
+            ? (property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY))
             : originType;
         if (needMemo && findCanAddMemoFromTypeAnnotation(newType)) {
             addMemoAnnotation(newType);
@@ -372,7 +328,10 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        subscribedWatches.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
+        subscribedWatches.setAnnotations([
+            annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+            annotation(DecoratorNames.JSONPARSEIGNORE),
+        ]);
         collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
 
         const addWatchSubscriber = factory.createWatchMethod(
@@ -491,7 +450,10 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        v1RenderId.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
+        v1RenderId.setAnnotations([
+            annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+            annotation(DecoratorNames.JSONPARSEIGNORE),
+        ]);
         collectStateManagementTypeImport(StateManagementTypes.RENDER_ID_TYPE);
         const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId(isObservedV2);
         return isObservedV2 ? [setV1RenderId] : [v1RenderId, setV1RenderId];
@@ -600,7 +562,10 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        meta.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
+        meta.setAnnotations([
+            annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+            annotation(DecoratorNames.JSONPARSEIGNORE),
+        ]);
         return meta;
     }
 
@@ -699,14 +664,14 @@ export class factory {
     static wrapStateManagementTypeToParam(
         param: arkts.Expression | undefined,
         decoratorName: DecoratorNames,
-        metadata?: arkts.AstNodeCacheValueMetadata,
+        metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Expression | undefined {
         let newParam: arkts.Expression | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
         if (!!param && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
             newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
             if (!!metadata) {
-                arkts.NodeCache.getInstance().collect(newParam, metadata);
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newParam, metadata);
             }
             collectStateManagementTypeImport(wrapTypeName);
         }
@@ -722,7 +687,7 @@ export class factory {
     static wrapStateManagementTypeToMethodInInterface(
         method: arkts.MethodDefinition,
         decorator: DecoratorNames,
-        metadata?: arkts.AstNodeCacheValueMetadata,
+        metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.MethodDefinition {
         if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
             const func = method.scriptFunction;
@@ -733,7 +698,7 @@ export class factory {
             removeDecorator(method, decorator);
             if (!!newType) {
                 if (!!metadata) {
-                    arkts.NodeCache.getInstance().collect(newType, metadata);
+                    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newType, metadata);
                 }
                 func.setReturnTypeAnnotation(newType);
             }
@@ -807,7 +772,7 @@ export class factory {
         monitorItem: string[] | undefined,
         originalName: string,
         newName: string,
-        isFromStruct: boolean,
+        isFromStruct: boolean
     ): arkts.ExpressionStatement {
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
         const args: arkts.AstNode[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)];
@@ -920,9 +885,18 @@ export class factory {
     }
 
     static generateComputedOwnerAssignment(newName: string): arkts.ExpressionStatement {
-        const computedVariable = UIFactory.generateMemberExpression(arkts.factory.createThisExpression(), newName, false);
-        const setOwnerFunc = UIFactory.generateMemberExpression(computedVariable, StateManagementTypes.SET_OWNER, false);
+        const computedVariable = UIFactory.generateMemberExpression(
+            arkts.factory.createThisExpression(),
+            newName,
+            false
+        );
+        const setOwnerFunc = UIFactory.generateMemberExpression(
+            computedVariable,
+            StateManagementTypes.SET_OWNER,
+            false
+        );
         return arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()]));
+            arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()])
+        );
     }
 }

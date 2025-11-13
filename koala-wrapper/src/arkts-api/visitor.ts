@@ -61,6 +61,7 @@ import {
     isClassStaticBlock,
     isFunctionExpression,
     FunctionExpression,
+    isIfStatement,
 } from '../generated';
 import {
     isEtsScript,
@@ -69,9 +70,7 @@ import {
     isExpressionStatement,
     isStructDeclaration,
     isMethodDefinition,
-    // isScriptFunction,
     isMemberExpression,
-    isIfStatement,
     isVariableDeclaration,
     isVariableDeclarator,
     isArrowFunctionExpression,
@@ -239,8 +238,8 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
         );
     }
     if (isSpreadElement(node)) {
-        const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
-        return factory.updateSpreadElement(node, nodeType, nodeVisitor(node.argument, visitor));
+        // const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
+        return factory.updateSpreadElement(node, node.nodeType, nodeVisitor(node.argument, visitor));
     }
     // TODO
     return node;
@@ -487,13 +486,13 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.isComputed
         );
     }
-    if (isClassStaticBlock(node) && !!node.value) {
+    if (isClassStaticBlock(node) && !!node.value && isFunctionExpression(node.value)) {
         updated = true;
         return factory.updateClassStaticBlock(
             node,
             updateFunctionExpression(
-                node.value as FunctionExpression,
-                nodeVisitor(node.function, visitor)
+                node.value,
+                nodeVisitor(node.value.function, visitor)
             )
         );
     }

@@ -33,10 +33,13 @@ import { BlockStatement } from "./BlockStatement"
 import { Identifier } from "./Identifier"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ETSModule extends BlockStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE;
     }
     get ident(): Identifier | undefined {
         return unpackNode(global.generatedEs2panda._ETSModuleIdentConst(global.context, this.peer))

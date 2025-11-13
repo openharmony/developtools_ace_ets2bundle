@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -111,8 +111,7 @@ function main() {}
   
   @JSONRename({newName:"name"}) private __backing_name?: string;
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
-  @JSONRename({newName:"age"}) private __backing_age?: number;
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_age: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved((this.__backing_name as string));
@@ -125,7 +124,10 @@ function main() {}
       this.executeOnSubscribingWatches("name");
     }
   }
-  
+
+  @JSONRename({newName:"age"}) private __backing_age?: number;
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_age: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+
   public get age(): number {
     this.conditionalAddRef(this.__meta_age);
     return UIUtils.makeObserved((this.__backing_age as number));
@@ -143,7 +145,10 @@ function main() {}
     this.name = name;
     this.age = age;
   }
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
@@ -192,7 +197,10 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
@@ -219,7 +227,7 @@ function main() {}
       ForEachImpl<User>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<User>((() => {
           return this.users;
-        }), @Memo() ((item: User) => {
+        }), ((item: User) => {
           ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
@@ -244,18 +252,21 @@ function main() {}
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Provider', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Consumer', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
@@ -268,7 +279,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test usage of @Provider and @Consumer decorator',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

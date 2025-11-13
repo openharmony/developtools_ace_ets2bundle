@@ -33,10 +33,13 @@ import { CallExpression } from "./CallExpression"
 import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class DirectEvalExpression extends CallExpression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_DIRECT_EVAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_DIRECT_EVAL;
     }
     static createDirectEvalExpression(callee: Expression | undefined, _arguments: readonly Expression[], typeParams: TSTypeParameterInstantiation | undefined, optional_arg: boolean, parserStatus: number): DirectEvalExpression {
         return new DirectEvalExpression(global.generatedEs2panda._CreateDirectEvalExpression(global.context, passNode(callee), passNodeArray(_arguments), _arguments.length, passNode(typeParams), optional_arg, parserStatus))

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { beforeMemoNoRecheck, builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
@@ -41,7 +41,7 @@ function testBuilderLambdaTransformer(this: PluginTestContext): void {
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { Memo as Memo } from "arkui.incremental.annotation";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { Memo as Memo } from \"@ohos.arkui.stateManagement\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
@@ -63,7 +63,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 import { Memo as Memo } from "arkui.incremental.annotation";
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
-import { Memo as Memo } from \"@ohos.arkui.stateManagement\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
@@ -109,9 +109,9 @@ class MyStateSample {
 
 pluginTester.run(
     'transform simple component',
-    [builderLambdaNoRecheck, beforeMemoNoRecheck, memoNoRecheck, recheck],
+    [collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
-        'checked:builder-lambda-no-recheck': [testBuilderLambdaTransformer],
+        'checked:ui-no-recheck': [testBuilderLambdaTransformer],
         'checked:memo-no-recheck': [testMemoTransformer],
     },
     {

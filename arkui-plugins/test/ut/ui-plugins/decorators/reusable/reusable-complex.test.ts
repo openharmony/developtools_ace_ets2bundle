@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -137,7 +137,10 @@ class Message {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 @Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -180,7 +183,10 @@ class Message {
   }
   
   public constructor() {}
+
+  static {
   
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -195,14 +201,14 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_display', '(boolean | undefined)')}
   
 }
 
 @Reusable() @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
   
@@ -215,7 +221,7 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex reusable',
-    [reusableTransform, uiNoRecheck, recheck],
+    [reusableTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testReusableTransformer],
     },

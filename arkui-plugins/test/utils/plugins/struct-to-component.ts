@@ -18,6 +18,7 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
 import { ComponentTransformer } from '../../../ui-plugins/component-transformer';
+import { Collector } from '../../../collectors/collector';
 
 /**
  * AfterParse transform struct to component.

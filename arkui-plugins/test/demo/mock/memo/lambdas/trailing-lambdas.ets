@@ -13,25 +13,25 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 class A {
-    @memo foo(p?: ()=>void): void {}
+    @Memo foo(p?: ()=>void): void {}
 
-    goo(@memo p?: ()=>void): void {}
+    goo(@Memo p?: ()=>void): void {}
 
-    @memo koo(@memo p?: ()=>void): void {}
+    @Memo koo(@Memo p?: ()=>void): void {}
 }
 
-@memo
+@Memo
 function bar(f?: ()=>void): void {}
 
-function par(f?: @memo ()=>void): void {}
+function par(f?: @Memo ()=>void): void {}
 
-@memo
-function kar(@memo f?: ()=>void): void {}
+@Memo
+function kar(@Memo f?: ()=>void): void {}
 
-@memo
+@Memo
 () => {
     let a = new A();
     a.foo() { console.log(); }

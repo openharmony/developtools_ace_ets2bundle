@@ -16,13 +16,23 @@
 import { TSInterfaceBody } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSInterfaceBody(original: TSInterfaceBody, body: readonly AstNode[]): TSInterfaceBody {
     if (isSameNativeObject(body, original.body)) {
         return original;
     }
 
-    const update = updateThenAttach(TSInterfaceBody.updateTSInterfaceBody, attachModifiers);
+    const update = updateThenAttach(
+        TSInterfaceBody.updateTSInterfaceBody,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, body);
 }

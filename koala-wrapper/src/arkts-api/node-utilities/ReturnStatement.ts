@@ -15,18 +15,23 @@
 
 import { Expression, ReturnStatement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateReturnStatement(original: ReturnStatement, argument?: Expression): ReturnStatement {
     if (isSameNativeObject(argument, original.argument)) {
         return original;
     }
 
-    const update = updateThenAttach(ReturnStatement.update1ReturnStatement, attachModifiers);
-    const newNode = update(original, argument);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(
+        ReturnStatement.update1ReturnStatement,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
+    return update(original, argument);
 }

@@ -16,7 +16,12 @@
 import { KInt } from '@koalaui/interop';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { VariableDeclaration, VariableDeclarator } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaVariableDeclarationKind } from '../../generated/Es2pandaEnums';
 
 export function updateVariableDeclaration(
@@ -36,7 +41,9 @@ export function updateVariableDeclaration(
     const update = updateThenAttach(
         VariableDeclaration.update,
         attachModifiers,
-        (node: VariableDeclaration, original: VariableDeclaration) => node.setAnnotations(original.annotations)
+        (node: VariableDeclaration, original: VariableDeclaration) => node.setAnnotations(original.annotations),
+        attachParent,
+        refreshNodeCache
     );
     return update(original, modifiers, kind, declarators);
 }

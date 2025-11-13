@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 import { __memo_context_type, __memo_id_type } from 'arkui.incremental.runtime.state';
 
 @Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
@@ -24,14 +24,14 @@ export declare function __context(): __memo_context_type
 export declare function __id(): __memo_id_type
 
 class Test {
-	@memo void_method(): void {
+	@Memo void_method(): void {
 	}
 	
-    @memo string_method_with_return(arg: string): string {
+    @Memo string_method_with_return(arg: string): string {
 	 	return arg
 	}
 
-	@memo method_with_type_parameter<T>(arg: T): T {
+	@Memo method_with_type_parameter<T>(arg: T): T {
 		return arg
 	}
 
@@ -44,7 +44,7 @@ class Test {
  		return 0
  	}
  
- 	@memo_entry memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo entry: () => R): R {
+ 	@memo_entry memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo entry: () => R): R {
  		const getContext = () => {
  			return __context()
  		}
@@ -58,7 +58,7 @@ class Test {
  		}
  	}
 
-	@memo memo_skip_args(arg1: number, @memo_skip arg2: string, @memo_skip arg3: @memo () => void): string {
+	@Memo memo_skip_args(arg1: number, @memo_skip arg2: string, @memo_skip arg3: @Memo () => void): string {
 		let a = arg1;
 		arg3();
 		return arg2;
@@ -66,7 +66,7 @@ class Test {
 }
 
 class Use {
-    @memo test() {
+    @Memo test() {
 		const test = new Test()
 
 		test.string_method_with_return("a string")

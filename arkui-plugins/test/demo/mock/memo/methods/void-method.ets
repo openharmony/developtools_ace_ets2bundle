@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo} from "arkui.incremental.annotation";
 
 class A {
 	x: int
@@ -21,30 +21,30 @@ class A {
 }
 
 class Test {
-    @memo void_method(): void {
+    @Memo void_method(): void {
 	}
 
-    @memo a_method_with_implicit_return_type() {
+    @Memo a_method_with_implicit_return_type() {
 	}
 
-	@memo void_method_with_arg(arg: string) {
+	@Memo void_method_with_arg(arg: string) {
 	}
 
-	@memo void_method_with_return(arg: string) {
+	@Memo void_method_with_return(arg: string) {
 	 	return
 	}
 
-    @memo static static_method_with_type_parameter<T>(arg: T): void {
+    @Memo static static_method_with_type_parameter<T>(arg: T): void {
 		return
 	}
 
-    @memo obj_arg(arg: A) {
+    @Memo obj_arg(arg: A) {
 
 	}
 }
 
 class Use {
-    @memo test() {
+    @Memo test() {
 		const test = new Test()
 
 		test.void_method()
