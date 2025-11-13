@@ -25,11 +25,8 @@
 #include <tuple>
 #include <unordered_map>
 
-#include <ani_signature_builder.h>
 #include "etsapi.h"
 #include "koala-types.h"
-
-using namespace arkts::ani_signature;
 
 template<class T>
 struct InteropTypeConverter {
@@ -143,8 +140,8 @@ struct InteropTypeConverter<KLength> {
       length.resource = 0;
       return length;
     } else if (env->IsInstanceOf(value, resource_class)) {
-        const static ets_method res_p = env->Getp_method(resource_class, Builder::BuildGetterName("id").c_str(), ":D");
-        return KLength{ 3, 0, 1, (KInt)env->CallDoubleMethod(value, res_p) };
+      const static ets_method resource_p = env->Getp_method(resource_class, "<get>id", ":D");
+      return KLength{ 3, 0, 1, (KInt)env->CallDoubleMethod(value, resource_p) };
     } else {
       return KLength( { 0, 0, 0, 0});
     }
@@ -1351,4 +1348,4 @@ void getKoalaEtsNapiCallbackDispatcher(ets_class* clazz, ets_method* method);
 
 #endif // KOALA_ETS_NAPI
 
-#endif // CONVERTORS_ETS_H/
+#endif // CONVERTORS_ETS_H
