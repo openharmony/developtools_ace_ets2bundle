@@ -13,22 +13,22 @@
  * limitations under the License.
  */
 
-import { ArrowFunctionInfo } from "./arrow-function";
-import { FunctionInfo } from "./function";
-import { CallInfo } from "./function-call";
-import { NewClassInstanceInfo } from "./new-class-instance";
-import { NormalClassInfo } from "./normal-class";
-import { NormalClassMethodInfo } from "./normal-class-method";
-import { NormalClassPropertyInfo } from "./normal-class-property";
-import { NormalInterfaceInfo } from "./normal-interface";
-import { NormalInterfacePropertyInfo } from "./normal-interface-property";
-import { ParameterInfo } from "./parameter";
-import { PropertyInfo } from "./property";
-import { CustomComponentInfo } from "./struct";
-import { CustomComponentInterfaceInfo } from "./struct-interface";
-import { CustomComponentInterfacePropertyInfo } from "./struct-interface-property";
-import { StructMethodInfo } from "./struct-method";
-import { StructPropertyInfo } from "./struct-property";
+import { ArrowFunctionInfo } from './arrow-function';
+import { FunctionInfo } from './function';
+import { CallInfo } from './function-call';
+import { NewClassInstanceInfo } from './new-class-instance';
+import { NormalClassInfo } from './normal-class';
+import { NormalClassMethodInfo } from './normal-class-method';
+import { NormalClassPropertyInfo } from './normal-class-property';
+import { NormalInterfaceInfo } from './normal-interface';
+import { NormalInterfacePropertyInfo } from './normal-interface-property';
+import { ParameterInfo } from './parameter';
+import { PropertyInfo } from './property';
+import { CustomComponentInfo } from './struct';
+import { CustomComponentInterfaceInfo } from './struct-interface';
+import { CustomComponentInterfacePropertyInfo } from './struct-interface-property';
+import { StructMethodInfo } from './struct-method';
+import { StructPropertyInfo } from './struct-property';
 
 export type ClassDeclarationRecordInfo = NormalClassInfo | CustomComponentInfo;
 
