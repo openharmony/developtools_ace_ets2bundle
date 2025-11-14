@@ -1,0 +1,42 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The '@Link' property cannot be specified a default value.",
+        "position": { "line": 36, "column": 4 }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
+        "position": { "line": 125, "column": 16 }
+      }
+    ]
+  },
+  "demo-3": {
+    "messages": [
+      {
+        "message": "The '@Link' property cannot be specified a default value.",
+        "position": { "line": 145, "column": 4 }
+      }
+    ]
+  },
+  "demo-4": {
+    "messages": [
+      {
+        "message": "The '@ObjectLink' property cannot be specified a default value.",
+        "position": { "line": 285, "column": 4 }
+      }
+    ]
+  },
+  "demo-5": {
+    "messages": [
+      {
+        "message": "The '@ObjectLink' property cannot be specified a default value.",
+        "position": { "line": 363, "column": 4 }
+      }
+    ]
+  }
+}
