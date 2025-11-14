@@ -1,0 +1,13 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The struct 'hunyong' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 27,
+          "column": 8
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+   "demo-1": {
+      "messages": [
+        {
+          "message": "The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.",
+          "position": {
+            "line": 30,
+            "column": 5
+          }
+        },
+        {
+          "message": "'@Computed' can only decorate member property.",
+          "position": {
+            "line": 30,
+            "column": 5
+          }
+        }
+      ]
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 46,
+          "column": 19
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 68,
+          "column": 26
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 73,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 76,
+          "column": 28
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 81,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 83,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 86,
+          "column": 26
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 88,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 109,
+          "column": 14
+        }
+      },
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 109,
+          "column": 14
+        }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 134,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 138,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+        "position": {
+          "line": 168,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+        "position": {
+          "line": 174,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 190,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 194,
+          "column": 9
+        }
+      }
+    ]
+  }
+}
