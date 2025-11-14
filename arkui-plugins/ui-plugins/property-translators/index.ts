@@ -66,7 +66,7 @@ import {
     RegularInterfaceTranslator,
 } from './regularProperty';
 import { StaticPropertyCachedTranslator, StaticPropertyTranslator } from './staticProperty';
-import { ClassInfo, CustomComponentInfo } from '../utils';
+import { ClassInfo, StructInfo } from '../utils';
 import {
     ConsumeCachedTranslator,
     ConsumeCachedInterfaceTranslator,
@@ -141,7 +141,7 @@ export type { ClassScopeInfo };
 
 export function classifyStructMembers(
     member: arkts.AstNode,
-    structInfo: CustomComponentInfo
+    structInfo: StructInfo
 ): PropertyTranslator | MethodTranslator | undefined {
     if (arkts.isClassProperty(member)) {
         return classifyProperty(member, structInfo);
@@ -153,7 +153,7 @@ export function classifyStructMembers(
 
 export function classifyProperty(
     property: arkts.AstNode,
-    structInfo: CustomComponentInfo
+    structInfo: StructInfo
 ): PropertyTranslator | undefined {
     if (!arkts.isClassProperty(property)) return undefined;
     if (StaticPropertyTranslator.canBeStaticTranslate(property)) {
@@ -176,7 +176,7 @@ export function classifyProperty(
 
 export function classifyV1Property(
     property: arkts.ClassProperty,
-    structInfo: CustomComponentInfo
+    structInfo: StructInfo
 ): PropertyTranslator | undefined {
     if (hasDecorator(property, DecoratorNames.STATE)) {
         return new StateTranslator({ property, structInfo });
@@ -217,7 +217,7 @@ export function classifyV1Property(
 
 export function classifyV2Property(
     property: arkts.ClassProperty,
-    structInfo: CustomComponentInfo
+    structInfo: StructInfo
 ): PropertyTranslator | undefined {
     if (hasDecorator(property, DecoratorNames.LOCAL)) {
         return new LocalTranslator({ property, structInfo });
