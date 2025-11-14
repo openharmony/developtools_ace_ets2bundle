@@ -356,6 +356,57 @@
             "type": "WARN"
         }
     ],
+    "validateLinkVariableSourceDataExtend": [
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "code": "10905364",
+            "type": "ERROR"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        }
+    ],
+    "validateLinkVariableSourceDataRealize": [
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "code": "10905364",
+            "type": "ERROR"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        }
+    ],
+    "validateLinkVariableSourceDataObserved": [
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "code": "10905364",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "code": "10905364",
+            "type": "ERROR"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "code": "10905364",
+            "type": "ERROR"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        }
+    ],
     "validateNonLinkWithDollar": {
         "message": "Property 'message' cannot initialize using '$' to create a reference to a variable.",
         "type": "ERROR",
