@@ -1,0 +1,24 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
+        "position": {
+          "line": 41,
+          "column":16
+        }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'value' cannot be assigned to the '@ObjectLink' property 'title'",
+        "position": {
+          "line": 68,
+          "column":24
+        }
+      }
+    ]
+  }
+}

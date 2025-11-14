@@ -1,0 +1,20 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The LocalStorageLink decorated 'local_link_value' cannot be declared as public.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The StorageLink decorated 'storage_link_value' cannot be declared as public.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

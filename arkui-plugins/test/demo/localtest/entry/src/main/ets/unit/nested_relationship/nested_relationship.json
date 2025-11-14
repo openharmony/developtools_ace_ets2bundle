@@ -1,0 +1,63 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The 'Scroll' component can have only one child component.",
+        "position": {
+          "line": 36,
+          "column": 7
+        }
+      },
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 37,
+          "column": 9
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 38,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 112,
+          "column": 11
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 115,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "demo-3": {
+    "messages": [
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 141,
+          "column": 11
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 144,
+          "column": 10
+        }
+      }
+    ]
+  }
+}
