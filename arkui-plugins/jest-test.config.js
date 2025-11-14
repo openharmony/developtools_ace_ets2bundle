@@ -22,20 +22,24 @@ const apiPath = path.resolve(sdkPath, './api');
 const kitPath = path.resolve(sdkPath, './kits');
 
 module.exports = {
+    preset: 'ts-jest',
     testEnvironment: 'node',
+    extensionsToTreatAsEsm: ['.ts'],
     transform: {
-        '^.+\\.ts$': ['ts-jest'],
+        '^.+\\.ts$': ['ts-jest', { useESM: true }],
     },
     testRegex: './test/ut/.+\\.test\\.ts$',
     testPathIgnorePatterns: [],
-    moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     coverageDirectory: './test/report',
+    collectCoverage: true,
     collectCoverageFrom: [
         'collectors/**',
         'common/**',
         'memo-plugins/**',
         'ui-plugins/**'
     ],
+    transformIgnorePatterns: ['/node_modules/'],
     coveragePathIgnorePatterns: [
         'common/debug.ts',
         'common/etsglobal-remover.ts',

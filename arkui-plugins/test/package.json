@@ -1,6 +1,7 @@
 {
   "name": "arkui-plugins-test",
   "version": "1.0.0",
+  "type": "commonjs",
   "private": true,
   "scripts": {
     "compile:ohos": "node $INIT_CWD/../../../../arkcompiler/ets_frontend/ets2panda/driver/build-system/dist/entry.js ./demo/hello_world/build_config.json",
@@ -23,6 +24,12 @@
     "localtest_decl": "rm -rf dist && node localtest_decl_config.js && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/lib node $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/driver/build-system/dist/entry.js ./demo/localtest/build_decl_config.json",
     "localtest_all": "npm run localtest_decl && npm run localtest",
     "es2panda:compile": "node ./arktsconfig_gen.js && $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/bin/es2panda --arktsconfig=./dist/cache/arktsconfig.json",
-    "es2panda:test": "$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/bin/es2panda ./demo/localtest/entry/test.ets --output=test.abc"
+    "es2panda:test": "$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/bin/es2panda ./demo/localtest/entry/test.ets --output=test.abc",
+    "unittests": "rm -rf dist && npm run compile:plugins && LD_LIBRARY_PATH=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/lib BUILDER_SCRIPT=$INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/driver/build-system/dist/entry.js jest unit/unittest.test.ts --coverage --logHeapUsage --maxWorkers=50% "
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
   }
 }
