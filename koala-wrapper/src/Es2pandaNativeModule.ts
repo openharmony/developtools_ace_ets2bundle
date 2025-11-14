@@ -1145,7 +1145,7 @@ export class Es2pandaNativeModule {
     }
 
     _PropertySetValue(context: KNativePointer, receiver: KNativePointer, value: KNativePointer): void {
-        throw new Error("PropertySetValue was not overloaded by native module initialization");
+        throw new Error('PropertySetValue was not overloaded by native module initialization');
     }
 }
 

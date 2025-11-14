@@ -200,7 +200,7 @@ export class NodeCache {
             return;
         }
         if (!!key) {
-            console.log("[PERFORMENCE] [NODE CACHE] cache key: ", key);
+            console.log('[PERFORMENCE] [NODE CACHE] cache key: ', key);
         }
         console.log(`[PERFORMENCE] [NODE CACHE] cached-node count: `, Object.keys(this.cacheMap).length);
         console.log(`[PERFORMENCE] [NODE CACHE] should-update-node count: `, this.nodesToUpdate.size);

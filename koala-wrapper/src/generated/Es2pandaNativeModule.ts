@@ -149,7 +149,7 @@ export class Es2pandaNativeModule {
         throw new Error("'IfStatementTest was not overloaded by native module initialization")
     }
     _IfStatementSetTest(context: KNativePointer, receiver: KNativePointer, test: KNativePointer): void {
-        throw new Error("IfStatementSetTest was not overloaded by native module initialization")
+        throw new Error('IfStatementSetTest was not overloaded by native module initialization')
     }
     _IfStatementConsequentConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'IfStatementConsequentConst was not overloaded by native module initialization")
@@ -158,7 +158,7 @@ export class Es2pandaNativeModule {
         throw new Error("'IfStatementConsequent was not overloaded by native module initialization")
     }
     _IfStatementSetConsequent(context: KNativePointer, receiver: KNativePointer, consequent: KNativePointer): void {
-        throw new Error("IfStatementSetConsequent was not overloaded by native module initialization")
+        throw new Error('IfStatementSetConsequent was not overloaded by native module initialization')
     }
     _IfStatementAlternate(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'IfStatementAlternate was not overloaded by native module initialization")
@@ -167,7 +167,7 @@ export class Es2pandaNativeModule {
         throw new Error("'IfStatementAlternateConst was not overloaded by native module initialization")
     }
     _IfStatementSetAlternate(context: KNativePointer, receiver: KNativePointer, alternate: KNativePointer): void {
-        throw new Error("IfStatementSetAlternate was not overloaded by native module initialization")
+        throw new Error('IfStatementSetAlternate was not overloaded by native module initialization')
     }
     _CreateTSConstructorType(context: KNativePointer, signature: KNativePointer, abstract: KBoolean): KNativePointer {
         throw new Error("'CreateTSConstructorType was not overloaded by native module initialization")
