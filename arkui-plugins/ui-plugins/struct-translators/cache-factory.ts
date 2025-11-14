@@ -49,6 +49,7 @@ import {
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     isKnownMethodDefinition,
+    StructType,
 } from '../utils';
 import { ConditionScopeFactory } from '../condition-scope-translators/condition-scope-factory';
 import { CacheFactory as BuilderLambdaCacheFactory } from '../builder-lambda-translators/cache-factory';
@@ -57,7 +58,7 @@ import { CacheFactory as PropertyCacheFactory } from '../property-translators/ca
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as StructFactory } from './factory';
-import { getResourceParams, StructType } from './utils';
+import { getResourceParams } from './utils';
 import {
     BuilderParamClassPropertyValueCache,
     CustomDialogControllerCache,
