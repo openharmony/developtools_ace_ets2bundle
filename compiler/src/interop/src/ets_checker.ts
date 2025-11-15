@@ -1267,6 +1267,21 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 // resolvedModulesCache records the files and their dependencies of program.
 export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
 
+export function isOhExport(packageName: string | undefined, resolvedFileName: string | undefined): boolean {
+  if (packageName === undefined || resolvedFileName === undefined) {
+    return true;
+  }
+
+  const ohExportsMap: Map<string, object> | undefined = projectConfig?.depName2OhExports;
+  // If oh-exports is not configured, then everything is accessible.
+  if (!ohExportsMap?.has(packageName)) {
+    return true;
+  }
+
+  const exportPaths: Set<string> = ohExportsMap.get(packageName)['oh-exports'];
+  return exportPaths.has(resolvedFileName);
+}
+
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   ts.PerformanceDotting.startAdvanced('resolveModuleNames');
   const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
@@ -1276,6 +1291,9 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
     !(cacheFileContent && cacheFileContent.length === moduleNames.length)) {
     for (const moduleName of moduleNames) {
       const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost);
+      if (result.resolvedModule && !isOhExport(result.resolvedModule?.packageId?.name, result.resolvedModule?.resolvedFileName)) {
+        result.resolvedModule.isNotOhExport = true;
+      }
       if (result.resolvedModule) {
         if (result.resolvedModule.resolvedFileName &&
           path.extname(result.resolvedModule.resolvedFileName) === EXTNAME_JS) {
