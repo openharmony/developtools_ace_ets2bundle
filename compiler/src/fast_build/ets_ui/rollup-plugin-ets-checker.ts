@@ -163,7 +163,8 @@ function getErrorCodeLogger(code: string, share: Object): Object | undefined {
 }
 
 function rootFileNamesCollect(rootFileNames: string[]): void {
-  const entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
+  let entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
+  entryFiles = Array.from(new Set([...entryFiles, ...projectConfig.ohExports]));
   entryFiles.forEach((fileName: string) => {
     rootFileNames.push(path.resolve(fileName));
   });

@@ -647,6 +647,8 @@ function loadBuildJson() {
     projectConfig.packageDir = 'oh_modules';
     projectConfig.packageJson = 'oh-package.json5';
   }
+  // add the oh-exports visibility file
+  projectConfig.ohExports = aceBuildJson['oh-exports'] || [];
   // add intent framework entry file
   projectConfig.intentEntry = aceBuildJson.compileEntry || [];
   if (!!aceBuildJson.otherCompileFiles) {
@@ -666,6 +668,14 @@ function loadBuildJson() {
   
   if (aceBuildJson.updateVersionInfo) {
     projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;
+  }
+
+  // Add the value of the oh-exports field to the filename obfuscation whitelist.
+  let ohExports = aceBuildJson['oh-exports'];
+  if (Array.isArray(ohExports) && ohExports.length !== 0) {
+    ohExports.forEach(ohExportPath => {
+      setEntryArrayForObf(ohExportPath);
+    });
   }
 }
 
