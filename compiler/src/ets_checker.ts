@@ -1284,6 +1284,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
     return [];
   }
 
+  const etsCheckerLogger = fastBuildLogger || logger;
   const resolvedTypeReferenceCache: ts.ResolvedTypeReferenceDirective[] = [];
   const cache: Map<string, ts.ResolvedTypeReferenceDirective> = new Map<string, ts.ResolvedTypeReferenceDirective>();
   const containingFile: string = path.join(projectConfig.modulePath, 'build-profile.json5');
@@ -1293,7 +1294,7 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
     if (!cache.has(typeName)) {
       const resolvedFile = ts.resolveTypeReferenceDirective(typeName, containingFile, compilerOptions, moduleResolutionHost);
       if (!resolvedFile || !resolvedFile.resolvedTypeReferenceDirective) {
-        logger.error('\u001b[31m', `ArkTS:Cannot find type definition file for: ${typeName}\n`);
+        etsCheckerLogger.warn('\u001b[33m', `ArkTS:Cannot find type definition file for: ${typeName}\n`);
       }
       const result: ts.ResolvedTypeReferenceDirective = resolvedFile.resolvedTypeReferenceDirective;
       cache.set(typeName, result);
