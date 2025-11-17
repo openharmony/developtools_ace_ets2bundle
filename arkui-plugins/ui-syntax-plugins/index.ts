@@ -56,7 +56,7 @@ function createTransformer(
         if (projectConfig.frameworkMode) {
             return undefined;
         }
-        const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        const program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
             return undefined;
         }
