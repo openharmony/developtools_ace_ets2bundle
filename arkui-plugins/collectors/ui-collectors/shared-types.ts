@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { VisitorOptions } from "../../common/abstract-visitor";
-import { AstNodePointer } from "../../common/safe-types";
-import { CustomComponentInfo, StructMethodInfo, StructPropertyInfo } from "./records";
+import { VisitorOptions } from '../../common/abstract-visitor';
+import { AstNodePointer } from '../../common/safe-types';
+import { CustomComponentInfo, StructMethodInfo, StructPropertyInfo } from './records';
 
 export interface UICollectMetadata extends VisitorOptions {
     shouldIgnoreDecl: boolean;
