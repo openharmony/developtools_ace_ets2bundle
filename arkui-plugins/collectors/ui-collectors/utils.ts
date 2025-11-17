@@ -111,7 +111,7 @@ export function getAnnotationName(anno: arkts.AnnotationUsage, ignoreDecl?: bool
     }
     const decl = arkts.getPeerIdentifierDecl(expr.peer);
     if (!decl) {
-        return;
+        return undefined;
     }
     if (!ignoreDecl && !isDeclFromArkUI(decl)) {
         return undefined;
