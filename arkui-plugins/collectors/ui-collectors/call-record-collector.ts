@@ -89,7 +89,7 @@ export class CallRecordCollector {
         return this;
     }
 
-    reset() {
+    reset(): void {
         this._prevCallInfo = undefined;
         this._chainingCallData.reset();
         this._inChainCalls.clear();

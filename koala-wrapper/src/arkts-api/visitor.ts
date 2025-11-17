@@ -238,7 +238,6 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
         );
     }
     if (isSpreadElement(node)) {
-        // const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
         return factory.updateSpreadElement(node, node.nodeType, nodeVisitor(node.argument, visitor));
     }
     // TODO

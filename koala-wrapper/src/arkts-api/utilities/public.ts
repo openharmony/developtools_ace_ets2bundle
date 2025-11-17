@@ -75,7 +75,6 @@ function processErrorState(state: Es2pandaContextState, context: KNativePointer,
 }
 
 export function nodeType(node: AstNode): Es2pandaAstNodeType {
-    // return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
     return node.nodeType;
 }
 

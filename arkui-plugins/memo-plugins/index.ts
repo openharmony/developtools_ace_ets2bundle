@@ -81,7 +81,6 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
-        // arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).visualize();
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
         const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
         const returnTransformer = new ReturnTransformer();
