@@ -47,14 +47,6 @@ export class StructCollector extends AbstractVisitor {
         this.shouldIgnoreDecl = options.shouldIgnoreDecl ?? false;
     }
 
-    // get propertyInfoMap(): Record<AstNodePointer, StructPropertyInfo> {
-    //     return this._properties;
-    // }
-
-    // get methodInfoMap(): Record<AstNodePointer, StructMethodInfo> {
-    //     return this._methods;
-    // }
-
     private get shouldCollectProperty(): boolean {
         if (this._disableCollectProperty) {
             return false;

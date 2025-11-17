@@ -133,7 +133,7 @@ export class Performance {
         }
     }
 
-    createDetailedEvent(name: string) {
+    createDetailedEvent(name: string): void | Object {
         if (this.shouldSkipDetail) {
             return { name: '', startTime: 0 };
         }
@@ -142,7 +142,7 @@ export class Performance {
         this.detailedEvents.set(name, newEvent);
     }
 
-    stopDetailedEvent(name: string, shouldLog: boolean = false) {
+    stopDetailedEvent(name: string, shouldLog: boolean = false): void | Object {
         if (this.shouldSkipDetail) {
             return { name: '', startTime: 0 };
         }

@@ -275,9 +275,6 @@ export class CacheFactory {
                 ),
                 undefined,
                 argInfos.map((info) => {
-                    // if (arkts.isArrowFunctionExpression(info.arg)) {
-                    //     return BuilderLambdaFactory.processArgArrowFunction(info.arg, info.hasBuilder);
-                    // }
                     return info.arg;
                 })
             );
