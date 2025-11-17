@@ -127,7 +127,6 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        // arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).visualize();
         arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
         const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
         if (projectConfig && !projectConfig.appResource) {
