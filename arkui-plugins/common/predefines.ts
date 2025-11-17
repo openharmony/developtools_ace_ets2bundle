@@ -404,7 +404,7 @@ export enum BuiltInNames {
     ETS_GLOBAL_CLASS = 'ETSGLOBAL',
     GLOBAL_INIT_METHOD = '_$init$_',
     GLOBAL_MAIN_METHOD = 'main',
-    IMPLEMENT_PROPETY_PREFIX = '<property>',
+    IMPLEMENT_PROPETY_PREFIX = '%%property-',
     DEFAULT_STATIC_BLOCK_NAME = '<cctor>',
 }
 
