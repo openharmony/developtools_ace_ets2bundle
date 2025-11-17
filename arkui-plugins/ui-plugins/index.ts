@@ -45,7 +45,7 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
-        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
         const canSkipPhases = program.canSkipPhases();
 
@@ -99,7 +99,7 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding && !!contextPtr) {
-        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
         const canSkipPhases = program.canSkipPhases();
 

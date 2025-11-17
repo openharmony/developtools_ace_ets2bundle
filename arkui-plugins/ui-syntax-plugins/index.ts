@@ -44,7 +44,7 @@ function collectAndLint(this: PluginContext): arkts.EtsScript | undefined {
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
     if (!!contextPtr) {
-        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
         debugLog('[BEFORE LINTER SCRIPT] script: ', script);
         arkts.Performance.getInstance().createEvent('ui-linter');
