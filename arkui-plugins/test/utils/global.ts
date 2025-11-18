@@ -41,7 +41,7 @@ function createGlobalConfig(
     config.push(fileInfo.filePath);
 
     if (isUseCache) {
-        arkts.MemInitialize();
+        arkts.memInitialize();
     }
     arkts.arktsGlobal.filePath = fileInfo.filePath;
     return resetConfig(config);
@@ -50,16 +50,16 @@ function createGlobalConfig(
 function destroyGlobalConfig(config: arkts.Config, isUseCache: boolean = true): void {
     destroyConfig(config);
     if (isUseCache) {
-        arkts.MemFinalize();
+        arkts.memFinalize();
     }
 }
 
 function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
-    return arkts.CreateGlobalContext(config.peer, files, files.length, false);
+    return arkts.createGlobalContext(config.peer, files, files.length, false);
 }
 
 function destroyGlobalContextPtr(globalContextPtr: number): void {
-    arkts.DestroyGlobalContext(globalContextPtr);
+    arkts.destroyGlobalContext(globalContextPtr);
 }
 
 function createCacheContextFromFile(
