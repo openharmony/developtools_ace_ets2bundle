@@ -31,9 +31,9 @@ const pluginTester = new PluginTester('test memo property', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -82,10 +82,10 @@ function main() {}
 });
 interface A {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'arg', '(()=> void)', [], [], false)}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_arg', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')], [], false)}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_optional_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('memo')])}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('memo')], [], false)}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg_memo_type', '@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_arg', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('Memo')], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_optional_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('Memo')])}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('Memo')], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'arg_memo_type', '@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [], [], false)}
 }
 `;
 

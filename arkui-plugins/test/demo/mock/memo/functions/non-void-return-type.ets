@@ -13,19 +13,19 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
-@memo
+@Memo
 function funcNum(): number {
   return 1;
 }
 
-@memo
+@Memo
 function funcStr(): string {
   return "1";
 }
 
-@memo
+@Memo
 function funcBool(): boolean {
   return false;
 }
@@ -34,14 +34,14 @@ interface A {
     str: string;
 }
 
-@memo
+@Memo
 function funcA(): A {
     return { str: "1" };
 }
 
 type B = (str: string) => void;
 
-@memo
+@Memo
 function funcB(): B {
     return (str: string) => {};
 }
@@ -53,12 +53,12 @@ class C {
     }
 }
 
-@memo
+@Memo
 function funcC(): C {
     return new C("1");
 }
 
-@memo
+@Memo
 function funcD(): () => void {
   return () => {};
 }

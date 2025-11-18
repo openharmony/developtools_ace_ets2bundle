@@ -34,7 +34,7 @@ const pluginTester = new PluginTester('test memo method', buildConfig, projectCo
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 function main() {}
 export function __context(): __memo_context_type
@@ -43,7 +43,7 @@ export function __id(): __memo_id_type
 @Retention({policy:"SOURCE"}) @interface memo_entry {}
 @Retention({policy:"SOURCE"}) @interface memo_skip {}
 class Test {
-    @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -54,7 +54,7 @@ class Test {
             return;
         }
     }
-    @memo() public string_method_with_return(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: string): string {
+    @Memo() public string_method_with_return(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: string): string {
         const __memo_scope = __memo_context.scope<string>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
@@ -62,7 +62,7 @@ class Test {
         }
         return __memo_scope.recache(__memo_parameter_arg.value);
     }
-    @memo() public method_with_type_parameter<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: T): T {
+    @Memo() public method_with_type_parameter<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: T): T {
         const __memo_scope = __memo_context.scope<T>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {
@@ -77,7 +77,7 @@ class Test {
         this.void_method(__memo_context, ((__memo_id) + (<some_random_number>)));
         return 0;
     }
-    @memo_entry() public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
+    @memo_entry() public memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
         const getContext = (() => {
             return __memo_context;
         });
@@ -90,7 +90,7 @@ class Test {
             return entry(__memo_context, ((__memo_id) + (<some_random_number>)));
         }
     }
-    @memo() public memo_skip_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, @memo_skip() arg2: string, @memo_skip() arg3: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): string {
+    @Memo() public memo_skip_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: number, @memo_skip() arg2: string, @memo_skip() arg3: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): string {
         const __memo_scope = __memo_context.scope<string>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1);
         if (__memo_scope.unchanged) {
@@ -103,7 +103,7 @@ class Test {
     public constructor() {}
 }
 class Use {
-    @memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

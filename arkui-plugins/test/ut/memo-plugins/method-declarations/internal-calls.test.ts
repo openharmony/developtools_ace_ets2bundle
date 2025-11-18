@@ -34,14 +34,14 @@ const pluginTester = new PluginTester('test memo method', buildConfig, projectCo
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 function main() {}
 export function __context(): __memo_context_type
 export function __id(): __memo_id_type
-type MemoType = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+type MemoType = @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
 class Test {
-    @memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() public void_method(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -52,7 +52,7 @@ class Test {
             return;
         }
     }
-    @memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -64,7 +64,7 @@ class Test {
             return;
         }
     }
-    @memo() public method_with_internals(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public method_with_internals(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -78,7 +78,7 @@ class Test {
         }
     }
     public memo_lambda() {
-        @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 __memo_scope.cached;
@@ -90,13 +90,13 @@ class Test {
             }
         });
     }
-    @memo() public memo_variables(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public memo_variables(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;
         }
-        @memo() const f = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): number => {
+        @Memo() const f = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): number => {
             const __memo_scope = __memo_context.scope<number>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 return __memo_scope.cached;
@@ -110,7 +110,7 @@ class Test {
             }
             return __memo_scope.recache(((123) + (__memo_parameter_x.value)));
         });
-        const h = @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): number => {
+        const h = @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type): number => {
             const __memo_scope = __memo_context.scope<number>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
                 return __memo_scope.cached;
@@ -125,7 +125,7 @@ class Test {
             return;
         }
     }
-    @memo() public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
+    @Memo() public args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_1?: int, gensym%%_2?: (()=> int), gensym%%_3?: int, arg4?: int): void {
         let arg1: int = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : (10 as int));
         let arg2: (()=> int) = (((gensym%%_2) !== (undefined)) ? gensym%%_2 : ((() => {
             return 20;
@@ -144,7 +144,7 @@ class Test {
             return;
         }
     }
-    @memo() public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)) {
+    @Memo() public optional_args(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1?: int, arg2?: (()=> int)) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
         const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2);
         if (__memo_scope.unchanged) {
@@ -160,7 +160,7 @@ class Test {
             return;
         }
     }
-    @memo() public type_alias(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: MemoType) {
+    @Memo() public type_alias(__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: MemoType) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_arg = __memo_scope.param(0, arg);
         if (__memo_scope.unchanged) {

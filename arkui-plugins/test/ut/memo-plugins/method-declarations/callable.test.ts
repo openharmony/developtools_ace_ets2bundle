@@ -30,9 +30,9 @@ const pluginTester = new PluginTester('test memo method', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -62,7 +62,7 @@ function main() {}
     }
 });
 class A {
-    @memo() public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -76,11 +76,11 @@ class A {
     public constructor() {}
 }
 class B {
-    public static $_invoke(@memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
+    public static $_invoke(@Memo() p?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {}
     public constructor() {}
 }
 class C {
-    @memo() public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
+    @Memo() public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
         const __memo_scope = __memo_context.scope<C>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_factory = __memo_scope.param(0, factory);
         if (__memo_scope.unchanged) {
@@ -91,7 +91,7 @@ class C {
     public constructor() {}
 }
 class D {
-    public static $_instantiate(factory: (()=> D), @memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
+    public static $_instantiate(factory: (()=> D), @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): D {
         return factory();
     }
     public constructor() {}

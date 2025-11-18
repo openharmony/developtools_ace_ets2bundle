@@ -125,14 +125,14 @@ class __EntryWrapper extends EntryPoint {
 
 const expectedUIHeaderScript: string = `
 import { Memo as Memo } from "arkui.incremental.annotation";
-import { memo as memo } from "arkui.stateManagement.runtime";
+import { Memo as Memo } from "arkui.incremental.annotation";
 import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 function main() {}
 
-@memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @memo() content_?: (()=> void)): void
+@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @Memo() content_?: (()=> void)): void
 
 @Memo() export function FakeComponentImpl(style: @Memo() ((instance: FakeComponentAttribute)=> void), content?: @Memo() (()=> void)): void
 

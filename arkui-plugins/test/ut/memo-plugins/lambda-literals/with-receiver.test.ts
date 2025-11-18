@@ -32,11 +32,11 @@ const pluginTester = new PluginTester('test memo lambda', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 
 function main() {}
 
-@memo() function fullName(this: Person, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@Memo() function fullName(this: Person, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
@@ -49,7 +49,7 @@ function main() {}
     }
 }
 
-@memo() function foo(this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@Memo() function foo(this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_this = __memo_scope.param(0, this), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
@@ -62,7 +62,7 @@ function main() {}
     }
 }
 
-@memo() function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@Memo() function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @Memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 2);
     const __memo_parameter_a = __memo_scope.param(0, a), __memo_parameter_arg = __memo_scope.param(1, arg);
     if (__memo_scope.unchanged) {
@@ -75,7 +75,7 @@ function main() {}
     }
 }
 
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -143,8 +143,8 @@ class A {
     public constructor() {}
 }
 
-@memo() type F1 = ((this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void);
-@memo() type F2 = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void);
+@Memo() type F1 = ((this: A, __memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void);
+@Memo() type F2 = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: A, @Memo() arg?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void);
 `;
 
 function testMemoTransformer(this: PluginTestContext): void {

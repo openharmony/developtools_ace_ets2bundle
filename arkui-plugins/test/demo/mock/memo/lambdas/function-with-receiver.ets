@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
 class B {
-	@memo internal_call(): B {
+	@Memo internal_call(): B {
 		this.foo1('morning');
     	return this.foo2('afternoon')
 	}
 }
 
-@memo function foo1(this: B, str: string): void {
+@Memo function foo1(this: B, str: string): void {
   console.log('Good', str);
 }
 
-@memo function foo2(this: B, str: string): this {
+@Memo function foo2(this: B, str: string): this {
   console.log('Good', str);
   return this;
 }

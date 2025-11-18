@@ -13,28 +13,28 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
 (arg: (()=>void)) => {}(() => {});
 
-(arg: @memo() (()=>void)) => {}(@memo() () => {});
+(arg: @Memo() (()=>void)) => {}(@Memo() () => {});
 
-(arg: @memo() (()=>void) = () => {}) => {}(@memo() () => {});
+(arg: @Memo() (()=>void) = () => {}) => {}(@Memo() () => {});
 
-@memo
+@Memo
 () => {
-  (@memo() (arg: @memo() (()=>void) = () => {}) => {})(@memo() () => {});
+  (@Memo() (arg: @Memo() (()=>void) = () => {}) => {})(@Memo() () => {});
 }
 
-@memo
+@Memo
 () => {
-    let goo = @memo (name: string = "old") => {}
+    let goo = @Memo (name: string = "old") => {}
 
     goo();
 }
 
 () => {
-    let foo = (arg: @memo() (()=>void) = () => {}) => {}
+    let foo = (arg: @Memo() (()=>void) = () => {}) => {}
 
-    foo(@memo () => {});
+    foo(@Memo () => {});
 }
