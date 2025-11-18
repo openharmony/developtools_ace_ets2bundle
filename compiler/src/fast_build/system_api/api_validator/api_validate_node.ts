@@ -21,9 +21,10 @@ import {
   isOpenHarmonyRuntime,
   defaultFormatCheckerWithoutMSF,
   defaultValueChecker,
-  getAvailableDecoratorFromNode,
+  getValidDecoratorFromNode,
   extractMinApiFromDecorator,
-  getVersionByValueChecker
+  getVersionByValueChecker,
+  isAvailableDecorator
 } from '../api_check_utils';
 import {
   AVAILABLE_TAG_NAME,
@@ -547,10 +548,9 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
     }
 
     try {
-      const curAvailableVersion = this.checkParentVersion(node);
+      const curAvailableVersion = this.getParentVersion(node);
 
-      // Version requirement exists but no parent wrapper → show warning
-      if (curAvailableVersion) {
+      if (this.compareVersions(curAvailableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion)) {
         return true;
       }
       
@@ -559,7 +559,6 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
       return false;
     }
   }
-
   /**
    * Finds the target version from the declaration.
    * Goes to where the symbol is declared and extracts @Available
@@ -567,35 +566,21 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
    * @param node - The usage node to find target version for
    * @returns The highest version requirement, or undefined if none found
    */
-  private checkParentVersion(node: ts.Node): ParsedVersion | null {
+  private getParentVersion(node: ts.Node): ParsedVersion | null {
     if (!node) {
       return null;
     }
-    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node, 1);
-
-    // Extract minApiVersion from @Available decorators
-    for (const dec of decorators) {
-      const availableVersion = extractMinApiFromDecorator(dec);
-      if (!availableVersion) {
-        continue;
-      }
-
-      // Validate version format using loaded format checker
-      // For OpenHarmony: uses integer-only format (e.g., "21")
-      // For other OS: uses format checker from external plugin or default
-      const isValidFormat = availableVersion.os === RUNTIME_OS_OH
-        ? defaultFormatCheckerWithoutMSF(availableVersion.version)
-        : this.formatChecker(availableVersion.formatVersion);
-
-      if (!isValidFormat || !isValidFormat.result) {
-        continue;
-      }
-      if (this.compareVersions(availableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion)) {
-        return availableVersion;
-      }
+    const decorator: ts.Decorator | null = getValidDecoratorFromNode(node, isAvailableDecorator);
+    if (decorator === null) {
+      return null;
     }
 
-    return null; // No valid @Available decorator found
+    const availableVersion = extractMinApiFromDecorator(decorator);
+    if (!availableVersion) {
+      return null;
+    }
+    
+    return availableVersion;
   }
 
   /**

@@ -1342,20 +1342,10 @@ export function processProp(prop: ts.ObjectLiteralElementLike): ParsedVersion | 
 /**
  * Recursively search for decorators named @Available in the node and its parent node.
  * @param node declaration
- * @param searchMode 0: Return upon locating the decorator 1：After querying all parent nodes, all decorators will be returned.
+ * @param predicate Function for validating decorators
  * @returns The array of @Available decorators found; if none exist, return an empty array.
  */
-export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration, searchMode?: number): ts.Decorator[] {
-  const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
-    if (ts.isCallExpression(decorator.expression)) {
-      return ts.isIdentifier(decorator.expression.expression) &&
-        decorator.expression.expression.text === 'Available';
-    } else if (ts.isIdentifier(decorator.expression)) {
-      return decorator.expression.text === 'Available';
-    }
-    return false;
-  };
-  
+export function getValidDecoratorFromNode(node: ts.Node | ts.Declaration, predicate: (parent: ts.Decorator) => boolean): ts.Decorator | null {
   const decoratorArray = [];
   if (ts.canHaveDecorators(node)) {
     decoratorArray.push(...(ts.getAnnotations(node)) || []);
@@ -1363,19 +1353,16 @@ export function getAvailableDecoratorFromNode(node: ts.Node | ts.Declaration, se
   if (ts.canHaveIllegalDecorators(node)) {
     decoratorArray.push(...(ts.getAnnotationsFromIllegalDecorators(node)) || []);
   }
-  const currentAvailableDecorators = decoratorArray.filter(isAvailableDecorator);
+  const validDecorator = decoratorArray.find(decorator => {
+    return predicate(decorator);
+  });
+
+  if (validDecorator) {
+    return validDecorator;
+  }
   const parentNode = node.parent;
 
-  if (searchMode === 0) {
-    if (currentAvailableDecorators.length > 0) {
-      return currentAvailableDecorators;
-    }
-    return parentNode ? getAvailableDecoratorFromNode(parentNode, 0) : [];
-  } else {
-    // 模式 1：收集当前节点的符合条件装饰器，继续查父节点并合并结果
-    const parentAvailable = parentNode ? getAvailableDecoratorFromNode(parentNode, 1) : [];
-    return [...currentAvailableDecorators, ...parentAvailable];
-  }
+  return parentNode ? getValidDecoratorFromNode(parentNode, predicate) : null;
 }
 
   /**
@@ -1407,40 +1394,84 @@ export function isAvailableDeclarationValid(annoDecl: ts.AnnotationDeclaration):
 }
 
 export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheckResult {
-  let result:ts.ConditionCheckResult = {
-    valid: false,
-    message: '@Availale annotation are not valid here',
-    type: ts.DiagnosticCategory.Error
+  // available的注解，只有在minApiVersion存在且不合法的情况下，需要做出告警提示，遇到异常情况，默认不告警
+  // 默认返回值 为 true
+  let result: ts.ConditionCheckResult = {
+    valid: true
   }
   if (!annotation || !annotation.annotationDeclaration) {
     return result;
   }
-  if (!ts.isCallExpression(annotation.expression) || !ts.isObjectLiteralExpression(annotation.expression.arguments[0])) {
+  try {
+    if (!ts.isCallExpression(annotation.expression) || !ts.isObjectLiteralExpression(annotation.expression.arguments[0])) {
+      return result;
+    }
+    const arg = annotation.expression.arguments[0];
+    for (const prop of arg.properties) {
+      if (!ts.isPropertyAssignment(prop)) {
+        continue;
+      }
+      let propName = !prop.name && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) ? prop.name.text : prop.name.getText().replace(/['"]/g, '');
+      if (propName !== 'minApiVersion' || !ts.isStringLiteral(prop.initializer)) {
+        continue;
+      }
+      let minApiVersion = prop.initializer.text;
+      
+      if (minApiVersion === null || minApiVersion === undefined) {
+        minApiVersion = "";
+      }
+      let parseVersion = parseVersionString(minApiVersion);
+      let checkResult = checkFormatResult(parseVersion);
+      if (checkResult) {
+        return checkResult;
+      }
+      // Verify the nearest parent node of the current child node that utilises the `@available` annotation.
+      // Check whether the parent node's version number is lower than that of the child node. If higher, trigger an alert.
+
+      let higherVersion = hasLargerVersionInParentNode(annotation.parent, parseVersion);
+      if (higherVersion) {
+        let msg = AVAILABLE_SCOPE_ERROR
+          .replace('$VERSION', higherVersion.version);
+        return {
+          valid: false,
+          message: msg,
+          type: ts.DiagnosticCategory.Warning
+        }
+      }
+    }
+  } catch (e) {
     return result;
   }
-  let parseVersion = extractMinApiFromDecorator(annotation);
-  let checkResult = checkFormatResult(parseVersion);
-  if (checkResult) {
-    return checkResult;
-  }
-  // Verify the nearest parent node of the current child node that utilises the `@available` annotation.
-  // Check whether the parent node's version number is lower than that of the child node. If higher, trigger an alert.
-  
-  let higherVersion = hasLargerVersionInParentNode(annotation.parent, parseVersion);
-  if (higherVersion) {
-    let msg = AVAILABLE_SCOPE_ERROR
-      .replace('$VERSION', higherVersion.version);
-    return {
-      valid: false,
-      message: msg,
-      type: ts.DiagnosticCategory.Warning
-    }
-  }
-
-  return {
-    valid: true
-  }
+  return result;
 }
+
+export const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
+  if (!decorator) {
+    return false;
+  }
+  let decoratorName: string = '';
+  if (ts.isCallExpression(decorator.expression) && ts.isIdentifier(decorator.expression.expression)) {
+    decoratorName = decorator.expression.expression.text;
+  } 
+  if (ts.isIdentifier(decorator.expression)) {
+    decoratorName =  decorator.expression.text;
+  }
+  if (decoratorName !== 'Available') {
+    return false
+  }
+  let parseVersion = extractMinApiFromDecorator(decorator);
+  if (!parseVersion) {
+      return false;
+  }
+  const isValidFormat = parseVersion.os === RUNTIME_OS_OH
+    ? defaultFormatCheckerWithoutMSF(parseVersion.version)
+    : getFormatChecker(AVAILABLE_TAG_NAME)(parseVersion.formatVersion);
+
+  if (!isValidFormat || !isValidFormat.result) {
+    return false;
+  }
+  return true;
+};
 /**
  * Check whether a higher version exists in the parent node
  * @param node check node
@@ -1451,27 +1482,22 @@ function hasLargerVersionInParentNode(node: ts.Node, curAvailableVersion: Parsed
   if (!node || !node.parent) {
     return null;
   }
-  const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node.parent, 1);
-
-  for (const dec of decorators) {
-    const availableVersion = extractMinApiFromDecorator(dec);
-    if (!availableVersion) {
-      continue;
-    }
-    const isValidFormat = availableVersion.os === RUNTIME_OS_OH
-      ? defaultFormatCheckerWithoutMSF(availableVersion.version)
-      : getFormatChecker()(availableVersion.formatVersion);
-
-    if (!isValidFormat || !isValidFormat.result) {
-      continue;
-    }
-    if (!compareVersions(availableVersion, curAvailableVersion)) {
-      return availableVersion;
-    }
+  
+  const decorator: ts.Decorator | null = getValidDecoratorFromNode(node.parent, isAvailableDecorator);
+  if (decorator === null) {
     return null;
   }
 
-  return null; // No valid @Available decorator found
+  const availableVersion = extractMinApiFromDecorator(decorator);
+  if (!availableVersion) {
+    return null;
+  }
+  
+  if (!compareVersions(availableVersion, curAvailableVersion)) {
+    return availableVersion;
+  }
+
+  return null;
 }
 
 /**
