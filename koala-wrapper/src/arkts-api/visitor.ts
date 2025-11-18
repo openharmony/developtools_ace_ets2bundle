@@ -60,7 +60,7 @@ import {
     isSpreadElement,
     isClassStaticBlock,
     isFunctionExpression,
-    FunctionExpression
+    FunctionExpression,
 } from '../generated';
 import {
     isEtsScript,
@@ -222,16 +222,6 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
     if (updated) {
         return node;
     }
-    if (
-        global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer) ===
-        Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION
-    ) {
-        updated = true;
-        return factory.updateFunctionExpression(
-            node as FunctionExpression,
-            nodeVisitor((node as FunctionExpression).scriptFunction, visitor)
-        );
-    }
     if (isBinaryExpression(node)) {
         updated = true;
         return factory.updateBinaryExpression(
@@ -243,10 +233,7 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
     }
     if (isAwaitExpression(node)) {
         updated = true;
-        return factory.updateAwaitExpression(
-            node,
-            nodeVisitor(node.argument, visitor)
-        );
+        return factory.updateAwaitExpression(node, nodeVisitor(node.argument, visitor));
     }
     if (isSpreadElement(node)) {
         const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
@@ -497,11 +484,19 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.isComputed
         );
     }
-    if (isClassStaticBlock(node)) {
+    if (
+        isClassStaticBlock(node) &&
+        node.value &&
+        global.generatedEs2panda._AstNodeTypeConst(global.context, node.value.peer) ===
+            Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION
+    ) {
         updated = true;
         return factory.updateClassStaticBlock(
             node,
-            nodeVisitor(node.value, visitor)
+            updateFunctionExpression(
+                node.value as FunctionExpression,
+                nodeVisitor((node.value as FunctionExpression).scriptFunction, visitor)
+            )
         );
     }
     // TODO

@@ -94,7 +94,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
   public build() {}
 
-  private constructor() {}
+  public constructor() {}
 
 }
 
