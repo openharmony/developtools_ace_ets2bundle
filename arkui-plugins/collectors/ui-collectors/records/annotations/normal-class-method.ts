@@ -39,7 +39,10 @@ export class NormalClassMethodAnnotationRecord extends BaseAnnotationRecord<
         this.annotationNames = [DecoratorNames.COMPUTED, DecoratorNames.MONITOR];
     }
 
-    updateAnnotationInfoByName(info: NormalClassMethodAnnotationInfo, name: string | undefined): NormalClassMethodAnnotationInfo {
+    updateAnnotationInfoByName(
+        info: NormalClassMethodAnnotationInfo,
+        name: string | undefined
+    ): NormalClassMethodAnnotationInfo {
         switch (name) {
             case DecoratorNames.COMPUTED:
                 info.hasComputed = true;

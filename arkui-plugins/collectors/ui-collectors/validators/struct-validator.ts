@@ -16,10 +16,40 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { CustomComponentInfo } from '../records';
+import {
+    checkComponentV2Mix,
+    checkCustomDialogMissingController,
+    checkEntryStructNoExport,
+    checkMainPagesEntry,
+    checkNoDuplicatePreview,
+    checkNoSameAsBuiltInAttribute,
+    checkObservedV2TraceUsageValidation,
+    checkReusableV2Decorator,
+    checkValidateDecoratorTarget,
+    checkWatchDecoratorFunction,
+    resetMainPagesEntry,
+    resetNoDuplicatePreview,
+    checkValidateBuildInStruct
+} from './rules';
 
 export class StructValidator extends BaseValidator<arkts.ClassDeclaration, CustomComponentInfo> {
+    reset(): void {
+        super.reset();
+        resetMainPagesEntry.bind(this)();
+        resetNoDuplicatePreview.bind(this)();
+    }
+
     reportIfViolated(node: arkts.ClassDeclaration): void {
-        const metadata = this.context ?? {};
-        // TODO: add rule here.
+        checkReusableV2Decorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkComponentV2Mix.bind(this)(node);
+        checkCustomDialogMissingController.bind(this)(node);
+        checkNoSameAsBuiltInAttribute.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkWatchDecoratorFunction.bind(this)(node);
+        checkEntryStructNoExport.bind(this)(node);
+        checkMainPagesEntry.bind(this)(node);
+        checkNoDuplicatePreview.bind(this)(node);
+        checkValidateBuildInStruct.bind(this)(node);
     }
 }

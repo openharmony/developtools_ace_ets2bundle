@@ -15,11 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
-import {
-    NormalInterfacePropertyInfo,
-    NormalInterfacePropertyRecord,
-    NormalInterfaceRecord,
-} from './records';
+import { NormalInterfacePropertyInfo, NormalInterfacePropertyRecord, NormalInterfaceRecord } from './records';
 import { CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME, NodeCacheNames } from '../../common/predefines';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { checkIsCustomDialogControllerBuilderOptionsFromInfo } from './utils';

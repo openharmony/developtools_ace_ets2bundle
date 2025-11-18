@@ -40,7 +40,7 @@ export class NormalInterfaceRecord extends BaseRecord<arkts.TSInterfaceDeclarati
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
-        }
+        };
         this.info = currInfo;
     }
 
@@ -48,6 +48,6 @@ export class NormalInterfaceRecord extends BaseRecord<arkts.TSInterfaceDeclarati
         this.refresh();
         return {
             ...(this.info?.name && { name: this.info.name }),
-        }
+        };
     }
 }

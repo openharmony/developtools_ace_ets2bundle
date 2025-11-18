@@ -38,7 +38,7 @@ function firstToLower(str: string): string {
 
 export abstract class BaseAnnotationRecord<
     U extends Annotations = Annotations,
-    V extends AnnotationInfo = AnnotationInfo
+    V extends AnnotationInfo = AnnotationInfo,
 > extends BaseRecord<arkts.AnnotationUsage, AnnotationRecord<U, V>> {
     protected abstract annotationNames: string[];
     protected _annotations: U = {} as U;

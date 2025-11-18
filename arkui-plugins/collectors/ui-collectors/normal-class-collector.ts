@@ -135,10 +135,7 @@ export class NormalClassCollector extends AbstractVisitor {
         ValidatorBuilder.build(NormalClassPropertyValidator).checkIsViolated(node, propertyInfo);
     }
 
-    private canSkipCollectRememberProperty(
-        info: NormalClassPropertyInfo,
-        hasTrackInObservedClass: boolean
-    ): boolean {
+    private canSkipCollectRememberProperty(info: NormalClassPropertyInfo, hasTrackInObservedClass: boolean): boolean {
         const hasObservedV2 = info.classInfo?.annotationInfo?.hasObservedV2;
         if (!!hasObservedV2) {
             return !info.annotationInfo?.hasTrace;

@@ -84,11 +84,11 @@ export class Collector extends AbstractVisitor {
             CallRecordCollector.getInstance(this.getMetadata()).reset();
         }
         if (this.shouldCheckUISyntax) {
+            ValidatorBuilder.reset();
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([0, 0, 2], 'LogCollector.emitLogInfo'));
             LogCollector.getInstance().emitLogInfo();
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([0, 0, 2], 'LogCollector.emitLogInfo'));
             LogCollector.getInstance().reset();
-            ValidatorBuilder.reset();
         }
         if (this.shouldCollectMemo) {
             arkts.Performance.getInstance().createDetailedEvent(

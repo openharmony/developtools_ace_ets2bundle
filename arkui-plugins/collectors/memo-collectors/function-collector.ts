@@ -75,7 +75,8 @@ export class MemoFunctionCollector extends AbstractVisitor {
     ): void {
         const shouldCollect =
             arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(declarator) ||
-            (!!declarator.initializer && arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(declarator.initializer));
+            (!!declarator.initializer &&
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(declarator.initializer));
         if (shouldCollect) {
             arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
@@ -95,7 +96,8 @@ export class MemoFunctionCollector extends AbstractVisitor {
         if (arkts.isArrowFunctionExpression(node.initializer)) {
             const func = node.initializer.scriptFunction;
             const localInfo = collectMemoableInfoInScriptFunction(func);
-            const hasMemo = checkIsMemoFromMemoableInfo(memoableInfo, false) || localInfo.hasBuilder || localInfo.hasMemo;
+            const hasMemo =
+                checkIsMemoFromMemoableInfo(memoableInfo, false) || localInfo.hasBuilder || localInfo.hasMemo;
             const shouldCollectParameter = hasMemo && !localInfo.hasMemoEntry && !localInfo.hasMemoIntrinsic;
             const shouldCollectReturn = hasMemo;
             const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);

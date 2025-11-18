@@ -23,8 +23,8 @@ import {
     UISyntaxRuleContext,
     UISyntaxRuleHandler,
 } from '../rules/ui-syntax-rule';
-import { getUIComponents, readJSON, UISyntaxRuleComponents } from '../utils';
-import { ProjectConfig } from 'common/plugin-context';
+import { ProjectConfig, UIComponents } from '../../common/plugin-context';
+import { getUIComponents } from '../../common/arkts-utils';
 
 export type UISyntaxRuleProcessor = {
     setProjectConfig(projectConfig: ProjectConfig): void;
@@ -48,11 +48,11 @@ const BASE_RESOURCE_PATH = 'src/main/resources/base';
 const ETS_PATH = 'src/main/ets';
 
 class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
-    public componentsInfo: UISyntaxRuleComponents | undefined;
+    public componentsInfo: UIComponents | undefined;
     public projectConfig?: ProjectConfig;
 
     constructor() {
-        this.componentsInfo = getUIComponents('../../components/');
+        this.componentsInfo = getUIComponents();
     }
 
     public report(options: ReportOptions): void {
@@ -88,39 +88,6 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
         } else {
             arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
-        }
-    }
-
-    getMainPages(): string[] {
-        if (!this.projectConfig) {
-            return [];
-        }
-        const { moduleRootPath, aceModuleJsonPath } = this.projectConfig;
-        if (!aceModuleJsonPath) {
-            return [];
-        }
-        const moduleConfig = readJSON<ModuleConfig>(aceModuleJsonPath);
-        if (!moduleConfig) {
-            return [];
-        }
-        if (!moduleConfig.module || !moduleConfig.module.pages) {
-            return [];
-        }
-        const pagesPath = moduleConfig.module.pages;
-        const matcher = /\$(?<directory>[_A-Za-z]+):(?<filename>[_A-Za-z]+)/.exec(pagesPath);
-        if (matcher && matcher.groups) {
-            const { directory, filename } = matcher.groups;
-            const mainPagesPath = path.resolve(moduleRootPath, BASE_RESOURCE_PATH, directory, `${filename}.json`);
-            const mainPages = readJSON<MainPages>(mainPagesPath);
-            if (!mainPages) {
-                return [];
-            }
-            if (!mainPages.src || !Array.isArray(mainPages.src)) {
-                return [];
-            }
-            return mainPages.src.map((page) => path.resolve(moduleRootPath, ETS_PATH, `${page}.ets`));
-        } else {
-            return [];
         }
     }
 

@@ -90,3 +90,32 @@ export function getPerfName(level: number[], name: string): string {
     const levelName: string = level.join('.');
     return [levelName, name].join(' --- ');
 }
+
+export function performanceLog<T extends any[], R>(
+  fn: (...args: T) => R,
+  label: string = fn.name
+): (...args: T) => R {
+  const timedFunction = function (this: any, ...args: T): R {
+    arkts.Performance.getInstance().createDetailedEvent(label);
+    try {
+      const result = fn.apply(this, args);
+      if (result instanceof Promise) {
+        return result.finally(() => {
+            arkts.Performance.getInstance().stopDetailedEvent(label); 
+        }) as R;
+      }
+      arkts.Performance.getInstance().stopDetailedEvent(label);
+      return result;
+    } catch (error) {
+      arkts.Performance.getInstance().stopDetailedEvent(label); 
+      throw error;
+    }
+  };
+
+  Object.defineProperty(timedFunction, 'name', { 
+    value: label || fn.name, 
+    configurable: true 
+  });
+  
+  return timedFunction;
+}

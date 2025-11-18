@@ -17,13 +17,19 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { NormalClassRecord, RecordBuilder, StructPropertyInfo } from '../../records';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkComponentComponentV2MixUse = performanceLog(
+    _checkComponentComponentV2MixUse,
+    getPerfName([0, 0, 0, 0, 0], 'checkComponentComponentV2MixUse')
+);
 
 /**
  * 校验规则：禁止在`@Component`中使用`@ObservedV2`装饰的类
- * 
+ *
  * 校验等级：error
  */
-export function checkComponentV2MixUse(
+function _checkComponentComponentV2MixUse(
     this: BaseValidator<arkts.ClassProperty, StructPropertyInfo>,
     classProperty: arkts.ClassProperty
 ): void {

@@ -16,6 +16,8 @@
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationUsage, getCurrentFilePath, PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getMainPages } from '../../common/arkts-utils';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -31,7 +33,7 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
         if (!currentFilePath) {
             return;
         }
-        if (!this.context.getMainPages().includes(currentFilePath)) {
+        if (!getMainPages(MetaDataCollector.getInstance().projectConfig).includes(currentFilePath)) {
             return;
         }
         let entryDecoratorCount = 0;

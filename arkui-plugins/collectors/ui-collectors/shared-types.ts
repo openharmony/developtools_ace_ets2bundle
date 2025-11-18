@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
+import * as arkts from '@koalaui/libarkts';
 import { VisitorOptions } from '../../common/abstract-visitor';
 import { AstNodePointer } from '../../common/safe-types';
-import { CustomComponentInfo, StructMethodInfo, StructPropertyInfo } from './records';
+import { CallRecord, CustomComponentInfo, StructMethodInfo, StructPropertyInfo } from './records';
 
 export interface UICollectMetadata extends VisitorOptions {
     shouldIgnoreDecl: boolean;
@@ -24,4 +25,9 @@ export interface UICollectMetadata extends VisitorOptions {
 export interface StructCollectorInfo extends CustomComponentInfo {
     propertyInfoMap: Record<AstNodePointer, StructPropertyInfo>;
     methodInfoMap: Record<AstNodePointer, StructMethodInfo>;
+}
+
+export interface CallRecordInfo {
+    call: arkts.CallExpression;
+    callRecord: CallRecord;
 }

@@ -15,13 +15,41 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
-import { checkBuilderParam, checkComponentLinkInit, checkComponentV2StateUsage, checkComputedDecorator, checkConsumerProviderDecorator } from './rules';
+import {
+    checkBuilderParam,
+    checkComponentV2StateUsage,
+    checkComputedDecorator,
+    checkConsumerProviderDecorator,
+    checkComponentComponentV2Init,
+    checkConstructPrivateParameter,
+    checkReusableComponentInV2,
+    checkNestedReuseComponent,
+    checkConstructParameter,
+    checkSpecificComponentChildren,
+    checkConstructParameterLiteral,
+    checkVariableInitializationPassing,
+    checkReuseAttribute,
+    checkWrapBuilder,
+    checkUIConsistent,
+    checkAttributeNoInvoke,
+    checkNestedRelationship,
+    checkNoChildInButton,
+    checkStaticParamRequire,
+    checkNoDuplicateId,
+    resetNoDuplicateId,
+} from './rules';
 import { CallInfo } from '../records';
 import { checkIsCustomComponentFromInfo } from '../utils';
 
 export class CallValidator extends BaseValidator<arkts.CallExpression, CallInfo> {
+    reset() {
+        super.reset();
+        resetNoDuplicateId();
+    }
+
     reportIfViolated(node: arkts.CallExpression): void {
         const metadata = this.context ?? {};
+        checkNoDuplicateId.bind(this)(node);
         if (!checkIsCustomComponentFromInfo(metadata.structDeclInfo) || !metadata.structDeclInfo?.definitionPtr) {
             reportInNonStructCall.bind(this)(node, metadata);
             return;
@@ -37,15 +65,29 @@ function reportInStructCall(this: CallValidator, node: arkts.CallExpression, met
     checkComponentV2StateUsage.bind(this)(node);
     checkComputedDecorator.bind(this)(node);
     checkConsumerProviderDecorator.bind(this)(node);
+    checkConstructParameterLiteral.bind(this)(node);
+    checkConstructParameter.bind(this)(node);
+    checkReuseAttribute.bind(this)(node);
+    checkAttributeNoInvoke.bind(this)(node);
 
     const struct = arkts.classByPeer<arkts.ClassDefinition>(metadata.structDeclInfo!.definitionPtr);
-    checkBuilderParam.bind(this)(struct);
-    checkComponentLinkInit.bind(this)(struct);
+    checkBuilderParam.bind(this)(node, struct);
+    checkComponentComponentV2Init.bind(this)(node, struct);
+    checkReusableComponentInV2.bind(this)(struct);
+    checkNestedReuseComponent.bind(this)(struct);
+    checkConstructPrivateParameter.bind(this)(struct);
+    checkStaticParamRequire.bind(this)(struct);
+    checkVariableInitializationPassing.bind(this)(node, struct);
 }
 
 /**
  * 只处理*非*自定义组件 CallExpression的场景
  */
 function reportInNonStructCall(this: CallValidator, node: arkts.CallExpression, metadata: CallInfo): void {
-    // TODO: write rules here
+    checkSpecificComponentChildren.bind(this)(node);
+    checkWrapBuilder.bind(this)(node);
+    checkUIConsistent.bind(this)(node);
+    checkAttributeNoInvoke.bind(this)(node);
+    checkNestedRelationship.bind(this)(node);
+    checkNoChildInButton.bind(this)(node);
 }

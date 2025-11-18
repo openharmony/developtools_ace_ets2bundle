@@ -16,7 +16,18 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { StructMethodInfo } from '../records';
-import { checkComponentV2StateUsage, checkComputedDecorator, checkConsumerProviderDecorator } from './rules';
+import {
+    checkBuildRootNode,
+    checkComponentV2StateUsage,
+    checkComputedDecorator,
+    checkConsumerProviderDecorator,
+    checkMonitorDecorator,
+    checkObservedV2TraceUsageValidation,
+    checkOnceDecorator,
+    checkStructPropertyDecorator,
+    checkTrackDecorator,
+    checkValidateDecoratorTarget,
+} from './rules';
 
 export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition, StructMethodInfo> {
     reportIfViolated(node: arkts.MethodDefinition): void {
@@ -27,8 +38,15 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
 
         checkComponentV2StateUsage.bind(this)(node);
         checkConsumerProviderDecorator.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
+        checkTrackDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkStructPropertyDecorator.bind(this)(node);
+        checkMonitorDecorator.bind(this)(node);
+        checkBuildRootNode.bind(this)(node);
 
         const struct = arkts.classByPeer<arkts.ClassDefinition>(metadata.structInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, struct);
+        checkValidateDecoratorTarget.bind(this)(node);
     }
 }

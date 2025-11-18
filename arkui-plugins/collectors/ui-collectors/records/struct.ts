@@ -17,10 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { CustomComponentAnnotationRecord, CustomComponentAnnotations, StructAnnotationInfo } from './annotations';
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
-import {
-    checkIsCustomComponentDeclaredClassFromInfo,
-    checkIsStructFromNode,
-} from '../utils';
+import { checkIsCustomComponentDeclaredClassFromInfo, checkIsStructFromNode } from '../utils';
 import { AstNodePointer } from '../../../common/safe-types';
 import { RecordCache } from './cache';
 
