@@ -22,7 +22,7 @@ import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
-import { dumpConstructor } from 'test/utils/simplify-dump';
+import { dumpConstructor } from '../../../../utils/simplify-dump';
 
 const FUNCTION_DIR_PATH: string = 'entry/localstorage';
 
