@@ -48,7 +48,7 @@ export class NewClassInstanceRecord extends BaseRecord<arkts.ETSNewClassInstance
             return;
         }
         this.name = nameNode.name;
-        this.declName = decl.ident?.name; 
+        this.declName = decl.ident?.name;
     }
 
     refreshOnce(): void {
@@ -56,7 +56,7 @@ export class NewClassInstanceRecord extends BaseRecord<arkts.ETSNewClassInstance
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
-            ...(this.declName && { declName: this.declName })
+            ...(this.declName && { declName: this.declName }),
         };
         this.info = currInfo;
     }
@@ -66,6 +66,6 @@ export class NewClassInstanceRecord extends BaseRecord<arkts.ETSNewClassInstance
         return {
             ...(this.info?.name && { name: this.info.name }),
             ...(this.info?.declName && { declName: this.info.declName }),
-        }
+        };
     }
 }

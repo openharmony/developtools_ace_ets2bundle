@@ -13,13 +13,16 @@
  * limitations under the License.
  */
 
-import { ProjectConfig, ResourceInfo } from './plugin-context';
+import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents } from './plugin-context';
 
 export class MetaDataCollector {
     public resourceInfo: ResourceInfo | undefined;
     public projectConfig: ProjectConfig | undefined;
     public fileAbsName: string | undefined;
     public externalSourceName: string | undefined;
+    public componentsInfo: UIComponents | undefined;
+    public consistentResourceMap: ConsistentResourceMap | undefined;
+    public mainPageNames: string[] | undefined;
     private static instance: MetaDataCollector | null = null;
 
     static getInstance(): MetaDataCollector {
@@ -49,10 +52,28 @@ export class MetaDataCollector {
         return this;
     }
 
+    setComponentsInfo(componentsInfo: UIComponents | undefined): this {
+        this.componentsInfo = componentsInfo;
+        return this;
+    }
+
+    setConsistentResourceMap(resourceMap: ConsistentResourceMap | undefined): this {
+        this.consistentResourceMap = resourceMap;
+        return this;
+    }
+
+    setMainPages(mainPages: string[] | undefined): this {
+        this.mainPageNames = mainPages;
+        return this;
+    }
+
     reset(): void {
         this.projectConfig = undefined;
         this.fileAbsName = undefined;
         this.externalSourceName = undefined;
         this.resourceInfo = undefined;
+        this.componentsInfo = undefined;
+        this.consistentResourceMap = undefined;
+        this.mainPageNames = undefined;
     }
 }

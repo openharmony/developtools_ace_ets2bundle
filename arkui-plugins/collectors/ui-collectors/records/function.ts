@@ -20,10 +20,7 @@ import { BaseRecord, RecordOptions } from './base';
 import { BuiltInNames } from '../../../common/predefines';
 import { InnerComponentFunctionInfo, InnerComponentFunctionRecord } from './inner-component-function';
 
-export type FunctionInfo = AnnotationRecord<
-    FunctionAnnotations,
-    FunctionAnnotationInfo
-> & {
+export type FunctionInfo = AnnotationRecord<FunctionAnnotations, FunctionAnnotationInfo> & {
     name?: string;
     modifiers?: arkts.Es2pandaModifierFlags;
     kind?: arkts.Es2pandaMethodDefinitionKind;
@@ -68,7 +65,7 @@ export class FunctionRecord extends BaseRecord<arkts.MethodDefinition, FunctionI
     refreshOnce(): void {
         let currInfo = this.info ?? {};
         const annotationRecord = this._annotationRecord?.toRecord();
-        const innerComponentInfo =  this._innerComponentRecord?.toRecord();
+        const innerComponentInfo = this._innerComponentRecord?.toRecord();
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),

@@ -23,7 +23,10 @@ export type CustomComponentInterfaceInfo = AnnotationRecord<CustomComponentAnnot
     name?: string;
 };
 
-export class CustomComponentInterfaceRecord extends BaseRecord<arkts.TSInterfaceDeclaration, CustomComponentInterfaceInfo> {
+export class CustomComponentInterfaceRecord extends BaseRecord<
+    arkts.TSInterfaceDeclaration,
+    CustomComponentInterfaceInfo
+> {
     private _annotationRecord: CustomComponentAnnotationRecord;
 
     protected name?: string;
@@ -51,8 +54,8 @@ export class CustomComponentInterfaceRecord extends BaseRecord<arkts.TSInterface
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
-            ...(annotationRecord && { ...annotationRecord })
-        }
+            ...(annotationRecord && { ...annotationRecord }),
+        };
         this.info = currInfo;
     }
 
@@ -61,6 +64,6 @@ export class CustomComponentInterfaceRecord extends BaseRecord<arkts.TSInterface
         return {
             ...(this.info?.name && { name: this.info.name }),
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
-        }
+        };
     }
 }

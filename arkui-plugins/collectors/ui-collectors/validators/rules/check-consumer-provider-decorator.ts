@@ -25,10 +25,21 @@ import {
     RecordBuilder,
     StructMethodInfo,
     StructPropertyInfo,
+    NormalClassInfo,
 } from '../../records';
 import { checkIsNameStartWithBackingField } from '../../utils';
 import { DecoratorNames, LogType, StateManagementTypes } from '../../../../common/predefines';
-import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
+import {
+    createSuggestion,
+    getPositionRangeFromAnnotation,
+    getPositionRangeFromNode,
+} from '../../../../common/log-collector';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkConsumerProviderDecorator = performanceLog(
+    _checkConsumerProviderDecorator,
+    getPerfName([0, 0, 0, 0, 0], 'checkConsumerProviderDecorator')
+);
 
 /**
  * 校验规则：
@@ -39,7 +50,7 @@ import { createSuggestion, getPositionRangeFromNode } from '../../../../common/l
  *
  * 校验等级：error
  */
-export function checkConsumerProviderDecorator(
+function _checkConsumerProviderDecorator(
     this: BaseValidator<arkts.AstNode, Object>,
     node: arkts.AstNode,
     other?: arkts.AstNode
@@ -62,7 +73,7 @@ function checkConsumerProviderDecoratorInStructMethod<T extends arkts.AstNode = 
             node: annotation,
             message: `'@${DecoratorNames.CONSUMER}' can only decorate member property.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(annotation)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
         });
     }
     if (metadata.ignoredAnnotationInfo?.hasProvider) {
@@ -71,7 +82,7 @@ function checkConsumerProviderDecoratorInStructMethod<T extends arkts.AstNode = 
             node: annotation,
             message: `'@${DecoratorNames.PROVIDER}' can only decorate member property.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(annotation)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
         });
     }
 }
@@ -88,7 +99,7 @@ function checkConsumerProviderDecoratorInProperty<T extends arkts.AstNode = arkt
             node: annotation,
             message: `The '@${DecoratorNames.CONSUMER}' annotation can only be used with 'struct'.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(annotation)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
         });
     }
     if (!!metadata.classInfo && metadata.ignoredAnnotationInfo?.hasProvider) {
@@ -97,7 +108,7 @@ function checkConsumerProviderDecoratorInProperty<T extends arkts.AstNode = arkt
             node: annotation,
             message: `The '@${DecoratorNames.PROVIDER}' annotation can only be used with 'struct'.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(annotation)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
         });
     }
     // 结构体成员变量不能被多个内置装饰器修饰；
@@ -106,22 +117,24 @@ function checkConsumerProviderDecoratorInProperty<T extends arkts.AstNode = arkt
         metadata.annotationInfo?.hasConsumer &&
         !!(foundOther = findOtherDecoratorFromInfo(metadata, DecoratorNames.CONSUMER))
     ) {
+        const annotation = metadata.annotations?.[DecoratorNames.CONSUMER]!;
         this.report({
-            node: foundOther,
+            node: annotation,
             message: `The struct member variable can not be decorated by multiple built-in annotations.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(foundOther)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove other annotations`),
         });
     }
     if (
         metadata.annotationInfo?.hasProvider &&
         !!(foundOther = findOtherDecoratorFromInfo(metadata, DecoratorNames.PROVIDER))
     ) {
+        const annotation = metadata.annotations?.[DecoratorNames.PROVIDER]!;
         this.report({
-            node: foundOther,
+            node: annotation,
             message: `The struct member variable can not be decorated by multiple built-in annotations.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(foundOther)),
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove other annotations`),
         });
     }
 }
@@ -150,9 +163,35 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
                 node: prop,
                 message: getForbiddenInitializationMessage(decoratorInfo.name, propertyInfo.name, structName),
                 level: LogType.ERROR,
-                suggestion: createSuggestion('', ...getPositionRangeFromNode(node)),
+                suggestion: createSuggestion('', ...getPositionRangeFromNode(node), `Remove the property`),
             });
         }
+    }
+}
+
+function checkConsumerProviderDecoratorInNormalClass<T extends arkts.AstNode = arkts.ClassDeclaration>(
+    this: BaseValidator<T, NormalClassInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    //`@Provider`/`@Consumer`装饰器只能用于`struct`类型，而不能用于类（`class`）或其他类型；
+    if (metadata.ignoredAnnotationInfo?.hasConsumer) {
+        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.CONSUMER]!;
+        this.report({
+            node: annotation,
+            message: `The '@${DecoratorNames.CONSUMER}' annotation can only be used with 'struct'.`,
+            level: LogType.ERROR,
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
+        });
+    }
+    if (metadata.ignoredAnnotationInfo?.hasProvider) {
+        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.PROVIDER]!;
+        this.report({
+            node: annotation,
+            message: `The '@${DecoratorNames.PROVIDER}' annotation can only be used with 'struct'.`,
+            level: LogType.ERROR,
+            suggestion: createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`),
+        });
     }
 }
 
@@ -160,6 +199,7 @@ const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunctio
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkConsumerProviderDecoratorInStructMethod],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkConsumerProviderDecoratorInProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkConsumerProviderDecoratorInStructCall],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkConsumerProviderDecoratorInNormalClass],
 ]);
 
 type PropertyInfo = StructPropertyInfo & NormalClassPropertyInfo;

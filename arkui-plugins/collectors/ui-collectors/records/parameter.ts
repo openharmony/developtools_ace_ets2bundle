@@ -18,12 +18,7 @@ import { ParameterAnnotationInfo, ParameterAnnotationRecord, ParameterAnnotation
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 
-
-export type ParameterInfo = AnnotationRecord<
-    ParameterAnnotations,
-    ParameterAnnotationInfo
-> & {
-};
+export type ParameterInfo = AnnotationRecord<ParameterAnnotations, ParameterAnnotationInfo> & {};
 
 export class ParameterRecord extends BaseRecord<arkts.ETSParameterExpression, ParameterInfo> {
     private _annotationRecord?: ParameterAnnotationRecord;
@@ -44,7 +39,7 @@ export class ParameterRecord extends BaseRecord<arkts.ETSParameterExpression, Pa
         const annotationRecord = this._annotationRecord?.toRecord();
         currInfo = {
             ...currInfo,
-            ...(annotationRecord && { ...annotationRecord })
+            ...(annotationRecord && { ...annotationRecord }),
         };
         this.info = currInfo;
     }
@@ -53,6 +48,6 @@ export class ParameterRecord extends BaseRecord<arkts.ETSParameterExpression, Pa
         this.refresh();
         return {
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
-        }
+        };
     }
 }

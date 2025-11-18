@@ -15,7 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { expectNameInTypeReference } from '../../../common/arkts-utils';
-import { collectTypeRecordFromParameter, collectTypeRecordFromTypeParameterDeclaration, collectTypeRecordFromTypeParameterInstantiation, ParameterRecord, TypeParameterTypeRecord, TypeRecord } from '../../utils/collect-types';
+import {
+    collectTypeRecordFromParameter,
+    collectTypeRecordFromTypeParameterDeclaration,
+    collectTypeRecordFromTypeParameterInstantiation,
+    ParameterRecord,
+    TypeParameterTypeRecord,
+    TypeRecord,
+} from '../../utils/collect-types';
 import { MetaDataCollector } from '../../../common/metadata-collector';
 import { ARKUI_FOREACH_SOURCE_NAME, DecoratorNames, InnerComponentNames } from '../../../common/predefines';
 import { BaseRecord, RecordOptions } from './base';
@@ -23,26 +30,29 @@ import { AstNodePointer } from '../../../common/safe-types';
 import { isDeclFromArkUI } from '../utils';
 import { hasMemoAnnotation, MemoAstNode } from '../../memo-collectors/utils';
 
-export type InnerComponentFunctionInfo = ComponentAttributeInfo & ComponentInfo & {
-    hasLastTrailingLambda?: boolean;
-};
+export type InnerComponentFunctionInfo = ComponentAttributeInfo &
+    ComponentInfo & {
+        hasLastTrailingLambda?: boolean;
+    };
 
 export type ComponentInfo = {
     paramRecords?: ParameterRecord[];
     typeParameters?: TypeParameterTypeRecord[];
     hasRestParameter?: boolean;
     hasReceiver?: boolean;
-}
+};
 
 export type ComponentAttributeInfo = {
     attributeName?: string;
     attributeTypeParams?: TypeRecord[];
-}
+};
 
 /**
  * find attribute info from component method
  */
-export function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition): ComponentAttributeInfo | undefined {
+export function findAttributeInfoFromComponentMethod(
+    component: arkts.MethodDefinition
+): ComponentAttributeInfo | undefined {
     const type = component.scriptFunction.returnTypeAnnotation;
     const name = expectNameInTypeReference(type);
     if (!name) {
@@ -56,7 +66,10 @@ export function findAttributeInfoFromComponentMethod(component: arkts.MethodDefi
     };
 }
 
-export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpression, ignoreDecl: boolean = false): boolean {
+export function findBuilderName(
+    node: arkts.TypeNode | arkts.ETSParameterExpression,
+    ignoreDecl: boolean = false
+): boolean {
     const builderAnnoExpr = node.annotations.find((anno) => {
         const expr = anno.expr;
         if (!expr || !arkts.isIdentifier(expr)) {
@@ -78,7 +91,11 @@ export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpress
     return !!builderAnnoExpr;
 }
 
-export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, ignoreDecl: boolean = false, shouldIgnoreAnnotation: boolean = false): boolean {
+export function checkIsTrailingLambdaType(
+    typeNode: arkts.AstNode | undefined,
+    ignoreDecl: boolean = false,
+    shouldIgnoreAnnotation: boolean = false
+): boolean {
     if (!typeNode) {
         return false;
     }
@@ -90,10 +107,11 @@ export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, i
     while (queue.length > 0 && otherTypeLength === 0 && !(hasTrailingLambdaType && hasBuilderAnnotation)) {
         const node = queue.shift()!;
         if (arkts.isETSFunctionType(node)) {
-            hasTrailingLambdaType ||= node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void';
+            hasTrailingLambdaType ||=
+                node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void';
             hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
             if (!hasTrailingLambdaType && !hasBuilderAnnotation) {
-                otherTypeLength ++;
+                otherTypeLength++;
             }
         } else if (arkts.isETSUnionType(node)) {
             queue.push(...node.types);
@@ -115,7 +133,7 @@ export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, i
             queue.push(type);
             hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
         } else if (!arkts.isETSUndefinedType(node)) {
-            otherTypeLength ++;
+            otherTypeLength++;
         }
     }
     return hasTrailingLambdaType && hasBuilderAnnotation && otherTypeLength === 0;
@@ -124,7 +142,10 @@ export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, i
 /**
  * check whether the last parameter is trailing lambda in components.
  */
-export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expression[], ignoreDecl: boolean = false): boolean {
+export function checkIsTrailingLambdaInLastParam(
+    params: readonly arkts.Expression[],
+    ignoreDecl: boolean = false
+): boolean {
     if (params.length === 0) {
         return false;
     }
@@ -164,12 +185,7 @@ export class InnerComponentFunctionRecord extends BaseRecord<arkts.MethodDefinit
     ): arkts.ETSParameterExpression {
         if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
             const lambdaType = arkts.factory.createFunctionType(
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [],
-                    param.type.clone(),
-                    false
-                ),
+                arkts.FunctionSignature.createFunctionSignature(undefined, [], param.type.clone(), false),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
             );
             return arkts.factory.createParameterDeclaration(

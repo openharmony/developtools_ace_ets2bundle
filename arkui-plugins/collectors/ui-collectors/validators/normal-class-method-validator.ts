@@ -16,7 +16,17 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassMethodInfo } from '../records';
-import { checkComputedDecorator, checkConsumerProviderDecorator } from './rules';
+import {
+    checkComputedDecorator,
+    checkConsumerProviderDecorator,
+    checkMonitorDecorator,
+    checkObservedV2TraceUsageValidation,
+    checkOnceDecorator,
+    checkStructPropertyDecorator,
+    checkTrackDecorator,
+    checkValidateDecoratorTarget,
+    checkComponentV2StateUsage,
+} from './rules';
 
 export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefinition, NormalClassMethodInfo> {
     reportIfViolated(node: arkts.MethodDefinition): void {
@@ -26,6 +36,13 @@ export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefini
         }
 
         checkConsumerProviderDecorator.bind(this)(node);
+        checkTrackDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
+        checkStructPropertyDecorator.bind(this)(node);
+        checkMonitorDecorator.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkComponentV2StateUsage.bind(this)(node);
 
         const classNode = arkts.classByPeer<arkts.ClassDefinition>(metadata.classInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, classNode);

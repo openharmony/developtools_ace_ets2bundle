@@ -15,10 +15,20 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
-import { isAnnotatedProperty } from '../utils';
+import { isBuiltInDeclaration } from '../utils';
 import { CallInfo } from '../../records';
-import { DecoratorNames, LogType } from '../../../../common/predefines';
-import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
+import { LogType } from '../../../../common/predefines';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+import { MetaDataCollector } from '../../../../common/metadata-collector';
+
+export const checkNestedRelationship = performanceLog(
+    _checkNestedRelationship,
+    getPerfName([0, 0, 0, 0, 0], 'checkNestedRelationship')
+);
+
+const SINGLE_CHILD_COMPONENT = 1;
+
+const renderingConrtrolComponents: Set<string> = new Set<string>(['ForEach', 'LazyForEach', 'Repeat']);
 
 /**
  * 校验规则：
@@ -29,27 +39,244 @@ import { createSuggestion, getPositionRangeFromNode } from '../../../../common/l
  *
  * 校验等级：error
  */
-export function checkNestedRelationship(
+function _checkNestedRelationship(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    struct: arkts.ClassDefinition
+    node: arkts.CallExpression
 ): void {
     const metadata = this.context ?? {};
-    const fromComponentV2: boolean = !!metadata.fromStructInfo?.annotationInfo?.hasComponentV2;
-    const isComponentCall: boolean = !!metadata.structDeclInfo?.annotationInfo?.hasComponent;
-    if (!(fromComponentV2 && isComponentCall)) {
+    if (!metadata.annotationInfo?.hasComponentBuilder || !!metadata.structDeclInfo) {
+        return;
+    }
+    const componentsInfo = MetaDataCollector.getInstance().componentsInfo;
+    if (!componentsInfo || !metadata.declName || !arkts.isIdentifier(node.expression)) {
         return;
     }
 
-    // 只要当前struct 中有被"@Link" 修饰的属性就报错
-    for (const member of struct.body) {
-        if (isAnnotatedProperty(member, DecoratorNames.LINK)) {
-            const declaration = struct.parent!; // Class Declaration has correct position information
-            this.report({
-                node: declaration,
-                level: LogType.ERROR,
-                message: `A V2 component cannot be used with any member property annotated by '@Link' in a V1 component.`,
-                suggestion: createSuggestion('', ...getPositionRangeFromNode(declaration)),
-            });
-        }
+    // Check if there are any restrictions on the node parent component
+    if (componentsInfo.validParentComponent.has(metadata.declName)) {
+        const parentComponentNames = componentsInfo.validParentComponent.get(metadata.declName)!;
+        checkValidParentComponent.bind(this)(node.expression, metadata.declName, parentComponentNames);
     }
+    // Check if the node's sub components have limitations
+    if (componentsInfo.validChildComponent.has(metadata.declName)) {
+        const childComponentNames = componentsInfo.validChildComponent.get(metadata.declName)!;
+        checkValidChildComponent.bind(this)(node.expression, metadata.declName, childComponentNames);
+    }
+    // Check whether the current node is a single subComponent container
+    if (componentsInfo.singleChildComponents.includes(metadata.declName)) {
+        checkSingleChildComponent.bind(this)(node.expression, metadata.declName);
+    }
+    // Check whether the current node is an atomic component
+    if (componentsInfo.atomicComponents.includes(metadata.declName)) {
+        checkNoChildComponent.bind(this)(node.expression, metadata.declName);
+    }
+}
+
+function checkValidParentComponent(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    componentIdentifier: arkts.Identifier,
+    componentName: string,
+    parentComponentNames: string[]
+): void {
+    if (!componentIdentifier.parent || !componentIdentifier.parent.parent) {
+        return;
+    }
+    let curNode = componentIdentifier.parent.parent;
+    let foundRenderingComponent: boolean = false;
+    while (
+        !arkts.isCallExpression(curNode) ||
+        !arkts.isIdentifier(curNode.expression) ||
+        !isBuiltInComponent.bind(this)(curNode.expression)
+    ) {
+        if (!curNode.parent) {
+            return;
+        }
+        if (
+            arkts.isCallExpression(curNode) &&
+            arkts.isIdentifier(curNode.expression) &&
+            renderingConrtrolComponents.has(curNode.expression.name)
+        ) {
+            foundRenderingComponent = true;
+        }
+        curNode = curNode.parent;
+    }
+    // If the parent component of the current component is not within the valid range, an error is reported
+    const parentComponentName = curNode.expression.name;
+    if (parentComponentNames.includes(parentComponentName)) {
+        return;
+    }
+
+    if (foundRenderingComponent) {
+        this.report({
+            node: componentIdentifier,
+            level: LogType.WARN,
+            message: `The '${componentName}' component can only be nested in the '${listToString(
+                parentComponentNames
+            )}' parent component.`,
+        });
+    } else {
+        this.report({
+            node: componentIdentifier,
+            level: LogType.ERROR,
+            message: `The '${componentName}' component can only be nested in the '${listToString(
+                parentComponentNames
+            )}' parent component.`,
+        });
+    }
+}
+
+function checkValidChildComponent(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    componentIdentifier: arkts.Identifier,
+    componentName: string,
+    childComponentNames: string[]
+): void {
+    if (!componentIdentifier.parent || !componentIdentifier.parent.parent) {
+        return;
+    }
+    let parentNode = componentIdentifier.parent;
+
+    if (!arkts.isCallExpression(parentNode) || !arkts.isIdentifier(parentNode.expression)) {
+        return;
+    }
+    let reportFlag: boolean = false;
+    // If the BlockStatement contains a child component that should not exist under the component, an error will be reported
+    parentNode.arguments.forEach((argument) => {
+        if (
+            !arkts.isArrowFunctionExpression(argument) ||
+            !argument.scriptFunction.body ||
+            !arkts.isBlockStatement(argument.scriptFunction.body)
+        ) {
+            return;
+        }
+        argument.scriptFunction.body.statements.forEach((statement) => {
+            if (
+                !arkts.isExpressionStatement(statement) ||
+                !statement.expression ||
+                !arkts.isCallExpression(statement.expression) ||
+                !statement.expression.expression ||
+                !arkts.isIdentifier(statement.expression.expression)
+            ) {
+                return;
+            }
+            const childComponentNode = statement.expression.expression;
+            const childComponentName = childComponentNode.name;
+            if (
+                childComponentName === '' ||
+                childComponentNames.includes(childComponentName) ||
+                !isBuiltInComponent.bind(this)(childComponentNode)
+            ) {
+                return;
+            }
+            reportFlag = true;
+            reportDelegateChildrenComponentChildren.bind(this)(childComponentNode, childComponentName, componentName);
+        });
+    });
+    if (reportFlag) {
+        this.report({
+            node: componentIdentifier,
+            level: LogType.ERROR,
+            message: `The component '${componentName}' can only have the child component '${listToString(
+                childComponentNames
+            )}'.`,
+        });
+    }
+}
+
+function reportDelegateChildrenComponentChildren(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    childComponentNode: arkts.Identifier,
+    childComponentName: string,
+    componentName: string
+): void {
+    this.report({
+        node: childComponentNode,
+        level: LogType.ERROR,
+        message: `The '${childComponentName}' component cannot be a child component of the ${componentName} component.`,
+    });
+}
+
+function checkSingleChildComponent(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    componentIdentifier: arkts.Identifier,
+    componentName: string
+): void {
+    if (!componentIdentifier.parent) {
+        return;
+    }
+    const parentNode = componentIdentifier.parent;
+    if (!arkts.isCallExpression(parentNode)) {
+        return;
+    }
+    // If there is more than one subComponent in the BlockStatement, an error is reported
+    parentNode.arguments.forEach((argument) => {
+        if (
+            !arkts.isArrowFunctionExpression(argument) ||
+            !argument.scriptFunction.body ||
+            !arkts.isBlockStatement(argument.scriptFunction.body)
+        ) {
+            return;
+        }
+        if (argument.scriptFunction.body.statements.length <= SINGLE_CHILD_COMPONENT) {
+            return;
+        }
+        this.report({
+            node: componentIdentifier,
+            level: LogType.ERROR,
+            message: `The '${componentName}' component can have only one child component.`,
+        });
+    });
+}
+
+function checkNoChildComponent(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    componentIdentifier: arkts.Identifier,
+    componentName: string
+): void {
+    if (!componentIdentifier.parent) {
+        return;
+    }
+    let parentNode = componentIdentifier.parent;
+    if (!arkts.isCallExpression(parentNode)) {
+        return;
+    }
+    // If there are child components in arguments, an error will be reported
+    parentNode.arguments.forEach((argument) => {
+        if (
+            !arkts.isArrowFunctionExpression(argument) ||
+            !argument.scriptFunction.body ||
+            !arkts.isBlockStatement(argument.scriptFunction.body)
+        ) {
+            return;
+        }
+        if (argument.scriptFunction.body.statements.length === 0) {
+            return;
+        }
+        this.report({
+            node: componentIdentifier,
+            level: LogType.ERROR,
+            message: `The component '${componentName}' can't have any child.`,
+        });
+    });
+}
+
+function isBuiltInComponent(
+    this: BaseValidator<arkts.CallExpression, CallInfo>,
+    componentIdentifier: arkts.Identifier
+): boolean {
+    const componentsInfo = MetaDataCollector.getInstance().componentsInfo;
+    if (!componentsInfo) {
+        return false;
+    }
+    if (!isBuiltInDeclaration(componentIdentifier)) {
+        return false;
+    }
+    return (
+        componentsInfo.containerComponents.includes(componentIdentifier.name) ||
+        componentsInfo.atomicComponents.includes(componentIdentifier.name)
+    );
+}
+
+function listToString(strList: string[]): string {
+    return strList.length > 1 ? `${strList.join(',')}` : strList.join('');
 }

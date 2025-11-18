@@ -81,7 +81,7 @@ export class NormalClassMethodRecord extends BaseRecord<arkts.MethodDefinition, 
             ...(this.isDecl && { isDecl: this.isDecl }),
             ...(annotationRecord && { ...annotationRecord }),
             ...(classRecord && { classInfo: classRecord }),
-            ...(inheritPorpertyInfo && { inheritPorpertyInfo })
+            ...(inheritPorpertyInfo && { inheritPorpertyInfo }),
         };
         this.info = currInfo;
     }
@@ -97,7 +97,7 @@ export class NormalClassMethodRecord extends BaseRecord<arkts.MethodDefinition, 
             ...(this.info?.isDecl && { isDecl: this.info.isDecl }),
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
             ...(classInfo && { classInfo }),
-            ...(inheritPorpertyInfo && { inheritPorpertyInfo })
+            ...(inheritPorpertyInfo && { inheritPorpertyInfo }),
         };
     }
 }

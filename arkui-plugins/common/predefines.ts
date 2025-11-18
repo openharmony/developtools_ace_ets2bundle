@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
+
 export const LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
     'std',
     'escompat',
@@ -49,6 +51,15 @@ export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.commo
 export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
 export const ARKUI_BUILDER_SOURCE_NAME: string = 'arkui.component.builder';
 export const ARKUI_INTEROP_SOURCE_NAME: string = 'arkui.component.interop';
+
+export const LIB_UI_COMPONENTS_PATH: string = path.resolve(__dirname, '../components');
+export const PREVIEWER_RESOURCE_PATH: string = path.resolve(
+    __dirname,
+    '../../../../../../previewer/common/resources/entry/resources.txt'
+);
+export const PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES: string[] = ['ohos_id', 'ohos_fa'];
+export const APPLICATION_MAIN_BASE_RESOURCE_PATH = 'src/main/resources/base';
+export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
 
 export enum ModuleType {
     HAR = 'har',
@@ -91,6 +102,9 @@ export enum StructDecoratorNames {
     RESUABLE_V2 = 'ReusableV2',
     CUSTOM_LAYOUT = 'CustomLayout',
     CUSTOMDIALOG = 'CustomDialog',
+    PREVIEW = 'Preview',
+    REUSABLE = 'Reusable',
+    REUSABLE_V2 = 'ReusableV2'
 }
 
 export enum EntryWrapperNames {
@@ -174,6 +188,8 @@ export enum DecoratorNames {
     COMPUTED = 'Computed',
     EVENT = 'Event',
     REQUIRE = 'Require',
+    REGULAR = 'Regular',
+    VARIABLE = 'Variable'
 }
 
 export enum TypeNames {

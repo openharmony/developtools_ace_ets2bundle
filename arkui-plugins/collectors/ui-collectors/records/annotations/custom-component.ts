@@ -26,6 +26,7 @@ export interface StructAnnotationInfo extends AnnotationInfo {
     hasReusableV2?: boolean;
     hasCustomLayout?: boolean;
     hasCustomDialog?: boolean;
+    hasPreview?: boolean;
 }
 
 export interface CustomComponentAnnotations extends Annotations {
@@ -36,6 +37,7 @@ export interface CustomComponentAnnotations extends Annotations {
     [StructDecoratorNames.RESUABLE_V2]?: arkts.AnnotationUsage;
     [StructDecoratorNames.CUSTOM_LAYOUT]?: arkts.AnnotationUsage;
     [StructDecoratorNames.CUSTOMDIALOG]?: arkts.AnnotationUsage;
+    [StructDecoratorNames.PREVIEW]?: arkts.AnnotationUsage;
 }
 
 export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
@@ -71,6 +73,9 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
                 break;
             case StructDecoratorNames.CUSTOMDIALOG:
                 info.hasCustomDialog = true;
+                break;
+            case StructDecoratorNames.PREVIEW:
+                info.hasPreview = true;
                 break;
             default:
                 return info;

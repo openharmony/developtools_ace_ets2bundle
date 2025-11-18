@@ -21,7 +21,7 @@ import { EmitTransformer } from './emit_transformer';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugLog } from '../common/debug';
-import { PluginContext, Plugins } from 'common/plugin-context';
+import { PluginContext, Plugins } from '../common/plugin-context';
 
 export function interopTransform():Plugins {
   return {

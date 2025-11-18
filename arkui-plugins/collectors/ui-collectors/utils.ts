@@ -123,7 +123,10 @@ export function getNonArkUIAnnotationWhiteList(): string[] {
     return [DecoratorNames.JSONSTRINGIFYIGNORE, DecoratorNames.JSONRENAME];
 }
 
-export function getArkUIAnnotationNames(annotations: Annotations | undefined, info: AnnotationInfo | undefined): string[] {
+export function getArkUIAnnotationNames(
+    annotations: Annotations | undefined,
+    info: AnnotationInfo | undefined
+): string[] {
     if (!annotations || !info) {
         return [];
     }
@@ -351,7 +354,11 @@ export function checkIsBuilderLambdaFromInfo(metadata: CallInfo): boolean {
 }
 
 export function checkIsFunctionMethodDeclFromInfo(metadata: StructMethodInfo | FunctionInfo): metadata is FunctionInfo {
-    return !!metadata.isDecl && Object.hasOwn(metadata, 'innerComponentInfo') && !!(metadata as FunctionInfo).innerComponentInfo;
+    return (
+        !!metadata.isDecl &&
+        Object.hasOwn(metadata, 'innerComponentInfo') &&
+        !!(metadata as FunctionInfo).innerComponentInfo
+    );
 }
 
 export function checkIsMonitorMethodFromInfo(metadata: StructMethodInfo | NormalClassMethodInfo): boolean {
@@ -382,8 +389,10 @@ export function checkIsInteropComponentCallFromInfo(metadata: CallInfo): boolean
 }
 
 export function checkIsCustomDialogControllerBuilderOptionsFromInfo(metadata: NormalInterfacePropertyInfo): boolean {
-    return metadata.interfaceInfo?.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER_OPTIONS &&
-        metadata.name === CustomDialogNames.OPTIONS_BUILDER;
+    return (
+        metadata.interfaceInfo?.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER_OPTIONS &&
+        metadata.name === CustomDialogNames.OPTIONS_BUILDER
+    );
 }
 
 export function collectStructPropertyInfos(metadata: CallInfo): CustomComponentInterfacePropertyInfo[] {
