@@ -128,14 +128,14 @@ class __EntryWrapper extends EntryPoint {
 
 const expectedUIHeaderScript: string = `
 import { Memo as Memo } from \"arkui.incremental.annotation\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
 
 function main() {}
 
-@memo() export function FakeComponentA(style: @Memo() ((instance: FakeComponentAAttribute)=> void), str: string, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentB(style: @Memo() ((instance: FakeComponentBAttribute)=> void), options?: FakeOptions, @memo() content_?: (()=> void)): void
-@memo() export function FakeComponentC(style: @Memo() ((instance: FakeComponentCAttribute)=> void), @memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentA(style: @Memo() ((instance: FakeComponentAAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentB(style: @Memo() ((instance: FakeComponentBAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+@Memo() export function FakeComponentC(style: @Memo() ((instance: FakeComponentCAttribute)=> void), @Memo() content_?: (()=> void)): void
 
 @Memo() export function FakeComponentAImpl(style: @Memo() ((instance: FakeComponentAAttribute)=> void), content?: @Memo() (()=> void)): void
 @Memo() export function FakeComponentBImpl(style: @Memo() ((instance: FakeComponentBAttribute)=> void), content?: @Memo() (()=> void)): void

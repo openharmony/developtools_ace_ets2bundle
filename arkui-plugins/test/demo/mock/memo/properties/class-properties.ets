@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
 class A {
     arg: () => void
-    @memo memo_arg: () => void
-    @memo memo_optional_arg?: () => void
-    @memo memo_union_arg: (() => void) | undefined = () => {}
+    @Memo memo_arg: () => void
+    @Memo memo_optional_arg?: () => void
+    @Memo memo_union_arg: (() => void) | undefined = () => {}
 
-    arg_memo_type: @memo () => void
+    arg_memo_type: @Memo () => void
 
     constructor() {
         this.arg = () => {};
@@ -29,7 +29,7 @@ class A {
         this.arg_memo_type = () => {};
     }
 
-    @memo
+    @Memo
     build() {
         this.arg();
         this.memo_arg();

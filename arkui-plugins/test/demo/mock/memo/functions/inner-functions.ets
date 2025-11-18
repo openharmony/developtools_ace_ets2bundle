@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
-@memo
+@Memo
 function foo() { }
 
-@memo
+@Memo
 function bar() {
-    const qux = @memo () => {
+    const qux = @Memo () => {
         foo();
     }
 
@@ -28,9 +28,9 @@ function bar() {
 }
 
 class A {
-    @memo goo() {
+    @Memo goo() {
         let func = () => {};
-        let func2 = @memo () => {
+        let func2 = @Memo () => {
             foo();
         }
     }

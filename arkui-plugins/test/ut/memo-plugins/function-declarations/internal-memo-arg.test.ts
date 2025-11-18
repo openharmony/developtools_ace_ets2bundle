@@ -50,15 +50,15 @@ export function __context(): __memo_context_type
 
 export function __id(): __memo_id_type
 
-@memo_entry() export function memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
+@memo_entry() export function memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
   return entry(__memo_context, ((__memo_id) + (75311131)));
 }
 
-@memo_entry() export function memoEntry1<T, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: T)=> R), arg: T): R {
+@memo_entry() export function memoEntry1<T, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg: T)=> R), arg: T): R {
   return entry(__memo_context, ((__memo_id) + (168506859)), arg);
 }
 
-@memo_entry() export function memoEntry2<T1, T2, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: T1, arg2: T2)=> R), arg1: T1, arg2: T2): R {
+@memo_entry() export function memoEntry2<T1, T2, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, arg1: T1, arg2: T2)=> R), arg1: T1, arg2: T2): R {
   return entry(__memo_context, ((__memo_id) + (76962895)), arg1, arg2);
 }
 
@@ -66,7 +66,7 @@ export function __id(): __memo_id_type
   return (__memo_context as StateManager).valueBy<Value>(name);
 }
 
-@memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+@memo_intrinsic() export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @Memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
   const scope = __memo_context.scope<undefined>(__memo_id, 1);
   if (scope.unchanged) {
     scope.cached;
@@ -76,7 +76,7 @@ export function __id(): __memo_id_type
   }
 }
 
-@memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, create: (()=> Node), @memo() update: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, node: Node)=> void), reuseKey?: string): void {
+@memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, create: (()=> Node), @Memo() update: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, node: Node)=> void), reuseKey?: string): void {
   const scope = (__memo_context as StateManager).scopeEx<undefined>(__memo_id, 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
@@ -108,7 +108,7 @@ export function __id(): __memo_id_type
   return (__memo_context as StateManager).controlledScope(__memo_id, invalidate);
 }
 
-@memo() export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)) {
+@Memo() export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @Memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (200707415)), 2);
   const __memo_parameter_count = __memo_scope.param(0, count), __memo_parameter_action = __memo_scope.param(1, action);
   if (__memo_scope.unchanged) {
@@ -152,7 +152,7 @@ export class MemoCallbackContext {
     this.id = id;
   }
 
-  @memo() public static Make(__memo_context: __memo_context_type, __memo_id: __memo_id_type): MemoCallbackContext {
+  @Memo() public static Make(__memo_context: __memo_context_type, __memo_id: __memo_id_type): MemoCallbackContext {
     const __memo_scope = __memo_context.scope<MemoCallbackContext>(((__memo_id) + (41727473)), 0);
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;
@@ -163,7 +163,7 @@ export class MemoCallbackContext {
 }
 
 export class CustomComponent {
-  @memo() public static _instantiateImpl(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+  @Memo() public static _instantiateImpl(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (214802466)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
