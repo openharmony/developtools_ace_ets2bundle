@@ -53,7 +53,9 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Builder() @Memo() function showTextBuilder() {
+@Builder() 
+@Memo() 
+function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
@@ -90,7 +92,8 @@ function main() {}
     this.__backing_customBuilderParam1 = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
@@ -125,14 +128,16 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @Memo() public componentBuilder() {
+  @Memo() 
+  public componentBuilder() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -185,7 +190,9 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Builder() @Memo() function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+@Builder() 
+@Memo() 
+function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (183537441)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -240,7 +247,8 @@ function main() {}
     this.__backing_customBuilderParam1 = value;
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (234402485)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -338,7 +346,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @Memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179117969)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -363,7 +372,8 @@ function main() {}
     }
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

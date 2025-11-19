@@ -55,9 +55,11 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
-  @Memo() public doNothingBuilder() {}
+  @Memo() 
+  public doNothingBuilder() {}
   
-  @Memo() public doNothingBuilder2(@MemoSkip() str: string) {}
+  @Memo() 
+  public doNothingBuilder2(@MemoSkip() str: string) {}
   
   private __backing_customBuilderParam?: @Memo() (()=> void);
   
@@ -79,7 +81,8 @@ function main() {}
     this.__backing_customBuilderParam2 = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
@@ -120,7 +123,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
-  @Memo() public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (174403279)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -132,7 +136,8 @@ function main() {}
     }
   }
   
-  @Memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
+  @Memo() 
+  public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76253767)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -164,7 +169,8 @@ function main() {}
     this.__backing_customBuilderParam2 = value;
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179390036)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

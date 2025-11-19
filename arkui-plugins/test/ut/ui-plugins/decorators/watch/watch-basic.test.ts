@@ -275,7 +275,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public ProvideOnChange(propName: string) {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -314,7 +315,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public ConsumeOnChange(propName: string) {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -324,7 +326,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
     }), undefined, undefined, undefined);

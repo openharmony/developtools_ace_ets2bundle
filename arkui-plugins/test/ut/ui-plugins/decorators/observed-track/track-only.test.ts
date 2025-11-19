@@ -123,7 +123,8 @@ class C implements IObservedObject, ISubscribedWatches {
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

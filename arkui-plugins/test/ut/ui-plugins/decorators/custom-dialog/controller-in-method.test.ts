@@ -70,7 +70,8 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
   static {
@@ -144,7 +145,8 @@ function main() {}
     this.dialogController = temp;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

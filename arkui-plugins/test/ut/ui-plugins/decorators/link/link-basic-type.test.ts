@@ -131,7 +131,8 @@ function main() {}
     this.__backing_linkVar5!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

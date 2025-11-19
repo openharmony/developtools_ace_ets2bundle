@@ -217,7 +217,8 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumA!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -227,7 +228,8 @@ final class Status extends BaseEnum<int> {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
     }), undefined, undefined, undefined);

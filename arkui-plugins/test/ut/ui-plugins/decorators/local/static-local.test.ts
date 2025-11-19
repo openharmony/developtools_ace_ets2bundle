@@ -93,7 +93,8 @@ class ABB {
     Parent.__backing_localVar3.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
   

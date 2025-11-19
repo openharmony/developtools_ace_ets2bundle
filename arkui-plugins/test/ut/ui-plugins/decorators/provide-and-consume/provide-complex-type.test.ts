@@ -280,7 +280,8 @@ final class PropType extends BaseEnum<int> {
     this.__backing_provideVar12!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

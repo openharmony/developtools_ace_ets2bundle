@@ -63,14 +63,18 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@Builder() @Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Builder() @Memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
@@ -84,7 +88,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @Memo() public testBuilder() {
+  @Memo() 
+  public testBuilder() {
     ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
@@ -95,7 +100,8 @@ function main() {}
     }));
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -148,7 +154,9 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 function main() {}
 
 
-@Builder() @Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (52041161)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -173,7 +181,9 @@ function main() {}
   }
 }
 
-@Builder() @Memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (151467670)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -205,7 +215,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @Memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (102938669)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -244,7 +255,8 @@ function main() {}
     }
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (245938697)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

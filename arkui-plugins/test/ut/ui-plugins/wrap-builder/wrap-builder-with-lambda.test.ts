@@ -85,7 +85,9 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Builder() @Memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
+@Builder() 
+@Memo() 
+function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
     instance.setColumnOptions(undefined).applyAttributesFinish();
     return;
@@ -168,7 +170,8 @@ function main() {}
     this.__backing_label!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -255,7 +258,9 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Builder() @Memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
+@Builder() 
+@Memo() 
+function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (133793681)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -374,7 +379,8 @@ function main() {}
     this.__backing_label!.set(value);
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (69406103)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

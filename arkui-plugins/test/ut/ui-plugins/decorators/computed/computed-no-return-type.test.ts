@@ -132,7 +132,8 @@ function main() {}
     return ((((this.firstName) + (" "))) + (this.lastName));
   }), "fullName");
   
-  @Computed() public get fullName() {
+  @Computed() 
+  public get fullName() {
     return this.__computed_fullName!.get();
   }
   
@@ -192,7 +193,8 @@ function main() {}
     return ((((((this.firstName) + (" "))) + (this.lastName))) + (this.age));
   }), "fullName");
   
-  @Computed() public get fullName() {
+  @Computed() 
+  public get fullName() {
     return this.__computed_fullName!.get();
   }
   
@@ -200,11 +202,13 @@ function main() {}
     return 5;
   }), "num5");
   
-  @Computed() public get num5() {
+  @Computed() 
+  public get num5() {
     return this.__computed_num5!.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

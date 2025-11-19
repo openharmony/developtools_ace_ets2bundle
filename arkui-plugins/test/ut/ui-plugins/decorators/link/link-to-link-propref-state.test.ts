@@ -88,7 +88,8 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -185,7 +186,8 @@ function main() {}
     this.__backing_childText4!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,

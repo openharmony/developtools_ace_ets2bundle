@@ -262,7 +262,8 @@ function main() {}
     this.__backing_builder = value;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -289,7 +290,8 @@ function main() {}
     return this.__backing_select1!.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

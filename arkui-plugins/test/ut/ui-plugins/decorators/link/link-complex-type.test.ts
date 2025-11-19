@@ -306,7 +306,8 @@ final class LinkType extends BaseEnum<int> {
     this.__backing_linkVar12!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

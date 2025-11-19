@@ -58,14 +58,16 @@ import { Component as Component, Row as Row, Builder as Builder, Text as Text } 
 function main() {}
 
 
-@Builder() function showTextBuilder() {
+@Builder() 
+function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Builder() function overBuilder(@MemoSkip() params: Tmp) {
+@Builder() 
+function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@Memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
@@ -77,7 +79,8 @@ function main() {}
   }));
 }
 
-@Builder() function globalBuilder(@MemoSkip() param: Person) {
+@Builder() 
+function globalBuilder(@MemoSkip() param: Person) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
     return;
@@ -106,7 +109,8 @@ interface Person {
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;

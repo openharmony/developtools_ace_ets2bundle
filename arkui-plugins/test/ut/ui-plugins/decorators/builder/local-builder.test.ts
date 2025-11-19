@@ -61,21 +61,24 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @Memo() public showTextBuilder() {
+  @Memo() 
+  public showTextBuilder() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public showTextValueBuilder(@MemoSkip() param: string) {
+  @Memo() 
+  public showTextValueBuilder(@MemoSkip() param: string) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

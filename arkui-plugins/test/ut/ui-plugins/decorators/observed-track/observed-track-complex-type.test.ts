@@ -820,7 +820,8 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -830,7 +831,8 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
     }), undefined, undefined, undefined);

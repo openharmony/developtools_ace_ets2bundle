@@ -119,7 +119,8 @@ function main() {}
   
   private __monitor_onStrChange: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["message", "name"]}) public onStrChange(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_43 = monitor.value(path);
       (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value(path);
@@ -127,7 +128,8 @@ function main() {}
     }));
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

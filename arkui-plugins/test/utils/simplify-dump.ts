@@ -47,7 +47,7 @@ function dumpGetterSetter(
             body = '{\nthrow new InvalidStoreAccessError();\n}\n';
         }
     }
-    const strList: string[] = [...annotations, methodStr, ...(!!body ? [body] : [])];
+    const strList: string[] = [...annotations.map((str) => `${str} \n`), methodStr, ...(!!body ? [body] : [])];
     return strList.join(' ');
 }
 

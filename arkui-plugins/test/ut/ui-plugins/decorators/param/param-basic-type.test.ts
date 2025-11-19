@@ -120,7 +120,8 @@ function main() {}
     return this.__backing_paramVar5!.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
