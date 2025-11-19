@@ -52,7 +52,8 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
   
   @State() public code: number;
   
-  @Builder() public build(): void
+  @Builder() 
+  public build(): void
   
   public constructor() {}
   
@@ -102,7 +103,8 @@ function main() {}
   
   @State() public code: number;
   
-  @Memo() public build(): void
+  @Memo() 
+  public build(): void
   
   public constructor() {}
 

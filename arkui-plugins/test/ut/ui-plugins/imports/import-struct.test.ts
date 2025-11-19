@@ -88,7 +88,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     SimpleStruct._instantiateImpl(undefined, (() => {
       return new SimpleStruct();
     }), undefined, undefined, undefined);

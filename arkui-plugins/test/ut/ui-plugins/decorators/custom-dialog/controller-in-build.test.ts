@@ -119,7 +119,8 @@ function main() {}
     this.__backing_hh!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -147,7 +148,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -253,7 +255,8 @@ function main() {}
     this.__backing_hh!.set(value);
   }
 
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -316,7 +319,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -406,10 +410,12 @@ function main() {}
   set __options_has_aaController(__options_has_aaController: (boolean | undefined)) {
     throw new InvalidStoreAccessError();
   }
-  @State() get text(): (string | undefined) {
+  @State() 
+  get text(): (string | undefined) {
     return undefined;
   }
-  @State() set text(text: (string | undefined)) {
+  @State() 
+  set text(text: (string | undefined)) {
     throw new InvalidStoreAccessError();
   }
   get __backing_text(): (IStateDecoratedVariable<string> | undefined) {
@@ -424,10 +430,12 @@ function main() {}
   set __options_has_text(__options_has_text: (boolean | undefined)) {
     throw new InvalidStoreAccessError();
   }
-  @State() get hh(): (string | undefined) {
+  @State() 
+  get hh(): (string | undefined) {
     return undefined;
   }
-  @State() set hh(hh: (string | undefined)) {
+  @State() 
+  set hh(hh: (string | undefined)) {
     throw new InvalidStoreAccessError();
   }
   get __backing_hh(): (IStateDecoratedVariable<string> | undefined) {

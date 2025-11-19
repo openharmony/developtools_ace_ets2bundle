@@ -98,7 +98,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_booleanA!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -108,7 +109,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._instantiateImpl(undefined, (() => {
       return new MyStateSample();
     }), undefined, undefined, undefined);

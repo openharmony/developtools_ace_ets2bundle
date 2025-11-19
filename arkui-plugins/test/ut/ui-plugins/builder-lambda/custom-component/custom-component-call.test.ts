@@ -53,7 +53,8 @@ import { CustomComponent as CustomComponent } from "arkui.component.customCompon
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
-  @Builder() public closerBuilder() {}
+  @Builder() 
+  public closerBuilder() {}
   
   @BuilderParam() public closer: (()=> void) = this.closerBuilder;
   
@@ -128,7 +129,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
 
-  @Memo() public closerBuilder() {}
+  @Memo() 
+  public closerBuilder() {}
   
   private __backing_closer?: @Memo() (()=> void);
   
@@ -140,7 +142,8 @@ function main() {}
     this.__backing_closer = value;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -154,7 +157,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

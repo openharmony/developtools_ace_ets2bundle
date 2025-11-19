@@ -51,21 +51,24 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
 
-  @Memo() public itemHead(@MemoSkip() text: string) {
+  @Memo() 
+  public itemHead(@MemoSkip() text: string) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC).applyAttributesFinish();
       return;
     }), undefined);
   }
 
-  @Memo() public itemFoot(@MemoSkip() num: number) {
+  @Memo() 
+  public itemFoot(@MemoSkip() num: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(\"Foot\", undefined).fontSize(16).backgroundColor(0xAABBCC).applyAttributesFinish();
       return;
     }), undefined);
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -129,7 +132,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @Memo() public itemHead(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() text: string) {
+  @Memo() 
+  public itemHead(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() text: string) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (199087787)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -154,7 +158,8 @@ function main() {}
     }
   }
   
-  @Memo() public itemFoot(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() num: number) {
+  @Memo() 
+  public itemFoot(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() num: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137467525)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -179,7 +184,8 @@ function main() {}
     }
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (145073445)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

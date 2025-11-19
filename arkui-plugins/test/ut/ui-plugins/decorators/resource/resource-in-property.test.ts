@@ -99,7 +99,8 @@ i = _r(16777216, 10003, "com.example.mock", "entry");
     this.__backing_lambdaOne = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

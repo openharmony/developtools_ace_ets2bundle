@@ -63,7 +63,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
-  @Memo() public customBuilder() {}
+  @Memo() 
+  public customBuilder() {}
   
   private __backing_customBuilderParam?: @Memo() (()=> void);
   
@@ -75,7 +76,8 @@ function main() {}
     this.__backing_customBuilderParam = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     this.customBuilderParam();
   }
   
@@ -91,14 +93,16 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @Memo() public componentBuilder() {
+  @Memo() 
+  public componentBuilder() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Parent builder", undefined).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -166,7 +170,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
-  @Memo() public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public customBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (252759234)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -188,7 +193,8 @@ function main() {}
     this.__backing_customBuilderParam = value;
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (209256344)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -213,7 +219,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   
-  @Memo() public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public componentBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (219399173)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -238,7 +245,8 @@ function main() {}
     }
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (135515930)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

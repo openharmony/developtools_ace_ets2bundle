@@ -87,7 +87,8 @@ function main() {}
 
   private __monitor_onStrChange1: (IMonitorDecoratedVariable | undefined);
 
-  @Monitor({value:["message", "name"]}) public onStrChange1(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange1(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value(path);
       (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value(path);
@@ -97,7 +98,8 @@ function main() {}
   
   private __monitor_onStrChange2: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["message", "name"]}) public onStrChange2(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange2(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value(path);
       (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value(path);
@@ -107,7 +109,8 @@ function main() {}
   
   private __monitor_onStrChange3: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["name"]}) public onStrChange3(monitor: IMonitor) {
+  @Monitor({value:["name"]}) 
+  public onStrChange3(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value(path);
       (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value(path);
@@ -145,7 +148,8 @@ function main() {}
     this.__backing_age!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

@@ -123,7 +123,8 @@ function main() {}
     return ((((Name.firstName) + (" "))) + (Name.lastName));
   }), "fullName");
   
-  @Computed() public static get fullName(): string {
+  @Computed() 
+  public static get fullName(): string {
     return Name.__computed_fullName.get();
   }
   
@@ -163,11 +164,13 @@ function main() {}
     return Parent.localVar1;
   }), "fullName");
   
-  @Computed() public static get fullName(): string {
+  @Computed() 
+  public static get fullName(): string {
     return Parent.__computed_fullName.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   public constructor() {}
 
@@ -185,7 +188,8 @@ function main() {}
     return ((((Name.firstName) + (" "))) + (Name.lastName));
   }), "fullName");
   
-  @Computed() public static get fullName(): string {
+  @Computed() 
+  public static get fullName(): string {
     return Parent2.__computed_fullName.get();
   }
   
@@ -193,11 +197,13 @@ function main() {}
     return Parent.localVar1;
   }), "fullName2");
   
-  @Computed() public static get fullName2(): string {
+  @Computed() 
+  public static get fullName2(): string {
     return Parent2.__computed_fullName2.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   public constructor() {}
 
@@ -231,7 +237,8 @@ function main() {}
     return ((((Name.firstName) + (" "))) + (Name.lastName));
   }), "fullName");
   
-  @Computed() public static get fullName(): string {
+  @Computed() 
+  public static get fullName(): string {
     return Name2.__computed_fullName.get();
   }
 

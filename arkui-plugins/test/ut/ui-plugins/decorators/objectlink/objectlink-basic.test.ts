@@ -156,7 +156,8 @@ function main() {}
     return this.__backing_objectlinkvar!.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -208,7 +209,8 @@ function main() {}
     return this.__backing_objectlinkvar3!.get();
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

@@ -51,7 +51,9 @@ import { CustomComponent as CustomComponent } from \"arkui.component.customCompo
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@Builder() @Memo() function MyBuilder(): void {
+@Builder() 
+@Memo() 
+function MyBuilder(): void {
     ConditionScope(@Memo() (() => {
         if (true) {
             ConditionBranch(@Memo() (() => {
@@ -63,7 +65,9 @@ function main() {}
         }
     }));
 }
-@Builder() @Memo() function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
+@Builder() 
+@Memo() 
+function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: (()=> void)): void {
     let param: (()=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : (() => {
         ConditionScope(@Memo() (() => {
             if (true) {
@@ -81,7 +85,8 @@ function main() {}
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
-    @Memo() public myBuilderMethod() {
+    @Memo() 
+    public myBuilderMethod() {
         ConditionScope(@Memo() (() => {
             if (true) {
                 ConditionBranch(@Memo() (() => {
@@ -93,7 +98,8 @@ function main() {}
             }
         }));
     }
-    @Memo() public build() {
+    @Memo() 
+  public build() {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
@@ -160,7 +166,8 @@ function main() {}
     public set myBuilderParam(value: @Memo() (()=> void)) {
         this.__backing_myBuilderParam = value;
     }
-    @Memo() public build() {
+    @Memo() 
+  public build() {
         ConditionScope(@Memo() (() => {
             if (true) {
                 ConditionBranch(@Memo() (() => {
@@ -204,7 +211,9 @@ import { CustomComponent as CustomComponent } from \"arkui.component.customCompo
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam, WrappedBuilder as WrappedBuilder, wrapBuilder as wrapBuilder } from \"@ohos.arkui.component\";
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
-@Builder() @Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@Builder() 
+@Memo() 
+function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -252,7 +261,9 @@ function main() {}
         return;
     }
 }
-@Builder() @Memo() function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
+@Builder() 
+@Memo() 
+function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
     let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
@@ -315,7 +326,8 @@ function main() {}
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
     public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
-    @Memo() public myBuilderMethod(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public myBuilderMethod(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -363,7 +375,8 @@ function main() {}
             return;
         }
     }
-    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -565,7 +578,8 @@ function main() {}
     public set myBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
         this.__backing_myBuilderParam = value;
     }
-    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

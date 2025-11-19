@@ -119,7 +119,8 @@ function main() {}
     this.__backing_onceVar5!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

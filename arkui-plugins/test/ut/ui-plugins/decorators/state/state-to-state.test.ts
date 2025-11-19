@@ -88,7 +88,8 @@ class Per {
     this.__backing_parentVar1!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -127,7 +128,8 @@ class Per {
     this.__backing_childVar1!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(this.childVar1.str, undefined).applyAttributesFinish();
       return;

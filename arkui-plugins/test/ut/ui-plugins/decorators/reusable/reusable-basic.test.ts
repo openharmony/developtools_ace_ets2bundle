@@ -60,7 +60,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     Child._instantiateImpl(undefined, (() => {
       return new Child();
     }), {
@@ -119,7 +120,8 @@ function main() {}
     this.__backing_num1!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

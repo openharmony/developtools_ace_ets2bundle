@@ -44,7 +44,8 @@ import { memo as memo } from "arkui.stateManagement.runtime";
 function main() {}
 
 
-@memo_intrinsic() export function factory<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, compute: (()=> Value)): Value
+@memo_intrinsic() 
+export function factory<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, compute: (()=> Value)): Value
 
 export function cb(callback?: (()=> void)) {
   if (callback) {
@@ -52,7 +53,8 @@ export function cb(callback?: (()=> void)) {
   }
 }
 
-@memo_intrinsic() export function impl<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() style: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<T>)=> void) | undefined), arr: SimpleArray<T>, gensym%%_1?: string): void {
+@memo_intrinsic() 
+export function impl<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() style: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type, attributes: IA<T>)=> void) | undefined), arr: SimpleArray<T>, gensym%%_1?: string): void {
   let err: string = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : "error message");
   const s = factory(__memo_context, ((__memo_id) + (90010973)), (() => {
     return new A<T>();
@@ -107,7 +109,8 @@ class A<T>  implements IA<T> {
 export type SimpleArray<T> = (Array<T> | ReadonlyArray<T> | Readonly<Array<T>>);
 
 class Use {
-  @Memo() public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (228150357)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
