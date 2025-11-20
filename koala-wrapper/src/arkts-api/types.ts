@@ -746,6 +746,10 @@ export class MethodDefinition extends AstNode {
         return unpackNodeArray(global.generatedEs2panda._MethodDefinitionOverloadsConst(global.context, this.peer));
     }
 
+    get baseOverloadMethod(): MethodDefinition | undefined {
+        return unpackNode(global.generatedEs2panda._MethodDefinitionBaseOverloadMethod(global.context, this.peer));
+    }
+
     setOverloads(overloads: readonly MethodDefinition[]): this {
         global.generatedEs2panda._MethodDefinitionSetOverloads(
             global.context,

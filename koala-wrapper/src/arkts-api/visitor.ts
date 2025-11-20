@@ -303,10 +303,10 @@ function visitMethodDefinition(node: MethodDefinition, visitor: Visitor): Method
         node.modifiers,
         false
     );
-    node.setOverloads(newOverloads);
+    newNode.setOverloads(newOverloads);
     newOverloads.forEach((it): void => {
-        it.setBaseOverloadMethod(node);
-        it.parent = node;
+        it.setBaseOverloadMethod(newNode);
+        it.parent = newNode;
     });
     return newNode;
 }
