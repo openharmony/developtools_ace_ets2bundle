@@ -102,8 +102,11 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
+import { 
+  ModuleSourceFile
+} from '../../../lib/fast_build/ark_compiler/module/module_source_file';
 
-function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean, NeedProcessMock: boolean = false): void {
+function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
 
   expect(cmdArgs[0].indexOf(ES2ABC_PATH) > 0).to.be.true;
@@ -113,11 +116,6 @@ function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersi
     expect(cmdArgs[3] === `\"${fileThreads}\"`).to.be.true;
     expect(cmdArgs[4] === MERGE_ABC).to.be.true;
     expect(cmdArgs[5].indexOf(compatibleSdkVersion) > 0).to.be.true;
-    if (NeedProcessMock) {
-      expect(cmdArgs.every(arg => !arg.includes(REMOVE_REDUNDANT_FILE))).to.be.true;
-    } else {
-      expect(cmdArgs.some(arg => arg.includes(REMOVE_REDUNDANT_FILE))).to.be.true;
-    }
   }
   expect(cmdArgs[1] === ENTRY_LIST).to.be.true;
   expect(cmdArgs[2] === OUTPUT).to.be.true;
@@ -1713,7 +1711,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar, true);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
 
   mocha.it('10-4: test generateEs2AbcCmd under preview debug', function () {
@@ -1732,7 +1730,7 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(2, 1);
     expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
     moduleMode.cmdArgs.splice(3, 1);
-    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar, false);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
 
   mocha.it('10-5: test generateEs2AbcCmd with enable column', function () {
@@ -2439,5 +2437,42 @@ mocha.describe('test module_mode file api', function () {
     CommonLogger.destroyInstance();
     this.rollup.share.getHvigorConsoleLogger = getHvigorConsoleLogger;
     stub.restore();
+  });
+
+  mocha.it('20-1: test collectDeclarationFilesEntry build', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.share.projectConfig.arkRouterMap = [
+      {
+        'ohmurl': '@normalized:N&&&har1/src/main/router&1.0.0'
+      },
+      {
+        'ohmurl': '@normalized:N&&&entry/src/main/router&'
+      },
+    ];
+    this.rollup.share.projectConfig.declarationEntry = [
+      '@normalized:N&&&har/src/main/mock/test&1.0.0',
+      '@normalized:N&&&har/src/main/mock/test1&1.0.0'
+    ]
+    ModuleSourceFile.ohmurlOfMockFiles = [
+      '@normalized:N&&&entry/src/main/mock/test.mock&',
+      '@normalized:N&&&entry/src/main/mock/test1.mock&'
+    ]
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    let compileEntries: Set<string> = new Set();
+    moduleMode.collectDeclarationFilesEntryMock(compileEntries, []);
+    const expectEntries =  new Set([
+      '&entry/src/main/mock/test.mock&',
+      '&entry/src/main/mock/test1.mock&',
+      '&har/src/main/mock/test&1.0.0',
+      '&har/src/main/mock/test1&1.0.0',
+      '&har1/src/main/router&1.0.0',
+      '&entry/src/main/router&'
+    ])
+    for (const item of expectEntries) {
+      expect(compileEntries.has(item)).to.be.true;
+    }
+    ModuleSourceFile.cleanUpObjects();
+    SourceMapGenerator.cleanSourceMapObject();
   });
 });
