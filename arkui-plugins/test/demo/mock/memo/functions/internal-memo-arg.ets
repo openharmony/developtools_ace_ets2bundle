@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 import { __memo_context_type, __memo_id_type } from "arkui.incremental.runtime.state";
 import { StateContext, IncrementalScope } from "arkui.incremental.runtime.state";
 
@@ -40,15 +40,15 @@ export declare interface StateManager extends StateContext {
 export declare function __context(): __memo_context_type
 export declare function __id(): __memo_id_type
 
-@memo_entry() export function memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: (()=> R)): R {
+@memo_entry() export function memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: (()=> R)): R {
   return entry();
 }
 
-@memo_entry() export function memoEntry1<T, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((arg: T)=> R), arg: T): R {
+@memo_entry() export function memoEntry1<T, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((arg: T)=> R), arg: T): R {
   return entry(arg);
 }
 
-@memo_entry() export function memoEntry2<T1, T2, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @memo() entry: ((arg1: T1, arg2: T2)=> R), arg1: T1, arg2: T2): R {
+@memo_entry() export function memoEntry2<T1, T2, R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((arg1: T1, arg2: T2)=> R), arg1: T1, arg2: T2): R {
   return entry(arg1, arg2);
 }
 
@@ -62,7 +62,7 @@ export class MemoCallbackContext {
     this.id = id;
   }
 
-  @memo() public static Make(): MemoCallbackContext {
+  @Memo() public static Make(): MemoCallbackContext {
     return new MemoCallbackContext(__context(), __id());
   }
 }
@@ -71,7 +71,7 @@ export class MemoCallbackContext {
   return (__context() as StateManager).valueBy<Value>(name);
 }
 
-@memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @memo() content: (()=> void)) {
+@memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @Memo() content: (()=> void)) {
   const scope = __context().scope<undefined>(__id(), 1);
   if (scope.unchanged) {
     scope.cached;
@@ -81,7 +81,7 @@ export class MemoCallbackContext {
   }
 }
 
-@memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(create: (()=> Node), @memo() update: ((node: Node)=> void), reuseKey?: string): void {
+@memo_intrinsic() export function NodeAttach<Node extends IncrementalNode>(create: (()=> Node), @Memo() update: ((node: Node)=> void), reuseKey?: string): void {
   const scope = (__context() as StateManager).scopeEx<undefined>(__id(), 0, create, undefined, undefined, undefined, reuseKey);
   if (scope.unchanged) {
     scope.cached;
@@ -104,14 +104,14 @@ export class MemoCallbackContext {
   return (__context() as StateManager).controlledScope(__id(), invalidate);
 }
 
-@memo() export function Repeat(count: int, @memo() action: ((index: int)=> void)) {
+@Memo() export function Repeat(count: int, @Memo() action: ((index: int)=> void)) {
   for (let i = 0;((i) < (count));(i++)) {
     memoEntry1<int, void>(__context(), i, action, i);
   }
 }
 
 export class CustomComponent {
-  @memo() public static _instantiateImpl(): void {
+  @Memo() public static _instantiateImpl(): void {
     const context: StateManager = (__context() as StateManager);
   }
 }

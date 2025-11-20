@@ -50,7 +50,7 @@ export class FunctionExpression extends Expression {
     static update1FunctionExpression(original?: FunctionExpression, namedExpr?: Identifier, func?: ScriptFunction): FunctionExpression {
         return new FunctionExpression(global.generatedEs2panda._UpdateFunctionExpression1(global.context, passNode(original), passNode(namedExpr), passNode(func)))
     }
-    get function(): ScriptFunction | undefined {
+    get scriptFunction(): ScriptFunction | undefined {
         return unpackNode(global.generatedEs2panda._FunctionExpressionFunctionConst(global.context, this.peer))
     }
     get isAnonymous(): boolean {

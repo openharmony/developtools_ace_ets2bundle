@@ -32,9 +32,9 @@ const pluginTester = new PluginTester('test memo function', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
-@memo() function func(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+@Memo() function func(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;

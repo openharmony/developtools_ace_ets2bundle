@@ -13,25 +13,25 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
 declare abstract class A {
-    @memo 
+    @Memo 
     x(): void;
 
     test_signature(
-		@memo arg1: () => void,
-		@memo arg2: (() => void) | undefined,
-		@memo arg3: ((() => void) | undefined) | ((() => int) | undefined),
-		@memo x: (y: (z: @memo () => void) => void) => void,
-	): @memo () => void;
+		@Memo arg1: () => void,
+		@Memo arg2: (() => void) | undefined,
+		@Memo arg3: ((() => void) | undefined) | ((() => int) | undefined),
+		@Memo x: (y: (z: @Memo () => void) => void) => void,
+	): @Memo () => void;
 }
 
 class AA extends A {
-    @memo x(): void {}
+    @Memo x(): void {}
 }
 
-@memo
+@Memo
 () => {
     new AA().x();
 

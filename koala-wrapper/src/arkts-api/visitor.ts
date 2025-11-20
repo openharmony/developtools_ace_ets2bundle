@@ -233,10 +233,7 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
     }
     if (isAwaitExpression(node)) {
         updated = true;
-        return factory.updateAwaitExpression(
-            node,
-            nodeVisitor(node.argument, visitor)
-        );
+        return factory.updateAwaitExpression(node, nodeVisitor(node.argument, visitor));
     }
     if (isSpreadElement(node)) {
         const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
@@ -487,13 +484,18 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
             node.isComputed
         );
     }
-    if (isClassStaticBlock(node) && !!node.value) {
+    if (
+        isClassStaticBlock(node) &&
+        node.value &&
+        global.generatedEs2panda._AstNodeTypeConst(global.context, node.value.peer) ===
+            Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION
+    ) {
         updated = true;
         return factory.updateClassStaticBlock(
             node,
             updateFunctionExpression(
                 node.value as FunctionExpression,
-                nodeVisitor(node.function, visitor)
+                nodeVisitor((node.value as FunctionExpression).scriptFunction, visitor)
             )
         );
     }

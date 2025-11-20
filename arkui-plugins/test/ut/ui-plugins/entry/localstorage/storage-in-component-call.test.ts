@@ -100,15 +100,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }), undefined, undefined);
   }
   
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
-    super(useSharedStorage, storage);
-  }
-  public constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-  public constructor() {
-    this(undefined, undefined);
-  }
+  ${dumpConstructor()}
   
 }
 

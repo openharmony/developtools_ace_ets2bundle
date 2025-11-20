@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-import { memo } from "arkui.stateManagement.runtime";
+import { Memo } from 'arkui.incremental.annotation';
 
 interface A {
-    @memo prop: (() => void) | undefined
+    @Memo prop: (() => void) | undefined
 }
 
 class AA implements A {
-    @memo prop: (() => void) | undefined
+    @Memo prop: (() => void) | undefined
 }

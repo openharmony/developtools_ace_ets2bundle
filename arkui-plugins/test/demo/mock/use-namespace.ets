@@ -13,52 +13,15 @@
  * limitations under the License.
  */
 
-import { Memo } from 'arkui.incremental.annotation';
+import { Component, Row } from "@ohos.arkui.component";
+import { ns } from './export-namespace';
 
-@Memo
-function funcNum(): number {
-  return 1;
-}
+ns.ns_num;
 
-@Memo
-function funcStr(): string {
-  return "1";
-}
-
-@Memo
-function funcBool(): boolean {
-  return false;
-}
-
-interface A {
-    str: string;
-}
-
-@Memo
-function funcA(): A {
-    return { str: "1" };
-}
-
-type B = (str: string) => void;
-
-@Memo
-function funcB(): B {
-    return (str: string) => {};
-}
-
-class C {
-    str: string;
-    constructor(str: string) {
-        this.str = str;
+@Component
+struct Index {
+  build() {
+    Row() {
     }
-}
-
-@Memo
-function funcC(): C {
-    return new C("1");
-}
-
-@Memo
-function funcD(): () => void {
-  return () => {};
+  }
 }

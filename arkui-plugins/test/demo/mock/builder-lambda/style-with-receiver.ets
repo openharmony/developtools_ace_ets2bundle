@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import { memo } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
+import { Memo } from "@ohos.arkui.stateManagement" // should be insert by ui-plugins
 import { Text, TextAttribute, Column, Component} from "@ohos.arkui.component"
 import hilog from '@ohos.hilog'
 
-@memo function cardStyle(this: TextAttribute, num: number, str: string): this {
+@Memo function cardStyle(this: TextAttribute, num: number, str: string): this {
 	this.fontSize(num);
 	this.backgroundColor(str);
 	return this;
 }
 
-@memo function style22(this: TextAttribute): this {
+@Memo function style22(this: TextAttribute): this {
 	this.fontWeight(700);
 	return this;
 }

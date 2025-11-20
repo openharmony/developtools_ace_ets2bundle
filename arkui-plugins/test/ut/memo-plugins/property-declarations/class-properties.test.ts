@@ -32,13 +32,13 @@ const pluginTester = new PluginTester('test memo property', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
 class A {
     public arg: (()=> void);
-    @memo() public memo_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-    @memo() public memo_optional_arg?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
-    @memo() public memo_union_arg: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    @Memo() public memo_arg: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+    @Memo() public memo_optional_arg?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+    @Memo() public memo_union_arg: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -49,7 +49,7 @@ class A {
             return;
         }
     });
-    public arg_memo_type: @memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+    public arg_memo_type: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
     public constructor() {
         this.arg = (() => {});
         this.memo_arg = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
@@ -75,7 +75,7 @@ class A {
             }
         });
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
