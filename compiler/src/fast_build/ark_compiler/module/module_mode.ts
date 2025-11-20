@@ -314,6 +314,15 @@ export class ModuleMode extends CommonMode {
         }
       });
     }
+    // Mock file ohmurls have `.origin` suffix, so we must
+    // pre-collect their record names to ensure they are present in compile entries.
+    ModuleSourceFile.getOhmurlOfMockFiles().forEach((ohmurl) => {
+      let pkgName: string = transformOhmurlToPkgName(ohmurl);
+      if (!hspPkgNames.includes(pkgName)) {
+        let recordName: string = transformOhmurlToRecordName(ohmurl);
+        compileEntries.add(recordName);
+      }
+    });
   }
 
   private collectRouterMapEntries(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
@@ -596,9 +605,7 @@ export class ModuleMode extends CommonMode {
     }
     if (this.abcPaths.length > 0 && !this.byteCodeHar) {
       this.cmdArgs.push('--enable-abc-input');
-      if (!ModuleSourceFile.getNeedProcessMock()) {
-        this.cmdArgs.push('--remove-redundant-file');
-      }
+      this.cmdArgs.push('--remove-redundant-file');
     }
     if (this.customizedHar) {
       this.cmdArgs.push('--enable-abc-input');
