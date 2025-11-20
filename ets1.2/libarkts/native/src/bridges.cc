@@ -248,9 +248,9 @@ static KNativePointer impl_ProgramExternalSources(KNativePointer contextPtr, KNa
 {
     auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
     auto&& instance = reinterpret_cast<es2panda_Program *>(instancePtr);
-    std::size_t source_len = 0;
-    auto external_sources = GetImpl()->ProgramExternalSources(context, instance, &source_len);
-    return StageArena::cloneVector(external_sources, source_len);
+    std::size_t sourceLen = 0;
+    auto external_sources = GetImpl()->ProgramExternalSources(context, instance, &sourceLen);
+    return StageArena::cloneVector(external_sources, sourceLen);
 }
 KOALA_INTEROP_2(ProgramExternalSources, KNativePointer, KNativePointer, KNativePointer);
 
