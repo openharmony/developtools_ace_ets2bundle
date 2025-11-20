@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { memo, __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement";
+import { __memo_context_type, __memo_id_type } from "@ohos.arkui.stateManagement";
 import { Text, Column, Component, Button, ClickEvent } from "@ohos.arkui.component";
 
 import hilog from '@ohos.hilog';

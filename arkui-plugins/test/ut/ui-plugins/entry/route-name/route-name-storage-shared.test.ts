@@ -64,7 +64,7 @@ const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
   
   public build() {}
   
-  public constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
   

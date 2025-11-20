@@ -13,52 +13,8 @@
  * limitations under the License.
  */
 
-import { Memo } from 'arkui.incremental.annotation';
-
-@Memo
-function funcNum(): number {
-  return 1;
+namespace n2 {
+    export const ns_num = 1;
 }
 
-@Memo
-function funcStr(): string {
-  return "1";
-}
-
-@Memo
-function funcBool(): boolean {
-  return false;
-}
-
-interface A {
-    str: string;
-}
-
-@Memo
-function funcA(): A {
-    return { str: "1" };
-}
-
-type B = (str: string) => void;
-
-@Memo
-function funcB(): B {
-    return (str: string) => {};
-}
-
-class C {
-    str: string;
-    constructor(str: string) {
-        this.str = str;
-    }
-}
-
-@Memo
-function funcC(): C {
-    return new C("1");
-}
-
-@Memo
-function funcD(): () => void {
-  return () => {};
-}
+export { n2 as ns };

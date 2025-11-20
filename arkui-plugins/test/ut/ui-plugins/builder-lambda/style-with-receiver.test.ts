@@ -59,7 +59,7 @@ import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.loca
 
 import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
-import { memo as memo } from "@ohos.arkui.stateManagement";
+import { Memo as Memo } from "@ohos.arkui.stateManagement";
 
 import { Text as Text, TextAttribute as TextAttribute, Column as Column, Component as Component } from "@ohos.arkui.component";
 
@@ -67,13 +67,13 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
+@Memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(str);
   return this;
 }
 
-@memo() function style22(this: TextAttribute): TextAttribute {
+@Memo() function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }

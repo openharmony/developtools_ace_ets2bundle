@@ -18,7 +18,7 @@ import { isSameNativeObject } from '../peers/ArktsObject';
 import { attachModifiers, updateThenAttach } from '../utilities/private';
 
 export function updateFunctionExpression(original: FunctionExpression, func?: ScriptFunction): FunctionExpression {
-    if (isSameNativeObject(func, original.function)) {
+    if (isSameNativeObject(func, original.scriptFunction)) {
         return original;
     }
 

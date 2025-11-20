@@ -33,9 +33,9 @@ const pluginTester = new PluginTester('test memo property', buildConfig);
 
 const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
-import { memo as memo } from \"arkui.stateManagement.runtime\";
+import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
-@memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -60,10 +60,10 @@ function main() {}
     }
 });
 interface A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('memo')], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('Memo')], [], false)}
 }
 class AA {
-    @memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+    @Memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
     public constructor(arg: (A | undefined)) {
         this.a = ({let gensym%%_<some_random_number> = arg;
         (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.a)});
@@ -71,7 +71,7 @@ class AA {
     public constructor() {
         this(undefined);
     }
-    @memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
