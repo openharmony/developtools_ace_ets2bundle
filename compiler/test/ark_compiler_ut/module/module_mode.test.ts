@@ -101,6 +101,9 @@ import {
   LogData,
   LogDataFactory
 } from '../../../lib/fast_build/ark_compiler/logger';
+import { 
+  ModuleSourceFile
+} from '../../../lib/fast_build/ark_compiler/module/module_source_file';
 
 function checkGenerateEs2AbcCmdExpect(cmdArgs: Array<object>, compatibleSdkVersion: string, byteCodeHar: boolean): void {
   const fileThreads: number = cpus();
@@ -1709,7 +1712,27 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.cmdArgs.splice(3, 1);
     checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
   });
-  mocha.it('10-4: test generateEs2AbcCmd with enable column', function () {
+
+  mocha.it('10-4: test generateEs2AbcCmd under preview debug', function () {
+    this.rollup.preview();
+    this.rollup.share.projectConfig.oldMapFilePath = DEFAULT_ETS;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    const compatibleSdkVersion = `${TARGET_API_VERSION}${this.rollup.share.projectConfig.compatibleSdkVersion}`;
+    moduleMode.generateEs2AbcCmd();
+    moduleMode.byteCodeHar = true;
+
+    expect(moduleMode.cmdArgs[1] === DEBUG_INFO).to.be.true;
+    moduleMode.cmdArgs.splice(1, 1);
+    expect(moduleMode.cmdArgs[1].indexOf(PREVIEW_DEBUG_INFO) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(1, 1);
+    expect(moduleMode.cmdArgs[2].indexOf(PREVIEW_DEBUG_NPM) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(2, 1);
+    expect(moduleMode.cmdArgs[3].indexOf(PREVIEW_MODULES_ABC) > 0).to.be.true;
+    moduleMode.cmdArgs.splice(3, 1);
+    checkGenerateEs2AbcCmdExpect(moduleMode.cmdArgs, compatibleSdkVersion, moduleMode.byteCodeHar);
+  });
+
+  mocha.it('10-5: test generateEs2AbcCmd with enable column', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.enableColumnNum = true;
     const moduleMode = new ModuleHotreloadMode(this.rollup);
@@ -2461,6 +2484,43 @@ mocha.describe('test module_mode file api', function () {
     fs.unlinkSync(moduleMode.sourceMapPath);
     fs.appendFileSync(moduleMode.sourceMapPath, content, 'utf8');
 
+    SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('20-1: test collectDeclarationFilesEntry build', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    this.rollup.share.projectConfig.arkRouterMap = [
+      {
+        'ohmurl': '@normalized:N&&&har1/src/main/router&1.0.0'
+      },
+      {
+        'ohmurl': '@normalized:N&&&entry/src/main/router&'
+      },
+    ];
+    this.rollup.share.projectConfig.declarationEntry = [
+      '@normalized:N&&&har/src/main/mock/test&1.0.0',
+      '@normalized:N&&&har/src/main/mock/test1&1.0.0'
+    ]
+    ModuleSourceFile.ohmurlOfMockFiles = [
+      '@normalized:N&&&entry/src/main/mock/test.mock&',
+      '@normalized:N&&&entry/src/main/mock/test1.mock&'
+    ]
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    let compileEntries: Set<string> = new Set();
+    moduleMode.collectDeclarationFilesEntryMock(compileEntries, []);
+    const expectEntries =  new Set([
+      '&entry/src/main/mock/test.mock&',
+      '&entry/src/main/mock/test1.mock&',
+      '&har/src/main/mock/test&1.0.0',
+      '&har/src/main/mock/test1&1.0.0',
+      '&har1/src/main/router&1.0.0',
+      '&entry/src/main/router&'
+    ])
+    for (const item of expectEntries) {
+      expect(compileEntries.has(item)).to.be.true;
+    }
+    ModuleSourceFile.cleanUpObjects();
     SourceMapGenerator.cleanSourceMapObject();
   });
 });

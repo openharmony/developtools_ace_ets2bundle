@@ -123,6 +123,7 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+import { ModuleSourceFile } from './module_source_file';
 
 export class ModuleInfo {
   filePath: string;
@@ -292,6 +293,15 @@ export class ModuleMode extends CommonMode {
         }
       });
     }
+    // Mock file ohmurls have `.origin` suffix, so we must
+    // pre-collect their record names to ensure they are present in compile entries.
+    ModuleSourceFile.getOhmurlOfMockFiles().forEach((ohmurl) => {
+      let pkgName: string = transformOhmurlToPkgName(ohmurl);
+      if (!hspPkgNames.includes(pkgName)) {
+        let recordName: string = transformOhmurlToRecordName(ohmurl);
+        compileEntries.add(recordName);
+      }
+    });
   }
 
   private collectRouterMapEntries(compileEntries: Set<string>, hspPkgNames: Array<string>): void {

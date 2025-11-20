@@ -104,6 +104,7 @@ export class ModuleSourceFile {
   private static moduleIdMap: Map<string, ModuleSourceFile> = new Map();
   private static isEnvInitialized: boolean = false;
   private static hookEventFactory: Object;
+  private static ohmurlOfMockFiles: string[] = [];
 
   constructor(moduleId: string, source: string | ts.SourceFile, metaInfo: Object) {
     this.moduleId = moduleId;
@@ -206,7 +207,7 @@ export class ModuleSourceFile {
     }
     let mockFile: string = ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey] ?
       ModuleSourceFile.transformedHarOrHspMockConfigInfo[transKey].source :
-      ModuleSourceFile.mockConfigInfo[originKey].source;
+      ModuleSourceFile.mockConfigInfo[originKey].source;0
     let source2ModuleIdMap: Map<string, string> = new Map;
     if (rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap &&
       rollupObject.share.projectConfig.mockParams?.source2ModuleIdMap.size > 0) {
@@ -628,6 +629,12 @@ export class ModuleSourceFile {
     this.source = code.toString();
   }
 
+  private static collectRecordNameMockFile(rollupObject: Object, ohmUrl: string): void {
+    if (rollupObject.share.projectConfig.useNormalizedOHMUrl && ohmUrl.startsWith('@normalized:N')) {
+      ModuleSourceFile.ohmurlOfMockFiles.push(ohmUrl);
+    }
+  }
+
   private processTransformedTsModuleRequest(rollupObject: Object): void {
     const moduleInfo: Object = rollupObject.getModuleInfo(this.moduleId);
     const importMap: Object = moduleInfo.importedIdMaps;
@@ -646,6 +653,10 @@ export class ModuleSourceFile {
             // the import module are added with ".origin" at the end of the ohm url in every mock file.
             const realOhmUrl: string = isMockFile ? `${ohmUrl}${ORIGIN_EXTENTION}` : ohmUrl;
             if (isMockFile) {
+              // In order to adapt the process for remove redundant files during the integration of bytecode har.
+              // It is need to collect mock file's recordNames to compile entries.
+              ModuleSourceFile.collectRecordNameMockFile(rollupObject, ohmUrl);
+
               ModuleSourceFile.addMockConfig(ModuleSourceFile.newMockConfigInfo, realOhmUrl, ohmUrl);
             }
             const modifiers: readonly ts.Modifier[] = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
@@ -728,6 +739,11 @@ export class ModuleSourceFile {
     ModuleSourceFile.needProcessMock = false;
     ModuleSourceFile.moduleIdMap = new Map();
     ModuleSourceFile.isEnvInitialized = false;
+    ModuleSourceFile.ohmurlOfMockFiles = [];
+  }
+
+  public static getOhmurlOfMockFiles(): string[] {
+    return ModuleSourceFile.ohmurlOfMockFiles;
   }
 }
 
