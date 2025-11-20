@@ -18,10 +18,13 @@ import { Context } from "../peers/Context";
 import { global } from "./global";
 import { clearNodeCache } from "../class-by-peer";
 
-export function getOrUpdateGlobalContext(peer: KNativePointer): Context {
+export function getOrUpdateGlobalContext(peer: KNativePointer, shouldClearCache: boolean = false): Context {
     if (!global.compilerContext || global.context !== peer) {
         clearNodeCache();
         global.compilerContext = new Context(peer);
+    }
+    if (shouldClearCache) {
+        clearNodeCache();
     }
     return global.compilerContext;
 }
