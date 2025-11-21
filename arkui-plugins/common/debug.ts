@@ -17,8 +17,6 @@ import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
 import { NodeCacheFactory } from './node-cache';
 
-// Moved from koala-wrapper
-
 export class Debugger {
     private static instance: Debugger | null = null;
     private phasesDebug: boolean;
@@ -44,8 +42,6 @@ export class Debugger {
         console.log(tag);
     }
 }
-
-// 
 
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;

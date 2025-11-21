@@ -162,7 +162,6 @@ export function recheckSubtree(node: AstNode): void {
     traceGlobal(() => `Recheck: start`);
     global.generatedEs2panda._AstNodeRecheck(global.context, node.peer);
     traceGlobal(() => `Recheck: done`);
-    // checkErrors();
 }
 
 export function rebindContext(context: KNativePointer = global.context): void {
@@ -527,14 +526,6 @@ export function logDiagnosticWithSuggestion(diagnosticInfo: DiagnosticInfo, sugg
 
 export function filterNodes(node: AstNode, filter: string): AstNode[] {
     return unpackNodeArray(global.es2panda._FilterNodes(global.context, passNode(node), filter));
-}
-
-export function MemInitialize() {
-    global.es2panda._MemInitialize()
-}
-
-export function MemFinalize() {
-    global.es2panda._MemFinalize()
 }
 
 export function memInitialize() {
