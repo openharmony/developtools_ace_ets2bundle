@@ -55,7 +55,7 @@ import { TextAttribute as TextAttribute } from "arkui.component.text";
 
 import { TextImpl as TextImpl } from "arkui.component.text";
 
-import { Bindable as Bindable } from "arkui.component.common";
+import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { GridItemImpl as GridItemImpl } from "arkui.component.gridItem";
 
@@ -141,12 +141,9 @@ class CC {
         return;
       }), @Memo() (() => {
         GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(({
-            value: this.boo,
-            onChange: ((value: boolean) => {
-              this.boo = value;
-            }),
-          } as Bindable<boolean>)).applyAttributesFinish();
+          instance.setGridItemOptions(undefined).selected(makeBindable(this.boo, ((value) => {
+            this.boo = value;
+          }))).applyAttributesFinish();
           return;
         }), @Memo() (() => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
@@ -155,12 +152,9 @@ class CC {
           }), undefined);
         }));
         GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(({
-            value: CC.c,
-            onChange: ((value: boolean) => {
-              CC.c = value;
-            }),
-          } as Bindable<boolean>)).applyAttributesFinish();
+          instance.setGridItemOptions(undefined).selected(makeBindable(CC.c, ((value) => {
+            CC.c = value;
+          }))).applyAttributesFinish();
           return;
         }), @Memo() (() => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
