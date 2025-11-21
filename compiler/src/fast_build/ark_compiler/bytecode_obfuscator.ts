@@ -316,6 +316,18 @@ export class BytecodeObfuscator {
     fs.writeFileSync(this.nameCachePath, JSON.stringify(nameCacheUpdated, null, 2));
   }
 
+  public registerRecordNameWhiteList(ohmurl: string): void {
+    if (!BytecodeObfuscator.enable || !ohmurl) {
+      return;
+    }
+
+    if (!this.bytecodeObfuscateConfig.obfuscationRules.recordNameWhiteList) {
+      this.bytecodeObfuscateConfig.obfuscationRules.recordNameWhiteList = new Set<string>();
+    }
+
+    this.bytecodeObfuscateConfig.obfuscationRules.recordNameWhiteList.add(ohmurl);
+  }
+
   private collectWhiteList(): void {
     this.bytecodeObfuscateConfig.addReservedNames(ES_ANNOTATIONS);
     this.bytecodeObfuscateConfig.addReservedProperties(BYTECODE_OBFUSCATION_PROPERTY_WHITE_LIST);
@@ -455,6 +467,7 @@ export class BytecodeObfuscationConfig {
     printNameCache: string;
     applyNameCache: string;
     reservedNames: Set<string>;
+    recordNameWhiteList: Set<string>;
     propertyObfuscation: {
       enable: boolean;
       reservedProperties: Set<string>;
@@ -514,6 +527,7 @@ export class BytecodeObfuscationConfig {
       printNameCache: options.printNameCache,
       applyNameCache: options.applyNameCache,
       reservedNames: new Set<string>(reservedNames),
+      recordNameWhiteList: new Set<string>(),
       propertyObfuscation: {
         enable: options.enablePropertyObfuscation,
         reservedProperties: new Set<string>(reservedPropertyNames),

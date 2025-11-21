@@ -266,6 +266,7 @@ export class ModuleMode extends CommonMode {
         undefined);
       compileEntries.add(recordName);
       this.collectReplaceRecords(replaceRecords, recordName, metaInfo.pkgName);
+      BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().registerRecordNameWhiteList(metaInfo.ohmurl);
     }
     this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
@@ -549,6 +550,7 @@ export class ModuleMode extends CommonMode {
         isRecordName: true,
       };
       recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
+      BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().registerRecordNameWhiteList(metaInfo.ohmurl);
     } else {
       recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
