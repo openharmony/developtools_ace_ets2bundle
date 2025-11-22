@@ -22,7 +22,6 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 const builtInDecorators = [PresetDecorators.LOCAL, PresetDecorators.PARAM, PresetDecorators.EVENT];
 
 class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
-    private componentV2PropertyMap: Map<string, Map<string, string>> = new Map();
     public setup(): Record<string, string> {
         return {
             multipleBuiltInDecorators: `The member property or method cannot be decorated by multiple built-in annotations.`,
@@ -33,13 +32,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         };
     }
 
-    public beforeTransform(): void {
-        this.componentV2PropertyMap = new Map();
-    }
-
     public parsed(node: arkts.AstNode): void {
-        this.initComponentV2PropertyMap(node, this.componentV2PropertyMap);
-        this.checkInitializeRule(node, this.componentV2PropertyMap);
         if (arkts.isClassDeclaration(node) && node.definition) {
             this.checkuseStateDecoratorsWithProperty(node.definition);
         }
@@ -55,6 +48,79 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             return;
         }
         this.validateClassPropertyDecorators(node);
+    }
+
+    public checked(node: arkts.AstNode): void {
+        this.checkPropertyInit(node);
+    }
+
+    private checkPropertyInit(node: arkts.AstNode): void {
+        if (!arkts.isCallExpression(node) ||
+            !arkts.isMemberExpression(node.expression) ||
+            !arkts.isIdentifier(node.expression.object)) {
+            return;
+        }
+        if (node.arguments.length === 0 || !arkts.isObjectExpression(node.arguments[0])) {
+            return;
+        }
+        const structDecl = arkts.getDecl(node.expression.object);
+        if (!structDecl || !arkts.isClassDefinition(structDecl)) {
+            return;
+        }
+        if (!structDecl.annotations.some(annotation =>
+            annotation.expr &&
+            arkts.isIdentifier(annotation.expr) &&
+            annotation.expr.name === PresetDecorators.COMPONENT_V2
+        )) {
+            return;
+        }
+        const forbidExternalInitProps: Map<string, string> = this.getForbidExternalInitProps(structDecl);
+        const properties = node.arguments[0].properties;
+        for (const property of properties) {
+            if (!arkts.isProperty(property) || !property.key || !arkts.isIdentifier(property.key)) {
+                continue;
+            }
+            const propertyName = property.key.name;
+            const decoratorName = forbidExternalInitProps.get(propertyName);
+            if (!decoratorName) {
+                continue;
+            }
+            this.report({
+                node: property,
+                message: this.messages.localNeedNoInit,
+                data: {
+                    decoratorName: decoratorName,
+                    key: propertyName,
+                    componentName: node.expression.object.name,
+                },
+                fix: (property) => {
+                    return {
+                        title: 'Remove the property',
+                        range: [property.startPosition, property.endPosition],
+                        code: '',
+                    };
+                }
+            });
+        }
+    }
+
+    private getForbidExternalInitProps(decl: arkts.ClassDefinition): Map<string, string> {
+        let forbidExternalInitProps: Map<string, string> = new Map<string, string>();
+        decl.body.forEach((item) => {
+            if (!arkts.isClassProperty(item) || !item.key || !arkts.isIdentifier(item.key)) {
+                return;
+            }
+            if (item.annotations.length === 0) {
+                forbidExternalInitProps.set(item.key.name, PresetDecorators.REGULAR);
+            } else if (item.annotations.some(annotation =>
+                annotation.expr &&
+                arkts.isIdentifier(annotation.expr) &&
+                annotation.expr.name === PresetDecorators.LOCAL
+            )) {
+                forbidExternalInitProps.set(item.key.name, '@' + PresetDecorators.LOCAL);
+            }
+        });
+        return forbidExternalInitProps;
     }
 
     private hasComponentV2Annotation = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
@@ -181,178 +247,6 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             // Rule 3: @Require must be used together with @Param
             this.checkRequireOnlyWithParam(member, propertyDecorators, isComponentV2);
         });
-    }
-
-    private checkDecorator(annoArray: readonly arkts.AnnotationUsage[], decorator: string): boolean {
-        let flag = false;
-        annoArray.forEach((anno) => {
-            if (!anno.expr) {
-                return;
-            }
-            const annoName = getIdentifierName(anno.expr);
-            if (annoName === decorator) {
-                flag = true;
-            }
-        });
-        return flag;
-    }
-
-    // Define a function to add property data to the property map
-    private addPropertyMap(
-        structName: string,
-        propertyName: string,
-        annotationName: string,
-        propertyMap: Map<string, Map<string, string>>
-    ): void {
-        if (!propertyMap.has(structName)) {
-            propertyMap.set(structName, new Map());
-        }
-        const structProperties = propertyMap.get(structName);
-        if (structProperties) {
-            structProperties.set(propertyName, annotationName);
-        }
-    }
-
-    // Iterate through the incoming componentv2 node to see if there are any state variables for decorator decorations
-    private initComponentV2PropertyMap(
-        node: arkts.AstNode,
-        componentV2PropertyMap: Map<string, Map<string, string>>
-    ): void {
-        if (arkts.nodeType(node) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-            return;
-        }
-        node.getChildren().forEach((member) => {
-            if (!arkts.isStructDeclaration(member) || !member.definition.ident ||
-                !this.checkDecorator(member.definition.annotations, PresetDecorators.COMPONENT_V2)) {
-                return;
-            }
-            let structName: string = member.definition.ident.name;
-            member.definition.body.forEach((item) => {
-                this.processClassPropertyAnnotations(item, structName, componentV2PropertyMap);
-            });
-        });
-    }
-
-    private processClassPropertyAnnotations(
-        item: arkts.AstNode,
-        structName: string,
-        componentV2PropertyMap: Map<string, Map<string, string>>
-    ): void {
-        if (!arkts.isClassProperty(item) || !item.key) {
-            return;
-        }
-        let propertyName: string = getIdentifierName(item.key);
-        // If there is no decorator, it is a regular type
-        if (item.annotations.length === 0) {
-            let annotationName: string = PresetDecorators.REGULAR;
-            this.addPropertyMap(structName, propertyName, annotationName, componentV2PropertyMap);
-        }
-        item.annotations.forEach((annotation) => {
-            if (!annotation.expr) {
-                return;
-            }
-            let annotationName: string = getIdentifierName(annotation.expr);
-            if (annotationName === PresetDecorators.LOCAL) {
-                this.addPropertyMap(structName, propertyName, annotationName, componentV2PropertyMap);
-            }
-        });
-    }
-
-    private checkInitializeRule(
-        node: arkts.AstNode,
-
-        componentV2PropertyMap: Map<string, Map<string, string>>,
-    ): void {
-        if (!arkts.isIdentifier(node) || !componentV2PropertyMap.has(getIdentifierName(node)) || !node.parent) {
-            return;
-        }
-        let structName: string = getIdentifierName(node);
-        let parentNode: arkts.AstNode = node.parent;
-        if (!arkts.isCallExpression(parentNode)) {
-            return;
-        }
-        let structNode = node.parent;
-        while (!arkts.isStructDeclaration(structNode)) {
-            if (!structNode.parent) {
-                return;
-            }
-            structNode = structNode.parent;
-        }
-        let parentPropertyMap: Map<string, string[]> = new Map();
-        structNode.definition.body.forEach((property) => {
-            if (!arkts.isClassProperty(property)) {
-                return;
-            }
-            let propertyArray: string[] = [];
-            property.annotations.forEach((annotation) => {
-                if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
-                    return;
-                }
-                propertyArray.push(annotation.expr.name);
-            });
-            const classPropertyName = getClassPropertyName(property);
-            if (!classPropertyName) {
-                return;
-            }
-            parentPropertyMap.set(classPropertyName, propertyArray);
-        });
-        // Gets all the properties recorded by the struct
-        const childPropertyName: Map<string, string> = componentV2PropertyMap.get(structName)!;
-        parentNode.arguments.forEach((argument) => {
-            if (!arkts.isObjectExpression(argument)) {
-                return;
-            }
-            argument.getChildren().forEach((property) => {
-                if (!arkts.isProperty(property) || !property.key) {
-                    return;
-                }
-                const childkeyName = getIdentifierName(property.key);
-                if (!childPropertyName.has(childkeyName)) {
-                    return;
-                }
-                this.reportLocalNeedInit(childPropertyName, childkeyName, property, structName);
-            });
-        });
-    }
-
-    private reportLocalNeedInit(childPropertyName: Map<string, string>, childkeyName: string,
-        property: arkts.Property, structName: string): void {
-        if (childPropertyName.get(childkeyName) === PresetDecorators.LOCAL) {
-            this.report({
-                node: property,
-                message: this.messages.localNeedNoInit,
-                data: {
-                    decoratorName: '@' + childPropertyName.get(childkeyName)!,
-                    key: childkeyName,
-                    componentName: structName,
-                },
-                fix: (property) => {
-                    return {
-                        title: 'Remove the property',
-                        range: [property.startPosition, property.endPosition],
-                        code: '',
-                    };
-                }
-            });
-        }
-        if (childPropertyName.get(childkeyName) === PresetDecorators.REGULAR) {
-            this.report({
-                node: property,
-                message: this.messages.localNeedNoInit,
-                data: {
-                    decoratorName: PresetDecorators.REGULAR,
-                    key: childkeyName,
-                    componentName: structName,
-                },
-                fix: (property) => {
-                    return {
-                        title: 'Remove the property',
-                        range: [property.startPosition, property.endPosition],
-                        code: '',
-                    };
-                }
-            });
-        }
     }
 };
 
