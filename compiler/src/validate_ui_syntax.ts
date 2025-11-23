@@ -1558,15 +1558,16 @@ function validateNonFunctionTypeWithDecorator(
   propertyName: string,
   decoratorName: string
 ): void {
-  if (
-    NON_FUNCTION_TYPE_WITH_V1_DECORATORS.has(decoratorName) &&
-    node.type &&
-    ts.isTypeReferenceNode(node.type) &&
-    node.type.typeName &&
-    ts.isIdentifier(node.type.typeName)
-  ) {
-    const escapedText = node.type.typeName.escapedText?.toString();
-    if (escapedText && escapedText === 'Function') {
+  if (NON_FUNCTION_TYPE_WITH_V1_DECORATORS.has(decoratorName) && node.type) {
+    let escapedText = '';
+    if (
+      ts.isTypeReferenceNode(node.type) &&
+      node.type.typeName &&
+      ts.isIdentifier(node.type.typeName)
+    ) {
+      escapedText = node.type.typeName.escapedText?.toString();
+    }
+    if (escapedText === 'Function' || ts.isFunctionTypeNode(node.type)) {
       transformLog.errors.push({
         type: LogType.ERROR,
         code: '10905363',
