@@ -25,7 +25,7 @@ import {
     generateGetOrSetCall,
     getValueInAnnotation,
     hasDecorator,
-    findCachedMemoMetadata,
+    findCachedMemoMetadata
 } from './utils';
 import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
 import { GetterSetter, InitializerConstructor } from './types';
@@ -98,6 +98,19 @@ export class ConsumeTranslator extends PropertyTranslator implements Initializer
             ),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
+        if (this.property.value) {
+            if (args.length === 2) {
+                args.push(arkts.factory.createUndefinedLiteral());
+            }
+            args.push(arkts.factory.createObjectExpression(
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                [arkts.factory.createProperty(
+                    arkts.factory.createIdentifier('defaultValue'),
+                    this.property.value.clone()
+                )],
+                true
+            ));
+        }
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
