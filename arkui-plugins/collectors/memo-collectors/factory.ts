@@ -56,7 +56,7 @@ export function collectMemoableNodeByTypeInPostOrder(
 export class factory {
     /**
      * Find and collect possible `@memo` property with arrow function value.
-     * 
+     *
      * @param node `arkts.Property` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` property
      * @returns `arkts.Property` node
@@ -83,7 +83,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` class property with arrow function value.
-     * 
+     *
      * @param node `arkts.ClassProperty` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` class property
      * @returns `arkts.ClassProperty` node
@@ -105,7 +105,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` type alias with function type.
-     * 
+     *
      * @param node `arkts.TSTypeAliasDeclaration` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` type alias
      * @returns `arkts.TSTypeAliasDeclaration` node
@@ -127,7 +127,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` parameter with function type.
-     * 
+     *
      * @param node `arkts.ETSParameterExpression` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` parameter
      * @returns `arkts.ETSParameterExpression` node
@@ -149,7 +149,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` method.
-     * 
+     *
      * @param node `arkts.MethodDefinition` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` method
      * @returns `arkts.MethodDefinition` node
@@ -171,7 +171,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` arrow function.
-     * 
+     *
      * @param node `arkts.ArrowFunctionExpression` node
      * @param rewriteFn function callback to rewrite node when it is `@memo` arrow function
      * @returns `arkts.ArrowFunctionExpression` node
@@ -193,7 +193,7 @@ export class factory {
 
     /**
      * Find and collect possible `@memo` function call.
-     * 
+     *
      * @param node `arkts.CallExpression` node
      * @returns `arkts.CallExpression` node
      */
@@ -211,7 +211,7 @@ export class factory {
 
     /**
      * Find and collect new class instance with possible `@memo` type parameters.
-     * 
+     *
      * @param node `arkts.ETSNewClassInstanceExpression` node
      * @returns `arkts.ETSNewClassInstanceExpression` node
      */

@@ -26,17 +26,21 @@ export interface ArrowFunctionAnnotations extends Annotations {
     [DecoratorNames.BUILDER]?: arkts.AnnotationUsage;
 }
 
-export class ArrowFunctionAnnotationRecord extends BaseAnnotationRecord<ArrowFunctionAnnotations, ArrowFunctionAnnotationInfo> {
+export class ArrowFunctionAnnotationRecord extends BaseAnnotationRecord<
+    ArrowFunctionAnnotations,
+    ArrowFunctionAnnotationInfo
+> {
     protected annotationNames: string[];
 
     constructor(options: RecordOptions) {
         super(options);
-        this.annotationNames = [
-            DecoratorNames.BUILDER
-        ];
+        this.annotationNames = [DecoratorNames.BUILDER];
     }
 
-    updateAnnotationInfoByName(info: ArrowFunctionAnnotationInfo, name: string | undefined): ArrowFunctionAnnotationInfo {
+    updateAnnotationInfoByName(
+        info: ArrowFunctionAnnotationInfo,
+        name: string | undefined
+    ): ArrowFunctionAnnotationInfo {
         switch (name) {
             case DecoratorNames.BUILDER:
                 info.hasBuilder = true;

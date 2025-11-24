@@ -174,3 +174,40 @@ export interface ResourceInfo {
     resourcesList: ResourceList;
     rawfile: Set<string>;
 }
+
+export type ConsistentResourceMap = Map<string, ConsistentResourceInfo[]>;
+
+export type ConsistentResourceInfo = {
+    id: string;
+    resourceName: string;
+}
+
+// UI COMPONENT TYPES
+export interface UIComponents {
+    builtInAttributes: string[];
+    containerComponents: string[];
+    atomicComponents: string[];
+    singleChildComponents: string[];
+    validParentComponent: Map<string, string[]>;
+    validChildComponent: Map<string, string[]>;
+}
+
+export interface ComponentJson {
+    name: string;
+    atomic?: boolean;
+    attrs: string[];
+    single?: boolean;
+    parents?: string[];
+    children?: string[];
+}
+
+// APPLICATION MAIN PAGE TYPES
+export type ApplicationModuleConfig = {
+    module: {
+        pages: string;
+    };
+};
+
+export type ApplicationMainPages = {
+    src: string[];
+};

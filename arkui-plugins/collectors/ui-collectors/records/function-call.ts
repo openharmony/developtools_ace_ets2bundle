@@ -327,7 +327,7 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         }
         const records: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][] = [];
         this._structPropertyRecords.forEach((record) => {
-            records.push([record[0], record[1].toJSON()]);
+            records.push([record[0], record[1].toRecord()]);
         });
         return records;
     }

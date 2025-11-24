@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ProjectConfig } from 'common/plugin-context';
+import { ProjectConfig } from '../../common/plugin-context';
 import { BuildConfig, Processor, TraceOptions } from './shared-types';
 
 class ProcessorBuilder {

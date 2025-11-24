@@ -19,11 +19,7 @@ import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 import { RecordCache } from './cache';
 
-export type PropertyInfo = AnnotationRecord<
-    ArrowFunctionAnnotations,
-    ArrowFunctionAnnotationInfo
-> & {
-};
+export type PropertyInfo = AnnotationRecord<ArrowFunctionAnnotations, ArrowFunctionAnnotationInfo> & {};
 
 export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
     private _annotationRecord?: ArrowFunctionAnnotationRecord;
@@ -52,7 +48,7 @@ export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
         const annotationRecord = this._annotationRecord?.toRecord();
         currInfo = {
             ...currInfo,
-            ...(annotationRecord && { ...annotationRecord })
+            ...(annotationRecord && { ...annotationRecord }),
         };
         this.info = currInfo;
     }
@@ -61,6 +57,6 @@ export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
         this.refresh();
         return {
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
-        }
+        };
     }
 }

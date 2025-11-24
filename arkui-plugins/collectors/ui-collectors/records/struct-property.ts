@@ -27,12 +27,12 @@ export type StructPropertyInfo = AnnotationRecord<StructPropertyAnnotations, Str
 };
 
 export interface StructPropertyRecordOptions extends RecordOptions {
-    structRecord: CustomComponentRecord;
+    structRecord?: CustomComponentRecord;
 }
 
 export class StructPropertyRecord extends BaseRecord<arkts.ClassProperty, StructPropertyInfo> {
     private _annotationRecord: StructPropertyAnnotationRecord;
-    private _structRecord: CustomComponentRecord;
+    private _structRecord?: CustomComponentRecord;
 
     protected name?: string;
     protected modifiers?: arkts.Es2pandaModifierFlags;
@@ -59,7 +59,7 @@ export class StructPropertyRecord extends BaseRecord<arkts.ClassProperty, Struct
     refreshOnce(): void {
         let currInfo = this.info ?? {};
         const annotationRecord = this._annotationRecord.toRecord();
-        const structRecord = this._structRecord.toRecord();
+        const structRecord = this._structRecord?.toRecord();
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
@@ -72,7 +72,7 @@ export class StructPropertyRecord extends BaseRecord<arkts.ClassProperty, Struct
 
     toJSON(): StructPropertyInfo {
         this.refresh();
-        const structInfo = this._structRecord.toJSON();
+        const structInfo = this._structRecord?.toJSON();
         return {
             ...(this.info?.name && { name: this.info.name }),
             ...(this.info?.modifiers && { modifiers: this.info.modifiers }),

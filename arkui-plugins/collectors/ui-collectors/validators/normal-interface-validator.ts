@@ -16,10 +16,12 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalInterfaceInfo } from '../records';
+import { checkObservedV2TraceUsageValidation, checkTrackDecorator, checkValidateDecoratorTarget } from './rules';
 
 export class NormalInterfaceValidator extends BaseValidator<arkts.TSInterfaceDeclaration, NormalInterfaceInfo> {
     reportIfViolated(node: arkts.TSInterfaceDeclaration): void {
-        const metadata = this.context ?? {};
-        // TODO: add rule here.
+        checkTrackDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
     }
 }

@@ -298,6 +298,14 @@ export class ComponentTransformer extends AbstractVisitor {
             return node;
         }
         if (arkts.isStructDeclaration(node)) {
+            if (node.definition.super || node.definition.implements.length !== 0) {
+                LogCollector.getInstance().collectLogInfo({
+                    node: node.definition?.ident ?? node,
+                    message: `Structs are not allowed to inherit from classes or implement interfaces.`,
+                    level: LogType.ERROR,
+                });
+                return node;
+            }
             this.collectComponentMembers(node, className);
         }
         const customComponentInterface = this.generateComponentInterface(

@@ -14,9 +14,27 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { DeclarationCollector } from './declaration-collector';
-import { ARKUI_IMPORT_PREFIX_NAMES, DecoratorNames } from './predefines';
 import * as fs from 'fs';
+import * as path from 'path';
+import { DeclarationCollector } from './declaration-collector';
+import {
+    APPLICATION_MAIN_BASE_RESOURCE_PATH,
+    APPLICATION_MAIN_ETS_PATH,
+    ARKUI_IMPORT_PREFIX_NAMES,
+    DecoratorNames,
+    LIB_UI_COMPONENTS_PATH,
+    PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES,
+    PREVIEWER_RESOURCE_PATH,
+} from './predefines';
+import {
+    ApplicationMainPages,
+    ApplicationModuleConfig,
+    ComponentJson,
+    ConsistentResourceInfo,
+    ConsistentResourceMap,
+    ProjectConfig,
+    UIComponents,
+} from './plugin-context';
 
 export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
     if (!node || !arkts.isETSTypeReference(node)) {
@@ -249,4 +267,147 @@ export function findLastPropertyElement<T>(arr: Array<T>, callback: (item: T) =>
         }
     }
     return undefined;
+}
+
+export function readJSON<T>(path: string): T | null {
+    if (!fs.existsSync(path)) {
+        return null;
+    }
+    const content = fs.readFileSync(path).toString();
+    if (!content) {
+        return null;
+    }
+    return JSON.parse(content) as T;
+}
+
+export function getUIComponents(): UIComponents | undefined {
+    let builtInAttributes: string[] = [];
+    let containerComponents: string[] = [];
+    let atomicComponents: string[] = [];
+    let singleChildComponents: string[] = [];
+    let validParentComponent: Map<string, string[]> = new Map();
+    let validChildComponent: Map<string, string[]> = new Map();
+
+    if (!fs.existsSync(LIB_UI_COMPONENTS_PATH)) {
+        return undefined;
+    }
+    // Read all files in the directory
+    const files = fs.readdirSync(LIB_UI_COMPONENTS_PATH);
+
+    files.forEach((file) => {
+        if (path.extname(file) === '.json') {
+            const filePath = path.join(LIB_UI_COMPONENTS_PATH, file);
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const componentJson: ComponentJson = JSON.parse(fileContent);
+            // Record the container component name
+            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
+                containerComponents.push(componentJson.name);
+            }
+            // Record the atomic component name
+            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
+                atomicComponents.push(componentJson.name);
+            }
+            // Record the name of a single subComponent component name
+            if (componentJson.single && componentJson.single === true && componentJson.name) {
+                singleChildComponents.push(componentJson.name);
+            }
+            // Record a valid parent component name
+            if (componentJson.parents && componentJson.name) {
+                validParentComponent.set(componentJson.name, componentJson.parents);
+            }
+            // Record a valid children component name
+            if (componentJson.children && componentJson.name) {
+                validChildComponent.set(componentJson.name, componentJson.children);
+            }
+            // Document all built-in attributes
+            componentJson.attrs
+                ?.filter((attr) => !builtInAttributes.includes(attr))
+                .forEach((attr) => builtInAttributes.push(attr));
+        }
+    });
+    return {
+        builtInAttributes,
+        containerComponents,
+        atomicComponents,
+        singleChildComponents,
+        validParentComponent,
+        validChildComponent,
+    };
+}
+
+export function getMainPages(projectConfig?: ProjectConfig): string[] {
+    if (!projectConfig) {
+        return [];
+    }
+
+    const { moduleRootPath, aceModuleJsonPath } = projectConfig;
+    if (!aceModuleJsonPath) {
+        return [];
+    }
+    const moduleConfig = readJSON<ApplicationModuleConfig>(aceModuleJsonPath);
+    if (!moduleConfig) {
+        return [];
+    }
+    if (!moduleConfig.module || !moduleConfig.module.pages) {
+        return [];
+    }
+    const pagesPath = moduleConfig.module.pages;
+    const matcher = /\$(?<directory>[_A-Za-z]+):(?<filename>[_A-Za-z]+)/.exec(pagesPath);
+    if (matcher && matcher.groups) {
+        const { directory, filename } = matcher.groups;
+        const mainPagesPath = path.resolve(
+            moduleRootPath,
+            APPLICATION_MAIN_BASE_RESOURCE_PATH,
+            directory,
+            `${filename}.json`
+        );
+        const mainPages = readJSON<ApplicationMainPages>(mainPagesPath);
+        if (!mainPages) {
+            return [];
+        }
+        if (!mainPages.src || !Array.isArray(mainPages.src)) {
+            return [];
+        }
+        return mainPages.src.map((page) => path.resolve(moduleRootPath, APPLICATION_MAIN_ETS_PATH, `${page}.ets`));
+    } else {
+        return [];
+    }
+}
+
+export function getConsistentResourceMap(): ConsistentResourceMap {
+    const resultMap = new Map<string, ConsistentResourceInfo[]>();
+    let resourceText: string = '';
+    try {
+        // The contents of the file are read synchronously
+        resourceText = fs.readFileSync(PREVIEWER_RESOURCE_PATH, 'utf-8');
+    } catch (error: unknown) {
+        return resultMap;
+    }
+    // Split text by line
+    const lines = resourceText.split('\n');
+    for (const line of lines) {
+        // Skip blank lines
+        if (!line.trim()) {
+            continue;
+        }
+        const match = line.match(/id:(\d+),\s*'([^']+)'\s*'([^']+)'/);
+        if (match && match.length === 4) {
+            const id = match[1];
+            const value = match[2];
+            const resourceName = match[3];
+            if (matchPrefix(PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES, resourceName)) {
+                continue;
+            }
+            let entries = resultMap.get(value);
+            if (!entries) {
+                entries = [];
+                resultMap.set(value, entries);
+            }
+            entries.push({
+                id: id,
+                resourceName: resourceName,
+            });
+        }
+    }
+    return resultMap;
 }

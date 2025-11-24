@@ -16,7 +16,13 @@
 import * as arkts from '@koalaui/libarkts';
 import { annotation, forEachArgWithParam, isDecoratorAnnotation } from '../../common/arkts-utils';
 import { ImportCollector } from '../../common/import-collector';
-import { DecoratorNames, BuiltInNames, MEMO_IMPORT_SOURCE_NAME, NodeCacheNames, MEMO_SKIP_UI_IMPORT_SOURCE_NAME } from '../../common/predefines';
+import {
+    DecoratorNames,
+    BuiltInNames,
+    MEMO_IMPORT_SOURCE_NAME,
+    NodeCacheNames,
+    MEMO_SKIP_UI_IMPORT_SOURCE_NAME,
+} from '../../common/predefines';
 import { AstNodeRevisitCache } from '../../common/cache/astNodeRevisitCache';
 import { AstNodePointer } from '../../common/safe-types';
 import { MemoFunctionCollector } from './function-collector';
@@ -67,7 +73,9 @@ export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: MemoName
 }
 
 export function hasMemoAnnotation<T extends MemoAstNode>(node: T): boolean {
-    return node.annotations.some((it) => (isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI)));
+    return node.annotations.some(
+        (it) => isMemoAnnotation(it, MemoNames.MEMO) || isMemoAnnotation(it, MemoNames.MEMO_UI)
+    );
 }
 
 function insertMemoAnnotationImport(memoName: MemoNames): void {
@@ -80,7 +88,8 @@ function isScriptFunctionFromInterfaceGetterSetter(node: arkts.ScriptFunction): 
     if (!methodDef || !arkts.isMethodDefinition(methodDef)) {
         return false;
     }
-    const isGetterSetter = methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
+    const isGetterSetter =
+        methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
         methodDef.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     if (!isGetterSetter) {
         return false;
@@ -127,7 +136,7 @@ function addMemoAnnotationInUnionType(
 }
 
 function collectMemoAstNode(
-    node: arkts.AstNode, 
+    node: arkts.AstNode,
     memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): void {
@@ -850,7 +859,9 @@ export function collectMemoFromNewClass(node: arkts.ETSNewClassInstanceExpressio
     }
     const typeInfo = collectMemoableInfoInTypeReference(typeRef);
     if (typeInfo.isWithinTypeParams) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(typeRef, { isWithinTypeParams: true });
+        arkts.NodeCacheFactory.getInstance()
+            .getCache(NodeCacheNames.MEMO)
+            .collect(typeRef, { isWithinTypeParams: true });
     }
 }
 

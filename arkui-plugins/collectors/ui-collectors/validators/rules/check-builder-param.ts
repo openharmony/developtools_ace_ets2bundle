@@ -18,14 +18,18 @@ import { BaseValidator } from '../base';
 import { isAnnotatedProperty } from '../utils';
 import { CallInfo } from '../../records';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkBuilderParam = performanceLog(_checkBuilderParam, getPerfName([0, 0, 0, 0, 0], 'checkBuilderParam'));
 
 /**
- * 校验规则：自定义组件尾随闭包调用的场景，struct 声明中只能有1个BuilderParam
- * 
+ * 校验规则：自定义组件尾随闭包调用的场景，struct 声明中有且只能有1个BuilderParam
+ *
  * 校验等级：error
  */
-export function checkBuilderParam(
+function _checkBuilderParam(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
+    call: arkts.CallExpression,
     struct: arkts.ClassDefinition
 ): void {
     const metadata = this.context ?? {};
@@ -44,11 +48,11 @@ export function checkBuilderParam(
         }
     }
 
-    // 如果@BuilderParam个数超过1个或者@BuilderParam修饰的函数类型有参数，那么就报错
-    if (properties.length > 1 || (properties.length === 1 && properties[0].argc > 0)) {
+    // 如果@BuilderParam个数不是1个或者@BuilderParam修饰的函数类型有参数，那么就报错
+    if (properties.length !== 1 || (properties.length === 1 && properties[0].argc > 0)) {
         const structName = struct.ident!.name;
         this.report({
-            node: struct.parent!, // Class Declaration has correct position information
+            node: call, // Class Declaration has correct position information
             level: LogType.ERROR,
             message: `In the trailing lambda case, '${structName}' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.`,
         });

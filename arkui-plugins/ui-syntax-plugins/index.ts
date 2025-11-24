@@ -22,7 +22,7 @@ import {
 import { createUISyntaxRuleProcessor, UISyntaxRuleProcessor } from './processor';
 import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
-import { matchPrefix } from '../common/arkts-utils';
+import { getConsistentResourceMap, getMainPages, getUIComponents, matchPrefix } from '../common/arkts-utils';
 import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
 import { debugLog, getDumpFileName } from '../common/debug';
 import { UIVisitor } from '../collectors/ui-collectors/ui-visitor';
@@ -30,6 +30,7 @@ import { MemoVisitor } from '../collectors/memo-collectors/memo-visitor';
 import { Collector } from '../collectors/collector';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export function uiSyntaxLinterTransform(): Plugins {
     return {
@@ -73,10 +74,18 @@ function checkedProgramVisit(
         arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
         arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
     }
+    const projectConfig = context.getProjectConfig();
+    arkts.Performance.getInstance().createDetailedEvent('[UI LINTER PLUGIN] MetadataCollector init');
+    MetaDataCollector.getInstance()
+        .setProjectConfig(projectConfig)
+        .setComponentsInfo(getUIComponents())
+        .setConsistentResourceMap(getConsistentResourceMap())
+        .setMainPages(getMainPages(projectConfig));
+    arkts.Performance.getInstance().stopDetailedEvent('[UI LINTER PLUGIN] MetadataCollector init');
     const collector = new Collector({
         shouldCollectUI: true,
         shouldCollectMemo: true,
-        shouldCheckUISyntax: false
+        shouldCheckUISyntax: true
     });
     const programVisitor = new ProgramVisitor({
         pluginName: uiSyntaxLinterTransform.name,
@@ -86,6 +95,10 @@ function checkedProgramVisit(
         pluginContext: context,
     });
     program = programVisitor.programVisitor(program);
+    MetaDataCollector.getInstance()
+        .setComponentsInfo(undefined)
+        .setConsistentResourceMap(undefined)
+        .setMainPages(undefined);
     if (!isCoding) {
         arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.UI, true);
         arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);

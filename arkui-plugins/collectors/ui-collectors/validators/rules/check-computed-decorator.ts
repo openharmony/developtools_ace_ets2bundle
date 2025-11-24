@@ -28,7 +28,17 @@ import {
     StructPropertyInfo,
 } from '../../records';
 import { DecoratorNames, LogType, StructDecoratorNames } from '../../../../common/predefines';
-import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
+import {
+    createSuggestion,
+    getPositionRangeFromAnnotation,
+    getPositionRangeFromNode,
+} from '../../../../common/log-collector';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkComputedDecorator = performanceLog(
+    _checkComputedDecorator,
+    getPerfName([0, 0, 0, 0, 0], 'checkComputedDecorator')
+);
 
 /**
  * 校验规则：
@@ -40,7 +50,7 @@ import { createSuggestion, getPositionRangeFromNode } from '../../../../common/l
  *
  * 校验等级：error
  */
-export function checkComputedDecorator(
+function _checkComputedDecorator(
     this: BaseValidator<arkts.AstNode, Object>,
     node: arkts.AstNode,
     other?: arkts.AstNode
@@ -53,7 +63,7 @@ export function checkComputedDecorator(
 
 function checkComputedDecoratorInMethod<
     T extends arkts.AstNode = arkts.MethodDefinition,
-    U extends arkts.AstNode = arkts.ClassDefinition
+    U extends arkts.AstNode = arkts.ClassDefinition,
 >(this: BaseValidator<T, MethodInfo>, node: T, classDecl?: U): void {
     const metadata = this.context ?? {};
     const method = coerceToAstNode<arkts.MethodDefinition>(node);
@@ -66,7 +76,7 @@ function checkComputedDecoratorInMethod<
             node: setter,
             message: `A property decorated by '@Computed' cannot define a set method.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(setter)),
+            suggestion: createSuggestion('', ...getPositionRangeFromNode(setter), `Remove the set method`),
         });
     }
     if (!metadata.annotationInfo?.hasComputed) {
@@ -79,20 +89,39 @@ function checkComputedDecoratorInMethod<
             node: computedAnnotation,
             message: `@${DecoratorNames.COMPUTED} can only decorate 'GetAccessor'.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(computedAnnotation)),
+            suggestion: createSuggestion(
+                '',
+                ...getPositionRangeFromAnnotation(computedAnnotation),
+                `Remove the annotation`
+            ),
         });
     } else if (!checkIsFromObervedV2InNormalClass(metadata) && !!classDef?.parent) {
+        const observed = metadata.classInfo?.annotations?.[DecoratorNames.OBSERVED];
+        const suggestion = observed
+            ? createSuggestion(
+                  `${DecoratorNames.OBSERVED_V2}`,
+                  ...getPositionRangeFromNode(observed),
+                  `Change @Observed to @ObservedV2`
+              )
+            : createSuggestion(
+                  `@${DecoratorNames.OBSERVED_V2}\n`,
+                  classDef.parent.startPosition,
+                  classDef.parent.startPosition,
+                  `Add @ObservedV2 decorator`
+              );
         // `@Computed`装饰器在已经被`@ObservedV2`装饰器装饰的类`class`中的成员方法上使用
         this.report({
             node: computedAnnotation,
             message: `The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion(
-                `@${DecoratorNames.OBSERVED_V2}`,
-                ...getPositionRangeFromNode(classDef.parent)
-            ),
+            suggestion: suggestion,
         });
-    } else if (!checkIsFromComponentV2InStruct(metadata) && !!classDef?.parent) {
+    } else if (
+        !checkIsFromComponentV2InStruct(metadata) &&
+        !!classDef?.parent &&
+        metadata.structInfo?.annotationInfo?.hasComponent
+    ) {
+        const componentAnnotation = metadata.structInfo?.annotations?.[StructDecoratorNames.COMPONENT]!;
         // `@Computed`装饰器在已经被`@ComponentV2`装饰器修饰的结构体`struct`中使用
         this.report({
             node: computedAnnotation,
@@ -100,7 +129,8 @@ function checkComputedDecoratorInMethod<
             level: LogType.ERROR,
             suggestion: createSuggestion(
                 `@${StructDecoratorNames.COMPONENT_V2}`,
-                ...getPositionRangeFromNode(classDef.parent)
+                ...getPositionRangeFromNode(componentAnnotation),
+                `Change @Component to @ComponentV2`
             ),
         });
     }
@@ -121,7 +151,11 @@ function checkComputedDecoratorInProperty<T extends arkts.AstNode = arkts.ClassP
         node: computedAnnotation,
         message: `@${DecoratorNames.COMPUTED} can only decorate 'GetAccessor'.`,
         level: LogType.ERROR,
-        suggestion: createSuggestion('', ...getPositionRangeFromNode(computedAnnotation)),
+        suggestion: createSuggestion(
+            '',
+            ...getPositionRangeFromAnnotation(computedAnnotation),
+            `Remove the annotation`
+        ),
     });
 }
 
@@ -149,7 +183,6 @@ function checkComputedDecoratorInStructCall<T extends arkts.AstNode = arkts.Call
                 node,
                 message: `A property decorated by '@Computed' cannot be used with two-way bind syntax.`,
                 level: LogType.ERROR,
-                suggestion: createSuggestion('', ...getPositionRangeFromNode(node)),
             });
         });
     });

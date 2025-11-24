@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
-import { getConsistentResourceInfo } from '../utils';
+import { getConsistentResourceMap } from '../../common/arkts-utils';
 
 class UiConsistentCheckRule extends AbstractUISyntaxRule {
     // UI consistency is only detect in the limited decorator
@@ -31,7 +31,7 @@ class UiConsistentCheckRule extends AbstractUISyntaxRule {
     // Resource color type tags
     private static readonly resourceColorType = 'ResourceColor';
 
-    private static readonly consistentResourceInfo = getConsistentResourceInfo();
+    private static readonly consistentResourceInfo = getConsistentResourceMap();
 
     public setup(): Record<string, string> {
         return {
