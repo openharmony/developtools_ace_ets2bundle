@@ -14,9 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import * as fs from 'fs';
-import * as path from 'path';
-import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
+import { UISyntaxRuleContext } from '../rules/ui-syntax-rule';
 
 export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
     'std',
@@ -281,123 +279,6 @@ export function hasAnnotation(annoArray: readonly arkts.AnnotationUsage[], annot
     return (annoArray || []).some((anno) => anno.expr && getIdentifierName(anno.expr) === annotationName);
 }
 
-interface ComponentJson {
-    name: string;
-    atomic?: boolean;
-    attrs: string[];
-    single?: boolean;
-    parents?: string[];
-    children?: string[];
-}
-
-export interface UISyntaxRuleComponents {
-    builtInAttributes: string[];
-    containerComponents: string[];
-    atomicComponents: string[];
-    singleChildComponents: string[];
-    validParentComponent: Map<string, string[]>;
-    validChildComponent: Map<string, string[]>;
-}
-
-export function getUIComponents(dirPath: string): UISyntaxRuleComponents | undefined {
-    const absolutePath = path.resolve(__dirname, dirPath);
-    let builtInAttributes: string[] = [];
-    let containerComponents: string[] = [];
-    let atomicComponents: string[] = [];
-    let singleChildComponents: string[] = [];
-    let validParentComponent: Map<string, string[]> = new Map();
-    let validChildComponent: Map<string, string[]> = new Map();
-
-    if (!fs.existsSync(absolutePath)) {
-        return undefined;
-    }
-    // Read all files in the directory
-    const files = fs.readdirSync(absolutePath);
-
-    files.forEach((file) => {
-        if (path.extname(file) === '.json') {
-            const filePath = path.join(absolutePath, file);
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            const componentJson: ComponentJson = JSON.parse(fileContent);
-            // Record the container component name
-            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
-                containerComponents.push(componentJson.name);
-            }
-            // Record the atomic component name
-            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
-                atomicComponents.push(componentJson.name);
-            }
-            // Record the name of a single subcomponent component name
-            if (componentJson.single && componentJson.single === true && componentJson.name) {
-                singleChildComponents.push(componentJson.name);
-            }
-            // Record a valid parent component name
-            if (componentJson.parents && componentJson.name) {
-                validParentComponent.set(componentJson.name, componentJson.parents);
-            }
-            // Record a valid children component name
-            if (componentJson.children && componentJson.name) {
-                validChildComponent.set(componentJson.name, componentJson.children);
-            }
-            // Document all built-in attributes
-            componentJson.attrs
-                ?.filter((attr) => !builtInAttributes.includes(attr))
-                .forEach((attr) => builtInAttributes.push(attr));
-        }
-    });
-    const componentsInfo: UISyntaxRuleComponents = {
-        builtInAttributes,
-        containerComponents,
-        atomicComponents,
-        singleChildComponents,
-        validParentComponent,
-        validChildComponent,
-    };
-
-    return componentsInfo;
-}
-
-export function getConsistentResourceInfo(): Map<string, { id: string; resourceName: string }[]> {
-    const resultMap = new Map<string, { id: string; resourceName: string }[]>();
-    const consistentResourcePath =
-        path.resolve(__dirname, '../../../../../../../previewer/common/resources/entry/resources.txt');
-    let resourceText: string = '';
-    try {
-        // The contents of the file are read synchronously
-        resourceText = fs.readFileSync(path.resolve(consistentResourcePath), 'utf-8');
-    } catch (error: unknown) {
-        return resultMap;
-    }
-    // Split text by line
-    const lines = resourceText.split('\n');
-    for (const line of lines) {
-        // Skip blank lines
-        if (!line.trim()) {
-            continue;
-        }
-        const match = line.match(/id:(\d+),\s*'([^']+)'\s*'([^']+)'/);
-        if (match && match.length === 4) {
-            const id = match[1];
-            const value = match[2];
-            const resourceName = match[3];
-            // Remove resource names that start with 'ohos_id' or 'ohos_fa'
-            if (resourceName.startsWith('ohos_id') || resourceName.startsWith('ohos_fa')) {
-                continue;
-            }
-            let entries = resultMap.get(value);
-            if (!entries) {
-                entries = [];
-                resultMap.set(value, entries);
-            }
-            entries.push({
-                id: id,
-                resourceName: resourceName,
-            });
-        }
-    }
-    return resultMap;
-}
-
 export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
     if (!context.componentsInfo) {
         return false;
@@ -433,17 +314,6 @@ export function isSingleChildComponent(context: UISyntaxRuleContext, componentNa
         return false;
     }
     return context.componentsInfo.singleChildComponents.includes(componentName);
-}
-
-export function readJSON<T>(path: string): T | null {
-    if (!fs.existsSync(path)) {
-        return null;
-    }
-    const content = fs.readFileSync(path).toString();
-    if (!content) {
-        return null;
-    }
-    return JSON.parse(content) as T;
 }
 
 export function tracePerformance<T extends (...args: any[]) => any>(name: string, fn: T): T {
@@ -553,5 +423,5 @@ export const TypeFlags = {
 
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    return program.absName;
+    return program?.absName;
 }

@@ -19,6 +19,7 @@ import { LogType } from './predefines';
 export interface SuggestionOptions {
     code: string;
     range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
+    title?: string;
     args?: string[];
 }
 
@@ -36,13 +37,19 @@ export function createSuggestion(
     code: string,
     rangeStart: arkts.SourcePosition,
     rangeEnd: arkts.SourcePosition,
+    title?: string,
     ...args: string[]
 ): SuggestionOptions {
-    return { code, range: [rangeStart, rangeEnd], args };
+    return { code, range: [rangeStart, rangeEnd], title, args };
 }
 
 export function getPositionRangeFromNode(node: arkts.AstNode): [arkts.SourcePosition, arkts.SourcePosition] {
     return [node.startPosition, node.endPosition];
+}
+
+// 开始位置前移一格，以包含@字符
+export function getPositionRangeFromAnnotation(node: arkts.AstNode): [arkts.SourcePosition, arkts.SourcePosition] {
+    return [arkts.SourcePosition.create(node.startPosition.index() - 1, node.startPosition.line()), node.endPosition];
 }
 
 export function generateDiagnosticKind(logItem: LogInfo): arkts.DiagnosticKind {

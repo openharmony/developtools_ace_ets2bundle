@@ -52,8 +52,8 @@ export abstract class BaseRecord<Node extends arkts.AstNode, T extends Record<st
 
     getOptions(): RecordOptions {
         return {
-            shouldIgnoreDecl: this._shouldIgnoreDecl
-        }
+            shouldIgnoreDecl: this._shouldIgnoreDecl,
+        };
     }
 
     toRecord(): T | undefined {

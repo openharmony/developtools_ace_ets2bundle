@@ -64,30 +64,34 @@ export abstract class BaseValidator<T extends arkts.AstNode, R extends Object> i
     abstract reportIfViolated(node: T): void;
 }
 
-// TODO: remove this
-function formatReport(logInfo: LogInfo): string {
+/**
+ * Reformat `logInfo` into serializable JSON object. This is only used for debugging purpose.
+ * 
+ * @internal
+ */
+export function formatReport(logInfo: LogInfo): Object | undefined {
     const node = logInfo.node.dumpSrc();
-    return JSON.stringify(
-        {
-            node,
-            level: logInfo.level,
-            message: logInfo.message,
-            args: logInfo.args,
-            suggestion: formatSuggestion(logInfo.suggestion),
-            code: logInfo.code,
-        },
-        null,
-        2
-    );
+    return {
+        node,
+        level: logInfo.level,
+        message: logInfo.message,
+        args: logInfo.args,
+        suggestion: formatSuggestion(logInfo.suggestion),
+        code: logInfo.code,
+    };
 }
 
-// TODO: remove this
-function formatSuggestion(suggestion: SuggestionOptions | undefined): Object | undefined {
+/**
+ * Reformat `suggestion` into serializable JSON object. This is only used for debugging purpose.
+ * 
+ * @internal
+ */
+export function formatSuggestion(suggestion: SuggestionOptions | undefined): Object | undefined {
     if (!suggestion) {
         return undefined;
     }
     const startRange = `(${suggestion.range[0].index()}, ${suggestion.range[0].line()})`;
     const endRange = `(${suggestion.range[1].index()}, ${suggestion.range[1].line()})`;
     const range = `${startRange} - ${endRange}`;
-    return { code: suggestion.code, range, args: suggestion.args };
+    return { code: suggestion.code, range, title: suggestion.title, args: suggestion.args };
 }

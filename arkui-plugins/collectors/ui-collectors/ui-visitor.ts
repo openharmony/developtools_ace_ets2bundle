@@ -49,9 +49,10 @@ export class UIVisitor extends AbstractVisitor {
 
     init(): void {
         super.init();
-        ValidatorBuilder.shouldSkip = !!this.shouldCheckUISyntax && !!this.externalSourceName
-            ? matchPrefix(LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES, this.externalSourceName)
-            : true;
+        ValidatorBuilder.shouldSkip =
+            !!this.shouldCheckUISyntax && !!this.externalSourceName
+                ? matchPrefix(LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES, this.externalSourceName)
+                : true;
         MetaDataCollector.getInstance().setExternalSourceName(this.externalSourceName);
     }
 
@@ -59,9 +60,9 @@ export class UIVisitor extends AbstractVisitor {
         super.reset();
         CallRecordCollector.getInstance(this.getMetadata()).reset();
         if (this.shouldCheckUISyntax) {
+            ValidatorBuilder.reset();
             LogCollector.getInstance().emitLogInfo();
             LogCollector.getInstance().reset();
-            ValidatorBuilder.reset();
         }
     }
 
@@ -71,7 +72,7 @@ export class UIVisitor extends AbstractVisitor {
             externalSourceName: this.externalSourceName,
             program: this.program,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
-        }
+        };
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {

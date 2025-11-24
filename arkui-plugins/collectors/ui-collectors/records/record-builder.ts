@@ -16,11 +16,11 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseRecord, RecordOptions } from './base';
 import { RecordCache } from './cache';
-import { AstNodePointer } from 'common/safe-types';
+import { AstNodePointer } from '../../../common/safe-types';
 
 function getOrPut<
     T extends BaseRecord<arkts.AstNode, Record<string, unknown>>,
-    U extends RecordOptions = RecordOptions
+    U extends RecordOptions = RecordOptions,
 >(key: AstNodePointer, options: U, create: (options: U) => T): T {
     if (RecordCache.getInstance<T>().has(key)) {
         return RecordCache.getInstance<T>().get(key)!;
@@ -31,11 +31,11 @@ function getOrPut<
 }
 
 export class RecordBuilder {
-    static build<U extends arkts.AstNode, V extends BaseRecord<U, Record<string, unknown>>, T extends RecordOptions = RecordOptions>(
-        Record: { new (options: T): V },
-        node: U,
-        options: T
-    ): V {
+    static build<
+        U extends arkts.AstNode,
+        V extends BaseRecord<U, Record<string, unknown>>,
+        T extends RecordOptions = RecordOptions,
+    >(Record: { new (options: T): V }, node: U, options: T): V {
         return getOrPut<V, T>(node.peer, options, (options: T) => new Record(options));
     }
 

@@ -16,6 +16,14 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassInfo } from '../records';
+import {
+    checkObservedHeritageCompatible,
+    checkObservedObservedV2,
+    checkObservedV2TraceUsageValidation,
+    checkValidateDecoratorTarget,
+    checkComponentV2StateUsage,
+    checkConsumerProviderDecorator,
+} from './rules';
 
 export class NormalClassValidator extends BaseValidator<arkts.ClassDeclaration, NormalClassInfo> {
     reportIfViolated(node: arkts.ClassDeclaration): void {
@@ -31,13 +39,25 @@ export class NormalClassValidator extends BaseValidator<arkts.ClassDeclaration, 
 /**
  * 只处理ETSGLOBAL ClassDeclaration
  */
-function reportInETSGlobalClass(this: NormalClassValidator, node: arkts.ClassDeclaration, metadata: NormalClassInfo): void {
-    // TODO: add rule here.
+function reportInETSGlobalClass(
+    this: NormalClassValidator,
+    node: arkts.ClassDeclaration,
+    metadata: NormalClassInfo
+): void {
 }
 
 /**
  * 只处理用户定义的 ClassDeclaration
  */
-function reportInNormalClass(this: NormalClassValidator, node: arkts.ClassDeclaration, metadata: NormalClassInfo): void {
-    // TODO: add rule here.
+function reportInNormalClass(
+    this: NormalClassValidator,
+    node: arkts.ClassDeclaration,
+    metadata: NormalClassInfo
+): void {
+    checkObservedObservedV2.bind(this)(node);
+    checkObservedV2TraceUsageValidation.bind(this)(node);
+    checkObservedHeritageCompatible.bind(this)(node);
+    checkValidateDecoratorTarget.bind(this)(node);
+    checkComponentV2StateUsage.bind(this)(node);
+    checkConsumerProviderDecorator.bind(this)(node);
 }

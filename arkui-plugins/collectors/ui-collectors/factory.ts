@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 import {
     checkIsCustomComponentDeclaredClassFromInfo,
     checkIsCustomComponentFromInfo,
-    checkIsObservedClassFromInfo,
     checkIsETSGlobalClassFromInfo,
     checkIsCommonMethodInterfaceFromInfo,
     checkCanCollectNormalClassFromInfo,
@@ -42,16 +41,10 @@ import { StructInterfaceCollector } from './struct-interface-collector';
 import { NormalInterfaceCollector } from './normal-interface-collector';
 import { CallRecordCollector } from './call-record-collector';
 import { UICollectMetadata } from './shared-types';
-import {
-    ARKUI_COMPONENT_COMMON_SOURCE_NAME,
-    ARKUI_IMPORT_PREFIX_NAMES,
-    LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES,
-    NodeCacheNames,
-} from '../../common/predefines';
+import { NormalClassValidator, NormalInterfaceValidator, StructValidator, ValidatorBuilder } from './validators';
+import { ARKUI_IMPORT_PREFIX_NAMES, NodeCacheNames } from '../../common/predefines';
 import { matchPrefix } from '../../common/arkts-utils';
 import { getPerfName } from '../../common/debug';
-import { NormalClassValidator, NormalInterfaceValidator, StructValidator, ValidatorBuilder } from './validators';
-import { MetaDataCollector } from '../../common/metadata-collector';
 
 export function findAndCollectUINodeInPreOrder(node: arkts.AstNode, metadata?: UICollectMetadata): void {
     const type = arkts.nodeType(node);
@@ -196,7 +189,10 @@ export class CollectFactory {
         return node;
     }
 
-    static findAndCollectArrowFunction(node: arkts.ArrowFunctionExpression, metadata: UICollectMetadata): arkts.AstNode {
+    static findAndCollectArrowFunction(
+        node: arkts.ArrowFunctionExpression,
+        metadata: UICollectMetadata
+    ): arkts.AstNode {
         const arrowFunctionRecord = new ArrowFunctionRecord(metadata);
         arrowFunctionRecord.collect(node);
         const arrowFunctionInfo = arrowFunctionRecord.toRecord();
@@ -219,7 +215,10 @@ export class CollectFactory {
         return node;
     }
 
-    static findAndCollectNewClassInstance(node: arkts.ETSNewClassInstanceExpression, metadata: UICollectMetadata): arkts.AstNode {
+    static findAndCollectNewClassInstance(
+        node: arkts.ETSNewClassInstanceExpression,
+        metadata: UICollectMetadata
+    ): arkts.AstNode {
         const newClassInstanceRecord = new NewClassInstanceRecord(metadata);
         newClassInstanceRecord.collect(node);
         const newClassInstanceInfo = newClassInstanceRecord.toRecord();
@@ -237,7 +236,10 @@ const preOrderCollectByType = new Map<arkts.Es2pandaAstNodeType, (node: any, ...
 ]);
 
 const postOrderCollectByType = new Map<arkts.Es2pandaAstNodeType, (node: any, ...args: any[]) => arkts.AstNode>([
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NEW_CLASS_INSTANCE_EXPRESSION, CollectFactory.findAndCollectNewClassInstance],
+    [
+        arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NEW_CLASS_INSTANCE_EXPRESSION,
+        CollectFactory.findAndCollectNewClassInstance,
+    ],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION, CollectFactory.findAndCollectParameter],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION, CollectFactory.findAndCollectArrowFunction],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY, CollectFactory.findAndCollectProperty],

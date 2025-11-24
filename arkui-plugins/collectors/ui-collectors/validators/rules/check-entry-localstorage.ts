@@ -17,13 +17,19 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { StructPropertyInfo } from '../../records';
 import { EntryParamNames, LogType, StructDecoratorNames } from '../../../../common/predefines';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkEntryLocalStorage = performanceLog(
+    _checkEntryLocalStorage,
+    getPerfName([0, 0, 0, 0, 0], 'checkEntryLocalStorage')
+);
 
 /**
  * 校验规则：`struct`结构体中使用了`@LocalStorageLink`来绑定属性，需要在`@Entry`装饰器中传入storage参数
  *
  * 校验等级：warn
  */
-export function checkEntryLocalStorage(
+function _checkEntryLocalStorage(
     this: BaseValidator<arkts.ClassProperty, StructPropertyInfo>,
     classProperty: arkts.ClassProperty
 ): void {
@@ -32,6 +38,7 @@ export function checkEntryLocalStorage(
         return;
     }
     const entryAnnotation = metadata.structInfo?.annotations?.[StructDecoratorNames.ENTRY]!;
+    // `struct`结构体中使用了`@LocalStorageLink`来绑定属性，需要在`@Entry`装饰器中传入storage参数
     if (!findStorageParamFromEntryAnnotation(entryAnnotation)) {
         this.report({
             node: entryAnnotation,
@@ -42,16 +49,15 @@ export function checkEntryLocalStorage(
 }
 
 function findStorageParamFromEntryAnnotation(node: arkts.AnnotationUsage): boolean {
-    return !!node.properties.find((prop) => {
-        if (!arkts.isClassProperty(prop)) {
-            return false;
-        }
-        if (!prop.key || !arkts.isIdentifier(prop.key) || prop.key.name !== EntryParamNames.ENTRY_STORAGE) {
-            return false;
-        }
-        if (!prop.value || !arkts.isStringLiteral(prop.value) || prop.value.str.length === 0) {
-            return false;
-        }
-        return true;
+    return node.properties.some((prop) => {
+        return (
+            arkts.isClassProperty(prop) &&
+            prop.key &&
+            arkts.isIdentifier(prop.key) &&
+            prop.key.name === EntryParamNames.ENTRY_STORAGE &&
+            prop.value &&
+            arkts.isStringLiteral(prop.value) &&
+            prop.value.str.length > 0
+        );
     });
 }

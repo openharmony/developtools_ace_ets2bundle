@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseRecord } from './base';
-import { AstNodePointer } from 'common/safe-types';
+import { AstNodePointer } from '../../../common/safe-types';
 
 /**
  * Singleton LRU Cache implementation using Map's insertion order

@@ -15,16 +15,18 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { CallInfo, CallRecord } from './records';
-import { UICollectMetadata } from './shared-types';
-import { checkIsCallFromLegacyBuilderFromInfo, checkIsCustomComponentFromInfo, checkIsInteropComponentCallFromInfo, findRootCallee, findRootCallObject } from './utils';
+import { CallRecordInfo, UICollectMetadata } from './shared-types';
+import {
+    checkIsCallFromLegacyBuilderFromInfo,
+    checkIsCustomComponentFromInfo,
+    checkIsInteropComponentCallFromInfo,
+    findRootCallee,
+    findRootCallObject,
+} from './utils';
 import { CallValidator, ValidatorBuilder } from './validators';
 import { NodeCacheNames } from '../../common/predefines';
 import { AstNodePointer } from '../../common/safe-types';
-
-export interface CallRecordInfo {
-    call: arkts.CallExpression;
-    callRecord: CallRecord;
-}
+import { ChainingCallDataSource } from './chaining-call-data-source';
 
 export class CallRecordCollector {
     private static instance: CallRecordCollector;
@@ -38,7 +40,7 @@ export class CallRecordCollector {
     private constructor(metadata: UICollectMetadata) {
         this._metadata = metadata;
         this._inChainCalls = new Set();
-        this._chainingCallData = new ChainingCallDataSource();
+        this._chainingCallData = ChainingCallDataSource.getInstance();
     }
 
     static getInstance(metadata: UICollectMetadata): CallRecordCollector {
@@ -122,46 +124,18 @@ export class CallRecordCollector {
             return;
         }
         this._prevCallInfo = { call, callRecord };
-        this._chainingCallData.setRootCallInfo({ call, callRecord }).addChainingCallInfo(callRecord.toChainJSON());
+        this._chainingCallData
+            .setRootCallInfo({ call, callRecord })
+            .addChainingCallInfo(call, callRecord.toChainJSON());
         if (this.canCollectCallFromInfo(callInfo)) {
             collectCallAndAllParentCalls.bind(this)(call, callRecord);
         } else {
+            // validate non-collected calls
             ValidatorBuilder.build(CallValidator).checkIsViolated(call, callInfo);
         }
         if (!isFromChainCall) {
             this._chainingCallData.reset();
         }
-    }
-}
-
-class ChainingCallDataSource {
-    rootCallInfo: CallRecordInfo | undefined;
-    chainingCallInfos: CallInfo[];
-
-    constructor(rootCallInfo?: CallRecordInfo, chainingCallInfos?: CallInfo[]) {
-        this.rootCallInfo = rootCallInfo;
-        this.chainingCallInfos = chainingCallInfos ?? [];
-    }
-
-    isWithInChain(): boolean {
-        return !!this.rootCallInfo && !!this.chainingCallInfos && this.chainingCallInfos.length > 0;
-    }
-
-    setRootCallInfo(rootCallInfo: CallRecordInfo): this {
-        if (!this.rootCallInfo) {
-            this.rootCallInfo = rootCallInfo;
-        }
-        return this;
-    }
-
-    addChainingCallInfo(chainingCallInfo: CallInfo): this {
-        this.chainingCallInfos.push(chainingCallInfo);
-        return this;
-    }
-
-    reset(): void {
-        this.rootCallInfo = undefined;
-        this.chainingCallInfos = [];
     }
 }
 
@@ -194,7 +168,7 @@ function checkParentHasChainInThisCall(thisCall: arkts.CallExpression, parent: a
         return false;
     }
     const firstArg = args.at(0)!;
-    if ((firstArg.peer === thisCall.peer) || firstArg.findNodeInInnerChild(thisCall)) {
+    if (firstArg.peer === thisCall.peer || firstArg.findNodeInInnerChild(thisCall)) {
         // whether the first argument has inner child of this call, impling possible function receiver call.
         const callee = findRootCallee(parent.expression);
         const decl = !!callee ? arkts.getPeerIdentifierDecl(callee.peer) : undefined;
@@ -222,6 +196,7 @@ function collectCallAndAllParentCalls(
         currParent = currParent.parent;
     }
     const { call: lastCall, callRecord: lastCallRecord } = this.lastCallInfo ?? { call, callRecord };
+    // validate collected calls
     ValidatorBuilder.build(CallValidator).checkIsViolated(lastCall, lastCallRecord.toRecord());
     uiNodeCache.collect(lastCall, lastCallRecord.toJSON());
     this.chainingCallData.reset();

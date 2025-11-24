@@ -16,29 +16,35 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { coerceToAstNode } from '../utils';
-import type { IntrinsicValidatorFunction, ModifiedValidatorFunction } from '../safe-types';
+import type { IntrinsicValidatorFunction } from '../safe-types';
 import {
     CallInfo,
-    CustomComponentInterfacePropertyRecord,
-    RecordBuilder,
     StructMethodInfo,
     StructPropertyInfo,
+    FunctionInfo,
+    NormalClassMethodInfo,
+    NormalClassInfo,
 } from '../../records';
-import { checkIsNameStartWithBackingField } from '../../utils';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
 import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkComponentV2StateUsage = performanceLog(
+    _checkComponentV2StateUsage,
+    getPerfName([0, 0, 0, 0, 0], 'checkComponentV2StateUsage')
+);
 
 /**
  * 校验规则：
  *  1. 确保成员属性或方法不能同时被多个内置装饰器（`@Local`, `@Param`, `@Event`）装饰；
  *  2. 当用`@Param`装饰的变量没有被分配默认值时，它也必须用`@Require`装饰；
  *  3. 在被`@ComponentV2`装饰的结构体中，`@Require`只能与`@Param`一起使用；
- *  4. 检查自定义组件中的`@Local`属性和无装饰器属性是否尝试在外部初始化；
+ *  4. 检查`@ComponentV2`自定义组件中的`@Local`属性和无装饰器属性是否尝试在外部初始化；
  *  5. 确保`@Local`，`@Param`，`@Event`装饰器只能用于成员属性，而不能用于方法。
  *
  * 校验等级：error
  */
-export function checkComponentV2StateUsage(this: BaseValidator<arkts.AstNode, Object>, node: arkts.AstNode): void {
+function _checkComponentV2StateUsage(this: BaseValidator<arkts.AstNode, Object>, node: arkts.AstNode): void {
     const nodeType = arkts.nodeType(node);
     if (checkByType.has(nodeType)) {
         checkByType.get(nodeType)!.bind(this)(node);
@@ -72,7 +78,7 @@ function checkComponentV2StateUsageInClassProperty<T extends arkts.AstNode = ark
             node,
             message: `When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion(`@${DecoratorNames.REQUIRE}`, position, position),
+            suggestion: createSuggestion(` @${DecoratorNames.REQUIRE}`, position, position, `Add @Require annotation`),
         });
     }
     // 在被`@ComponentV2`装饰的结构体中，`@Require`只能与`@Param`一起使用
@@ -82,7 +88,11 @@ function checkComponentV2StateUsageInClassProperty<T extends arkts.AstNode = ark
             node: requiredDecorator,
             message: `In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.`,
             level: LogType.ERROR,
-            suggestion: createSuggestion('', ...getPositionRangeFromNode(requiredDecorator)),
+            suggestion: createSuggestion(
+                '',
+                ...getPositionRangeFromNode(requiredDecorator),
+                `Remove the @Require annotation`
+            ),
         });
     }
 }
@@ -93,6 +103,10 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
 ): void {
     const metadata = this.context ?? {};
     if (!metadata.structDeclInfo?.name) {
+        return;
+    }
+    const hasComponentV2: boolean = !!metadata.fromStructInfo?.annotationInfo?.hasComponentV2;
+    if (!hasComponentV2) {
         return;
     }
     const structName = metadata.structDeclInfo.name;
@@ -113,21 +127,18 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
                 node: prop,
                 message: getLocalNeedNoInitReportMessage(reportDecoratorName, propertyInfo?.name, structName),
                 level: LogType.ERROR,
-                suggestion: createSuggestion('', ...getPositionRangeFromNode(prop)),
+                suggestion: createSuggestion('', ...getPositionRangeFromNode(prop), `Remove the property`),
             });
         }
     }
 }
 
-function checkComponentV2StateUsageInStructMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
-    this: BaseValidator<T, StructMethodInfo>,
+function checkComponentV2StateUsageInMethodDefinition<T extends arkts.AstNode = arkts.MethodDefinition>(
+    this: BaseValidator<T, StructMethodInfo | FunctionInfo | NormalClassMethodInfo>,
     node: T
 ): void {
     const metadata = this.context ?? {};
-    if (!metadata.structInfo?.annotationInfo?.hasComponentV2) {
-        return;
-    }
-    const decorators = findStructAttributeBuiltInDecoratorsFromInfo(metadata);
+    const decorators = findInvalidBuiltInDecoratorUsage(metadata);
     // 确保`@Local`，`@Param`，`@Event`装饰器只能用于成员属性，而不能用于方法
     if (decorators.length > 0) {
         decorators.forEach((info) =>
@@ -135,7 +146,25 @@ function checkComponentV2StateUsageInStructMethod<T extends arkts.AstNode = arkt
                 node: info.annotation,
                 message: `'@${info.name}' can only decorate member property.`,
                 level: LogType.ERROR,
-                suggestion: createSuggestion('', ...getPositionRangeFromNode(info.annotation)),
+                suggestion: createSuggestion('', ...getPositionRangeFromNode(info.annotation), `Remove the annotation`),
+            })
+        );
+    }
+}
+
+function checkComponentV2StateUsageInClass<T extends arkts.AstNode = arkts.ClassDeclaration>(
+    this: BaseValidator<T, NormalClassInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    const decorators = findInvalidBuiltInDecoratorUsage(metadata);
+    if (decorators.length > 0) {
+        decorators.forEach((info) =>
+            this.report({
+                node: info.annotation,
+                message: `'@${info.name}' can only decorate member property.`,
+                level: LogType.ERROR,
+                suggestion: createSuggestion('', ...getPositionRangeFromNode(info.annotation), `Remove the annotation`),
             })
         );
     }
@@ -144,7 +173,8 @@ function checkComponentV2StateUsageInStructMethod<T extends arkts.AstNode = arkt
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction>([
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkComponentV2StateUsageInClassProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkComponentV2StateUsageInStructCall],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkComponentV2StateUsageInStructMethod],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkComponentV2StateUsageInMethodDefinition],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkComponentV2StateUsageInClass],
 ]);
 
 interface DecoratorInfo {
@@ -167,6 +197,18 @@ function findStructAttributeBuiltInDecoratorsFromInfo(info: StructPropertyInfo |
         .map((name) => ({
             name,
             annotation: info.annotations?.[name]!,
+        }));
+}
+
+function findInvalidBuiltInDecoratorUsage(info: StructMethodInfo | FunctionInfo): DecoratorInfo[] {
+    if (!info.ignoredAnnotationInfo || !info.ignoredAnnotations) {
+        return [];
+    }
+    return builtInDecorators
+        .filter((name) => !!info.ignoredAnnotationInfo?.[`has${name}`])
+        .map((name) => ({
+            name,
+            annotation: info.ignoredAnnotations?.[name]!,
         }));
 }
 
