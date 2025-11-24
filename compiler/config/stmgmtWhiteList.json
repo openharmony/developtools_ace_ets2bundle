@@ -163,6 +163,11 @@
         "getShareLocalStorage",
         "setShareLocalStorage",
         "propagateToChildren",
-        "__getDecoratorPropertyName__V2View__Internal"
+        "__getDecoratorPropertyName__V2View__Internal",
+        "__latestInstanceId__Internal",
+        "__updateForEnvValue__Internal",
+        "__hasEnv__Internal",
+        "__getEnvPropertyNameToKey__Internal",
+        "__registerUpdateInstanceForEnvFunc__Internal"
     ]
 }
