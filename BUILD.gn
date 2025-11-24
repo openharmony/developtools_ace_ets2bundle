@@ -55,7 +55,7 @@ action("build_ets_loader_library") {
     deps += [
       "//interface/sdk-js:bundle_arkts",
       "//interface/sdk-js:bundle_kits",
-      "//interface/sdk-js:ets_component",
+      "//interface/sdk-js:ohos_build_dynamic_sdk_component",
       "//interface/sdk-js:ets_internal_api",
       "//interface/sdk-js:ohos_declaration_ets",
     ]
