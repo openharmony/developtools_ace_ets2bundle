@@ -1,0 +1,34 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The Link decorated 'link_value' cannot be declared as private.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Entry' component 'Child2struct05' cannot have the '@Link' property 'link_value'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      },
+      {
+        "message": "The ObjectLink decorated 'objectLink_value' cannot be declared as private.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Entry' component 'Child2struct05' cannot have the '@ObjectLink' property 'objectLink_value'.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

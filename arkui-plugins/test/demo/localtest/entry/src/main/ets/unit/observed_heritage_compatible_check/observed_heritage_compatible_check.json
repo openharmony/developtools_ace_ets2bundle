@@ -1,0 +1,13 @@
+{
+  "demo-1":{
+    "messages": [
+      {
+          "message": "A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.",
+          "position": {
+            "line": 35,
+            "column": 2
+          }
+      }
+    ]
+  }
+}
