@@ -20,8 +20,8 @@ import { State } from "@ohos.arkui.stateManagement"
 struct MyStateSample {
   @State tt: string = "state var";
   @State index: int = 1;
-  @State select: double = 0.0;
-  @State selectArr: double[] = [0.0, 1.0, 2.0];
+  @State select: int = 0;
+  @State selectArr: int[] = [0, 1, 2];
   fruits: string[] = ['apple1', 'orange2', 'peach3', 'grape4'];
 
   build() {
