@@ -1,0 +1,42 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": { "line": 29, "column": 4 }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": { "line": 29, "column": 11 }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": { "line": 30, "column": 4 }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": { "line": 30, "column": 11 }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "'@Local' can only decorate member property.",
+        "position": { "line": 43, "column": 4 }
+      },
+      {
+        "message": "'@Param' can only decorate member property.",
+        "position": { "line": 45, "column": 4 }
+      },
+      {
+        "message": "'@Once' can only decorate member property.",
+        "position": { "line": 47, "column": 4 }
+      },
+      {
+        "message": "'@Event' can only decorate member property.",
+        "position": { "line": 49, "column": 4 }
+      }
+    ]
+  }
+}

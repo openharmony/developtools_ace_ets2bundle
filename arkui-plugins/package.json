@@ -1,6 +1,7 @@
 {
   "name": "arkui-plugin",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
   "private": true,
   "workspaces": [

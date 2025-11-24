@@ -1,0 +1,13 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

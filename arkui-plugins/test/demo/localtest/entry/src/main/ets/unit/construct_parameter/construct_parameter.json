@@ -1,0 +1,42 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 33,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "demo-2": {
+    "messages": [
+      {
+        "message": "The '@Consume' property 'value2' cannot be assigned to the 'regular' property 'title'.",
+        "position": {
+          "line": 74,
+          "column": 16
+        }
+      },
+      {
+        "message": "The '@Provide' property 'value' cannot be assigned to the 'regular' property 'title1'.",
+        "position": {
+          "line": 75,
+          "column": 17
+        }
+      }
+    ]
+  },
+  "demo-3": {
+    "messages": [
+      {
+        "message": "The '@StoragePropRef' property 'value2' cannot be assigned to the 'regular' property 'title'.",
+        "position": {
+          "line": 101,
+          "column": 16
+        }
+      }
+    ]
+  }
+}

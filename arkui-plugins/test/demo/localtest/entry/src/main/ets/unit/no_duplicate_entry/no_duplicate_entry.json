@@ -1,0 +1,14 @@
+{
+  "demo-1": {
+    "messages": [
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": { "line": 26, "column": 2 }
+      },
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": { "line": 59, "column": 2 }
+      }
+    ]
+  }
+}
