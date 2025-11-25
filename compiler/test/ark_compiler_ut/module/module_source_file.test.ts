@@ -1185,4 +1185,37 @@ mocha.describe('test module_source_file file api', function () {
     expect(ModuleSourceFile.isMockFile(file, this.rollup)).to.be.true;
     ModuleSourceFile.needProcessMock = false;
   });
+
+  mocha.it('9-1: test collectRecordNameMockFile normalized ohmurl', function () {
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    const ohmurls = [
+      '@ohos.system',
+      '@normalized:N&&&entry/src/main/Index&',
+      '@normalized:Y&&&library.so&'
+    ];
+    const expectRes = [
+      '@normalized:N&&&entry/src/main/Index&'
+    ];
+    ohmurls.forEach((ohmurl) => {
+      ModuleSourceFile.collectRecordNameMockFile(this.rollup, ohmurl);
+    });
+    expect(ModuleSourceFile.ohmurlOfMockFiles.toString() == expectRes.toString()).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.cleanUpObjects();
+  });
+
+  mocha.it('9-2: test collectRecordNameMockFile old ohmurl', function () {
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    const ohmurls = [
+      '@ohos.system',
+      '@normalized:N&&&entry/src/main/Index&',
+      '@normalized:Y&&&library.so&'
+    ];
+    ohmurls.forEach((ohmurl) => {
+      ModuleSourceFile.collectRecordNameMockFile(this.rollup, ohmurl);
+    });
+    expect(ModuleSourceFile.ohmurlOfMockFiles.length == 0).to.be.true;
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.cleanUpObjects();
+  });
 });
