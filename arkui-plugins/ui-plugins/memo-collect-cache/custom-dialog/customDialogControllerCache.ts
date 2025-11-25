@@ -22,7 +22,6 @@ export interface CustomDialogControllerInfo {
 
 export class CustomDialogControllerCache {
     private _infos: CustomDialogControllerInfo[] = [];
-    private _memoCache: arkts.NodeCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
     private static instance: CustomDialogControllerCache | null = null;
 
     static getInstance(): CustomDialogControllerCache {
@@ -33,12 +32,15 @@ export class CustomDialogControllerCache {
     }
 
     private _updateController(controller: arkts.ETSNewClassInstanceExpression): void {
-        if (!this._memoCache.shouldUpdateByPeer(controller.peer)) {
+        if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(controller.peer)) {
             return;
         }
         let currParent: arkts.AstNode | undefined = controller.parent;
-        while (!!currParent && !this._memoCache.shouldUpdateByPeer(currParent.peer)) {
-            this._memoCache.addNodeToUpdateByPeer(currParent.peer);
+        while (
+            !!currParent &&
+            !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer)
+        ) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
             currParent = currParent.parent;
         }
     }

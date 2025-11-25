@@ -31,11 +31,16 @@ import { Collector } from '../collectors/collector';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
 import { MetaDataCollector } from '../common/metadata-collector';
+import { ProgramSkipper } from '../common/program-skipper';
 
 export function uiSyntaxLinterTransform(): Plugins {
     return {
         name: 'ui-syntax-plugin',
         checked: collectAndLint,
+        clean() {
+            ProgramSkipper.clear();
+            arkts.NodeCacheFactory.getInstance().clear();
+        },
     };
 }
 

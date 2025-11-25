@@ -181,6 +181,9 @@ export class NodeCache {
         this.cacheMap.clear();
         this.nodesToUpdate.clear();
         this._isCollected = false;
+        this._shouldPerfLog = false;
+        this._shouldCollectUpdate = false;
+        this._shouldCollect = true;
     }
 
     visualize(): void {
