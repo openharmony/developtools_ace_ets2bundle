@@ -692,7 +692,7 @@ export class ModuleSourceFile {
   }
 
   private static collectRecordNameMockFile(rollupObject: Object, ohmUrl: string): void {
-    if (rollupObject.share.projectConfig.useNormalizedOHMUrl) {
+    if (rollupObject.share.projectConfig.useNormalizedOHMUrl && ohmUrl.startsWith('@normalized:N')) {
       ModuleSourceFile.ohmurlOfMockFiles.push(ohmUrl);
     }
   }
