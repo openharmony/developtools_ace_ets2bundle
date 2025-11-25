@@ -108,6 +108,10 @@ class ModuleModeMock extends ModuleMode {
     }
   }
 
+  collectDeclarationFilesEntryMock(compileEntries: Set<string>, hspPkgNames: Array<string>): void {
+    this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
+  }
+
   generateCompileFilesInfoMock(includeByteCodeHarInfo: boolean) {
     this.generateCompileFilesInfo(includeByteCodeHarInfo);
   }
