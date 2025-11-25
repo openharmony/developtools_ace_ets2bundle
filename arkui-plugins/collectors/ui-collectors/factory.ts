@@ -182,9 +182,8 @@ export class CollectFactory {
         const parameterRecord = new ParameterRecord(metadata);
         parameterRecord.collect(node);
         const parameterInfo = parameterRecord.toRecord();
-        const uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (parameterInfo?.annotationInfo?.hasBuilder) {
-            uiCache.collect(node, parameterRecord.toJSON());
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, parameterRecord.toJSON());
         }
         return node;
     }
@@ -196,10 +195,11 @@ export class CollectFactory {
         const arrowFunctionRecord = new ArrowFunctionRecord(metadata);
         arrowFunctionRecord.collect(node);
         const arrowFunctionInfo = arrowFunctionRecord.toRecord();
-        const uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (arrowFunctionInfo?.annotationInfo?.hasBuilder) {
             RecordCache.getInstance().set(node.peer, arrowFunctionRecord);
-            uiCache.collect(node, arrowFunctionRecord.toJSON());
+            arkts.NodeCacheFactory.getInstance()
+                .getCache(NodeCacheNames.UI)
+                .collect(node, arrowFunctionRecord.toJSON());
         }
         return node;
     }
@@ -208,9 +208,8 @@ export class CollectFactory {
         const propertyRecord = new PropertyRecord(metadata);
         propertyRecord.collect(node);
         const propertyInfo = propertyRecord.toRecord();
-        const uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (propertyInfo?.annotationInfo?.hasBuilder) {
-            uiCache.collect(node, propertyRecord.toJSON());
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
         }
         return node;
     }
@@ -222,9 +221,10 @@ export class CollectFactory {
         const newClassInstanceRecord = new NewClassInstanceRecord(metadata);
         newClassInstanceRecord.collect(node);
         const newClassInstanceInfo = newClassInstanceRecord.toRecord();
-        const uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (checkIsDialogControllerNewInstanceFromInfo(newClassInstanceInfo)) {
-            uiCache.collect(node, newClassInstanceRecord.toJSON());
+            arkts.NodeCacheFactory.getInstance()
+                .getCache(NodeCacheNames.UI)
+                .collect(node, newClassInstanceRecord.toJSON());
         }
         return node;
     }

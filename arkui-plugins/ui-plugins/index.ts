@@ -33,6 +33,7 @@ export function uiTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
+            arkts.NodeCacheFactory.getInstance().clear();
         },
     };
 }

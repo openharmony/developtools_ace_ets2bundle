@@ -23,7 +23,6 @@ export interface customDialogControllerBuilderInfo {
 
 export class CustomDialogControllerBuilderCache {
     private _infos: customDialogControllerBuilderInfo[] = [];
-    private _memoCache: arkts.NodeCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
     private static instance: CustomDialogControllerBuilderCache | null = null;
 
     static getInstance(): CustomDialogControllerBuilderCache {
@@ -35,19 +34,19 @@ export class CustomDialogControllerBuilderCache {
 
     private _updateBuilderArrowFunc(arrowFunc: arkts.ArrowFunctionExpression): void {
         const scriptFunc = arrowFunc.scriptFunction;
-        this._memoCache.addNodeToUpdateByPeer(scriptFunc.peer);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunc.peer);
         const body = scriptFunc.body;
         if (!!body) {
-            this._memoCache.addNodeToUpdateByPeer(body.peer);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
         }
-        this._memoCache.collect(arrowFunc);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(arrowFunc);
     }
 
     private _updateBuilderCall(call?: arkts.CallExpression): void {
         if (!call) {
             return;
         }
-        this._memoCache.collect(call);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(call);
     }
 
     get infos(): customDialogControllerBuilderInfo[] {
