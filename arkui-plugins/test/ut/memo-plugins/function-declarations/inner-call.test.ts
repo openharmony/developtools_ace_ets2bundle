@@ -34,11 +34,14 @@ function createPeerNode(factory: (()=> PeerNode), @Memo() update: ((__memo_conte
     return factory();
 }
 interface IComponent {
-    @Memo() get builder(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
-    @Memo() set builder(builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
+    @Memo() 
+    get builder(): ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
+    @Memo() 
+    set builder(builder: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
     get itemBuilder(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
     set itemBuilder(itemBuilder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))
-    @Memo() builderFunc(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
+    @Memo() 
+    builderFunc(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
 }
 
 class PeerNode {

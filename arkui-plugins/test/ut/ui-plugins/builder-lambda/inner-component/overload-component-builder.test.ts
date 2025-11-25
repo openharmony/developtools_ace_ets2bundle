@@ -78,7 +78,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-    @Memo() public build() {
+    @Memo() 
+    public build() {
         FakeComponentImpl(@Memo() ((instance: FakeComponentAttribute): void => {
             instance.setFakeComponentOptions(\"fake-component\");
             return;
@@ -88,7 +89,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             return;
         }), undefined);
         FakeComponentImpl(@Memo() ((instance: FakeComponentAttribute): void => {
-            instance.setFakeComponentOptions();
+            instance.setFakeComponentOptions(undefined);
             return;
         }), @Memo() (() => {}));
     }
@@ -100,7 +101,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(): void {
+    @Memo() 
+    public entry(): void {
         A._instantiateImpl(undefined, (() => {
             return new A();
         }), undefined, undefined, undefined);
@@ -119,11 +121,17 @@ import { Memo as Memo } from \"arkui.incremental.annotation\";
 
 function main() {}
 
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
+@Memo() 
+export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
 
-@Memo() export function FakeComponentImpl(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
+@Memo() 
+export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+
+@Memo() 
+export function FakeComponent(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
+
+@Memo() 
+export function FakeComponentImpl(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
   get str(): (string | undefined) {

@@ -114,7 +114,8 @@ function main() {}
     this.__backing_nullB!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

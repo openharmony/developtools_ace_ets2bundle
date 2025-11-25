@@ -60,13 +60,15 @@ import hilog from "@ohos.hilog";
 function main() {}
 
 
-@Memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
+@Memo() 
+function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(str);
   return this;
 }
 
-@Memo() function style22(this: TextAttribute): TextAttribute {
+@Memo() 
+function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
@@ -77,7 +79,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

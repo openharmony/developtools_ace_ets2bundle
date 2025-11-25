@@ -116,7 +116,8 @@ function main() {}
     return ((((this.firstName) + (" "))) + (this.lastName));
   }), "fullName");
   
-  @Computed() public get fullName(): string {
+  @Computed() 
+  public get fullName(): string {
     return this.__computed_fullName!.get();
   }
   

@@ -113,9 +113,13 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@Builder() @Memo() function builder1(@MemoSkip() str: string) {}
+@Builder() 
+@Memo() 
+function builder1(@MemoSkip() str: string) {}
 
-@Builder() @Memo() function builder2() {}
+@Builder() 
+@Memo() 
+function builder2() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -142,7 +146,8 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -179,7 +184,8 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

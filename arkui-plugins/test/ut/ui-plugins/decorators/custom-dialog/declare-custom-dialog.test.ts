@@ -56,7 +56,8 @@ function main() {}
   
   public hh: string;
   
-  @Memo() public build(): void
+  @Memo() 
+  public build(): void
   
   public constructor() {}
   
@@ -92,7 +93,8 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -130,7 +132,8 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

@@ -57,7 +57,8 @@ function main() {}
         this.__backing_readOnlyParam = value;
     }
 
-    @Memo() public build() {}
+    @Memo() 
+  public build() {}
 
     public constructor() {}
 

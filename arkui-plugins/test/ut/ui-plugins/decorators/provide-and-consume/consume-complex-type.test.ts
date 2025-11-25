@@ -382,7 +382,8 @@ final class PropType extends BaseEnum<int> {
     this.__backing_conVar13!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
