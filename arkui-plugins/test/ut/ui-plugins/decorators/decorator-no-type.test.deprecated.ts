@@ -362,7 +362,8 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11115!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -516,7 +517,8 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11112!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 
@@ -670,7 +672,8 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar11112!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

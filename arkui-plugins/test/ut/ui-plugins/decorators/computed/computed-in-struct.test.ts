@@ -116,11 +116,13 @@ function main() {}
     return ((((((this.firstName) + (" "))) + (this.lastName))) + (this.age));
   }), "fullName");
   
-  @Computed() public get fullName(): string {
+  @Computed() 
+  public get fullName(): string {
     return this.__computed_fullName!.get();
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

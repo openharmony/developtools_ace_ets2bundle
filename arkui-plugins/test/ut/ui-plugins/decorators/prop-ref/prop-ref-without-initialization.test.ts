@@ -221,7 +221,8 @@ function main() {}
     this.__backing_propVar7!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

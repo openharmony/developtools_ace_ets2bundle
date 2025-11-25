@@ -205,7 +205,8 @@ final class MonitorNames extends BaseEnum<String> {
 
   private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) public changeCCC(monitor: IMonitor) {}
+  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) 
+  public changeCCC(monitor: IMonitor) {}
   
   public constructor() {
     this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([{
@@ -263,9 +264,11 @@ final class MonitorNames extends BaseEnum<String> {
   
   private __monitor_changeEEE: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:[MonitorNames.name4]}) public changeEEE(monitor: IMonitor) {}
+  @Monitor({value:[MonitorNames.name4]}) 
+  public changeEEE(monitor: IMonitor) {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

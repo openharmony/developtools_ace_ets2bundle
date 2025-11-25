@@ -211,7 +211,8 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumB!.set(value);
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

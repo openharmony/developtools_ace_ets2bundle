@@ -60,13 +60,17 @@ let builderArr: Array<WrappedBuilder<@Builder() ((value: string, size: number)=>
 let wrappedBuilder1: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 let wrappedBuilder2: WrappedBuilder<@Builder() ((value: string, size: number)=> void)>;
 function main() {}
-@Builder() @Memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
         return;
     }), undefined);
 }
-@Builder() @Memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
         return;
@@ -100,7 +104,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     this.__backing_message!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
       return;
@@ -124,7 +129,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
 }
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(): void {
+    @Memo() 
+  public entry(): void {
         Index._instantiateImpl(undefined, (() => {
             return new Index();
         }), undefined, undefined, undefined);
@@ -166,7 +172,9 @@ let builderArr: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context
 let wrappedBuilder1: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 let wrappedBuilder2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
 function main() {}
-@Builder() @Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -190,7 +198,9 @@ function main() {}
         return;
     }
 }
-@Builder() @Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -242,7 +252,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     this.__backing_message!.set(value);
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (135515930)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -312,7 +323,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
 }
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() 
+    public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

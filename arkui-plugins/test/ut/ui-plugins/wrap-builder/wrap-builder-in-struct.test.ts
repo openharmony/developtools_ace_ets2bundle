@@ -97,7 +97,9 @@ import { Local as Local, Param as Param, Provider as Provider, Once as Once, Con
 
 function main() {}
 
-@Builder() @Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (93169018)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -109,7 +111,9 @@ function main() {}
   }
 }
 
-@Builder() @Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Builder() 
+@Memo() 
+function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (258460786)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -318,7 +322,8 @@ function main() {}
     this.__backing_builderConsumer3!.set(value);
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (75236795)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -758,7 +763,8 @@ function main() {}
     this.__backing_builderLocalStoragePropRef3!.set(value);
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (187581126)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

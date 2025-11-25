@@ -52,7 +52,8 @@ function main() {}
 @Component() final struct ElseIf extends CustomComponent<ElseIf, __Options_ElseIf> {
     public __initializeStruct(initializers: (__Options_ElseIf | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_ElseIf | undefined)): void {}
-    @Memo() public build() {
+    @Memo() 
+  public build() {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
@@ -134,7 +135,8 @@ function main() {}
 @Component() final struct ElseIf extends CustomComponent<ElseIf, __Options_ElseIf> {
     public __initializeStruct(initializers: (__Options_ElseIf | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_ElseIf | undefined)): void {}
-    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

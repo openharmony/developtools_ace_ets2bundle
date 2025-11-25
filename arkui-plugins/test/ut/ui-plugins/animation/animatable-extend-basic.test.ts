@@ -77,7 +77,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -109,7 +110,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     AnimatablePropertyExample._instantiateImpl(undefined, (() => {
       return new AnimatablePropertyExample();
     }), undefined, undefined, undefined);

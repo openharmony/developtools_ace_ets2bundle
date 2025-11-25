@@ -83,7 +83,8 @@ function main() {}
     this.__backing_aaController = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -152,7 +153,8 @@ class DialogControllerV3 extends DialogControllerV2 {
     this.__backing_dialogController = value;
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

@@ -101,7 +101,8 @@ class Data {
     this.__backing_storageLinkObject!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -129,7 +130,8 @@ class Data {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
     }), undefined, undefined, undefined);

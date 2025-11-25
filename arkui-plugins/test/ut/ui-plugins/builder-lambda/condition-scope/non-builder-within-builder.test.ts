@@ -46,13 +46,16 @@ import { Memo as Memo } from \"arkui.incremental.annotation\";
 import { CustomComponent as CustomComponent } from \"arkui.component.customComponent\";
 import { Component as Component, Builder as Builder } from \"@ohos.arkui.component\";
 function main() {}
-@Builder() @Memo() function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
+@Builder() 
+@Memo() 
+function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
 type TestInitCallback = (()=> void);
 type TestUpdateCallback = (()=> void);
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     TestComponent((() => {
       if (true) {
       }

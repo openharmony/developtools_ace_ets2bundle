@@ -34,7 +34,8 @@ const expectedScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from \"arkui.incremental.runtime.state\";
 import { memo as memo } from \"arkui.stateManagement.runtime\";
 function main() {}
-@Memo() function foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+@Memo() 
+function foo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -45,7 +46,8 @@ function main() {}
         return;
     }
 }
-@Memo() function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+@Memo() 
+function bar(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -70,7 +72,8 @@ function main() {}
     }
 }
 class A {
-    @Memo() public goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

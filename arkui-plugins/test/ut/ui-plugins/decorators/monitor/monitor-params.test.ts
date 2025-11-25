@@ -197,15 +197,18 @@ class GGG {
   
   private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
 
-  @Monitor({value:["name"]}) public onNameChange(monitor: IMonitor) {}
+  @Monitor({value:["name"]}) 
+  public onNameChange(monitor: IMonitor) {}
   
   private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["strArr.0", "age"]}) public onAgeChange(monitor: IMonitor) {}
+  @Monitor({value:["strArr.0", "age"]}) 
+  public onAgeChange(monitor: IMonitor) {}
   
   private __monitor_onJobChange: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) public onJobChange(monitor: IMonitor) {}
+  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) 
+  public onJobChange(monitor: IMonitor) {}
   
   public constructor() {
     this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
@@ -313,9 +316,11 @@ class GGG {
   
   private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
   
-  @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) public onPerChange(monitor: IMonitor) {}
+  @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) 
+  public onPerChange(monitor: IMonitor) {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   public constructor() {}
 

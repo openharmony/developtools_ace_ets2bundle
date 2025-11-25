@@ -110,7 +110,8 @@ class Message {
     this.__backing_display!.set(value);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
       return;
@@ -170,7 +171,8 @@ class Message {
   
   public aboutToReuse(params: Record<string, ESObject>) {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).borderWidth(1).height(100).applyAttributesFinish();
       return;
@@ -190,7 +192,8 @@ class Message {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     Index._instantiateImpl(undefined, (() => {
       return new Index();
     }), undefined, undefined, undefined);
