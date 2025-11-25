@@ -394,7 +394,7 @@ export function initFileManagerInRollup(InteropConfig: InteropConfig): void {
 
   FileManager.init(
     InteropConfig.projectConfig.dependentModuleMap,
-    InteropConfig.projectConfig.aliasPaths,
+    InteropConfig.projectConfig.sdkAliasMap,
     sdkInfo.dynamicSDKPath,
     sdkInfo.staticSDKInteropDecl,
     sdkInfo.staticSDKGlueCodePath
