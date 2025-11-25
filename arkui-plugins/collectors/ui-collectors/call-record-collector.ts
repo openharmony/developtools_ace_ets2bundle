@@ -182,7 +182,6 @@ function collectCallAndAllParentCalls(
     call: arkts.CallExpression,
     callRecord: CallRecord
 ): void {
-    const uiNodeCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
     let prevCall: arkts.CallExpression = call;
     let currParent: arkts.AstNode | undefined = call.parent;
     while (!!currParent) {
@@ -198,6 +197,6 @@ function collectCallAndAllParentCalls(
     const { call: lastCall, callRecord: lastCallRecord } = this.lastCallInfo ?? { call, callRecord };
     // validate collected calls
     ValidatorBuilder.build(CallValidator).checkIsViolated(lastCall, lastCallRecord.toRecord());
-    uiNodeCache.collect(lastCall, lastCallRecord.toJSON());
+    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(lastCall, lastCallRecord.toJSON());
     this.chainingCallData.reset();
 }

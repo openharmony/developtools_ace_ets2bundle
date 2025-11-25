@@ -23,7 +23,6 @@ export interface ConditionScopeInfo {
 
 export class ConditionScopeInfoCache {
     private _infos: ConditionScopeInfo[] = [];
-    private _memoCache: arkts.NodeCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
     private static instance: ConditionScopeInfoCache | null = null;
 
     static getInstance(): ConditionScopeInfoCache {
@@ -35,16 +34,16 @@ export class ConditionScopeInfoCache {
 
     private _updateConditionArg(arg: arkts.ArrowFunctionExpression): void {
         const scriptFunc = arg.scriptFunction;
-        this._memoCache.addNodeToUpdateByPeer(scriptFunc.peer);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunc.peer);
         const body = scriptFunc.body;
         if (!!body) {
-            this._memoCache.addNodeToUpdateByPeer(body.peer);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
         }
-        this._memoCache.collect(arg);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(arg);
     }
 
     private _updateConditionCall(call: arkts.CallExpression): void {
-        this._memoCache.collect(call);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(call);
     }
 
     get infos(): ConditionScopeInfo[] {

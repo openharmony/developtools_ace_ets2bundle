@@ -23,10 +23,9 @@ export interface BaseCacheInfo<T extends arkts.AstNode> {
 
 export class BaseMemoCollectCache<T extends arkts.AstNode, Info extends BaseCacheInfo<T>> {
     protected _infos: Info[] = [];
-    protected _memoCache: arkts.NodeCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
 
     protected _updateInfo(info: Info): void {
-        this._memoCache.collect(info.node, info.metadata);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(info.node, info.metadata);
     }
 
     get infos(): Info[] {
