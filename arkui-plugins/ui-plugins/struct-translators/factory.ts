@@ -246,6 +246,10 @@ export class factory {
                 return overload;
             });
             builderNode.setOverloads(newOverLoads);
+            newOverLoads.forEach((it): void => {
+                it.setBaseOverloadMethod(builderNode);
+                it.parent = builderNode;
+            });
             if (!!newType) {
                 builderNode.scriptFunction.setReturnTypeAnnotation(newType);
             }
