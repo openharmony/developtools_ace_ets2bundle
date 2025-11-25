@@ -257,9 +257,9 @@ mocha.describe('test interop_manager file api', function () {
       });
     });
     const expectedStaticInteropDecl = new Set([
-      '/static/build-tools/interop/declarations/kits',
-      '/static/build-tools/interop/declarations/api',
-      '/static/build-tools/interop/declarations/arkts'
+      '/static/build-tools/interop/declaration/kits',
+      '/static/build-tools/interop/declaration/api',
+      '/static/build-tools/interop/declaration/arkts'
     ]);
 
     const expectedStaticGlueCode = new Set([

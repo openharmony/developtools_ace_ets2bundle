@@ -395,7 +395,7 @@ export function initFileManagerInRollup(InteropConfig: InteropConfig): void {
 
   FileManager.init(
     InteropConfig.projectConfig.dependentModuleMap,
-    InteropConfig.projectConfig.aliasPaths,
+    InteropConfig.projectConfig.sdkAliasMap,
     sdkInfo.dynamicSDKPath,
     sdkInfo.staticSDKInteropDecl,
     sdkInfo.staticSDKGlueCodePath
@@ -412,9 +412,9 @@ export function collectSDKInfo(share: Object): {
   const staticInteroSDKBasePath = process.env.staticInteroSDKBasePath ||
     path.resolve(share.projectConfig.etsLoaderPath, '../../../static/build-tools/interop');
   const staticSDKInteropDecl: Set<string> = new Set([
-    path.resolve(staticInteroSDKBasePath, './declarations/kits'),
-    path.resolve(staticInteroSDKBasePath, './declarations/api'),
-    path.resolve(staticInteroSDKBasePath, './declarations/arkts'),
+    path.resolve(staticInteroSDKBasePath, './declaration/kits'),
+    path.resolve(staticInteroSDKBasePath, './declaration/api'),
+    path.resolve(staticInteroSDKBasePath, './declaration/arkts'),
   ].map(toUnixPath));
 
   const staticSDKGlueCodePath: Set<string> = new Set([
