@@ -25,6 +25,7 @@ export const checkCustomDialogMissingController = performanceLog(
 );
 
 const CUSTOM_DIALOG_CONTROLLER = 'CustomDialogController';
+const UNION_TYPE_NUM_LIMIT = 2;
 
 /**
  * 校验规则：用于验证`@CustomDialog` 装饰器约束条件
@@ -40,7 +41,9 @@ function _checkCustomDialogMissingController(
     const hasCustomDialog = !!metadata.annotationInfo?.hasCustomDialog;
     const hasCustomDialogControllerProperty = struct.definition?.body.some((property) => {
         // The joint type also report error, such as CustomDialogController | undefined
-        return arkts.isClassProperty(property) && property.typeAnnotation?.dumpSrc() === CUSTOM_DIALOG_CONTROLLER;
+        if (arkts.isClassProperty(property)) {
+            return checkPropertyIsCustomDialogController(property);
+        }
     });
 
     // 使用 `@CustomDialog` 装饰器装饰的自定义组件必须包含一个类型为 `CustomDialogController` 的属性。
@@ -54,4 +57,45 @@ function _checkCustomDialogMissingController(
             message: `The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.`,
         });
     }
+}
+
+function checkPropertyIsCustomDialogController(property: arkts.ClassProperty): boolean {
+    const typeAnnotation = property.typeAnnotation;
+    if (!typeAnnotation) {
+        return false;
+    }
+    if (arkts.isETSTypeReference(typeAnnotation)) {
+        return checkETSTypeReference(typeAnnotation);
+    }
+    if (arkts.isETSUnionType(typeAnnotation)) {
+        return checkETSUnionType(typeAnnotation);
+    }
+    return false;
+}
+
+function checkETSTypeReference(type: arkts.ETSTypeReference): boolean {
+    return !!(
+        type.part &&
+        type.part.name &&
+        arkts.isIdentifier(type.part.name) &&
+        type.part.name.name === CUSTOM_DIALOG_CONTROLLER
+    );
+}
+
+function checkETSUnionType(type: arkts.ETSUnionType): boolean {
+    if (type.types.length !== UNION_TYPE_NUM_LIMIT) {
+        return false;
+    }
+
+    let hasCustomDialog: boolean = false;
+    let hasUndefined: boolean = false;
+    for (const nodeType of type.types) {
+        if (arkts.isETSTypeReference(nodeType) && checkETSTypeReference(nodeType)) {
+            hasCustomDialog = true;
+        }
+        if (arkts.isETSUndefinedType(nodeType)) {
+            hasUndefined = true;
+        }
+    }
+    return hasCustomDialog && hasUndefined;
 }
