@@ -1846,6 +1846,66 @@
     ],
     "validateNonFunctionTypeWithV1Decorator": [
         {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
             "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state2'.",
             "type": "ERROR",
             "code": "10905363"
@@ -1966,6 +2026,186 @@
             "code": "10905363"
         },
         {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
             "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state2'.",
             "type": "ERROR",
             "code": "10905363"
@@ -2052,6 +2292,186 @@
         },
         {
             "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink4'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@State' cannot be applied to a Function-type variable 'state14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'provide14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Consume' cannot be applied to a Function-type variable 'consume14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Prop' cannot be applied to a Function-type variable 'prop14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@Link' cannot be applied to a Function-type variable 'link14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageProp' cannot be applied to a Function-type variable 'storageProp14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'storageLink14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageProp' cannot be applied to a Function-type variable 'localStorageProp14'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink11'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink12'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink13'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@LocalStorageLink' cannot be applied to a Function-type variable 'localStorageLink14'.",
             "type": "ERROR",
             "code": "10905363"
         }
