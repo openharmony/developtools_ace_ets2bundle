@@ -128,8 +128,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           }), undefined);
         }));
         GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(makeBindable(CC.c, ((value) => {
-            CC.c = value;
+          instance.setGridItemOptions(undefined).selected(makeBindable(c, ((value) => {
+            c = value;
           }))).applyAttributesFinish();
           return;
         }), @Memo() (() => {
