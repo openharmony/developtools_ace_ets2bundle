@@ -27,6 +27,30 @@ struct Index {
   regular7: object = this.add;
   regular8: Function | boolean = true;
   regular9: Function | undefined = undefined;
+  regular10: () => void = buildFun;
+  regular11: () => void | number = this.add;
+  regular12: () => void | number | string = buildFun;
+  regular13: (a:number) => void | number | string = this.add;
+  regular14: (()=>void | number) | number = 1;
+
+  @State state11: () => void = buildFun;
+  @State state12: () => void | number = this.add;
+  @State state13: () => void | number | string = buildFun;
+  @State state14: (a:number) => void | number | string = this.add;
+  @State state15: (()=>void | number) | number = 1;
+
+
+  @Provide provide11: () => void = buildFun;
+  @Provide provide12: () => void | number = this.add;
+  @Provide provide13: () => void | number | string = buildFun;
+  @Provide provide14: (a:number) => void | number | string = this.add;
+  @Provide provide15: (()=>void | number) | number = 1;
+
+  @Consume consume11: () => void = buildFun;
+  @Consume consume12: () => void | number = this.add;
+  @Consume consume13: () => void | number | string = buildFun;
+  @Consume consume14: (a:number) => void | number | string = this.add;
+  @Consume consume15: (()=>void | number) | number = 1;
 
   @State message1: string = 'Hello World';
   @State state2: Function = buildFun;
@@ -82,7 +106,12 @@ struct Index {
         link6:this.consume6,
         link7:this.consume7,
         link8:this.consume8,
-        link9:this.consume9
+        link9:this.consume9,
+        link11:this.consume11,
+        link12:this.consume12,
+        link13:this.consume13,
+        link14:this.consume14,
+        link15:this.consume15,
       });
       DialogSample({
         link1:this.consume1,
@@ -93,7 +122,12 @@ struct Index {
         link6:this.consume6,
         link7:this.consume7,
         link8:this.consume8,
-        link9:this.consume9
+        link9:this.consume9,
+        link11:this.consume11,
+        link12:this.consume12,
+        link13:this.consume13,
+        link14:this.consume14,
+        link15:this.consume15,
       });
       ComponentV2Sample();
     }
@@ -209,6 +243,60 @@ struct Com2 {
   @LocalStorageLink('propA13') localStorageLink8: Function | null = buildFun;
   @LocalStorageLink('propA13') localStorageLink9: Function | undefined = this.add;
 
+  @State state11: () => void = buildFun;
+  @State state12: () => void | number = this.add;
+  @State state13: () => void | number | string = buildFun;
+  @State state14: (a:number) => void | number | string = this.add;
+  @State state15: (()=>void | number) | number = 1;
+
+  @Provide provide11: () => void = buildFun;
+  @Provide provide12: () => void | number = this.add;
+  @Provide provide13: () => void | number | string = buildFun;
+  @Provide provide14: (a:number) => void | number | string = this.add;
+  @Provide provide15: (()=>void | number) | number = 1;
+
+  @Consume consume11: () => void = buildFun;
+  @Consume consume12: () => void | number = this.add;
+  @Consume consume13: () => void | number | string = buildFun;
+  @Consume consume14: (a:number) => void | number | string = this.add;
+  @Consume consume15: (()=>void | number) | number = 1;
+
+  @Prop prop11: () => void = buildFun;
+  @Prop prop12: () => void | number = this.add;
+  @Prop prop13: () => void | number | string = buildFun;
+  @Prop prop14: (a:number) => void | number | string = this.add;
+  @Prop prop15: (()=>void | number) | number = 1;
+
+  @Link link11: () => void;
+  @Link link12: () => void | number;
+  @Link link13: () => void | number | string;
+  @Link link14: (a:number) => void | number | string;
+  @Link link15: (()=>void | number) | number;
+
+  @StorageProp('propA12') storageProp11: () => void = buildFun;
+  @StorageProp('propA12') storageProp12: () => void | number = this.add;
+  @StorageProp('propA12') storageProp13: () => void | number | string = buildFun;
+  @StorageProp('propA12') storageProp14: (a:number) => void | number | string = this.add;
+  @StorageProp('propA12') storageProp15: (()=>void | number) | number = 1;
+
+  @StorageLink('propA12') storageLink11: () => void = buildFun;
+  @StorageLink('propA12') storageLink12: () => void | number = this.add;
+  @StorageLink('propA12') storageLink13: () => void | number | string = buildFun;
+  @StorageLink('propA12') storageLink14: (a:number) => void | number | string = this.add;
+  @StorageLink('propA12') storageLink15: (()=>void | number) | number = 1;
+
+  @LocalStorageProp('propA13') localStorageProp11: () => void = buildFun;
+  @LocalStorageProp('propA13') localStorageProp12: () => void | number = this.add;
+  @LocalStorageProp('propA13') localStorageProp13: () => void | number | string = buildFun;
+  @LocalStorageProp('propA13') localStorageProp14: (a:number) => void | number | string = this.add;
+  @LocalStorageProp('propA13') localStorageProp15: (()=>void | number) | number = 1;
+
+  @LocalStorageLink('propA13') localStorageLink11: () => void = buildFun;
+  @LocalStorageLink('propA13') localStorageLink12: () => void | number = this.add;
+  @LocalStorageLink('propA13') localStorageLink13: () => void | number | string = buildFun;
+  @LocalStorageLink('propA13') localStorageLink14: (a:number) => void | number | string = this.add;
+  @LocalStorageLink('propA13') localStorageLink15: (()=>void | number) | number = 1;
+
   add(){}
 
   onBuildChange(){}
@@ -235,6 +323,11 @@ struct DialogSample {
   regular7: object = this.add;
   regular8: Function | boolean = true;
   regular9: Function | undefined = undefined;
+  regular10: () => void = buildFun;
+  regular11: () => void | number = this.add;
+  regular12: () => void | number | string = buildFun;
+  regular13: (a:number) => void | number | string = this.add;
+  regular14: (()=>void | number) | number = 1;
 
   @State message1: string = 'Hello World';
   @State state2: Function = buildFun;
@@ -328,6 +421,60 @@ struct DialogSample {
   @LocalStorageLink('propA13') localStorageLink8: Function | null = buildFun;
   @LocalStorageLink('propA13') localStorageLink9: Function | undefined = this.add;
 
+  @State state11: () => void = buildFun;
+  @State state12: () => void | number = this.add;
+  @State state13: () => void | number | string = buildFun;
+  @State state14: (a:number) => void | number | string = this.add;
+  @State state15: (()=>void | number) | number = 1;
+
+  @Provide provide11: () => void = buildFun;
+  @Provide provide12: () => void | number = this.add;
+  @Provide provide13: () => void | number | string = buildFun;
+  @Provide provide14: (a:number) => void | number | string = this.add;
+  @Provide provide15: (()=>void | number) | number = 1;
+
+  @Consume consume11: () => void = buildFun;
+  @Consume consume12: () => void | number = this.add;
+  @Consume consume13: () => void | number | string = buildFun;
+  @Consume consume14: (a:number) => void | number | string = this.add;
+  @Consume consume15: (()=>void | number) | number = 1;
+
+  @Prop prop11: () => void = buildFun;
+  @Prop prop12: () => void | number = this.add;
+  @Prop prop13: () => void | number | string = buildFun;
+  @Prop prop14: (a:number) => void | number | string = this.add;
+  @Prop prop15: (()=>void | number) | number = 1;
+
+  @Link link11: () => void;
+  @Link link12: () => void | number;
+  @Link link13: () => void | number | string;
+  @Link link14: (a:number) => void | number | string;
+  @Link link15: (()=>void | number) | number;
+
+  @StorageProp('propA12') storageProp11: () => void = buildFun;
+  @StorageProp('propA12') storageProp12: () => void | number = this.add;
+  @StorageProp('propA12') storageProp13: () => void | number | string = buildFun;
+  @StorageProp('propA12') storageProp14: (a:number) => void | number | string = this.add;
+  @StorageProp('propA12') storageProp15: (()=>void | number) | number = 1;
+
+  @StorageLink('propA12') storageLink11: () => void = buildFun;
+  @StorageLink('propA12') storageLink12: () => void | number = this.add;
+  @StorageLink('propA12') storageLink13: () => void | number | string = buildFun;
+  @StorageLink('propA12') storageLink14: (a:number) => void | number | string = this.add;
+  @StorageLink('propA12') storageLink15: (()=>void | number) | number = 1;
+
+  @LocalStorageProp('propA13') localStorageProp11: () => void = buildFun;
+  @LocalStorageProp('propA13') localStorageProp12: () => void | number = this.add;
+  @LocalStorageProp('propA13') localStorageProp13: () => void | number | string = buildFun;
+  @LocalStorageProp('propA13') localStorageProp14: (a:number) => void | number | string = this.add;
+  @LocalStorageProp('propA13') localStorageProp15: (()=>void | number) | number = 1;
+
+  @LocalStorageLink('propA13') localStorageLink11: () => void = buildFun;
+  @LocalStorageLink('propA13') localStorageLink12: () => void | number = this.add;
+  @LocalStorageLink('propA13') localStorageLink13: () => void | number | string = buildFun;
+  @LocalStorageLink('propA13') localStorageLink14: (a:number) => void | number | string = this.add;
+  @LocalStorageLink('propA13') localStorageLink15: (()=>void | number) | number = 1;
+
   add(){}
   onBuildChange(){}
 
@@ -344,6 +491,11 @@ class Test1{
   @Track track2: Function|number = buildFun;
   @Track track3: Function|string = 'track3';
   @Track track4: object = buildFun;
+  @Track track5: () => void = buildFun;
+  @Track track6: () => void | number = buildFun;
+  @Track track7: () => void | number | string = buildFun;
+  @Track track8: (a:number) => void | number | string = buildFun;
+  @Track track9: (()=>void | number) | number = 1;
 
   constructor(regular1:Function, regular2:Function|number, regular3:Function|string, regular4:object) {
     this.regular1 = regular1;
@@ -360,18 +512,43 @@ struct ComponentV2Sample {
 
   @Local local1: Function = this.add;
   @Local local2: Function = buildFun;
+  @Local local3: () => void = buildFun;
+  @Local local4: () => void | number = this.add;
+  @Local local5: () => void | number | string = buildFun;
+  @Local local6: (a:number) => void | number | string = this.add;
+  @Local local7: (()=>void | number) | number = 1;
 
   @Provider() provider1: Function = buildFun;
   @Provider() provider2: Function = this.add;
+  @Provider() provider3: () => void = buildFun;
+  @Provider() provider4: () => void | number = this.add;
+  @Provider() provider5: () => void | number | string = buildFun;
+  @Provider() provider6: (a:number) => void | number | string = this.add;
+  @Provider() provider7: (()=>void | number) | number = 1;
 
   @Consumer() consumer1: Function = buildFun;
   @Consumer() consumer2: Function = this.add;
+  @Consumer() consumer3: () => void = buildFun;
+  @Consumer() consumer4: () => void | number = this.add;
+  @Consumer() consumer5: () => void | number | string = buildFun;
+  @Consumer() consumer6: (a:number) => void | number | string = this.add;
+  @Consumer() consumer7: (()=>void | number) | number = 1;
 
   @Param param1: Function = buildFun;
   @Param param2: Function = this.add;
+  @Param param3: () => void = buildFun;
+  @Param param4: () => void | number = this.add;
+  @Param param5: () => void | number | string = buildFun;
+  @Param param6: (a:number) => void | number | string = this.add;
+  @Param param7: (()=>void | number) | number = 1;
 
   @Event event1: Function = buildFun;
   @Event event2: Function = this.add;
+  @Event event3: () => void = buildFun;
+  @Event event4: () => void | number = this.add;
+  @Event event5: () => void | number | string = buildFun;
+  @Event event6: (a:number) => void | number | string = this.add;
+  @Event event7: (()=>void | number) | number = 1;
 
   add(){}
   build() {}
