@@ -20,7 +20,7 @@ import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
 import { uiNoRecheck, recheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -39,18 +39,15 @@ const parsedTransform: Plugins = {
 };
 
 const expectedScript: string = `
-
-import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
-
-import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
-
-import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
-
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
 import { TextPickerAttribute as TextPickerAttribute } from "arkui.component.textPicker";
 
 import { TextPickerImpl as TextPickerImpl } from "arkui.component.textPicker";
+
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
 
@@ -58,17 +55,11 @@ import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
 
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
-import { Memo as Memo } from "arkui.incremental.annotation";
+import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
-
-import { Builder as Builder } from "arkui.component.builder";
-
-import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
-
-import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, TextInput as TextInput, $$ as $$, TextPicker as TextPicker, TextPickerOptions as TextPickerOptions } from "@ohos.arkui.component";
 
@@ -83,12 +74,12 @@ function main() {}
     (((gensym___111800258) == (null)) ? undefined : gensym___111800258.tt)})) ?? ("state var")));
     this.__backing_index = STATE_MGMT_FACTORY.makeState<int>(this, "index", ((({let gensym___91647805 = initializers;
     (((gensym___91647805) == (null)) ? undefined : gensym___91647805.index)})) ?? (1)));
-    this.__backing_select = STATE_MGMT_FACTORY.makeState<double>(this, "select", ((({let gensym___90525328 = initializers;
-    (((gensym___90525328) == (null)) ? undefined : gensym___90525328.select)})) ?? (0.0)));
-    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<double>>(this, "selectArr", ((({let gensym___264591166 = initializers;
-    (((gensym___264591166) == (null)) ? undefined : gensym___264591166.selectArr)})) ?? ([0.0, 1.0, 2.0])));
-    this.__backing_fruits = ((({let gensym___180713065 = initializers;
-    (((gensym___180713065) == (null)) ? undefined : gensym___180713065.fruits)})) ?? (["apple1", "orange2", "peach3", "grape4"]));
+    this.__backing_select = STATE_MGMT_FACTORY.makeState<int>(this, "select", ((({let gensym___90525328 = initializers;
+    (((gensym___90525328) == (null)) ? undefined : gensym___90525328.select)})) ?? (0)));
+    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<int>>(this, "selectArr", ((({let gensym___264591166 = initializers;
+    (((gensym___264591166) == (null)) ? undefined : gensym___264591166.selectArr)})) ?? ([0, 1, 2])));
+    this.__backing_fruits = ((({let gensym___19120252 = initializers;
+    (((gensym___19120252) == (null)) ? undefined : gensym___19120252.fruits)})) ?? (["apple1", "orange2", "peach3", "grape4"]));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
@@ -111,21 +102,21 @@ function main() {}
     this.__backing_index!.set(value);
   }
   
-  private __backing_select?: IStateDecoratedVariable<double>;
-  public get select(): double {
+  private __backing_select?: IStateDecoratedVariable<int>;
+  public get select(): int {
     return this.__backing_select!.get();
   }
   
-  public set select(value: double) {
+  public set select(value: int) {
     this.__backing_select!.set(value);
   }
   
-  private __backing_selectArr?: IStateDecoratedVariable<Array<double>>;
-  public get selectArr(): Array<double> {
+  private __backing_selectArr?: IStateDecoratedVariable<Array<int>>;
+  public get selectArr(): Array<int> {
     return this.__backing_selectArr!.get();
   }
   
-  public set selectArr(value: Array<double>) {
+  public set selectArr(value: Array<int>) {
     this.__backing_selectArr!.set(value);
   }
   
@@ -138,18 +129,8 @@ function main() {}
     this.__backing_fruits = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
-    throw new Error("Declare interface");
-  }
-  
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).margin(10).applyAttributesFinish();
       return;
@@ -201,22 +182,22 @@ function main() {}
     }));
   }
   
-  ${dumpConstructor()}
-  
+  public constructor() {}
+
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_tt', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_tt', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(double | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<double> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(int | undefined)', [dumpAnnotation('State')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<double> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<double>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<int> | undefined)', [dumpAnnotation('State')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<int>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectArr', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'fruits', '(Array<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_fruits', '(boolean | undefined)')}
