@@ -117,11 +117,20 @@ export function metaDatabase(fileName: string): string {
     return `${fileName}.meta.json`;
 }
 
-export function checkErrors() {
+export function checkErrors(proceedTo?: string) {
     if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         traceGlobal(() => `Terminated due to compilation errors occured`);
-        console.log(unpackString(global.generatedEs2panda._GetAllErrorMessages(global.context)));
-        throw new Error("ArkTS compilation failed")
+
+        const errorMessage = unpackString(global.generatedEs2panda._ContextErrorMessage(global.context));
+        if (errorMessage === undefined) {
+            throwError(`Could not get ContextErrorMessage`);
+        }
+        const allErrorMessages = unpackString(global.generatedEs2panda._GetAllErrorMessages(global.context));
+        if (allErrorMessages === undefined) {
+            throwError(`Could not get AllErrorMessages`);
+        }
+        const actionMsg = proceedTo ? " to " + proceedTo : ""
+        throwError([`Failed to proceed${actionMsg}`, errorMessage, allErrorMessages].join(`\n`));
     }
 }
 
@@ -129,7 +138,7 @@ export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativ
     if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         NodeCache.clear();
         if (!ignoreErrors) {
-            checkErrors();
+            checkErrors(Es2pandaContextState[state]);
         }
     }
     if (state <= global.es2panda._ContextState(global.context)) {
@@ -143,7 +152,7 @@ export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativ
     const after = Date.now();
     global.profiler.proceededToState(after - before);
     if (!ignoreErrors) {
-        checkErrors();
+        checkErrors(Es2pandaContextState[state]);
     }
 }
 
