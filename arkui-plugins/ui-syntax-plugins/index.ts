@@ -37,7 +37,7 @@ export function uiSyntaxLinterTransform(): Plugins {
     return {
         name: 'ui-syntax-plugin',
         checked: collectAndLint,
-        clean() {
+        clean(): void {
             ProgramSkipper.clear();
             arkts.NodeCacheFactory.getInstance().clear();
         },

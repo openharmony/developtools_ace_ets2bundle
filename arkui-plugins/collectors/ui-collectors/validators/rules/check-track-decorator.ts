@@ -191,7 +191,7 @@ function checkInvalidTrackInGlobalProperty<T extends arkts.AstNode = arkts.Class
 function reportTrackOnClassMemberOnlyError<T extends arkts.AstNode = arkts.ClassProperty>(
     this: BaseValidator<T, StructPropertyInfo>,
     trackNode: arkts.AnnotationUsage
-) {
+): void {
     this.report({
         node: trackNode,
         level: LogType.ERROR,
