@@ -111,7 +111,7 @@ function generateTSASExpression(expression: arkts.AstNode): arkts.Expression {
     );
 }
 
-function newComponent(className: string): arkts.Statement {
+function newComponent(context: InteropContext, className: string): arkts.Statement {
     return createVariableLet(
         InteropInternalNames.COMPONENT,
         getWrapValue(
@@ -120,7 +120,7 @@ function newComponent(className: string): arkts.Statement {
                 [
                     generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
                     generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
-                    arkts.factory.createUndefinedLiteral(),
+                    context.storage ?? arkts.factory.createUndefinedLiteral(),
                     generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createArrowFunction(
@@ -150,12 +150,12 @@ function newComponent(className: string): arkts.Statement {
     );
 }
 
-function createComponent(className: string, isV2: boolean): arkts.Statement[] {
+function createComponent(context: InteropContext, className: string, isV2: boolean): arkts.Statement[] {
     let viewCreateMethod: string = 'viewPUCreate';
     if (isV2) {
         viewCreateMethod = 'viewV2Create';
     }
-    const component = newComponent(className);
+    const component = newComponent(context, className);
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
@@ -206,7 +206,7 @@ function createWrapperBlock(
         ...initialArgsStatement,
         ...createExtraInfo(['page'], [path]),
         createELMTID(),
-        ...createComponent(className, isV2),
+        ...createComponent(context, className, isV2),
         createInitReturn(className),
     ]);
 }
@@ -390,16 +390,22 @@ export function processArguments(arg: arkts.Expression): arkts.ObjectExpression 
 }
 
 
-function getProperParams(args: arkts.Expression[]): [arkts.AstNode | undefined, arkts.AstNode | undefined] {
-    if (args.length < 2) {
-        return [undefined, undefined];
-    } else if (args.length === 2) {
-        if (args[1] instanceof arkts.ArrowFunctionExpression) {
-            return [undefined, args[1]];
+function getProperParams(
+    args: arkts.Expression[]
+): [arkts.ObjectExpression | undefined, arkts.Identifier | undefined, arkts.ArrowFunctionExpression | undefined] {
+    let initializers: arkts.AstNode | undefined = undefined;
+    let storage: arkts.AstNode | undefined = undefined;
+    let content: arkts.AstNode | undefined = undefined;
+    args.forEach((arg) => {
+        if (arkts.isObjectExpression(arg)) {
+            initializers = processArguments(arg);
+        } else if (arkts.isIdentifier(arg)) {
+            storage = arg;
+        } else if (arkts.isArrowFunctionExpression(arg)) {
+            content = arg;
         }
-        return [processArguments(args[1]), undefined];
-    }
-    return [processArguments(args[1]), args[2]];
+    });
+    return [initializers, storage, content];
 }
 
 /**
@@ -416,7 +422,7 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     }
     const filePath = arkts.getProgramFromAstNode(decl).moduleName;
     const args = node.arguments;
-    const [options, content] = getProperParams(args);
+    const [options, storage, content] = getProperParams(args);
 
     if (!!content) {
         arkts.NodeCache.getInstance().collect(content);
@@ -425,6 +431,7 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
         className: className,
         path: filePath,
         arguments: options,
+        storage: storage,
         content: content,
     };
 
