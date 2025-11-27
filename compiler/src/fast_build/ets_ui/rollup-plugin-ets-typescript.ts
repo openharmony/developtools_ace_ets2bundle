@@ -572,8 +572,9 @@ async function transform(code: string, id: string) {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
   }
-
+  const eventmemoryUtils = createAndStartEvent(eventEtsTransformForEsmodule, 'typeScriptMemoryUtils');
   ts.MemoryUtils.tryGC();
+  stopEvent(eventmemoryUtils);
   resetCollection();
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
