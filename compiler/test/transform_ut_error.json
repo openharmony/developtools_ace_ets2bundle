@@ -254,108 +254,6 @@
         "type": "ERROR",
         "code": "10905315"
     },
-    "validateLinkVariableSourceData": [
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-                {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
-            "type": "ERROR",
-            "code": "10905364"
-        },
-        {
-            "message": "The 'regular' property 'data111' cannot be assigned to the '@Link' property 'link'.",
-            "type": "ERROR",
-            "code": "10905315"
-        },
-        {
-            "message": "The 'regular' property 'bool111' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "ERROR",
-            "code": "10905315"
-        },
-        {
-            "message": "The 'regular' property 'data1' cannot be assigned to the '@Link' property 'link'.",
-            "type": "ERROR",
-            "code": "10905315"
-        },
-        {
-            "message": "The 'regular' property 'bool' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "ERROR",
-            "code": "10905315"
-        },
-        {
-            "message": "The 'regular' property 'new Data1()' cannot be assigned to the '@Link' property 'link'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'true' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'this.state_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
-            "type": "WARN"
-        },
-        {
-            "message": "The 'regular' property 'this.state_boolArr[0]' cannot be assigned to the '@Link' property 'link1'.",
-            "type": "WARN"
-        }
-    ],
     "validateLinkVariableSourceDataExtend": [
         {
             "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
@@ -404,6 +302,649 @@
         },
         {
             "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        }
+    ],
+    "validateLinkVariableSourceDataEachCondition": [
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+                {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The 'regular' property 'data1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "ERROR",
+            "code": "10905315"
+        },
+        {
+            "message": "The 'regular' property 'bool' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "ERROR",
+            "code": "10905315"
+        },
+        {
+            "message": "The 'regular' property 'data1_global' cannot be assigned to the '@Link' property 'link'.",
+            "type": "ERROR",
+            "code": "10905315"
+        },
+        {
+            "message": "The 'regular' property 'bool_global' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "ERROR",
+            "code": "10905315"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data1Arr_initFormState[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2.aa1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2Arr[0].aa1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa10' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'new Data1()' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'true' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        }
+    ],
+    "validateLinkVariableSourceDataEachState": [
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link1' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_boolArr[0]' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data1Arr_initFormState[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_boolArr_initFormState[0]' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2.aa1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2.aaArr[0]' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2Arr[0].aa1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data2Arr[0].aaArr[0]' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.link_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.objectLink_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.consume_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.prop_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.provide_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.localStorageLink_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.localStorageProp_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.storageLink_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'aa' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.storageProp_data1Arr[0]' cannot be assigned to the '@Link' property 'link'.",
             "type": "WARN"
         }
     ],
