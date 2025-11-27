@@ -232,7 +232,7 @@ export function createGlobal(): arkts.Statement {
 
 export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
     const property = node.property;
-    if (arkts.isIdentifier(property) && property.name === '$_instantiate') {
+    if (arkts.isIdentifier(property) && property.name === InteroperAbilityNames.INVOKE) {
         return true;
     }
     return false;

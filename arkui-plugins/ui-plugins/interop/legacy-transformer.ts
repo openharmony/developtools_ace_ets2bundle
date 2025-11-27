@@ -101,13 +101,6 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     createParamsForInstatiate(name: string): arkts.ETSParameterExpression[] {
-        const paramFactory: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(
-                InteroperAbilityNames.FACTORY,
-                factory.createLambdaFunctionType(undefined, factory.createTypeReferenceFromString(name!))
-            ),
-            undefined
-        );
         const paramInitializers: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 InteroperAbilityNames.INITIALIZERS,
@@ -116,14 +109,14 @@ export class LegacyTransformer extends AbstractVisitor {
             undefined
         );
         paramInitializers.setOptional(true);
-        const paramReuseId: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const paramStorage: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
-                InteroperAbilityNames.REUSEID,
-                factory.createTypeReferenceFromString('string')
+                InteroperAbilityNames.STORAGE,
+                factory.createTypeReferenceFromString('LocalStorage')
             ),
             undefined
         );
-        paramReuseId.setOptional(true);
+        paramStorage.setOptional(true);
         const paramContent: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(
                 InteroperAbilityNames.CONTENT,
@@ -137,7 +130,7 @@ export class LegacyTransformer extends AbstractVisitor {
                 arkts.factory.createIdentifier('Builder')
             )
         ];
-        return [paramFactory, paramInitializers, paramReuseId, paramContent];
+        return [paramInitializers, paramStorage, paramContent];
     }
 
     createInstantiateMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
@@ -152,7 +145,7 @@ export class LegacyTransformer extends AbstractVisitor {
         const returnTypeAnnotation = factory.createTypeReferenceFromString('Object');
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
-        const key = arkts.factory.createIdentifier(InteroperAbilityNames.INSTANTIATE);
+        const key = arkts.factory.createIdentifier(InteroperAbilityNames.INVOKE);
 
         return factory.createMethodDefinition({
             key,
