@@ -311,7 +311,7 @@ function reportInvalidStructAnnotation<T extends arkts.AstNode>(
     this: BaseValidator<T, StructPropertyInfo>,
     errorNode: arkts.AnnotationUsage,
     annotationName: string
-) {
+): void {
     this.report({
         node: errorNode,
         level: LogType.ERROR,
@@ -324,7 +324,7 @@ function reportInvalidPropertyAnnotation<T extends arkts.AstNode>(
     this: BaseValidator<T, StructPropertyInfo>,
     errorNode: arkts.AnnotationUsage,
     annotationName: string
-) {
+): void {
     this.report({
         node: errorNode,
         level: LogType.ERROR,
