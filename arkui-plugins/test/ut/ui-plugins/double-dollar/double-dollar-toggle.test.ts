@@ -42,6 +42,10 @@ const expectedScript: string = `
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
+import { makeBindable as makeBindable } from "arkui.component.common";
+import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 import { Memo as Memo } from "arkui.incremental.annotation";
 import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
 import { Bindable as Bindable } from "arkui.component.common";
@@ -103,36 +107,27 @@ class BooleanClass {
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: this.boo[0],
-            onChange: ((value: boolean) => {
-              this.boo[0] = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(this.boo[0], ((value) => {
+            this.boo[0] = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: this.booClass.isOn,
-            onChange: ((value: boolean) => {
-              this.booClass.isOn = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(this.booClass.isOn, ((value) => {
+            this.booClass.isOn = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
         instance.setToggleOptions({
           type: ToggleType.Checkbox,
-          isOn: ({
-            value: c[1],
-            onChange: ((value: boolean) => {
-              c[1] = value;
-            }),
-          } as Bindable<boolean>),
+          isOn: makeBindable(c[1], ((value) => {
+            c[1] = value;
+          })),
         }).applyAttributesFinish();
         return;
       }), undefined);
