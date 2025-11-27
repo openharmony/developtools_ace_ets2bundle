@@ -194,7 +194,7 @@ class HandleUIImports {
   private addUIImports(node: ts.SourceFile): void {
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
     const stateImportSpecifiers: ts.ImportSpecifier[] = [];
-
+    this.importedInterfaces.add('LocalStorage');
     this.interfacesNeedToImport.forEach((interfaceName) => {
       if (this.importedInterfaces.has(interfaceName)) {
         return;

@@ -18,7 +18,7 @@ export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',
     ARKTS_1_2 = '1.2',
     ARKUICOMPATIBLE = 'compatibleComponent',
-    INSTANTIATE = '$_instantiate',
+    INVOKE = '$_invoke',
     FACTORY = 'factory',
     INITIALIZERS = 'initializers',
     REUSEID = 'reuseId',
@@ -26,6 +26,7 @@ export enum InteroperAbilityNames {
     CONSTRUCTOR = 'constructor',
     GETCOMPATIBLESTATE = 'getCompatibleState',
     INTEROP = 'arkui.component.interop',
+    STORAGE = 'storage',
 }
 
 export enum InteropInternalNames {
