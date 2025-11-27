@@ -74,6 +74,7 @@ export interface InteropContext {
     col?: number;
     arguments?: arkts.ObjectExpression;
     content?: arkts.ArrowFunctionExpression;
+    storage?: arkts.Identifier;
 }
 
 export class ComponentTransformer extends AbstractVisitor {
