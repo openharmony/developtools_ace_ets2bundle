@@ -142,7 +142,7 @@ export class factory {
             (arg, param, index) => {
                 const _param = param as arkts.ETSParameterExpression;
                 if (index === 0 && !!arg && isDoubleDollarCall(arg)) {
-                    argInfo.push({ arg: BindableFactory.updateBindableStyleArguments(arg, _param) });
+                    argInfo.push({ arg: BindableFactory.updateBindableStyleArguments(arg) });
                 } else if (!!arg) {
                     argInfo.push({ arg, hasBuilder: hasDecorator(_param, DecoratorNames.BUILDER) });
                 }

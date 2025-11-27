@@ -89,6 +89,7 @@ export enum Dollars {
 }
 
 export enum BindableNames {
+    MAKE_BINDABLE = 'makeBindable',
     BINDABLE = 'Bindable',
     VALUE = 'value',
     ON_CHANGE = 'onChange',
@@ -317,7 +318,7 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
     [Dollars.DOLLAR_RESOURCE, [Dollars.TRANSFORM_DOLLAR_RESOURCE]],
     [Dollars.DOLLAR_RAWFILE, [Dollars.TRANSFORM_DOLLAR_RAWFILE]],
-    [Dollars.DOLLAR_DOLLAR, [BindableNames.BINDABLE]],
+    [Dollars.DOLLAR_DOLLAR, [BindableNames.BINDABLE, BindableNames.MAKE_BINDABLE]],
     [DecoratorNames.STATE, [StateManagementTypes.STATE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.LINK,
