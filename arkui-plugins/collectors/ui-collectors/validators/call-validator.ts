@@ -42,7 +42,7 @@ import { CallInfo } from '../records';
 import { checkIsCustomComponentFromInfo } from '../utils';
 
 export class CallValidator extends BaseValidator<arkts.CallExpression, CallInfo> {
-    reset() {
+    reset(): void {
         super.reset();
         resetNoDuplicateId();
     }

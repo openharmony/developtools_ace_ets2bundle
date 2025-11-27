@@ -308,7 +308,7 @@ function reportErrorWithRemoveAnnotationFix<T extends arkts.AstNode = arkts.Clas
     errorNode: arkts.AnnotationUsage,
     message: string,
     fixTitle: string
-) {
+): void {
     this.report({
         node: errorNode,
         level: LogType.ERROR,
