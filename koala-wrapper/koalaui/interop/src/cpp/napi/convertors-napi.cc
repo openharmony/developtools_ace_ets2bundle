@@ -363,7 +363,6 @@ ModuleRegisterCallback ProvideModuleRegisterCallback(ModuleRegisterCallback valu
 static constexpr bool splitModules = true;
 
 static napi_value InitModule(napi_env env, napi_value exports) {
-    LOG("InitModule: " QUOTE(INTEROP_LIBRARY_NAME) "\n");
     Exports* inst = Exports::getInstance();
     napi_status status;
     napi_value target = exports;
