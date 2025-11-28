@@ -14,28 +14,26 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PluginContext, PluginHandler, Plugins } from '../common/plugin-context';
+import { PluginContext, Plugins } from '../common/plugin-context';
 import {
-    CheckedUISyntaxLinterTransformer,
     ParsedUISyntaxLinterTransformer,
 } from './transformers/ui-syntax-linter-transformer';
-import { createUISyntaxRuleProcessor, UISyntaxRuleProcessor } from './processor';
+import { createUISyntaxRuleProcessor } from './processor';
 import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
-import { getConsistentResourceMap, getMainPages, getUIComponents, matchPrefix } from '../common/arkts-utils';
-import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
-import { debugLog, getDumpFileName } from '../common/debug';
-import { UIVisitor } from '../collectors/ui-collectors/ui-visitor';
-import { MemoVisitor } from '../collectors/memo-collectors/memo-visitor';
+import { getConsistentResourceMap, getMainPages, getUIComponents } from '../common/arkts-utils';
+import { debugLog } from '../common/debug';
 import { Collector } from '../collectors/collector';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ProgramSkipper } from '../common/program-skipper';
 
+
 export function uiSyntaxLinterTransform(): Plugins {
     return {
         name: 'ui-syntax-plugin',
+        parsed: parsedTransform,
         checked: collectAndLint,
         clean(): void {
             ProgramSkipper.clear();
@@ -49,7 +47,7 @@ function collectAndLint(this: PluginContext): arkts.EtsScript | undefined {
     arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED ENTER');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
-    if (!!contextPtr) {
+    if (!isCoding && !!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
         debugLog('[BEFORE LINTER SCRIPT] script: ', script);
@@ -112,72 +110,38 @@ function checkedProgramVisit(
 }
 
 
-function createTransformer(
-    phase: string,
-    processor: UISyntaxRuleProcessor,
-    transformer: UISyntaxLinterVisitor
-): PluginHandler {
-    const visitedPrograms: Set<any> = new Set();
-    const visitedExternalSources: Set<any> = new Set();
-    return tracePerformance(`UISyntaxPlugin::${phase}`, function (this: PluginContext): arkts.EtsScript | undefined {
-        const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-        if (!contextPtr) {
-            return undefined;
-        }
-        const projectConfig = this.getProjectConfig();
-        if (!projectConfig) {
-            return undefined;
-        }
-        processor.setProjectConfig(projectConfig);
-        if (projectConfig.frameworkMode) {
-            return undefined;
-        }
-        const program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-        if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
-            return undefined;
-        }
-        const isCoding = this.isCoding?.() ?? false;
-        if (isCoding) {
-            const codingFilePath = this.getCodingFilePath();
-            if (program.absName === codingFilePath) {
-                return transformProgram.call(this, transformer, program);
-            }
-        } else {
-            transformExternalSources.call(this, program, visitedExternalSources, visitedPrograms, transformer);
-            if (program.absName) {
-                return transformProgram.call(this, transformer, program);
-            }
-        }
-        visitedPrograms.add(program.peer);
+const visitedPrograms: Set<any> = new Set();
+function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
+    const isCoding = this.isCoding?.() ?? false;
+    if (!isCoding) {
         return undefined;
-    });
-}
-
-function transformExternalSources(
-    this: PluginContext,
-    program: arkts.Program,
-    visitedExternalSources: Set<any>,
-    visitedPrograms: Set<any>,
-    transformer: UISyntaxLinterVisitor
-): void {
-    const externalSources = program.externalSources;
-    for (const externalSource of externalSources) {
-        if (matchPrefix(EXCLUDE_EXTERNAL_SOURCE_PREFIXES, externalSource.getName())) {
-            continue;
-        }
-        if (visitedExternalSources.has(externalSource)) {
-            continue;
-        }
-        const programs = externalSource.programs;
-        for (const program of programs) {
-            if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
-                continue;
-            }
-            const script = transformer.transform(program.astNode) as arkts.EtsScript;
-            this.setArkTSAst(script);
-        }
-        visitedExternalSources.add(externalSource.peer);
     }
+    arkts.Performance.getInstance().createEvent(`ui-syntax::parsed`);
+    const processor = createUISyntaxRuleProcessor(rules);
+    const transformer = new ParsedUISyntaxLinterTransformer(processor);
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+    if (!contextPtr) {
+        return undefined;
+    }
+    const projectConfig = this.getProjectConfig();
+    if (!projectConfig) {
+        return undefined;
+    }
+    processor.setProjectConfig(projectConfig);
+    if (projectConfig.frameworkMode) {
+        return undefined;
+    }
+    const program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
+    if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
+        return undefined;
+    }
+    const codingFilePath = this.getCodingFilePath();
+    if (program.absName === codingFilePath) {
+        return transformProgram.call(this, transformer, program);
+    }
+    visitedPrograms.add(program.peer);
+    arkts.Performance.getInstance().stopEvent(`ui-syntax::parsed`, true);
+    return undefined;
 }
 
 function transformProgram(
