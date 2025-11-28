@@ -95,7 +95,9 @@ function main() {}
     BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
       const instance = new CustomDialogExample(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
-      instance.__setDialogController__((controller as CustomDialogController));
+      if (controller) {
+        instance.__setDialogController__((controller as CustomDialogController))
+      }
       return instance;
     }), initializers, content);
   }
