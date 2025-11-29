@@ -125,11 +125,6 @@ export class LegacyTransformer extends AbstractVisitor {
             undefined
         );
         paramContent.setOptional(true);
-        paramContent.annotations = [
-            arkts.factory.createAnnotationUsage(
-                arkts.factory.createIdentifier('Builder')
-            )
-        ];
         return [paramInitializers, paramStorage, paramContent];
     }
 
@@ -259,23 +254,7 @@ export class LegacyTransformer extends AbstractVisitor {
         return result;
     }
 
-    createBuilderImport(): void {
-        if (!this.program) {
-            throw new Error('Failed to insert import: Transformer has no program');
-        }
-        const source = arkts.factory.createStringLiteral('@ohos.arkui.component');
-        const imported = arkts.factory.createIdentifier('Builder');
-        createAndInsertImportDeclaration(
-            source,
-            imported,
-            imported,
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
-            this.program
-        );
-    }
-
     processEtsScript(node: arkts.EtsScript): arkts.EtsScript {
-        this.createBuilderImport();
         let updateStatements: arkts.AstNode[] = [];
         if (this.componentInterfaceCollection.length > 0) {
             updateStatements.push(...this.componentInterfaceCollection);

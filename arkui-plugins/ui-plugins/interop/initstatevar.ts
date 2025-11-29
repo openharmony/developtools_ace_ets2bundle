@@ -19,7 +19,7 @@ import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
-import { hasDecorator } from '../property-translators/utils';
+import { hasDecoratorInterop } from './utils';
 import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
 
@@ -52,31 +52,31 @@ export function initialArgs(
         const annotations = keyProperty.annotations;
         if (annotations.length === 0) {
             const valueProperty = arkts.getDecl(value);
-            if (valueProperty instanceof arkts.ClassProperty && (hasDecorator(valueProperty, DecoratorNames.PROVIDE) ||
-                hasDecorator(valueProperty, DecoratorNames.CONSUME))) {
+            if (valueProperty instanceof arkts.ClassProperty && (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
+                hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))) {
                 const errorMessage = 'Cannot assign @Provide or @Consume decorated data to regular property.';
                 logDiagnostic(errorMessage, node);
             }
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecorator(keyProperty, DecoratorNames.LINK)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.LINK)) {
             const initParam = processLink(keyName, value, keyType, proxySet);
             result.push(...initParam);
-        } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
-        } else if (hasDecorator(keyProperty, DecoratorNames.PROP) || hasDecorator(keyProperty, DecoratorNames.OBJECT_LINK) ||
-            hasDecorator(keyProperty, DecoratorNames.PARAM)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.PROP) || hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.PARAM)) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecorator(keyProperty, DecoratorNames.STATE) || hasDecorator(keyProperty, DecoratorNames.PROVIDE)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.STATE) || hasDecoratorInterop(keyProperty, DecoratorNames.PROVIDE)) {
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecorator(keyProperty, DecoratorNames.CONSUME)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
-        } else if (hasDecorator(keyProperty, DecoratorNames.BUILDER_PARAM)) {
+        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.BUILDER_PARAM)) {
             const initParam = processBuilderParam(keyName, value);
             result.push(...initParam);
         } else {
