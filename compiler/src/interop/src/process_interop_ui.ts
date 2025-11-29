@@ -27,6 +27,7 @@ import {
 const fs = require('fs');
 const path = require('path');
 
+const OHOS_ARKUI_GLOBAL_ANNOTATION: string = 'dynamic/@ohos.arkui.GlobalAnnotation';
 const OHOS_ARKUI_STATEMANAGEMENT: string = '@ohos.arkui.stateManagement';
 const OHOS_ARKUI_COMPONENT: string = '@ohos.arkui.component';
 const ARKUI_EXTEND: string = 'Extend';
@@ -121,7 +122,7 @@ class HandleUIImports {
       const moduleSpecifier = node.moduleSpecifier;
       if (ts.isStringLiteral(moduleSpecifier)) {
         const modulePath = moduleSpecifier.text;
-        if ([OHOS_ARKUI_STATEMANAGEMENT, OHOS_ARKUI_COMPONENT].includes(modulePath)) {
+        if ([OHOS_ARKUI_STATEMANAGEMENT, OHOS_ARKUI_COMPONENT, OHOS_ARKUI_GLOBAL_ANNOTATION].includes(modulePath)) {
           return node;
         }
       }
@@ -192,6 +193,7 @@ class HandleUIImports {
   }
 
   private addUIImports(node: ts.SourceFile): void {
+    const dynamicImportSpecifiers: ts.ImportSpecifier[] = [];
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
     const stateImportSpecifiers: ts.ImportSpecifier[] = [];
     this.importedInterfaces.add('LocalStorage');
@@ -200,31 +202,32 @@ class HandleUIImports {
         return;
       }
       const identifier = ts.factory.createIdentifier(interfaceName);
-      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList, ...stateManagementWhiteList]
-        .includes(interfaceName)) {
+      if ([...decoratorsWhiteList, ...decoratorsV2WhiteList].includes(interfaceName)) {
+        dynamicImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
+      } else if (stateManagementWhiteList.includes(interfaceName)) {
         stateImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
       } else {
         compImportSpecifiers.push(ts.factory.createImportSpecifier(false, undefined, identifier));
       }
     });
 
-    if (compImportSpecifiers.length + stateImportSpecifiers.length > 0) {
+    if (dynamicImportSpecifiers.length + stateImportSpecifiers.length + compImportSpecifiers.length > 0) {
       const newStatements = [...node.statements];
 
-      if (compImportSpecifiers.length) {
-        const moduleName = OHOS_ARKUI_COMPONENT;
-        const compImportDeclaration = ts.factory.createImportDeclaration(
+      if (dynamicImportSpecifiers.length) {
+        const moduleName = OHOS_ARKUI_GLOBAL_ANNOTATION;
+        const dynamicImportDeclaration = ts.factory.createImportDeclaration(
           undefined,
           ts.factory.createImportClause(false,
             undefined,
             ts.factory.createNamedImports(
-              compImportSpecifiers
+              dynamicImportSpecifiers
             )
           ),
           ts.factory.createStringLiteral(moduleName, true),
           undefined
         );
-        newStatements.splice(this.insertPosition, 0, compImportDeclaration);
+        newStatements.splice(this.insertPosition, 0, dynamicImportDeclaration);
       }
 
       if (stateImportSpecifiers.length) {
@@ -241,6 +244,22 @@ class HandleUIImports {
           undefined
         );
         newStatements.splice(this.insertPosition, 0, stateImportDeclaration);
+      }
+
+      if (compImportSpecifiers.length) {
+        const moduleName = OHOS_ARKUI_COMPONENT;
+        const compImportDeclaration = ts.factory.createImportDeclaration(
+          undefined,
+          ts.factory.createImportClause(false,
+            undefined,
+            ts.factory.createNamedImports(
+              compImportSpecifiers
+            )
+          ),
+          ts.factory.createStringLiteral(moduleName, true),
+          undefined
+        );
+        newStatements.splice(this.insertPosition, 0, compImportDeclaration);
       }
 
       newStatements.splice(this.insertPosition, 0, this.AddInteropImports());
