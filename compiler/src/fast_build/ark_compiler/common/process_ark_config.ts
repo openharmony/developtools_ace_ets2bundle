@@ -277,6 +277,7 @@ export function readProjectAndLibsSource(
         mReservedProperties: [],
         mRenameProperties: obfOptions.enablePropertyObfuscation,
         mKeepStringProperty: !obfOptions.enableStringPropertyObfuscation,
+        mKeepObjectProperty: obfOptions.keepObjectProps,
         mEnableAtKeep: obfOptions.enableAtKeep
       },
       mExportObfuscation: obfOptions.enableExportObfuscation,
