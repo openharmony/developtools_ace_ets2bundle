@@ -477,7 +477,7 @@ function parseMethodDeclaration(member: ts.MethodDeclaration, decorators: readon
   }
 }
 
-function getDecoratorName(decorator: ts.Decorator): string {
+export function getDecoratorName(decorator: ts.Decorator): string {
   return decorator.getText().replace(/\([^\(\)]*\)/, '').trim();
 }
 
