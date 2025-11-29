@@ -30,10 +30,8 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
             return;
         }
         const currentFilePath = getCurrentFilePath(node);
-        if (!currentFilePath) {
-            return;
-        }
-        if (!getMainPages(MetaDataCollector.getInstance().projectConfig).includes(currentFilePath)) {
+        const mainPages = getMainPages(this.context.projectConfig);
+        if (!currentFilePath || !mainPages || !mainPages.includes(currentFilePath)) {
             return;
         }
         let entryDecoratorCount = 0;
