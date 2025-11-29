@@ -1652,7 +1652,10 @@ export class factory {
                         ),
                     ]
                 ),
-                factory.genertateControllerSetCall(instanceIdent, CustomDialogNames.CONTROLLER),
+                arkts.factory.createIfStatement(
+                    arkts.factory.createIdentifier(CustomDialogNames.CONTROLLER),
+                    factory.genertateControllerSetCall(instanceIdent, CustomDialogNames.CONTROLLER)
+                ),
                 arkts.factory.createReturnStatement(instanceIdent.clone()),
             ];
         }
