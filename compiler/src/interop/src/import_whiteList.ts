@@ -1634,6 +1634,13 @@ export const decoratorsWhiteList: string[] = [
   'Consume',
   'Watch',
   'Require',
+  'Builder',
+  'BuilderParam',
+  'AnimatableExtend',
+  'Reusable',
+  'Entry',
+  'Component',
+  'CustomDialog',
 ];
 
 export const decoratorsV2WhiteList: string[] = [
@@ -1646,4 +1653,7 @@ export const decoratorsV2WhiteList: string[] = [
   'Computed',
   'Monitor',
   'Once',
+  'Trace',
+  'ReusableV2',
+  'ComponentV2',
 ];
