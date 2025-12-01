@@ -24,6 +24,49 @@ struct Index {
   regular3: Function = this.add;
   regular4: boolean = false;
   regular5: string = '234';
+  regular6: (Function) = buildFun;
+  regular7: (Function | number) = 7;
+  regular8: (Function | string) = 'regular';
+  regular9: (string) = '234';
+  regular10: () => void = buildFun;
+  regular11: (() => void | number) = this.add;
+  regular12: () => void | number | string = buildFun;
+  regular13: (a:number) => void | number | string = this.add;
+  regular14: (()=>void | number) | number = 1;
+
+  @State state22: (Function) = buildFun;
+  @State state23: ((Function)) = this.add;
+  @State state24: (Function | (string)) = '24';
+  @State state25: (Function | boolean) = buildFun;
+  @State state26: ((((Function) | number))) = 10;
+  @State state27: ((((Function | null)))) = buildFun;
+  @State state28: ((Function | undefined)) = this.add;
+  @State state29: (object) = this.add;
+  @State state30: ((boolean)) = false;
+
+  @State state16: (() => void) = buildFun;
+  @State state17: ((() => void | number)) = this.add;
+  @State state18: (() => void | (number | string)) = buildFun;
+  @State state19: ((a:number) => void | number | string )= this.add;
+  @State state20: ((()=>void | number) | number) = 1;
+  @State state21: (((()=>void | number) | string)) = '21';
+
+  @Provide provide22: (Function) = buildFun;
+  @Provide provide23: ((Function)) = this.add;
+  @Provide provide24: (Function | (string)) = '24';
+  @Provide provide25: (Function | boolean) = buildFun;
+  @Provide provide26: ((((Function) | number))) = 10;
+  @Provide provide27: ((((Function | null)))) = buildFun;
+  @Provide provide28: ((Function | undefined)) = this.add;
+  @Provide provide29: (object) = this.add;
+  @Provide provide30: ((boolean)) = false;
+
+  @Provide provide16: (() => void) = buildFun;
+  @Provide provide17: ((() => void | number)) = this.add;
+  @Provide provide18: (() => void | (number | string)) = buildFun;
+  @Provide provide19: ((a:number) => void | number | string )= this.add;
+  @Provide provide20: ((()=>void | number) | number) = 1;
+  @Provide provide21: (((()=>void | number) | string)) = '21';
 
   @State message: number = 1;
   @State message1: Function = this.add;
@@ -231,6 +274,74 @@ struct DialogSample {
   @LocalStorageLink('') localstorageLink2: Function|number = 1;
   @LocalStorageLink('') localstorageLink22: Function|string = 'localstorageLink';
   @LocalStorageLink('') localstorageLink3: Function|boolean = this.add;
+
+  @State state22: (Function) = buildFun;
+  @State state23: ((Function)) = this.add;
+  @State state24: (Function | (string)) = '24';
+  @State state25: (Function | boolean) = buildFun;
+  @State state26: ((((Function) | number))) = 10;
+  @State state27: ((((Function | null)))) = buildFun;
+  @State state28: ((Function | undefined)) = this.add;
+  @State state29: (object) = this.add;
+  @State state30: ((boolean)) = false;
+
+  @State state16: (() => void) = buildFun;
+  @State state17: ((() => void | number)) = this.add;
+  @State state18: ((()=>void | undefined) | number) = 18;
+  @State state19: (((()=>void | null) | string)) = '236';
+  @State state20: ((()=>void | number) | number) = 1;
+  @State state21: (((()=>void | number) | string)) = '21';
+
+  @Prop prop22: (Function) = buildFun;
+  @Prop prop23: ((Function)) = this.add;
+  @Prop prop24: (Function | (string)) = '24';
+  @Prop prop25: (Function | boolean) = buildFun;
+  @Prop prop26: ((((Function) | number))) = 10;
+  @Prop prop27: ((((Function | null)))) = buildFun;
+  @Prop prop28: ((Function | undefined)) = this.add;
+  @Prop prop29: (object) = this.add;
+  @Prop prop30: ((boolean)) = false;
+
+  @Prop prop16: (() => void) = buildFun;
+  @Prop prop17: ((() => void | number)) = this.add;
+  @Prop prop18: ((()=>void | undefined) | number) = 18;
+  @Prop prop19: (((()=>void | null) | string)) = '236';
+  @Prop prop20: ((()=>void | number) | number) = 1;
+  @Prop prop21: (((()=>void | number) | string)) = '21';
+
+  @Link link22: (Function);
+  @Link link23: ((Function));
+  @Link link24: (Function | (string));
+  @Link link25: (Function | boolean);
+  @Link link26: ((((Function) | number)));
+  @Link link27: ((((Function | null))));
+  @Link link28: ((Function | undefined));
+  @Link link29: (object);
+  @Link link30: ((boolean));
+
+  @Link link16: (() => void);
+  @Link link17: ((() => void | number));
+  @Link link18: ((()=>void | undefined) | number);
+  @Link link19: (((()=>void | null) | string));
+  @Link link20: ((()=>void | number) | number);
+  @Link link21: (((()=>void | number) | string));
+
+  @StorageProp('') storageProp31: (Function) = buildFun;
+  @StorageProp('') storageProp23: ((Function)) = this.add;
+  @StorageProp('') storageProp24: (Function | (string)) = '24';
+  @StorageProp('') storageProp25: (Function | boolean) = buildFun;
+  @StorageProp('') storageProp26: ((((Function) | number))) = 10;
+  @StorageProp('') storageProp27: ((((Function | null)))) = buildFun;
+  @StorageProp('') storageProp28: ((Function | undefined)) = this.add;
+  @StorageProp('') storageProp29: (object) = this.add;
+  @StorageProp('') storageProp30: ((boolean)) = false;
+
+  @StorageProp('') storageProp16: (() => void) = buildFun;
+  @StorageProp('') storageProp17: ((() => void | number)) = this.add;
+  @StorageProp('') storageProp18: ((()=>void | undefined) | number) = 18;
+  @StorageProp('') storageProp19: (((()=>void | null) | string)) = '236';
+  @StorageProp('') storageProp20: ((()=>void | number) | number) = 1;
+  @StorageProp('') storageProp21: (((()=>void | number) | string)) = '21';
 
   add(){}
 
