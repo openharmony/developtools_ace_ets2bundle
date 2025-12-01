@@ -83,10 +83,10 @@ function main() {}
     (((gensym___111800258) == (null)) ? undefined : gensym___111800258.tt)})) ?? ("state var")));
     this.__backing_index = STATE_MGMT_FACTORY.makeState<int>(this, "index", ((({let gensym___91647805 = initializers;
     (((gensym___91647805) == (null)) ? undefined : gensym___91647805.index)})) ?? (1)));
-    this.__backing_select = STATE_MGMT_FACTORY.makeState<double>(this, "select", ((({let gensym___90525328 = initializers;
-    (((gensym___90525328) == (null)) ? undefined : gensym___90525328.select)})) ?? (0.0)));
-    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<double>>(this, "selectArr", ((({let gensym___264591166 = initializers;
-    (((gensym___264591166) == (null)) ? undefined : gensym___264591166.selectArr)})) ?? ([0.0, 1.0, 2.0])));
+    this.__backing_select = STATE_MGMT_FACTORY.makeState<int>(this, "select", ((({let gensym___90525328 = initializers;
+    (((gensym___90525328) == (null)) ? undefined : gensym___90525328.select)})) ?? (0)));
+    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<int>>(this, "selectArr", ((({let gensym___264591166 = initializers;
+    (((gensym___264591166) == (null)) ? undefined : gensym___264591166.selectArr)})) ?? ([0, 1, 2])));
     this.__backing_fruits = ((({let gensym___180713065 = initializers;
     (((gensym___180713065) == (null)) ? undefined : gensym___180713065.fruits)})) ?? (["apple1", "orange2", "peach3", "grape4"]));
   }
@@ -111,21 +111,21 @@ function main() {}
     this.__backing_index!.set(value);
   }
   
-  private __backing_select?: IStateDecoratedVariable<double>;
-  public get select(): double {
+  private __backing_select?: IStateDecoratedVariable<int>;
+  public get select(): int {
     return this.__backing_select!.get();
   }
   
-  public set select(value: double) {
+  public set select(value: int) {
     this.__backing_select!.set(value);
   }
   
-  private __backing_selectArr?: IStateDecoratedVariable<Array<double>>;
-  public get selectArr(): Array<double> {
+  private __backing_selectArr?: IStateDecoratedVariable<Array<int>>;
+  public get selectArr(): Array<int> {
     return this.__backing_selectArr!.get();
   }
   
-  public set selectArr(value: Array<double>) {
+  public set selectArr(value: Array<int>) {
     this.__backing_selectArr!.set(value);
   }
   
@@ -212,11 +212,11 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(double | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<double> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(int | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<double> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<double>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<int> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<int>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectArr', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'fruits', '(Array<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_fruits', '(boolean | undefined)')}

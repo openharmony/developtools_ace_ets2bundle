@@ -23,6 +23,12 @@ struct PropParent {
   @Consume conVar3: boolean;
   @Consume conVar4: undefined;
   @Consume conVar5: null;
+  @Consume conVar6?: undefined;
+  @Consume conVar7?: null;
+  @Consume conVar8: undefined = undefined;
+  @Consume conVar9: null = null;
+  @Consume conVar10?: null = null;
+  @Consume conVar11?: undefined = undefined;
 
   build() {
   }
