@@ -13,6 +13,7 @@
     "clean:test": "rm -rf dist && rm -rf coverage",
     "prepare:test": "cp -rf $INIT_CWD/../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/koala-wrapper/build/native/ ../koala-wrapper/build/",
     "test": "npm run clean:test && npm run prepare:test && LD_LIBRARY_PATH=$INIT_CWD/../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/lib jest --coverage --logHeapUsage --config ./jest-test.config.js --maxWorkers=50% --silent",
+    "test:ci": "LD_LIBRARY_PATH=$INIT_CWD/../../../out/sdk/packages/ohos-sdk/linux/*/ets/static/build-tools/ets2panda/lib jest --config ./jest-test.ci.config.js --maxWorkers=80% --silent",
     "test:gdb": "LD_LIBRARY_PATH=$INIT_CWD/../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ets2panda/lib gdb --args node ./node_modules/.bin/jest --config ./jest-test.config.js",
     "compile": "npm run compile:clean && npm run compile:plugins && cp -rf ./lib $INIT_CWD/../../../../out/sdk/ohos-sdk/linux/ets/static/build-tools/ui-plugins/"
   },
