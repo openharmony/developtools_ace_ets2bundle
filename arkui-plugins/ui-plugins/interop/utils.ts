@@ -16,7 +16,14 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
+import {
+    BuilderMethodNames,
+    ESValueMethodNames,
+    InteroperAbilityNames,
+    InteropInternalNames,
+    GLOBAL_ANNOTATION_MODULE
+} from './predefines';
+import { DecoratorNames } from '../../common/predefines';
 import { BuilderLambdaNames } from '../utils';
 import { ImportCollector } from '../../common/import-collector';
 
@@ -264,4 +271,40 @@ export function isInteropComponent(node: arkts.CallExpression): boolean {
         return true;
     }
     return false;
+}
+
+function isDecoratorAnnotation(
+    anno: arkts.AnnotationUsage,
+    decoratorName: DecoratorNames,
+    ignoreDecl?: boolean
+): boolean {
+    if (!(!!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName)) {
+        return false;
+    }
+    if (!ignoreDecl) {
+        const decl = arkts.getDecl(anno.expr);
+        if (!decl) {
+            return false;
+        }
+        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        if (!moduleName || moduleName !== GLOBAL_ANNOTATION_MODULE) {
+            return false;
+        }
+    }
+    return true;
+}
+
+export function hasDecoratorInterop(
+    property:
+        | arkts.ClassProperty
+        | arkts.ClassDefinition
+        | arkts.MethodDefinition
+        | arkts.ETSParameterExpression
+        | arkts.ETSFunctionType,
+    decoratorName: DecoratorNames
+): boolean {
+    if (arkts.isMethodDefinition(property)) {
+        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+    }
+    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
