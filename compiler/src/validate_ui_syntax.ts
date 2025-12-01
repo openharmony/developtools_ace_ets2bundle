@@ -1559,15 +1559,8 @@ function validateNonFunctionTypeWithDecorator(
   decoratorName: string
 ): void {
   if (NON_FUNCTION_TYPE_WITH_V1_DECORATORS.has(decoratorName) && node.type) {
-    let escapedText = '';
-    if (
-      ts.isTypeReferenceNode(node.type) &&
-      node.type.typeName &&
-      ts.isIdentifier(node.type.typeName)
-    ) {
-      escapedText = node.type.typeName.escapedText?.toString();
-    }
-    if (escapedText === 'Function' || ts.isFunctionTypeNode(node.type)) {
+    const isFunctionType = getFunctionTypeFlag(node.type);
+    if (isFunctionType) {
       transformLog.errors.push({
         type: LogType.ERROR,
         code: '10905363',
@@ -1576,6 +1569,25 @@ function validateNonFunctionTypeWithDecorator(
       });
     }
   }
+}
+
+function getFunctionTypeFlag(typeNode: ts.TypeNode): boolean {
+  if (ts.isParenthesizedTypeNode(typeNode)) {
+    return getFunctionTypeFlag(typeNode.type);
+  }
+  if (ts.isTypeReferenceNode(typeNode)) {
+    let escapedText = '';
+    if (typeNode.typeName && ts.isIdentifier(typeNode.typeName)) {
+      escapedText = typeNode.typeName.escapedText?.toString();
+    }
+    if (escapedText === 'Function') {
+      return true;
+    }
+  }
+  if (ts.isFunctionTypeNode(typeNode)) {
+    return true;
+  }
+  return false;
 }
 
 function collectCurrentClassMethod(node: ts.StructDeclaration, currentMethodCollection: Set<string>): void {
