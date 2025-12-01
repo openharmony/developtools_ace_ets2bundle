@@ -1068,6 +1068,30 @@
             "type": "WARN"
         }
     ],
+    "MutableBuilderParam": [
+        {
+            "message": "The mutableBuilder's parameter should be '@Builder' function.",
+            "type": "ERROR",
+            "code": "10905109"
+        },
+        {
+            "message": "The mutableBuilder's parameter should be '@Builder' function.",
+            "type": "ERROR",
+            "code": "10905109"
+        }
+    ],
+    "WrapBuilderParam": [
+        {
+            "message": "The wrapBuilder's parameter should be '@Builder' function.",
+            "type": "ERROR",
+            "code": "10905109"
+        },
+        {
+            "message": "The wrapBuilder's parameter should be '@Builder' function.",
+            "type": "ERROR",
+            "code": "10905109"
+        }
+    ],
     "UnknownSrc": {
         "message": "Unknown resource source 'hap'.",
         "type": "ERROR",
