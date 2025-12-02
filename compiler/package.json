@@ -25,7 +25,7 @@
     "run:arkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\" --exclude \"arkTest_build/ark_compiler_ut/interop/*.test.js\"",
     "run:cleanArkTest": "rm -rf arkTest_build",
     "arkTest": "npm run build && npm run generateKitConfigs && ./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:arkTest && npm run run:cleanArkTest",
-    "run:interopArkTest": "mocha \"arkTest_build/ark_compiler_ut/interop/*.test.js\"",
+    "run:interopArkTest": "mocha \"arkTest_build/ark_compiler_ut/**/*.test.js\"",
     "interopArkTest": "npm run interopBuild && npm run generateKitConfigs && ./node_modules/.bin/babel ./test/ark_compiler_ut --out-dir arkTest_build/ark_compiler_ut --extensions .ts && npm run run:interopArkTest && npm run run:cleanArkTest",
     "coverage": "node_modules/nyc/bin/nyc.js npm run test:coverage",
     "duplicate": "jscpd",
