@@ -113,14 +113,15 @@ import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/uti
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
-import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
+import { ARKUI_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 import { expandAllImportPaths } from '../../import_path_expand';
 import {
   interopTransformLog,
-  interopTransform
+  interopTransform,
+  resetInteropTransformLog
 } from '../ark_compiler/interop/process_arkts_evolution';
 import { FileManager } from '../ark_compiler/interop/interop_manager';
 import { ARKTS_1_2 } from '../ark_compiler/interop/pre_define';
@@ -557,6 +558,7 @@ async function transform(code: string, id: string) {
     emitLogInfo(logger, getTransformLog(interopTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
+    resetInteropTransformLog();
     resetLog();
     resetKitImportLog();
   }
