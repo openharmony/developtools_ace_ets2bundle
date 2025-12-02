@@ -29,9 +29,10 @@ import {
   getFormatChecker,
   defaultFormatCheckerWithoutMSF,
   defaultValueChecker,
-  getAvailableDecoratorFromNode,
+  getValidDecoratorFromNode,
   extractMinApiFromDecorator,
-  getVersionByValueChecker
+  getVersionByValueChecker,
+  isAvailableDecorator
 } from '../api_check_utils';
 import { BaseVersionChecker } from './base_version_checker';
 
@@ -90,6 +91,7 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
     }
   }
 
+
   /**
    * Extract @Available decorator from a TypeScript node.
    * 
@@ -109,31 +111,18 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       return false;
     }
 
-    const decorators: ts.Decorator[] = getAvailableDecoratorFromNode(node, 1);
-
-    // Extract minApiVersion from @Available decorators
-    for (const dec of decorators) {
-      const minApi = extractMinApiFromDecorator(dec);
-      if (!minApi) {
-        continue;
-      }
-
-      // Validate version format using loaded format checker
-      // For OpenHarmony: uses integer-only format (e.g., "21")
-      // For other OS: uses format checker from external plugin or default
-      const isValidFormat = minApi.os === RUNTIME_OS_OH
-        ? defaultFormatCheckerWithoutMSF(minApi.version)
-        : this.formatChecker(minApi.formatVersion);
-
-      if (isValidFormat && isValidFormat.result) {
-        // Set instance variable for later retrieval
-        this.minApiVersion = minApi.version;
-        this.availableVersion = minApi;
-        return true; // Found valid @Available decorator
-      }
+    const decorator: ts.Decorator | null = getValidDecoratorFromNode(node, isAvailableDecorator);
+    if (decorator === null) {
+      return false
+    }
+    const minApi = extractMinApiFromDecorator(decorator);
+    if (!minApi) {
+      return false;
     }
 
-    return false; // No valid @Available decorator found
+    this.minApiVersion = minApi.version;
+    this.availableVersion = minApi;
+    return true;
   }
 
   /**
