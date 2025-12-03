@@ -117,7 +117,7 @@ import {
 import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
-import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import processStructComponentV2, { StructInfo, getDecoratorName } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
 
 export class ComponentCollection {
@@ -190,6 +190,8 @@ export const isStaticViewCollection: Map<string, boolean> = new Map();
 export const useOSFiles: Set<string> = new Set();
 export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
 export const originalImportNamesMap: Map<string, string> = new Map();
+
+const classTraceVariables: Map<string, string[]> = new Map();
 
 const envSupportClass: string = 'WindowSizeLayoutBreakpointInfo';
 
@@ -489,15 +491,18 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false,
+    undefined, '');
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean): void {
+  isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean,
+  classNode: ts.ClassDeclaration | undefined, tempStructName: string): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     const structName: string = node.name.escapedText.toString();
+    tempStructName = structName;
     const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
     if (structInfo.isComponentV2) {
       processStructComponentV2.parseComponentProperty(node, structInfo, log, sourceFileNode);
@@ -508,6 +513,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
+    classNode = node;
     [isObservedV1Class, isObservedClass, isSendableClass] = parseClassDecorator(node, sourceFileNode, log);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
@@ -520,14 +526,17 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
-    isObservedV1Class, isSendableClass);
+    isObservedV1Class, isSendableClass, classNode, tempStructName);
   ts.forEachChild(node, (child: ts.Node) => visitAllNode(child, sourceFileNode, allComponentNames, log,
-    structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass));
+    structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass,
+    classNode, tempStructName));
   structContext = false;
   classContext = false;
   isObservedClass = false;
   isObservedV1Class = false;
   isSendableClass = false;
+  classNode = undefined;
+  tempStructName = '';
 }
 
 const v1ComponentDecorators: string[] = [
@@ -819,15 +828,16 @@ function collectAttrsNames(node: ts.CallExpression, attrsNames: Set<string>): vo
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean): void {
+  isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean,
+  classNode: ts.ClassDeclaration | undefined, structName: string): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
     setLocalBuilderInFile(decoratorName);
-    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
+    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2, structName);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
-      isObservedV1Class, isSendableClass);
+      isObservedV1Class, isSendableClass, classNode);
     validatePropertyInStruct(structContext, node, decoratorName, sourceFileNode, log);
     return;
   }
@@ -850,7 +860,8 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905116' });
     return;
   }
-  const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR];
+  const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR,
+    constantDefine.SYNC_MONITOR_DECORATOR];
   if (partialDecoratorCollection.includes(decoratorName) && node.parent &&
     !ts.isMethodDeclaration(node.parent)) {
     const message: string = `'${decoratorName}' can only decorate method.`;
@@ -872,7 +883,8 @@ function isMemberForComponentV2(decoratorName: string, isComponentV2: boolean): 
 
 const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
 const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, TYPE,
-  constantDefine.MONITOR, constantDefine.COMPUTED];
+  constantDefine.MONITOR, constantDefine.COMPUTED, constantDefine.SYNC_MONITOR];
+const monitorDecorators: string[] = [constantDefine.SYNC_MONITOR];
 
 function validTypeCallback(node: ts.Identifier): boolean {
   let isSdkPath: boolean = true;
@@ -894,18 +906,20 @@ function isTypeFromSdkCallback(classContext: boolean, decoratorName: string, isT
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   classContext: boolean, decoratorName: string, isObservedClass: boolean, isObservedV1Class: boolean,
-  isSendableClass: boolean): void {
+  isSendableClass: boolean, classNode: ts.ClassDeclaration | undefined): void {
   const isTypeFromSdk: boolean = validTypeCallback(node);
   if (!classContext && (classDecorators.includes(decoratorName) || isTypeFromSdkCallback(classContext, decoratorName, isTypeFromSdk))) {
     const message: string = `The '@${decoratorName}' decorator can decorate only member variables of a class.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905345' });
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
-    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass, isTypeFromSdk);
+    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass,
+      isTypeFromSdk, classNode);
   }
 }
 
 function validateMemberInClass(isObservedClass: boolean, decoratorName: string, node: ts.Identifier,
-  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean, isTypeFromSdk: boolean): void {
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean,
+  isTypeFromSdk: boolean, classNode: ts.ClassDeclaration | undefined): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
       const message: string = `'@${decoratorName}' cannot be used with classes decorated by '@ObservedV2.'` +
@@ -920,12 +934,161 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
     }
     return;
   }
+  if (monitorDecorators.includes(decoratorName) && isObservedClass && classNode &&
+  ts.isCallExpression(node.parent)) {
+    const className: string = classNode.name.escapedText.toString();
+    const parentCallExpression: ts.CallExpression = node.parent;
+    const traceVariables: string[] = getOrCreateClassTraceVariables(className, classNode);
+    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, traceVariables);
+  }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
     const message: string = `The '@${decoratorName}' can decorate only member '${info}' within a 'class' decorated with '@ObservedV2'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905343' });
     return;
   }
+}
+
+function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceFileNode: ts.SourceFile,
+  log: LogInfo[], stateVariables: string[]): void {
+  if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
+    return;
+  }
+  parentCallExpression.arguments.forEach(monitorArgument => {
+    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log);
+    if (ts.isStringLiteral(monitorArgument) ||
+    ts.isNoSubstitutionTemplateLiteral(monitorArgument)) {
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, stateVariables);
+    }
+  });
+}
+
+interface argWrapper {
+  value: string
+}
+
+function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], stateVariables: string[]): void {
+  if (hasNumberDotPattern(monitorArgument)) {
+    return;
+  }
+  let monitorArg: argWrapper = { value: monitorArgument.text };
+  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
+  const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
+    `except in wildcard-based monitoring scenarios.`;
+  if (needCheckContent && !stateVariables.includes(monitorArg.value)) {
+    addLog(LogType.ERROR, variableExistMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905366' });
+  }
+}
+
+function hasNumberDotPattern(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral): boolean {
+  const argText: string = monitorArgument.text;
+  const regx: RegExp = /\.\d+/g;
+  const matches = argText.match(regx);
+  if (matches && matches.length > 0) {
+    return true;
+  }
+  return false;
+}
+
+function checkWildCard(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper): boolean {
+  const argText: string = monitorArgument.text;
+  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`;
+  const wildCardRegex: RegExp = /\.\*/g;
+  const matches = argText.match(wildCardRegex);
+  if (!matches || !matches.length) {
+    return true;
+  }
+  const wildCardCount: number = matches.length;
+  const isAtEnd: boolean = argText.endsWith('.*');
+  if (wildCardCount !== 1 || !isAtEnd) {
+    addLog(LogType.ERROR, wildCardMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905367' });
+    return false;
+  }
+  monitorArg.value = argText.slice(0, -2);
+  return true;
+}
+
+function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
+  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  const typeMessage: string = `Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.`;
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!ts.isIdentifier(monitorArgument) && !ts.isPropertyAccessExpression(monitorArgument) &&
+    !ts.isStringLiteral(monitorArgument) && !ts.isNoSubstitutionTemplateLiteral(monitorArgument)) {
+    addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+    return;
+  }
+  if (ts.isIdentifier(monitorArgument)) {
+    if (checker && !isIdentifierConst(monitorArgument, checker, log)) {
+      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+    }
+    return;
+  }
+  if (ts.isPropertyAccessExpression(monitorArgument)) {
+    if (monitorArgument.expression.kind === ts.SyntaxKind.ThisKeyword) {
+      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+      return;
+    }
+    if (!ts.isIdentifier(monitorArgument.expression) ||
+      (checker && !isIdentifierEnum(monitorArgument.expression, checker))) {
+      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+    }
+  }
+}
+
+function isIdentifierConst(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker,
+  log: LogInfo[]
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  for (const decl of declarations) {
+    if (ts.isVariableDeclaration(decl) && decl.parent) {
+      const hasConstModifier: boolean = decl.parent.getText().includes('const');
+      return hasConstModifier;
+    }
+  }
+  return false;
+}
+
+function isIdentifierEnum(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  const hasEnumDeclaration: boolean = declarations.some(decl => ts.isEnumDeclaration(decl));
+  return hasEnumDeclaration;
+}
+
+function getOrCreateClassTraceVariables(className: string,
+  classNode: ts.ClassDeclaration): string[] {
+  if (!classTraceVariables.has(className)) {
+    const traceVariables: string[] = [];
+    let propertyName: string = '';
+    classNode.members.forEach(propertyMember => {
+      if (!ts.isPropertyDeclaration(propertyMember) ||
+        !ts.isIdentifier(propertyMember.name)) {
+        return;
+      }
+      propertyName = propertyMember.name.escapedText.toString();
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+      const hasTrace = decorators.some(decorator => {
+        return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
+      });
+      hasTrace && traceVariables.push(propertyName);
+    });
+    classTraceVariables.set(className, traceVariables);
+  }
+  return classTraceVariables.get(className);
 }
 
 function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[], decoratorName: string,
@@ -1063,13 +1226,21 @@ function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childCla
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
-  structContext: boolean, decoratorName: string, isComponentV2: boolean): void {
+  structContext: boolean, decoratorName: string, isComponentV2: boolean, structName: string): void {
   const name: string = `@${decoratorName}`;
   if (structContext) {
     if (isComponentV2) {
       if (constantDefine.COMPONENT_MEMBER_DECORATOR_V1.includes(name)) {
         const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
         addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905339' });
+      }
+      if (monitorDecorators.includes(decoratorName) && node.parent &&
+        ts.isCallExpression(node.parent)) {
+        const parentCallExpression: ts.CallExpression = node.parent;
+        const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+        const stateVariables: string[] = [...structInfo.localDecoratorSet, ...structInfo.paramDecoratorMap.keys(),
+          ...structInfo.providerDecoratorSet, ...structInfo.consumerDecoratorSet];
+        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, stateVariables);
       }
     } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
@@ -2029,6 +2200,7 @@ export function resetComponentCollection(): void {
   provideInitialization.clear();
   privateCollection.clear();
   regularStaticCollection.clear();
+  classTraceVariables.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
