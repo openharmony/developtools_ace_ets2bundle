@@ -1,24 +1,13 @@
 {
-  "demo-1": {
+  "variable_initialization_via_component_constructor_1": {
     "messages": [
       {
         "message": "'@Require' decorated 'count1' must be initialized through the component constructor.",
         "position": {
-          "line": 37,
+          "line": 35,
           "column": 7
         }
       }
-    ]
-  },
-  "demo-2": {
-    "messages": [
-      {
-        "message": "The '@Local' property 'value' in the custom component 'TestParamChild' cannot be initialized here (forbidden to specify).",
-        "position": {
-            "line": 58,
-            "column": 23
-        }
-     }
     ]
   }
 }
