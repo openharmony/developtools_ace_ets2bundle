@@ -1,22 +1,33 @@
 {
-  "demo-1": {
+  "construct_parameter_literal_1": {
     "messages": [
       {
         "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
         "position": {
-          "line": 41,
+          "line": 35,
           "column":16
         }
       }
     ]
   },
-  "demo-2": {
+  "construct_parameter_literal_2": {
     "messages": [
       {
         "message": "The 'regular' property 'value' cannot be assigned to the '@ObjectLink' property 'title'",
         "position": {
-          "line": 68,
+          "line": 39,
           "column":24
+        }
+      }
+    ]
+  },
+  "construct_parameter_literal_3": {
+    "messages": [
+      {
+        "message": "The 'regular' property '$$.paramA1' cannot be assigned to the '@Link' property 'message'.",
+        "position": {
+          "line": 33,
+          "column": 25
         }
       }
     ]

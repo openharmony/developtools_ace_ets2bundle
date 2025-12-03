@@ -1,18 +1,72 @@
 {
-  "demo-1": {
+  "consumer_provider_decorator_check_1": {
     "messages": [
       {
-        "message": "The '@Consume' property 'ProvideVariableR' in the custom component 'Childprovide04' cannot be initialized here (forbidden to specify).",
+        "message": "The '@Consumer' property 'localVar' in the custom component 'ChildComponentV2' cannot be initialized here (forbidden to specify).",
         "position": {
-          "line": 45,
+          "line": 32,
           "column": 9
         }
       },
       {
-        "message": "The '@Consume' property 'ConsumeVariableR1' in the custom component 'Childprovide04' cannot be initialized here (forbidden to specify).",
+        "message": "The '@Provider' property 'providerVar' in the custom component 'ChildComponentV2' cannot be initialized here (forbidden to specify).",
         "position": {
-          "line": 48,
+          "line": 33,
           "column": 9
+        }
+      }
+    ]
+  },
+  "consumer_provider_decorator_check_2": {
+    "messages": [
+      {
+        "message": "The struct member variable can not be decorated by multiple built-in annotation",
+        "position": {
+          "line": 24,
+          "column": 4
+        }
+      },
+      {
+        "message": "The struct member variable can not be decorated by multiple built-in annotation",
+        "position": {
+          "line": 24,
+          "column": 14
+        }
+      }
+    ]
+  },
+  "consumer_provider_decorator_check_3": {
+    "messages": [
+      {
+        "message": "The struct member variable can not be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "The struct member variable can not be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 26,
+          "column": 16
+        }
+      }
+    ]
+  },
+  "consumer_provider_decorator_check_4": {
+    "messages": [
+      {
+        "message": "The '@Provider' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Consumer' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 31,
+          "column": 4
         }
       }
     ]
