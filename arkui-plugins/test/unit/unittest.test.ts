@@ -35,11 +35,15 @@ for (let i = 0; i < 4; i++) {
 // JSON 文件路径
 const jsonFilePath = path.join(__dirname, '../demo/localtest/unit_config_template.json');
 const unitPath = path.join(__dirname, '../demo/localtest/entry/src/main/ets/unit');
+const mainPagesPath = path.resolve(__dirname, '../demo/localtest/entry/src/main/resources/base/profile/main_pages.json');
+const testEtsPage = path.join(__dirname, '../demo/localtest/entry/src/main/ets/unit/main_pages_entry_check');
 const configFile = './test_config_all.json';
+const mainPagesName = 'main_pages_entry_check';
 
 let TEST_DATA = {};
-const TIMEOUT_MS = 10000;
-const JEST_TIMEOUT_MS = 100000;
+let mainPagesContent = { src: [] };
+const TIMEOUT_MS = 100000;
+const JEST_TIMEOUT_MS = 1000000;
 
 try {
     // 读取 JSON 文件内容
@@ -127,6 +131,20 @@ const { exec } = require('child_process');
  * @returns {Promise<{logs: string}>} Promise that resolves with combined stdout/stderr logs
  * @throws {Error} Throws if process times out or encounters an error
  */
+function getMainPages(etsPath: string, fileName: string) {
+    if (!fs.existsSync(etsPath)) {
+        return [];
+    }
+    const parent = path.basename(path.dirname(etsPath));
+    const folder = path.basename(etsPath);
+    return fs.readdirSync(etsPath)
+        .filter(file => file.endsWith('.ets') && file.startsWith(`${fileName}_`))
+        .map(file => {
+            const fileNoExt = file.replace(/\.ets$/, "");
+            return `${parent}/${folder}/${fileNoExt}`;
+        });
+}
+
 function runScriptAndCheckLogs(scriptPath: string, timeoutMs: number = TIMEOUT_MS) {
     return new Promise((resolve, reject) => {
         const process = exec(`node ${scriptPath}`, { timeout: timeoutMs }, (error, stdout, stderr) => {
@@ -148,18 +166,22 @@ function collectTestUnits(unitBasePath: string): Map<string, m.TestUnit> {
 
     for (const folderName of folders) {
         const rulePath = path.join(unitBasePath, folderName);
-        const etsFile = path.join(rulePath, `${folderName}.ets`);
+        const etsFiles = fs.readdirSync(rulePath)
+            .filter(file => file.endsWith('.ets') && file.startsWith(`${folderName}_`))
+            .map(file => path.join(rulePath, file));
+
         const jsonFile = path.join(rulePath, `${folderName}.json`);
-        if (fs.existsSync(etsFile) && fs.existsSync(jsonFile)) {
-            const messageData = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
-            const testUnit: m.TestUnit = {
-                folderName:folderName,
-                etsPath: etsFile,
-                jsonPath: jsonFile,
-                demo: messageData,
-            };
-            rules.set(folderName, testUnit);
+        if (!fs.existsSync(jsonFile) || etsFiles.length === 0) {
+            continue;
         }
+        const messageData = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
+        const testUnit: m.TestUnit = {
+            folderName: folderName,
+            etsPaths: etsFiles,
+            jsonPath: jsonFile,
+            demo: messageData,
+        };
+        rules.set(folderName, testUnit);
     }
     return rules;
 }
@@ -170,17 +192,40 @@ jest.setTimeout(JEST_TIMEOUT_MS);
 describe('All validation rules check', () => {
     let globalLogs = '';
     beforeAll(async () => {
-        const allEtsPaths = Array.from(testUnits.values()).map(u => path.resolve(__dirname, u.etsPath));
+        const allEtsPaths = Array.from(testUnits.values())
+            .flatMap(u => u.etsPaths)
+            .map(p => path.resolve(__dirname, p));
+
+        const originMainContent = fs.readFileSync(mainPagesPath, 'utf8')
+        mainPagesContent = JSON.parse(originMainContent);
+        const mainPagesList: string[] = getMainPages(testEtsPage, mainPagesName);
+
+        if (mainPagesList.length > 0) {
+            const pages = mainPagesList.filter(PagesItem => !mainPagesContent.src.includes(PagesItem));
+            if (pages.length > 0) {
+                mainPagesContent.src.push(...pages);
+                fs.writeFileSync(mainPagesPath, JSON.stringify(mainPagesContent, null, 2), 'utf8');
+            }
+        }
+
         TEST_DATA.compileFiles = allEtsPaths;
         TEST_DATA.entryFiles = allEtsPaths;
         fs.writeFileSync(configFile, JSON.stringify(TEST_DATA, null, 2), 'utf8');
         const result = await runScriptAndCheckLogs(`${BUILDER_SCRIPT} ${configFile}`);
+        fs.writeFileSync(mainPagesPath, originMainContent, 'utf8');
         globalLogs = result.logs;
     });
 
     for (const [ folderName, test] of testUnits) {
-        for (const [demoName, demo] of Object.entries(test.demo)) {
-            it(`${folderName} - ${demoName} should match`, () => {
+        for (const etsPath of test.etsPaths) {
+            const etsFileName = path.basename(etsPath,'.ets');
+            const demo = test.demo[etsFileName];
+
+            if (!demo) {
+                throw new Error(`${folderName}: in JSON '${etsFileName}' not found`);
+            }
+
+            it(`${folderName} - ${etsFileName} should match`, () => {
                 const pluginErrorLines = extractErrorWarningBlocks(globalLogs, LookingFor.ERROR);
                 const pluginWarningLines = extractErrorWarningBlocks(globalLogs, LookingFor.WARNING);
                 const missing: string[] = [];
@@ -191,7 +236,7 @@ describe('All validation rules check', () => {
                         pluginErrorLines.some(line => line.includes(message) && line.includes(positionInfo)) ||
                         pluginWarningLines.some(line => line.includes(message) && line.includes(positionInfo))
                     if (!found) {
-                        missing.push(`${folderName}/${demoName}: ${message} ${positionInfo}`);
+                        missing.push(`${folderName}/${etsFileName}: ${message} ${positionInfo}`);
                     }
                 }
                 expect(missing).toEqual([]);
@@ -202,4 +247,3 @@ describe('All validation rules check', () => {
         if (fs.existsSync(configFile)) fs.unlinkSync(configFile);
     });
 });
-

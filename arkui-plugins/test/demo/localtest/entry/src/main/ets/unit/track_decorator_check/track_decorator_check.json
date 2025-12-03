@@ -1,0 +1,70 @@
+{
+  "track_decorator_check_1": {
+    "messages": [
+      {
+        "message": "The '@Track' annotation can decorate only member variables of a class.",
+        "position": {
+          "line": 22,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@Track' annotation can decorate only member variables of a class.",
+        "position": {
+          "line": 27,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "track_decorator_check_2": {
+    "messages": [
+      {
+        "message": "'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' annotation instead.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Track' annotation can decorate only member variables of a class.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' annotation instead.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Track' annotation can decorate only member variables of a class.",
+        "position": {
+          "line": 33,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Track' cannot be used with classes decorated by '@ObservedV2'. Use the '@Trace' annotation instead.",
+        "position": {
+          "line": 33,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "track_decorator_check_3": {
+    "messages": [
+      {
+        "message": "The '@Track' annotation can decorate only member variables of a class.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      }
+    ]
+  }
+}
