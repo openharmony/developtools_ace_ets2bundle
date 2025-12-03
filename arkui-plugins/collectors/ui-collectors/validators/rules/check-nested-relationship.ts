@@ -150,16 +150,10 @@ function checkValidChildComponent(
             return;
         }
         argument.scriptFunction.body.statements.forEach((statement) => {
-            if (
-                !arkts.isExpressionStatement(statement) ||
-                !statement.expression ||
-                !arkts.isCallExpression(statement.expression) ||
-                !statement.expression.expression ||
-                !arkts.isIdentifier(statement.expression.expression)
-            ) {
+            const childComponentNode = findChildComponentNode(statement);
+            if (!childComponentNode) {
                 return;
             }
-            const childComponentNode = statement.expression.expression;
             const childComponentName = childComponentNode.name;
             if (
                 childComponentName === '' ||
@@ -181,6 +175,28 @@ function checkValidChildComponent(
             )}'.`,
         });
     }
+}
+
+function findChildComponentNode(stmt: arkts.AstNode): arkts.Identifier | undefined {
+    if (
+        !arkts.isExpressionStatement(stmt) ||
+        !stmt.expression ||
+        !arkts.isCallExpression(stmt.expression) ||
+        !stmt.expression.expression
+    ) {
+        return undefined;
+    }
+    if (arkts.isIdentifier(stmt.expression.expression)) {
+        return stmt.expression.expression;
+    }
+    if (
+        arkts.isMemberExpression(stmt.expression.expression) &&
+        arkts.isCallExpression(stmt.expression.expression.object) &&
+        arkts.isIdentifier(stmt.expression.expression.object.expression)
+    ) {
+        return stmt.expression.expression.object.expression;
+    }
+    return undefined;
 }
 
 function reportDelegateChildrenComponentChildren(
