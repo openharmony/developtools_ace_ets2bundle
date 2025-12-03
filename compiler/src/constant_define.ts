@@ -16,12 +16,16 @@
 const NAVIGATION_BUILDER_REGISTER: string = 'NavigationBuilderRegister';
 
 const MONITOR: string = 'Monitor';
+const SYNC_MONITOR: string = 'SyncMonitor';
+const TRACE: string = 'Trace';
 const COMPUTED: string = 'Computed';
 const REQUIRE: string = 'Require';
 const BUILDER_PARAM: string = 'BuilderParam';
 const DECORATOR_BUILDER_PARAM: string = '@BuilderParam';
 const DECORATOR_ENV: string = '@Env';
 const MONITOR_DECORATOR: string = '@Monitor';
+const SYNC_MONITOR_DECORATOR: string = '@SyncMonitor';
+const TRACE_DECORATOR: string = '@Trace';
 const COMPUTED_DECORATOR: string = '@Computed';
 const EVENT_DECORATOR: string = '@Event';
 
@@ -34,7 +38,7 @@ const COMPONENT_MEMBER_DECORATOR_V2: string[] = [
   '@Local', '@Param', '@Once', '@Event', '@Provider', '@Consumer'
 ];
 const STRUCT_CLASS_MEMBER_DECORATOR_V2: string[] = [
-  '@Monitor', '@Computed'
+  '@Monitor', '@Computed', '@SyncMonitor'
 ];
 const DECORATOR_V2: string[] = [
   ...COMPONENT_MEMBER_DECORATOR_V2, ...STRUCT_CLASS_MEMBER_DECORATOR_V2
@@ -99,5 +103,9 @@ export default {
   COMPONENT_CLASS,
   GET_PARAMS,
   GET_REUSE_ID,
-  EXTRA_INFO
+  EXTRA_INFO,
+  SYNC_MONITOR,
+  SYNC_MONITOR_DECORATOR,
+  TRACE,
+  TRACE_DECORATOR
 };
