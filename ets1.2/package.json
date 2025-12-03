@@ -17,6 +17,6 @@
     "compile:interop": "npm run compile --prefix interop",
     "panda:sdk:reinstall:libarkts": "npm run panda:sdk:reinstall --prefix libarkts",
     "regenerate:libarkts": "npm run regenerate --prefix libarkts",
-    "compile:js:libarkts": "npm run compile:js --prefix libarkts"
+    "compile:js:libarkts": "npm run compile:js:lib --prefix libarkts"
   }
 }
