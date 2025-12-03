@@ -529,6 +529,10 @@ export function collectMemoableInfoInFunctionReturnType(node: arkts.ScriptFuncti
         }
         if ((memoableInfo.hasMemo || memoableInfo.hasBuilder) && memoableInfo.hasProperType) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node.returnTypeAnnotation);
+        } else if (!!memoableInfo.isWithinTypeParams) {
+            NodeCacheFactory.getInstance()
+                .getCache(NodeCacheNames.MEMO)
+                .collect(node, { forbidTypeRewrite: true, isWithinTypeParams: true });
         }
         return memoableInfo;
     }
@@ -819,6 +823,15 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): node is arkts.Met
                 hasMemoEntry,
                 hasMemoIntrinsic,
             });
+        if (metadata.isGetter && returnMemoableInfo.isWithinTypeParams) {
+            NodeCacheFactory.getInstance()
+                .getCache(NodeCacheNames.MEMO)
+                .collect(func, {
+                    ...metadata,
+                    hasMemoEntry,
+                    hasMemoIntrinsic,
+                });
+        }
         const body = func.body;
         if (!!body && arkts.isBlockStatement(body) && !isScriptFunctionFromInterfaceGetterSetter(func)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
