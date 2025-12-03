@@ -412,7 +412,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `The '${node.expression.escapedText.toString()}'s parameter should be '@Builder' function.`,
+            message: `The ${node.expression.escapedText.toString()}'s parameter should be '@Builder' function.`,
             pos: node.getStart(),
             code: '10905109'
           });

@@ -287,6 +287,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_ui_syntax/ExtendOneChild',
   'Decorators/process_ui_syntax/ExtendInnerComponents',
   'Decorators/process_ui_syntax/ExtendUISyntax',
+  'Decorators/process_ui_syntax/MutableBuilderParam',
   'Decorators/process_ui_syntax/NoSrc',
   'Decorators/process_ui_syntax/NotSupportResrcParam',
   'Decorators/process_ui_syntax/NotSupportResrcType',
@@ -295,6 +296,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/process_ui_syntax/UnknownSrc',
   'Decorators/process_ui_syntax/UnknownSrcName',
   'Decorators/process_ui_syntax/UnknownSrcType',
+  'Decorators/process_ui_syntax/WrapBuilderParam',
 
   'Decorators/v1AndV2ComponentDecorators/property_observe_validate',
   'Decorators/v1AndV2ComponentDecorators/v2ToV1ComponentValidate',
