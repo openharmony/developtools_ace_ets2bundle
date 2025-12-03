@@ -197,7 +197,7 @@ export class SourceMapGenerator {
     }
     const pkgInfo = this.getPkgInfoByModuleId(moduleId, shouldObfuscateFileName);
     if (pkgInfo.dependency) {
-      key = `${pkgInfo.  entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
+      key = `${pkgInfo.entry.name}|${pkgInfo.dependency.name}|${pkgInfo.dependency.version}|${pkgInfo.modulePath}`;
     } else {
       key = `${pkgInfo.entry.name}|${pkgInfo.entry.name}|${pkgInfo.entry.version}|${pkgInfo.modulePath}`;
     }
@@ -252,13 +252,34 @@ export class SourceMapGenerator {
     }
 
     const cacheFileContent: string = fs.readFileSync(toUnixPath(cacheSourceMapInfo.path)).toString();
-    let cacheFileJson: Object = JSON.parse(cacheFileContent);
-    let compileFileList: Set<string> = this.getCompileFileList();
-    Object.keys(cacheFileJson).forEach(key => { 
-      if (!(!compileFileList.has(key) || this.sourceMapsResult[key])) {
-        this.sourceMapsResult[key] = cacheFileJson[key];
+    try {
+      let cacheFileJson: Object = JSON.parse(cacheFileContent);
+      let compileFileList: Set<string> = this.getCompileFileList();
+      Object.keys(cacheFileJson).forEach(key => {
+        if (!(!compileFileList.has(key) || this.sourceMapsResult[key])) {
+          this.sourceMapsResult[key] = cacheFileJson[key];
+        }
+      });
+    } catch (e) {
+      let lines: string[] = cacheFileContent.split(/\r?\n/);
+      if (lines.length <= 0) {
+        this.checkAndWriteEnd();
+        stopEvent(eventMergeCachedSourceMaps);
+        return;
       }
-    });  
+
+      let compileFileList: Set<string> = this.getCompileFileList();
+      for (const line of lines) {
+        if (line.trim() === '') {
+          continue;
+        }
+        let smObj: Object = JSON.parse(line.trim());
+        if (!(!compileFileList.has(smObj.key) || this.sourceMapsResult[smObj.key])) {
+          this.sourceMapsResult[smObj.key] = smObj.val;
+        }
+      }
+    }
+
     this.checkAndWriteEnd();
     stopEvent(eventMergeCachedSourceMaps);
   }
