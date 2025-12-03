@@ -1110,6 +1110,22 @@ function clearRollupCacheStore(cacheStoreManager: object, currentKey: string): v
   }
 }
 
+export function hspRawfileResources(rawfilePath: string, hspResourcesArr: string[],
+  tempResourceName: string = ''): void {
+  const files: string[] = fs.readdirSync(rawfilePath);
+  if (!files.length) {
+    return;
+  }
+  files.forEach((file: string) => {
+    if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
+      hspRawfileResources(path.join(rawfilePath, file), hspResourcesArr,
+        tempResourceName ? tempResourceName + '/' + file : file);
+    } else {
+      hspResourcesArr.push(tempResourceName ? `${tempResourceName}/${file}` : file);
+    }
+  });
+}
+
 export function startTimeStatisticsLocation(startTimeEvent: CompileEvent): void {
   if (startTimeEvent) {
     startTimeEvent.start();
