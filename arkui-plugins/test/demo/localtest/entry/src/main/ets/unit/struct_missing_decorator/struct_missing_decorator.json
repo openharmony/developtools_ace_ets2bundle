@@ -1,0 +1,49 @@
+{
+  "struct_missing_decorator_1": {
+    "messages": [
+      {
+        "message": "Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'V22'.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'V23'.",
+        "position": {
+          "line": 30,
+          "column": 8
+        }
+      },
+      {
+        "message": "Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'V25'.",
+        "position": {
+          "line": 37,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "struct_missing_decorator_2": {
+    "messages": [
+      {
+        "message": "Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.",
+        "position": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "struct_missing_decorator_3": {
+    "messages": [
+      {
+        "message": "Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'DemoMissing1'.",
+        "position": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    ]
+  }
+}
