@@ -438,10 +438,10 @@ export class ModuleSourceFile {
   private async writeSourceFile(parentEvent: Object): Promise<void> {
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
-        this.moduleId, parentEvent, ModuleSourceFile.logger);
+        this.moduleId, parentEvent, printObfLogger);
     } else {
       await writeFileContentToTempDir(this.moduleId, <string> this.source, ModuleSourceFile.projectConfig,
-        ModuleSourceFile.logger, parentEvent, this.metaInfo);
+        printObfLogger, parentEvent, this.metaInfo);
     }
   }
 
