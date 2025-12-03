@@ -1,0 +1,35 @@
+{
+  "observed_observedV2_check_1": {
+    "messages": [
+      {
+        "message": "A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "observed_observedV2_check_2": {
+    "messages": [
+      {
+        "message": "A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "observed_observedV2_check_3": {
+    "messages": [
+      {
+        "message": "A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      }
+    ]
+  }
+}

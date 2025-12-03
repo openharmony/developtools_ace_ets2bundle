@@ -1,0 +1,35 @@
+{
+  "property_type_1": {
+    "messages": [
+      {
+        "message": "'@BuilderParam' property can only be initialized by '@Builder' function or '@Builder' method in struct.",
+        "position": {
+          "line": 27,
+          "column": 17
+        }
+      }
+    ]
+  },
+  "property_type_2": {
+    "messages": [
+      {
+        "message": "'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.",
+        "position": {
+          "line": 27,
+          "column": 15
+        }
+      }
+    ]
+  },
+  "property_type_3": {
+    "messages": [
+      {
+        "message": "The '@PropRef' decorated attribute 'myState' must be of the string, number, boolean, enum or object type.",
+        "position": {
+          "line": 26,
+          "column": 12
+        }
+      }
+    ]
+  }
+}
