@@ -1579,6 +1579,28 @@
             "type": "ERROR"
         }
     ],
+    "envValidateArg": [
+        {
+            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "code": "10905368",
+            "type": "ERROR"
+        },
+        {
+            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "code": "10905368",
+            "type": "ERROR"
+        },
+        {
+            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "code": "10905368",
+            "type": "ERROR"
+        },
+        {
+            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "code": "10905368",
+            "type": "ERROR"
+        }
+    ],
     "mutiDecoratorInComponentV2": [
         {
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
