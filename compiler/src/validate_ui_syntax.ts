@@ -208,6 +208,8 @@ const envAllowTypes: string[] = [
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
+const envSupportArg: string = 'SystemProperties.BREAK_POINT';
+
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
   let log: LogInfo[] = [];
@@ -1680,6 +1682,7 @@ class RecordRequire {
   hasState: boolean = false;
   hasProvide: boolean = false;
   hasEnv: boolean = false;
+  envDecorator: ts.Decorator | undefined = undefined;
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComponentSet,
@@ -1918,6 +1921,51 @@ function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequ
   if (!checkEnvType(propertyType)) {
     validateEnvType(item);
   }
+  if (recordRequire.envDecorator) {
+    checkEnvDecoratorExp(recordRequire.envDecorator);
+  }
+}
+
+export function checkEnvDecoratorExp(node: ts.Decorator): void {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker || !node.expression || !ts.isCallExpression(node.expression) ||
+    !node.expression.arguments || !node.expression.arguments.length) {
+    return;
+  }
+  const envExp: ts.Expression = node.expression.arguments[0];
+  if (!ts.isPropertyAccessExpression(envExp) ||
+    !ts.isIdentifier(envExp.expression) ||
+    !isIdentifierHasEnumDecl(envExp.expression, checker) ||
+    !ts.isIdentifier(envExp.name)) {
+    validateEnvDecoratorExp(envExp);
+    return;
+  }
+  const argText: string = envExp.getText();
+  if (argText !== envSupportArg) {
+    validateEnvDecoratorExp(envExp);
+  }
+}
+
+export function validateEnvDecoratorExp(node: ts.Expression): void {
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905368',
+    message: `Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.`,
+    pos: node.getStart()
+  });
+}
+
+function isIdentifierHasEnumDecl(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  const hasEnumDeclaration: boolean = declarations.some(decl => ts.isEnumDeclaration(decl));
+  return hasEnumDeclaration;
 }
 
 export function checkEnvType(propertyType: ts.Type): boolean {
@@ -2009,6 +2057,7 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       break;
     case COMPONENT_ENV_DECORATOR:
       recordRequire.hasEnv = true;
+      recordRequire.envDecorator = node;
       componentSet.envs.add(name);
       break;
   }
