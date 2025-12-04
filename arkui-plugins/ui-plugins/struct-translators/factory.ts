@@ -144,7 +144,7 @@ export class factory {
             ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
-            : member.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
+            : member.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
         const body = isDecl
             ? undefined
             : arkts.factory.createBlock([

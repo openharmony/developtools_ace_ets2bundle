@@ -72,7 +72,7 @@ import hilog from "@ohos.hilog";
     Column(){};
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 
@@ -91,7 +91,7 @@ import hilog from "@ohos.hilog";
     Column(){};
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 

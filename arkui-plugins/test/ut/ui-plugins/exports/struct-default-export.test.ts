@@ -51,7 +51,7 @@ import { Component as Component, Entry as Entry } from \"@ohos.arkui.component\"
         throw new Error("Declare interface");
     }
     public build() {}
-    private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
         super(useSharedStorage, storage);
     }
 
