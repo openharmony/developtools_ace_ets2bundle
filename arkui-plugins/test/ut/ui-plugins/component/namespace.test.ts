@@ -54,7 +54,7 @@ import { State as State } from "@ohos.arkui.stateManagement";
       Text("123");
     };
     }
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 }
@@ -83,7 +83,7 @@ export namespace NS1 {
       };
     }
     
-    private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
       super(useSharedStorage, storage);
     }
     
@@ -104,7 +104,7 @@ export namespace NS1 {
         Text("123");
       };
       }
-      private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+      protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
       super(useSharedStorage, storage);
       }
     }
