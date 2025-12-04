@@ -45,7 +45,7 @@ export class CacheFactory {
     ): arkts.MethodDefinition {
         if (metadata.annotationInfo?.hasBuilder) {
             removeDecorator(method, DecoratorNames.BUILDER);
-            addMemoAnnotation(method.scriptFunction);
+            addMemoAnnotation(method.function);
         }
         return method;
     }
@@ -79,7 +79,7 @@ export class CacheFactory {
         const originalName: string = metadata.name!;
         const newName: string = backingField(originalName);
         const body = getterBodyWithObservedTrackProperty.bind(rewriteOptions)(originalName, newName);
-        node.scriptFunction.setBody(body);
+        node.function.setBody(body);
         return node;
     }
 
@@ -90,13 +90,13 @@ export class CacheFactory {
     ): arkts.MethodDefinition {
         const originalName: string = metadata.name!;
         const newName: string = backingField(originalName);
-        const scriptFunction = node.scriptFunction;
+        const scriptFunction = node.function;
         const params = scriptFunction.params;
-        if (params.length <= 0 || !arkts.isEtsParameterExpression(params.at(0)!)) {
+        if (params.length <= 0 || !arkts.isETSParameterExpression(params.at(0)!)) {
             return node;
         }
         const originParam: arkts.ETSParameterExpression = params.at(0)! as arkts.ETSParameterExpression;
-        const type = originParam.type;
+        const type = originParam.typeAnnotation;
         if (!type || !arkts.isTypeNode(type)) {
             return node;
         }
@@ -104,9 +104,10 @@ export class CacheFactory {
             originalName,
             newName
         );
-        const body = arkts.factory.createBlock([ifEqualsNewValue]);
-        const param = arkts.factory.createParameterDeclaration(
+        const body = arkts.factory.createBlockStatement([ifEqualsNewValue]);
+        const param = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, type),
+            false,
             undefined
         );
         scriptFunction.setParams([param]).setBody(body);
@@ -146,7 +147,7 @@ export class CacheFactory {
         const originalName: string = metadata.name!;
         const newName: string = backingField(originalName);
         const body = getterBodyWithObservedV2TraceProperty.bind(rewriteOptions)(originalName, newName);
-        node.scriptFunction.setBody(body);
+        node.function.setBody(body);
         return node;
     }
 
@@ -157,13 +158,13 @@ export class CacheFactory {
     ): arkts.MethodDefinition {
         const originalName: string = metadata.name!;
         const newName: string = backingField(originalName);
-        const scriptFunction = node.scriptFunction;
+        const scriptFunction = node.function;
         const params = scriptFunction.params;
-        if (params.length <= 0 || !arkts.isEtsParameterExpression(params.at(0)!)) {
+        if (params.length <= 0 || !arkts.isETSParameterExpression(params.at(0)!)) {
             return node;
         }
         const originParam: arkts.ETSParameterExpression = params.at(0)! as arkts.ETSParameterExpression;
-        const type = originParam.type;
+        const type = originParam.typeAnnotation;
         if (!type || !arkts.isTypeNode(type)) {
             return node;
         }
@@ -171,9 +172,10 @@ export class CacheFactory {
             originalName,
             newName
         );
-        const body = arkts.factory.createBlock([ifEqualsNewValue]);
-        const param = arkts.factory.createParameterDeclaration(
+        const body = arkts.factory.createBlockStatement([ifEqualsNewValue]);
+        const param = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, type),
+            false,
             undefined
         );
         scriptFunction.setParams([param]).setBody(body);

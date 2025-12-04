@@ -19,8 +19,16 @@ function parseDumpSrc(str: string): string {
     _str = removeImportStatements(_str);
     _str = removeSpaceAndReturn(_str);
     _str = replaceWithRandomNumber(_str);
+    _str = organizeImports(_str);
 
     return _str;
+}
+
+function organizeImports(str: string): string {
+    let imports: string[] = [];
+    str = str.replaceAll(/^\s*import.*from.*$/gm, (importLine) => { imports.push(importLine.trim()); return "" });
+    imports.sort()
+    return [...imports, "", str.trimStart()].join("\n")
 }
 
 function filterSource(text: string): string {

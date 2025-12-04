@@ -88,7 +88,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     if (({let gensym___27735436 = initializers;
     (((gensym___27735436) == (null)) ? undefined : gensym___27735436.__options_has_selectedDate)})) {
       this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
-    };
+    }
   }
   
   public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}

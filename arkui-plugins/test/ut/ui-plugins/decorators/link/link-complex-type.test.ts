@@ -137,51 +137,51 @@ final class LinkType extends BaseEnum<int> {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<Per>(this, "linkVar1", initializers!.__backing_linkVar1!);
-    };
+    }
     if (({let gensym___82966591 = initializers;
     (((gensym___82966591) == (null)) ? undefined : gensym___82966591.__options_has_linkVar2)})) {
       this.__backing_linkVar2 = STATE_MGMT_FACTORY.makeLink<Array<number>>(this, "linkVar2", initializers!.__backing_linkVar2!);
-    };
+    }
     if (({let gensym___55498955 = initializers;
     (((gensym___55498955) == (null)) ? undefined : gensym___55498955.__options_has_linkVar3)})) {
       this.__backing_linkVar3 = STATE_MGMT_FACTORY.makeLink<LinkType>(this, "linkVar3", initializers!.__backing_linkVar3!);
-    };
+    }
     if (({let gensym___231322030 = initializers;
     (((gensym___231322030) == (null)) ? undefined : gensym___231322030.__options_has_linkVar4)})) {
       this.__backing_linkVar4 = STATE_MGMT_FACTORY.makeLink<Set<string>>(this, "linkVar4", initializers!.__backing_linkVar4!);
-    };
+    }
     if (({let gensym___2576517 = initializers;
     (((gensym___2576517) == (null)) ? undefined : gensym___2576517.__options_has_linkVar5)})) {
       this.__backing_linkVar5 = STATE_MGMT_FACTORY.makeLink<Array<boolean>>(this, "linkVar5", initializers!.__backing_linkVar5!);
-    };
+    }
     if (({let gensym___11281112 = initializers;
     (((gensym___11281112) == (null)) ? undefined : gensym___11281112.__options_has_linkVar6)})) {
       this.__backing_linkVar6 = STATE_MGMT_FACTORY.makeLink<Array<Per>>(this, "linkVar6", initializers!.__backing_linkVar6!);
-    };
+    }
     if (({let gensym___228477447 = initializers;
     (((gensym___228477447) == (null)) ? undefined : gensym___228477447.__options_has_linkVar7)})) {
       this.__backing_linkVar7 = STATE_MGMT_FACTORY.makeLink<Array<Per>>(this, "linkVar7", initializers!.__backing_linkVar7!);
-    };
+    }
     if (({let gensym___82513833 = initializers;
     (((gensym___82513833) == (null)) ? undefined : gensym___82513833.__options_has_linkVar8)})) {
       this.__backing_linkVar8 = STATE_MGMT_FACTORY.makeLink<((sr: string)=> void)>(this, "linkVar8", initializers!.__backing_linkVar8!);
-    };
+    }
     if (({let gensym___218466927 = initializers;
     (((gensym___218466927) == (null)) ? undefined : gensym___218466927.__options_has_linkVar9)})) {
       this.__backing_linkVar9 = STATE_MGMT_FACTORY.makeLink<Date>(this, "linkVar9", initializers!.__backing_linkVar9!);
-    };
+    }
     if (({let gensym___190376050 = initializers;
     (((gensym___190376050) == (null)) ? undefined : gensym___190376050.__options_has_linkVar10)})) {
       this.__backing_linkVar10 = STATE_MGMT_FACTORY.makeLink<Map<number, Per>>(this, "linkVar10", initializers!.__backing_linkVar10!);
-    };
+    }
     if (({let gensym___64181673 = initializers;
     (((gensym___64181673) == (null)) ? undefined : gensym___64181673.__options_has_linkVar11)})) {
       this.__backing_linkVar11 = STATE_MGMT_FACTORY.makeLink<(string | number)>(this, "linkVar11", initializers!.__backing_linkVar11!);
-    };
+    }
     if (({let gensym___134911804 = initializers;
     (((gensym___134911804) == (null)) ? undefined : gensym___134911804.__options_has_linkVar12)})) {
       this.__backing_linkVar12 = STATE_MGMT_FACTORY.makeLink<(Set<string> | Per)>(this, "linkVar12", initializers!.__backing_linkVar12!);
-    };
+    }
   }
   
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}

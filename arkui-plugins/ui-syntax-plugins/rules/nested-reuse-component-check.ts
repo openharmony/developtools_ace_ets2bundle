@@ -35,7 +35,7 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
         this.reusableStructName = [];
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.initStructName(node);
         this.checkNestedReuseComponent(node);
         this.checkNoReusableV1InReusableV2(node);
@@ -48,7 +48,7 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
         //Go through all the children of Program
         for (const childNode of node.getChildren()) {
             // Check whether the type is struct
-            if (!arkts.isStructDeclaration(childNode)) {
+            if (!arkts.isETSStructDeclaration(childNode)) {
                 continue;
             }
             // Get a list of annotations
@@ -82,15 +82,15 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
         let hasRepeat: boolean = false;
         let hasTemplate: boolean = false;
         while (arkts.isCallExpression(node) &&
-            node.expression && arkts.isMemberExpression(node.expression) &&
-            node.expression.object && arkts.isCallExpression(node.expression.object)) {
-            if (arkts.isIdentifier(node.expression.property) && getIdentifierName(node.expression.property) === TEMPLATE) {
+            node.callee && arkts.isMemberExpression(node.callee) &&
+            node.callee.object && arkts.isCallExpression(node.callee.object)) {
+            if (arkts.isIdentifier(node.callee.property) && getIdentifierName(node.callee.property) === TEMPLATE) {
                 hasTemplate = true;
             }
-            node = node.expression.object;
+            node = node.callee.object;
         }
-        if (arkts.isCallExpression(node) && arkts.isIdentifier(node.expression)) {
-            hasRepeat = getIdentifierName(node.expression) === COMPONENT_REPEAT;
+        if (arkts.isCallExpression(node) && arkts.isIdentifier(node.callee)) {
+            hasRepeat = getIdentifierName(node.callee) === COMPONENT_REPEAT;
         }
         return { hasRepeat, hasTemplate };
     }
@@ -122,13 +122,13 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkNoReusableV1InReusableV2(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        if (this.reusableStructName.includes(node.expression.name)) {
+        if (this.reusableStructName.includes(node.callee.name)) {
             // Traverse upwards to find the custom component.
             let struceNode: arkts.AstNode = node;
-            while (!arkts.isStructDeclaration(struceNode)) {
+            while (!arkts.isETSStructDeclaration(struceNode)) {
                 if (!struceNode.parent) {
                     return;
                 }
@@ -171,14 +171,14 @@ class NestedReuseComponentCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkNestedReuseComponent(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        if (this.reusableV2StructName.includes(node.expression.name)) {
+        if (this.reusableV2StructName.includes(node.callee.name)) {
             // Traverse upwards to find the custom component.
             let struceNode: arkts.AstNode = node;
             let hasReportedError = false;
-            while (!arkts.isStructDeclaration(struceNode)) {
+            while (!arkts.isETSStructDeclaration(struceNode)) {
                 if (!struceNode.parent) {
                     return;
                 }

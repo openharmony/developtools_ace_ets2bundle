@@ -34,7 +34,7 @@ function _checkValidateBuildInStruct(
   const metadata = this.context ?? {};
   let hasBuild = false;
   node.definition?.body.forEach((item) => {
-    if (!arkts.isMethodDefinition(item) || item.name.name !== BUILD_NAME) {
+    if (!arkts.isMethodDefinition(item) || item.id?.name !== BUILD_NAME) {
       return;
     }
 
@@ -42,16 +42,16 @@ function _checkValidateBuildInStruct(
       hasBuild = true;
     }
 
-    if (item.scriptFunction.params.length !== 0) {
-      const firstParam = item.scriptFunction.params[0];
-      item.scriptFunction.params.forEach((param) => {
+    if (item.function.params.length !== 0) {
+      const firstParam = item.function.params[0];
+      item.function.params.forEach((param) => {
         this.report({
           node: param,
           message: `The 'build' method can not have arguments.`,
           level: LogType.ERROR,
           suggestion: createSuggestion(
               ``,
-              ...getStartAndEndPosition(item.scriptFunction.params, firstParam),
+              ...getStartAndEndPosition(item.function.params, firstParam),
               `Remove the parameters of the build function`
           ),
         });
@@ -64,7 +64,7 @@ function _checkValidateBuildInStruct(
     if (!identifier) {
       return;
     }
-    const position = arkts.SourcePosition.create(node.endPosition.index() - 1, node.endPosition.line());
+    const position = arkts.createSourcePosition(node.endPosition.getIndex() - 1, node.endPosition.getLine());
     this.report({
       node: identifier,
       message: `The struct '${identifier.name}' must have at least and at most one 'build' method.`,

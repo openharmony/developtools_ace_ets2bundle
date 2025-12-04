@@ -84,7 +84,7 @@ export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extend
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROP_REF);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROP_REF);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROP_REF);
         }

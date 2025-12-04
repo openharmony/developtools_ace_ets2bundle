@@ -80,7 +80,7 @@ export class OnceInterfaceTranslator<T extends InterfacePropertyTypes> extends I
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.ONCE);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.ONCE);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.ONCE);
         }

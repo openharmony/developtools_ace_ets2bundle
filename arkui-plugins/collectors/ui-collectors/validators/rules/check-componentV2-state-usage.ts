@@ -122,7 +122,7 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
             reportDecoratorName = 'regular';
         }
         if (!!reportDecoratorName && !!propertyInfo?.name) {
-            const prop = arkts.classByPeer<arkts.Property>(propPtr);
+            const prop = arkts.unpackNode<arkts.Property>(propPtr)!;
             this.report({
                 node: prop,
                 message: getLocalNeedNoInitReportMessage(reportDecoratorName, propertyInfo?.name, structName),

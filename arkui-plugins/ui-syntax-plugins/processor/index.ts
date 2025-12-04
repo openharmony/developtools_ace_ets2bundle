@@ -63,31 +63,31 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             message = this.format(options.message, options.data);
         }
 
-        const diagnosticKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+        const diagnosticKind: arkts.DiagnosticKind = arkts.createDiagnosticKind(
             message,
             options.level === 'error'
-                ? arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
-                : arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
+                ? arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
+                : arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
         );
         if (options.fix) {
-            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind,
-                arkts.getStartPosition(options.node));
+            const diagnosticInfo: arkts.DiagnosticInfo = arkts.createDiagnosticInfo(diagnosticKind,
+                options.node.startPosition);
             const fixSuggestion = options.fix(options.node);
-            const suggestionKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+            const suggestionKind: arkts.DiagnosticKind = arkts.createDiagnosticKind(
                 message,
-                arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
+                arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
             );
             const [startPosition, endPosition] = fixSuggestion.range;
-            const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
-            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
+            const sourceRange: arkts.SourceRange = arkts.createSourceRange(startPosition, endPosition);
+            const suggestionInfo: arkts.SuggestionInfo = arkts.createSuggestionInfo(
                 suggestionKind,
                 fixSuggestion.code,
                 fixSuggestion.title ? fixSuggestion.title : '',
                 sourceRange
             );
-            arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
+            arkts.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
         } else {
-            arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
+            arkts.logDiagnostic(diagnosticKind, options.node.startPosition);
         }
     }
 

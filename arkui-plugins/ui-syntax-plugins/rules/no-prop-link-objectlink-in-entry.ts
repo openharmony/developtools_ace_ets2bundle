@@ -26,16 +26,16 @@ class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
         };
     }
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.checkNoPropLinkOrObjectLinkInEntry(node);
     }
 
-    private checkNoPropLinkOrObjectLinkInEntry(node: arkts.StructDeclaration): void {
+    private checkNoPropLinkOrObjectLinkInEntry(node: arkts.ETSStructDeclaration): void {
         // Check if the struct has the @Entry decorator
         const isEntryComponent = !!getAnnotationUsage(node, PresetDecorators.ENTRY);
-        if (!node.definition.ident || !arkts.isIdentifier(node.definition.ident)) {
+        if (!node.definition?.ident || !arkts.isIdentifier(node.definition.ident)) {
             return;
         }
         const componentName = node.definition.ident.name;
@@ -72,7 +72,7 @@ class NoPropLinkObjectLinkInEntryRule extends AbstractUISyntaxRule {
                 },
                 fix: (annotation) => {
                     let startPosition = annotation.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     let endPosition = annotation.endPosition;
                     return {
                         title: 'Remove the annotation',

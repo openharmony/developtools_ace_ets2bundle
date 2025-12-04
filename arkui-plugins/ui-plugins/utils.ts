@@ -237,13 +237,13 @@ export function isCustomComponentAnnotation(
 }
 
 export function collectCustomComponentScopeInfo(
-    node: arkts.ClassDeclaration | arkts.StructDeclaration
+    node: arkts.ClassDeclaration | arkts.ETSStructDeclaration
 ): CustomComponentInfo | undefined {
     const definition: arkts.ClassDefinition | undefined = node.definition;
     if (!definition || !definition?.ident?.name) {
         return undefined;
     }
-    const isStruct = arkts.isStructDeclaration(node);
+    const isStruct = arkts.isETSStructDeclaration(node);
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClassDecl = !isStruct && isDecl;
     const shouldIgnoreDecl = isStruct || isDecl;
@@ -305,8 +305,8 @@ export function getAnnotationInfoForStruct(
     return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog };
 }
 
-export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
-    return scopeInfo.name === node.definition.ident?.name;
+export function isComponentStruct(node: arkts.ETSStructDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    return scopeInfo.name === node.definition!.ident?.name;
 }
 
 /**
@@ -356,19 +356,19 @@ export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: st
     }
 
     // For now, we only considered matched method name.
-    const isNameMatched: boolean = method.name?.name === name;
+    const isNameMatched: boolean = method.id?.name === name;
     return isNameMatched;
 }
 
 export function isSpecificNewClass(node: arkts.ETSNewClassInstanceExpression, className: string): boolean {
     if (
-        node.getTypeRef &&
-        arkts.isETSTypeReference(node.getTypeRef) &&
-        node.getTypeRef.part &&
-        arkts.isETSTypeReferencePart(node.getTypeRef.part) &&
-        node.getTypeRef.part.name &&
-        arkts.isIdentifier(node.getTypeRef.part.name) &&
-        node.getTypeRef.part.name.name === className
+        node.typeRef &&
+        arkts.isETSTypeReference(node.typeRef) &&
+        node.typeRef.part &&
+        arkts.isETSTypeReferencePart(node.typeRef.part) &&
+        node.typeRef.part.name &&
+        arkts.isIdentifier(node.typeRef.part.name) &&
+        node.typeRef.part.name.name === className
     ) {
         return true;
     }

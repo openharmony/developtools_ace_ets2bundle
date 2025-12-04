@@ -29,7 +29,7 @@ class ReusableComponentInV2CheckRule extends AbstractUISyntaxRule {
     public beforeTransform(): void {
         this.reusableStructName = [];
     }
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.initStructName(node);
         this.checkNoReusableV1InComponentV2(node);
     }
@@ -41,7 +41,7 @@ class ReusableComponentInV2CheckRule extends AbstractUISyntaxRule {
         //Go through all the children of Program
         for (const childNode of node.getChildren()) {
             // Check whether the type is struct
-            if (!arkts.isStructDeclaration(childNode)) {
+            if (!arkts.isETSStructDeclaration(childNode)) {
                 continue;
             }
             const reusableV1Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V1);
@@ -53,19 +53,19 @@ class ReusableComponentInV2CheckRule extends AbstractUISyntaxRule {
     }
 
     private checkNoReusableV1InComponentV2(node: arkts.AstNode,): void {
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        if (this.reusableStructName.includes(node.expression.name)) {
+        if (this.reusableStructName.includes(node.callee.name)) {
             // Traverse upwards to find the custom component.
             let structNode: arkts.AstNode = node;
-            while (!arkts.isStructDeclaration(structNode)) {
+            while (!arkts.isETSStructDeclaration(structNode)) {
                 if (!structNode.parent) {
                     return;
                 }
                 structNode = structNode.parent;
             }
-            const annotationsList = structNode.definition.annotations;
+            const annotationsList = structNode.definition?.annotations;
             // Check that the current component is decorated by the @ComponentV2 decorator
             if (annotationsList?.some((annotation: any) => annotation.expr.name === PresetDecorators.COMPONENT_V2)) {
                 this.report({

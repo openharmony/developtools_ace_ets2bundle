@@ -56,7 +56,7 @@ function _checkConstructParameter(
         if (!propertyPtr || !propertyInfo) {
             return;
         }
-        const property = arkts.classByPeer<arkts.Property>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.Property>(propertyPtr);
         const initializerProperty = property.key;
         const parameterProperty = property.value;
 
@@ -160,7 +160,7 @@ function getParameterAnnotationsAndName(parameterProperty: arkts.AstNode): {
         if (!parameterNode || !isFunctionDeclaration(parameterNode)) {
             return { parameterAnnotations: [], parameterName: '' };
         }
-        const funcAnnotations = parameterNode.funcExpr.function?.annotations;
+        const funcAnnotations = parameterNode.function.annotations;
         if (!funcAnnotations || funcAnnotations.length === 0) {
             return { parameterAnnotations: [DecoratorNames.REGULAR], parameterName: parameterName };
         }
@@ -172,7 +172,7 @@ function getParameterAnnotationsAndName(parameterProperty: arkts.AstNode): {
         });
     }
     if (isThisParameter) {
-        const propertyDecl = arkts.getPeerIdentifierDecl(parameterProperty.property.peer);
+        const propertyDecl = arkts.getPeerIdentifierDecl(parameterProperty.property!.peer);
         if (!propertyDecl || !arkts.isClassProperty(propertyDecl) || !arkts.isIdentifier(parameterProperty.property)) {
             return { parameterAnnotations: [], parameterName: '' };
         }

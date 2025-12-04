@@ -33,7 +33,7 @@ function fieldWithMonitorMethod(
     const field: arkts.ClassProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(newName),
         undefined,
-        arkts.factory.createUnionType([
+        arkts.factory.createETSUnionType([
             UIFactory.createTypeReferenceFromString(StateManagementTypes.MONITOR_DECORATED),
             arkts.factory.createETSUndefinedType(),
         ]),
@@ -49,7 +49,7 @@ function monitorInfo(
     originalName: string,
     isFromStruct: boolean
 ): MonitorInfo {
-    const monitorItem: string[] | undefined = getValueInMonitorAnnotation(this.method.scriptFunction.annotations);
+    const monitorItem: string[] | undefined = getValueInMonitorAnnotation(this.method.function.annotations);
     const monitorInfo: MonitorInfo = {
         monitorItem: monitorItem,
         originalName: originalName,
@@ -74,7 +74,7 @@ export class MonitorTranslator extends MethodTranslator implements IMonitorTrans
     }
 
     translateMember(): arkts.AstNode[] {
-        const originalName: string = expectName(this.method.name);
+        const originalName: string = expectName(this.method.id);
         const newName: string = monitorField(originalName);
         this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);

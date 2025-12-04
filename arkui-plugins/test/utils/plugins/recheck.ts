@@ -21,12 +21,12 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
  */
 export const recheck: Plugins = {
     name: 'recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             arkts.recheckSubtree(script);
             return script;
         }

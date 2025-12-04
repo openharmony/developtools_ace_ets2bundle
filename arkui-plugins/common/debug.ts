@@ -15,6 +15,33 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
+import { NodeCacheFactory } from './node-cache';
+
+export class Debugger {
+    private static instance: Debugger | null = null;
+    private phasesDebug: boolean;
+    private constructor() {
+        this.phasesDebug = false;
+    }
+
+    public static getInstance(): Debugger {
+        if (!this.instance) {
+            this.instance = new Debugger();
+        }
+        return this.instance;
+    }
+
+    enablePhasesDebug(phasesDebug: boolean = false): void {
+        this.phasesDebug = phasesDebug;
+    }
+
+    phasesDebugLog(tag: string): void {
+        if (!this.phasesDebug) {
+            return;
+        }
+        console.log(tag);
+    }
+}
 
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
@@ -25,10 +52,10 @@ const enableMemoryTracker: boolean = false;
 const enablePhasesDebug: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
 arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
-arkts.Debugger.getInstance().enablePhasesDebug(enablePhasesDebug);
+Debugger.getInstance().enablePhasesDebug(enablePhasesDebug);
 arkts.Performance.getInstance().skip(!isPerformance).skipDetail(!isPerformanceDetail);
 arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
-arkts.NodeCacheFactory.getInstance().shouldPerfLog(isNodeCacheLogPerformance);
+NodeCacheFactory.getInstance().shouldPerfLog(isNodeCacheLogPerformance);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }

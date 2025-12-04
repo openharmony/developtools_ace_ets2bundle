@@ -90,16 +90,6 @@ export class Collector extends AbstractVisitor {
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([0, 0, 2], 'LogCollector.emitLogInfo'));
             LogCollector.getInstance().reset();
         }
-        if (this.shouldCollectMemo) {
-            arkts.Performance.getInstance().createDetailedEvent(
-                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
-            );
-            ImportCollector.getInstance().insertCurrentImports(this.program);
-            ImportCollector.getInstance().clearImports();
-            arkts.Performance.getInstance().stopDetailedEvent(
-                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
-            );
-        }
     }
 
     private getMetadata(): UICollectMetadata {
@@ -132,7 +122,21 @@ export class Collector extends AbstractVisitor {
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.preOrderVisitor(node);
-        const newNode = this.visitEachChild(node);
+        let newNode = this.visitEachChild(node);
+
+        if (arkts.isETSModule(newNode) && this.shouldCollectMemo) {
+            arkts.Performance.getInstance().createDetailedEvent(
+                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
+            );
+            if (ImportCollector.getInstance().importInfos.length > 0) {
+                let imports = ImportCollector.getInstance().getImportStatements();
+                newNode = arkts.factory.updateETSModule(newNode, [...imports, ...newNode.statements], newNode.ident, newNode.getNamespaceFlag(), newNode.program);
+            }
+            arkts.Performance.getInstance().stopDetailedEvent(
+                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
+            );
+            ImportCollector.getInstance().clearImports();
+        }
         this.postOrderVisitor(newNode);
         return newNode;
     }

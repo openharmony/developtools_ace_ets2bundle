@@ -23,6 +23,7 @@ import { ConditionBreakCache } from './cache/conditionBreakCache';
 import { factory as UIFactory } from '../ui-factory';
 import { ConditionScopeInfoCache } from '../memo-collect-cache';
 import { ConditionScopeCacheVisitor } from './condition-scope-visitor';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export class ConditionScopeFactory {
     /**
@@ -59,7 +60,7 @@ export class ConditionScopeFactory {
     /**
      * update if-else in a builder lambda call's arguments.
      */
-    static updateIfElseContentBodyInBuilderLambda(statement: arkts.AstNode, shouldWrap?: boolean): arkts.AstNode {
+    static updateIfElseContentBodyInBuilderLambda(statement: arkts.Statement, shouldWrap?: boolean): arkts.Statement {
         if (arkts.isIfStatement(statement)) {
             const alternate = !!statement.alternate
                 ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap)
@@ -93,18 +94,18 @@ export class ConditionScopeFactory {
     /**
      * wrap `ConditionScope` or `ConditionBranch` builder function to the block statements.
      */
-    static wrapConditionToBlock(statements: readonly arkts.AstNode[], condition: ConditionNames): arkts.AstNode {
-        const contentArg = arkts.factory.createArrowFunction(
+    static wrapConditionToBlock(statements: readonly arkts.Statement[], condition: ConditionNames): arkts.Statement {
+        const contentArg = arkts.factory.createArrowFunctionExpression(
             UIFactory.createScriptFunction({
-                body: arkts.factory.createBlock(statements),
+                body: arkts.factory.createBlockStatement(statements),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             })
         );
         contentArg.setAnnotations([annotation(MemoNames.MEMO_UI)]);
-        const newCall = arkts.factory.createCallExpression(arkts.factory.createIdentifier(condition), undefined, [
+        const newCall = arkts.factory.createCallExpression(arkts.factory.createIdentifier(condition), [
             contentArg,
-        ]);
+        ], undefined, false, false);
         const newStatement = arkts.factory.createExpressionStatement(newCall);
         ConditionScopeInfoCache.getInstance().collect({ arg: contentArg, call: newCall });
         ImportCollector.getInstance().collectSource(condition, ARKUI_BUILDER_SOURCE_NAME);
@@ -170,7 +171,7 @@ export class ConditionScopeFactory {
      *
      * @internal
      */
-    static createBreakBetweenConditionStatements(): arkts.AstNode[] {
+    static createBreakBetweenConditionStatements(): arkts.Statement[] {
         const cache = ConditionBreakCache.getInstance();
         if (cache.shouldBreak) {
             return [arkts.factory.createBreakStatement()];
@@ -199,7 +200,7 @@ export class ConditionScopeFactory {
         const newStatements = funcBody.statements.map((st) => {
             const newNode = conditionScopeVisitor.visitor(st);
             conditionScopeVisitor.reset();
-            return newNode;
+            return newNode as arkts.Statement;
         });
         funcBody.setStatements(newStatements);
         _node.setParams(params);
@@ -211,16 +212,18 @@ export class ConditionScopeFactory {
      */
     static rewriteBuilderMethod<T extends arkts.AstNode = arkts.MethodDefinition>(node: T): arkts.MethodDefinition {
         const _node = coerceToAstNode<arkts.MethodDefinition>(node);
-        const newFunc = this.rewriteBuilderScriptFunction(_node.scriptFunction);
+        const newFunc = this.rewriteBuilderScriptFunction(_node.function);
         const newNode = arkts.factory.updateMethodDefinition(
             _node,
             _node.kind,
-            _node.name,
-            newFunc,
+            _node.key,
+            arkts.factory.createFunctionExpression(undefined, newFunc),
             _node.modifiers,
             false
         );
         ConditionScopeInfoCache.getInstance().updateAll().reset();
+        NodeCacheFactory.getInstance().refresh(_node.function, newNode.function)
+        NodeCacheFactory.getInstance().refreshUpdate(_node.function, newNode.function)
         return newNode;
     }
 
@@ -240,7 +243,8 @@ export class ConditionScopeFactory {
             newValue,
             _node.typeAnnotation,
             _node.modifiers,
-            false
+            false,
+            _node.annotations
         );
         ConditionScopeInfoCache.getInstance().updateAll().reset();
         return newNode;
@@ -268,8 +272,8 @@ export class ConditionScopeFactory {
         node: T
     ): arkts.ArrowFunctionExpression {
         const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
-        const newFunc = this.rewriteBuilderScriptFunction(_node.scriptFunction);
-        const newNode = arkts.factory.updateArrowFunction(_node, newFunc);
+        const newFunc = this.rewriteBuilderScriptFunction(_node.function);
+        const newNode = arkts.factory.updateArrowFunctionExpression(_node, newFunc, _node.annotations);
         ConditionScopeInfoCache.getInstance().updateAll().reset();
         return newNode;
     }

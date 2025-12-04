@@ -94,14 +94,14 @@ export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
 export function isResourceNode(node: arkts.CallExpression, ignoreDecl: boolean = false): boolean {
     if (
         !(
-            arkts.isIdentifier(node.expression) &&
-            (node.expression.name === Dollars.DOLLAR_RESOURCE || node.expression.name === Dollars.DOLLAR_RAWFILE)
+            arkts.isIdentifier(node.callee) &&
+            (node.callee.name === Dollars.DOLLAR_RESOURCE || node.callee.name === Dollars.DOLLAR_RAWFILE)
         )
     ) {
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getPeerIdentifierDecl(node.expression.peer);
+        const decl = arkts.getPeerIdentifierDecl(node.callee.peer);
         if (!decl) {
             return false;
         }

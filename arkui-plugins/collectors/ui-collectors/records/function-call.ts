@@ -153,7 +153,7 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         if (!callee.parent || !arkts.isMemberExpression(callee.parent)) {
             return false;
         }
-        return callee.parent.object && arkts.isThisExpression(callee.parent.object);
+        return !!(callee.parent.object && arkts.isThisExpression(callee.parent.object));
     }
 
     private collectFromDecl(decl: arkts.AstNode | undefined): void {
@@ -304,7 +304,7 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
     collectFromNode(node: arkts.CallExpression): void {
         this.ptr = node.peer;
 
-        const callee = node.expression;
+        const callee = node.callee;
         this._rootCallObject = this._rootCallObject ?? findRootCallObject(callee);
         this._rootCallee = this._rootCallee ?? findRootCallee(callee);
         this.callName = this._rootCallee?.name;

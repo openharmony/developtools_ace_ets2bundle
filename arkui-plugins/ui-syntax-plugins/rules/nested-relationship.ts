@@ -40,7 +40,7 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
             delegateParentComponent: `The '{{componentName}}' component can only be nested in the '{{parentComponentList}}' parent component.`,
         };
     }
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.checkValidParentComponent(node);
         this.checkValidChildComponent(node);
         this.checkSingleChildComponent(node);
@@ -64,22 +64,22 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
         let foundRenderingComponent: boolean = false;
         while (
             !arkts.isCallExpression(curNode) ||
-            !arkts.isIdentifier(curNode.expression) ||
-            !isBuildInComponent(this.context, curNode.expression.name)
+            !arkts.isIdentifier(curNode.callee) ||
+            !isBuildInComponent(this.context, curNode.callee.name)
         ) {
             if (!curNode.parent) {
                 return;
             }
             if (
                 arkts.isCallExpression(curNode) &&
-                arkts.isIdentifier(curNode.expression) &&
-                renderingConrtrolComponents.has(curNode.expression.name)
+                arkts.isIdentifier(curNode.callee) &&
+                renderingConrtrolComponents.has(curNode.callee.name)
             ) {
                 foundRenderingComponent = true;
             }
             curNode = curNode.parent;
         }
-        const parentComponentName = curNode.expression.name;
+        const parentComponentName = curNode.callee.name;
         if (this.context.componentsInfo.validParentComponent.get(componentName)!.includes(parentComponentName)) {
             return;
         }
@@ -116,7 +116,7 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
         }
         const componentName: string = getIdentifierName(node);
         if (!this.context.componentsInfo.validChildComponent.has(componentName) || !node.parent ||
-            !arkts.isCallExpression(node.parent) || !arkts.isIdentifier(node.parent.expression)) {
+            !arkts.isCallExpression(node.parent) || !arkts.isIdentifier(node.parent.callee)) {
             return;
         }
         let parentNode = node.parent;
@@ -162,19 +162,19 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
             !arkts.isExpressionStatement(stmt) ||
             !stmt.expression ||
             !arkts.isCallExpression(stmt.expression) ||
-            !stmt.expression.expression
+            !stmt.expression.callee
         ) {
             return undefined;
         }
-        if (arkts.isIdentifier(stmt.expression.expression)) {
-            return stmt.expression.expression;
+        if (arkts.isIdentifier(stmt.expression.callee)) {
+            return stmt.expression.callee;
         }
         if (
-            arkts.isMemberExpression(stmt.expression.expression) &&
-            arkts.isCallExpression(stmt.expression.expression.object) &&
-            arkts.isIdentifier(stmt.expression.expression.object.expression)
+            arkts.isMemberExpression(stmt.expression.callee) &&
+            arkts.isCallExpression(stmt.expression.callee.object) &&
+            arkts.isIdentifier(stmt.expression.callee.object.callee)
         ) {
-            return stmt.expression.expression.object.expression;
+            return stmt.expression.callee.object.callee;
         }
         return undefined;
     }

@@ -77,7 +77,7 @@ export class CustomComponentRecord extends BaseRecord<arkts.ClassDeclaration, Cu
             return;
         }
         const isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const isLegacy = definition.lang === arkts.Es2pandaLanguage.JS;
+        const isLegacy = definition.language === arkts.Es2pandaLanguage.LANGUAGE_JS;
         const isStruct = checkIsStructFromNode(node, !isLegacy);
         const isCustomComponentClass = checkIsCustomComponentDeclaredClassFromInfo({
             name,

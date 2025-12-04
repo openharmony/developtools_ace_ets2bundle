@@ -80,7 +80,7 @@ export function isProtectedClassProperty(property: arkts.ClassProperty): boolean
 
 export function isClassDeclaration(node: arkts.AstNode): node is arkts.ClassDeclaration {
     return (
-        arkts.isClassDeclaration(node) && !!node.definition && !arkts.classDefinitionIsFromStructConst(node.definition)
+        arkts.isClassDeclaration(node) && !!node.definition && !node.definition.isFromStruct
     );
 }
 
@@ -103,10 +103,10 @@ export function isInEtsGlobalClassDeclaration(node: arkts.AstNode): boolean {
 
 //Global method
 export function isFunctionDeclaration(node: arkts.AstNode): node is arkts.MethodDefinition {
-    if (!arkts.isMethodDefinition(node) || !node.isStatic || !node.scriptFunction.id) {
+    if (!arkts.isMethodDefinition(node) || !node.isStatic || !node.function.id) {
         return false;
     }
-    const methodName = node.scriptFunction.id.name;
+    const methodName = node.function.id.name;
     return (
         methodName !== BuiltInNames.GLOBAL_INIT_METHOD &&
         methodName !== BuiltInNames.GLOBAL_MAIN_METHOD &&
@@ -175,7 +175,7 @@ export function isBuiltInDeclaration(node: arkts.Identifier): boolean {
 
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    return program?.absName;
+    return program?.absoluteName;
 }
 
 export function checkIsValidChainingDataSource(dataSource: ChainingCallDataSource, thisCallInfo: CallInfo): boolean {

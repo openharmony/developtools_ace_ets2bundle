@@ -47,14 +47,14 @@ function _checkWrapBuilder(this: BaseValidator<arkts.CallExpression, CallInfo>, 
         if (
             !(decl = arkts.getPeerIdentifierDecl(funcIdentifier.peer)) ||
             !arkts.isMethodDefinition(decl) ||
-            !arkts.isFunctionExpression(decl.funcExpr) ||
-            !arkts.isScriptFunction(decl.funcExpr.function!)
+            !arkts.isFunctionExpression(decl) ||
+            !arkts.isScriptFunction(decl.function)
             // !arkts.isScriptFunction(decl.funcExpr.scriptFunction)
         ) {
             return;
         }
         // If the parameter is a Builder decorated method, no error will be reported
-        const funcAnnotations = decl.funcExpr.function.annotations;
+        const funcAnnotations = decl.function.annotations;
         const builderDecorator = getAnnotationUsageByName(funcAnnotations, DecoratorNames.BUILDER);
         if (builderDecorator) {
             return;

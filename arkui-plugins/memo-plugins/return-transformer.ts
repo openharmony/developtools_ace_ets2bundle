@@ -60,7 +60,7 @@ export class ReturnTransformer extends AbstractVisitor {
                 return factory.createReturnThis();
             }
             if (node.argument === undefined) {
-                return arkts.factory.createBlock([
+                return arkts.factory.createBlockStatement([
                     arkts.factory.createExpressionStatement(factory.createRecacheCall()),
                     node,
                 ]);
@@ -72,9 +72,10 @@ export class ReturnTransformer extends AbstractVisitor {
                 this.returnTypeInfo.isMemo &&
                 arkts.isArrowFunctionExpression(argument)
             ) {
-                argument = arkts.factory.updateArrowFunction(
+                argument = arkts.factory.updateArrowFunctionExpression(
                     argument,
-                    factory.updateScriptFunctionWithMemoParameters(argument.scriptFunction)
+                    factory.updateScriptFunctionWithMemoParameters(argument.function!),
+                    argument.annotations
                 );
             }
 

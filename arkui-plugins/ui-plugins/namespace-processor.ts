@@ -58,7 +58,7 @@ export class NamespaceProcessor {
         ++this.totalInterfacesCnt_;
     }
 
-    public updateCurrentNamespace(node: arkts.EtsScript): arkts.EtsScript {
-        return arkts.factory.updateEtsScript(node, [...node.statements, ...this.currentNamepaceInterfaces]);
+    public updateCurrentNamespace(node: arkts.ETSModule): arkts.ETSModule {
+        return arkts.factory.updateETSModule(node, [...node.statements, ...this.currentNamepaceInterfaces], node.ident, node.getNamespaceFlag(), node.program);
     }
 }

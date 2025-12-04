@@ -40,12 +40,13 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithObjectLinkProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -58,14 +59,16 @@ function initializeStructWithObjectLinkProperty(
         this.propertyType,
         false
     );
-    const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
+    const args: arkts.Expression[] = [arkts.factory.createStringLiteral(originalName), initializers];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
@@ -88,7 +91,7 @@ export class ObjectLinkTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithObjectLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -113,7 +116,7 @@ export class ObjectLinkCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithObjectLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -127,7 +130,7 @@ export class ObjectLinkInterfaceTranslator<T extends InterfacePropertyTypes> ext
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
         }

@@ -43,7 +43,7 @@ interface ComponentAttributeInfo {
  * find attribute info from component method
  */
 function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition): ComponentAttributeInfo | undefined {
-    const type = component.scriptFunction.returnTypeAnnotation;
+    const type = component.function.returnTypeAnnotation;
     const name = expectNameInTypeReference(type);
     if (!name) {
         return undefined;
@@ -108,14 +108,9 @@ export class ComponentAttributeCache {
         index: number,
         name: string
     ): arkts.ETSParameterExpression {
-        if (index === 0 && isForEach(name) && !!param.type && arkts.isTypeNode(param.type)) {
-            return arkts.factory.createParameterDeclaration(
-                arkts.factory.createIdentifier(
-                    param.identifier.name,
-                    UIFactory.createLambdaFunctionType([], param.type.clone())
-                ),
-                undefined
-            );
+        if (index === 0 && isForEach(name) && arkts.isTypeNode(param.typeAnnotation)) {
+            param.setTypeAnnotation(UIFactory.createLambdaFunctionType([], param.typeAnnotation.clone()))
+            return param;
         }
         return param;
     }
@@ -142,8 +137,8 @@ export class ComponentAttributeCache {
         if (!attributeInfo) {
             return;
         }
-        const name: string = node.name.name;
-        const func = node.scriptFunction;
+        const name: string = node.id!.name;
+        const func = node.function;
         const hasRestParameter = func.hasRestParameter;
         const hasReceiver = func.hasReceiver;
         const typeParameters = collectTypeRecordFromTypeParameterDeclaration(func.typeParams);

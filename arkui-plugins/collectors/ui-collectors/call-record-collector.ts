@@ -27,6 +27,7 @@ import { CallValidator, ValidatorBuilder } from './validators';
 import { NodeCacheNames } from '../../common/predefines';
 import { AstNodePointer } from '../../common/safe-types';
 import { ChainingCallDataSource } from './chaining-call-data-source';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export class CallRecordCollector {
     private static instance: CallRecordCollector;
@@ -98,7 +99,7 @@ export class CallRecordCollector {
     }
 
     collect(call: arkts.CallExpression, isFromChainCall?: boolean): void {
-        if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).has(call)) {
+        if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).has(call)) {
             return;
         }
         if (this._inChainCalls.has(call.peer)) {
@@ -110,8 +111,8 @@ export class CallRecordCollector {
         }
         const callRecord = new CallRecord(this._metadata);
         // collect external information from current call.
-        const rootCallObject = findRootCallObject(call.expression);
-        const rootCallee = findRootCallee(call.expression);
+        const rootCallObject = findRootCallObject(call.callee);
+        const rootCallee = findRootCallee(call.callee);
         callRecord.withRootCallObject(rootCallObject).withRootCallee(rootCallee);
         if (this._chainingCallData.isWithInChain()) {
             callRecord.withRootCallInfo(this._chainingCallData.rootCallInfo!.callRecord.toRecord()!);
@@ -140,14 +141,14 @@ export class CallRecordCollector {
 }
 
 function parametersBlockHasReceiver(params: readonly arkts.Expression[]): boolean {
-    return params.length > 0 && arkts.isEtsParameterExpression(params[0]) && isThisParam(params[0]);
+    return params.length > 0 && arkts.isETSParameterExpression(params[0]) && isThisParam(params[0]);
 }
 
 function isThisParam(node: arkts.Expression | undefined): boolean {
-    if (node === undefined || !arkts.isEtsParameterExpression(node)) {
+    if (node === undefined || !arkts.isETSParameterExpression(node)) {
         return false;
     }
-    return node.identifier?.isReceiver ?? false;
+    return node.ident?.isReceiver ?? false;
 }
 
 function parametrizedNodeHasReceiver(node: arkts.ScriptFunction | undefined): boolean {
@@ -158,8 +159,8 @@ function parametrizedNodeHasReceiver(node: arkts.ScriptFunction | undefined): bo
 }
 
 function checkParentHasChainInThisCall(thisCall: arkts.CallExpression, parent: arkts.CallExpression): boolean {
-    const parentCallee = parent.expression;
-    if (parentCallee.findNodeInInnerChild(thisCall)) {
+    const parentCallee = parent.callee;
+    if (parentCallee?.findNodeInInnerChild(thisCall)) {
         // this impiles the parent call has inner callee of this call.
         return true;
     }
@@ -170,9 +171,9 @@ function checkParentHasChainInThisCall(thisCall: arkts.CallExpression, parent: a
     const firstArg = args.at(0)!;
     if (firstArg.peer === thisCall.peer || firstArg.findNodeInInnerChild(thisCall)) {
         // whether the first argument has inner child of this call, impling possible function receiver call.
-        const callee = findRootCallee(parent.expression);
+        const callee = findRootCallee(parent.callee);
         const decl = !!callee ? arkts.getPeerIdentifierDecl(callee.peer) : undefined;
-        return !!decl && arkts.isMethodDefinition(decl) && parametrizedNodeHasReceiver(decl.scriptFunction);
+        return !!decl && arkts.isMethodDefinition(decl) && parametrizedNodeHasReceiver(decl.function);
     }
     return false;
 }
@@ -197,6 +198,6 @@ function collectCallAndAllParentCalls(
     const { call: lastCall, callRecord: lastCallRecord } = this.lastCallInfo ?? { call, callRecord };
     // validate collected calls
     ValidatorBuilder.build(CallValidator).checkIsViolated(lastCall, lastCallRecord.toRecord());
-    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(lastCall, lastCallRecord.toJSON());
+    NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(lastCall, lastCallRecord.toJSON());
     this.chainingCallData.reset();
 }

@@ -64,8 +64,8 @@ class NoDuplicateIdRule extends AbstractUISyntaxRule {
                 data: {
                     id: idInfo.value,
                     path: getCurrentFilePath(node) ?? '',
-                    line: idInfo.node.startPosition.line().toString(),
-                    index: idInfo.node.startPosition.index().toString()
+                    line: idInfo.node.startPosition.getLine().toString(),
+                    index: idInfo.node.startPosition.getIndex().toString()
                 }
             });
         } else {
@@ -75,7 +75,7 @@ class NoDuplicateIdRule extends AbstractUISyntaxRule {
     }
 
     private getIdInfo(node: arkts.CallExpression): IdInfo | undefined {
-        const callee = node.expression;
+        const callee = node.callee;
 
         if (!arkts.isMemberExpression(callee)) {
             return undefined;

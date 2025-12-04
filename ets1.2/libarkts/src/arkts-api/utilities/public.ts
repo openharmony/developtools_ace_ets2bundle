@@ -117,16 +117,30 @@ export function metaDatabase(fileName: string): string {
     return `${fileName}.meta.json`;
 }
 
-export function checkErrors() {
+export function checkErrors(proceedTo?: string) {
     if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         traceGlobal(() => `Terminated due to compilation errors occured`);
-        console.log(unpackString(global.generatedEs2panda._GetAllErrorMessages(global.context)));
-        // global.es2panda._DestroyConfig(global.config)
-        process.exit(1);
+
+        const errorMessage = unpackString(global.generatedEs2panda._ContextErrorMessage(global.context));
+        if (errorMessage === undefined) {
+            throwError(`Could not get ContextErrorMessage`);
+        }
+        const allErrorMessages = unpackString(global.generatedEs2panda._GetAllErrorMessages(global.context));
+        if (allErrorMessages === undefined) {
+            throwError(`Could not get AllErrorMessages`);
+        }
+        const actionMsg = proceedTo ? " to " + proceedTo : ""
+        throwError([`Failed to proceed${actionMsg}`, errorMessage, allErrorMessages].join(`\n`));
     }
 }
 
-export function proceedToState(state: Es2pandaContextState): void {
+export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativePointer, ignoreErrors = false): void {
+    if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        NodeCache.clear();
+        if (!ignoreErrors) {
+            checkErrors(Es2pandaContextState[state]);
+        }
+    }
     if (state <= global.es2panda._ContextState(global.context)) {
         return;
     }
@@ -137,7 +151,9 @@ export function proceedToState(state: Es2pandaContextState): void {
     traceGlobal(() => `Proceeding to state ${Es2pandaContextState[state]}: done`);
     const after = Date.now();
     global.profiler.proceededToState(after - before);
-    checkErrors();
+    if (!ignoreErrors) {
+        checkErrors(Es2pandaContextState[state]);
+    }
 }
 
 /** @deprecated Use {@link rebindContext} instead */
@@ -155,7 +171,6 @@ export function recheckSubtree(node: AstNode): void {
     traceGlobal(() => `Recheck: start`);
     global.generatedEs2panda._AstNodeRecheck(global.context, node.peer);
     traceGlobal(() => `Recheck: done`);
-    checkErrors();
 }
 
 export function rebindContext(context: KNativePointer = global.context): void {
@@ -268,6 +283,14 @@ export function resolveGensymVariableDeclaratorForOptionalCall(node: VariableDec
     return undefined;
 }
 
+export function getPeerIdentifierDecl(peer: KNativePointer): AstNode | undefined {
+    const decl = global.generatedEs2panda._DeclarationFromIdentifier(global.context, peer);
+    if (decl === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(decl);
+}
+
 export function getPeerObjectDecl(peer: KNativePointer): AstNode | undefined {
     const decl = global.es2panda._ClassVariableDeclaration(global.context, peer);
     if (decl === nullptr) {
@@ -275,6 +298,23 @@ export function getPeerObjectDecl(peer: KNativePointer): AstNode | undefined {
     }
     return unpackNonNullableNode(decl);
 }
+
+export function getPeerMemberDecl(peer: KNativePointer): AstNode | undefined {
+    const decl = global.es2panda._DeclarationFromMemberExpression(global.context, peer);
+    if (decl === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(decl);
+}
+
+export function getPeerPropertyDecl(peer: KNativePointer): AstNode | undefined {
+    const decl = global.es2panda._DeclarationFromProperty(global.context, peer);
+    if (decl === nullptr) {
+        return undefined;
+    }
+    return unpackNonNullableNode(decl);
+}
+
 
 export function getAnnotations(node: AstNode): readonly AnnotationUsage[] {
     if (!isFunctionDeclaration(node) && !isScriptFunction(node) && !isClassDefinition(node)) {
@@ -495,4 +535,12 @@ export function logDiagnosticWithSuggestion(diagnosticInfo: DiagnosticInfo, sugg
 
 export function filterNodes(node: AstNode, filter: string): AstNode[] {
     return unpackNodeArray(global.es2panda._FilterNodes(global.context, passNode(node), filter));
+}
+
+export function memInitialize() {
+    global.es2panda._MemInitialize()
+}
+
+export function memFinalize() {
+    global.es2panda._MemFinalize()
 }
