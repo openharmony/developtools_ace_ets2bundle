@@ -45,8 +45,10 @@ function findRootDir() {
 }
 
 export function getArktsPath() {
-    return path.join(findRootDir(), 'koala-wrapper', './build/lib/arkts-api/index.js');
+    return path.join(findRootDir(), 'libarkts', './lib/libarkts.js');
 }
+
+// Please check which of these are actually used, and replace the paths to ets1.2/* if needed
 
 export function getInteropPath() {
     return path.join(findRootDir(), 'koala-wrapper/koalaui/interop', './dist/lib/src/interop/index.js');

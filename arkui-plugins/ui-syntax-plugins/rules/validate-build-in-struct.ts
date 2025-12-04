@@ -31,7 +31,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         let buildFunctionCount: number = BUILD_FUNCTION_COUNT_INI;
@@ -39,12 +39,12 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
     }
 
     private validateBuild(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         buildFunctionCount: number
     ): void {
-        node.definition.body.forEach((member) => {
+        node.definition?.body.forEach((member) => {
             // Check if the member is defined for the method and the method name is 'build'
-            if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name) && getIdentifierName(member.name) === BUILD_NAME) {
+            if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.id) && getIdentifierName(member.id) === BUILD_NAME) {
                 buildFunctionCount++;
                 this.validateBuildFunctionParameters(member);
                 this.validateDuplicateBuild(buildFunctionCount, member);
@@ -59,10 +59,10 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
 
     // rule1: Check if the build function contains arguments and report an error
     private validateBuildFunctionParameters(buildFunction: arkts.MethodDefinition): void {
-        const paramsNodes = buildFunction.scriptFunction.params;
+        const paramsNodes = buildFunction.function!.params;
         if (paramsNodes.length > NOT_PARAM_LENGTH) {
             paramsNodes.forEach((param) => {
-                if (arkts.isEtsParameterExpression(param)) {
+                if (arkts.isETSParameterExpression(param)) {
                     this.reportBuildParamNotAllowed(param);
                 }
             });
@@ -74,7 +74,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
         member: arkts.MethodDefinition,
     ): void {
         if (buildFunctionCount > BUILD_FUNCTION_COUNT) {
-            const buildNode = member.scriptFunction.id;
+            const buildNode = member.function!.id;
             if (!buildNode) {
                 return;
             }
@@ -101,16 +101,16 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
     }
 
     private validateConstructorForBuildFunction(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         member: arkts.MethodDefinition,
         buildFunctionCount: number,
     ): void {
-        const blockStatement = member.scriptFunction.body;
+        const blockStatement = member.function!.body;
         if (!blockStatement || !arkts.isBlockStatement(blockStatement)) {
             return;
         }
         const statements = blockStatement.statements;
-        const structName = node.definition.ident;
+        const structName = node.definition?.ident;
         if (buildFunctionCount === BUILD_FUNCTION_COUNT_INI &&
             statements.length === NOT_STATEMENT_LENGTH) {
             this.reportMissingBuildInStruct(structName, node);
@@ -138,7 +138,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
 
     private reportMissingBuildInStruct(
         structName: arkts.Identifier | undefined,
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
     ): void {
         if (!structName) {
             return;
@@ -151,7 +151,7 @@ class ValidateBuildInStructRule extends AbstractUISyntaxRule {
             },
             fix: () => {
                 let startPosition = node.endPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = startPosition;
                 return {
                     title: 'Add a build function to the custom component',

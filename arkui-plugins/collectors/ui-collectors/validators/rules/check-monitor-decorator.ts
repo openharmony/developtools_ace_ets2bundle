@@ -132,7 +132,7 @@ function checkMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDef
             ),
         });
     } else {
-        const classDeclaration = arkts.classByPeer(metadata.classInfo?.definitionPtr);
+        const classDeclaration = arkts.unpackNonNullableNode(metadata.classInfo?.definitionPtr!);
         this.report({
             node: monitorUsage,
             level: LogType.ERROR,

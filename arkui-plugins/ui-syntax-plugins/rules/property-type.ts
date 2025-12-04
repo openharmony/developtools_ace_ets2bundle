@@ -136,7 +136,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
                 }
             } else if (arkts.isETSPrimitiveType(member) ||
                 arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE ||
-                arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE) {
+                arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE) {
                 return false;
             } else if (arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE ||
                 arkts.isETSUndefinedType(member)) {
@@ -157,7 +157,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
                 if (propertyTypeName === PropErrorType[0] || propertyTypeName === TypeFlags.BigInt) {
                     return false;
                 }
-            } else if (arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE) {
+            } else if (arkts.nodeType(member) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE) {
                 return false;
             }
         }
@@ -202,7 +202,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
             }
         } else if (arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE ||
             arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE ||
-            arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ERROR_TYPE_NODE ||
+            arkts.nodeType(propertyType) === arkts.Es2pandaAstNodeType.AST_NODE_TYPE_BROKEN_TYPE_NODE ||
             arkts.isETSPrimitiveType(propertyType) ||
             arkts.isETSUndefinedType(propertyType)
         ) {
@@ -296,7 +296,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
         }
         node.getChildren().forEach((member) => {
             // Only the situation within the component is judged
-            if (!arkts.isStructDeclaration(member) || !member.definition.ident) {
+            if (!arkts.isETSStructDeclaration(member) || !member.definition?.ident) {
                 return;
             }
             this.getCurrentStructBuilderMethodName(member);
@@ -315,7 +315,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
         }
         const builderParamDecorator = findDecorator(item, PresetDecorators.BUILDER_PARAM);
         if (item.value && !arkts.isMemberExpression(item.value) && !arkts.isIdentifier(item.value) &&
-            builderParamDecorator) {
+            !arkts.isArrowFunctionExpression(item.value) && builderParamDecorator) {
             this.reportInvalidBuilderParamInitialized(item.key);
         } else if (item.value && arkts.isMemberExpression(item.value) && builderParamDecorator) {
             this.checkValidMemberExpressionUsage(item.value, item.key);
@@ -324,6 +324,10 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
                 !this.builderFunctionName.includes(item.value.name)) {
                 this.reportInvalidBuilderParamInitialized(item.key);
             }
+        } else if (item.value && arkts.isArrowFunctionExpression(item.value) && builderParamDecorator) {
+            // Allow the initilization of the @BuilderParam property with a lambda since
+            // such lambdas are implicitly treated as a @Builder function
+            return;
         }
     }
 
@@ -361,13 +365,13 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
-            if (arkts.isFunctionDeclaration(member) && member.scriptFunction.id?.name) {
+            if (arkts.isFunctionDeclaration(member) && member.function!.id?.name) {
                 const hasBuilderDecorator = findDecorator(member, PresetDecorators.BUILDER);
                 if (hasBuilderDecorator) {
-                    this.builderFunctionName.push(member.scriptFunction.id?.name);
+                    this.builderFunctionName.push(member.function!.id?.name);
                 }
             }
-            if (arkts.isStructDeclaration(member) && member.definition.ident) {
+            if (arkts.isETSStructDeclaration(member) && member.definition?.ident) {
                 let structName = member.definition.ident.name;
                 this.structStaticMethodsMap.set(structName, new Set());
                 member.definition.body.forEach((item) => {
@@ -381,28 +385,28 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
         item: arkts.AstNode,
         structName: string
     ): void {
-        if (!arkts.isMethodDefinition(item) || !item.scriptFunction.id || !item.isStatic) {
+        if (!arkts.isMethodDefinition(item) || !item.function!.id || !item.isStatic) {
             return;
         }
-        const hasBuilderDecorator = findDecorator(item.scriptFunction, PresetDecorators.BUILDER);
+        const hasBuilderDecorator = findDecorator(item.function!, PresetDecorators.BUILDER);
         // judgment static method
-        if (hasBuilderDecorator && arkts.isIdentifier(item.scriptFunction.id) && item.isStatic) {
-            const methodName = item.scriptFunction.id.name;
+        if (hasBuilderDecorator && arkts.isIdentifier(item.function!.id) && item.isStatic) {
+            const methodName = item.function!.id.name;
             this.structStaticMethodsMap.get(structName)?.add(methodName);
         }
     }
 
     private getCurrentStructBuilderMethodName(
-        node: arkts.StructDeclaration
+        node: arkts.ETSStructDeclaration
     ): void {
         node.definition?.body?.forEach((item) => {
-            if (!arkts.isMethodDefinition(item) || !item.scriptFunction.id) {
+            if (!arkts.isMethodDefinition(item) || !item.function!.id) {
                 return;
             }
-            const builderDecorator = findDecorator(item.scriptFunction, PresetDecorators.BUILDER);
+            const builderDecorator = findDecorator(item.function!, PresetDecorators.BUILDER);
             // judgment static method
-            if (builderDecorator && arkts.isIdentifier(item.scriptFunction.id) && !item.isStatic) {
-                this.currentStructBuilderMethodName.push(item.scriptFunction.id.name);
+            if (builderDecorator && arkts.isIdentifier(item.function!.id) && !item.isStatic) {
+                this.currentStructBuilderMethodName.push(item.function!.id.name);
             }
         });
     }

@@ -84,7 +84,7 @@ function _checkVariableInitializationPassing(
             return;
         }
         // 特定装饰器修饰的属性在组件构造时，禁止赋值
-        const property = arkts.classByPeer<arkts.ClassProperty>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.ClassProperty>(propertyPtr);
         this.report({
             node: property,
             level: LogType.ERROR,

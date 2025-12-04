@@ -24,7 +24,7 @@ export class DeclTransformer extends AbstractVisitor {
         super();
     }
 
-    processComponent(node: arkts.StructDeclaration): arkts.ClassDeclaration {
+    processComponent(node: arkts.ETSStructDeclaration): arkts.ClassDeclaration {
         const className = node.definition?.ident?.name;
         if (!className) {
             throw 'Non Empty className expected for Component';
@@ -42,7 +42,8 @@ export class DeclTransformer extends AbstractVisitor {
             undefined,
             node.definition?.body,
             newDec.definition?.modifiers!,
-            arkts.classDefinitionFlags(newDec.definition!) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            arkts.classDefinitionFlags(newDec.definition!) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            node.definition.annotations
         );
 
         arkts.factory.updateClassDeclaration(newDec, newDefinition);
@@ -52,20 +53,20 @@ export class DeclTransformer extends AbstractVisitor {
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         let astNode: arkts.AstNode = beforeChildren;
-        if (arkts.isEtsScript(astNode)) {
+        if (arkts.isETSModule(astNode)) {
             astNode = this.transformImportDecl(astNode);
         }
         const node = this.visitEachChild(astNode);
-        if (arkts.isStructDeclaration(node)) {
-            debugLog(`DeclTransformer:before:flag:${arkts.classDefinitionIsFromStructConst(node.definition!)}`);
-            arkts.classDefinitionSetFromStructModifier(node.definition!);
+        if (arkts.isETSStructDeclaration(node)) {
+            debugLog(`DeclTransformer:before:flag:${node.definition?.isFromStruct!}`);
+            node.definition!.setFromStructModifier();
             let newnode = this.processComponent(node);
-            debugLog(`DeclTransformer:after:flag:${arkts.classDefinitionIsFromStructConst(newnode.definition!)}`);
+            debugLog(`DeclTransformer:after:flag:${node.definition?.isFromStruct!}`);
             return newnode;
         } else if (arkts.isETSImportDeclaration(astNode)) {
             return this.updateImportDeclaration(astNode);
         } else if (arkts.isMethodDefinition(astNode)) {
-            if (astNode.name?.name === 'build' ) {
+            if (astNode.id?.name === 'build' ) {
                 return this.transformMethodDefinition(astNode);
             }
             return astNode;
@@ -76,40 +77,46 @@ export class DeclTransformer extends AbstractVisitor {
     }
 
     transformImportDecl(astNode: arkts.AstNode):arkts.AstNode {
-        if (!arkts.isEtsScript(astNode)) {
+        if (!arkts.isETSModule(astNode)) {
             return astNode;
         }
         let statements = astNode.statements.filter(node => this.isImportDeclarationNeedFilter(node));
-        return arkts.factory.updateEtsScript(astNode, statements);
+        return arkts.factory.updateETSModule(astNode, statements, astNode.ident, astNode.getNamespaceFlag(),astNode.program);
   }
 
     transformMethodDefinition(node: arkts.MethodDefinition): arkts.AstNode {
-        const func: arkts.ScriptFunction = node.scriptFunction;
+        const func: arkts.ScriptFunction = node.function!;
         const isFunctionCall: boolean = false;
-        const typeNode: arkts.TypeNode | undefined = node.scriptFunction?.returnTypeAnnotation;
+        const typeNode: arkts.TypeNode | undefined = node.function?.returnTypeAnnotation;
         const updateFunc = arkts.factory.updateScriptFunction(
             func,
             !!func.body && arkts.isBlockStatement(func.body)
-            ? arkts.factory.updateBlock(
+            ? arkts.factory.updateBlockStatement(
                     func.body,
                     func.body.statements.filter((st) => false)
                 )
             : undefined,
-            arkts.FunctionSignature.createFunctionSignature(func.typeParams, func.params, func.returnTypeAnnotation, false),
+            func.typeParams,
+            func.params,
+            func.returnTypeAnnotation,
+            false,
             func?.flags,
-            func?.modifiers
+            func?.modifiers,
+            func.id,
+            func.annotations,
         );
 
         return arkts.factory.updateMethodDefinition(
             node,
             node.kind,
             arkts.factory.updateIdentifier(
-                node.name,
-                node.name?.name
+                node.id!,
+                node.id?.name!
             ),
-            updateFunc,
+            arkts.factory.createFunctionExpression(func.id?.clone(), updateFunc),
             node.modifiers,
-            false
+            false,
+            node.overloads
         );
     }
   
@@ -127,7 +134,7 @@ export class DeclTransformer extends AbstractVisitor {
         astNode.specifiers.forEach((element) => {
             if (arkts.isImportSpecifier(element)) {
                 if (ARKUI_DECLARE_LIST.has(element.imported?.name as string)) {
-                    arkts.ImportSpecifierSetRemovable(element);
+                    element.setRemovable(true);
                 }
             }
         });
@@ -135,7 +142,8 @@ export class DeclTransformer extends AbstractVisitor {
     }
 
     transformWrappedBuilderVarDecl(node: arkts.VariableDeclarator): arkts.VariableDeclarator {
-        const typeAnn = node?.name?.typeAnnotation;
+        const nodeId = node?.id as arkts.Identifier | undefined;
+        const typeAnn = nodeId?.typeAnnotation;
         if (!typeAnn || !arkts.isETSTypeReference(typeAnn)) {
             return node;
         }
@@ -149,17 +157,17 @@ export class DeclTransformer extends AbstractVisitor {
         }
         const types: arkts.TypeNode[] = [];
         for (const p of fnType.params) {
-            if (!arkts.isEtsParameterExpression(p) || !p.type || !arkts.isTypeNode(p.type)) {
+            if (!arkts.isETSParameterExpression(p) || !p.typeAnnotation || !arkts.isTypeNode(p.typeAnnotation)) {
                 return node;
             }
-            types.push(p.type);
+            types.push(p.typeAnnotation);
         }
         const tuple = arkts.ETSTuple.create2ETSTuple(types);
 
         const newTypeParams = arkts.factory.updateTSTypeParameterInstantiation(part.typeParams, [tuple]);
-        const newPart = arkts.factory.updateTypeReferencePart(part, part.name, newTypeParams, part.previous);
-        const newTypeRef = arkts.factory.updateTypeReference(typeAnn, newPart);
-        const newId = arkts.factory.updateIdentifier(node.name, node.name.name, newTypeRef);
-        return arkts.factory.updateVariableDeclarator(node, node.flag, newId, node.initializer);
+        const newPart = arkts.factory.updateETSTypeReferencePart(part, part.name, newTypeParams, part.previous);
+        const newTypeRef = arkts.factory.updateETSTypeReference(typeAnn, newPart);
+        const newId = arkts.factory.updateIdentifier(nodeId, nodeId.name, newTypeRef);
+        return arkts.factory.updateVariableDeclarator(node, node.flag, newId, node.init);
     }
 }

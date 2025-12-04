@@ -58,7 +58,7 @@ class NoChildInButtonRule extends AbstractUISyntaxRule {
         let isInStruct = false;
         let isInBuild = false;
         while (arkts.nodeType(parentNode) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ETS_MODULE) {
-            if (arkts.isStructDeclaration(parentNode)) {
+            if (arkts.isETSStructDeclaration(parentNode)) {
                 isInStruct = true;
             }
             if (arkts.isScriptFunction(parentNode) && parentNode.id?.name === 'build') {

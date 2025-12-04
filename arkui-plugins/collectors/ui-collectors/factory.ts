@@ -45,6 +45,7 @@ import { NormalClassValidator, NormalInterfaceValidator, StructValidator, Valida
 import { ARKUI_IMPORT_PREFIX_NAMES, NodeCacheNames } from '../../common/predefines';
 import { matchPrefix } from '../../common/arkts-utils';
 import { getPerfName } from '../../common/debug';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export function findAndCollectUINodeInPreOrder(node: arkts.AstNode, metadata?: UICollectMetadata): void {
     const type = arkts.nodeType(node);
@@ -92,14 +93,14 @@ export class CollectFactory {
         let classInfo = structRecord.toRecord();
         if (!!classInfo && checkIsCustomComponentFromInfo(classInfo)) {
             ValidatorBuilder.build(StructValidator).checkIsViolated(node, classInfo);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, structRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, structRecord.toJSON());
             const structCollector = new StructCollector({ ...metadata, structRecord });
             structCollector.visitor(node);
             structCollector.reset();
             return node;
         }
         if (!!classInfo && checkIsCustomComponentDeclaredClassFromInfo(classInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, structRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, structRecord.toJSON());
             const structCollector = new StructCollector({ ...metadata, structRecord });
             structCollector.disableCollectProperty().visitor(node);
             structCollector.reset();
@@ -115,13 +116,13 @@ export class CollectFactory {
         }
         ValidatorBuilder.build(NormalClassValidator).checkIsViolated(node, classInfo);
         if (checkCanCollectNormalClassFromInfo(classInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
         }
         if (checkIsETSGlobalClassFromInfo(classInfo)) {
             const globalClassCollector = new GlobalClassCollector(metadata);
             globalClassCollector.visitor(node);
             if (globalClassCollector.shouldCollectGlobalClass) {
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
             }
             globalClassCollector.reset();
             return node;
@@ -150,7 +151,7 @@ export class CollectFactory {
         interfaceInfo = normalInterfaceRecord.toRecord();
         ValidatorBuilder.build(NormalInterfaceValidator).checkIsViolated(node, interfaceInfo);
         if (checkIsComponentAttributeInterfaceFromInfo(interfaceInfo)) {
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.UI)
                 .collect(node, normalInterfaceRecord.toJSON());
         } else if (
@@ -158,7 +159,7 @@ export class CollectFactory {
             matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, metadata.externalSourceName) &&
             checkIsCommonMethodInterfaceFromInfo(interfaceInfo)
         ) {
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.UI)
                 .collect(node, normalInterfaceRecord.toJSON());
         }
@@ -183,7 +184,7 @@ export class CollectFactory {
         parameterRecord.collect(node);
         const parameterInfo = parameterRecord.toRecord();
         if (parameterInfo?.annotationInfo?.hasBuilder) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, parameterRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, parameterRecord.toJSON());
         }
         return node;
     }
@@ -197,7 +198,7 @@ export class CollectFactory {
         const arrowFunctionInfo = arrowFunctionRecord.toRecord();
         if (arrowFunctionInfo?.annotationInfo?.hasBuilder) {
             RecordCache.getInstance().set(node.peer, arrowFunctionRecord);
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.UI)
                 .collect(node, arrowFunctionRecord.toJSON());
         }
@@ -209,7 +210,7 @@ export class CollectFactory {
         propertyRecord.collect(node);
         const propertyInfo = propertyRecord.toRecord();
         if (propertyInfo?.annotationInfo?.hasBuilder) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
         }
         return node;
     }
@@ -222,7 +223,7 @@ export class CollectFactory {
         newClassInstanceRecord.collect(node);
         const newClassInstanceInfo = newClassInstanceRecord.toRecord();
         if (checkIsDialogControllerNewInstanceFromInfo(newClassInstanceInfo)) {
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.UI)
                 .collect(node, newClassInstanceRecord.toJSON());
         }

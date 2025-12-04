@@ -156,7 +156,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_<some_random_numbe
                     }));
                 }
             }));
-        })))
+        })));
     }
     public __updateStruct(initializers: (__Options_Child | undefined)): void {}
     private __backing_myBuilderParam?: @Memo() (()=> void);
@@ -568,7 +568,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
                     __memo_scope.recache();
                     return;
                 }
-            })))
+            })));
     }
     public __updateStruct(initializers: (__Options_Child | undefined)): void {}
     private __backing_myBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);

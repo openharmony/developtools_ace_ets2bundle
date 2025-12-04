@@ -32,7 +32,7 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
         this.linkMap = new Map();
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.ETSStructDeclaration): void {
         this.initMap(node);
         this.checkInitializeWithLiteral(node);
     }
@@ -76,7 +76,7 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
             return;
         }
         node.getChildren().forEach((member) => {
-            if (!(arkts.isStructDeclaration(member))) {
+            if (!(arkts.isETSStructDeclaration(member))) {
                 return;
             }
             if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
@@ -93,10 +93,10 @@ class ConstructParameterLiteralRule extends AbstractUISyntaxRule {
     }
 
     private checkInitializeWithLiteral(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        const componentName = node.expression.name;
+        const componentName = node.callee.name;
         // Only assignments to properties decorated with Link or ObjectLink trigger rule checks
         if (!this.linkMap.has(componentName)) {
             return;

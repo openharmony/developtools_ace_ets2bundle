@@ -42,7 +42,7 @@ export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassPrope
         checkValidateDecoratorTarget.bind(this)(node);
         checkOldNewDecoratorMixUse.bind(this)(node);
 
-        const classNode = arkts.classByPeer<arkts.ClassDefinition>(metadata.classInfo.definitionPtr);
+        const classNode = arkts.unpackNode<arkts.ClassDefinition>(metadata.classInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, classNode);
     }
 }

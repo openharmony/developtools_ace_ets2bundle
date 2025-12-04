@@ -30,8 +30,6 @@
     },
     "keywords": [],
     "dependencies": {
-        "@koalaui/build-common": "1.7.10+devel",
-        "@koalaui/compat": "1.7.10+devel",
         "@ohos/hypium": "1.0.6",
         "@types/mocha": "^9.1.0",
         "typescript": "4.9.5",

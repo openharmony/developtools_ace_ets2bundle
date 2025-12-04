@@ -64,26 +64,26 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
     this.builderFunctionList = [];
   }
 
-  public parsed(node: arkts.StructDeclaration): void {
+  public parsed(node: arkts.ETSStructDeclaration): void {
     this.initList(node);
     this.initPropertyMap(node);
     this.checkConstructParameter(node);
   }
 
   private getPropertyAnnotationName(node: arkts.AstNode, propertyName: string): string {
-    while (!arkts.isStructDeclaration(node)) {
+    while (!arkts.isETSStructDeclaration(node)) {
       if (!node.parent) {
         return '';
       }
       node = node.parent;
     }
     let annotationNames: string[] = [];
-    node.definition.body.forEach((item) => {
+    node.definition?.body.forEach((item) => {
       if (arkts.isClassProperty(item) && getClassPropertyName(item) === propertyName) {
         annotationNames = getClassPropertyAnnotationNames(item);
       }
-      if (arkts.isMethodDefinition(item) && getIdentifierName(item.name) === propertyName) {
-        annotationNames = item.scriptFunction.annotations.map((annotation) =>
+      if (arkts.isMethodDefinition(item) && getIdentifierName(item) === propertyName) {
+        annotationNames = item.function!.annotations.map((annotation) =>
           getAnnotationName(annotation)
         );
       }
@@ -120,8 +120,8 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
     }
     member.annotations.forEach(annotation => {
       if (annotation.expr && getIdentifierName(annotation.expr) === PresetDecorators.BUILDER &&
-        member.scriptFunction.id) {
-        this.builderFunctionList.push(member.scriptFunction.id.name);
+        member.function!.id) {
+        this.builderFunctionList.push(member.function!.id.name);
       }
     });
   }
@@ -131,11 +131,11 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       return;
     }
     member.getChildren().forEach((item) => {
-      if (!arkts.isVariableDeclarator(item) || !item.name ||
-        (item.initializer && arkts.isArrowFunctionExpression(item.initializer))) {
+      if (!arkts.isVariableDeclarator(item) || !item.id ||
+        (item.init && arkts.isArrowFunctionExpression(item.init))) {
         return;
       }
-      this.regularVariableList.push(item.name.name);
+      this.regularVariableList.push((item.id as arkts.Identifier).name);
     });
   }
 
@@ -181,7 +181,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
       return;
     }
     node.getChildren().forEach((member) => {
-      if (!arkts.isStructDeclaration(member) || !member.definition.ident) {
+      if (!arkts.isETSStructDeclaration(member) || !member.definition?.ident) {
         return;
       }
       let structName: string = member.definition.ident?.name ?? '';
@@ -294,7 +294,7 @@ class ConstructParameterRule extends AbstractUISyntaxRule {
         if (!arkts.isMemberExpression(property.value) || !arkts.isThisExpression(property.value.object)) {
           return;
         }
-        const parentName = getIdentifierName(property.value.property);
+        const parentName = getIdentifierName(property.value.property as arkts.AstNode);
         const parentType: string = this.getPropertyAnnotationName(node, parentName);
         if (parentType === '') {
           return;

@@ -49,22 +49,22 @@ export function getPositionRangeFromNode(node: arkts.AstNode): [arkts.SourcePosi
 
 // 开始位置前移一格，以包含@字符
 export function getPositionRangeFromAnnotation(node: arkts.AstNode): [arkts.SourcePosition, arkts.SourcePosition] {
-    return [arkts.SourcePosition.create(node.startPosition.index() - 1, node.startPosition.line()), node.endPosition];
+    return [arkts.createSourcePosition(node.startPosition.getIndex() - 1, node.startPosition.getLine()), node.endPosition];
 }
 
 export function generateDiagnosticKind(logItem: LogInfo): arkts.DiagnosticKind {
     const message: string = !!logItem.code ? `${logItem.code}: ${logItem.message}` : logItem.message;
-    const level: arkts.PluginDiagnosticType =
+    const level: arkts.Es2pandaPluginDiagnosticType =
         logItem.level === LogType.ERROR
-            ? arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
-            : arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_WARNING;
-    return arkts.DiagnosticKind.create(message, level);
+            ? arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
+            : arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_WARNING;
+    return arkts.createDiagnosticKind(message, level);
 }
 
 export function generateDiagnosticInfo(logItem: LogInfo, pos: arkts.SourcePosition): arkts.DiagnosticInfo {
     const diagnosticArgs = logItem.args ?? [];
     const diagnosticKind = generateDiagnosticKind(logItem);
-    return arkts.DiagnosticInfo.create(diagnosticKind, pos, ...diagnosticArgs);
+    return arkts.createDiagnosticInfo(diagnosticKind, pos, ...diagnosticArgs);
 }
 
 export function generateSuggestionInfo(
@@ -73,13 +73,13 @@ export function generateSuggestionInfo(
     range: arkts.SourceRange
 ): arkts.SuggestionInfo {
     const suggestionArgs = suggestion.args ?? [];
-    const suggestionKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
-    return arkts.SuggestionInfo.create(suggestionKind, suggestion.code, message, range, ...suggestionArgs);
+    const suggestionKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
+    return arkts.createSuggestionInfo(suggestionKind, suggestion.code, message, range, ...suggestionArgs);
 }
 
 export function generateSuggestionRange(suggestion: SuggestionOptions): arkts.SourceRange {
     const [startPosition, endPosition] = suggestion.range;
-    return arkts.SourceRange.create(startPosition, endPosition);
+    return arkts.createSourceRange(startPosition, endPosition);
 }
 
 export class LogCollector {
@@ -101,16 +101,16 @@ export class LogCollector {
 
     private reportDiagnostic(log: LogInfo): void {
         const args = log.args ?? [];
-        const position = log.position ?? arkts.getStartPosition(log.node);
+        const position = log.position ?? log.node.startPosition;
         const suggestion = log.suggestion;
         if (!suggestion) {
             const kind = generateDiagnosticKind(log);
-            arkts.Diagnostic.logDiagnostic(kind, position, ...args);
+            arkts.logDiagnostic(kind, position, ...args);
         } else {
             const info = generateDiagnosticInfo(log, position);
             const suggestionRange = generateSuggestionRange(suggestion);
             const suggestionInfo = generateSuggestionInfo(suggestion, log.message, suggestionRange);
-            arkts.Diagnostic.logDiagnosticWithSuggestion(info, suggestionInfo);
+            arkts.logDiagnosticWithSuggestion(info, suggestionInfo);
         }
     }
 

@@ -32,6 +32,7 @@ import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { generateArkUICompatible } from '../interop/interop';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
+import { BuilderMethodNames, InteroperAbilityNames } from '../interop/predefines';
 
 export class StructTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -63,7 +64,7 @@ export class StructTransformer extends AbstractVisitor {
             }
         }
         if (arkts.isMethodDefinition(node) && this.scope.customComponents.length > 0) {
-            const name = node.name.name;
+            const name = node.id!.name;
             const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
@@ -102,8 +103,9 @@ export class StructTransformer extends AbstractVisitor {
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return factory.tranformInterfaceMembers(node, this.externalSourceName);
         }
-        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
-            ImportCollector.getInstance().insertCurrentImports(this.program);
+        if (arkts.isETSModule(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            let imports = ImportCollector.getInstance().getImportStatements();
+            return arkts.factory.updateETSModule(node, [...imports, ...node.statements], node.ident, node.getNamespaceFlag(), node.program);
         }
         return node;
     }

@@ -45,7 +45,7 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
         checkMonitorDecorator.bind(this)(node);
         checkBuildRootNode.bind(this)(node);
 
-        const struct = arkts.classByPeer<arkts.ClassDefinition>(metadata.structInfo.definitionPtr);
+        const struct = arkts.unpackNode<arkts.ClassDefinition>(metadata.structInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, struct);
         checkValidateDecoratorTarget.bind(this)(node);
     }

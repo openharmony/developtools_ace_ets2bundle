@@ -158,7 +158,7 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
         }
         const decoratorInfo = findConsumerOrProviderFromInterfacePropertyInfo(propertyInfo);
         if (!!decoratorInfo) {
-            const prop = arkts.classByPeer<arkts.Property>(propPtr);
+            const prop = arkts.unpackNode<arkts.Property>(propPtr)!;
             this.report({
                 node: prop,
                 message: getForbiddenInitializationMessage(decoratorInfo.name, propertyInfo.name, structName),

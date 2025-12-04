@@ -37,12 +37,12 @@ export class BuilderFactory {
             return _node;
         }
         const conditionScopeVisitor = ConditionScopeVisitor.getInstance();
-        funcBody = arkts.factory.updateBlock(
+        funcBody = arkts.factory.updateBlockStatement(
             funcBody,
             funcBody.statements.map((st) => {
                 const newNode = conditionScopeVisitor.visitor(st);
                 conditionScopeVisitor.reset();
-                return newNode;
+                return coerceToAstNode(newNode);
             })
         );
         return UIFactory.updateScriptFunction(_node, { params, body: funcBody });
@@ -53,8 +53,9 @@ export class BuilderFactory {
      */
     static rewriteBuilderMethod<T extends arkts.AstNode = arkts.MethodDefinition>(node: T): arkts.MethodDefinition {
         const _node = coerceToAstNode<arkts.MethodDefinition>(node);
-        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.scriptFunction);
-        return arkts.factory.updateMethodDefinition(_node, _node.kind, _node.name, newFunc, _node.modifiers, false);
+        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
+        const newFuncExpr = arkts.factory.createFunctionExpression(newFunc.id?.clone(), newFunc);
+        return arkts.factory.updateMethodDefinition(_node, _node.kind, _node.id, newFuncExpr, _node.modifierFlags, false, _node.overloads);
     }
 
     /**
@@ -73,7 +74,8 @@ export class BuilderFactory {
             newValue,
             _node.typeAnnotation,
             _node.modifiers,
-            false
+            false,
+            _node.annotations
         );
     }
 
@@ -98,8 +100,8 @@ export class BuilderFactory {
         node: T
     ): arkts.ArrowFunctionExpression {
         const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
-        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.scriptFunction);
-        return arkts.factory.updateArrowFunction(_node, newFunc);
+        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
+        return arkts.factory.updateArrowFunctionExpression(_node, newFunc, _node.annotations);
     }
 
     /**
@@ -114,7 +116,7 @@ export class BuilderFactory {
             return _node;
         }
         const newInitializer = BuilderFactory.rewriteBuilderArrowFunction(initializer);
-        return arkts.factory.updateParameterDeclaration(_node, _node.identifier, newInitializer);
+        return arkts.factory.updateETSParameterExpression(_node, _node.ident, _node.isOptional, newInitializer, _node.annotations);
     }
 
     /**
@@ -136,7 +138,7 @@ export class BuilderFactory {
         }
         const isFromClass = arkts.isClassDefinition(decl);
         const typeRef = BuilderLambdaFactory.createTypeRefInBuilderParameterProxyCall(arg, decl);
-        let newArgument: arkts.AstNode;
+        let newArgument: arkts.Expression;
         if (arkts.isTSAsExpression(arg)) {
             const objectExpr = arg.expr as arkts.ObjectExpression;
             newArgument = arkts.factory.updateTSAsExpression(
@@ -148,7 +150,7 @@ export class BuilderFactory {
         } else {
             newArgument = BuilderLambdaFactory.createBuilderParameterProxyCall(arg, typeRef, isFromClass);
         }
-        return arkts.factory.updateCallExpression(_node, _node.expression, _node.typeArguments, [newArgument]);
+        return arkts.factory.updateCallExpression(_node, _node.callee, [newArgument], _node.typeParams, _node.isOptional, _node.hasTrailingComma, _node.trailingBlock);
     }
 }
 

@@ -32,7 +32,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             arkts.isTSTypeAliasDeclaration(node)) {
             this.reportInvalidTrackDecoratorUsage(node);
         }
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             this.checkInvalidTrackAnnotations(node);
         }
         // Check if the current node is a class declaration
@@ -51,13 +51,13 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
-    private checkInvalidTrackAnnotations(node: arkts.StructDeclaration): void {
+    private checkInvalidTrackAnnotations(node: arkts.ETSStructDeclaration): void {
         const trackAnnotation = getAnnotationUsage(node, PresetDecorators.TRACK);
         if (trackAnnotation) {
             this.reportInvalidTarget(trackAnnotation);
         }
         // Traverse all members of the struct body
-        node.definition.body.forEach((member) => {
+        node.definition?.body.forEach((member) => {
             // Check whether it is a member variable
             if (arkts.isClassProperty(member)) {
                 const trackDecorator = findDecorator(member, PresetDecorators.TRACK);
@@ -68,7 +68,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             }
             // Check whether this is the method
             if (arkts.isMethodDefinition(member)) {
-                const trackDecorator = findDecorator(member.scriptFunction, PresetDecorators.TRACK);
+                const trackDecorator = findDecorator(member.function!, PresetDecorators.TRACK);
                 // If the method is decorated with @Track, an error is reported immediately
                 if (trackDecorator) {
                     this.reportInvalidTarget(trackDecorator);
@@ -93,7 +93,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             }
             // Check whether this is the method
             if (arkts.isMethodDefinition(member)) {
-                const trackDecorator = findDecorator(member.scriptFunction, PresetDecorators.TRACK);
+                const trackDecorator = findDecorator(member.function!, PresetDecorators.TRACK);
                 // If the method is decorated with @Track, an error is reported immediately
                 if (trackDecorator) {
                     this.reportInvalidTarget(trackDecorator);
@@ -111,7 +111,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.trackMustUsedWithObserved,
             fix: (trackDecorator) => {
                 let startPosition = trackDecorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = trackDecorator.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -128,7 +128,7 @@ class TrackDecoratorCheckRule extends AbstractUISyntaxRule {
             message: this.messages.trackOnClassMemberOnly,
             fix: (node) => {
                 let startPosition = node.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = node.endPosition;
                 return {
                     title: 'Remove the annotation',

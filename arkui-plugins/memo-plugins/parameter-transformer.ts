@@ -36,16 +36,16 @@ export interface ParameterTransformerOptions extends VisitorOptions {
 }
 
 interface RewriteMemoInfo extends MemoInfo {
-    rewritePeer: number;
+    rewritePeer: arkts.KNativePointer;
 }
 
 export class ParameterTransformer extends AbstractVisitor {
-    private rewriteIdentifiers?: Map<number, () => arkts.MemberExpression | arkts.Identifier>;
-    private rewriteCalls?: Map<number, (passArgs: arkts.Expression[]) => arkts.CallExpression>;
-    private rewriteMemoInfos?: Map<number, RewriteMemoInfo>;
+    private rewriteIdentifiers?: Map<arkts.KNativePointer, () => arkts.MemberExpression | arkts.Identifier>;
+    private rewriteCalls?: Map<arkts.KNativePointer, (passArgs: arkts.Expression[]) => arkts.CallExpression>;
+    private rewriteMemoInfos?: Map<arkts.KNativePointer, RewriteMemoInfo>;
     private rewriteThis?: boolean;
     private skipNode?: arkts.VariableDeclaration;
-    private visited: Set<number>;
+    private visited: Set<arkts.KNativePointer>;
 
     private positionalIdTracker: PositionalIdTracker;
 
@@ -74,11 +74,11 @@ export class ParameterTransformer extends AbstractVisitor {
             parameters
                 .filter(
                     (it) =>
-                        it.param.type && (arkts.isETSFunctionType(it.param.type) || arkts.isETSUnionType(it.param.type))
+                        it.param.ident?.typeAnnotation && (arkts.isETSFunctionType(it.param.ident.typeAnnotation) || arkts.isETSUnionType(it.param.ident.typeAnnotation))
                 )
                 .map((it) => {
                     return [
-                        it.param.identifier.name.startsWith(RuntimeNames.GENSYM)
+                        it.param.ident?.name.startsWith(RuntimeNames.GENSYM)
                             ? it.ident.originalPeer
                             : it.param.originalPeer,
                         (passArgs: arkts.Expression[]): arkts.CallExpression => {
@@ -90,7 +90,7 @@ export class ParameterTransformer extends AbstractVisitor {
         this.rewriteIdentifiers = new Map(
             parameters.map((it) => {
                 return [
-                    it.param.identifier.name.startsWith(RuntimeNames.GENSYM)
+                    it.param.ident?.name.startsWith(RuntimeNames.GENSYM)
                         ? it.ident.originalPeer
                         : it.param.originalPeer,
                     (): arkts.MemberExpression => {
@@ -102,12 +102,12 @@ export class ParameterTransformer extends AbstractVisitor {
         this.rewriteMemoInfos = new Map(
             parameters.map((it) => {
                 return [
-                    it.param.identifier.name.startsWith(RuntimeNames.GENSYM)
+                    it.param.ident!.name.startsWith(RuntimeNames.GENSYM)
                         ? it.ident.originalPeer
                         : it.param.originalPeer,
                     {
-                        name: it.param.identifier.name,
-                        rewritePeer: it.param.identifier.originalPeer,
+                        name: it.param.ident!.name,
+                        rewritePeer: it.param.ident!.originalPeer,
                         isMemo: isMemoETSParameterExpression(it.param),
                     },
                 ];
@@ -135,7 +135,7 @@ export class ParameterTransformer extends AbstractVisitor {
         initializer: arkts.ArrowFunctionExpression,
         returnType: arkts.TypeNode | undefined
     ): arkts.ArrowFunctionExpression {
-        const scriptFunction = initializer.scriptFunction;
+        const scriptFunction = initializer.function!;
         if (!scriptFunction.body || !arkts.isBlockStatement(scriptFunction.body)) {
             return initializer;
         }
@@ -173,7 +173,7 @@ export class ParameterTransformer extends AbstractVisitor {
         paramaterTransformer.reset();
         returnTransformer.reset();
         this.track(updateScriptFunction.body);
-        return arkts.factory.updateArrowFunction(initializer, updateScriptFunction);
+        return arkts.factory.updateArrowFunctionExpression(initializer, updateScriptFunction, initializer.annotations);
     }
 
     private updateVariableDeclareInit<T extends arkts.AstNode>(
@@ -206,50 +206,49 @@ export class ParameterTransformer extends AbstractVisitor {
     }
 
     private updateParamReDeclare(node: arkts.VariableDeclarator, memoInfo: RewriteMemoInfo): arkts.VariableDeclarator {
-        const shouldUpdate: boolean = node.name.name !== memoInfo.name && memoInfo.isMemo;
+        const shouldUpdate: boolean = (node.id as arkts.Identifier).name !== memoInfo.name && memoInfo.isMemo;
         if (!shouldUpdate) {
             return node;
         }
         const decl = arkts.getPeerIdentifierDecl(memoInfo.rewritePeer);
-        if (!decl || !arkts.isEtsParameterExpression(decl)) {
+        if (!decl || !arkts.isETSParameterExpression(decl)) {
             return node;
         }
 
         let typeAnnotation: arkts.TypeNode | undefined;
         if (
-            !!node.name.typeAnnotation &&
-            !(typeAnnotation = factory.updateMemoTypeAnnotation(node.name.typeAnnotation))
+            !!(node.id as arkts.Identifier).typeAnnotation &&
+            !(typeAnnotation = factory.updateMemoTypeAnnotation((node.id as arkts.Identifier).typeAnnotation))
         ) {
-            console.error(`ETSFunctionType or ETSUnionType expected for @memo-variable-type ${node.name.name}`);
+            console.error(`ETSFunctionType or ETSUnionType expected for @memo-variable-type ${(node.id as arkts.Identifier).name}`);
             throw 'Invalid @memo usage';
         }
 
-        const returnType = findReturnTypeFromTypeAnnotation(decl.type);
+        const returnType = findReturnTypeFromTypeAnnotation(decl.typeAnnotation);
         return arkts.factory.updateVariableDeclarator(
             node,
             node.flag,
-            arkts.factory.updateIdentifier(node.name, node.name.name, typeAnnotation),
-            this.updateVariableDeclareInit(node.initializer, returnType)
+            arkts.factory.updateIdentifier(node.id as arkts.Identifier, (node.id as arkts.Identifier).name, typeAnnotation),
+            this.updateVariableDeclareInit(node.init, returnType)
         );
     }
 
     private updateVariableReDeclarationFromParam(node: arkts.VariableDeclaration): arkts.VariableDeclaration {
         return arkts.factory.updateVariableDeclaration(
             node,
-            node.modifiers,
-            node.declarationKind,
+            node.kind,
             node.declarators.map((declarator) => {
-                if (this.rewriteMemoInfos?.has(declarator.name.originalPeer)) {
-                    const memoInfo = this.rewriteMemoInfos.get(declarator.name.originalPeer)!;
+                if (this.rewriteMemoInfos?.has(declarator.id!.originalPeer)) {
+                    const memoInfo = this.rewriteMemoInfos.get(declarator.id!.originalPeer)!;
                     return this.updateParamReDeclare(declarator, memoInfo);
                 }
-                if (!!declarator.initializer && arkts.isIdentifier(declarator.initializer)) {
-                    const decl = arkts.getPeerIdentifierDecl(declarator.initializer.originalPeer);
+                if (!!declarator.init && arkts.isIdentifier(declarator.init)) {
+                    const decl = arkts.getPeerIdentifierDecl(declarator.init.originalPeer);
                     if (decl && this.rewriteIdentifiers?.has(decl.peer)) {
                         return arkts.factory.updateVariableDeclarator(
                             declarator,
                             declarator.flag,
-                            declarator.name,
+                            declarator.id,
                             this.rewriteIdentifiers.get(decl.peer)!()
                         );
                     }
@@ -280,15 +279,15 @@ export class ParameterTransformer extends AbstractVisitor {
         if (arkts.isVariableDeclaration(beforeChildren)) {
             return this.updateVariableReDeclarationFromParam(beforeChildren);
         }
-        if (arkts.isCallExpression(beforeChildren) && arkts.isIdentifier(beforeChildren.expression)) {
-            const decl = arkts.getPeerIdentifierDecl(beforeChildren.expression.originalPeer);
+        if (arkts.isCallExpression(beforeChildren) && arkts.isIdentifier(beforeChildren.callee)) {
+            const decl = arkts.getPeerIdentifierDecl(beforeChildren.callee.originalPeer);
             if (decl && this.rewriteCalls?.has(decl.peer)) {
                 const updateCall = this.rewriteCalls.get(decl.peer)!(
                     beforeChildren.arguments.map((it) => this.visitor(it) as arkts.Expression)
                 );
                 if (this.rewriteMemoInfos?.has(decl.peer)) {
                     const memoInfo = this.rewriteMemoInfos.get(decl.peer)!;
-                    return this.updateCallReDeclare(updateCall, beforeChildren.expression, memoInfo);
+                    return this.updateCallReDeclare(updateCall, beforeChildren.callee, memoInfo);
                 }
                 return updateCall;
             }

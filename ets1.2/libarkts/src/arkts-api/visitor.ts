@@ -19,6 +19,7 @@ import {
     ArrayExpression,
     ArrowFunctionExpression,
     AssignmentExpression,
+    AwaitExpression,
     BinaryExpression,
     BlockExpression,
     BlockStatement,
@@ -368,6 +369,17 @@ function visitChainExpression(node: ChainExpression, visitor: Visitor): ChainExp
     const newExpression = nodeVisitor(node.expression, visitor);
     if (global.updateTracker.check()) {
         const result = factory.createChainExpression(newExpression);
+        result.onUpdate(node);
+        return result;
+    }
+    return node;
+}
+
+function visitAwaitExpression(node: AwaitExpression, visitor: Visitor): AwaitExpression {
+    global.updateTracker.push();
+    const newArgument = nodeVisitor(node.argument, visitor);
+    if (global.updateTracker.check()) {
+        const result = factory.createAwaitExpression(newArgument);
         result.onUpdate(node);
         return result;
     }
@@ -993,6 +1005,7 @@ export function initVisitsTable(): void {
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION] = visitFunctionDeclaration;
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT] = visitBlockStatement;
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION] = visitBlockExpression;
+    visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION] = visitAwaitExpression;
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION] = visitChainExpression;
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_EXPRESSION_STATEMENT] = visitExpressionStatement;
     visitsTable[Es2pandaAstNodeType.AST_NODE_TYPE_STRUCT_DECLARATION] = visitETSStructDeclaration;

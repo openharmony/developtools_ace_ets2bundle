@@ -23,18 +23,19 @@ import { ReturnTransformer } from '../../../memo-plugins/return-transformer';
 import { SignatureTransformer } from '../../../memo-plugins/signature-transformer';
 import { FunctionTransformer } from '../../../memo-plugins/function-transformer';
 import { InternalsTransformer } from '../../../memo-plugins/internal-transformer';
+import { NodeCacheFactory } from '../../../common/node-cache';
 
 /**
  * AfterCheck unmemoizeTransform with no recheck AST.
  */
 export const memoNoRecheck: Plugins = {
     name: 'memo-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
+    checked(this: PluginContext): arkts.ETSModule | undefined {
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            let script = program.astNode;
+            let script = program.ast as arkts.ETSModule;
             const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
             const parameterTransformer = new ParameterTransformer({
                 positionalIdTracker,
@@ -51,7 +52,7 @@ export const memoNoRecheck: Plugins = {
                 returnTransformer,
                 signatureTransformer,
                 internalsTransformer,
-                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected()
+                useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected()
             });
             const skipPrefixNames = isFrameworkMode
                 ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -64,8 +65,8 @@ export const memoNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
-            script = program.astNode;
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
+            script = program.ast as arkts.ETSModule;
             return script;
         }
     },

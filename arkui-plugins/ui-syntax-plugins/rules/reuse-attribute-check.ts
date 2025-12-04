@@ -45,14 +45,14 @@ class ReuseAttributeCheckRule extends AbstractUISyntaxRule {
         //Go through all the children of Program
         for (const childNode of node.getChildren()) {
             // Check whether the type is struct
-            if (!arkts.isStructDeclaration(childNode)) {
+            if (!arkts.isETSStructDeclaration(childNode)) {
                 continue;
             }
             // Check that the current component has @ComponentV2 and @ReusableV2 decorators
             const reusableV2Decorator = getAnnotationUsage(childNode, PresetDecorators.REUSABLE_V2);
             const componentV2Decorator = getAnnotationUsage(childNode, PresetDecorators.COMPONENT_V2);
             if (reusableV2Decorator && componentV2Decorator) {
-                const struceName = childNode.definition.ident?.name ?? '';
+                const struceName = childNode.definition?.ident?.name ?? '';
                 this.reusableV2ComponentV2Struct.push(struceName);
             }
         }
@@ -65,7 +65,7 @@ class ReuseAttributeCheckRule extends AbstractUISyntaxRule {
         // Gets the reuse or reuseId attribute
         const decoratedNode = node.property;
         if (arkts.isCallExpression(structNode)) {
-            const nodeExpression = structNode.expression;
+            const nodeExpression = structNode.callee;
             if (arkts.isIdentifier(nodeExpression) && arkts.isIdentifier(decoratedNode)) {
                 if (decoratedNode.name === ReuseConstants.REUSE &&
                     !this.reusableV2ComponentV2Struct.includes(nodeExpression.name)) {

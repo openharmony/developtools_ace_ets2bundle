@@ -14,7 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { createAndInsertImportDeclaration } from './arkts-utils';
 
 interface ImportInfo {
     imported: string;
@@ -23,15 +22,15 @@ interface ImportInfo {
     kind: arkts.Es2pandaImportKinds;
 }
 
-function insertImport(importInfo: ImportInfo, program?: arkts.Program): void {
-    const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(importInfo.source);
+function createImport(importInfo: ImportInfo): arkts.ETSImportDeclaration {
+    const source: arkts.StringLiteral = arkts.factory.createStringLiteral(importInfo.source);
     const imported: arkts.Identifier = arkts.factory.createIdentifier(importInfo.imported);
     const local: arkts.Identifier = arkts.factory.createIdentifier(importInfo.local);
-    // Insert this import at the top of the script's statements.
-    if (!program) {
-        throw Error('Failed to insert import: Transformer has no program');
-    }
-    createAndInsertImportDeclaration(source, imported, local, importInfo.kind, program);
+    return arkts.factory.createETSImportDeclaration(
+        source,
+        [arkts.factory.createImportSpecifier(imported, local)],
+        importInfo.kind
+    );
 }
 
 export class ImportCollector {
@@ -77,7 +76,7 @@ export class ImportCollector {
     collectImport(
         imported: string,
         local?: string,
-        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
     ): void {
         if (!this.sourceMap.has(imported)) {
             throw new Error(`ImportCollector: import ${imported}'s source haven't been collected yet.`);
@@ -101,9 +100,7 @@ export class ImportCollector {
         return this.localMap.get(imported);
     }
 
-    insertCurrentImports(program?: arkts.Program): void {
-        this.importInfos.forEach((importInfo) => {
-            insertImport(importInfo, program);
-        });
+    getImportStatements(): arkts.ETSImportDeclaration[] {
+        return this.importInfos.map((importInfo) => createImport(importInfo));
     }
 }

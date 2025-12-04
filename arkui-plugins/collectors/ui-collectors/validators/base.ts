@@ -90,8 +90,8 @@ export function formatSuggestion(suggestion: SuggestionOptions | undefined): Obj
     if (!suggestion) {
         return undefined;
     }
-    const startRange = `(${suggestion.range[0].index()}, ${suggestion.range[0].line()})`;
-    const endRange = `(${suggestion.range[1].index()}, ${suggestion.range[1].line()})`;
+    const startRange = `(${suggestion.range[0].getIndex()}, ${suggestion.range[0].getLine()})`;
+    const endRange = `(${suggestion.range[1].getIndex()}, ${suggestion.range[1].getLine()})`;
     const range = `${startRange} - ${endRange}`;
     return { code: suggestion.code, range, title: suggestion.title, args: suggestion.args };
 }

@@ -33,6 +33,7 @@ import {
 import { PluginDriver } from './plugin-driver';
 import { PluginState, PluginContext, PluginExecutor } from '../../common/plugin-context';
 import { concatObject } from './serializable';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 function insertPlugin(driver: PluginDriver, plugin: PluginExecutor | undefined): boolean {
     const pluginContext: PluginContext = driver.getPluginContext();
@@ -44,7 +45,7 @@ function insertPlugin(driver: PluginDriver, plugin: PluginExecutor | undefined):
 
 function collectPluginTextContextFromSourceProgram(program: arkts.Program, tracing: TraceOptions): PluginTestContext {
     const pluginTestContext: PluginTestContext = {};
-    const script: arkts.EtsScript = program.astNode;
+    const script: arkts.ETSModule = program.ast as arkts.ETSModule;
     pluginTestContext.scriptSnapshot = script.dumpSrc();
     return pluginTestContext;
 }
@@ -61,7 +62,7 @@ function collectPluginTextContextFromExternalSource(
         const name = source.getName();
         const sourceProgram: arkts.Program = source.programs[0];
         const shouldCollectByName = filteredExternalSourceNames.includes(name) || matchSourceName(name);
-        const shouldCollectByProgram = sourceProgram && (!useCache || sourceProgram.isASTLowered());
+        const shouldCollectByProgram = sourceProgram && (!useCache || sourceProgram.isASTLowered);
         return shouldCollectByName && shouldCollectByProgram;
     });
     const declContexts: Record<string, SingleProgramContext> = {};
@@ -75,7 +76,7 @@ function collectPluginTextContextFromExternalSource(
             );
         } else {
             const sourceTestContext: SingleProgramContext = {};
-            const script: arkts.EtsScript = sourceProgram.astNode;
+            const script: arkts.ETSModule = sourceProgram.ast as arkts.ETSModule;
             const scriptSnapshot = script.dumpSrc();
             sourceTestContext.scriptSnapshot = scriptSnapshot;
             declContexts[name] = sourceTestContext;
@@ -105,7 +106,7 @@ function collectPluginTestContext(
             );
         }
         if (canCollectExternal) {
-            const externalSources: arkts.ExternalSource[] = program.externalSources;
+            const externalSources: arkts.ExternalSource[] = program.getExternalSources();
             pluginTestContext = concatObject(
                 pluginTestContext,
                 collectPluginTextContextFromExternalSource(externalSources, tracing, matchSourceName, useCache)
@@ -206,7 +207,7 @@ function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     const stopAfter = jobInfo.stopAfter!;
     let shouldStop = false;
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
     shouldStop = runPluginsAtState(
         emitter,
         jobInfo,
@@ -221,7 +222,7 @@ function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
         emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
         return;
     }
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
     shouldStop = runPluginsAtState(
         emitter,
         jobInfo,
@@ -236,7 +237,7 @@ function compileAbcWithExternal(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
         emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
         return;
     }
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED, context.peer);
     destroyContext(context);
     MockPluginDriver.getInstance().clear();
     emitter.emit('TASK_FINISH', { jobId: 'compile-abc-with-external' });
@@ -249,7 +250,7 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
     const stopAfter = jobInfo.stopAfter!;
     let shouldStop = false;
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
     shouldStop = runPluginsAtState(
         emitter,
         jobInfo,
@@ -263,7 +264,7 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
         MockPluginDriver.getInstance().clear();
         return;
     }
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
     shouldStop = runPluginsAtState(
         emitter,
         jobInfo,
@@ -277,7 +278,7 @@ function compileAbc(emitter: EventEmitter<ProcessEvent>, jobInfo: JobInfo, traci
         MockPluginDriver.getInstance().clear();
         return;
     }
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_BIN_GENERATED, context.peer);
     destroyContext(context);
     MockPluginDriver.getInstance().clear();
 }
@@ -287,13 +288,43 @@ function compileExternalProgram(emitter: EventEmitter<ProcessEvent>, jobInfo: Jo
     MockPluginDriver.getInstance().getPluginContext().setProjectConfig(jobInfo.projectConfig!);
     const context = createContextForExternalCompilation(jobInfo);
     MockPluginDriver.getInstance().getPluginContext().setContextPtr(context.peer);
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context.peer);
     runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED, context, tracing);
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context.peer);
     runPluginsAtState(emitter, jobInfo, arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED, context, tracing);
-    arkts.proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_LOWERED, context.peer);
+    proceedToState(arkts.Es2pandaContextState.ES2PANDA_STATE_LOWERED, context.peer);
     destroyContext(context);
     MockPluginDriver.getInstance().clear();
+}
+
+function proceedToState(state: arkts.Es2pandaContextState, context: arkts.KNativePointer, forceDtsEmit = false): void {
+    console.log('[TS WRAPPER] PROCEED TO STATE: ', arkts.getEnumName(arkts.Es2pandaContextState, state));
+    if (arkts.arktsGlobal.es2panda._ContextState(context) === arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR) {
+        NodeCacheFactory.getInstance().clear();
+        processErrorState(state, context, forceDtsEmit);
+    }
+    if (state <= arkts.arktsGlobal.es2panda._ContextState(context)) {
+        console.log('[TS WRAPPER] PROCEED TO STATE: SKIPPING');
+        return;
+    }
+    NodeCacheFactory.getInstance().clear();
+    arkts.arktsGlobal.es2panda._ProceedToState(context, state);
+    processErrorState(state, context, forceDtsEmit);
+}
+
+function processErrorState(state: arkts.Es2pandaContextState, context: arkts.KNativePointer, forceDtsEmit = false): void {
+    try {
+        if (arkts.arktsGlobal.es2panda._ContextState(context) === arkts.Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
+            const errorMessage = arkts.unpackString(arkts.arktsGlobal.generatedEs2panda._ContextErrorMessage(context));
+            if (errorMessage === undefined) {
+                arkts.throwError(`Could not get ContextErrorMessage`);
+            }
+            arkts.throwError([`Failed to proceed to ${arkts.Es2pandaContextState[state]}`, errorMessage].join(`\n`));
+        }
+    } catch (e) {
+        arkts.arktsGlobal.es2panda._DestroyContext(context);
+        throw e;
+    }
 }
 
 export { compileAbcWithExternal, compileAbc, compileExternalProgram };

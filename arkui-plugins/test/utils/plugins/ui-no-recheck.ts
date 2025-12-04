@@ -18,22 +18,22 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { CheckedTransformer } from '../../../ui-plugins/checked-transformer';
-import { Collector } from '../../../collectors/collector';
+import { NodeCacheFactory } from '../../../common/node-cache';
 
 /**
  * AfterCheck uiTransform with no recheck AST.
  */
 export const uiNoRecheck: Plugins = {
     name: 'ui-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             const checkedTransformer = new CheckedTransformer({
                 projectConfig: this.getProjectConfig(),
-                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+                useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
             });
             const programVisitor = new ProgramVisitor({
                 pluginName: uiNoRecheck.name,
@@ -43,7 +43,7 @@ export const uiNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

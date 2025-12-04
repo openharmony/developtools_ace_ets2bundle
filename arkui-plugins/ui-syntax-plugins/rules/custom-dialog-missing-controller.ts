@@ -27,21 +27,21 @@ class CustomDialogMissingControllerRule extends AbstractUISyntaxRule {
   }
 
   public parsed(node: arkts.AstNode): void {
-    if (!arkts.isStructDeclaration(node)) {
+    if (!arkts.isETSStructDeclaration(node)) {
       return;
     }
     this.checkMissingController(node);
   }
 
   // Check if the @CustomDialog-decorated struct contains a property of type CustomDialogController
-  private checkMissingController(node: arkts.StructDeclaration): void {
+  private checkMissingController(node: arkts.ETSStructDeclaration): void {
     const customDialogDecorator = getAnnotationUsage(node, PresetDecorators.CUSTOM_DIALOG);
 
     if (!customDialogDecorator) {
       return;
     }
 
-    const structName = node.definition.ident;
+    const structName = node.definition?.ident;
     if (!structName) {
       return;
     }

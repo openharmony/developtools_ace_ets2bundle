@@ -69,7 +69,7 @@ export class ProgramVisitor extends AbstractVisitor {
     private readonly visitors: AbstractVisitor[];
     private readonly skipPrefixNames: (string | RegExp)[];
     private readonly hooks?: ProgramHooks;
-    private filenames: Map<number, string>;
+    private filenames: Map<arkts.KNativePointer, string>;
     private pluginContext?: PluginContext;
     private isFrameworkMode: boolean = false;
 
@@ -112,7 +112,9 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
-        transformer.visitor(program.astNode);
+        const newScript = transformer.visitor(program.ast) as arkts.ETSModule;
+        program?.setAst(newScript)
+        arkts.setAllParents(newScript);
     }
 
     private visitNonLegacyInExternalSource(
@@ -122,8 +124,8 @@ export class ProgramVisitor extends AbstractVisitor {
         cachePath?: string
     ): void {
         const extensionName: string = program.fileNameWithExtension;
-        this.dumpExternalSource(currProgram.astNode, name, `${cachePath}/BEFORE`, this.pluginName, extensionName);
-        const newScript = this.visitor(currProgram.astNode, currProgram, name);
+        this.dumpExternalSource(currProgram.ast, name, `${cachePath}/BEFORE`, this.pluginName, extensionName);
+        const newScript = this.visitor(currProgram.ast, currProgram, name);
         this.dumpExternalSource(newScript, name, `${cachePath}/AFTER`, this.pluginName, extensionName);
     }
 
@@ -154,7 +156,7 @@ export class ProgramVisitor extends AbstractVisitor {
         const queue: arkts.Program[] = programQueue;
         while (queue.length > 0) {
             const currProgram = queue.shift()!;
-            if (visited.has(currProgram.peer) || currProgram.isASTLowered()) {
+            if (visited.has(currProgram.peer) || currProgram.isASTLowered) {
                 continue;
             }
             if (currProgram.peer !== program.peer) {
@@ -165,7 +167,7 @@ export class ProgramVisitor extends AbstractVisitor {
                     'getFileManager' in this.pluginContext &&
                     this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED &&
                     this.pluginName === 'uiTransform' &&
-                    this.isLegacyFile(currProgram.absName)
+                    this.isLegacyFile(currProgram.absoluteName)
                 ) {
                     this.visitLegacyInExternalSource(currProgram, name);
                 } else {
@@ -173,7 +175,7 @@ export class ProgramVisitor extends AbstractVisitor {
                 }
             }
             visited.add(currProgram.peer);
-            for (const externalSource of currProgram.externalSources) {
+            for (const externalSource of currProgram.getExternalSources()) {
                 if (matchPrefix(this.skipPrefixNames, externalSource.getName())) {
                     continue;
                 }
@@ -185,7 +187,7 @@ export class ProgramVisitor extends AbstractVisitor {
     programVisitor(program: arkts.Program): arkts.Program {
         this.visitExternalSources(program, [program]);
 
-        let programScript = program.astNode;
+        let programScript = program.ast;
         programScript = this.visitor(programScript, program, this.externalSourceName);
 
         const visitorsToReset = flattenVisitorsInHooks(this.hooks, this.state);
@@ -199,15 +201,16 @@ export class ProgramVisitor extends AbstractVisitor {
         node: arkts.AstNode,
         program?: arkts.Program,
         externalSourceName?: string
-    ): void {
-        let script: arkts.EtsScript = node as arkts.EtsScript;
+    ): arkts.ETSModule {
+        let script: arkts.ETSModule = node as arkts.ETSModule;
         const preVisitors = hook?.pre?.visitors ?? [];
         for (const transformer of preVisitors) {
-            this.visitTransformer(transformer, script, externalSourceName, program);
+            script = this.visitTransformer(transformer, script, externalSourceName, program);
             if (!this.hooks?.external?.pre?.resetAfter) {
                 transformer.reset();
             }
         }
+        return script
     }
 
     private postVisitor(
@@ -215,37 +218,37 @@ export class ProgramVisitor extends AbstractVisitor {
         node: arkts.AstNode,
         program?: arkts.Program,
         externalSourceName?: string
-    ): void {
-        let script: arkts.EtsScript = node as arkts.EtsScript;
+    ): arkts.ETSModule {
+        let script: arkts.ETSModule = node as arkts.ETSModule;
         const postVisitors = hook?.post?.visitors ?? [];
         for (const transformer of postVisitors) {
-            this.visitTransformer(transformer, script, externalSourceName, program);
+            script = this.visitTransformer(transformer, script, externalSourceName, program);
             if (!this.hooks?.external?.pre?.resetAfter) {
                 transformer.reset();
             }
         }
+        return script
     }
 
-    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.EtsScript {
+    visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.ETSModule {
         if (!this.isFrameworkMode && ProgramSkipper.canSkipProgram(program)) {
-            debugLog('can skip file: ', program?.absName);
-            return node as arkts.EtsScript;
+            debugLog('can skip file: ', program?.absoluteName);
+            return node as arkts.ETSModule;
         }
-        debugLog('cant skip file: ', program?.absName);
+        debugLog('cant skip file: ', program?.absoluteName);
 
         let hook: ProgramHookLifeCycle | undefined;
 
-        let script: arkts.EtsScript = node as arkts.EtsScript;
+        let script: arkts.ETSModule = node as arkts.ETSModule;
         let count: number = 0;
         const isExternal: boolean = !!externalSourceName;
 
         // pre-run visitors
         hook = isExternal ? this.hooks?.external : this.hooks?.source;
-        this.preVisitor(hook, node, program, externalSourceName);
+        script = this.preVisitor(hook, script, program, externalSourceName);
 
         for (const transformer of this.visitors) {
-            this.visitTransformer(transformer, script, externalSourceName, program);
-            arkts.setAllParents(script);
+            script = this.visitTransformer(transformer, script, externalSourceName, program);
             if (!transformer.isExternal) {
                 debugDumpAstNode(
                     script,
@@ -259,22 +262,39 @@ export class ProgramVisitor extends AbstractVisitor {
 
         // post-run visitors
         hook = isExternal ? this.hooks?.external : this.hooks?.source;
-        this.postVisitor(hook, node, program, externalSourceName);
+        script = this.postVisitor(hook, script, program, externalSourceName);
         return script;
     }
 
     private visitTransformer(
         transformer: AbstractVisitor,
-        script: arkts.EtsScript,
+        script: arkts.ETSModule,
         externalSourceName?: string,
         program?: arkts.Program
-    ): arkts.EtsScript {
+    ): arkts.ETSModule {
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;
         transformer.init();
-        const newScript = transformer.visitor(script) as arkts.EtsScript;
+        const importStorage = new arkts.ImportStorage(program!, true)
+        const newScript = transformer.visitor(script) as arkts.ETSModule;
+        program?.setAst(newScript)
+        arkts.setAllParents(newScript);
+        importStorage.update();
         transformer.reset();
-        return newScript;
+        return program!.ast as arkts.ETSModule;
     }
 }
+
+export class CanSkipPhasesCache {
+    static resultCache = new Map<arkts.Program, boolean>()
+    
+    static check(program: arkts.Program) {
+        if (!CanSkipPhasesCache.resultCache.has(program)) {
+            const result = arkts.global.es2panda._ProgramCanSkipPhases(arkts.global.context, program.peer);
+            CanSkipPhasesCache.resultCache.set(program, result);
+        }
+        return CanSkipPhasesCache.resultCache.get(program);
+    }
+}
+

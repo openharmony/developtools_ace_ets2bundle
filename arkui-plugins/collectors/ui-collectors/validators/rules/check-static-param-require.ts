@@ -63,7 +63,7 @@ function _checkStaticParamRequire(
             return;
         }
         // 向V1组件的`static`变量或V2组件带装饰器的`static`变量传参时，告警。
-        const property = arkts.classByPeer<arkts.Property>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.Property>(propertyPtr);
         this.report({
             node: property,
             level: LogType.WARN,

@@ -32,15 +32,15 @@ class SpecificComponentChildrenRule extends AbstractUISyntaxRule {
         };
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isCallExpression(node) || !node.expression) {
+    public parsed(node: arkts.ETSStructDeclaration): void {
+        if (!arkts.isCallExpression(node) || !node.callee) {
             return;
         }
         // Check whether the current node is an identifier and toggle component
-        if (!arkts.isIdentifier(node.expression)) {
+        if (!arkts.isIdentifier(node.callee)) {
             return;
         }
-        const componentName: string = getIdentifierName(node.expression);
+        const componentName: string = getIdentifierName(node.callee);
         if (componentName !== PresetDecorators.TOGGLE) {
             return;
         }

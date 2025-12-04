@@ -161,7 +161,7 @@ export class factory {
         let found: boolean = false;
         if (findCanAddMemoFromMethod(node)) {
             found = true;
-            addMemoAnnotation(node.scriptFunction);
+            addMemoAnnotation(node.function!);
         }
         if (found && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION);
@@ -183,7 +183,7 @@ export class factory {
         let found: boolean = false;
         if (findCanAddMemoFromArrowFunction(node)) {
             found = true;
-            addMemoAnnotation(node.scriptFunction);
+            addMemoAnnotation(node.function!);
         }
         if (found && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION);

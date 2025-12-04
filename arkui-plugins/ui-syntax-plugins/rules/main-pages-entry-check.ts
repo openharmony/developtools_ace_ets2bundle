@@ -26,7 +26,7 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
         };
     }
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isEtsScript(node) || node.isNamespace) {
+        if (!arkts.isETSModule(node) || node.isNamespace) {
             return;
         }
         const currentFilePath = getCurrentFilePath(node);
@@ -40,9 +40,9 @@ class MainPagesEntryCheckRule extends AbstractUISyntaxRule {
         // Traverse all child nodes of the Program
         for (const child of node.getChildren()) {
             // Check if it's of type StructDeclaration
-            if (arkts.isStructDeclaration(child)) {
+            if (arkts.isETSStructDeclaration(child)) {
                 if (!firstStructDeclaration) {
-                    firstStructDeclaration = child.definition.ident;
+                    firstStructDeclaration = child.definition?.ident;
                 }
                 const entryDocoratorUsage = getAnnotationUsage(
                     child,

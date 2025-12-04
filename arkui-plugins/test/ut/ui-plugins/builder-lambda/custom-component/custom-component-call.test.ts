@@ -124,7 +124,7 @@ function main() {}
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
-    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
+    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder));
   }
   
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}

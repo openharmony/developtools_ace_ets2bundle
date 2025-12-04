@@ -66,7 +66,7 @@ export class StructPropertyValidator extends BaseValidator<arkts.ClassProperty, 
         checkWatchDecoratorRegular.bind(this)(node);
         checkStructPropertyOptional.bind(this)(node);
 
-        const struct = arkts.classByPeer<arkts.ClassDefinition>(metadata.structInfo.definitionPtr);
+        const struct = arkts.unpackNode<arkts.ClassDefinition>(metadata.structInfo.definitionPtr);
         checkComputedDecorator.bind(this)(node, struct);
     }
 }

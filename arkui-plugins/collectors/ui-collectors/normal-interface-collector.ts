@@ -19,6 +19,7 @@ import { NormalInterfacePropertyInfo, NormalInterfacePropertyRecord, NormalInter
 import { CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME, NodeCacheNames } from '../../common/predefines';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { checkIsCustomDialogControllerBuilderOptionsFromInfo } from './utils';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface NormalInterfaceCollectorOptions extends VisitorOptions {
     interfaceRecord: NormalInterfaceRecord;
@@ -57,7 +58,7 @@ export class NormalInterfaceCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
     }
 

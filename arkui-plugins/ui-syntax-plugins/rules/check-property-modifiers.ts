@@ -45,15 +45,15 @@ class CheckPropertyModifiersRule extends AbstractUISyntaxRule {
         };
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isStructDeclaration(node)) {
+    public parsed(node: arkts.ETSStructDeclaration): void {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
-        node.definition.body.forEach(member => {
+        node.definition?.body.forEach(member => {
             if (!arkts.isClassProperty(member)) {
                 return;
             }
-            if (arkts.isDefaultAccessModifierClassProperty(member)) {
+            if (member.isDefaultAccessModifier) {
                 return;
             }
             const propertyName = getClassPropertyName(member);

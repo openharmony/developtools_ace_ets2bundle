@@ -226,18 +226,13 @@ KOALA_INTEROP_2(CreateConfig, KNativePointer, KInt, KStringArray)
 KNativePointer impl_DestroyConfig(KNativePointer configPtr)
 {
     auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+    // panda prints diagnostics here and do not clone our strings
+    // so keep arena alive until this moment.
     GetImpl()->DestroyConfig(config);
+    StageArena::instance()->cleanup();
     return nullptr;
 }
 KOALA_INTEROP_1(DestroyConfig, KNativePointer, KNativePointer)
-
-void impl_DestroyContext(KNativePointer contextPtr)
-{
-    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
-    GetImpl()->DestroyContext(context);
-    StageArena::instance()->cleanup();
-}
-KOALA_INTEROP_V1(DestroyContext, KNativePointer)
 
 KNativePointer impl_UpdateCallExpression(
     KNativePointer contextPtr,
@@ -553,6 +548,74 @@ KNativePointer impl_AstNodeProgram(KNativePointer contextPtr, KNativePointer ins
     if (GetImpl()->AstNodeIsProgramConst(_context, _receiver)) {
         return GetImpl()->ETSModuleProgram(_context, _receiver);
     }
-    return impl_AstNodeProgram(_context, GetImpl()->AstNodeParent(_context, _receiver));
+    auto parent = GetImpl()->AstNodeParent(_context, _receiver);
+    if (parent == nullptr) {
+        return nullptr;
+    }
+    return impl_AstNodeProgram(_context, parent);
 }
 KOALA_INTEROP_2(AstNodeProgram, KNativePointer, KNativePointer, KNativePointer)
+
+thread_local KBoolean targetChildFound = false;
+thread_local es2panda_AstNode *targetInnerChild = nullptr;
+thread_local KInt targetAstNodeType = -1;
+
+static void findNodeInnerChild(es2panda_AstNode *node)
+{
+    if (targetInnerChild == node) {
+        targetChildFound = true;
+    }
+}
+
+KBoolean impl_AstNodeFindNodeInInnerChild(
+    KNativePointer contextPtr, KNativePointer instancePtr, KNativePointer tartgetPtr)
+{
+    if (tartgetPtr == nullptr) {
+        return false;
+    }
+    auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto _receiver = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    auto _target = reinterpret_cast<es2panda_AstNode*>(tartgetPtr);
+    targetChildFound = false;
+    targetInnerChild = _target;
+    GetImpl()->AstNodeIterateConst(_context, _receiver, findNodeInnerChild);
+    return targetChildFound;
+}
+KOALA_INTEROP_3(AstNodeFindNodeInInnerChild, KBoolean, KNativePointer, KNativePointer, KNativePointer);
+
+static void findInnerChild(es2panda_AstNode *node, void *arg)
+{
+    auto *context = static_cast<es2panda_Context *>(arg);
+    if (targetAstNodeType == GetImpl()->AstNodeTypeConst(context, node)) {
+        targetInnerChild = node;
+    }
+}
+
+KNativePointer impl_AstNodeFindInnerChild(KNativePointer contextPtr, KNativePointer instancePtr, KInt AstNodeType)
+{
+    auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto _receiver = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    targetAstNodeType = AstNodeType;
+
+    GetImpl()->AstNodeForEach(_receiver, findInnerChild, _context);
+    return targetInnerChild;
+}
+KOALA_INTEROP_3(AstNodeFindInnerChild, KNativePointer, KNativePointer, KNativePointer, KInt);
+
+KNativePointer impl_AstNodeFindOuterParent(KNativePointer contextPtr, KNativePointer instancePtr, KInt AstNodeType)
+{
+    auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    auto _receiver = reinterpret_cast<es2panda_AstNode*>(instancePtr);
+    if (GetImpl()->AstNodeIsProgramConst(_context, _receiver)) {
+        return nullptr;
+    }
+    if (AstNodeType == GetImpl()->AstNodeTypeConst(_context, _receiver)) {
+        return _receiver;
+    }
+    auto parent = GetImpl()->AstNodeParent(_context, _receiver);
+    if (parent == nullptr) {
+        return nullptr;
+    }
+    return impl_AstNodeFindOuterParent(_context, parent, AstNodeType);
+}
+KOALA_INTEROP_3(AstNodeFindOuterParent, KNativePointer, KNativePointer, KNativePointer, KInt);

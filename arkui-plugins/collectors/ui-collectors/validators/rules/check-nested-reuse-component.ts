@@ -51,7 +51,7 @@ function _checkNestedReuseComponent(
     const fromReusableV2: boolean = !!metadata.fromStructInfo?.annotationInfo?.hasReusableV2;
     const isReusableCall: boolean = !!metadata.structDeclInfo?.annotationInfo?.hasReusable;
     const isReusableV2Call: boolean = !!metadata.structDeclInfo?.annotationInfo?.hasReusableV2;
-    const callExpression = arkts.classByPeer<arkts.CallExpression>(metadata.ptr);
+    const callExpression = arkts.unpackNonNullableNode<arkts.CallExpression>(metadata.ptr!);
     const { hasRepeat, hasTemplate } = checkHasRepeatOrTemplate(callExpression);
 
     // `@Component`组件不能包含`@ReusableV2`修饰的组件。(如果有`@Reusable`,只报第二个错误)
@@ -99,29 +99,29 @@ function checkHasRepeatOrTemplate(node: arkts.CallExpression): { hasRepeat: bool
     let currParent: arkts.AstNode | undefined = node.parent;
     while (!!currParent) {
         if (arkts.isCallExpression(currParent)) {
-            if (!currParent.expression.findNodeInInnerChild(prevCall)) {
+            if (!currParent.callee?.findNodeInInnerChild(prevCall)) {
                 break;
             }
             prevCall = currParent;
         }
         currParent = currParent.parent;
     }
-    if (!currParent || !arkts.isCallExpression(currParent) || !arkts.isMemberExpression(currParent.expression)) {
+    if (!currParent || !arkts.isCallExpression(currParent) || !arkts.isMemberExpression(currParent.callee)) {
         return { hasRepeat, hasTemplate };
     }
     if (
-        currParent.expression.property &&
-        arkts.isIdentifier(currParent.expression.property) &&
-        currParent.expression.property.name === TEMPLATE
+        currParent.callee.property &&
+        arkts.isIdentifier(currParent.callee.property) &&
+        currParent.callee.property.name === TEMPLATE
     ) {
         hasTemplate = true;
     }
     if (
-        currParent.expression.object &&
-        arkts.isCallExpression(currParent.expression.object) &&
-        currParent.expression.object.expression &&
-        arkts.isIdentifier(currParent.expression.object.expression) &&
-        currParent.expression.object.expression.name === REPEAT
+        currParent.callee.object &&
+        arkts.isCallExpression(currParent.callee.object) &&
+        currParent.callee.object.callee &&
+        arkts.isIdentifier(currParent.callee.object.callee) &&
+        currParent.callee.object.callee.name === REPEAT
     ) {
         hasRepeat = true;
     }

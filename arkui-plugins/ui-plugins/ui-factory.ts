@@ -69,20 +69,18 @@ export class factory {
      * create `instance: <typeName>` as parameter
      */
     static createInstanceParameter(typeName: string): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(factory.createInstanceIdentifier(typeName), undefined);
+        return arkts.factory.createETSParameterExpression(factory.createInstanceIdentifier(typeName), false, undefined);
     }
 
     /**
      * create `(instance: <typeName>) => void`
      */
     static createStyleLambdaFunctionType(typeName: string): arkts.ETSFunctionType {
-        return arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [factory.createInstanceParameter(typeName)],
-                factory.createTypeReferenceFromString(typeName),
-                false
-            ),
+        return arkts.factory.createETSFunctionType(
+            undefined,
+            [factory.createInstanceParameter(typeName)],
+            factory.createTypeReferenceFromString(typeName),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
     }
@@ -93,7 +91,7 @@ export class factory {
     static createStyleIdentifier(typeName: string): arkts.Identifier {
         return arkts.factory.createIdentifier(
             BuilderLambdaNames.STYLE_PARAM_NAME,
-            arkts.factory.createUnionType([
+            arkts.factory.createETSUnionType([
                 factory.createStyleLambdaFunctionType(typeName),
                 arkts.factory.createETSUndefinedType(),
             ])
@@ -106,7 +104,7 @@ export class factory {
     static createInitializerOptionsIdentifier(optionsName: string): arkts.Identifier {
         return arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
-            arkts.factory.createUnionType([
+            arkts.factory.createETSUnionType([
                 factory.createTypeReferenceFromString(optionsName),
                 arkts.factory.createETSUndefinedType(),
             ])
@@ -117,8 +115,9 @@ export class factory {
      * create `initializers: <optionsName> | undefined` as parameter
      */
     static createInitializersOptionsParameter(optionsName: string): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             factory.createInitializerOptionsIdentifier(optionsName),
+            false,
             undefined
         );
     }
@@ -129,7 +128,7 @@ export class factory {
     static createContentIdentifier(): arkts.Identifier {
         return arkts.factory.createIdentifier(
             BuilderLambdaNames.CONTENT_PARAM_NAME,
-            arkts.factory.createUnionType([factory.createLambdaFunctionType(), arkts.factory.createETSUndefinedType()])
+            arkts.factory.createETSUnionType([factory.createLambdaFunctionType(), arkts.factory.createETSUndefinedType()])
         );
     }
 
@@ -138,7 +137,7 @@ export class factory {
      */
     static createContentParameter(): arkts.ETSParameterExpression {
         const contentParam: arkts.Identifier = factory.createContentIdentifier();
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(contentParam, undefined);
+        const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(contentParam, false, undefined);
         addMemoAnnotation(param);
         return param;
     }
@@ -152,11 +151,11 @@ export class factory {
     ): arkts.TypeNode {
         let part: arkts.ETSTypeReferencePart;
         if (!!typeParams) {
-            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name), typeParams);
+            part = arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(name), typeParams);
         } else {
-            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name));
+            part = arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(name));
         }
-        return arkts.factory.createTypeReference(part);
+        return arkts.factory.createETSTypeReference(part);
     }
 
     /**
@@ -166,8 +165,8 @@ export class factory {
         name: string,
         params: readonly arkts.TypeNode[]
     ): arkts.TypeNode {
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier(name),
                 arkts.factory.createTSTypeParameterInstantiation(params)
             )
@@ -181,13 +180,11 @@ export class factory {
         params?: arkts.Expression[],
         returnType?: arkts.TypeNode | undefined
     ): arkts.ETSFunctionType {
-        return arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                params ?? [],
-                returnType ?? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+        return arkts.factory.createETSFunctionType(
+            undefined,
+            params ?? [],
+            returnType ?? arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
     }
@@ -212,21 +209,15 @@ export class factory {
         const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
             original,
             config.body ?? original.body,
-            arkts.factory.createFunctionSignature(
-                config.typeParams ?? original.typeParams,
-                config.params ?? original.params,
-                config.returnTypeAnnotation ?? original.returnTypeAnnotation,
-                config.hasReceiver ?? original.hasReceiver
-            ),
+            config.typeParams ?? original.typeParams,
+            config.params ?? original.params,
+            config.returnTypeAnnotation ?? original.returnTypeAnnotation,
+            config.hasReceiver ?? original.hasReceiver,
             config.flags ?? original.flags,
-            config.modifiers ?? original.modifiers
+            config.modifiers ?? original.modifiers,
+            config.key ?? original.id,
+            config.annotations ?? original.annotations
         );
-        if (!!config.key) {
-            newFunc.setIdent(config.key);
-        }
-        if (!!config.annotations) {
-            newFunc.setAnnotations(config.annotations);
-        }
         return newFunc;
     }
 
@@ -236,21 +227,15 @@ export class factory {
     static createScriptFunction(config: Partial<ScriptFunctionConfiguration>): arkts.ScriptFunction {
         const newFunc: arkts.ScriptFunction = arkts.factory.createScriptFunction(
             config.body ?? undefined,
-            arkts.factory.createFunctionSignature(
-                config.typeParams ?? undefined,
-                config.params ?? [],
-                config.returnTypeAnnotation ?? undefined,
-                config.hasReceiver ?? false
-            ),
+            config.typeParams ?? undefined,
+            config.params ?? [],
+            config.returnTypeAnnotation ?? undefined,
+            config.hasReceiver ?? false,
             config.flags ?? arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE,
-            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            config.key?.clone(),
+            config.annotations,
         );
-        if (!!config.key) {
-            newFunc.setIdent(config.key);
-        }
-        if (!!config.annotations) {
-            newFunc.setAnnotations(config.annotations);
-        }
         return newFunc;
     }
 
@@ -261,16 +246,16 @@ export class factory {
         original: arkts.MethodDefinition,
         config: PartialNested<MethodDefinitionConfiguration>
     ): arkts.MethodDefinition {
-        const key: arkts.Identifier = config.key ?? original.name;
-        const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.scriptFunction, {
+        const key: arkts.Identifier = config.key ?? original.id!.clone();
+        const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.function!, {
             ...config.function,
             key,
         });
         const newMethod: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
             original,
             config.kind ?? original.kind,
-            key,
-            newFunc,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), newFunc),
             config.modifiers ?? original.modifiers,
             config.isComputed ?? false
         );
@@ -287,8 +272,8 @@ export class factory {
         });
         const newMethod: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
             config.kind ?? arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
-            config.key!,
-            newFunc,
+            config.key?.clone(),
+            arkts.factory.createFunctionExpression(config.key?.clone(), newFunc),
             config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             config.isComputed ?? false
         );
@@ -303,7 +288,7 @@ export class factory {
         config: PartialExcept<IntrinsicAnnotationDeclarationConfiguration, 'expr'>
     ): arkts.AnnotationDeclaration {
         const intrinsicAnnotations: arkts.AnnotationUsage[] = [
-            arkts.factory.create1AnnotationUsage(arkts.factory.createIdentifier('Retention'), [
+            arkts.factory.createAnnotationUsage(arkts.factory.createIdentifier('Retention'), [
                 arkts.factory.createClassProperty(
                     arkts.factory.createIdentifier('policy'),
                     arkts.factory.createStringLiteral('SOURCE'),
@@ -336,7 +321,7 @@ export class factory {
                 property.key &&
                 arkts.isIdentifier(property.key)
             ) {
-                return arkts.factory.update1AnnotationUsage(anno, anno.expr, [
+                return arkts.factory.updateAnnotationUsage(anno, anno.expr, [
                     ...anno.properties,
                     factory.createAliasClassProperty(property.key),
                 ]);
@@ -353,7 +338,7 @@ export class factory {
     static createAliasClassProperty(value: arkts.Identifier): arkts.ClassProperty {
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier('alias'),
-            arkts.factory.create1StringLiteral(value.name),
+            arkts.factory.createStringLiteral(value.name),
             undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
@@ -382,8 +367,8 @@ export class factory {
         typeParameters?: arkts.TSTypeParameterInstantiation
     ): arkts.TSClassImplements {
         return arkts.factory.createTSClassImplements(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(interfaceName))
+            arkts.factory.createETSTypeReference(
+                arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(interfaceName))
             ),
             typeParameters
         );
@@ -434,10 +419,10 @@ export class factory {
         return arkts.factory.updateInterfaceDeclaration(
             newNode,
             newNode.extends,
-            newNode.id,
+            newNode.id?.clone(),
             newNode.typeParams,
             arkts.factory.updateInterfaceBody(newNode.body!, [
-                ...newNode.body.body,
+                ...newNode.body.body.map(n => n.clone()),
                 factory.createPropertyInInterface(
                     CustomDialogNames.BASE_COMPONENT,
                     factory.createTypeReferenceFromString(CustomDialogNames.EXTENDABLE_COMPONENT)
@@ -453,7 +438,7 @@ export class factory {
      *
      * @param method method definition node
      */
-    static generateMemberExpression(object: arkts.AstNode, property: string, optional = false): arkts.MemberExpression {
+    static generateMemberExpression(object: arkts.Expression, property: string, optional = false): arkts.MemberExpression {
         return arkts.factory.createMemberExpression(
             object,
             arkts.factory.createIdentifier(property),
@@ -469,10 +454,11 @@ export class factory {
     static createParameterDeclaration(
         keyName: string,
         typeName: string,
-        initializers?: arkts.AstNode
+        initializers?: arkts.Expression
     ): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(keyName, this.createTypeReferenceFromString(typeName)),
+            false,
             initializers
         );
     }
@@ -483,9 +469,10 @@ export class factory {
     static createClassStaticBlock(): arkts.ClassStaticBlock {
         return arkts.factory.createClassStaticBlock(
             arkts.factory.createFunctionExpression(
+                arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
                 factory.createScriptFunction({
                     key: arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
-                    body: arkts.factory.createBlock([]),
+                    body: arkts.factory.createBlockStatement([]),
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     flags:
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_STATIC_BLOCK |
@@ -502,7 +489,7 @@ export class factory {
         const optionsHasMember: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(optionsHasField(name)),
             undefined,
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -537,15 +524,16 @@ export class factory {
      */
     static createOptionalCall(
         callee: arkts.Expression,
-        typeArgs: readonly arkts.TypeNode[] | undefined,
-        args: readonly arkts.AstNode[] | undefined,
+        typeArgs: readonly arkts.TypeNode[],
+        args: readonly arkts.Expression[],
         isLowered?: boolean
     ): arkts.Expression {
+        const typeParams = arkts.factory.createTSTypeParameterInstantiation(typeArgs)
         if (!isLowered) {
-            return arkts.factory.createCallExpression(callee, typeArgs, args, true);
+            return arkts.factory.createCallExpression(callee, args, typeParams, true, false);
         }
         const id = GenSymGenerator.getInstance().id();
-        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), typeArgs, args);
+        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), args, typeParams, false, false);
         const statements: arkts.Statement[] = [
             factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), callee),
             factory.generateTernaryExpression(id, alternate),
@@ -559,9 +547,8 @@ export class factory {
      * @param left left expression.
      * @param right right expression.
      */
-    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
+    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.Expression): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
             [
                 arkts.factory.createVariableDeclarator(
