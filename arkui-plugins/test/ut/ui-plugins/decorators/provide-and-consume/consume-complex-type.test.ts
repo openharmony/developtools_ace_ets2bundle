@@ -99,7 +99,7 @@ enum PropType {
 
   public build() {}
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 
