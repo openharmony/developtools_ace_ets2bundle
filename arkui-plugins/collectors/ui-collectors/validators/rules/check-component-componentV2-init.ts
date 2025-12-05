@@ -46,11 +46,12 @@ function _checkComponentComponentV2Init(
     // 只要当前struct 中有被"@Link" 修饰的属性就报错
     for (const member of struct.body) {
         if (isAnnotatedProperty(member, DecoratorNames.LINK)) {
+            const reportNode = node.parent && arkts.isExpressionStatement(node.parent) ? node.parent : node;
             this.report({
-                node: node,
+                node: reportNode,
                 level: LogType.ERROR,
                 message: `A V2 component cannot be used with any member property annotated by '@Link' in a V1 component.`,
-                suggestion: createSuggestion(``, ...getPositionRangeFromNode(node), `Remove the component`),
+                suggestion: createSuggestion(``, ...getPositionRangeFromNode(reportNode), `Remove the component`),
             });
         }
     }

@@ -71,20 +71,23 @@ class ComponentComponentV2InitCheckRule extends AbstractUISyntaxRule {
             }
             structNode = structNode.parent;
         }
-        if (getAnnotationUsage(structNode, PresetDecorators.COMPONENT_V2) !== undefined) {
-            const parentNode = node.parent;
-            this.report({
-                node: parentNode,
-                message: this.messages.componentInitLinkCheck,
-                fix: () => {
-                    return {
-                        title: 'Remove the component',
-                        range: [parentNode.startPosition, parentNode.endPosition],
-                        code: '',
-                    };
-                }
-            });
+        if (getAnnotationUsage(structNode, PresetDecorators.COMPONENT_V2) === undefined) {
+            return;
         }
+        const reportNode = node.parent.parent && arkts.isExpressionStatement(node.parent.parent)
+            ? node.parent.parent
+            : node.parent;
+        this.report({
+            node: reportNode,
+            message: this.messages.componentInitLinkCheck,
+            fix: () => {
+                return {
+                    title: 'Remove the component',
+                    range: [reportNode.startPosition, reportNode.endPosition],
+                    code: '',
+                };
+            }
+        });
     }
 }
 
