@@ -70,6 +70,7 @@ import ReusableComponentInV2CheckRule from './reusable-component-in-V2-check';
 import SpecificComponentChildrenRule from './specific-component-children';
 import EntryComponentV2InvalidParamsRule from './entry-componentv2-invalid-params';
 import StructAttributeNoTypeRule from './struct-attribute-no-type';
+import CheckObjectLinkUseLiteralRule from './check-objectlink-use-literal';
 
 const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [AttributeNoInvokeRule, 'error'],
@@ -126,6 +127,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [SpecificComponentChildrenRule, 'error'],
     [EntryComponentV2InvalidParamsRule, 'warn'],
     [StructAttributeNoTypeRule, 'error'],
+    [CheckObjectLinkUseLiteralRule, 'error'],
 ];
 
 export default rules;

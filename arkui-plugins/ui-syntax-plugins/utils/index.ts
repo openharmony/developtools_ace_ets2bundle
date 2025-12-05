@@ -48,6 +48,7 @@ export const COMPONENT_REPEAT: string = 'Repeat';
 export const TEMPLATE: string = 'template';
 
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL = 2;
+export const GLOBAL: string = 'GLOBAL';
 
 export const PresetType = {
     STRING: 'string',
