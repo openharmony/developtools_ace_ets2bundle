@@ -38,12 +38,15 @@ function generateTargetFile(filePath, output) {
   const files = [];
   const globalTsFile = path.resolve(filePath, '../ets_internal_api/global.d.ts');
   const featureAbilityPath = path.resolve(filePath, '../internal_full/featureability.d.ts');
+  const featureAbilityPathOrigin = path.resolve(filePath, '../ets_internal_api/featureability.d.ts');
   const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
     files.push(globalTsFile);
   }
   if (fs.existsSync(featureAbilityPath)) {
     files.push(featureAbilityPath);
+  } else if (fs.existsSync(featureAbilityPathOrigin)) {
+    files.push(featureAbilityPathOrigin);
   }
   readFile(filePath, files);
   if (!fs.existsSync(output)) {
