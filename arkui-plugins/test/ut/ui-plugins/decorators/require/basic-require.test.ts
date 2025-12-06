@@ -326,13 +326,17 @@ function main() {}
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_V2222 | undefined)): void {
+    this.__backing_select1!.resetOnReuse((initializers!.select1 as string));
+  }
+
   private __backing_select1?: IParamDecoratedVariable<string>;
 
   public get select1(): string {
     return this.__backing_select1!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<V2222, __Options_V2222>(style, ((): V2222 => {
       return new V2222();
     }), initializers, reuseId, content);

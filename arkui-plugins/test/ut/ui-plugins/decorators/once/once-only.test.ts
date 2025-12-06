@@ -71,6 +71,13 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_onceParamNum!.resetOnReuse(((({let gensym___21785150 = initializers;
+    (((gensym___21785150) == (null)) ? undefined : gensym___21785150.onceParamNum)})) ?? (0)));
+    this.__backing_onceVar4!.resetOnReuse(((({let gensym___39587884 = initializers;
+    (((gensym___39587884) == (null)) ? undefined : gensym___39587884.onceVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+  }
+
   private __backing_onceParamNum?: IParamOnceDecoratedVariable<number>;
 
   public get onceParamNum(): number {
@@ -91,7 +98,7 @@ function main() {}
     this.__backing_onceVar4!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
     }), initializers, reuseId, content);

@@ -80,6 +80,7 @@ export type OptionsPropertyInfo = {
 export type StructCalleeInfo = {
     isFromCustomDialog?: boolean;
     isFromReuse?: boolean;
+    isFromReuseV2?: boolean;
     structName?: string;
     structEntryStroage?: arkts.Expression;
 };
@@ -98,7 +99,7 @@ export function getStructCalleeInfoFromCallee(
     const info: StructCalleeInfo = {};
     for (const anno of decl.annotations) {
         info.isFromReuse ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE, shouldIgnoreDecl);
-        info.isFromReuse ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
+        info.isFromReuseV2 ||= isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE_V2, shouldIgnoreDecl);
         info.isFromCustomDialog ||= isCustomComponentAnnotation(
             anno,
             StructDecoratorNames.CUSTOMDIALOG,
@@ -147,10 +148,24 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
 
 export function findReuseId(chainingCall: arkts.CallExpression): arkts.AstNode | undefined {
     const callee = chainingCall.expression;
-    if (!arkts.isIdentifier(callee) || callee.name !== BuilderLambdaNames.REUSE_ID_PARAM_NAME) {
+    if (!arkts.isIdentifier(callee) || chainingCall.arguments.length === 0) {
         return undefined;
     }
-    return chainingCall.arguments.at(0);
+    if (callee.name === BuilderLambdaNames.REUSE_ID_PARAM_NAME) {
+        return chainingCall.arguments.at(0);
+    }
+    if (callee.name === BuilderLambdaNames.REUSE_PARAM_NAME) {
+        return findReusableV2Id(chainingCall.arguments.at(0)!);
+    }
+    return undefined;
+}
+
+function findReusableV2Id(arg: arkts.Expression): arkts.AstNode | undefined {
+    if (!arkts.isObjectExpression(arg) || arg.properties.length === 0 || !arkts.isProperty(arg.properties[0])) {
+        return undefined;
+    }
+    const reuse = arg.properties[0].value;
+    return reuse;
 }
 
 export function isBuilderLambda(node: arkts.AstNode, nodeDecl?: arkts.AstNode | undefined): boolean {

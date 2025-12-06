@@ -343,6 +343,40 @@ export class factory {
         );
     }
 
+    static createResetStateVars(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
+        const resetKey: arkts.Identifier = arkts.factory.createIdentifier(
+            CustomComponentNames.RESET_STATE_VARS_ON_REUSE
+        );
+        let body: arkts.BlockStatement | undefined;
+        let modifiers: arkts.Es2pandaModifierFlags =
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        if (!scope.isDecl) {
+            body = arkts.factory.createBlock(PropertyCache.getInstance().getResetStateVars(scope.name));
+            modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        }
+        const params = UIFactory.createInitializersOptionsParameter(optionsTypeName)
+        const scriptFunction = arkts.factory.createScriptFunction(
+            body,
+            arkts.FunctionSignature.createFunctionSignature(
+                undefined,
+                [params],
+                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false
+            ),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            modifiers
+        )
+        .setIdent(resetKey);
+        const resetMethod = arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            resetKey.clone(),
+            scriptFunction,
+            modifiers,
+            false
+        );
+        return resetMethod;
+    }
+
     /**
      * generate `const paramsCasted = (params as <optionsTypeName>)`.
      */
@@ -555,6 +589,9 @@ export class factory {
         }
         if (!!scope.annotations?.reusable) {
             collections.push(this.createToRecord(optionsTypeName, scope));
+        }
+        if (!!scope.annotations?.componentV2) {
+            collections.push(this.createResetStateVars(optionsTypeName, scope));
         }
         return collect(...collections, ...propertyMembers);
     }
@@ -1539,15 +1576,22 @@ export class factory {
     }
 
     /**
-     * create `reuseId: string | undefined` in `_invokeImpl` static method.
+     * create `reuseId: string | undefined` for v1 and `reuseId: (() => string) | undefined` for v2 in `_invokeImpl` static method.
      */
-    static createReuseIdParamInInvokeImpl(): arkts.ETSParameterExpression {
+    static createReuseIdParamInInvokeImpl(isComponent: boolean): arkts.ETSParameterExpression {
+        const type = isComponent
+            ? UIFactory.createTypeReferenceFromString(TypeNames.STRING)
+            : arkts.factory.createFunctionType(
+                  arkts.factory.createFunctionSignature(
+                      undefined,
+                      [],
+                      UIFactory.createTypeReferenceFromString(TypeNames.STRING),
+                      false
+                  ),
+                  arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+              );
         return arkts.factory.createParameterDeclaration(
-            UIFactory.createIdentifierWithType(
-                BuilderLambdaNames.REUSE_ID_PARAM_NAME,
-                UIFactory.createTypeReferenceFromString(TypeNames.STRING),
-                true
-            ),
+            UIFactory.createIdentifierWithType(BuilderLambdaNames.REUSE_ID_PARAM_NAME, type, true),
             undefined
         );
     }
@@ -1686,7 +1730,7 @@ export class factory {
         if (isCustomDialog) {
             params.push(this.createControllerParamInInvokeImpl());
         } else if (isCustomComponent) {
-            params.push(this.createReuseIdParamInInvokeImpl());
+            params.push(this.createReuseIdParamInInvokeImpl(!!annotations.component));
         }
         params.push(UIFactory.createContentParameter());
         const invokeCall = this.createInvokeImplCall(structName, scopeInfo);

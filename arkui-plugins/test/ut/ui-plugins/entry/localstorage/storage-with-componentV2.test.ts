@@ -78,7 +78,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample();
     }), initializers, reuseId, content);

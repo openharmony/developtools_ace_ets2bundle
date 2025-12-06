@@ -43,6 +43,8 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
         initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName, originalName);
+        PropertyCache.getInstance().collectResetStateVars(this.structInfo.name, [resetStateVars]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -103,6 +105,11 @@ export class OnceTranslator extends PropertyTranslator implements InitializerCon
             )
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateResetStateVars(newName: string, originalName: string): arkts.ExpressionStatement {
+        const arg = factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName);
+        return factory.createResetOnReuseStmt(newName, arg);
     }
 }
 

@@ -246,6 +246,10 @@ class Info {
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_infoList!.resetOnReuse([new Info("Alice", 8, 0, 0), new Info("Barry", 10, 1, 20), new Info("Cindy", 18, 24, 40)]);
+  }
+
   private __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
 
   public get infoList(): Array<Info> {
@@ -256,7 +260,7 @@ class Info {
     this.__backing_infoList!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
@@ -314,13 +318,17 @@ class Info {
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_MiddleComponent | undefined)): void {
+    this.__backing_info!.resetOnReuse((initializers!.info as Info));
+  }
+
   private __backing_info?: IParamDecoratedVariable<Info>;
 
   public get info(): Info {
     return this.__backing_info!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MiddleComponent)=> void), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MiddleComponent)=> void), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<MiddleComponent, __Options_MiddleComponent>(style, ((): MiddleComponent => {
       return new MiddleComponent();
     }), initializers, reuseId, content);
@@ -371,13 +379,17 @@ class Info {
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_SubComponent | undefined)): void {
+    this.__backing_region!.resetOnReuse((initializers!.region as Region));
+  }
+
   private __backing_region?: IParamDecoratedVariable<Region>;
 
   public get region(): Region {
     return this.__backing_region!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: SubComponent)=> void), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: SubComponent)=> void), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<SubComponent, __Options_SubComponent>(style, ((): SubComponent => {
       return new SubComponent();
     }), initializers, reuseId, content);

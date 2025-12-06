@@ -77,6 +77,19 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_onceVar1!.resetOnReuse(((({let gensym___243327348 = initializers;
+    (((gensym___24332734) == (null)) ? undefined : gensym___24332734.onceVar1)})) ?? ("stateVar1")));
+    this.__backing_onceVar2!.resetOnReuse(((({let gensym___162552729 = initializers;
+    (((gensym___162552729) == (null)) ? undefined : gensym___162552729.onceVar2)})) ?? (50)));
+    this.__backing_onceVar3!.resetOnReuse(((({let gensym___194665329 = initializers;
+    (((gensym___194665329) == (null)) ? undefined : gensym___194665329.onceVar3)})) ?? (true)));
+    this.__backing_onceVar4!.resetOnReuse(((({let gensym___72527275 = initializers;
+    (((gensym___72527275) == (null)) ? undefined : gensym___72527275.onceVar4)})) ?? (undefined)));
+    this.__backing_onceVar5!.resetOnReuse(((({let gensym___122742778 = initializers;
+    (((gensym___122742778) == (null)) ? undefined : gensym___122742778.onceVar5)})) ?? (null)));
+  }
+
   private __backing_onceVar1?: IParamOnceDecoratedVariable<string>;
 
   public get onceVar1(): string {
@@ -127,7 +140,7 @@ function main() {}
     this.__backing_onceVar5!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);

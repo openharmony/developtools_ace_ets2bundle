@@ -181,6 +181,17 @@ function main() {}
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_index!.resetOnReuse(((({let gensym___208581472 = initializers;
+    (((gensym___208581472) == (null)) ? undefined : gensym___208581472.index)})) ?? (0)));
+    this.changeIndex = (initializers!.changeIndex as ((val: number)=> void));
+    this.testEvent = (initializers!.testEvent as ((val: number)=> number));
+    this.testEvent2 = ((({let gensym___86685242 = initializers;
+    (((gensym___86685242) == (null)) ? undefined : gensym___86685242.testEvent2)})) ?? (((val: number) => {
+    return val;
+    })));
+  }
+
   private __backing_index?: IParamDecoratedVariable<number>;
 
   public get index(): number {
@@ -217,7 +228,7 @@ function main() {}
     this.__backing_testEvent2 = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
     }), initializers, reuseId, content);
@@ -253,6 +264,10 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_index!.resetOnReuse(0);
+  }
+
   private __backing_index?: ILocalDecoratedVariable<number>;
 
   public get index(): number {
@@ -263,7 +278,7 @@ function main() {}
     this.__backing_index!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
