@@ -854,4 +854,18 @@ export class factory {
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()]));
     }
+
+    static createResetOnReuseStmt(newName: string, arg?: arkts.Expression): arkts.ExpressionStatement {
+        const callee = arkts.factory.createMemberExpression(
+            generateThisBacking(newName, false, true),
+            arkts.factory.createIdentifier(StateManagementTypes.RESET_ON_REUSE),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(callee, undefined, arg ? [arg] : [])
+        );
+    }
 }

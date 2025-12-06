@@ -57,6 +57,8 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
             const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
             initializeStruct.range = this.property.range;
             PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+            const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName);
+            PropertyCache.getInstance().collectResetStateVars(this.structInfo.name, [resetStateVars]);
         }
     }
 
@@ -137,6 +139,11 @@ export class LocalTranslator extends PropertyTranslator implements InitializerCo
             !this.isStatic,
             this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
         );
+    }
+
+    generateResetStateVars(newName: string): arkts.ExpressionStatement {
+        const arg = this.property.value ? this.property.value.clone() : arkts.factory.createUndefinedLiteral();
+        return factory.createResetOnReuseStmt(newName, arg);
     }
 }
 

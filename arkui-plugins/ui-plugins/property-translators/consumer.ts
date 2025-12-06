@@ -43,6 +43,8 @@ export class ConsumerTranslator extends PropertyTranslator implements Initialize
         const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
         initializeStruct.range = this.property.range;
         PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
+        const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName);
+        PropertyCache.getInstance().collectResetStateVars(this.structInfo.name, [resetStateVars]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -105,6 +107,11 @@ export class ConsumerTranslator extends PropertyTranslator implements Initialize
             )
         );
         return arkts.factory.createExpressionStatement(assign);
+    }
+
+    generateResetStateVars(newName: string): arkts.ExpressionStatement {
+        const arg = this.property.value ? this.property.value.clone() : arkts.factory.createUndefinedLiteral();
+        return factory.createResetOnReuseStmt(newName, arg);
     }
 }
 

@@ -40,6 +40,7 @@ import { ParamInterfaceTranslator, ParamTranslator } from './param';
 import { OnceInterfaceTranslator, OnceTranslator } from './once';
 import { ProviderInterfaceTranslator, ProviderTranslator } from './provider';
 import { ConsumerInterfaceTranslator, ConsumerTranslator } from './consumer';
+import { EventInterfaceTranslator, EventTranslator } from './event';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
 
@@ -141,7 +142,9 @@ export function classifyV2Property(
     if (hasDecorator(property, DecoratorNames.CONSUMER)) {
         return new ConsumerTranslator({ property, structInfo });
     }
-
+    if (hasDecorator(property, DecoratorNames.EVENT)) {
+        return new EventTranslator({ property, structInfo });
+    }
     return undefined;
 }
 
@@ -216,6 +219,9 @@ export function classifyV2PropertyInInterface(property: arkts.AstNode): Interfac
     }
     if (ConsumerInterfaceTranslator.canBeTranslated(property)) {
         return new ConsumerInterfaceTranslator({ property });
+    }
+    if (EventInterfaceTranslator.canBeTranslated(property)) {
+         return new EventInterfaceTranslator({ property });
     }
     return undefined;
 }

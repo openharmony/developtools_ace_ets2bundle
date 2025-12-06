@@ -135,6 +135,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUserV2 | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUserV2 | undefined)): void {}
+
   private __backing_dialogController?: (CustomDialogController | null);
 
   public get dialogController(): (CustomDialogController | null) {
@@ -145,7 +147,7 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUserV2)=> void), initializers: ((()=> __Options_CustomDialogUserV2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUserV2)=> void), initializers: ((()=> __Options_CustomDialogUserV2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<CustomDialogUserV2, __Options_CustomDialogUserV2>(style, ((): CustomDialogUserV2 => {
       return new CustomDialogUserV2();
     }), initializers, reuseId, content);

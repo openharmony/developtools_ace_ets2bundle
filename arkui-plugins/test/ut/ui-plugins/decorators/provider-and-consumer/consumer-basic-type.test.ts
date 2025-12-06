@@ -72,6 +72,14 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_consumerVar1!.resetOnReuse("propVar1");
+    this.__backing_consumerVar2!.resetOnReuse(50);
+    this.__backing_consumerVar3!.resetOnReuse(true);
+    this.__backing_consumerVar4!.resetOnReuse(undefined);
+    this.__backing_consumerVar5!.resetOnReuse(null);
+  }
+
   private __backing_consumerVar1?: IConsumerDecoratedVariable<string>;
 
   public get consumerVar1(): string {
@@ -122,7 +130,7 @@ function main() {}
     this.__backing_consumerVar5!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);

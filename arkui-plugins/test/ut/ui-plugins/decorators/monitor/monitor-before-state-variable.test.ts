@@ -93,6 +93,15 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__monitor_onStrChange1!.resetOnReuse();
+    this.__monitor_onStrChange2!.resetOnReuse();
+    this.__monitor_onStrChange3!.resetOnReuse();
+    this.__backing_message!.resetOnReuse("Hello World");
+    this.__backing_name!.resetOnReuse("Tom");
+    this.__backing_age!.resetOnReuse(24);
+  }
+
   private __monitor_onStrChange1: (IMonitorDecoratedVariable | undefined);
 
   private __monitor_onStrChange2: (IMonitorDecoratedVariable | undefined);
@@ -129,7 +138,7 @@ function main() {}
     this.__backing_age!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);

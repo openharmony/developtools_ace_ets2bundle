@@ -38,6 +38,7 @@ export enum CustomComponentNames {
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
     LAYOUT_CALLBACKS = 'LayoutCallbacks',
+    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse'
 }
 
 export enum CustomDialogNames {
@@ -58,6 +59,7 @@ export enum BuilderLambdaNames {
     TRANSFORM_METHOD_NAME = '_invoke',
     CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',
     REUSE_ID_PARAM_NAME = 'reuseId',
+    REUSE_PARAM_NAME = 'reuse',
     STORAGE_PARAM_NAME = 'storage',
     USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
     STYLE_PARAM_NAME = 'style',
