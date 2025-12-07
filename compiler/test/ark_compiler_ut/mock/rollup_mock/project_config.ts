@@ -170,8 +170,8 @@ class ProjectConfig {
     this.mockParams = params;
   }
 
-  public mockCompileContextInfo() {
-    this.entryObj = {
+  public mockCompileContextInfo(entryObj?: Object, pkgName?: string) {
+    this.entryObj = (entryObj && pkgName) ? entryObj : {
       'entryAbility/EntryAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryability/EntryAbility.ets`,
       'page/Intex': `${PROJECT_ROOT}/entry/src/main/ets/page/Index.ets`,
       'entryformability/EntryFormAbility': `${PROJECT_ROOT}/entry/src/main/ets/entryformability/EntryFormAbility.ets`,

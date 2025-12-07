@@ -32,11 +32,11 @@ class Meta {
   belongProjectPath: string;
   commonjs: Object;
 
-  constructor(entryModuleName: string, modulePath: string) {
-    this.belongModulePath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${DEFAULT_ENTRY}`;
+  constructor(entryModuleName: string, modulePath: string, pkgName?: string) {
+    this.belongModulePath = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/${pkgName || DEFAULT_ENTRY}`;
     this.hostModulesInfo = [];
     this.moduleName = entryModuleName;
-    this.pkgName = '';
+    this.pkgName = pkgName || '';
     this.isLocalDependency = true;
     this.isNodeEntryFile = false;
     this.pkgPath = modulePath;
@@ -54,8 +54,8 @@ export class ModuleInfo {
   importedIdMaps: object = {};
   importCache = [];
 
-  constructor(id: string, entryModuleName: string, modulePath: string) {
-    this.meta = new Meta(entryModuleName, modulePath);
+  constructor(id: string, entryModuleName: string, modulePath: string, pkgName?: string) {
+    this.meta = new Meta(entryModuleName, modulePath, pkgName);
     this.id = id;
   }
 
