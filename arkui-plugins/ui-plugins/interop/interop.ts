@@ -85,24 +85,18 @@ function createExtraInfo(properties: string[], value: string[]): arkts.Statement
     return body;
 }
 
-function generateTSASExpression(expression: arkts.Expression): arkts.Expression {
-    return arkts.factory.createTSAsExpression(
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                expression,
-                arkts.factory.createIdentifier('unwrap'),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            [],
-            undefined,
+function generateUnwrapCallExpression(expression: arkts.Expression): arkts.Expression {
+    return arkts.factory.createCallExpression(
+        arkts.factory.createMemberExpression(
+            expression,
+            arkts.factory.createIdentifier('unwrap'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,
             false
         ),
-        arkts.factory.createETSTypeReference(
-            arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Object'))
-        ),
+        [],
+        undefined,
+        false,
         false
     );
 }
@@ -113,9 +107,9 @@ function newComponent(className: string): arkts.Statement {
         getWrapValue(
             arkts.factory.createETSNewClassInstanceExpression(arkts.factory.createIdentifier(className), [
                 arkts.factory.createUndefinedLiteral(),
-                generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARAM)),
+                generateUnwrapCallExpression(arkts.factory.createIdentifier(InteroperAbilityNames.PARAM)),
                 arkts.factory.createUndefinedLiteral(),
-                generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)),
+                generateUnwrapCallExpression(arkts.factory.createIdentifier(InteroperAbilityNames.ELMTID)),
                 arkts.factory.createTSAsExpression(
                     arkts.factory.createArrowFunctionExpression(
                         arkts.factory.createScriptFunction(
@@ -135,7 +129,7 @@ function newComponent(className: string): arkts.Statement {
                     ),
                     false
                 ),
-                generateTSASExpression(arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO)),
+                generateUnwrapCallExpression(arkts.factory.createIdentifier(InteroperAbilityNames.EXTRAINFO)),
             ])
         )
     );
