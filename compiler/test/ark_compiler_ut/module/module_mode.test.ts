@@ -81,7 +81,8 @@ import {
   MERGE_ABC,
   CACHE_FILE,
   TARGET_API_VERSION,
-  REMOVE_REDUNDANT_FILE
+  REMOVE_REDUNDANT_FILE,
+  PROJECT_ROOT
 } from '../mock/rollup_mock/path_config';
 import {
   scanFiles,
@@ -2400,6 +2401,42 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.generateCompileContextInfoMock(this.rollup);
     expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
     SourceMapGenerator.cleanSourceMapObject();
+  });
+
+  mocha.it('18-15: test generateCompileContext HAP/HSP ResourceTable', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    const entryObj: Object = this.rollup.share.projectConfig.entryObj;
+    console.log(this.rollup.share.projectConfig.entryObj)
+    const entryObjMock: Object = Object.assign({}, entryObj, {
+      'ResourceTable': `${PROJECT_ROOT}/entry/build/default/generated/r/default/ResourceTable.ts`
+    });
+    this.rollup.mockCompileContextInfo(entryObjMock, 'entry');
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+    this.rollup.mockCompileContextInfo(entryObj);
+  });
+
+  mocha.it('18-16: test generateCompileContext customized har collect compile files', function () {
+    this.rollup.build();
+    SourceMapGenerator.initInstance(this.rollup);
+    const entryObj: Object = this.rollup.share.projectConfig.entryObj;
+    const entryObjMock: Object = {
+      'test/test': `${PROJECT_ROOT}/har/src/main/ets/test/test.ets`
+    };
+    this.rollup.share.projectConfig.byteCodeHar = true;
+    this.rollup.share.projectConfig.customizedOptions = {
+      basePackage: `${PROJECT_ROOT}/har/module.abc`,
+    };
+    this.rollup.mockCompileContextInfo(entryObjMock,'har');
+    const moduleMode: ModuleModeMock = new ModuleModeMock(this.rollup);
+    moduleMode.generateCompileContextInfoMock(this.rollup);
+    expect(moduleMode.checkGenerateCompileContextInfo(this.rollup) === true).to.be.true;
+    SourceMapGenerator.cleanSourceMapObject();
+    this.rollup.mockCompileContextInfo(entryObj);
+    this.rollup.share.projectConfig.byteCodeHar = false;
   });
 
   mocha.it('19-1: test the error message of removeCompilationCache', function () {
