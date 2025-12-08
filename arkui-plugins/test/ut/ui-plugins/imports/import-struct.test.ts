@@ -68,7 +68,7 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
     };
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 

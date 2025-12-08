@@ -79,7 +79,7 @@ import hilog from "@ohos.hilog";
     };
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 

@@ -131,12 +131,10 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
                 return;
             }
             member.statements.forEach(statement => {
-                if (!arkts.isExpressionStatement(statement) || !statement.expression ||
-                    !arkts.isCallExpression(statement.expression) || !statement.expression.expression ||
-                    !arkts.isIdentifier(statement.expression.expression)) {
+                const childComponentNode = this.findChildComponentNode(statement);
+                if (!childComponentNode) {
                     return;
                 }
-                const childComponentNode = statement.expression.expression;
                 const childComponentName = getIdentifierName(childComponentNode);
                 if (childComponentListArray.includes(childComponentName) ||
                     !isBuildInComponent(this.context, childComponentName)) {
@@ -157,6 +155,28 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
                 childComponentList: listToString(childComponentListArray),
             },
         });
+    }
+
+    private findChildComponentNode(stmt: arkts.AstNode): arkts.Identifier | undefined {
+        if (
+            !arkts.isExpressionStatement(stmt) ||
+            !stmt.expression ||
+            !arkts.isCallExpression(stmt.expression) ||
+            !stmt.expression.expression
+        ) {
+            return undefined;
+        }
+        if (arkts.isIdentifier(stmt.expression.expression)) {
+            return stmt.expression.expression;
+        }
+        if (
+            arkts.isMemberExpression(stmt.expression.expression) &&
+            arkts.isCallExpression(stmt.expression.expression.object) &&
+            arkts.isIdentifier(stmt.expression.expression.object.expression)
+        ) {
+            return stmt.expression.expression.object.expression;
+        }
+        return undefined;
     }
 
     private reportDelegateChildrenComponentChildren(
