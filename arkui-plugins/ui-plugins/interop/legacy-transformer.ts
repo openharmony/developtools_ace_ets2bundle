@@ -196,12 +196,9 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
-        const valueType = arkts.factory.createETSUnionType([
-            arkts.factory.createETSTypeReference(
-                arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Object'))
-            ),
-            arkts.factory.createETSUndefinedType(),
-        ]);
+        const valueType = arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Any'))
+        );
         const script = factory.createScriptFunction({
             key: node.id?.clone(),
             body: arkts.factory.createBlockStatement([]),
