@@ -194,6 +194,17 @@ export const originalImportNamesMap: Map<string, string> = new Map();
 const classTraceVariables: Map<string, string[]> = new Map();
 
 const envSupportClass: string = 'WindowSizeLayoutBreakpointInfo';
+const sizeInVPClass: string = 'SizeInVP';
+const sizeClass: string = 'Size';
+const uiEnvWindowAvoidAreaInfoPXClass: string = 'UIEnvWindowAvoidAreaInfoPX';
+const uiEnvWindowAvoidAreaInfoVPClass: string = 'UIEnvWindowAvoidAreaInfoVP';
+const envAllowTypes: string[] = [
+  envSupportClass,
+  sizeInVPClass,
+  sizeClass,
+  uiEnvWindowAvoidAreaInfoPXClass,
+  uiEnvWindowAvoidAreaInfoVPClass
+];
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
@@ -1930,7 +1941,7 @@ export function checkEnvType(propertyType: ts.Type): boolean {
   }
   if (propertyType.isClassOrInterface()) {
     const typeName = checker.typeToString(propertyType);
-    if (typeName === envSupportClass) {
+    if (envAllowTypes.includes(typeName)) {
       return true;
     }
     const baseTypes = checker.getBaseTypes(propertyType);

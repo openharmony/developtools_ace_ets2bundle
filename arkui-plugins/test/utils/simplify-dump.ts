@@ -67,15 +67,15 @@ function ignoreNewLines(dumpStr: string): string {
 
 function dumpConstructor(): string {
     return `
-  private constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+  protected constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
     super(useSharedStorage, storage);
   }
 
-  private constructor(useSharedStorage: (boolean | undefined)) {
+  protected constructor(useSharedStorage: (boolean | undefined)) {
     this(useSharedStorage, undefined);
   }
     
-  private constructor() {
+  protected constructor() {
     this(undefined, undefined);
   }`
 }

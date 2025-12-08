@@ -67,7 +67,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     };
   }
   
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
   
@@ -90,7 +90,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     };
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 

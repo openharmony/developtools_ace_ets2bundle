@@ -67,7 +67,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 
   public build() {}
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 
@@ -93,7 +93,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
     };
   }
 
-  private constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
   }
 
