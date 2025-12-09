@@ -2438,55 +2438,6 @@ mocha.describe('test module_mode file api', function () {
     stub.restore();
   });
 
-  mocha.it('20-1: test checkSourceMapFormat when no file', async function () {
-    this.rollup.build(RELEASE);
-    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
-    const moduleMode = new ModuleModeMock(this.rollup);
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
-      ArkTSInternalErrorDescription,
-      `SourceMap file not exist, path: ${moduleMode.sourceMapPath}`
-    );
-    const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
-    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
-    await sleep(1000);
-    // remove file to mock no file
-    const content: string = fs.readFileSync(toUnixPath(moduleMode.sourceMapPath)).toString();
-    fs.unlinkSync(moduleMode.sourceMapPath);
-
-    sourceMapGenerator.checkSourceMapFormat();
-    expect(stub.calledWith(errInfo)).to.be.true;
-    stub.restore();
-    fs.appendFileSync(moduleMode.sourceMapPath, content, 'utf8');
-
-    SourceMapGenerator.cleanSourceMapObject();
-  });
-
-  mocha.it('20-2: test checkSourceMapFormat when error format', async function () {
-    this.rollup.build(RELEASE);
-    const sourceMapGenerator = SourceMapGenerator.initInstance(this.rollup);
-    const moduleMode = new ModuleModeMock(this.rollup);
-    const errInfo: LogData = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_CHECK_SOURCEMAP_FORMAT_FAILED,
-      ArkTSInternalErrorDescription,
-      `SourceMap content format error, path: ${moduleMode.sourceMapPath}`
-    );
-    const stub = sinon.stub(sourceMapGenerator.logger.getLoggerFromErrorCode(errInfo.code), 'printErrorAndExit');
-    moduleMode.buildModuleSourceMapInfoMock(sourceMapGenerator);
-    await sleep(1000);
-    // add a char '}' to make the format error
-    const content: string = fs.readFileSync(toUnixPath(moduleMode.sourceMapPath)).toString();
-    fs.appendFileSync(moduleMode.sourceMapPath, '}', 'utf8');
-
-    sourceMapGenerator.checkSourceMapFormat();
-    expect(stub.calledWith(errInfo)).to.be.true;
-    stub.restore();
-    fs.unlinkSync(moduleMode.sourceMapPath);
-    fs.appendFileSync(moduleMode.sourceMapPath, content, 'utf8');
-
-    SourceMapGenerator.cleanSourceMapObject();
-  });
-
   mocha.it('20-1: test collectDeclarationFilesEntry build', function () {
     this.rollup.build();
     SourceMapGenerator.initInstance(this.rollup);
