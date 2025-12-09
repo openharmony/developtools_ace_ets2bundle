@@ -67,7 +67,7 @@ export function impl<T>(
 class Use {
   @Memo test() {
     const style = @Memo (attributes: IA<number>) => {};
-    const arr = [1, 2, 3, 4];
+    const arr: Array<number> = [1, 2, 3, 4];
     impl(style, arr);
   }
 }
