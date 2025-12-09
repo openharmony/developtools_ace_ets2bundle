@@ -24,7 +24,7 @@ import {
 } from '../utils';
 import { AbstractUISyntaxRule, UISyntaxRuleLevel } from './ui-syntax-rule';
 
-const renderingConrtrolComponents: Set<string> = new Set<string>([
+const renderingControlComponents: Set<string> = new Set<string>([
     'ForEach',
     'LazyForEach',
     'Repeat'
@@ -73,7 +73,7 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
             if (
                 arkts.isCallExpression(curNode) &&
                 arkts.isIdentifier(curNode.callee) &&
-                renderingConrtrolComponents.has(curNode.callee.name)
+                renderingControlComponents.has(curNode.callee.name)
             ) {
                 foundRenderingComponent = true;
             }
@@ -136,8 +136,11 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
                     return;
                 }
                 const childComponentName = getIdentifierName(childComponentNode);
-                if (childComponentListArray.includes(childComponentName) ||
-                    !isBuildInComponent(this.context, childComponentName)) {
+                if (
+                    childComponentListArray.includes(childComponentName) ||
+                    !isBuildInComponent(this.context, childComponentName) ||
+                    renderingControlComponents.has(childComponentName)
+                ) {
                     return;
                 }
                 reportFlag = true;

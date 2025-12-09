@@ -28,7 +28,7 @@ export const checkNestedRelationship = performanceLog(
 
 const SINGLE_CHILD_COMPONENT = 1;
 
-const renderingConrtrolComponents: Set<string> = new Set<string>(['ForEach', 'LazyForEach', 'Repeat']);
+const renderingControlComponents: Set<string> = new Set<string>(['ForEach', 'LazyForEach', 'Repeat']);
 
 /**
  * 校验规则：
@@ -94,7 +94,7 @@ function checkValidParentComponent(
         if (
             arkts.isCallExpression(curNode) &&
             arkts.isIdentifier(curNode.callee) &&
-            renderingConrtrolComponents.has(curNode.callee.name)
+            renderingControlComponents.has(curNode.callee.name)
         ) {
             foundRenderingComponent = true;
         }
@@ -156,9 +156,9 @@ function checkValidChildComponent(
             }
             const childComponentName = childComponentNode.name;
             if (
-                childComponentName === '' ||
                 childComponentNames.includes(childComponentName) ||
-                !isBuiltInComponent.bind(this)(childComponentNode)
+                !isBuiltInComponent.bind(this)(childComponentNode) ||
+                renderingControlComponents.has(childComponentName)
             ) {
                 return;
             }
