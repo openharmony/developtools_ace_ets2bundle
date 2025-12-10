@@ -69,7 +69,7 @@ function generateTargetFile(filePath, output) {
   files.forEach((item) => {
     let content = fs.readFileSync(item, 'utf8');
     const fileName = path.resolve(output, path.basename(item));
-    if (item === featureAbilityPath) {
+    if (item === featureAbilityPath || item === featureAbilityPathOrigin) {
       content = processsFile(content, fileName, true);
     } else if (item === globalTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, true);
