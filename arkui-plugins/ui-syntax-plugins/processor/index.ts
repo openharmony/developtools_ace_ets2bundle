@@ -23,11 +23,12 @@ import {
     UISyntaxRuleContext,
     UISyntaxRuleHandler,
 } from '../rules/ui-syntax-rule';
-import { getUIComponents, readJSON, UISyntaxRuleComponents } from '../utils';
+import { getComponentsInfo, readJSON, UISyntaxRuleComponents } from '../utils';
 import { ProjectConfig } from 'common/plugin-context';
 
 export type UISyntaxRuleProcessor = {
     setProjectConfig(projectConfig: ProjectConfig): void;
+    setComponentsInfo(projectConfig: ProjectConfig, isCoding: boolean): void;
     beforeTransform(): void;
     afterTransform(): void;
     parsed(node: arkts.AstNode): void;
@@ -52,7 +53,7 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
     public projectConfig?: ProjectConfig;
 
     constructor() {
-        this.componentsInfo = getUIComponents('../../components/');
+        this.componentsInfo = undefined;
     }
 
     public report(options: ReportOptions): void {
@@ -182,6 +183,10 @@ class ConcreteUISyntaxRuleProcessor implements UISyntaxRuleProcessor {
 
     setProjectConfig(projectConfig: ProjectConfig): void {
         this.context.projectConfig = projectConfig;
+    }
+
+    setComponentsInfo(projectConfig: ProjectConfig, isCoding: boolean): void {
+        this.context.componentsInfo = getComponentsInfo(projectConfig, isCoding);
     }
 }
 

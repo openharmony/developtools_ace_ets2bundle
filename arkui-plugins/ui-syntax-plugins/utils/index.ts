@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
+import { ProjectConfig } from 'common/plugin-context';
 
 export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
     'std',
@@ -126,6 +127,10 @@ export const PresetDecorators = {
 export const TOGGLE_TYPE: string = 'ToggleType';
 export const TYPE: string = 'type';
 export const WRAP_BUILDER: string = 'wrapBuilder';
+
+const UI_COMPONENT_PATH = '../../components/';
+const EXTERNAL_COMPONENT_PATH_EDIT    = 'build-tools/ets-loader/components';
+const EXTERNAL_COMPONENT_PATH_COMPILE = '../build-tools/ets-loader/components';
 
 export const ToggleType = {
     CHECKBOX: 'Checkbox',
@@ -303,52 +308,18 @@ export interface UISyntaxRuleComponents {
     validChildComponent: Map<string, string[]>;
 }
 
-export function getUIComponents(dirPath: string): UISyntaxRuleComponents | undefined {
-    const absolutePath = path.resolve(__dirname, dirPath);
+export function getComponentsInfo(projectConfig: ProjectConfig | undefined, isCoding: boolean): UISyntaxRuleComponents {
+    const uiComponentPath = path.resolve(__dirname, UI_COMPONENT_PATH);
+    const uiComponentFiles = fs.existsSync(uiComponentPath) ? fs.readdirSync(uiComponentPath) : [];
+    const externalComponentPath = getExternalComponentPath(projectConfig, isCoding);
+    const externalComponentFiles = fs.existsSync(externalComponentPath) ? fs.readdirSync(externalComponentPath) : [];
+
     let builtInAttributes: string[] = [];
     let containerComponents: string[] = [];
     let atomicComponents: string[] = [];
     let singleChildComponents: string[] = [];
     let validParentComponent: Map<string, string[]> = new Map();
     let validChildComponent: Map<string, string[]> = new Map();
-
-    if (!fs.existsSync(absolutePath)) {
-        return undefined;
-    }
-    // Read all files in the directory
-    const files = fs.readdirSync(absolutePath);
-
-    files.forEach((file) => {
-        if (path.extname(file) === '.json') {
-            const filePath = path.join(absolutePath, file);
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            const componentJson: ComponentJson = JSON.parse(fileContent);
-            // Record the container component name
-            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
-                containerComponents.push(componentJson.name);
-            }
-            // Record the atomic component name
-            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
-                atomicComponents.push(componentJson.name);
-            }
-            // Record the name of a single subcomponent component name
-            if (componentJson.single && componentJson.single === true && componentJson.name) {
-                singleChildComponents.push(componentJson.name);
-            }
-            // Record a valid parent component name
-            if (componentJson.parents && componentJson.name) {
-                validParentComponent.set(componentJson.name, componentJson.parents);
-            }
-            // Record a valid children component name
-            if (componentJson.children && componentJson.name) {
-                validChildComponent.set(componentJson.name, componentJson.children);
-            }
-            // Document all built-in attributes
-            componentJson.attrs
-                ?.filter((attr) => !builtInAttributes.includes(attr))
-                .forEach((attr) => builtInAttributes.push(attr));
-        }
-    });
     const componentsInfo: UISyntaxRuleComponents = {
         builtInAttributes,
         containerComponents,
@@ -358,7 +329,70 @@ export function getUIComponents(dirPath: string): UISyntaxRuleComponents | undef
         validChildComponent,
     };
 
+    extractComponentInfo(componentsInfo, uiComponentPath, uiComponentFiles);
+    extractComponentInfo(componentsInfo, externalComponentPath, externalComponentFiles);
     return componentsInfo;
+}
+
+function extractComponentInfo(componentsInfo: UISyntaxRuleComponents, componentPath: string, files: string[]): void {
+    if (files.length === 0) {
+        return;
+    }
+    files.forEach((file) => {
+        if (path.extname(file) === '.json') {
+            const filePath = path.join(componentPath, file);
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            let componentJson: ComponentJson;
+            try {
+                componentJson = JSON.parse(fileContent);
+            } catch (error) {
+                console.error(`Invalid JSON: ${filePath}`, (error as Error).message);
+                return;
+            }
+            
+            // Record the container component name
+            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
+                componentsInfo.containerComponents.push(componentJson.name);
+            }
+            // Record the atomic component name
+            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
+                componentsInfo.atomicComponents.push(componentJson.name);
+            }
+            // Record the name of a single subcomponent component name
+            if (componentJson.single && componentJson.single === true && componentJson.name) {
+                componentsInfo.singleChildComponents.push(componentJson.name);
+            }
+            // Record a valid parent component name
+            if (componentJson.parents && componentJson.name) {
+                componentsInfo.validParentComponent.set(componentJson.name, componentJson.parents);
+            }
+            // Record a valid children component name
+            if (componentJson.children && componentJson.name) {
+                componentsInfo.validChildComponent.set(componentJson.name, componentJson.children);
+            }
+            // Document all built-in attributes
+            componentJson.attrs
+                ?.filter((attr) => !componentsInfo.builtInAttributes.includes(attr))
+                .forEach((attr) => componentsInfo.builtInAttributes.push(attr));
+        }
+    });
+}
+
+function getExternalComponentPath(projectConfig: ProjectConfig | undefined, isCoding: boolean): string {
+    if (!projectConfig) {
+        return '';
+    }
+    const externalComponentPaths = isCoding
+        ? (projectConfig.externalApiPath ? [projectConfig.externalApiPath] : [])
+        : (projectConfig.externalApiPaths ?? []);
+    const subPath = isCoding ? EXTERNAL_COMPONENT_PATH_EDIT : EXTERNAL_COMPONENT_PATH_COMPILE;
+    for (const sdkPath of externalComponentPaths) {
+        const fullPath = path.resolve(sdkPath, subPath);
+        if (fs.existsSync(fullPath)) {
+            return fullPath;
+        }
+    }
+    return '';
 }
 
 export function getConsistentResourceInfo(): Map<string, { id: string; resourceName: string }[]> {
