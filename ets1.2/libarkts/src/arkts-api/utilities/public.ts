@@ -137,6 +137,7 @@ export function checkErrors(proceedTo?: string) {
 export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativePointer, ignoreErrors = false): void {
     if (global.es2panda._ContextState(global.context) === Es2pandaContextState.ES2PANDA_STATE_ERROR) {
         NodeCache.clear();
+        globalThis.gc?.();
         if (!ignoreErrors) {
             checkErrors(Es2pandaContextState[state]);
         }
@@ -145,6 +146,7 @@ export function proceedToState(state: Es2pandaContextState, _contextPtr?: KNativ
         return;
     }
     NodeCache.clear();
+    globalThis.gc?.();
     const before = Date.now();
     traceGlobal(() => `Proceeding to state ${Es2pandaContextState[state]}: start`);
     global.es2panda._ProceedToState(global.context, state);
