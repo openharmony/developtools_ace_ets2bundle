@@ -176,7 +176,7 @@ class ModuleModeMock extends ModuleMode {
     } else if (rollupObject.share.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
-    if (this.projectConfig.bundleType === 'shared') {
+    if (this.projectConfig.bundleType === 'shared' || this.projectConfig.bundleType === 'appPlugin') {
       compileContextInfo.needModifyRecord = true;
       compileContextInfo.bundleName = this.projectConfig.bundleName;
     }
