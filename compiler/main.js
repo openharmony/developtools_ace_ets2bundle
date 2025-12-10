@@ -661,9 +661,9 @@ function loadBuildJson() {
   if (!!aceBuildJson.byteCodeHar) {
     projectConfig.useTsHar = true;
   }
-  if (!!aceBuildJson.customizedHar) {
-    projectConfig.customizedHar = true;
-  }
+
+  projectConfig.customizedHar = !!aceBuildJson.customizedHar;
+  
   if (aceBuildJson.updateVersionInfo) {
     projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;
   }
