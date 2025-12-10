@@ -22,6 +22,7 @@ export type KUint8ArrayPtr = int32 | Uint8Array | null;
 export type KInt = int32;
 export type KUInt = int32;
 export type KLong = int64;
+export type KULong = int64;
 export type KFloat = float32;
 export type KDouble = float64;
 export type KBoolean = int32;

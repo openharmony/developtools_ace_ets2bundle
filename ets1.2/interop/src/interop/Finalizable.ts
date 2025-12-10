@@ -14,9 +14,10 @@
  */
 
 import { Wrapper, nullptr } from './Wrapper';
-import { finalizerRegister, finalizerUnregister, Thunk } from '@koalaui/common';
+import { finalizerRegister, finalizerUnregister, Thunk, int32 } from '@koalaui/common';
 import { InteropNativeModule } from './InteropNativeModule';
 import { pointer } from './InteropTypes';
+import { CallbackResource } from './SerializerBase'
 
 export class NativeThunk implements Thunk {
     finalizer: pointer;
@@ -29,8 +30,8 @@ export class NativeThunk implements Thunk {
         this.name = name;
     }
 
-    clean() {
-        if (this.obj != nullptr) {
+    clean(): void {
+        if (this.obj !== nullptr) {
             this.destroyNative(this.obj, this.finalizer);
         }
         this.obj = nullptr;
@@ -39,6 +40,26 @@ export class NativeThunk implements Thunk {
     destroyNative(ptr: pointer, finalizer: pointer): void {
         InteropNativeModule._InvokeFinalizer(ptr, finalizer);
     }
+}
+
+class ResourceThunk implements Thunk {
+    resourceId: int32;
+    releaser: pointer;
+
+    constructor(resourceId: int32, releaser: pointer) {
+        this.resourceId = resourceId;
+        this.releaser = releaser;
+    }
+
+
+    clean(): void {
+        InteropNativeModule._CallCallbackResourceReleaser(this.releaser, this.resourceId)
+    }
+}
+
+export function resourceFinalizerRegister(value: object, resource: CallbackResource) {
+    InteropNativeModule._CallCallbackResourceHolder(resource.hold, resource.resourceId)
+    finalizerRegister(value, new ResourceThunk(resource.resourceId, resource.release))
 }
 
 /**
@@ -57,8 +78,12 @@ export class Finalizable extends Wrapper {
 
         if (this.managed) {
             // Improve: reenable exception.
-            if (this.ptr == nullptr) return; // throw new Error("Can't have nullptr ptr ${}")
-            if (this.finalizer == nullptr) throw new Error('Managed finalizer is 0');
+            if (this.ptr === nullptr) {
+                return;
+            } // throw new Error('Cannot have nullptr ptr ${}')
+            if (this.finalizer === nullptr) {
+                throw new Error('Managed finalizer is 0');
+            }
 
             const thunk = this.makeNativeThunk(ptr, finalizer, handle);
             finalizerRegister(this, thunk);
@@ -74,10 +99,10 @@ export class Finalizable extends Wrapper {
         return new NativeThunk(ptr, finalizer, handle);
     }
 
-    close() {
-        if (this.ptr == nullptr) {
+    close(): void {
+        if (this.ptr === nullptr) {
             throw new Error(`Closing a closed object: ` + this.toString());
-        } else if (this.cleaner == null) {
+        } else if (!this.cleaner) {
             throw new Error(`No thunk assigned to ` + this.toString());
         } else {
             finalizerUnregister(this);
@@ -89,14 +114,18 @@ export class Finalizable extends Wrapper {
 
     release(): pointer {
         finalizerUnregister(this);
-        if (this.cleaner) this.cleaner.obj = nullptr;
+        if (this.cleaner) {
+            this.cleaner.obj = nullptr;
+        }
         let result = this.ptr;
         this.ptr = nullptr;
         return result;
     }
 
-    resetPeer(pointer: pointer) {
-        if (this.managed) throw new Error('Can only reset peer for an unmanaged object');
+    resetPeer(pointer: pointer): void {
+        if (this.managed) {
+            throw new Error('Can only reset peer for an unmanaged object');
+        }
         this.ptr = pointer;
     }
 

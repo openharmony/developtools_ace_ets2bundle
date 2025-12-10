@@ -16,13 +16,12 @@ import { float32, float64, int32, int64 } from '@koalaui/common';
 import { pointer, KPointer, KSerializerBuffer } from './InteropTypes';
 import { wrapCallback } from './InteropOps';
 import { InteropNativeModule } from './InteropNativeModule';
-import { ResourceHolder, ResourceId } from '../arkts/ResourceManager';
+import { ResourceHolder, ResourceId } from './ResourceManager';
 import { MaterializedBase } from './MaterializedBase';
 import { nullptr } from './Wrapper';
-import { NativeBuffer } from './NativeBuffer';
 
 // imports required interfaces (now generation is disabled)
-// import { Resource } from "@arkoala/arkui"
+// import { Resource } from '@arkoala/arkui'
 /**
  * Value representing possible JS runtime object type.
  * Must be synced with "enum RuntimeType" in C++.
@@ -56,14 +55,30 @@ export enum Tags {
 
 export function runtimeType(value: any): int32 {
     let type = typeof value;
-    if (type == 'number') return RuntimeType.NUMBER;
-    if (type == 'string') return RuntimeType.STRING;
-    if (type == 'undefined') return RuntimeType.UNDEFINED;
-    if (type == 'object') return RuntimeType.OBJECT;
-    if (type == 'boolean') return RuntimeType.BOOLEAN;
-    if (type == 'bigint') return RuntimeType.BIGINT;
-    if (type == 'function') return RuntimeType.FUNCTION;
-    if (type == 'symbol') return RuntimeType.SYMBOL;
+    if (type === 'number') {
+        return RuntimeType.NUMBER;
+    }
+    if (type === 'string') {
+        return RuntimeType.STRING;
+    }
+    if (type === 'undefined') {
+        return RuntimeType.UNDEFINED;
+    }
+    if (type === 'object') {
+        return RuntimeType.OBJECT;
+    }
+    if (type === 'boolean') {
+        return RuntimeType.BOOLEAN;
+    }
+    if (type === 'bigint') {
+        return RuntimeType.BIGINT;
+    }
+    if (type === 'function') {
+        return RuntimeType.FUNCTION;
+    }
+    if (type === 'symbol') {
+        return RuntimeType.SYMBOL;
+    }
 
     throw new Error(`bug: ${value} is ${type}`);
 }
@@ -81,8 +96,19 @@ export function registerCallback(value: object | undefined): int32 {
 }
 
 export function toPeerPtr(value: object): KPointer {
-    if (value.hasOwnProperty('peer')) return unsafeCast<MaterializedBase>(value).getPeer()?.ptr ?? nullptr;
-    else throw new Error('Value is not a MaterializedBase instance');
+    try {
+        return unsafeCast<MaterializedBase>(value).getPeer()?.ptr ?? nullptr;
+    } catch (error) {
+        throw new Error('Value is not a MaterializedBase instance');
+    }
+}
+
+export class InteropError extends Error {
+    public code: int32
+    constructor(code: int32, message: string) {
+        super(message)
+        this.code = code
+    }
 }
 
 export interface CallbackResource {
@@ -126,22 +152,26 @@ export class SerializerBase {
     }
 
     private static customSerializers: CustomSerializer | undefined = undefined;
-    static registerCustomSerializer(serializer: CustomSerializer) {
-        if (SerializerBase.customSerializers == undefined) {
+    static registerCustomSerializer(serializer: CustomSerializer): void {
+        if (SerializerBase.customSerializers === undefined || SerializerBase.customSerializers === null) {
             SerializerBase.customSerializers = serializer;
         } else {
             let current = SerializerBase.customSerializers;
-            while (current.next != undefined) {
+            while (current.next) {
                 current = current.next;
             }
             current.next = serializer;
         }
     }
+    private static createErrorFromStringData(errStr: string[]): Error {
+        let code: int32 = errStr.length > 0 ? Number.parseInt(errStr.splice(0, 1)[0]) : 0;
+        return new InteropError(code, errStr.join(';'));
+    }
     constructor() {
         this.buffer = new ArrayBuffer(96);
         this.view = new DataView(this.buffer);
     }
-    public release() {
+    public release(): void {
         this.releaseResources();
         this.position = 0;
         if (this !== SerializerBase.pool[SerializerBase.poolTop - 1]) {
@@ -165,7 +195,7 @@ export class SerializerBase {
         return this.position;
     }
 
-    private checkCapacity(value: int32) {
+    private checkCapacity(value: int32): void {
         if (value < 1) {
             throw new Error(`${value} is less than 1`);
         }
@@ -207,8 +237,11 @@ export class SerializerBase {
         let resourceId: ResourceId = 0;
         const promise = new Promise<void>((resolve, reject) => {
             const callback = (err: string[] | undefined) => {
-                if (err !== undefined) reject(err);
-                else resolve();
+                if (err) {
+                    reject(SerializerBase.createErrorFromStringData(err))
+                } else {
+                    resolve();
+                }
             };
             resourceId = this.holdAndWriteCallback(callback, hold, release, call, callSync);
         });
@@ -222,14 +255,17 @@ export class SerializerBase {
         let resourceId: ResourceId = 0;
         const promise = new Promise<T>((resolve, reject) => {
             const callback = (value: T | undefined, err: string[] | undefined) => {
-                if (err !== undefined) reject(err);
-                else resolve(value!);
+                if (err) {
+                    reject(SerializerBase.createErrorFromStringData(err))
+                } else {
+                    resolve(value!);
+                }
             };
             resourceId = this.holdAndWriteCallback(callback, hold, release, call);
         });
         return [promise, resourceId];
     }
-    writeCallbackResource(resource: CallbackResource) {
+    writeCallbackResource(resource: CallbackResource): void {
         this.writeInt32(resource.resourceId);
         this.writePointer(resource.hold);
         this.writePointer(resource.release);
@@ -242,12 +278,14 @@ export class SerializerBase {
         this.writePointer(release);
         return resourceId;
     }
-    private releaseResources() {
-        for (const resourceId of this.heldResources) InteropNativeModule._ReleaseCallbackResource(resourceId);
+    private releaseResources(): void {
+        for (const resourceId of this.heldResources) {
+            InteropNativeModule._ReleaseCallbackResource(resourceId);
+        }
         // Improve: think about effective array clearing/pushing
         this.heldResources = [];
     }
-    writeCustomObject(kind: string, value: any) {
+    writeCustomObject(kind: string, value: any): void {
         let current = SerializerBase.customSerializers;
         while (current) {
             if (current.supports(kind)) {
@@ -259,14 +297,14 @@ export class SerializerBase {
         console.log(`Unsupported custom serialization for ${kind}, write undefined`);
         this.writeInt8(Tags.UNDEFINED);
     }
-    writeNumber(value: number | undefined) {
+    writeNumber(value: number | undefined): void {
         this.checkCapacity(5);
-        if (value == undefined) {
+        if (value === undefined || value === null) {
             this.view.setInt8(this.position, Tags.UNDEFINED);
             this.position++;
             return;
         }
-        if (value == Math.round(value)) {
+        if (value === Math.round(value)) {
             this.view.setInt8(this.position, Tags.INT32);
             this.view.setInt32(this.position + 1, value, true);
             this.position += 5;
@@ -276,45 +314,45 @@ export class SerializerBase {
         this.view.setFloat32(this.position + 1, value, true);
         this.position += 5;
     }
-    writeInt8(value: int32) {
+    writeInt8(value: int32): void {
         this.checkCapacity(1);
         this.view.setInt8(this.position, value);
         this.position += 1;
     }
-    writeInt32(value: int32) {
+    writeInt32(value: int32): void {
         this.checkCapacity(4);
         this.view.setInt32(this.position, value, true);
         this.position += 4;
     }
-    writeInt64(value: int64) {
+    writeInt64(value: int64): void {
         this.checkCapacity(8);
         this.view.setBigInt64(this.position, BigInt(value), true);
         this.position += 8;
     }
-    writePointer(value: pointer) {
+    writePointer(value: pointer): void {
         this.checkCapacity(8);
         this.view.setBigInt64(this.position, BigInt(value ?? 0), true);
         this.position += 8;
     }
-    writeFloat32(value: float32) {
+    writeFloat32(value: float32): void {
         this.checkCapacity(4);
         this.view.setFloat32(this.position, value, true);
         this.position += 4;
     }
-    writeFloat64(value: float64) {
+    writeFloat64(value: float64): void {
         this.checkCapacity(8);
         this.view.setFloat64(this.position, value, true);
         this.position += 8;
     }
-    writeBoolean(value: boolean | undefined) {
+    writeBoolean(value: boolean | undefined): void {
         this.checkCapacity(1);
-        this.view.setInt8(this.position, value == undefined ? RuntimeType.UNDEFINED : +value);
+        this.view.setInt8(this.position, value !== undefined ? +value : RuntimeType.UNDEFINED);
         this.position++;
     }
-    writeFunction(value: object | undefined) {
+    writeFunction(value: object | undefined): void {
         this.writeInt32(registerCallback(value));
     }
-    writeString(value: string) {
+    writeString(value: string): void {
         this.checkCapacity(4 + value.length * 4); // length, data
         let encodedLength = InteropNativeModule._ManagedStringWrite(
             value,
@@ -325,7 +363,7 @@ export class SerializerBase {
         this.view.setInt32(this.position, encodedLength, true);
         this.position += encodedLength + 4;
     }
-    writeBuffer(buffer: ArrayBuffer) {
+    writeBuffer(buffer: ArrayBuffer): void {
         this.holdAndWriteObject(buffer);
         const ptr = InteropNativeModule._GetNativeBufferPointer(buffer);
         this.writePointer(ptr);
@@ -344,6 +382,6 @@ class DateSerializer extends CustomSerializer {
 }
 SerializerBase.registerCustomSerializer(new DateSerializer());
 
-export function unsafeCast<T>(value: unknown) {
+export function unsafeCast<T>(value: unknown): T {
     return value as unknown as T;
 }

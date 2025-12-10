@@ -20,11 +20,11 @@ export enum Access {
     WRITE = 2, // 1 << 1,
     READWRITE = 3, // READ | WRITE
 }
-export function isRead(access: Access) {
-    return access & Access.READ;
+export function isRead(access: Access): boolean {
+    return (access & Access.READ) != 0;
 }
-export function isWrite(access: Access) {
-    return access & Access.WRITE;
+export function isWrite(access: Access): boolean {
+    return (access & Access.WRITE) != 0;
 }
 
 export type Exec<P, R> = (pointer: P) => R;

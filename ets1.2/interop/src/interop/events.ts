@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,23 +16,23 @@
 import { int32 } from '@koalaui/common';
 import { DeserializerBase } from './DeserializerBase';
 import { InteropNativeModule } from './InteropNativeModule';
-import { ResourceHolder } from '../arkts/ResourceManager';
+import { ResourceHolder } from './ResourceManager';
 import { wrapSystemCallback } from './InteropOps';
 import { KSerializerBuffer } from './InteropTypes';
 
 const API_KIND_MAX = 100;
 const apiEventHandlers: (EventHandler | undefined)[] = new Array(API_KIND_MAX).fill(undefined);
 export type EventHandler = (deserializer: DeserializerBase) => void;
-export function registerApiEventHandler(apiKind: int32, handler: EventHandler) {
+export function registerApiEventHandler(apiKind: int32, handler: EventHandler): void {
     if (apiKind < 0 || apiKind > API_KIND_MAX) {
         throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`);
     }
-    if (apiEventHandlers[apiKind] !== undefined) {
+    if (!!apiEventHandlers[apiKind]) {
         throw new Error(`Callback caller for api kind ${apiKind} already was set`);
     }
     apiEventHandlers[apiKind] = handler;
 }
-export function handleApiEvent(apiKind: int32, deserializer: DeserializerBase) {
+export function handleApiEvent(apiKind: int32, deserializer: DeserializerBase): void {
     if (apiKind < 0 || apiKind > API_KIND_MAX) {
         throw new Error(`Maximum api kind is ${API_KIND_MAX}, received ${apiKind}`);
     }
@@ -41,7 +41,7 @@ export function handleApiEvent(apiKind: int32, deserializer: DeserializerBase) {
     }
     apiEventHandlers[apiKind]!(deserializer);
 }
-export function wrapSystemApiHandlerCallback() {
+export function wrapSystemApiHandlerCallback(): void {
     wrapSystemCallback(1, (buffer: KSerializerBuffer, len: int32) => {
         const deserializer = new DeserializerBase(buffer, len);
         const apiKind = deserializer.readInt32();
@@ -64,8 +64,10 @@ const buffer = new Uint8Array(bufferSize);
 const deserializer = new DeserializerBase(buffer.buffer, bufferSize);
 function checkSingleEvent(): boolean {
     deserializer.resetCurrentPosition();
-    let result = InteropNativeModule._CheckCallbackEvent(buffer, bufferSize);
-    if (result == 0) return false;
+    let result: int32 = InteropNativeModule._CheckCallbackEvent(buffer, bufferSize);
+    if (result === 0) {
+        return false;
+    }
 
     const eventKind = deserializer.readInt32() as CallbackEventKind;
     switch (eventKind) {

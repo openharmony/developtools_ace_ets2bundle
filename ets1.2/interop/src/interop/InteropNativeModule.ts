@@ -161,6 +161,6 @@ export class InteropNativeModule {
     }
 }
 
-export function loadInteropNativeModule() {
+export function loadInteropNativeModule(): void {
     loadNativeModuleLibrary('InteropNativeModule', InteropNativeModule);
 }
