@@ -41,6 +41,7 @@ import NoDuplicateIdRule from './no-duplicate-id';
 import NoDuplicatePreviewRule from './no-duplicate-preview';
 import NoPropLinkObjectLinkInEntryRule from './no-prop-link-objectlink-in-entry';
 import NoSameAsBuiltInAttributeRule from './no-same-as-built-in-attribute';
+import NoVariablesChangeInBuildRule from './no-variables-change-in-build';
 import ReuseAttributeCheckRule from './reuse-attribute-check';
 import StaticParamRequireRule from './static-param-require';
 import StructMissingDecoratorRule from './struct-missing-decorator';
@@ -98,6 +99,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [NoDuplicatePreviewRule, 'error'],
     [NoPropLinkObjectLinkInEntryRule, 'warn'],
     [NoSameAsBuiltInAttributeRule, 'error'],
+    [NoVariablesChangeInBuildRule, 'error'],
     [ReuseAttributeCheckRule, 'error'],
     [StaticParamRequireRule, 'warn'],
     [StructMissingDecoratorRule, 'error'],
