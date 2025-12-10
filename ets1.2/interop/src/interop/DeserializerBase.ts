@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 import { CustomTextDecoder, float32, float64, int32, int64 } from '@koalaui/common';
-import { Tags, CallbackResource } from './SerializerBase';
+import { Tags, CallbackResource, InteropError } from './SerializerBase';
 import { pointer, KUint8ArrayPtr, KSerializerBuffer } from './InteropTypes';
 import { NativeBuffer } from './NativeBuffer';
-import { ResourceHolder } from '../arkts/ResourceManager';
+import { ResourceHolder } from './ResourceManager';
 import { InteropNativeModule } from './InteropNativeModule';
 
 export class DeserializerBase {
@@ -27,12 +27,12 @@ export class DeserializerBase {
     private static textDecoder = new CustomTextDecoder();
     private static customDeserializers: CustomDeserializer | undefined = undefined;
 
-    static registerCustomDeserializer(deserializer: CustomDeserializer) {
+    static registerCustomDeserializer(deserializer: CustomDeserializer): void {
         let current = DeserializerBase.customDeserializers;
-        if (current == undefined) {
+        if (current === undefined) {
             DeserializerBase.customDeserializers = deserializer;
         } else {
-            while (current.next != undefined) {
+            while (!!current.next) {
                 current = current.next;
             }
             current.next = deserializer;
@@ -40,7 +40,9 @@ export class DeserializerBase {
     }
 
     constructor(buffer: ArrayBuffer | KSerializerBuffer | KUint8ArrayPtr, length: int32) {
-        if (typeof buffer != 'object') throw new Error('Must be used only with ArrayBuffer');
+        if (typeof buffer !== 'object') {
+            throw new Error('Must be used only with ArrayBuffer');
+        }
         if (buffer && 'buffer' in buffer) {
             buffer = buffer.buffer as ArrayBuffer;
         }
@@ -74,7 +76,7 @@ export class DeserializerBase {
         this.position = 0;
     }
 
-    private checkCapacity(value: int32) {
+    private checkCapacity(value: int32): void {
         if (value > this.length) {
             throw new Error(`${value} is less than remaining buffer length`);
         }
@@ -126,7 +128,7 @@ export class DeserializerBase {
         this.checkCapacity(1);
         const value = this.view.getInt8(this.position);
         this.position += 1;
-        return value == 1;
+        return value === 1;
     }
 
     readFunction(): any {
@@ -220,6 +222,12 @@ export class DeserializerBase {
             resource.hold,
             resource.release
         );
+    }
+
+    readException(): Error {
+        const code = this.readInt32()
+        const message = this.readString()
+        return new InteropError(code, message)
     }
 }
 

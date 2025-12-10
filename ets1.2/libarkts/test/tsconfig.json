@@ -10,8 +10,5 @@
         "../src/**/*.ts",
         "../test/**/*.ts",
         "../examples/**/*.ts"
-    ],
-    "exclude": [
-        "./ts-api/**/*"
     ]
 }

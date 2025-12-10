@@ -25,7 +25,9 @@ export { isNullPtr, nullptr, ptrToBits, bitsToPtr, isSamePtr, ptrToString } from
 export class Wrapper {
     ptr: KPointer;
     constructor(ptr: KPointer) {
-        if (ptr == null) throw new Error(`Init <${className(this)}> with null native peer`);
+        if (ptr === null) {
+            throw new Error(`Init <${className(this)}> with null native peer`);
+        }
         this.ptr = ptr;
     }
     toString(): string {
@@ -38,7 +40,11 @@ export function getPtr(value: Wrapper | undefined): KPointer {
 }
 
 export function ptrEqual(a: Wrapper | undefined, b: Wrapper | undefined): boolean {
-    if (a === b) return true;
-    if (a == undefined || b == undefined) return false;
+    if (a === b) {
+        return true;
+    }
+    if (a === undefined || b === undefined || a === null || b === null) {
+        return false;
+    }
     return isSamePtr(a.ptr, b.ptr);
 }

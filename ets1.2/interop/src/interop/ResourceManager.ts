@@ -18,7 +18,7 @@ import { int32, float64toInt32 } from '@koalaui/common';
 export type ResourceId = int32;
 
 interface ResourceInfo {
-    resource: object;
+    resource: object | null | undefined;
     holdersCount: int32;
 }
 
@@ -34,7 +34,7 @@ export class ResourceHolder {
     private static disposablesSize = 0;
 
     static instance(): ResourceHolder {
-        if (ResourceHolder._instance == undefined) {
+        if (ResourceHolder._instance === undefined || ResourceHolder._instance === null) {
             ResourceHolder._instance = new ResourceHolder();
         }
         return ResourceHolder._instance!;
@@ -52,7 +52,7 @@ export class ResourceHolder {
         if (resource.holdersCount <= 0) this.resources.delete(resourceId);
     }
 
-    public registerAndHold(resource: object): ResourceId {
+    public registerAndHold(resource: object | null | undefined): ResourceId {
         const resourceId = ResourceHolder.nextResourceId++;
         this.resources.set(resourceId, {
             resource: resource,
@@ -61,7 +61,7 @@ export class ResourceHolder {
         return resourceId;
     }
 
-    public get(resourceId: ResourceId): object {
+    public get(resourceId: ResourceId): object | null | undefined {
         if (!this.resources.has(resourceId)) throw new Error(`Resource ${resourceId} does not exists`);
         return this.resources.get(resourceId)!.resource;
     }
