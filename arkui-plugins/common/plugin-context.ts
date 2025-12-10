@@ -129,6 +129,8 @@ export interface ProjectConfig {
     projectRootPath: string,
     integratedHsp: boolean
     frameworkMode?: string;
+    externalApiPaths: string[];
+    externalApiPath: string;
 }
 
 export type PluginHandlerFunction = () => void;
