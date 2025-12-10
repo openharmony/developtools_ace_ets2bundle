@@ -307,7 +307,7 @@ export class ModuleMode extends CommonMode {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     // The bundleType is 'shared' in cross-app hsp.
-    if (this.projectConfig.bundleType === 'shared') {
+    if (this.projectConfig.bundleType === 'shared' || this.projectConfig.bundleType === 'appPlugin') {
       compileContextInfo.needModifyRecord = true;
       compileContextInfo.bundleName = this.projectConfig.bundleName;
     }
