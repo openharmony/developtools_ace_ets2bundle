@@ -37,10 +37,10 @@ struct testEnv {
   }
 
   private aaStatic: string = 'aa';
-  @State @Env(`system`) envOne: WindowSizeLayoutBreakpointInfo;
-  @Require @Env(`system`) envTwo: a;
-  @BuilderParam @Env(`aaaaa`) envThree: nextBreakPoint;
-  @Env(`aaa`) @Env(`aaaaa`) envFour: nextBreakPoint;
+  @State @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
+  @Require @Env(SystemProperties.BREAK_POINT) envTwo: a;
+  @BuilderParam @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
 
   build() {
     Column() {
@@ -71,10 +71,10 @@ struct testEnv2 {
   }
 
   private aaStatic: string = 'aa';
-  @Local @Env(`system`) envOne: WindowSizeLayoutBreakpointInfo;
-  @Require @Env(`system`) envTwo: a;
-  @BuilderParam @Env(`aaaaa`) envThree: nextBreakPoint;
-  @Env(`aaa`) @Env(`aaaaa`) envFour: nextBreakPoint;
+  @Local @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
+  @Require @Env(SystemProperties.BREAK_POINT) envTwo: a;
+  @BuilderParam @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
 
   build() {
     Column() {
