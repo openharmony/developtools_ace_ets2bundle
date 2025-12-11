@@ -67,14 +67,18 @@ export interface PlatformDefinedData {
 
 let platformData: PlatformDefinedData | undefined = undefined;
 
-export function providePlatformDefinedData(platformDataParam: PlatformDefinedData) {
+export function providePlatformDefinedData(platformDataParam: PlatformDefinedData): void {
     platformData = platformDataParam;
     let registry = platformDataParam.callbackRegistry();
-    if (registry) setCallbackRegistry(registry);
+    if (registry) {
+        setCallbackRegistry(registry);
+    }
 }
 
 export function withStringResult(ptr: KPointer): string | undefined {
-    if (isNullPtr(ptr)) return undefined;
+    if (isNullPtr(ptr)) {
+        return undefined;
+    }
     let managedString = platformData!.nativeString(ptr);
     let result = managedString?.toString();
     managedString?.close();
@@ -82,7 +86,9 @@ export function withStringResult(ptr: KPointer): string | undefined {
 }
 
 export function withStringArrayResult(ptr: KPointer): Array<string> {
-    if (ptr == nullptr) return new Array<string>();
+    if (ptr === nullptr) {
+        return new Array<string>();
+    }
     let managedStringArray = platformData!.nativeStringArrayDecoder().decode(ptr);
     return managedStringArray.map((nativeString: NativeStringBase) => nativeString.toString());
 }

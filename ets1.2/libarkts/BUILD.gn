@@ -121,7 +121,6 @@ shared_library("es2panda_lib") {
         "${koala_mr.libarkts_path}/native/src/memoryTracker.cc",
 
         "${koala_mr.interop_path}/src/cpp/napi/convertors-napi.cc",
-        "${koala_mr.interop_path}/src/cpp/callback-resource.cc",
         "${koala_mr.interop_path}/src/cpp/interop-logging.cc",
         "${koala_mr.interop_path}/src/cpp/common-interop.cc"
     ]
