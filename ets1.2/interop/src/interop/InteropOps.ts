@@ -66,7 +66,7 @@ class CallbackRegistry {
         return record.callback(args, length);
     }
 
-    dispose(id: int32) {
+    dispose(id: int32): void {
         this.callbacks.delete(id);
     }
 }
@@ -79,7 +79,7 @@ export function wrapSystemCallback(id: number, callback: CallbackType): int32 {
     return CallbackRegistry.INSTANCE.wrapSystem(id, callback, false);
 }
 
-export function disposeCallback(id: int32) {
+export function disposeCallback(id: int32): void {
     CallbackRegistry.INSTANCE.dispose(id);
 }
 
