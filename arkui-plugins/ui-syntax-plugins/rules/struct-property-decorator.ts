@@ -98,7 +98,7 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
             if (!arkts.isMethodDefinition(member) || !member.name || !member.isStatic) {
                 return;
             }
-            const hasMonitor = member.funcExpr.scriptFunction.annotations.some(annotation => {
+            const hasMonitor = member.funcExpr.scriptFunction?.annotations.some(annotation => {
                 if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
                     return false;
                 }
