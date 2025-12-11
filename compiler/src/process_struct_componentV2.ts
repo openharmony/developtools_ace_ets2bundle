@@ -37,6 +37,7 @@ import {
   PROTOTYPE,
   IS_REUSABLE_,
   GET_ATTRIBUTE,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -57,7 +58,8 @@ import {
   builderParamObjectCollection,
   validateStmgmtKeywords,
   checkEnvType,
-  validateEnvType
+  validateEnvType,
+  checkEnvDecoratorExp
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
 import { globalProgram } from '../main';
@@ -341,9 +343,13 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   }
   if (structInfo.envDecoratorSet.has(propName)) {
     checkEnvInitializerV2(member, log);
+    const envDecorator: ts.Decorator | undefined = decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_ENV_DECORATOR);
     const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
     if (member.type && !checkEnvType(propertyType)) {
       validateEnvType(member);
+    }
+    if (envDecorator) {
+      checkEnvDecoratorExp(envDecorator);
     }
   }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {

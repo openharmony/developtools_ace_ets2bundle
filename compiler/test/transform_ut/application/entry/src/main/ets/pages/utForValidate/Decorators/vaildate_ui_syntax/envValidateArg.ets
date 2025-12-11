@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export class WindowSizeLayoutBreakpointInfo {
+ export class WindowSizeLayoutBreakpointInfo {
   widthBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_XS;
   heightBreakpoint: HeightBreakpoint = HeightBreakpoint.HEIGHT_SM;
 }
@@ -22,6 +22,7 @@ type a = WindowSizeLayoutBreakpointInfo;
 class nextBreakPoint extends WindowSizeLayoutBreakpointInfo {
   name: string = '';
 }
+
 
 @Entry
 @Component
@@ -39,19 +40,58 @@ struct testEnv {
   @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
   @Env(SystemProperties.BREAK_POINT) envTwo: a;
   @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
+
+  @Env('aaa') testStringOne: WindowSizeLayoutBreakpointInfo;
+  @Env(`bbb`) testNumberOne: WindowSizeLayoutBreakpointInfo;
 
   build() {
     Column() {
       Text('this.objOne')
       Button(``)
       testNon({
-        // aa: this.envOne,
         paramOne: this.envThree,
         paramTwo: this.envThree,
       })
 
       testNonV2({
-        // aa: this.envOne,
+        paramOne: this.envThree,
+        paramTwo: this.envThree
+      })
+    }
+  }
+}
+
+@ComponentV2
+struct testEnv2 {
+  @Local testState: string = 'testState';
+
+  @Builder
+  childBuilder() {
+    Row() {
+
+    }
+  }
+
+  private aaStatic: string = 'aa';
+  @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
+  @Env(SystemProperties.BREAK_POINT) envTwo: a;
+  @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
+
+  @Env('SystemProperties.BREAK_POINT') testStringOne: WindowSizeLayoutBreakpointInfo;
+  @Env(`SystemProperties.BREAK_POINT`) testNumberOne: WindowSizeLayoutBreakpointInfo;
+
+  build() {
+    Column() {
+      Text('this.objOne')
+      Button(``)
+      testNon({
+        paramOne: this.envThree,
+        paramTwo: this.envThree,
+      })
+
+      testNonV2({
         paramOne: this.envThree,
         paramTwo: this.envThree
       })
@@ -61,7 +101,8 @@ struct testEnv {
 
 @Component
 struct testNon {
-  private aa: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
+  @State aa: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
+  @Prop commonOne: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
   @Consume('') testConsume: string = 'testConsume';
   @Require paramOne: WindowSizeLayoutBreakpointInfo;
   @Require paramTwo: WindowSizeLayoutBreakpointInfo;
@@ -75,23 +116,12 @@ struct testNon {
 @ComponentV2
 struct testNonV2 {
   @Local aa: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
+  @Provider(`p1`) bb: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
   @Consumer('') testConsume: string = 'testConsume';
   @Require @Param paramOne: a;
   @Require @Param paramTwo: WindowSizeLayoutBreakpointInfo;
 
   build() {
 
-  }
-}
-
-@CustomDialog
-struct testCustomDialog {
-  private controller: CustomDialogController = new CustomDialogController({
-    builder: testNonV2
-  })
-  @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
-
-  build() {
-    Text('this is a text')
   }
 }

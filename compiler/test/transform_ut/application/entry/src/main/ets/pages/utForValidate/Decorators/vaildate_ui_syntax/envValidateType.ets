@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,13 +37,13 @@ struct testEnv {
   }
 
   private aaStatic: string = 'aa';
-  @Env(`system`) envOne: WindowSizeLayoutBreakpointInfo;
-  @Env(`system`) envTwo: a;
-  @Env(`aaaaa`) envThree: nextBreakPoint;
-  @Env(`aaaaa`) envFour: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
+  @Env(SystemProperties.BREAK_POINT) envTwo: a;
+  @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
 
-  @Env(`testStringOne`) testStringOne: string;
-  @Env(`testNumberOne`) testNumberOne: number;
+  @Env(SystemProperties.BREAK_POINT) testStringOne: string;
+  @Env(SystemProperties.BREAK_POINT) testNumberOne: number;
 
   build() {
     Column() {
@@ -74,13 +74,13 @@ struct testEnv2 {
   }
 
   private aaStatic: string = 'aa';
-  @Env(`system`) envOne: WindowSizeLayoutBreakpointInfo;
-  @Env(`system`) envTwo: a;
-  @Env(`aaaaa`) envThree: nextBreakPoint;
-  @Env(`aaaaa`) envFour: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo;
+  @Env(SystemProperties.BREAK_POINT) envTwo: a;
+  @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint;
+  @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint;
 
-  @Env(`testStringOne`) testStringOne: string;
-  @Env(`testNumberOne`) testNumberOne: number;
+  @Env(SystemProperties.BREAK_POINT) testStringOne: string;
+  @Env(SystemProperties.BREAK_POINT) testNumberOne: number;
 
   build() {
     Column() {
