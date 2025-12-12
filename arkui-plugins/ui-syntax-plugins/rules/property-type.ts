@@ -63,7 +63,7 @@ class PropertyTypeRule extends AbstractUISyntaxRule {
 
     public setup(): Record<string, string> {
         return {
-            propertyObjectLink: `'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
+            propertyObjectLink: `'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed'.`,
             propertyProp: `The '@{{decoratorName}}' decorated attribute '{{propertyName}}' must be of the string, number, boolean, enum or object type.`,
             propertyBuilderParam: `'@BuilderParam' property can only be initialized by '@Builder' function or '@Builder' method in struct.`,
         };
