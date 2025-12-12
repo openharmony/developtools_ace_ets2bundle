@@ -130,10 +130,10 @@ struct InteropTypeConverter<KLength> {
       env->NewGlobalRef(env->FindClass("@koalaui/arkts-arkui/generated/ArkResourceInterfaces/Resource")));
 
     if (env->IsInstanceOf(value, double_class)) {
-      const static ets_method double_p = env->Getp_method(double_class, "unboxed", ":D");
+      const static ets_method double_p = env->Getp_method(double_class, "toDouble", ":D");
       return KLength{ 1, (KFloat)env->CallDoubleMethod(value, double_p), 1, 0 };
     } else if (env->IsInstanceOf(value, int_class)) {
-      const static ets_method int_p = env->Getp_method(int_class, "unboxed", ":I");
+      const static ets_method int_p = env->Getp_method(int_class, "toInt", ":I");
       return KLength{ 1, (KFloat)env->CallIntMethod(value, int_p), 1, 0 };
     } else if (env->IsInstanceOf(value, string_class)) {
       KStringPtr ptr = InteropTypeConverter<KStringPtr>::convertFrom(env, reinterpret_cast<ets_string>(value));
