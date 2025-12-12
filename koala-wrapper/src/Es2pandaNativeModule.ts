@@ -307,8 +307,7 @@ export class Es2pandaNativeModule {
         specifiers: BigUint64Array,
         specifiersSequenceLength: KInt,
         importKind: KInt,
-        programPtr: KNativePointer,
-        flags: KInt
+        programPtr: KNativePointer
     ): KNativePointer {
         throw new Error('Not implemented');
     }

@@ -32,7 +32,6 @@ import { ImportDeclaration } from './ImportDeclaration';
 import { ImportSource } from './ImportSource';
 import { Es2pandaImportKinds } from './../Es2pandaEnums';
 import { StringLiteral } from './StringLiteral';
-import { Es2pandaImportFlags } from './../../Es2pandaEnums';
 
 export class ETSImportDeclaration extends ImportDeclaration {
     constructor(pointer: KNativePointer) {
@@ -43,8 +42,7 @@ export class ETSImportDeclaration extends ImportDeclaration {
         source: StringLiteral | undefined,
         specifiers: readonly AstNode[],
         importKind: Es2pandaImportKinds,
-        program: ArktsObject,
-        flags: Es2pandaImportFlags
+        program: ArktsObject
     ): ETSImportDeclaration {
         return new ETSImportDeclaration(
             global.es2panda._CreateETSImportDeclaration(
@@ -53,8 +51,7 @@ export class ETSImportDeclaration extends ImportDeclaration {
                 passNodeArray(specifiers),
                 specifiers.length,
                 importKind,
-                passNode(program),
-                flags
+                passNode(program)
             )
         );
     }

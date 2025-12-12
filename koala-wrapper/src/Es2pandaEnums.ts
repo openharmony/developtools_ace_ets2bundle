@@ -187,12 +187,6 @@ export enum Es2pandaAstNodeType {
     AST_NODE_TYPE_REST_ELEMENT,
 };
 
-export enum Es2pandaImportFlags {
-    IMPORT_FLAGS_NONE,
-    IMPORT_FLAGS_DEFAULT_IMPORT,
-    IMPORT_FLAGS_IMPLICIT_PACKAGE_IMPORT,
-}
-
 export enum Es2pandaLanguage {
     AS = 0,
     JS = 1,

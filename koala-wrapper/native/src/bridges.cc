@@ -519,14 +519,6 @@ KBoolean impl_ProgramIsASTLoweredConst(KNativePointer contextPtr, KNativePointer
 }
 KOALA_INTEROP_2(ProgramIsASTLoweredConst, KBoolean, KNativePointer, KNativePointer);
 
-KNativePointer impl_ETSParserGetGlobalProgramAbsName(KNativePointer contextPtr)
-{
-    auto context = reinterpret_cast<es2panda_Context*>(contextPtr);
-    auto result = GetImpl()->ETSParserGetGlobalProgramAbsName(context);
-    return new std::string(result);
-}
-KOALA_INTEROP_1(ETSParserGetGlobalProgramAbsName, KNativePointer, KNativePointer)
-
 KNativePointer impl_ProgramAbsoluteNameConst(KNativePointer contextPtr, KNativePointer instancePtr)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
@@ -564,7 +556,7 @@ KOALA_INTEROP_1(IsMethodDefinition, KBoolean, KNativePointer)
 
 KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePointer source,
                                                KNativePointerArray specifiers, KUInt specifiersSequenceLength,
-                                               KInt importKind, KNativePointer programPtr, KInt flags)
+                                               KInt importKind, KNativePointer programPtr)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _source = reinterpret_cast<es2panda_AstNode*>(source);
@@ -572,13 +564,12 @@ KNativePointer impl_CreateETSImportDeclaration(KNativePointer context, KNativePo
     const auto _specifiersSequenceLength = static_cast<KUInt>(specifiersSequenceLength);
     const auto _importKind = static_cast<Es2pandaImportKinds>(importKind);
     const auto _program = reinterpret_cast<es2panda_Program*>(programPtr);
-    const auto _flags = static_cast<Es2pandaImportFlags>(flags);
     auto result = GetImpl()->ETSParserBuildImportDeclaration(_context, _importKind, _specifiers,
-                                                             _specifiersSequenceLength, _source, _program, _flags);
+                                                             _specifiersSequenceLength, _source, _program);
     return result;
 }
-KOALA_INTEROP_7(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray,
-                KUInt, KInt, KNativePointer, KInt)
+KOALA_INTEROP_6(CreateETSImportDeclaration, KNativePointer, KNativePointer, KNativePointer, KNativePointerArray,
+                KUInt, KInt, KNativePointer)
 
 KNativePointer impl_AstNodeRangeConst(KNativePointer context, KNativePointer node)
 {
