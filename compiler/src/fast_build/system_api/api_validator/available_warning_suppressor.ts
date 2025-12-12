@@ -20,8 +20,9 @@ import {
   NodeValidator,
   SdkComparisonValidator,
 } from './api_validate_node';
-
+import { BaseWarningSuppressor } from './base_warning_suppressor';
 import {
+  AVAILABLE_TAG_NAME,
   ParsedVersion
 } from '../api_check_define'
 
@@ -31,16 +32,16 @@ import {
  * 
  * Note: Unlike @since, @available does NOT support try/catch or undefined checks.
  */
-export class AvailableWarningSuppressor {
-  private validator: NodeValidator;
-
+export class AvailableWarningSuppressor extends BaseWarningSuppressor {
   constructor(
     projectCompatibleSdkVersion: string,
     minRequiredVersion: string,
     minAvaileableVersion: ParsedVersion,
     typeChecker?: ts.TypeChecker
   ) {
-    this.validator = new CompositeValidator([
+    super(AVAILABLE_TAG_NAME);
+    // Create all validators
+    this.validators.addValidator([
       new AvailableComparisonValidator(
         projectCompatibleSdkVersion,
         minRequiredVersion,
@@ -68,6 +69,6 @@ export class AvailableWarningSuppressor {
       return false;
     }
 
-    return this.validator.validate(node);
+    return this.validators.validate(node);
   }
 }
