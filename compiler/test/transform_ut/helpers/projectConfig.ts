@@ -139,6 +139,7 @@ class ProjectConfig {
   buildId?: string;
   globalModulePaths?: string[];
   compileEnv?: string;
+  ohExports: string[];
 
 	// copied from ark_compiler_ut
   compileMode: string = ESMODULE;
@@ -242,6 +243,7 @@ class ProjectConfig {
     this.compilerTypes = [];
     this.otherCompileFiles = {}
     this.intentEntry = [];
+    this.ohExports = [];
   }
 
   public setIgnoreWarning(ignoreWarning: boolean) {
