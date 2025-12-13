@@ -187,7 +187,7 @@ class TransitionExample extends ViewPU {
         If.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Button.createWithLabel('animation');
-            Context.animation({
+            globalThis.Context.animation({
                 duration: 1000,
                 curve: Curve.EaseOut,
                 delay: 200,
@@ -199,7 +199,7 @@ class TransitionExample extends ViewPU {
             Button.onClick(() => {
                 this.btnW += 50;
             });
-            Context.animation(null);
+            globalThis.Context.animation(null);
         }, Button);
         Button.pop();
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -209,17 +209,17 @@ class TransitionExample extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Column.create();
-            Context.animation({ duration: 1000 });
+            globalThis.Context.animation({ duration: 1000 });
             Column.opacity(this.opacity1);
             Column.backgroundColor(this.color);
-            Context.animation(null);
-            Context.animation({ duration: 2000 });
+            globalThis.Context.animation(null);
+            globalThis.Context.animation({ duration: 2000 });
             Column.width(this.width1);
-            Context.animation(null);
-            Context.animation({ duration: 3000 });
+            globalThis.Context.animation(null);
+            globalThis.Context.animation({ duration: 3000 });
             Column.height(this.height1);
             Column.borderRadius(this.borderRaius1);
-            Context.animation(null);
+            globalThis.Context.animation(null);
             Column.onClick(() => {
                 this.color = Color.Green;
                 this.borderRaius1 = 20;

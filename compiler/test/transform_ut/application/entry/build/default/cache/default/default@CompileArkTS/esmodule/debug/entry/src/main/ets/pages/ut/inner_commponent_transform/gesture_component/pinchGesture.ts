@@ -15,28 +15,28 @@
 "use strict";
 let __generate__Id = 0;
 function generateId() {
-    return "rotationGesture_" + ++__generate__Id;
+    return "pinchGesture_" + ++__generate__Id;
 }
-class RotationGestureExample extends View {
+class PinchGestureExample extends View {
     constructor(compilerAssignedUniqueChildId, parent, params, localStorage) {
         super(compilerAssignedUniqueChildId, parent, localStorage);
-        this.__angle = new ObservedPropertySimple(0, this, "angle");
+        this.__scale = new ObservedPropertySimple(1, this, "scale");
         this.updateWithValueParams(params);
     }
     updateWithValueParams(params) {
-        if (params.angle !== undefined) {
-            this.angle = params.angle;
+        if (params.scale !== undefined) {
+            this.scale = params.scale;
         }
     }
     aboutToBeDeleted() {
-        this.__angle.aboutToBeDeleted();
+        this.__scale.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id());
     }
-    get angle() {
-        return this.__angle.get();
+    get scale() {
+        return this.__scale.get();
     }
-    set angle(newValue) {
-        this.__angle.set(newValue);
+    set scale(newValue) {
+        this.__scale.set(newValue);
     }
     render() {
         Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
@@ -45,24 +45,24 @@ class RotationGestureExample extends View {
         Flex.padding(20);
         Flex.border({ width: 1 });
         Flex.margin(80);
-        Flex.rotate({ x: 1, y: 2, z: 3, angle: this.angle });
-        Gesture.create(GesturePriority.Low);
-        RotationGesture.create();
-        RotationGesture.onActionStart((event) => {
-            console.log('Rotation start');
+        Flex.scale({ x: this.scale, y: this.scale, z: this.scale });
+        globalThis.Gesture.create(GesturePriority.Low);
+        PinchGesture.create();
+        PinchGesture.onActionStart((event) => {
+            console.info('Pinch start');
         });
-        RotationGesture.onActionUpdate((event) => {
-            this.angle = event.angle;
+        PinchGesture.onActionUpdate((event) => {
+            this.scale = event.scale;
         });
-        RotationGesture.onActionEnd(() => {
-            console.log('Rotation end');
+        PinchGesture.onActionEnd(() => {
+            console.info('Pinch end');
         });
-        RotationGesture.pop();
-        Gesture.pop();
-        Text.create('RotationGesture angle:' + this.angle);
+        PinchGesture.pop();
+        globalThis.Gesture.pop();
+        Text.create('PinchGesture scale:' + this.scale);
         Text.pop();
         Flex.pop();
     }
 }
-loadDocument(new RotationGestureExample("1", undefined, {}));
-//# sourceMappingURL=rotationGesture.js.map
+loadDocument(new PinchGestureExample("1", undefined, {}));
+//# sourceMappingURL=pinchGesture.js.map
