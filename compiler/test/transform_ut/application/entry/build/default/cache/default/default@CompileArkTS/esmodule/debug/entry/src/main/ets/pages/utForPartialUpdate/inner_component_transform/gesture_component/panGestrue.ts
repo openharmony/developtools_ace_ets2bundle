@@ -68,7 +68,7 @@ class PanGestureExample extends ViewPU {
             Flex.border({ width: 1 });
             Flex.margin(80);
             Flex.translate({ x: this.offsetX, y: this.offsetY, z: 5 });
-            Gesture.create(GesturePriority.Low);
+            globalThis.Gesture.create(GesturePriority.Low);
             PanGesture.create({});
             PanGesture.onActionStart((event) => {
                 console.info('Pan start');
@@ -81,7 +81,7 @@ class PanGestureExample extends ViewPU {
                 console.info('Pan end');
             });
             PanGesture.pop();
-            Gesture.pop();
+            globalThis.Gesture.pop();
         }, Flex);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create('PanGesture offset X: ' + this.offsetX);

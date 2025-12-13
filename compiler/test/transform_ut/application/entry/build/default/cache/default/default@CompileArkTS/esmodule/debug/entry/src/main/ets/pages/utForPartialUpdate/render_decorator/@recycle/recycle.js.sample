@@ -495,10 +495,10 @@ class RecycleAnimationTest extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
-            Context.animation({ duration: 300 });
+            globalThis.Context.animation({ duration: 300 });
             Text.height(100);
             Text.width(this.width_value);
-            Context.animation(null);
+            globalThis.Context.animation(null);
         }, Text);
         Text.pop();
         Column.pop();
