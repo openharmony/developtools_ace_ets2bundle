@@ -182,7 +182,8 @@ function getErrorCodeLogger(code: string, share: Object): Object | undefined {
  *  In fact, dependency resolution requires interop decl file
  */
 function rootFileNamesCollect(rootFileNames: string[], sharedObj: Object): void {
-  const entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
+  let entryFiles: string[] = projectConfig.widgetCompile ? Object.values(projectConfig.cardEntryObj) : Object.values(projectConfig.entryObj);
+  entryFiles = Array.from(new Set([...entryFiles, ...projectConfig.ohExports]));
   entryFiles.forEach((fileName: string) => {
     if (isBridgeCode(fileName, sharedObj?.projectConfig)) {
       return;

@@ -40,7 +40,8 @@ import {
   MAX_FLOW_DEPTH_DEFAULT_VALUE,
   fileCache,
   getFileContentWithHash,
-  areEqualArrays
+  areEqualArrays,
+  isOhExport
 } from '../../lib/ets_checker';
 import { TS_BUILD_INFO_SUFFIX } from '../../lib/pre_define';
 import {
@@ -549,5 +550,44 @@ mocha.describe('optimize createProgram', () => {
         const secondResult = getFileContentWithHash(testFileName);
         expect(readFileSyncStub.called).to.be.false;
         expect(secondResult).to.equal(firstResult);
+    });
+});
+
+mocha.describe('function isOhExport', () => {  
+    mocha.beforeEach(() => {
+        projectConfig.depName2OhExports = new Map()
+    });
+
+    mocha.it('1-1: should return true when both parameters are undefined', () => {
+      const result = isOhExport(undefined, undefined);
+      expect(result).to.be.true;
+    });
+
+    mocha.it('1-2: should return true when resolvedFileName is undefined', () => {
+      const result = isOhExport('library', undefined);
+      expect(result).to.be.true;
+    });
+
+    mocha.it('1-3: should return true when packageName is undefined', () => {
+      const result = isOhExport(undefined, 'D:/xxx/Myapplication/library/src/main/ets/test.d.ets');
+      expect(result).to.be.true;
+    });
+
+    mocha.it('1-4: should return true when package exists and file path matches', () => {
+      projectConfig.depName2OhExports.set('library', { 'oh-exports': new Set(['D:/xxx/TestApplication/library/src/main/ets/test.d.ets']) })
+      const result = isOhExport('library', 'D:/xxx/TestApplication/library/src/main/ets/test.d.ets');
+      expect(result).to.be.true;
+    });
+
+    mocha.it('1-5: Should return true when package is not configured in oh-exports', () => {
+      projectConfig.depName2OhExports.set('library', { 'oh-exports': new Set(['D:/xxx/TestApplication/library/src/main/ets/test.d.ets']) })
+      const result = isOhExport('isNotOhExportLibrary', 'D:/xxx/TestApplication/library/src/main/ets/test.d.ets');
+      expect(result).to.be.true;
+    });
+
+    mocha.it('1-6: Should return false when package exists but file path does not match', () => {
+      projectConfig.depName2OhExports.set('library', { 'oh-exports': new Set(['D:/xxx/TestApplication/library/src/main/ets/test.d.ets']) })
+      const result = isOhExport('library', 'D:/xxx/TestApplication/library/src/main/ets/test2.d.ets');
+      expect(result).to.be.false;
     });
 });
