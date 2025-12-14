@@ -976,6 +976,9 @@ function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral | ts.
   const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
   const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
     `except in wildcard-based monitoring scenarios.`;
+  if (needCheckContent && !stateVariables.includes(monitorArg.value)) {
+    addLog(LogType.ERROR, variableExistMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905366' });
+  }
 }
 
 function hasNumberDotPattern(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral): boolean {
