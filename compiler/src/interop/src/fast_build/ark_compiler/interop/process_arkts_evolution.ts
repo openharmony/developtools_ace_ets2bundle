@@ -92,6 +92,10 @@ export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
 
+//This map is used to store the mapping between the relative paths of classes and their package names, for the purpose of constructing fully qualified class names.
+//key: relative paths of classes;value: package names
+let arkTSEvoPkgNameOHMUrlMap: Map<string, string> = new Map();
+
 let declaredClassVars: Set<string> = new Set();
 
 export function addDeclFilesConfig(filePath: string, projectConfig: Object, logger: Object,
@@ -218,6 +222,7 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   arkTSHybridModuleMap = new Map();
   pkgDeclFilesConfig = {};
   arkTSEvoFileOHMUrlMap = new Map();
+  arkTSEvoPkgNameOHMUrlMap = new Map;
   interopTransformLog.cleanUp();
   declaredClassVars = new Set();
 }
@@ -338,6 +343,9 @@ function isFromArkTSEvolutionModule(node: ts.Node): boolean {
       const relative: string = filePath.replace(declgenV1OutPath + '/', '').replace(/\.d\.ets$/, '');
       if (!arkTSEvoFileOHMUrlMap.has(filePath)) {
         arkTSEvoFileOHMUrlMap.set(filePath, relative);
+        if(!arkTSEvoPkgNameOHMUrlMap.has(relative)){
+          arkTSEvoPkgNameOHMUrlMap.set(relative, arkTSEvolutionModuleInfo.packageName);
+         } 
       }
       return true;
     }
@@ -472,8 +480,9 @@ function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className:
     return 'Lescompat/Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
+  const pkgName: string = arkTSEvoPkgNameOHMUrlMap.get(basePath);
   return ts.isInterfaceDeclaration(decl) ? 
-    `L${basePath}/${basePath.split('/').join('$')}$${className}$ObjectLiteral;` :
+    `L${basePath}/${pkgName}$${basePath.replace(pkgName + '/', '').split('/').join('$')}$${className}$ObjectLiteral;` :
     `L${basePath}/${className};`;
 }
 
