@@ -13,12 +13,7 @@
  * limitations under the License.
  */
 
-import * as fs from "node:fs"
-import * as path from "node:path"
 import { global } from "./arkts-api/static/global"
-import { isNumber, throwError, withWarning, filterSource } from "./utils"
-import { Es2pandaContextState } from "./generated/Es2pandaEnums"
-import { AstNode, Config, Context, EtsScript, proceedToState } from "./arkts-api"
 
 import * as arkts from "./arkts-api"
 export {arkts, global as arktsGlobal}

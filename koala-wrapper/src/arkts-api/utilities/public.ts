@@ -61,22 +61,17 @@ export function proceedToState(state: Es2pandaContextState, context: KNativePoin
 }
 
 function processErrorState(state: Es2pandaContextState, context: KNativePointer, forceDtsEmit = false): void {
-    try {
-        if (global.es2panda._ContextState(context) === Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
-            const errorMessage = withStringResult(global.es2panda._ContextErrorMessage(context));
-            if (errorMessage === undefined) {
-                throwError(`Could not get ContextErrorMessage`);
-            }
-            const allErrorMessages = withStringResult(global.es2panda._GetAllErrorMessages(context));
-            if (allErrorMessages === undefined) {
-                throwError(`Could not get AllErrorMessages`);
-            }
-            throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage, allErrorMessages].join(`\n`));
+    if (global.es2panda._ContextState(context) === Es2pandaContextState.ES2PANDA_STATE_ERROR && !forceDtsEmit) {
+        const errorMessage = withStringResult(global.es2panda._ContextErrorMessage(context));
+        if (errorMessage === undefined) {
+            throwError(`Could not get ContextErrorMessage`);
+         }
+        const allErrorMessages = withStringResult(global.es2panda._GetAllErrorMessages(context));
+        if (allErrorMessages === undefined) {
+            throwError(`Could not get AllErrorMessages`);
         }
-    } catch (e) {
-        global.es2panda._DestroyContext(context);
-        throw e;
-    }
+        throwError([`Failed to proceed to ${Es2pandaContextState[state]}`, errorMessage, allErrorMessages].join(`\n`));
+     }
 }
 
 export function nodeType(node: AstNode): Es2pandaAstNodeType {
