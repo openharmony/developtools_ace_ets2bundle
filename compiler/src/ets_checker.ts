@@ -489,7 +489,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const targetESVersionDiffers: boolean | undefined = lastTargetESVersion && currentTargetESVersion && lastTargetESVersion !== currentTargetESVersion;
   const typesDiff: boolean | undefined = lastTypes && currentTypes && !areEqualArrays(lastTypes, currentTypes);
   const maxFlowDepthDiffers: boolean | undefined = lastMaxFlowDepth && currentMaxFlowDepth && lastMaxFlowDepth !== currentMaxFlowDepth;
-  const useTsHarDiff: boolean = checkValueDiff(cache?.useTsHar, projectConfig.useTsHar);
+  const useTsHarDiff: boolean = projectConfig.compileHar && !projectConfig.byteCodeHar && checkValueDiff(cache?.useTsHar, projectConfig.useTsHar);
   const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
   const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
   const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
