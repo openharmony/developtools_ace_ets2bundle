@@ -21,7 +21,7 @@ import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map'
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
   for (const element of componentCollection.arkoalaComponents) {
-    const byteCodePath = generateBytecodePathFragement(element[0], element[1]);
+    const byteCodePath = generateBytecodePathFragement(element[0], element[1][0], element[1][1]);
     const optionsVariable = ts.factory.createVariableDeclaration(
       ts.factory.createIdentifier(`__Options_${element[0]}`),
       undefined,
@@ -60,7 +60,8 @@ export function insertGetOptionsAtTop(sourceFile: ts.SourceFile): ts.SourceFile 
     return ts.factory.updateSourceFile(sourceFile, newStatements);
 }
 
-export function generateBytecodePathFragement(className: string, filePath: string): string {
+export function generateBytecodePathFragement(className: string, filePath: string,
+    moduleSpecifier: string): string {
     const regex = /.*declgenV1\/(.*?)\.d\.ets$/;
     const match = filePath.match(regex);
 
@@ -69,7 +70,12 @@ export function generateBytecodePathFragement(className: string, filePath: strin
     }
 
     const targetPath = match[1];
-    const targetPathWithDollar = targetPath.replace(/\//g, '$');
+    let targetPathWithDollar: string;
+    if (moduleSpecifier.match(/^(@(?![0-9\-_])[a-z0-9\-_]+(?<![\-_])\/)?(?![0-9\-_.])[a-z0-9\-_.]+(?<![\-_.])$/)) {
+        targetPathWithDollar = moduleSpecifier + targetPath.slice(moduleSpecifier.length).replace(/\//g, '$');
+    } else {
+        targetPathWithDollar = targetPath.replace(/\//g, '$');
+    }
 
     return `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`;
 }
