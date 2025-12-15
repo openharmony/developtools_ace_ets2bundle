@@ -771,7 +771,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
 
   // import xxx from 'xxx'
   if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageInfo, share);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageInfo, share,
+      node.moduleSpecifier.getText().replace(/'|"/g, ''));
   }
 
   // import {xxx} from 'xxx'
@@ -780,7 +781,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     node.importClause.namedBindings.elements) {
     node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
       if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
-        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo, share);
+        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo, share,
+          node.moduleSpecifier.getText().replace(/'|"/g, ''));
       }
     });
   }
@@ -790,7 +792,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
     ts.isIdentifier(node.importClause.namedBindings.name)) {
     storedFileInfo.isAsPageImport = true;
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageInfo, share);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageInfo,
+      share, node.moduleSpecifier.getText().replace(/'|"/g, ''));
   }
 }
 
@@ -801,7 +804,7 @@ function getFileVersion(originNode: ts.Node): string | undefined {
 }
 
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
-  usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null): void {
+  usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null, moduleSpecifier: string = ''): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   importSymbol = checker?.getSymbolAtLocation(usedNode);
   if (importSymbol) {
@@ -824,7 +827,7 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
       }
     }
     const isArkoala = getFileVersion(originNode) === ARKTS_1_2;
-    processImportNode(originNode, usedNode, false, null, pageInfo, share, isArkoala);
+    processImportNode(originNode, usedNode, false, null, pageInfo, share, isArkoala, moduleSpecifier);
   }
 }
 
@@ -870,7 +873,8 @@ function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageInfo:
 }
 
 function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
-  usedPropName: string, pageInfo: PageInfo, share: object = null, isArkoala: boolean = false): void {
+  usedPropName: string, pageInfo: PageInfo, share: object = null, isArkoala: boolean = false,
+  moduleSpecifier: string = ''): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
   let asComponentName: string;
@@ -885,7 +889,8 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
-    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile, isArkoala);
+    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile, isArkoala,
+      moduleSpecifier);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
@@ -956,11 +961,12 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
-  asComponentName: string, structDecorator: structDecoratorResult, originFile: string, isArkoala: boolean = false): void {
+  asComponentName: string, structDecorator: structDecoratorResult, originFile: string,
+  isArkoala: boolean = false, moduleSpecifier: string = ''): void {
   componentCollection.customComponents.add(name);
   if (isArkoala) {
     const filePath = originNode.getSourceFile().fileName;
-    componentCollection.arkoalaComponents.set(name, filePath);
+    componentCollection.arkoalaComponents.set(name, [filePath, moduleSpecifier]);
   }
   const structInfo: StructInfo = asComponentName ?
     processStructComponentV2.getOrCreateStructInfo(asComponentName) :
