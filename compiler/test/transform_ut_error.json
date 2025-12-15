@@ -321,7 +321,7 @@
             "type": "ERROR",
             "code": "10905364"
         },
-                {
+        {
             "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
             "type": "ERROR",
             "code": "10905364"
@@ -402,6 +402,21 @@
             "code": "10905315"
         },
         {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
+            "message": "The type of the parent component's state variable initializing the '@Link' variable 'link' must match the '@Link' variable's declared type.",
+            "type": "ERROR",
+            "code": "10905364"
+        },
+        {
             "message": "The 'regular' property 'aa1' cannot be assigned to the '@Link' property 'link'.",
             "type": "WARN"
         },
@@ -475,6 +490,18 @@
         },
         {
             "message": "The 'regular' property 'true' cannot be assigned to the '@Link' property 'link1'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data!.aa1!' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data?.aa1' cannot be assigned to the '@Link' property 'link'.",
+            "type": "WARN"
+        },
+        {
+            "message": "The 'regular' property 'this.state_data?.aa1!' cannot be assigned to the '@Link' property 'link'.",
             "type": "WARN"
         }
     ],

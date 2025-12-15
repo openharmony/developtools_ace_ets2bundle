@@ -251,6 +251,11 @@ struct Index {
       Child({link: new Data1(), link1: true}) // 非this.开头的父子组件传参。不进行校验
       Child({link: data_global.aa1, link1: this.state_bool})  // 非this.开头的父子组件传参。不进行校验
       Child({link: data3_global.aa.aa1, link1: this.state_bool})  // 非this.开头的父子组件传参。不进行校验
+
+      // !?场景
+      Child({link: this.state_data!.aa1!, link1: this.state_bool})  // crash，已拦截
+      Child({link: this.state_data?.aa1, link1: this.state_bool})  // crash，已拦截
+      Child({link: this.state_data?.aa1!, link1: this.state_bool})  // crash，已拦截
     }
   }
 }
