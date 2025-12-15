@@ -1609,4 +1609,46 @@ mocha.describe('generate ohmUrl', function () {
     const parsedFileContent = JSON.parse(fileContent.trim().replace(/,$/, ''));
     expect(parsedFileContent).to.deep.equal(expectedJson);
   });
+
+  mocha.it('test process customizedHar import declfile ohmurl', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    this.rollup.share.projectConfig.pkgContextInfo = {
+      'customizedhar': {
+        'packageName': 'customizedhar',
+        'bundleName': '',
+        'moduleName': '',
+        'version': '1.0.0',
+        'entryPath': 'Index.ets',
+        'isSO': false
+      }
+    }
+    const filePath: string = 'hvigor_ignore_testCustomizedHar_customizedhar_src_mai_ets_utils_Calc.d.ets';
+    this.rollup.share.projectConfig.customHarDeclareFilesMap = {
+      'hvigor_ignore_testCustomizedHar_customizedhar_src_mai_ets_utils_Calc.d.ets': {
+        id: '/testCustomizedHar/customizedhar/src/main/ets/utils/Calc.d.ets'
+      }
+    }
+    this.rollup.share.projectConfig.byteCodeHar = true;
+    this.rollup.share.projectConfig.customizedOptions = {
+      basePackage: '/testCustomizedHar/customizedhar/module.abc'
+    };
+    this.rollup.share.projectConfig.entryPackageName = 'customizedhar';
+    this.rollup.share.projectConfig.modulePath = '/testCustomizedHar/customizedhar'
+    const importerFile: string = '/testCustomizedHar/customizedhar/src/main/ets/pages/Index.ets'
+    const relativePath: string = '../utils/Calc';
+    const etsBasedAbsolutePath: string = 'ets/utils/Calc';
+    const standardImportPath: string = 'customizedhar/src/main/ets/utils/Calc';
+    const moduleSourceFile: string = new ModuleSourceFile();
+    ModuleSourceFile.initPluginEnv(this.rollup);
+    const relativePathOhmUrl: string = moduleSourceFile.getOhmUrl(this.rollup, relativePath, filePath, importerFile);
+    const etsBasedAbsolutePathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, etsBasedAbsolutePath, filePath,
+      importerFile);
+    const standardImportPathOhmUrl = moduleSourceFile.getOhmUrl(this.rollup, standardImportPath, filePath,
+      importerFile);
+    const expectedNormalizedOhmUrl: string = '@normalized:N&&&customizedhar/src/main/ets/utils/Calc&1.0.0';
+    expect(relativePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(etsBasedAbsolutePathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+    expect(standardImportPathOhmUrl == expectedNormalizedOhmUrl).to.be.true;
+  });
 });

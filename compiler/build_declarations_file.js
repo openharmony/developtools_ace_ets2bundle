@@ -38,12 +38,15 @@ function generateTargetFile(filePath, output) {
   const files = [];
   const globalTsFile = path.resolve(filePath, '../ets_internal_api/global.d.ts');
   const featureAbilityPath = path.resolve(filePath, '../internal_full/featureability.d.ts');
+  const featureAbilityPathOrigin = path.resolve(filePath, '../ets_internal_api/featureability.d.ts');
   const middleTsFile = path.resolve(filePath, 'middle_class.d.ts');
   if (fs.existsSync(globalTsFile)) {
     files.push(globalTsFile);
   }
   if (fs.existsSync(featureAbilityPath)) {
     files.push(featureAbilityPath);
+  } else if (fs.existsSync(featureAbilityPathOrigin)) {
+    files.push(featureAbilityPathOrigin);
   }
   readFile(filePath, files);
   if (!fs.existsSync(output)) {
@@ -66,7 +69,7 @@ function generateTargetFile(filePath, output) {
   files.forEach((item) => {
     let content = fs.readFileSync(item, 'utf8');
     const fileName = path.resolve(output, path.basename(item));
-    if (item === featureAbilityPath) {
+    if (item === featureAbilityPath || item === featureAbilityPathOrigin) {
       content = processsFile(content, fileName, true);
     } else if (item === globalTsFile) {
       content = license + '\n\n' + processsFile(content, fileName, true);

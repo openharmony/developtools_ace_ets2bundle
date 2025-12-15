@@ -142,6 +142,7 @@ class ModuleModeMock extends ModuleMode {
     }
     compileContextInfo.hspPkgNames = hspPkgNames;
     let compileEntries: Set<string> = new Set();
+    let replaceRecords: Object = {};
     let entryObj: Object = this.projectConfig.entryObj;
     if (this.projectConfig.widgetCompile) {
       entryObj = this.projectConfig.cardEntryObj;
@@ -163,9 +164,10 @@ class ModuleModeMock extends ModuleMode {
         pkgPath: metaInfo.pkgPath,
         isRecordName: true
       };
-      let recordName: string = getNormalizedOhmUrlByFilepath(moduleId, rollupObject.share.projectConfig,
+      let recordName: string = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(moduleId, rollupObject.share.projectConfig,
         rollupObject.share.logger, pkgParams, undefined);
       compileEntries.add(recordName);
+      this.collectReplaceRecordsMock(replaceRecords, recordName, metaInfo.pkgName);
     }
     this.collectDeclarationFilesEntry(compileEntries, hspPkgNames);
     compileContextInfo.compileEntries = Array.from(compileEntries);
@@ -174,14 +176,28 @@ class ModuleModeMock extends ModuleMode {
     } else if (rollupObject.share.projectConfig.pkgContextInfo) {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
-    if (this.projectConfig.bundleType === 'shared') {
+    if (this.projectConfig.bundleType === 'shared' || this.projectConfig.bundleType === 'appPlugin') {
       compileContextInfo.needModifyRecord = true;
       compileContextInfo.bundleName = this.projectConfig.bundleName;
+    }
+    if (this.customizedHar) {
+      compileContextInfo.replaceRecords = replaceRecords;
     }
     if (JSON.stringify(compileContextInfo) === cacheCompileContextInfo) {
       return true;
     }
     return false;
+  }
+
+  collectReplaceRecordsMock(replaceRecords: Object, recordName: string, pkgName: string): void {
+    if (!this.customizedHar) {
+      return;
+    }
+    if (replaceRecords[pkgName] && replaceRecords[pkgName].length >= 0) {
+      replaceRecords[pkgName].push(recordName);
+    } else {
+      replaceRecords[pkgName] = [recordName];
+    }
   }
 
   checkGenerateCompileFilesInfo(includeByteCodeHarInfo: boolean): boolean {

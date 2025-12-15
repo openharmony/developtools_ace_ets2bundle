@@ -14,6 +14,10 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+
+import { FileManager } from '../../common/file-manager';
+import { LANGUAGE_VERSION } from '../../common/predefines';
+
 import { getIdentifierName, getClassPropertyAnnotationNames, PresetDecorators, $_INVOKE, COMPONENT_BUILDER } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
@@ -85,7 +89,14 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         return symbol.scriptFunction.annotations.some(annotation => {
             return annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name === COMPONENT_BUILDER;
-        })
+        }) || this.isDynStruct(symbol);
+    }
+
+    isDynStruct(symbol: arkts.AstNode): boolean {
+        const fileManager: FileManager = FileManager.getInstance();
+        const path: string = arkts.getProgramFromAstNode(symbol)?.absName;
+        const version: string = LANGUAGE_VERSION.ARKTS_1_1;
+        return fileManager.getLanguageVersionByFilePath(path) === version;
     }
 
     private checkVariableInitializationViaConstructor(node: arkts.AstNode): void {

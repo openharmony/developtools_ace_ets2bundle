@@ -125,6 +125,11 @@ import {
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
 import { ModuleSourceFile } from './module_source_file';
 
+type BeforeObfuscateFn = (
+  abcPath: string,
+   config: {isArkGuardEnabled: boolean , isBytecodeObfEnabled?: boolean}
+) => void;
+
 export class ModuleInfo {
   filePath: string;
   cacheFilePath: string;
@@ -177,6 +182,7 @@ export class ModuleMode extends CommonMode {
   byteCodeHar: boolean;
   perfReportPath: string;
   customizedHar: boolean;
+  beforeObfuscate?: BeforeObfuscateFn;
 
   constructor(rollupObject: Object) {
     super(rollupObject);
@@ -213,6 +219,14 @@ export class ModuleMode extends CommonMode {
     }
     if (this.customizedHar) {
       this.abcPaths.push(toUnixPath(this.projectConfig.customizedOptions.basePackage));
+    }
+
+    if (rollupObject.share.beforeObfuscate) {
+      if (typeof rollupObject.share.beforeObfuscate === 'function') {
+         this.beforeObfuscate = rollupObject.share.beforeObfuscate as BeforeObfuscateFn;
+      } else {
+        this.logger.error('beforeObfuscate is not function');
+      }
     }
   }
 
@@ -276,7 +290,7 @@ export class ModuleMode extends CommonMode {
       compileContextInfo.pkgContextInfo = this.projectConfig.pkgContextInfo;
     }
     // The bundleType is 'shared' in cross-app hsp.
-    if (this.projectConfig.bundleType === 'shared') {
+    if (this.projectConfig.bundleType === 'shared' || this.projectConfig.bundleType === 'appPlugin') {
       compileContextInfo.needModifyRecord = true;
       compileContextInfo.bundleName = this.projectConfig.bundleName;
     }
@@ -736,11 +750,16 @@ export class ModuleMode extends CommonMode {
         eventGenAbc = createAndStartEvent(parentEvent, 'generate merged abc by es2abc (async)', true);
         return childProcess.exec(genAbcCmd, { windowsHide: true });
       });
-      child.on('close', (code: any) => {
+      child.on('close', async (code: any) => {
         if (code === SUCCESS) {
           stopEvent(eventGenAbc, true);
           this.processAotIfNeeded();
           processExternalEvents(this.projectConfig, ExternalEventType.ES2ABC, { parentEvent: eventGenAbc, filePath: this.perfReportPath });
+          
+          if (this.beforeObfuscate) {
+            await this.beforeObfuscate(this.moduleAbcPath , {isArkGuardEnabled: this.isArkguardEnabled});
+          }
+
           BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().execute(this.moduleInfos);
           this.triggerEndSignal();
           return;
