@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import ts from 'typescript';
 export const PERMISSION_TAG_CHECK_NAME: string = 'permission';
 export const PERMISSION_TAG_CHECK_ERROR: string = "To use this API, you need to apply for the permissions: $DT";
 export const SYSTEM_API_TAG_CHECK_NAME: string = 'systemapi';
@@ -69,6 +69,26 @@ export enum ComparisonResult {
 
 export const SDK_SUBSYSTEM_CODE = "117";
 export const ERROR_DESCRIPTION = "ArkTS Compiler Error";
+
+
+export const SUPPRESSWARNINGS_RULE_INFO: Map<string, string> = new Map([
+  [SINCE_TAG_NAME, 'SuppressWarnings'],
+  [AVAILABLE_TAG_NAME, 'SuppressWarnings']
+])
+
+export const ANNOTATION_RULE_INFO: string[] = [
+  'SuppressWarningsType.COMPATIBILITY'
+]
+
+interface ChainedModel {
+  isChain: boolean
+  chainNode: ts.Node
+}
+
+export interface NodeParentModel {
+  node: ts.Node
+  isChainedCall: ChainedModel
+}
 
 interface MoreInfo {
   cn: string;
