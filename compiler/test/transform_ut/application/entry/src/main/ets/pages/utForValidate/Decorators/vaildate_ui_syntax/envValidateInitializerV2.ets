@@ -37,10 +37,10 @@ struct testEnv {
   }
 
   private aaStatic: string = 'aa';
-  @Env(`system`) envOne: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
-  @Env(`system`) envTwo: a = new WindowSizeLayoutBreakpointInfo();
-  @Env(`aaaaa`) envThree: nextBreakPoint = new nextBreakPoint();
-  @Env(`aaaaa`) envFour: nextBreakPoint = new nextBreakPoint();
+  @Env(SystemProperties.BREAK_POINT) envOne: WindowSizeLayoutBreakpointInfo = new WindowSizeLayoutBreakpointInfo();
+  @Env(SystemProperties.BREAK_POINT) envTwo: a = new WindowSizeLayoutBreakpointInfo();
+  @Env(SystemProperties.BREAK_POINT) envThree: nextBreakPoint = new nextBreakPoint();
+  @Env(SystemProperties.BREAK_POINT) envFour: nextBreakPoint = new nextBreakPoint();
 
   build() {
     Column() {

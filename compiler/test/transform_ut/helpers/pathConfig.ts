@@ -313,6 +313,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/envValidateInitializerV1',
   'Decorators/vaildate_ui_syntax/envValidateInitializerV2',
   'Decorators/vaildate_ui_syntax/envValidateType',
+  'Decorators/vaildate_ui_syntax/envValidateArg',
   'Decorators/vaildate_ui_syntax/ExceededEntry',
   'Decorators/vaildate_ui_syntax/ExceededPreview',
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate',

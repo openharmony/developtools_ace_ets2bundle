@@ -111,16 +111,19 @@ class RollUpPluginMock {
     this.share.projectConfig.useNormalizedOHMUrl = true;
   }
 
-  public mockCompileContextInfo() {
-    this.share.projectConfig.mockCompileContextInfo();
-    let entryObj: object = this.share.projectConfig.entryObj;
+  public mockCompileContextInfo(entryObjMock?: Object, pkgName?: string) {
+    this.share.projectConfig.mockCompileContextInfo(entryObjMock, pkgName);
+    let entryObj: object = entryObjMock || this.share.projectConfig.entryObj;
     if (!!this.share.projectConfig.widgetCompile) {
       entryObj = this.share.projectConfig.cardEntryObj
     }
     for(let entry in entryObj) {
       let filePath: string = entryObj[entry];
-      let moduleInfo: ModuleInfo = new ModuleInfo(filePath, 'entry', `${PROJECT_ROOT}/entry`);
-      moduleInfo.meta.pkgName = 'entry';
+      let moduleInfo: ModuleInfo = new ModuleInfo(filePath, pkgName || 'entry', `${PROJECT_ROOT}/${pkgName || 'entry'}`, pkgName);
+      moduleInfo.meta.pkgName = pkgName || 'entry';
+      if (entry === 'ResourceTable') {
+        moduleInfo.meta.ohmurl = '&entry/build/genarated/r/ResourceTable&';
+      }
       this.moduleInfos.push(moduleInfo);
     }
   }
