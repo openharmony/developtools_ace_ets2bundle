@@ -33,9 +33,11 @@ import {
   FormatCheckerFunction,
   ParsedVersion,
   RUNTIME_OS_OH,
-  VersionValidationResult
+  VersionValidationResult,
+  ANNOTATION_RULE_INFO,
+  NodeParentModel
 } from '../api_check_define';
-import { fileDeviceCheckPlugin, fileAvailableCheckPlugin } from '../../../../main';
+import { fileDeviceCheckPlugin, fileAvailableCheckPlugin, suppressWarningsCheckPlugin } from '../../../../main';
 import fs from 'fs';
 
 /**
@@ -50,6 +52,11 @@ export interface NodeValidator {
    * @returns True if the node is properly suppressed, false otherwise
    */
   validate(node: ts.Node): boolean;
+  /**
+   * Add validators in batch.
+   * @param validator - Validator to add
+   */
+  addValidator?(validator: NodeValidator[]): void;
 }
 
 /**
@@ -71,12 +78,12 @@ export class CompositeValidator implements NodeValidator {
   }
 
   /**
-   * Add a validator to the composite.
+   * Add validators to the combination in batch.
    * 
    * @param validator - Validator to add
    */
-  addValidator(validator: NodeValidator): void {
-    this.validators.push(validator);
+  addValidator(validator: NodeValidator[]): void {
+    this.validators.push(...validator);
   }
 
   /**
@@ -193,6 +200,41 @@ export abstract class BaseValidator {
    */
   protected normalizePath(path: string): string {
     return path.replace(/\\/g, '/').toLowerCase();
+  }
+
+  /**
+   * Check the suppressWarnings scenario in the cache.
+   * @param node - Obtain the content of the currently compiled file.
+   * @param sceneName - comment or annotation scene.
+   * @returns - Do not check when there is no data in the cache, and perform verification when there is data.
+   */
+  protected checkSuppressWarningsCache(node: ts.Node, sceneName: string): boolean {
+    const commentRegex = /\/\/\s*@SuppressWarnings\s/g;
+    const annotationRegex = /\s*@SuppressWarnings\s*(\()/g;
+    const contentRegex = sceneName === 'comment_suppressWarnings' ? commentRegex : annotationRegex;
+    const nodeSourceFile = node.getSourceFile()?.fileName;
+    const mapKey = `${sceneName}_${nodeSourceFile}`;
+    if (suppressWarningsCheckPlugin.has(mapKey)) {
+      const hasSuppressWarnings = suppressWarningsCheckPlugin.get(mapKey)!;
+      if (!hasSuppressWarnings.get(sceneName)) {
+        return false;
+      }
+    } else {
+      try {
+        const fileContent: string = fs.readFileSync(nodeSourceFile, { encoding: 'utf-8' });
+        const contentChecker = contentRegex.test(fileContent);
+        const commentMap = new Map([
+          [sceneName, contentChecker]
+        ])
+        suppressWarningsCheckPlugin.set(mapKey, commentMap);
+        if (!contentChecker) {
+          return false;
+        }
+      } catch (error) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -553,7 +595,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
       if (this.compareVersions(curAvailableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion)) {
         return true;
       }
-      
+
       return false;
     } catch (error) {
       return false;
@@ -579,7 +621,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
     if (!availableVersion) {
       return null;
     }
-    
+
     return availableVersion;
   }
 
@@ -604,7 +646,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
         result = this.valueChecker(minRequiredVersion, getVersionByValueChecker(curAvailableVersion, this.valueChecker), scenario);
       } else {
         result = this.valueChecker(getVersionByValueChecker(minRequiredVersion, this.valueChecker),
-         getVersionByValueChecker(curAvailableVersion, this.valueChecker), scenario);
+          getVersionByValueChecker(curAvailableVersion, this.valueChecker), scenario);
       }
 
       if (result) {
@@ -615,5 +657,348 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
     } catch (error) {
       return false;
     }
+  }
+}
+
+/**
+ * Validates '@SuppressWarnings' decorator usage by comparing target (declaration) vs context (call site).
+ * 
+ * Uses regex-based decorator extraction - NO strategy dependency!
+ * 
+ * Example:
+ * ```typescript
+ * // Index.ets
+ * @SuppressWarnings({rules: [SuppressWarningsType.COMPATIBILITY]})
+ * function test() {
+ *  wifiManager.startScan();
+ * }
+ * ```
+ */
+export class AnnotateSuppressWarningsValidator extends BaseValidator implements NodeValidator {
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * validate entrance
+   * @param node - The node where the compilation warning occurs.
+   * @returns - Whether it complies with the rules and returns the alarm suppression result.
+   */
+  validate(node: ts.Node): boolean {
+    return this.checkSuppressWarningsCache(node, 'annotation_suppressWarnings') && this.checkAnnotationWarning(node);
+  }
+
+  /**
+   * Verify the alarm suppression function.
+   * 
+   * Find annotation information based on the current node.
+   * 
+   * @param node - The node that has generated an alarm.
+   * @returns - Return alarm suppression result.
+   */
+  private checkAnnotationWarning(node: ts.Node): boolean {
+    const decoratornode: ts.Decorator[] = this.getTagDecoratorFromNode(node);
+    return decoratornode.some(item => this.extractRulesFromDecorator(item));
+  }
+
+  /**
+   * Find the decorator corresponding to the alarm node.
+   * 
+   * @param decorator - Find the decorator corresponding to the alarm node.
+   * @returns - Return whether it is a decorator that conforms to the rules.
+   */
+  private findTagDecorator(decorator: ts.Decorator): boolean {
+    if (ts.isCallExpression(decorator.expression)) {
+      return ts.isIdentifier(decorator.expression.expression) && decorator.expression.expression.text === 'SuppressWarnings';
+    } else if (ts.isIdentifier(decorator.expression)) {
+      return decorator.expression.text === 'SuppressWarnings';
+    }
+    return false;
+  }
+
+  /**
+   * Find the decorator where the parent node of the current alarm node is located.
+   * 
+   * @param node - The node that has generated an alarm.
+   * @returns - Return the corresponding decorator.
+   */
+  private getTagDecoratorFromNode(node: ts.Node): ts.Decorator[] {
+    const decoratorArray = [];
+    if (ts.canHaveDecorators(node)) {
+      decoratorArray.push(...(ts.getAnnotations(node)) || []);
+    }
+    if (ts.canHaveIllegalDecorators(node)) {
+      decoratorArray.push(...(ts.getAnnotationsFromIllegalDecorators(node)) || []);
+    }
+    const currentSuppressWarningDecorators = decoratorArray.filter(item => this.findTagDecorator(item));
+    if (currentSuppressWarningDecorators.length > 0) {
+      return [...currentSuppressWarningDecorators];
+    }
+    const parentNode = node.parent;
+    const parentSuppressWarning = parentNode ? this.getTagDecoratorFromNode(parentNode) : [];
+    return [...currentSuppressWarningDecorators, ...parentSuppressWarning];
+  }
+
+  /**
+   * Check the rules of the decorator corresponding to the alarm node.
+   * 
+   * ANNOTATION_RULE_INFO ---Alarm suppression rule
+   * {rule: [SuppressWarningsType.COMPATIBILITY]}
+   * 
+   * ```typescript
+   * '@SuppressWarnings'
+   * ```
+   * 
+   * @param decorator - The node that has generated an alarm.
+   * @returns - Check the rules of the decorator corresponding to the alarm node
+   */
+  private extractRulesFromDecorator(decorator: ts.Decorator): boolean {
+    if (!decorator) {
+      return false;
+    }
+    if (!ts.isCallExpression(decorator.expression)) {
+      return false;
+    }
+    const callExpr: ts.CallExpression = decorator.expression;
+    if (!ts.isIdentifier(callExpr.expression)) {
+      return false;
+    }
+    if (callExpr.expression.text !== 'SuppressWarnings') {
+      return false;
+    }
+    if (callExpr.arguments.length === 0) {
+      return false;
+    }
+    const arg = callExpr.arguments[0];
+    if (!ts.isObjectLiteralExpression(arg)) {
+      return false;
+    }
+    const pro = arg.properties[0];
+    if (!ts.isPropertyAssignment(pro)) {
+      return false;
+    }
+    if (pro.initializer && ts.isArrayLiteralExpression(pro.initializer) && pro.initializer.elements.length > 0) {
+      return pro.initializer.elements.some(item => ANNOTATION_RULE_INFO.includes(item.getText() || item.getFullText()));
+    }
+
+    return false;
+  }
+}
+
+/**
+ * Validates '@SuppressWarnings' comment usage by comparing target (declaration) vs context (call site).
+ * 
+ * Uses regex-based comment extraction - NO strategy dependency!
+ * 
+ * Example:
+ * ```typescript
+ * // Index.ets
+ * // '@SuppressWarnings' compatibility
+ * wifiManager.startScan();
+ * ```
+ */
+export class CommentSuppressWarningsValidator extends BaseValidator implements NodeValidator {
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * validate entrance
+   * @param node The node where the compilation warning occurs.
+   * @returns Whether it complies with the rules and returns the alarm suppression result.
+   */
+  validate(node: ts.Node): boolean {
+    return this.checkSuppressWarningsCache(node, 'comment_suppressWarnings') && this.checkCommentsWarning(node);
+  }
+
+  /**
+   * Verify the alarm suppression function.
+   * 
+   * Find annotation information based on the current node.
+   * 
+   * @param node - The node that has generated an alarm.
+   * @returns - Return alarm suppression result.
+   */
+  private checkCommentsWarning(node: ts.Node): boolean {
+    if (ts.isIdentifier(node)) {
+      const commentsMessage: string[] | null = this.getAllClosestComments(node.getSourceFile(), node);
+      if (!commentsMessage) {
+        return false;
+      }
+      return this.checkCommentsMessage(commentsMessage);
+    }
+    return false;
+  }
+
+  /**
+   * Check the annotation information that meets the criteria.
+   * 
+   * @param sourceFile - The compilation file where the current alarm node is located.
+   * @param node - The node that has generated an alarm.
+   * @returns - Return the annotation information that meets the criteria.
+   */
+  private getAllClosestComments(sourceFile: ts.SourceFile, node: ts.Identifier): string[] | null {
+    const text = sourceFile.text;
+    const comments: string[] = [];
+    const nodeStatement: NodeParentModel | null = this.getChainCallNode(this.findNodeParentStatement(node));
+    if (!nodeStatement) {
+      return null;
+    }
+
+    const commentsPosOrEnd = nodeStatement.isChainedCall.isChain && ts.isPropertyAccessExpression(nodeStatement.isChainedCall.chainNode.parent)
+      ? nodeStatement.isChainedCall.chainNode.parent.expression.end : nodeStatement.node.pos;
+    if (commentsPosOrEnd === undefined) {
+      return null;
+    }
+
+    const leadingComments = ts.getLeadingCommentRanges(text, commentsPosOrEnd);
+    if (leadingComments && leadingComments.length > 0) {
+      comments.push(...leadingComments.map(item => text.substring(item.pos, item.end)));
+    }
+
+    return comments;
+  }
+
+  /**
+   * Find the parent node.
+   * 
+   * two scenarios:
+   * 
+   * 1.chain invocation scene
+   * Example:
+   * ```typescript
+   * Button('test')
+   *  .id('test')
+   *  // '@SuppressWarnind' compatibility
+   *  .fontSize('xxx')
+   * ```
+   * 
+   * 2.normal invocation scene
+   * Example:
+   * ```typescript
+   * // '@SuppressWarnind' compatibility
+   * const test = a.b
+   * ```
+   * @param node - The node that has generated an alarm.
+   * @returns 
+   * 1.The chained invocation scenarios directly returns the alarm node.
+   * 2.In normal invocation scenarios, the parent node of the alarm node is returned.
+   */
+  private findNodeParentStatement(node: ts.Identifier): NodeParentModel | null {
+    if (!ts.isIdentifier(node)) {
+      return null;
+    }
+    let nodeStatement: NodeParentModel = {
+      node: node,
+      isChainedCall: { isChain: false, chainNode: node }
+    }
+    while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && nodeStatement.node.parent) {
+      if (ts.isPropertyAccessExpression(nodeStatement.node)) {
+        if (ts.isCallExpression(nodeStatement.node.expression)) {
+          const expression = nodeStatement.node.expression;
+          const text = expression.getText() || expression.getFullText();
+          nodeStatement.isChainedCall.isChain = text.includes('SuppressWarnings');
+        }
+      }
+      nodeStatement.node = nodeStatement.node.parent;
+    }
+    return nodeStatement;
+  }
+
+  /**
+   * Obtain the chain call scenario node.
+   * Example:
+   * ```typescript
+   * Button()
+   * .id('text')
+   * // '@SuppressWarnings' compatibility
+   * .onClick(() => {
+   *  a.b  // will not trigger compatiale warning
+   * })
+   * ```
+   * 
+   * ```typescript
+   * // '@SuppressWarnings' compatibility
+   * Button().id('test').fontSize('10').onClick(() => {}) // will not trigger compatiale warning
+   * ```
+   * @param node - The node that has generated an alarm.
+   * @returns - Return the processed node after the chained call scenario.
+   */
+  private getChainCallNode(node: NodeParentModel): NodeParentModel | null {
+    let chainCallNode: NodeParentModel = node;
+    if (chainCallNode.isChainedCall.isChain || !(ts.isBlock(chainCallNode.node.parent) &&
+      ts.isArrowFunction(chainCallNode.node.parent.parent))) {
+      return chainCallNode;
+    }
+    while (chainCallNode.node && chainCallNode.node.parent) {
+      if (ts.isArrowFunction(chainCallNode.node) &&
+        ts.isCallExpression(chainCallNode.node.parent) &&
+        ts.isPropertyAccessExpression(chainCallNode.node.parent.expression)) {
+        const expression = chainCallNode.node.parent.expression.expression;
+        const text = expression.getText() || expression.getFullText();
+        chainCallNode.isChainedCall.isChain = text.includes('SuppressWarnings');
+        chainCallNode.isChainedCall.chainNode = expression;
+        chainCallNode.node = expression;
+        break;
+      }
+      chainCallNode.node = chainCallNode.node.parent;
+    }
+    return chainCallNode;
+  }
+
+  /**
+   * check comments message.
+   * 
+   * matchSuppressWarningsCharacter: match suppresswarnings '// @SuppressWarnings'.
+   * matchCompatibilityCharacter: match compatibility ', compatibility or compatibility'.
+   * 
+   * @param comments - scene comments.
+   * @returns - Determine whether the result conforms to the rule-based scenario.
+   */
+  private checkCommentsMessage(comments: string[]): boolean {
+    const matchSuppressWarningsCharacter = /\/\/\s*@SuppressWarnings\s/g;
+    const matchCompatibilityCharacter = /(^|[\s,])compatibility($|[\s,])/;
+    if (!this.hasNotSupportScene(comments)) {
+      return comments.some(item => matchSuppressWarningsCharacter.test(item) && matchCompatibilityCharacter.test(item));
+    }
+    return false;
+  }
+
+  /**
+   * check is not support scene.
+   * 
+   * 1.mulitiLineCommentScene: muliti-line comment scene.
+   * Example:
+   * ```typescript
+   * // '@SuppressWarnind' compatibility
+   * /*
+   * * '@SuppressWarnind' compatibility
+   * /
+   * // test
+   * ```
+   * 
+   * 2./^\/\/\s*@SuppressWarnings\s*(\/+)/: Therer are two or more double slashes.
+   * Example:
+   * ```typescript
+   * // '@SuppressWarnind' // compatibility
+   * ```
+   * @param comments - scene comments
+   * @returns - Return the corresponding result based on the annotation information of the input parameter.
+   */
+  private hasNotSupportScene(comments: string[]): boolean {
+    let isSupportScene = false;
+    const mulitiLineCommentScene = /\/\*+/g;
+    for (const item of comments) {
+      if (/^\/\/\s*@SuppressWarnings\s*(\/+)/.test(item)) {
+        return true;
+      }
+
+      if (mulitiLineCommentScene.test(item)) {
+        return true;
+      }
+    }
+    return isSupportScene;
   }
 }

@@ -424,8 +424,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   } else if (!systemModules.includes(apiName) && path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)) {
     needCheckResult = true;
     checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-    SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
-    VERSION_CHECK_FUNCTION_NAME, true, undefined, checkAvailableDecorator));
+      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
+      VERSION_CHECK_FUNCTION_NAME, true, undefined, checkAvailableDecorator));
   }
   result = {
     nodeNeedCheck: needCheckResult,
@@ -583,7 +583,7 @@ function collectExternalSyscapInfos(
  * @param node check node
  * @returns nodeKey for filter
  */
-function getAvailableNodeKey(node: ts.Node):string {
+function getAvailableNodeKey(node: ts.Node): string {
   const sourceFile: ts.SourceFile = node.getSourceFile();
   const fileName: string = path.basename(sourceFile.fileName);
   return `${fileName}::${node.pos}::${node.end}`;
@@ -606,8 +606,8 @@ function getAvailableNodeKey(node: ts.Node):string {
  * @returns True if incompatibility is detected, otherwise false
  */
 function checkAvailableDecorator(
-  jsDocTags: readonly ts.JSDocTag[], 
-  config: ts.JsDocNodeCheckConfigItem, 
+  jsDocTags: readonly ts.JSDocTag[],
+  config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
@@ -632,14 +632,14 @@ function checkAvailableDecorator(
     return false;
   }
   const typeChecker = CurrentProcessFile.getChecker();
-  
+
   const checker = new AvailableAnnotationChecker(typeChecker);
   const hasIncompatibility = checker.checkTargetVersion(declaration);
-  
+
   if (!hasIncompatibility) {
     return false;
   }
-    
+
   const minApiVersion = checker.getMinApiVersion();  // Minimum required API version
 
   const suppressor = new AvailableWarningSuppressor(
@@ -648,15 +648,15 @@ function checkAvailableDecorator(
     checker.getAvailableVersion(),
     typeChecker
   );
-  
+
   if (suppressor.isApiVersionHandled(node)) {
     return false;
   }
-  
+
   config.message = AVAILABLE_DECORATOR_WARNING
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
-  
+
   return true;
 }
 
@@ -690,15 +690,15 @@ function checkSinceValue(
 
   const checker = new SinceJSDocChecker(typeChecker);
   const hasIncompatibility = checker.checkTargetVersion(jsDocNode);
-  
+
   if (!hasIncompatibility) {
     return false;
   }
 
   // Use SinceWarningSuppressor with all three strategies
   const suppressor = new SinceWarningSuppressor(
-    checker.getSdkVersion(), 
-    checker.getMinApiVersion(), 
+    checker.getSdkVersion(),
+    checker.getMinApiVersion(),
     typeChecker
   );
 
@@ -737,8 +737,8 @@ export function defaultValueChecker(
 
   return {
     result: isTargetGreaterOrEqual,
-    message: isTargetGreaterOrEqual 
-      ? 'Version requirement satisfied' 
+    message: isTargetGreaterOrEqual
+      ? 'Version requirement satisfied'
       : 'API version requirement not met'
   };
 }
@@ -815,15 +815,15 @@ export function isOpenHarmonyRuntime(): boolean {
 export function initComparisonFunctions(): void {
   const tags = ['since', 'available'];
   const osName = projectConfig.runtimeOS;
-    for (const tag of tags) {
-      // Initialize value checker (CompatibilityCheck)
-      initValueChecker(osName, tag);
-      // Initialize format checker (FormatValidation) - only for 'available'
-      if (tag === 'available') {
-        initFormatChecker(osName, tag);
-      }
+  for (const tag of tags) {
+    // Initialize value checker (CompatibilityCheck)
+    initValueChecker(osName, tag);
+    // Initialize format checker (FormatValidation) - only for 'available'
+    if (tag === 'available') {
+      initFormatChecker(osName, tag);
     }
-  
+  }
+
 }
 
 /**
@@ -838,7 +838,7 @@ export function initComparisonFunctions(): void {
  */
 export function initValueChecker(osName: string, tag: string): void {
   const cacheKey = `${osName}/${tag}`;
-  
+
   // Skip if already initialized
   if (comparisonFunctions.valueChecker.has(cacheKey)) {
     return;
@@ -850,18 +850,18 @@ export function initValueChecker(osName: string, tag: string): void {
     formatKey = `${osName}/${tag}`;
   }
   let plugins = externalApiCheckPlugin.get(formatKey);
-  
+
   if (!plugins || plugins.length === 0) {
     comparisonFunctions.valueChecker.set(cacheKey, defaultValueChecker);
     return;
   }
-  
+
   // Try to load external plugin
   for (const plugin of plugins) {
     try {
       const externalModule = require(plugin.path);
       const externalMethod = externalModule[plugin.functionName];
-      
+
       if (typeof externalMethod === 'function') {
         comparisonFunctions.valueChecker.set(cacheKey, externalMethod);
         return;
@@ -869,7 +869,7 @@ export function initValueChecker(osName: string, tag: string): void {
     } catch (error) {
     }
   }
-  
+
   // Fallback to default
   comparisonFunctions.valueChecker.set(cacheKey, defaultValueChecker);
 }
@@ -883,7 +883,7 @@ export function initValueChecker(osName: string, tag: string): void {
 export function initFormatChecker(osName: string, tag: string): void {
   const pluginKey = `${osName}/${tag}/FormatValidation`;
   const cacheKey = `${osName}/${tag}`;
-  
+
   // Try to load external plugin
   const plugins = externalApiCheckPlugin.get(pluginKey);
   if (!plugins || plugins.length === 0) {
@@ -894,7 +894,7 @@ export function initFormatChecker(osName: string, tag: string): void {
     try {
       const externalModule = require(plugin.path);
       const externalMethod = externalModule[plugin.functionName];
-      
+
       if (typeof externalMethod === 'function') {
         comparisonFunctions.formatChecker.set(cacheKey, externalMethod);
         return;
@@ -902,7 +902,7 @@ export function initFormatChecker(osName: string, tag: string): void {
     } catch (error) {
     }
   }
-  
+
   // Fallback to default
   comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerWithoutMSF);
 }
@@ -917,7 +917,7 @@ export function getValueChecker(tag: string): ValueCheckerFunction {
   const runtimeOS = projectConfig.runtimeOS;
   const cacheKey = `${runtimeOS}/${tag}`;
   const checker = comparisonFunctions.valueChecker.get(cacheKey);
-  
+
   return checker || defaultValueChecker;
 }
 
@@ -931,7 +931,7 @@ export function getFormatChecker(tag: string = 'available'): FormatCheckerFuncti
   const runtimeOS = projectConfig.runtimeOS;
   const cacheKey = `${runtimeOS}/${tag}`;
   const checker = comparisonFunctions.formatChecker.get(cacheKey);
-  
+
   return checker || defaultFormatCheckerWithoutMSF;
 }
 
@@ -1378,11 +1378,11 @@ export function getValidDecoratorFromNode(node: ts.Node | ts.Declaration, predic
     }
   }
 
-export function isAvailableDeclarationValid(annoDecl: ts.AnnotationDeclaration): boolean {
+export function isSourceRetentionDeclarationValid(annoDecl: ts.AnnotationDeclaration): boolean {
   if (!annoDecl) {
     return false;
   }
-  if (ts.isIdentifier(annoDecl.name) && annoDecl.name.escapedText.toString() !== 'Available') {
+  if (ts.isIdentifier(annoDecl.name) && annoDecl.name.escapedText.toString() !== 'Available' && annoDecl.name.escapedText.toString() !== 'SuppressWarnings') {
     return false;
   }
 
@@ -1393,9 +1393,7 @@ export function isAvailableDeclarationValid(annoDecl: ts.AnnotationDeclaration):
   return false;
 }
 
-export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheckResult {
-  // available的注解，只有在minApiVersion存在且不合法的情况下，需要做出告警提示，遇到异常情况，默认不告警
-  // 默认返回值 为 true
+export function isSourceRetentionAnnotationContentValid(annotation: ts.Annotation): ts.ConditionCheckResult {
   let result: ts.ConditionCheckResult = {
     valid: true
   }
@@ -1416,7 +1414,7 @@ export function isAvailableVersion(annotation: ts.Annotation): ts.ConditionCheck
         continue;
       }
       let minApiVersion = prop.initializer.text;
-      
+
       if (minApiVersion === null || minApiVersion === undefined) {
         minApiVersion = "";
       }
@@ -1452,16 +1450,16 @@ export const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
   let decoratorName: string = '';
   if (ts.isCallExpression(decorator.expression) && ts.isIdentifier(decorator.expression.expression)) {
     decoratorName = decorator.expression.expression.text;
-  } 
+  }
   if (ts.isIdentifier(decorator.expression)) {
-    decoratorName =  decorator.expression.text;
+    decoratorName = decorator.expression.text;
   }
   if (decoratorName !== 'Available') {
     return false
   }
   let parseVersion = extractMinApiFromDecorator(decorator);
   if (!parseVersion) {
-      return false;
+    return false;
   }
   const isValidFormat = parseVersion.os === RUNTIME_OS_OH
     ? defaultFormatCheckerWithoutMSF(parseVersion.version)
@@ -1482,7 +1480,7 @@ function hasLargerVersionInParentNode(node: ts.Node, curAvailableVersion: Parsed
   if (!node || !node.parent) {
     return null;
   }
-  
+
   const decorator: ts.Decorator | null = getValidDecoratorFromNode(node.parent, isAvailableDecorator);
   if (decorator === null) {
     return null;
@@ -1492,7 +1490,7 @@ function hasLargerVersionInParentNode(node: ts.Node, curAvailableVersion: Parsed
   if (!availableVersion) {
     return null;
   }
-  
+
   if (!compareVersions(availableVersion, curAvailableVersion)) {
     return availableVersion;
   }
@@ -1509,7 +1507,7 @@ export function checkFormatResult(parseVersion: ParsedVersion | null): ts.Condit
   let checkResult: VersionValidationResult;
   if (parseVersion.os === RUNTIME_OS_OH) {
     checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
-  } else if (parseVersion.os === projectConfig.runtimeOS){
+  } else if (parseVersion.os === projectConfig.runtimeOS) {
     checkResult = getFormatChecker()(parseVersion.formatVersion);
   } else {
     let msg = AVAILABLE_OSNAME_ERROR
