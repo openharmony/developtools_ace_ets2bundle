@@ -22,6 +22,7 @@ import CheckDecoratedPropertyTypeRule from './check-decorated-property-type';
 import CheckPropertyModifiersRule from './check-property-modifiers';
 import ComponentComponentV2MixUseCheckRule from './component-componentV2-mix-use-check';
 import ComponentV2MixCheckRule from './componentV2-mix-check';
+import ConstructParameterLinkSourceDataRule from './construct-parameter-link-source-data';
 import ConstructParameterLiteralRule from './construct-parameter-literal';
 import ConstructParameterRule from './construct-parameter';
 import ConsumerProviderDecoratorCheckRule from './consumer-provider-decorator-check';
@@ -79,6 +80,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [CheckPropertyModifiersRule, 'warn'],
     [ComponentComponentV2MixUseCheckRule, 'error'],
     [ComponentV2MixCheckRule, 'error'],
+    [ConstructParameterLinkSourceDataRule, 'error'],
     [ConstructParameterLiteralRule, 'warn'],
     [ConstructParameterRule, 'error'],
     [ConsumerProviderDecoratorCheckRule, 'error'],
