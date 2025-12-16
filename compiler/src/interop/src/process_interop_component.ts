@@ -14,9 +14,11 @@
  */
 
 import ts from 'typescript';
+import { arkTSEvolutionModuleMap, arkTSHybridModuleMap } from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
 import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER, BUILDER_ATTR_BIND } from './pre_define';
-import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map'
+import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map';
+import { toUnixPath } from './utils';
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -70,13 +72,17 @@ export function generateBytecodePathFragement(className: string, filePath: strin
     }
 
     const targetPath = match[1];
-    let targetPathWithDollar: string;
-    if (moduleSpecifier.match(/^(@(?![0-9\-_])[a-z0-9\-_]+(?<![\-_])\/)?(?![0-9\-_.])[a-z0-9\-_.]+(?<![\-_.])$/)) {
-        targetPathWithDollar = moduleSpecifier + targetPath.slice(moduleSpecifier.length).replace(/\//g, '$');
-    } else {
-        targetPathWithDollar = targetPath.replace(/\//g, '$');
+    let packageName: string = '';
+    const combinedMap = new Map([...arkTSHybridModuleMap, ...arkTSEvolutionModuleMap]);
+    for (const arkTSEvolutionModuleInfo of combinedMap.values()) {
+      const declgenV1OutputPath = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
+      if (filePath.startsWith(declgenV1OutputPath + '/')) {
+        packageName = arkTSEvolutionModuleInfo.packageName;
+        break;
+      }
     }
 
+    const targetPathWithDollar: string = packageName + targetPath.slice(packageName.length).replace(/\//g, '$');
     return `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`;
 }
 
