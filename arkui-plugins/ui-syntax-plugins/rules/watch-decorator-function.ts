@@ -17,11 +17,14 @@ import * as arkts from '@koalaui/libarkts';
 import { getIdentifierName, isPrivateClassProperty, PresetDecorators, getClassPropertyName, findDecorator } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
+
+
 class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
             invalidWatch: `'@watch' cannot be used with '{{parameterName}}'. Apply it only to parameters that correspond to existing methods.`,
             stringOnly: `'@Watch' cannot be used with '{{parameterName}}'. Apply it only to 'string' parameters.`,
+            IllegalFunction: `The V1 decorator '{{decorateNameProxy}}' cannot be applied to a Function-type variable '{{propertyName}}'`,
         };
     }
 
@@ -29,11 +32,14 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
         if (!arkts.isStructDeclaration(node)) {
             return;
         }
-        // Get all method names
         const methodNames = this.getMethodNames(node);
-        // Get a private variable
         const privateNames = this.getPrivateNames(node);
         this.validateWatch(node, methodNames, privateNames);
+        node.definition.body.forEach(member => {
+            if (arkts.isClassProperty(member)) {
+                this.reportIllegalFunctionError(member);
+            }
+        });
     }
 
     private getExpressionValue(parameters: arkts.Expression, privateNames: string[]): string {
@@ -189,6 +195,77 @@ class WatchDecoratorFunctionRule extends AbstractUISyntaxRule {
                 };
             },
         });
+    }
+    private hasDecoratorWithFunctionType(
+        member: arkts.ClassProperty,
+        decorators: string[]
+    ): boolean {
+        const hasTargetDecorator = member.annotations.some((annotation: arkts.AnnotationUsage) => {
+            return (
+                annotation.expr &&
+                arkts.isIdentifier(annotation.expr) &&
+                decorators.includes(annotation.expr.name)
+            );
+        });
+
+        if (!hasTargetDecorator) {
+            return false;
+        }
+        if (member.typeAnnotation) {
+            if (arkts.isETSFunctionType(member.typeAnnotation) ||
+                this.isFunctionTypeReference(member.typeAnnotation)) {
+                return true;
+            }
+            if (arkts.isETSUnionType(member.typeAnnotation)) {
+                return this.isUnionOfTypeOnlyFunction(member.typeAnnotation);
+            }
+        }
+        return false;
+    }
+    private isFunctionTypeReference(typeNode: arkts.TypeNode): boolean {
+        if (arkts.isETSTypeReference(typeNode)) {
+            const ref = typeNode as arkts.ETSTypeReference;
+            if (ref.part && arkts.isETSTypeReferencePart(ref.part)) {
+                const part = ref.part as arkts.ETSTypeReferencePart;
+                if (part.name && arkts.isIdentifier(part.name)) {
+                    return part.name.name === 'Function';
+                }
+            }
+        }
+        return false;
+    }
+
+    private isUnionOfTypeOnlyFunction(unionType: arkts.ETSUnionType): boolean {
+        const types = unionType.types;
+        for (const type of types) {
+            if (arkts.isETSFunctionType(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private reportIllegalFunctionError(member: arkts.ClassProperty): void {
+        const decorators = [PresetDecorators.STATE, PresetDecorators.PROP_REF,
+        PresetDecorators.PROVIDE, PresetDecorators.LINK, PresetDecorators.CONSUME,
+        PresetDecorators.STORAGE_LINK, PresetDecorators.LOCAL_STORAGE_LINK,
+        PresetDecorators.STORAGE_PROP_REF, PresetDecorators.LOCAL_STORAGE_PROP_REF];
+        if (member.key && arkts.isIdentifier(member.key)) {
+            const propertyName = member.key.name.toString();
+            const decorateNameProxy = decorators.find(decoratorName => {
+                return findDecorator(member, decoratorName);
+            })
+            if (this.hasDecoratorWithFunctionType(member, decorators) && decorateNameProxy) {
+                this.report({
+                    node: member,
+                    message: this.messages.IllegalFunction,
+                    data: {
+                        decorateNameProxy: decorateNameProxy,
+                        propertyName: propertyName,
+                    },
+                });
+            };
+        };
     }
 }
 
