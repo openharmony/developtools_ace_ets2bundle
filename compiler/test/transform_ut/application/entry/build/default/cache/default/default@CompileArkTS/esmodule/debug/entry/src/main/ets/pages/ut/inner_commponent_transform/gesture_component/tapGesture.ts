@@ -45,13 +45,13 @@ class TapGestureExample extends View {
         Flex.padding(60);
         Flex.border({ width: 1 });
         Flex.margin(30);
-        Gesture.create(GesturePriority.Low);
+        globalThis.Gesture.create(GesturePriority.Low);
         TapGesture.create({ count: 2 });
         TapGesture.onAction(() => {
             this.value = 'TapGesture onAction';
         });
         TapGesture.pop();
-        Gesture.pop();
+        globalThis.Gesture.pop();
         Text.create('Click twice');
         Text.pop();
         Text.create(this.value);

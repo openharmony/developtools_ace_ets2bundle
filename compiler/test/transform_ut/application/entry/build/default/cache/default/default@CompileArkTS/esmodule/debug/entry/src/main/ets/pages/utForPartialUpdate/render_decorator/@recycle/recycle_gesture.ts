@@ -67,7 +67,7 @@ class GestureTest extends ViewPU {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Flex.create({ direction: FlexDirection.Column, alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween });
             Flex.width(this.width_value);
-            Gesture.create(GesturePriority.Low);
+            globalThis.Gesture.create(GesturePriority.Low);
             LongPressGesture.create({ repeat: true });
             LongPressGesture.onAction((event) => {
                 if (event.repeat) {
@@ -78,7 +78,7 @@ class GestureTest extends ViewPU {
                 this.count = 0;
             });
             LongPressGesture.pop();
-            Gesture.pop();
+            globalThis.Gesture.pop();
             if (isInitialRender) {
                 Flex.height(100);
                 Flex.padding(60);

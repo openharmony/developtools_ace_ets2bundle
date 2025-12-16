@@ -45,7 +45,7 @@ class LongPressGestureExample extends View {
         Flex.padding(60);
         Flex.border({ width: 1 });
         Flex.margin(30);
-        Gesture.create(GesturePriority.Low);
+        globalThis.Gesture.create(GesturePriority.Low);
         LongPressGesture.create({ repeat: true });
         LongPressGesture.onAction((event) => {
             if (event.repeat) {
@@ -56,7 +56,7 @@ class LongPressGestureExample extends View {
             this.count = 0;
         });
         LongPressGesture.pop();
-        Gesture.pop();
+        globalThis.Gesture.pop();
         Text.create('LongPress onAction:' + this.count);
         Text.pop();
         Flex.pop();
