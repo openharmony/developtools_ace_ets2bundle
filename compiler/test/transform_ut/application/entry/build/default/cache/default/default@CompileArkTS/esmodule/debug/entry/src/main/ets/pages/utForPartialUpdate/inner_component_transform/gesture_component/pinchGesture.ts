@@ -16,36 +16,36 @@
 if (!("finalizeConstruction" in ViewPU.prototype)) {
     Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
 }
-class RotationGestureExample extends ViewPU {
+class PinchGestureExample extends ViewPU {
     constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
         super(parent, __localStorage, elmtId, extraInfo);
         if (typeof paramsLambda === "function") {
             this.paramsGenerator_ = paramsLambda;
         }
-        this.__angle = new ObservedPropertySimplePU(0, this, "angle");
+        this.__scale2 = new ObservedPropertySimplePU(1, this, "scale2");
         this.setInitiallyProvidedValue(params);
         this.finalizeConstruction();
     }
     setInitiallyProvidedValue(params) {
-        if (params.angle !== undefined) {
-            this.angle = params.angle;
+        if (params.scale2 !== undefined) {
+            this.scale2 = params.scale2;
         }
     }
     updateStateVars(params) {
     }
     purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__angle.purgeDependencyOnElmtId(rmElmtId);
+        this.__scale2.purgeDependencyOnElmtId(rmElmtId);
     }
     aboutToBeDeleted() {
-        this.__angle.aboutToBeDeleted();
+        this.__scale2.aboutToBeDeleted();
         SubscriberManager.Get().delete(this.id__());
         this.aboutToBeDeletedInternal();
     }
-    get angle() {
-        return this.__angle.get();
+    get scale2() {
+        return this.__scale2.get();
     }
-    set angle(newValue) {
-        this.__angle.set(newValue);
+    set scale2(newValue) {
+        this.__scale2.set(newValue);
     }
     initialRender() {
         this.observeComponentCreation2((elmtId, isInitialRender) => {
@@ -55,23 +55,23 @@ class RotationGestureExample extends ViewPU {
             Flex.padding(20);
             Flex.border({ width: 1 });
             Flex.margin(80);
-            Flex.rotate({ x: 1, y: 2, z: 3, angle: this.angle });
-            Gesture.create(GesturePriority.Low);
-            RotationGesture.create();
-            RotationGesture.onActionStart((event) => {
-                console.log('Rotation start');
+            Flex.scale({ x: this.scale2, y: this.scale2, z: this.scale2 });
+            globalThis.Gesture.create(GesturePriority.Low);
+            PinchGesture.create();
+            PinchGesture.onActionStart((event) => {
+                console.info('Pinch start');
             });
-            RotationGesture.onActionUpdate((event) => {
-                this.angle = event.angle;
+            PinchGesture.onActionUpdate((event) => {
+                this.scale2 = event.scale;
             });
-            RotationGesture.onActionEnd(() => {
-                console.log('Rotation end');
+            PinchGesture.onActionEnd(() => {
+                console.info('Pinch end');
             });
-            RotationGesture.pop();
-            Gesture.pop();
+            PinchGesture.pop();
+            globalThis.Gesture.pop();
         }, Flex);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('RotationGesture angle:' + this.angle);
+            Text.create('PinchGesture scale:' + this.scale2);
         }, Text);
         Text.pop();
         Flex.pop();
@@ -80,8 +80,8 @@ class RotationGestureExample extends ViewPU {
         this.updateDirtyElements();
     }
     static getEntryName() {
-        return "RotationGestureExample";
+        return "PinchGestureExample";
     }
 }
-registerNamedRoute(() => new RotationGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/rotationGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/rotationGesture", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=rotationGesture.js.map
+registerNamedRoute(() => new PinchGestureExample(undefined, {}), "", { bundleName: "com.example.application", moduleName: "application", pagePath: "pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", pageFullPath: "application/entry/src/main/ets/pages/utForPartialUpdate/inner_component_transform/gesture_component/pinchGesture", integratedHsp: "false", moduleType: "followWithHap" });
+//# sourceMappingURL=pinchGesture.js.map

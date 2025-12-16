@@ -142,7 +142,8 @@ import {
   REUSE_ATTRIBUTE,
   MUTABLEBUILDER_BUILDERPROP,
   MUTABLEBUILDER_CLASS,
-  MUTABLEBUILDER_DISPATCHBUILDER
+  MUTABLEBUILDER_DISPATCHBUILDER,
+  GLOBAL_THIS
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -3609,6 +3610,7 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
     const compName: string = node.escapedText.toString();
     const type: string = attrNode.escapedText.toString();
+    const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
   if (argumentsArr && argumentsArr.length) {
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
@@ -3642,7 +3644,8 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
       [ts.factory.createThis()]
     ) : 
       ts.factory.createPropertyAccessExpression(
-        node,
+        globalThisArr.includes(compName) ? ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(GLOBAL_THIS), node) : node,
         attrNode
       ),
     undefined,

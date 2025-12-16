@@ -43,14 +43,14 @@ class childTest extends ViewPU {
         }, Column);
         this.observeComponentCreation2((elmtId, isInitialRender) => {
             Text.create("hello");
-            Gesture.create(GesturePriority.Low);
+            globalThis.Gesture.create(GesturePriority.Low);
             GestureGroup.create(GestureMode.Parallel);
             TapGesture.create({ count: 2 });
             TapGesture.onAction(() => {
             });
             TapGesture.pop();
             GestureGroup.pop();
-            Gesture.pop();
+            globalThis.Gesture.pop();
         }, Text);
         Text.pop();
         Column.pop();

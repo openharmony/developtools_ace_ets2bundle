@@ -55,14 +55,14 @@ class SwipeGestureExample extends View {
         Column.width(260);
         Column.height(260);
         Column.rotate({ x: 0, y: 0, z: 1, angle: this.rotateAngle });
-        Gesture.create(GesturePriority.Low);
+        globalThis.Gesture.create(GesturePriority.Low);
         SwipeGesture.create({ fingers: 1, direction: SwipeDirection.Vertical });
         SwipeGesture.onAction((event) => {
             this.speed = event.speed;
             this.rotateAngle = event.angle;
         });
         SwipeGesture.pop();
-        Gesture.pop();
+        globalThis.Gesture.pop();
         Text.create("SwipGesture speed : " + this.speed);
         Text.pop();
         Text.create("SwipGesture angle : " + this.rotateAngle);
