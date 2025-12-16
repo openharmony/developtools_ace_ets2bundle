@@ -22,7 +22,8 @@ const {
   readFile,
   writeFileSync,
   resourcesRawfile,
-  getStoredFileInfo
+  getStoredFileInfo,
+  hspRawfileResources
 } = require('./lib/utils');
 
 const {
@@ -62,6 +63,7 @@ const resources = {
   app: {},
   sys: {}
 };
+const rawfileResources = new Map();
 const systemModules = [];
 const abilityPagesFullPath = new Set();
 let globalModulePaths = [];
@@ -924,6 +926,12 @@ function readHspResource() {
           hspResourceCollect[key] = value;
         }
       }
+      const hspRawFileSource = path.join(aceBuildJson.hspResourcesMap[hspName], '../resources/rawfile');
+      if (fs.existsSync(hspRawFileSource) && fs.statSync(hspRawFileSource).isDirectory()) {
+        const tempHspRawfileResource = [];
+        hspRawfileResources(hspRawFileSource, tempHspRawfileResource, '');
+        rawfileResources.set(hspName, tempHspRawfileResource);
+      }
     }
   }
 }
@@ -1200,6 +1208,7 @@ function resetMain() {
   resetAbilityConfig();
   resetProjectConfig();
   resources.app = {};
+  rawfileResources.clear();
   abilityPagesFullPath.clear();
   aceBuildJson = {};
   partialUpdateConfig.builderCheck = true;
@@ -1280,6 +1289,7 @@ exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
 exports.readAppResource = readAppResource;
 exports.resources = resources;
+exports.rawfileResources = rawfileResources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;

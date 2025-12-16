@@ -142,7 +142,8 @@ import {
 import {
   resources,
   projectConfig,
-  partialUpdateConfig
+  partialUpdateConfig,
+  rawfileResources
 } from '../main';
 import {
   createCustomComponentNewExpression,
@@ -831,12 +832,16 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
   isTemplateString: boolean, isCorrectResources: isCorrectResourcesType, filePath: string): void {
-  if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
+  if (!ts.isStringLiteral(node.arguments[0]) && !ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
+    return;
+  }
+  const resourceText: string = node.arguments[0].text;
+  if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(resourceText) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     isTemplateString && (isCorrectResources.booleanValue = true);
     transformLog.errors.push({
       type: isTemplateString ? LogType.WARN : LogType.ERROR,
-      message: `No such '${node.arguments[0].text}' resource in current module.`,
+      message: `No such '${resourceText}' resource in current module.`,
       pos: node.getStart(),
       code: '10904333'
     });
@@ -844,8 +849,49 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
     if (!storedFileInfo.resourcesForFiles.has(filePath)) {
       storedFileInfo.resourcesForFiles.set(filePath, []);
     }
-    storedFileInfo.resourcesForFiles.get(filePath).push(node.arguments[0].text);
+    storedFileInfo.resourcesForFiles.get(filePath).push(resourceText);
   }
+  if (isResourceModule && projectConfig.hspResourcesMap && rawfileResources.keys() &&
+    !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
+    const resourceData: string[] = resourceText.trim().split('.');
+    const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
+    const needCheckResource: boolean = checkHspRawfileSource(resourceDataFirst, node);
+    const resourceParam: string = getAfterFirstDotRegex(resourceText);
+    needCheckResource && checkHspRawfileParam(resourceDataFirst, resourceParam, node);
+  }
+}
+
+function checkHspRawfileParam(resourceDataFirst: string, resourceParam: string, node: ts.CallExpression): void {
+  if (!rawfileResources.has(resourceDataFirst)) {
+    return;
+  }
+  const hspRawfiles: string[] | undefined = rawfileResources.get(resourceDataFirst);
+  if (hspRawfiles && Array.isArray(hspRawfiles) &&
+    !hspRawfiles.includes(resourceParam)) {
+    transformLog.errors.push({
+      message: `No such '[${resourceDataFirst}].${resourceParam}' resource.`,
+      type: LogType.WARN,
+      pos: node.getStart()
+    });
+  }
+}
+
+function checkHspRawfileSource(resourceDataFirst: string, node: ts.CallExpression): boolean {
+  const collectedHspNames: string[] = Array.from(rawfileResources.keys());
+  if (!collectedHspNames.length || !collectedHspNames.includes(resourceDataFirst)) {
+    transformLog.errors.push({
+      message: `Unknown resource source '[${resourceDataFirst}]'.`,
+      type: LogType.WARN,
+      pos: node.getStart()
+    });
+    return false;
+  }
+  return true;
+}
+
+function getAfterFirstDotRegex(str: string): string {
+  const regex = /^[^.]*\./;
+  return str.replace(regex, '');
 }
 
 function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration>, resourceModuleName: string, isResourceModule: boolean): void {
