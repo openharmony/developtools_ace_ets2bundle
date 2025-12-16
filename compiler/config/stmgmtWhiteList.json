@@ -168,6 +168,10 @@
         "__updateForEnvValue__Internal",
         "__hasEnv__Internal",
         "__getEnvPropertyNameToKey__Internal",
-        "__registerUpdateInstanceForEnvFunc__Internal"
+        "__registerUpdateInstanceForEnvFunc__Internal",
+        "__isEntryValue__Internal",
+        "__isEntry__Internal",
+        "__getPathValueFromJson__Internal",
+        "__findPathValueInJson__Internal"
     ]
 }
