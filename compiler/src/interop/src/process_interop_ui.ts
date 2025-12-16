@@ -164,34 +164,6 @@ class HandleUIImports {
     });
   }
 
-  private AddInteropImports(): ts.ImportDeclaration {
-    const moduleName = 'arkui.component.interop';
-    const interopImportName = [
-      'compatibleComponent',
-      'getCompatibleState',
-      'transferCompatibleBuilder',
-      'transferCompatibleUpdatableBuilder'
-    ];
-    const interopImportSpecifiers: ts.ImportSpecifier[] = [];
-    interopImportName.forEach((interopName) => {
-      const identifier = ts.factory.createIdentifier(interopName);
-      const specifier = ts.factory.createImportSpecifier(false, undefined, identifier);
-      interopImportSpecifiers.push(specifier);
-    });
-    const compImportDeclaration = ts.factory.createImportDeclaration(
-      undefined,
-      ts.factory.createImportClause(false,
-        undefined,
-        ts.factory.createNamedImports(
-          interopImportSpecifiers
-        )
-      ),
-      ts.factory.createStringLiteral(moduleName, true),
-      undefined
-    );
-    return compImportDeclaration;
-  }
-
   private addUIImports(node: ts.SourceFile): void {
     const dynamicImportSpecifiers: ts.ImportSpecifier[] = [];
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
@@ -261,8 +233,6 @@ class HandleUIImports {
         );
         newStatements.splice(this.insertPosition, 0, compImportDeclaration);
       }
-
-      newStatements.splice(this.insertPosition, 0, this.AddInteropImports());
 
       const updatedStatements = ts.factory.createNodeArray(newStatements);
       const updatedSourceFile = ts.factory.updateSourceFile(node,
