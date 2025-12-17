@@ -92,7 +92,8 @@ export let arkTSHybridModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
 
 let arkTSEvoFileOHMUrlMap: Map<string, string> = new Map();
 
-//This map is used to store the mapping between the relative paths of classes and their package names, for the purpose of constructing fully qualified class names.
+//This map is used to store the mapping between the relative paths of classes and their package names, 
+//for the purpose of constructing fully qualified class names.
 //key: relative paths of classes;value: package names
 let arkTSEvoPkgNameOHMUrlMap: Map<string, string> = new Map();
 
@@ -341,16 +342,20 @@ function isFromArkTSEvolutionModule(node: ts.Node): boolean {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     if (filePath.startsWith(declgenV1OutPath + '/')) {
       const relative: string = filePath.replace(declgenV1OutPath + '/', '').replace(/\.d\.ets$/, '');
-      if (!arkTSEvoFileOHMUrlMap.has(filePath)) {
-        arkTSEvoFileOHMUrlMap.set(filePath, relative);
-        if(!arkTSEvoPkgNameOHMUrlMap.has(relative)){
-          arkTSEvoPkgNameOHMUrlMap.set(relative, arkTSEvolutionModuleInfo.packageName);
-         } 
-      }
+      updateEovMaps(filePath, relative , arkTSEvolutionModuleInfo.packageName);
       return true;
     }
   }
   return false;
+}
+
+function updateEovMaps(filePath: string, relative:string , packageName: string):void{
+  if (!arkTSEvoFileOHMUrlMap.has(filePath)) {
+        arkTSEvoFileOHMUrlMap.set(filePath, relative);
+        if(!arkTSEvoPkgNameOHMUrlMap.has(relative)){
+          arkTSEvoPkgNameOHMUrlMap.set(relative, packageName);
+         } 
+      }
 }
 
 function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.TransformationContext, typeChecker: ts.TypeChecker,
