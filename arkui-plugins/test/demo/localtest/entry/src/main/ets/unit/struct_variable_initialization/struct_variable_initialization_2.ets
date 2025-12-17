@@ -13,16 +13,12 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, RowSplit, Column, TextAlign, Button, Text, Stack, Scroll, Scroller, Blank,
- ListItem, Alignment, Color, ScrollDirection, EdgeEffect, Edge, BarState, Grid, GridLayoutOptions, GridItem,
- ReusableV2, ComponentV2, TabContent, Repeat, RepeatItem, ForEach, Tabs, Builder, BuilderParam, ClickEvent,
- Flex } from '@ohos.arkui.component'
+import { Entry, Component, Text, Builder, Flex } from '@ohos.arkui.component';
+import { Prop, State, Link } from "@ohos.arkui.stateManagement";
 
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalStorageProp, LocalStorageLink,
- StorageProp, StorageLink, Link, Consume, Once, Monitor, IMonitor, StoragePropRef 
- ObjectLink, Observed} from "@ohos.arkui.stateManagement";
+// Expected: A @Link property must receive a value bound with a stateful reference (e.g.,@State, @Prop).
+// Actual: A regular non-reactive property ('value2') was passed to the @Link property 'title'.
 
-// demo-1
 @Component
 struct TitleComp {
   @Link title: string
@@ -39,33 +35,6 @@ struct LinkComponent{
   TitleCompView() {
     //  ERROR: The regular property 'this.value2' cannot be assigned to the @Link property 'title'.
     TitleComp({title: this.value2});
-  }
-  build() {
-    Flex() {
-      this.TitleCompView()
-    }
-  }
-}
-
-// demo-2
-@Observed
-class Aobject01{
-name :string='12'
-}
-@Component
-struct TitleCompobject01 {
-  @ObjectLink title: Aobject01
-  build() {
-    Text(this.title)
-  }
-}
-@Entry
-@Component
-struct LinkComponentobject01{
-  value: Aobject01 = new Aobject01;
-  @Builder
-  TitleCompView() {
-    TitleCompobject01({title: this.value});
   }
   build() {
     Flex() {
