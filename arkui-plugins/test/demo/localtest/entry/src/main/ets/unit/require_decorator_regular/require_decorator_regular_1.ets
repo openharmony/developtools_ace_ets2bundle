@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, RowSplit, Column, TextAlign, Button, Text, Stack, Scroll, Scroller, Blank,
- ListItem, Alignment, Color, ScrollDirection, EdgeEffect, Edge, BarState, Grid, GridLayoutOptions, GridItem,
- ReusableV2, ComponentV2, TabContent, Repeat, RepeatItem, ForEach, Tabs, Builder, BuilderParam, ClickEvent,
- Flex } from '@ohos.arkui.component'
+import { Entry, Component, Column, Builder } from '@ohos.arkui.component';
+import { State, Prop, Provide, BuilderParam, Require } from "@ohos.arkui.stateManagement";
 
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalStorageProp, LocalStorageLink,
- StorageProp, StorageLink, Link, Consume, Once, Monitor, IMonitor, StoragePropRef, ObjectLink, Observed, ObservedV2,
- Trace } from "@ohos.arkui.stateManagement";
+// Expected: Properties decorated with '@Require' must not be private, because they are meant to be supplied from the
+// component constructor and therefore must be publicly accessible on the struct.
+// Actual: In 'structChild', the properties 'state_value', 'prop_value', 'provide_value', 'builder_value' and 
+// 'regular_value' are all marked as 'private' and also decorated with '@Require', so the rule reports
+// "Property '... ' can not be decorated with both Require and private."
 
-// demo-1
 @Entry
 @Component
-struct structPage1 {
+struct StructPage1 {
   @Builder
   buildTest() {}
 
@@ -44,12 +43,12 @@ struct structPage1 {
 }
 
 @Component
-struct structChild {
-  @Require @State private state_value: string = "hello"
-  @Require @Prop private prop_value: string = "hello"
-  @Require @Provide private provide_value: string = "hello"
+struct StructChild {
+  @Require @State private state_value: string = "hello";
+  @Require @Prop private prop_value: string = "hello";
+  @Require @Provide private provide_value: string = "hello";
   @Require @BuilderParam private builder_value: () => void = this.buildTest;
-  @Require private regular_value: string = "hello"
+  @Require private regular_value: string = "hello";
 
   @Builder
   buildTest() {}

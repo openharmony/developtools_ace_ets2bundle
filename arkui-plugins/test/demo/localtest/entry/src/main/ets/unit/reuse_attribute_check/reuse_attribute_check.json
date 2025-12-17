@@ -1,0 +1,56 @@
+{
+  "reuse_attribute_check_1": {
+    "messages": [
+      {
+        "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2",
+        "position": {
+          "line": 31,
+          "column": 7
+        }
+      },
+      {
+        "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2",
+        "position": {
+          "line": 32,
+          "column": 7
+        }
+      },
+      {
+        "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2",
+        "position": {
+          "line": 33,
+          "column": 7
+        }
+      },
+      {
+        "message": "The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+        "position": {
+          "line": 35,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "reuse_attribute_check_2": {
+    "messages": [
+      {
+        "message": "The reuse attribute is only applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+        "position": {
+          "line": 25,
+          "column": 5
+        }
+      }
+    ]
+  },
+  "reuse_attribute_check_3": {
+    "messages": [
+      {
+        "message": " The reuseId attribute is not applicable to custom components decorated with both @ComponentV2 and @ReusableV2.",
+        "position": {
+          "line": 33,
+          "column": 7
+        }
+      }
+    ]
+  }
+}
