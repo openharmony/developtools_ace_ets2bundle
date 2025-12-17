@@ -13,16 +13,15 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, RowSplit, Column, TextAlign, Button, Text, Stack, Scroll, Scroller, Blank,
- ListItem, Alignment, Color, ScrollDirection, EdgeEffect, Edge, BarState, Grid, GridLayoutOptions, GridItem,
- ReusableV2, ComponentV2, TabContent, Repeat, RepeatItem, ForEach, Tabs, Builder, BuilderParam, ClickEvent,
- Flex } from '@ohos.arkui.component'
+import { Entry, ComponentV2, Column, Text, Button } from '@ohos.arkui.component';
+import { Local, Once, Event } from "@ohos.arkui.stateManagement";
 
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalStorageProp, LocalStorageLink,
- StorageProp, StorageLink, Link, Consume, Once, Monitor, IMonitor, StoragePropRef, ObjectLink, Observed, ObservedV2,
- Trace } from "@ohos.arkui.stateManagement";
+// Expected: The '@Once' annotation may only decorate member properties inside a struct, and any property decorated 
+// with '@Once' must also be decorated with '@Param' so that it is explicitly marked as a one-time input parameter.
+// Actual: In the struct 'CompAonce', the properties 'Localonce' and 'Eventonce' are both decorated with '@Once' 
+// but are missing the required '@Param' annotation, so these fields violate the rule that '@Once' must
+// always be used together with '@Param'.
 
-// demo-1
  @ComponentV2
  struct CompAonce {
    @Local @Once Localonce: string = ''; // 错误用法，@Once不能与@Local一起使用
@@ -51,17 +50,4 @@ import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalSto
        })
      }
    }
- }
-
- // demo-2
- class testcase{
-   @Once cc:string=''
-   @Param @Once dd:string='' ;
- }
- @Entry
- @ComponentV2
- struct TestComponent9 {
-
-   build() {}
-
  }
