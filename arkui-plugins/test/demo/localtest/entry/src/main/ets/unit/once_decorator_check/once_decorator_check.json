@@ -1,36 +1,72 @@
 {
-  "demo-1": {
+  "once_decorator_check_1": {
     "messages": [
+      {
+        "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+        "position": {
+          "line": 27,
+          "column": 12
+        }
+      },
       {
         "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
         "position": {
           "line": 28,
           "column": 12
         }
+      }
+    ]
+  },
+  "once_decorator_check_2": {
+    "messages": [
+      {
+        "message": "'@Once' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 27,
+          "column": 5
+        }
+      },
+      {
+        "message": "'@Once' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 28,
+          "column": 5
+        }
+      }
+    ]
+  },
+  "once_decorator_check_3": {
+    "messages": [
+      {
+        "message": "'@Once' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 33,
+          "column": 6
+        }
+      },
+      {
+        "message": "'@Once' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 34,
+          "column": 6
+        }
+      }
+    ]
+  },
+  "once_decorator_check_4": {
+    "messages": [
+      {
+        "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
       },
       {
         "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
         "position": {
           "line": 29,
-          "column": 12
-        }
-      }
-    ]
-  },
-  "demo-2": {
-    "messages": [
-      {
-        "message": " '@Once' annotation can only be used with 'struct'",
-        "position": {
-          "line": 58,
-          "column": 5
-        }
-      },
-      {
-        "message": "'@Once' annotation can only be used with 'struct'",
-        "position": {
-          "line": 59,
-          "column": 12
+          "column": 4
         }
       }
     ]

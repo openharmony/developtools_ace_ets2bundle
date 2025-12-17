@@ -13,17 +13,14 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, RowSplit, Column, TextAlign, Button, Text, Stack, Scroll, Scroller, Blank,
- ListItem, Alignment, Color, ScrollDirection, EdgeEffect, Edge, BarState, Grid, GridLayoutOptions, GridItem,
- ReusableV2, ComponentV2, TabContent, Repeat, RepeatItem, ForEach, Tabs, Builder, BuilderParam, ClickEvent,
- Flex } from '@ohos.arkui.component'
+import { Entry, ComponentV2, Row, Column, Text, Button, FontWeight } from '@ohos.arkui.component';
+import { ObservedV2, Observed, Trace } from "@ohos.arkui.stateManagement";
 
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalStorageProp, LocalStorageLink,
- StorageProp, StorageLink, Link, Consume, Once, Monitor, IMonitor, StoragePropRef, ObjectLink, Observed,
- Trace } from "@ohos.arkui.stateManagement";
+// Expected: A class decorated with '@Observed' must not inherit from any base class that is decorated with 
+// '@ObservedV2'; this inheritance direction is not allowed.
+// Actual: The '@Observed' class 'Father' extends the '@ObservedV2' class 'GrandFather', so its inheritance hierarchy 
+// violates the compatibility rule between '@Observed' and '@ObservedV2'.
 
-// demo-1
-// 继承链上@ObservedV2/@Observed不一致
 @ObservedV2
 class GrandFather {
   @Trace age: number = 0;
@@ -53,6 +50,7 @@ class Cousin extends Uncle {
     super(cousin);
   }
 }
+
 @Entry
 @ComponentV2
 struct Index {

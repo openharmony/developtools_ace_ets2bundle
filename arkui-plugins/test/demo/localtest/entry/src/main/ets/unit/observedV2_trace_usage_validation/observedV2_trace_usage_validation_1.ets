@@ -13,16 +13,14 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, RowSplit, Column, TextAlign, Button, Text, Stack, Scroll, Scroller, Blank,
- ListItem, Alignment, Color, ScrollDirection, EdgeEffect, Edge, BarState, Grid, GridLayoutOptions, GridItem,
- ReusableV2, ComponentV2, TabContent, Repeat, RepeatItem, ForEach, Tabs, Builder, BuilderParam, ClickEvent,
- Flex } from '@ohos.arkui.component'
+import { Entry, ComponentV2 } from '@ohos.arkui.component';
+import { Local, Trace } from "@ohos.arkui.stateManagement";
 
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, LocalStorageProp, LocalStorageLink,
- StorageProp, StorageLink, Link, Consume, Once, Monitor, IMonitor, StoragePropRef, ObjectLink, Observed,
- Trace } from "@ohos.arkui.stateManagement";
+// Expected: The '@Trace' annotation may only decorate member variables inside a class that is explicitly decorated 
+// with '@ObservedV2'; any class using '@Trace' must first opt in to '@ObservedV2'.
+// Actual: The class 'Observedv2test7User' applies '@Trace' to the 'name' field, but the class itself is not decorated 
+// with '@ObservedV2', so the Trace usage violates the requirement that it be used within an '@ObservedV2' class.
 
-// demo-1
 class Observedv2test7User {
   id: number = 0;
   @Trace name: string = "Tom"; // 错误用法，编译时报错
