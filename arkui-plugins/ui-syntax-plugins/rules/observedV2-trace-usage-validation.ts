@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    PresetDecorators, getAnnotationUsage, findDecorator, getClassDeclarationAnnotation
+    PresetDecorators, getAnnotationUsage, findDecorator, getClassDeclarationAnnotation, getClassAnnotationUsage
 } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
@@ -28,6 +28,7 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             //The repair logic is different, if there is v1, update to v2
             traceMustUsedWithObservedV2: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
             traceMustUsedWithObservedV2Update: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
+            observedV2MissingTraceError: `A 'class' decorated with '@ObservedV2' must contain at least one property decorated with '@Trace'.`
         };
     }
 
@@ -170,6 +171,9 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
 
     private validateTraceDecoratorUsage(node: arkts.AstNode): void {
         let currentNode = node;
+        if (arkts.isClassDeclaration(node)) {
+            this.checkObservedV2HasTraceProperty(node);
+        }
         if (arkts.isStructDeclaration(node)) {
             // Check whether the current custom component is decorated by the @ObservedV2 decorator
             const observedV2Decorator = getAnnotationUsage(node, PresetDecorators.OBSERVED_V2);
@@ -223,6 +227,28 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
             }
             // The '@Trace' decorator can only be used in 'class'
             this.tracePropertyRule(currentNode, traceDecorator);
+        }
+    }
+
+    private checkObservedV2HasTraceProperty(classNode: arkts.ClassDeclaration): void {
+        if (!classNode.definition) {
+            return;
+        }
+        if (!getClassAnnotationUsage(classNode, PresetDecorators.OBSERVED_V2)){
+            return;
+        }
+        const classDefinition = classNode.definition;
+        const hasTraceProperty = classDefinition.body.some(member => {
+            if (arkts.isClassProperty(member)) {
+                return findDecorator(member, PresetDecorators.TRACE) !== undefined;
+            }
+            return false;
+        });
+        if (!hasTraceProperty) {
+            this.report({
+                node: classNode,
+                message: this.messages.observedV2MissingTraceError
+            });
         }
     }
 };
