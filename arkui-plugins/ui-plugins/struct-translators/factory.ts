@@ -1676,16 +1676,17 @@ export class factory {
         const { isDecl, annotations } = scopeInfo;
         const params: arkts.Expression[] = [];
         const isCustomComponent = !!annotations.component || !!annotations.componentV2;
-        if (isCustomComponent) {
+        const isCustomDialog = !!annotations.customDialog;
+        if (isCustomComponent && !isCustomDialog) {
             const structType = UIFactory.createTypeReferenceFromString(structName);
             params.push(BuilderLambdaFactory.createStyleArgInBuilderLambdaDecl(structType));
         }
         params.push(this.createInitializerParamInInvokeImpl(structName));
         params.push(this.createStorageParamInInvokeImpl());
-        if (isCustomComponent) {
-            params.push(this.createReuseIdParamInInvokeImpl());
-        } else {
+        if (isCustomDialog) {
             params.push(this.createControllerParamInInvokeImpl());
+        } else if (isCustomComponent) {
+            params.push(this.createReuseIdParamInInvokeImpl());
         }
         params.push(UIFactory.createContentParameter());
         const invokeCall = this.createInvokeImplCall(structName, scopeInfo);
