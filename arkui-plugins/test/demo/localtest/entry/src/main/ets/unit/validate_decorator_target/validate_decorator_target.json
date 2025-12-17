@@ -1,0 +1,71 @@
+{
+  "validate_decorator_target_1": {
+    "messages": [
+      {
+        "message": "The '@ReusableV2' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 29,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@Reusable' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@Component' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 35,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@ComponentV2' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 38,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@Preview' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 41,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@CustomDialog' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 44,
+          "column": 2
+        }
+      }
+    ]
+
+  },
+  "validate_decorator_target_2": {
+    "messages": [
+      {
+        "message": "The '@Component' annotation can only be used with 'struct'.",
+        "position": {
+          "line": 21,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "validate_decorator_target_3": {
+    "messages": [
+      {
+        "message": "'@State' can only decorate member property.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

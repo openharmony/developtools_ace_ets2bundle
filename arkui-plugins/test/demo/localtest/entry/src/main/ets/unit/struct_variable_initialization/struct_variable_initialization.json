@@ -1,41 +1,125 @@
 {
-  "demo-1": {
+  "struct_variable_initialization_1": {
     "messages": [
       {
         "message": "The '@Link' property cannot be specified a default value.",
-        "position": { "line": 36, "column": 4 }
+        "position": {
+          "line": 32,
+          "column": 4
+        }
       }
     ]
   },
-  "demo-2": {
+  "struct_variable_initialization_2": {
     "messages": [
       {
         "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
-        "position": { "line": 125, "column": 16 }
+        "position": {
+          "line": 37,
+          "column": 16
+        }
       }
     ]
   },
-  "demo-3": {
+  "struct_variable_initialization_3": {
     "messages": [
       {
         "message": "The '@Link' property cannot be specified a default value.",
-        "position": { "line": 145, "column": 4 }
+        "position": {
+          "line": 32,
+          "column": 4
+        }
       }
     ]
   },
-  "demo-4": {
+  "struct_variable_initialization_4": {
     "messages": [
       {
         "message": "The '@ObjectLink' property cannot be specified a default value.",
-        "position": { "line": 285, "column": 4 }
+        "position": {
+          "line": 88,
+          "column": 4
+        }
       }
     ]
   },
-  "demo-5": {
+  "struct_variable_initialization_5": {
     "messages": [
       {
         "message": "The '@ObjectLink' property cannot be specified a default value.",
-        "position": { "line": 363, "column": 4 }
+        "position": {
+          "line": 84,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "struct_variable_initialization_6": {
+    "messages": [
+      {
+        "message": "The '@Link' property cannot be specified a default value.",
+        "position": {
+          "line": 35,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "struct_variable_initialization_7": {
+    "messages": [
+      {
+        "message": "The '@ObjectLink' property cannot be specified a default value.",
+        "position": {
+          "line": 40,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "struct_variable_initialization_8": {
+    "messages": [
+      {
+        "message": "The '@Consume' property cannot be specified a default value.",
+        "position": {
+          "line": 36,
+          "column": 6
+        }
+      },
+      {
+        "message": "The '@Link' property cannot be specified a default value.",
+        "position": {
+          "line": 37,
+          "column": 6
+        }
+      },
+      {
+        "message": "The '@ObjectLink' property cannot be specified a default value.",
+        "position": {
+          "line": 38,
+          "column": 6
+        }
+      }
+    ]
+  },
+  "struct_variable_initialization_9": {
+    "messages": [
+      {
+        "message": "The '@Link' property cannot be specified a default value.",
+        "position": {
+          "line": 35,
+          "column": 6
+        }
+      }
+    ]
+  },
+  "struct_variable_initialization_10": {
+    "messages": [
+      {
+        "message": "The '@State' property must be specified a default value.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
       }
     ]
   }
