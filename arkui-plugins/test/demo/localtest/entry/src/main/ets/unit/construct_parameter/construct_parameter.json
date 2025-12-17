@@ -1,40 +1,51 @@
 {
-  "demo-1": {
+  "construct_parameter_1": {
     "messages": [
       {
-        "message": "A page can't contain more then one '@Entry' annotation.",
+        "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
         "position": {
-          "line": 33,
-          "column": 2
+          "line": 35,
+          "column": 16
         }
       }
     ]
   },
-  "demo-2": {
+  "construct_parameter_2": {
     "messages": [
       {
         "message": "The '@Consume' property 'value2' cannot be assigned to the 'regular' property 'title'.",
         "position": {
-          "line": 74,
+          "line": 43,
           "column": 16
         }
       },
       {
         "message": "The '@Provide' property 'value' cannot be assigned to the 'regular' property 'title1'.",
         "position": {
-          "line": 75,
+          "line": 48,
           "column": 17
         }
       }
     ]
   },
-  "demo-3": {
+  "construct_parameter_3": {
     "messages": [
       {
         "message": "The '@StoragePropRef' property 'value2' cannot be assigned to the 'regular' property 'title'.",
         "position": {
-          "line": 101,
+          "line": 39,
           "column": 16
+        }
+      }
+    ]
+  },
+  "construct_parameter_4": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'message' cannot be assigned to the '@Link' property 'message'.",
+        "position": {
+          "line": 29,
+          "column": 43
         }
       }
     ]
