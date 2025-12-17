@@ -1,18 +1,40 @@
 {
-  "demo-1": {
+  "entry_localstorage_check_1": {
     "messages": [
       {
         "message": "The LocalStorageLink decorated 'local_link_value' cannot be declared as public.",
         "position": {
-          "line": 30,
+          "line": 26,
           "column": 4
         }
       },
       {
         "message": "The StorageLink decorated 'storage_link_value' cannot be declared as public.",
         "position": {
-          "line": 32,
+          "line": 28,
           "column": 4
+        }
+      }
+    ]
+  },
+  "entry_localstorage_check_2": {
+    "messages": [
+      {
+        "message": "'@Entry' should have a parameter, like '@Entry ({ storage: \"__get_local_storage__\" })'.",
+        "position": {
+          "line": 34,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_localstorage_check_3": {
+    "messages": [
+      {
+        "message": "'@Entry' should have a parameter, like '@Entry ({ storage: \"__get_local_storage__\" })'.",
+        "position": {
+          "line": 25,
+          "column": 2
         }
       }
     ]
