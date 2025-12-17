@@ -1,0 +1,27 @@
+{
+  "static_param_require_1": {
+    "messages": [
+      {
+        "message": "Static property 'a1' can not be initialized through the component constructor.",
+        "position": {
+          "line": 29,
+          "column": 24
+        }
+      },
+      {
+        "message": "Static property 'b4' can not be initialized through the component constructor.",
+        "position": {
+          "line": 32,
+          "column": 9
+        }
+      },
+      {
+        "message": "Static property 'b5' can not be initialized through the component constructor.",
+        "position": {
+          "line": 33,
+          "column": 9
+        }
+      }
+    ]
+  }
+}
