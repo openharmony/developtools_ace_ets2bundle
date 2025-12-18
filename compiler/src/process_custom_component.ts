@@ -1391,9 +1391,12 @@ function validateLinkVariableSourceData(node: ts.PropertyAssignment, log: LogInf
 function isInitFromMismatchSourceData(node: ts.PropertyAssignment): boolean {
   let curNode = node.initializer;
   let nestingLevel = 0;
-  while (ts.isPropertyAccessExpression(curNode) || ts.isElementAccessExpression(curNode)) {
+  while (ts.isPropertyAccessExpression(curNode) || ts.isElementAccessExpression(curNode) ||
+    ts.isNonNullExpression(curNode)) {
+    if (!ts.isNonNullExpression(curNode)) {
+      nestingLevel++;
+    }
     curNode = curNode.expression;
-    nestingLevel++;
   }
   return nestingLevel >= MAX_LINK_SOURCE_DATA_NESTING_LEVEL && curNode.kind === ts.SyntaxKind.ThisKeyword;
 }
