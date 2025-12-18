@@ -18,6 +18,11 @@ import path from 'path';
 
 import { toUnixPath } from './utils';
 import { sdkConfigPrefix } from '../main';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from './performance';
 
 interface ImportInfo {
   defaultImport?: {
@@ -32,11 +37,12 @@ interface SymbolInfo {
   exportName?: string
 }
 
-export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Object): Function {
+export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Object, parentEvent: CompileEvent): Function {
   const expandImportPath: Object = rollupObejct.share.projectConfig?.expandImportPath;
   if (!(expandImportPath && Object.entries(expandImportPath).length !== 0) || !expandImportPath.enable) {
     return () => sourceFile => sourceFile;
   }
+  const eventExpandAllImportPaths: CompileEvent = createAndStartEvent(parentEvent, 'import path expand');
   const exclude: string[] = expandImportPath?.exclude ? expandImportPath?.exclude : [];
   return (context: ts.TransformationContext) => {
     // @ts-ignore
@@ -50,7 +56,9 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
     };
 
     return (node: ts.SourceFile): ts.SourceFile => {
-      return ts.visitEachChild(node, visitor, context);
+      const processNode: ts.SourceFile = ts.visitEachChild(node, visitor, context);
+      stopEvent(eventExpandAllImportPaths);
+      return processNode;
     };
   };
 }
