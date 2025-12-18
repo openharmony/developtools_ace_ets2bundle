@@ -722,7 +722,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBlock: ts.Statement[] = isArkoala ? createStaticArrowBlock(newNode, componentParameter, name) : 
+  const arrowBlock: ts.Statement[] = isArkoala ? createStaticArrowBlock(newNode, componentParameter, name, componentNode) : 
   [
     projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
     createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
