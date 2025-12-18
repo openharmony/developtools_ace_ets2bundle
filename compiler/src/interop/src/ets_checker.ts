@@ -72,7 +72,9 @@ import {
   isMac,
   tryToLowerCasePath,
   getRollupCache,
-  setRollupCache
+  setRollupCache,
+  getRollupCommonCache,
+  setRollupCommonCache
 } from './utils';
 import {
   isExtendFunction,
@@ -239,6 +241,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'tsBuildInfoFile': buildInfoPath,
     'tsImportSendableEnable': tsImportSendable,
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
+    'skipBaseUrlInKeyForCompilationSettings': shareDocumentRegistryCache,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
@@ -543,7 +546,8 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
       'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' + 'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
     );
     rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
-    service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    service = ts.createLanguageService(servicesHost, shareDocumentRegistryCache ?
+      getOrCreateDocumentRegistryCache(rollupShareObject) : ts.createDocumentRegistry());
     stopEvent(eventShouldRebuild);
   } else {
     // Found language service from cache, update root files
@@ -572,6 +576,30 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
+}
+
+// Share the document registry between multiple LanguageService instances in one worker.
+// Setting this to false will create a new document registry when LanguageService is created.
+const shareDocumentRegistryCache: boolean = true;
+
+/**
+ * Boost languageService's sourcefiles creation procedure & lower memory consumption by caching DocumentRegistry
+ * into Rollup CommonCache(which will make every single file has only one sourcefile being created during building) to
+ * share common sourcefiles with multi-modules compiling tasks on the same worker process.
+ * Once compiling gets done, hvigor will clear the Rollup CommonCache so that tsc's original sourcefile updation process
+ * will refresh the changed files sourcefiles to prevent the new program getting the old un-refreshed sourcefiles in
+ * inc-compilation.
+ */
+function getOrCreateDocumentRegistryCache(rollupShareObject?: any): ts.DocumentRegistry {
+  const commonCacheKey: string = 'documentRegistry';
+  let documentRegistryCache: object | undefined = getRollupCommonCache(rollupShareObject, commonCacheKey);
+  if (documentRegistryCache) {
+    return <ts.DocumentRegistry>documentRegistryCache;
+  } else {
+    documentRegistryCache = ts.createDocumentRegistry();
+    setRollupCommonCache(rollupShareObject, commonCacheKey, documentRegistryCache);
+    return <ts.DocumentRegistry>documentRegistryCache;
+  }
 }
 
 /**
