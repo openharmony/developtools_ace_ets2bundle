@@ -143,8 +143,9 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
         // eg. import { xxx } form "xxx" --> import lazy { xxx } form "xxx"
         let processedNode: ts.SourceFile =
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
-        processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(metaInfo, processedNode, autoLazyFilter, resolver) : processedNode);
-        lazyImportReExportCheck(processedNode, reExportCheckMode);
+        processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(metaInfo, processedNode, autoLazyFilter, resolver,
+          eventProcessKitImport) : processedNode);
+        lazyImportReExportCheck(processedNode, reExportCheckMode, eventProcessKitImport);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);
         stopEvent(eventProcessKitImport);

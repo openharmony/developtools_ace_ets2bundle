@@ -28,6 +28,11 @@ import {
   ErrorCode
 } from './fast_build/ark_compiler/error_code';
 import creatAstNodeUtils from './create_ast_node_utils';
+import {
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
+} from './performance';
 
 export const reExportCheckLog: IFileLog = new creatAstNodeUtils.FileLog();
 export const reExportNoCheckMode: string = 'noCheck';
@@ -40,17 +45,21 @@ export interface LazyImportOptions {
 }
 
 export function processJsCodeLazyImport(id: string, code: string,
-  autoLazyImport: boolean, reExportCheckMode: string, metaInfo: Object, autoLazyFilter: Object): string {
+  autoLazyImport: boolean, reExportCheckMode: string, metaInfo: Object, autoLazyFilter: Object, parentEvent?: CompileEvent): string {
+  const eventProcessJsCodeLazyImport: CompileEvent = createAndStartEvent(parentEvent, 'process Js code lazy import');
   let sourceNode: ts.SourceFile = ts.createSourceFile(id, code, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
   if (autoLazyImport) {
-    sourceNode = transformLazyImport(metaInfo, sourceNode, autoLazyFilter);
+    sourceNode = transformLazyImport(metaInfo, sourceNode, autoLazyFilter, eventProcessJsCodeLazyImport);
   }
-  lazyImportReExportCheck(sourceNode, reExportCheckMode);
-  return autoLazyImport ? ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(sourceNode) : code;
+  lazyImportReExportCheck(sourceNode, reExportCheckMode, eventProcessJsCodeLazyImport);
+  code = autoLazyImport ? ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(sourceNode) : code;
+  stopEvent(eventProcessJsCodeLazyImport);
+  return code;
 }
 
 export function transformLazyImport(metaInfo: Object, sourceNode: ts.SourceFile,
-  autoLazyFilter: Object, resolver?: Object): ts.SourceFile {
+  autoLazyFilter: Object, resolver?: Object, parentEvent?: CompileEvent): ts.SourceFile {
+  const eventTransformLazyImport: CompileEvent = createAndStartEvent(parentEvent, 'transform lazy import');
   if (isNotAutoLazyImport(metaInfo, autoLazyFilter)) {
     return sourceNode;
   }
@@ -64,9 +73,10 @@ export function transformLazyImport(metaInfo: Object, sourceNode: ts.SourceFile,
     return node => ts.visitEachChild(node, visitor, context);
   };
 
-  const result: ts.TransformationResult<ts.SourceFile> =
-    ts.transform(sourceNode, [moduleNodeTransformer]);
-  return result.transformed[0];
+  const result: ts.SourceFile =
+    ts.transform(sourceNode, [moduleNodeTransformer]).transformed[0];
+  stopEvent(eventTransformLazyImport);
+  return result;
 }
 
 function isNotAutoLazyImport(metaInfo: Object, autoLazyFilter: Object): boolean {
@@ -155,10 +165,11 @@ export function resetReExportCheckLog(): void {
   reExportCheckLog.cleanUp();
 }
 
-export function lazyImportReExportCheck(node: ts.SourceFile, reExportCheckMode: string): void {
+export function lazyImportReExportCheck(node: ts.SourceFile, reExportCheckMode: string, parentEvent?: CompileEvent): void {
   if (reExportCheckMode === reExportNoCheckMode) {
     return;
   }
+  const eventLazyImportReExportCheck: CompileEvent = createAndStartEvent(parentEvent, 'lazy import re export check');
   reExportCheckLog.sourceFile = node;
   const lazyImportSymbols: Set<string> = new Set();
   const exportSymbols: Map<string, ts.Statement[]> = new Map();
@@ -172,6 +183,7 @@ export function lazyImportReExportCheck(node: ts.SourceFile, reExportCheckMode: 
       collectReExportErrors(statement, key, reExportCheckMode);
     }
   }
+  stopEvent(eventLazyImportReExportCheck);
 }
 
 function collectLazyImportSymbols(stmt: ts.Statement, lazyImportSymbols: Set<string>,
