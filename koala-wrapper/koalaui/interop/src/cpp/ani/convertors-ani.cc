@@ -20,7 +20,7 @@
 #include "interop-types.h"
 
 static const char* callCallbackFromNative = "callCallbackFromNative";
-static const char* callCallbackFromNativeSig = "I[BI:I";
+static const char* CALL_CALLBACK_FROM_NATIVE_SIG = "iA{b}i:i";
 
 static const char* FAST_NATIVE_PREFIX = "#F$";
 
@@ -36,7 +36,7 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
         method.pointer = func;
         method.signature = (flag & ANI_SLOW_NATIVE_FLAG) == 0 ? FAST_NATIVE_PREFIX : nullptr;
         if (registerByOne) {
-            result &= env->Class_BindNativeMethods(clazz, &method, 1) == ANI_OK;
+            result &= env->Class_BindStaticNativeMethods(clazz, &method, 1) == ANI_OK;
             ani_boolean isError = false;
             env->ExistUnhandledError(&isError);
             if (isError) {
@@ -48,7 +48,7 @@ static bool registerNatives(ani_env *env, const ani_class clazz, const std::vect
         }
     }
     if (!registerByOne) {
-        result = env->Class_BindNativeMethods(clazz, methods.data(), static_cast<ani_size>(methods.size())) == ANI_OK;
+        result = env->Class_BindStaticNativeMethods(clazz, methods.data(), static_cast<ani_size>(methods.size())) == ANI_OK;
     }
     return registerByOne ? true : result;
 }
@@ -114,11 +114,11 @@ void AniExports::setClasspath(const char* module, const char *classpath) {
 }
 
 static std::map<std::string, std::string> g_defaultClasspaths = {
-    {"InteropNativeModule", "@koalaui/interop/InteropNativeModule/InteropNativeModule"},
+    {"InteropNativeModule", "@koalaui.interop.InteropNativeModule.InteropNativeModule"},
     // todo leave just InteropNativeModule, define others via KOALA_ETS_INTEROP_MODULE_CLASSPATH
-    {"TestNativeModule", "@koalaui/arkts-arkui/generated/arkts/TestNativeModule/TestNativeModule"},
-    {"ArkUINativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUINativeModule/ArkUINativeModule"},
-    {"ArkUIGeneratedNativeModule", "@koalaui/arkts-arkui/generated/arkts/ArkUIGeneratedNativeModule/ArkUIGeneratedNativeModule"},
+    {"TestNativeModule", "@koalaui.arkts-arkui.generated.arkts.TestNativeModule.TestNativeModule"},
+    {"ArkUINativeModule", "@koalaui.arkts-arkui.generated.arkts.ArkUINativeModule.ArkUINativeModule"},
+    {"ArkUIGeneratedNativeModule", "@koalaui.arkts-arkui.generated.arkts.ArkUIGeneratedNativeModule.ArkUIGeneratedNativeModule"},
 };
 const std::string& AniExports::getClasspath(const std::string& module) {
     auto it = classpaths.find(module);
