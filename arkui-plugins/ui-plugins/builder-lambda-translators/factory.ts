@@ -238,6 +238,17 @@ export class factory {
         if (!!structInfo?.isFromReuse && !!structInfo?.structName) {
             lambdaBodyInfo.defaultReuseId = arkts.factory.createStringLiteral(structInfo.structName);
         }
+        if (!!structInfo?.isFromReuseV2 && !!structInfo?.structName) {
+            lambdaBodyInfo.defaultReuseId = arkts.factory.createArrowFunction(
+                UIFactory.createScriptFunction({
+                    body: arkts.factory.createBlock([arkts.factory.createReturnStatement(arkts.factory.createStringLiteral(structInfo.structName))]),
+                    flags:
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                })
+            )
+        }
         if (!!structInfo?.structEntryStroage && arkts.isStringLiteral(structInfo.structEntryStroage)) {
             lambdaBodyInfo.structEntryStroage = structInfo.structEntryStroage.str;
         }

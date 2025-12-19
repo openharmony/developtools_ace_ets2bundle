@@ -167,6 +167,10 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_users!.resetOnReuse(data);
+  }
+
   private __backing_users?: IProviderDecoratedVariable<Array<User>>;
   
   public get users(): Array<User> {
@@ -177,7 +181,7 @@ function main() {}
     this.__backing_users!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);
@@ -228,6 +232,10 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_users!.resetOnReuse([]);
+  }
+
   private __backing_users?: IConsumerDecoratedVariable<Array<User>>;
   
   public get users(): Array<User> {
@@ -238,7 +246,7 @@ function main() {}
     this.__backing_users!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
     }), initializers, reuseId, content);

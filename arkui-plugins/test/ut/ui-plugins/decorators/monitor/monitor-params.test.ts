@@ -284,6 +284,13 @@ class GGG {
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_per!.resetOnReuse(new EEE());
+    this.__backing_v1!.resetOnReuse(true);
+    this.__backing_numArr!.resetOnReuse(["1", "3", "5"]);
+    this.__monitor_onPerChange!.resetOnReuse();
+  }
+
   private __backing_per?: ILocalDecoratedVariable<EEE>;
 
   public get per(): EEE {
@@ -316,7 +323,7 @@ class GGG {
 
   private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);

@@ -250,6 +250,7 @@ export enum StateManagementTypes {
     MAKE_OBSERVED = 'makeObserved',
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
     SET_OWNER = 'setOwner',
+    RESET_ON_REUSE = 'resetOnReuse',
 }
 
 export enum AnimationNames {

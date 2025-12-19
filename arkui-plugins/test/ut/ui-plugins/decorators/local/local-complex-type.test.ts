@@ -155,6 +155,20 @@ final class StateType extends BaseEnum<int> {
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_localVar1!.resetOnReuse(new Per(6));
+    this.__backing_localVar2!.resetOnReuse(new Array<number>(3, 6, 8));
+    this.__backing_localVar3!.resetOnReuse(StateType.TYPE3);
+    this.__backing_localVar4!.resetOnReuse(new Set<string>(new Array<string>("aa", "bb")));
+    this.__backing_localVar5!.resetOnReuse([true, false]);
+    this.__backing_localVar6!.resetOnReuse(new Array<Per>(new Per(7), new Per(11)));
+    this.__backing_localVar7!.resetOnReuse([new Per(7), new Per(11)]);
+    this.__backing_localVar9!.resetOnReuse(new Date("2025-4-23"));
+    this.__backing_localVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
+    this.__backing_localVar11!.resetOnReuse(0.0);
+    this.__backing_localVar12!.resetOnReuse(new Per(6));
+  }
+
   private __backing_localVar1?: ILocalDecoratedVariable<Per>;
 
   public get localVar1(): Per {
@@ -265,7 +279,7 @@ final class StateType extends BaseEnum<int> {
     this.__backing_localVar12!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);

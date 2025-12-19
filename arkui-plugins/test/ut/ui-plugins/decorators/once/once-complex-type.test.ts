@@ -168,6 +168,33 @@ final class StateType extends BaseEnum<int> {
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_onceVar1!.resetOnReuse(((({let gensym___18536475 = initializers;
+    (((gensym___18536475) == (null)) ? undefined : gensym___18536475.onceVar1)})) ?? (new Per(6))));
+    this.__backing_onceVar2!.resetOnReuse(((({let gensym___20853412 = initializers;
+    (((gensym___20853412) == (null)) ? undefined : gensym___20853412.onceVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_onceVar3!.resetOnReuse(((({let gensym___14745221 = initializers;
+    (((gensym___14745221) == (null)) ? undefined : gensym___14745221.onceVar3)})) ?? (StateType.TYPE3)));
+    this.__backing_onceVar4!.resetOnReuse(((({let gensym___35521402 = initializers;
+    (((gensym___35521402) == (null)) ? undefined : gensym___35521402.onceVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_onceVar5!.resetOnReuse(((({let gensym___114369541 = initializers;
+    (((gensym___114369541) == (null)) ? undefined : gensym___114369541.onceVar5)})) ?? ([true, false])));
+    this.__backing_onceVar6!.resetOnReuse(((({let gensym___29511023 = initializers;
+    (((gensym___29511023) == (null)) ? undefined : gensym___29511023.onceVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
+    this.__backing_onceVar7!.resetOnReuse(((({let gensym___18569471 = initializers;
+    (((gensym___18569471) == (null)) ? undefined : gensym___18569471.onceVar7)})) ?? ([new Per(7), new Per(11)])));
+    this.__backing_onceVar8!.resetOnReuse(((({let gensym___18221701 = initializers;
+    (((gensym___18221701) == (null)) ? undefined : gensym___18221701.onceVar8)})) ?? (((sr: string) => {}))));
+    this.__backing_onceVar9!.resetOnReuse(((({let gensym___18025610 = initializers;
+    (((gensym___18025610) == (null)) ? undefined : gensym___18025610.onceVar9)})) ?? (new Date("2025-4-23"))));
+    this.__backing_onceVar10!.resetOnReuse(((({let gensym___11791339 = initializers;
+    (((gensym___11791339) == (null)) ? undefined : gensym___11791339.onceVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
+    this.__backing_onceVar11!.resetOnReuse(((({let gensym___34218856 = initializers;
+    (((gensym___34218856) == (null)) ? undefined : gensym___34218856.onceVar11)})) ?? (0.0)));
+    this.__backing_onceVar12!.resetOnReuse(((({let gensym___134562011 = initializers;
+    (((gensym___134562011) == (null)) ? undefined : gensym___134562011.onceVar12)})) ?? (new Per(6))));
+  }
+
   private __backing_onceVar1?: IParamOnceDecoratedVariable<Per>;
 
   public get onceVar1(): Per {
@@ -288,7 +315,7 @@ final class StateType extends BaseEnum<int> {
     this.__backing_onceVar12!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);

@@ -20,6 +20,7 @@ export interface PropertyCachedBody {
     toRecordBody?: arkts.Property[];
     constructorBody?: arkts.AstNode[];
     monitorBody?: arkts.AstNode[];
+    resetStateVarsBody?: arkts.AstNode[];
 }
 
 export class PropertyCache {
@@ -53,6 +54,10 @@ export class PropertyCache {
         return this._cache.get(name)?.toRecordBody ?? [];
     }
 
+    getResetStateVars(name: string): arkts.AstNode[] {
+        return this._cache.get(name)?.resetStateVarsBody ?? [];
+    }
+
     collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {
         const initializeBody = this._cache.get(name)?.initializeBody ?? [];
         const newInitializeBody = [...initializeBody, ...initializeStruct];
@@ -69,5 +74,11 @@ export class PropertyCache {
         const toRecordBody = this._cache.get(name)?.toRecordBody ?? [];
         const newToRecordBody = [...toRecordBody, ...toRecord];
         this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
+    }
+    
+    collectResetStateVars(name: string, resetStateVars: arkts.AstNode[]): void {
+        const resetStateVarsBody = this._cache.get(name)?.resetStateVarsBody ?? [];
+        const newResetStateVarsBody = [...resetStateVarsBody, ...resetStateVars];
+        this._cache.set(name, { ...this._cache.get(name), resetStateVarsBody: newResetStateVarsBody });
     }
 }

@@ -18,11 +18,13 @@ import * as arkts from '@koalaui/libarkts';
 import { expectName } from '../../common/arkts-utils';
 import { StateManagementTypes } from '../../common/predefines';
 import { monitorField } from '../utils';
-import { collectStateManagementTypeImport, getValueInMonitorAnnotation } from './utils';
+import { collectStateManagementTypeImport, generateThisBacking, getValueInMonitorAnnotation } from './utils';
 import { MethodTranslator } from './base';
 import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';
 import { MonitorCache, MonitorInfo } from './cache/monitorCache';
+import { PropertyCache } from './cache/propertyCache';
+import { factory } from './factory';
 
 export class MonitorTranslator extends MethodTranslator implements InitializerConstructor {
     translateMember(): arkts.AstNode[] {
@@ -44,6 +46,8 @@ export class MonitorTranslator extends MethodTranslator implements InitializerCo
             isFromStruct: this.classInfo.isFromStruct
         };
         MonitorCache.getInstance().collectMonitors(this.classInfo.className, monitorPathsStr, monitorInfo);
+        const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName);
+        PropertyCache.getInstance().collectResetStateVars(this.classInfo.className, [resetStateVars]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -60,5 +64,9 @@ export class MonitorTranslator extends MethodTranslator implements InitializerCo
         );
 
         return [field];
+    }
+
+    generateResetStateVars(newName: string): arkts.ExpressionStatement {
+        return factory.createResetOnReuseStmt(newName);
     }
 }

@@ -160,6 +160,14 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_firstName!.resetOnReuse("Li");
+    this.__backing_lastName!.resetOnReuse("Hua");
+    this.__computed_fullName!.resetOnReuse();
+    this.__computed_num5!.resetOnReuse();
+  }
+
+
   private __backing_firstName?: ILocalDecoratedVariable<string>;
 
   public get firstName(): string {
@@ -209,7 +217,7 @@ function main() {}
     return this.__computed_num5!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);

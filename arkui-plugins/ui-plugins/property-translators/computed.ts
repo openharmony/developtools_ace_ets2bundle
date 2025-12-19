@@ -24,6 +24,7 @@ import { InitializerConstructor } from './types';
 import { factory as UIFactory } from '../ui-factory';
 import { factory } from './factory';
 import { ComputedCache } from './cache/computedCache';
+import { PropertyCache } from './cache/propertyCache';
 
 export class ComputedTranslator extends MethodTranslator implements InitializerConstructor {
     private isStatic: boolean;
@@ -44,6 +45,8 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
 
     cacheTranslatedInitializer(newName: string): void {
         ComputedCache.getInstance().collectComputed(this.classInfo.className, { newName });
+        const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName);
+        PropertyCache.getInstance().collectResetStateVars(this.classInfo.className, [resetStateVars]);
     }
 
     translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
@@ -92,5 +95,9 @@ export class ComputedTranslator extends MethodTranslator implements InitializerC
             ? UIFactory.generateMemberExpression(arkts.factory.createIdentifier(this.classInfo.className), newName)
             : generateThisBacking(newName, false, true);
         return generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    }
+
+    generateResetStateVars(newName: string): arkts.ExpressionStatement {
+        return factory.createResetOnReuseStmt(newName);
     }
 }
