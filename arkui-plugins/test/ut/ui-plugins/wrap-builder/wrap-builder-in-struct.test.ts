@@ -175,6 +175,30 @@ function main() {}
       this.__backing_builderParam3!.update((initializers!.builderParam3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
     }
   }
+
+  public resetStateVarsOnReuse(initializers: (__Options_Index2 | undefined)): void {
+    this.__backing_builderLocal!.resetOnReuse(MyBuilder);
+    this.__backing_builderLocal2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderLocal3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderParam!.resetOnReuse(((({let gensym___169695253 = initializers;
+    (((gensym___169695253) == (null)) ? undefined : gensym___169695253.builderParam)})) ?? (MyBuilder)));
+    this.__backing_builderParam2!.resetOnReuse(((({let gensym___267972835 = initializers;
+    (((gensym___267972835) == (null)) ? undefined : gensym___267972835.builderParam2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderParam3!.resetOnReuse(((({let gensym___261799470 = initializers;
+    (((gensym___261799470) == (null)) ? undefined : gensym___261799470.builderParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderOnceParam!.resetOnReuse(((({let gensym___268070032 = initializers;
+    (((gensym___268070032) == (null)) ? undefined : gensym___268070032.builderOnceParam)})) ?? (MyBuilder)));
+    this.__backing_builderOnceParam2!.resetOnReuse(((({let gensym___65134112 = initializers;
+    (((gensym___65134112) == (null)) ? undefined : gensym___65134112.builderOnceParam2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderOnceParam3!.resetOnReuse(((({let gensym___167991091 = initializers;
+    (((gensym___167991091) == (null)) ? undefined : gensym___167991091.builderOnceParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderProvider!.resetOnReuse(MyBuilder);
+    this.__backing_builderProvider2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderProvider3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderConsumer!.resetOnReuse(MyBuilder);
+    this.__backing_builderConsumer2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderConsumer3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+  }
   
   private __backing_builderRegular?: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
   public get builderRegular(): @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) {
@@ -326,7 +350,7 @@ function main() {}
     this.__backing_builderConsumer3!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index2, __Options_Index2>(__memo_context, ((__memo_id) + (241913892)), style, ((): Index2 => {
       return new Index2();
     }), initializers, reuseId, content);

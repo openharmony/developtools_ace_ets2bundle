@@ -146,6 +146,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
+
   public static __backing_localVar1: ILocalDecoratedVariable<string> = STATE_MGMT_FACTORY.makeStaticLocal<string>("localVar1", "stateVar1");
 
   public static get localVar1(): string {
@@ -174,7 +176,7 @@ function main() {}
     return Parent.__computed_fullName.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);
@@ -198,6 +200,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent2 | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent2 | undefined)): void {}
+
   public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
     return ((((Name.firstName) + (" "))) + (Name.lastName));
   }), "fullName");
@@ -214,7 +218,7 @@ function main() {}
     return Parent2.__computed_fullName2.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent2)=> void), initializers: ((()=> __Options_Parent2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent2)=> void), initializers: ((()=> __Options_Parent2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent2, __Options_Parent2>(style, ((): Parent2 => {
       return new Parent2();
     }), initializers, reuseId, content);

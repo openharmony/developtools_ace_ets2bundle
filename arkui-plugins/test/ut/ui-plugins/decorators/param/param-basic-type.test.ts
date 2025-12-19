@@ -98,6 +98,19 @@ function main() {}
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_paramVar1!.resetOnReuse(((({let gensym___157433564 = initializers;
+    (((gensym___157433564) == (null)) ? undefined : gensym___157433564.paramVar1)})) ?? ("stateVar1")));
+    this.__backing_paramVar2!.resetOnReuse(((({let gensym___189311109 = initializers;
+    (((gensym___189311109) == (null)) ? undefined : gensym___189311109.paramVar2)})) ?? (50)));
+    this.__backing_paramVar3!.resetOnReuse(((({let gensym___209027760 = initializers;
+    (((gensym___209027760) == (null)) ? undefined : gensym___209027760.paramVar3)})) ?? (true)));
+    this.__backing_paramVar4!.resetOnReuse(((({let gensym___227583696 = initializers;
+    (((gensym___227583696) == (null)) ? undefined : gensym___227583696.paramVar4)})) ?? (undefined)));
+    this.__backing_paramVar5!.resetOnReuse(((({let gensym___246298707 = initializers;
+    (((gensym___246298707) == (null)) ? undefined : gensym___246298707.paramVar5)})) ?? (null)));
+  }
+
   private __backing_paramVar1?: IParamDecoratedVariable<string>;
 
   public get paramVar1(): string {
@@ -128,7 +141,7 @@ function main() {}
     return this.__backing_paramVar5!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
     }), initializers, reuseId, content);
