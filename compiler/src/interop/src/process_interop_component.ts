@@ -87,29 +87,30 @@ export function generateBytecodePathFragement(className: string, filePath: strin
 }
 
 // create block in this.observeComponentCreation2
-export function createStaticArrowBlock(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string): ts.Statement[] {
+export function createStaticArrowBlock(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string, componentNode: ts.CallExpression): ts.Statement[] {
   return [
     setInteropRenderingFlag(),
-    createIfStaticComponent(newNode, componentParameter, name),
+    createIfStaticComponent(newNode, componentParameter, name, componentNode),
     resetInteropRenderingFlag()
   ]
 }
 
 // isInitialRender
-export function createIfStaticComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression, name: string): ts.IfStatement {
+export function createIfStaticComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression, name: string, componentNode: ts.CallExpression): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
       [ 
         createInteropExtendableComponent(true),
-        createStaticComponent(name, newNode),
+        createStaticComponent(name, newNode, componentNode),
         createInteropExtendableComponent(false),
         pushStaticComponent(name),
         popStaticComponent()
       ], true),
     ts.factory.createBlock(
       [
-        ts.factory.createCallExpression(
+        ts.factory.updateCallExpression(
+          componentNode,
           ts.factory.createElementAccessExpression(
             ts.factory.createIdentifier('static_' + name),
             ts.factory.createNumericLiteral('0')
@@ -351,10 +352,11 @@ function getStateVar(node: ts.Expression): ts.Expression {
  * @param newNode 
  * @returns static_Child = __Interop_CreateStaticComponent_Internal(() => { return new Child(); });
  */
-export function createStaticComponent(name: string, newNode: ts.NewExpression): ts.Statement {
+export function createStaticComponent(name: string, newNode: ts.NewExpression, componentNode: ts.CallExpression): ts.Statement {
   const argument = newNode.arguments;
   const options = argument.length > 2 ? argument[1] : undefined;
-  return ts.factory.createExpressionStatement(
+  return ts.factory.updateExpressionStatement(
+    componentNode as unknown as ts.ExpressionStatement,
     ts.factory.createBinaryExpression(
       ts.factory.createIdentifier('static_' + name),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken),
