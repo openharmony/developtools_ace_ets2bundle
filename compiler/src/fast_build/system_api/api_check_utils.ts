@@ -1172,10 +1172,10 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
 }
 
 /**
- * build error diagnostic
- * @param { JsDocNodeCheckConfig } config
- * @param { DiagnosticWithLocation } diagnostic
- * @returns { BuildDiagnosticInfo }
+ * Handle the error information passed over from tsc.
+ * @param positionMessage - Location of error message
+ * @param message - Error message
+ * @returns - Error message processed locally
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
@@ -1192,19 +1192,19 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
 }
 
 /**
- * hvigor error logger
- * @param { JsDocNodeCheckConfig } config
- * @param { DiagnosticWithLocation } diagnostic
- * @returns { void }
+ * Handle SDK error messages and output Hvigor format information.
+ * @param positionMessage - Location of error message
+ * @param message - Error message
+ * @returns - Return error information in hvigor format
  */
 export function sdkBuildErrorInfoFromDiagnostic(positionMessage: string, message: string): SdkHvigorErrorInfo | undefined {
   return sdkTransfromErrorCode(buildErrorDiagnostic(positionMessage, message));
 }
 
 /**
- * api transfrom error code
- * @param { BuildDiagnosticInfo } diagnostic
- * @returns { SdkHvigorErrorInfo }
+ * Format the error information into information in the hvigor format.
+ * @param diagnostic - Locally processed error message
+ * @returns - Return error information in hvigor format
  */
 function sdkTransfromErrorCode(diagnostic: BuildDiagnosticInfo | undefined): SdkHvigorErrorInfo | undefined {
   if (!diagnostic || !diagnostic.code) {
