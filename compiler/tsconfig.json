@@ -295,6 +295,7 @@
         "ArcAlphabetIndexer",
         "ArcSwiper",
         "ArcScrollBar",
+        "UnionEffectContainer",
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -948,6 +949,11 @@
             "name": "ArcScrollBar",
             "type": "ArcScrollBarAttribute",
             "instance": "ArcScrollBarInstance"
+          },
+          {
+            "name": "UnionEffectContainer",
+            "type": "UnionEffectContainerAttribute",
+            "instance": "UnionEffectContainerInstance"
           },
         ]
       },
