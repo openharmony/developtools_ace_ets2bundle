@@ -1713,7 +1713,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
               setPrivateCollection(componentSet, accessQualifierResult, propertyName, decoratorName);
               validateAccessQualifier(item, propertyName, decoratorName, accessQualifierResult,
                 recordRequire, uiCheck, hasValidatePrivate);
-              validateNonFunctionTypeWithDecorator(item, propertyName, decoratorName);
+              uiCheck && validateNonFunctionTypeWithDecorator(item, propertyName, decoratorName);
               hasValidatePrivate = true;
             }
           }
