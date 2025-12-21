@@ -26,7 +26,8 @@ import {
   allModulesPaths,
   ohosSystemModuleSubDirPaths,
   externalApiCheckPlugin,
-  externalApiMethodPlugin
+  externalApiMethodPlugin,
+  fileAvailableCheckPlugin
 } from '../../../main';
 import {
   LogType,
@@ -356,14 +357,27 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   const checkConfigArray: ts.JsDocNodeCheckConfigItem[] = [];
   const apiName: string = path.basename(fileName);
   const sourceBaseName: string = path.basename(sourceFileName);
+  result = {
+    nodeNeedCheck: needCheckResult,
+    checkConfig: checkConfigArray
+  };
   initComparisonFunctions();
   if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
     sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
     checkConfigArray.push(getJsDocNodeCheckConfigItem([], FIND_MODULE_WARNING, false, ts.DiagnosticCategory.Warning,
       '', true));
   }
-  if (!systemModules.includes(apiName) && (allModulesPaths.includes(path.normalize(sourceFileName)) ||
-    isArkuiDependence(sourceFileName))) {
+  if (systemModules.includes(apiName)) {
+    byFileName.set(sourceFileName, result);
+    return result;
+  }
+  if (checkFileHasAvailableByFileName(sourceFileName)) {
+    needCheckResult = true;
+    checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
+      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
+      VERSION_CHECK_FUNCTION_NAME, true, undefined, checkAvailableDecorator));
+  }
+  else if (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
     permissionsArray = projectConfig.requestPermissions;
     checkConfigArray.push(getJsDocNodeCheckConfigItem([DEPRECATED_TAG_CHECK_NAME], DEPRECATED_TAG_CHECK_WARNING, false,
       ts.DiagnosticCategory.Warning, '', false));
@@ -421,11 +435,6 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
       checkConfigArray.push(getJsDocNodeCheckConfigItem([ATOMICSERVICE_TAG_CHECK_NAME], ATOMICSERVICE_TAG_CHECK_ERROR,
         false, ts.DiagnosticCategory.Error, '', true));
     }
-  } else if (!systemModules.includes(apiName) && path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)) {
-    needCheckResult = true;
-    checkConfigArray.push(getJsDocNodeCheckConfigItem([SINCE_TAG_NAME],
-      SINCE_TAG_CHECK_ERROR, false, ts.DiagnosticCategory.Warning,
-      VERSION_CHECK_FUNCTION_NAME, true, undefined, checkAvailableDecorator));
   }
   result = {
     nodeNeedCheck: needCheckResult,
@@ -813,6 +822,9 @@ export function isOpenHarmonyRuntime(): boolean {
  * - FormatValidation → formatChecker
  */
 export function initComparisonFunctions(): void {
+  if (comparisonFunctions.valueChecker.size !== 0 ) {
+    return;
+  }
   const tags = ['since', 'available'];
   const osName = projectConfig.runtimeOS;
   for (const tag of tags) {
@@ -1553,4 +1565,39 @@ export function compareVersions(parentAvailableVersion: ParsedVersion, curAvaila
   } catch (error) {
     return false;
   }
+}
+
+/**
+ * 判断节点所在的工程目录文件内容中是否包含@Available字符串
+ * @param node 待校验的节点
+ * @returns 如果是工程目录文件且存在@Available返回true，否则返回false
+ */
+export function checkFileHasAvailableByFileName(sourceFileName: string): boolean {
+  if (!sourceFileName) {
+    return false;
+  }
+  // Check Available info cache
+  if (fileAvailableCheckPlugin.has(sourceFileName)) {
+    const hasAvailale = fileAvailableCheckPlugin.get(sourceFileName)!;
+    if (!hasAvailale) {
+      return false;
+    }
+  } else {
+    try {
+      const isProjectFile = path.normalize(sourceFileName).startsWith(projectConfig.projectRootPath)
+      if (!isProjectFile) {
+        fileAvailableCheckPlugin.set(sourceFileName, false);
+        return false;
+      }
+      const fileContent: string = fs.readFileSync(sourceFileName, { encoding: 'utf-8' });
+      const availableContentChecker = /@Available/.test(fileContent);
+      fileAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
+      if (!availableContentChecker) {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+  return true;
 }
