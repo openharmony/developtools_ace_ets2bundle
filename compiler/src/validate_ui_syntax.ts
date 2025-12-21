@@ -198,17 +198,22 @@ const sizeInVPClass: string = 'SizeInVP';
 const sizeClass: string = 'Size';
 const uiEnvWindowAvoidAreaInfoPXClass: string = 'UIEnvWindowAvoidAreaInfoPX';
 const uiEnvWindowAvoidAreaInfoVPClass: string = 'UIEnvWindowAvoidAreaInfoVP';
-const envAllowTypes: string[] = [
-  envSupportClass,
-  sizeInVPClass,
-  sizeClass,
-  uiEnvWindowAvoidAreaInfoPXClass,
-  uiEnvWindowAvoidAreaInfoVPClass
-];
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
 const envSupportArg: string = 'SystemProperties.BREAK_POINT';
+const envWindowAvoidArea: string = 'SystemProperties.WINDOW_AVOID_AREA';
+const envWindowAvoidAreaPx: string = 'SystemProperties.WINDOW_AVOID_AREA_PX';
+const envWindowSize: string = 'SystemProperties.WINDOW_SIZE';
+const envWindowSizePx: string = 'SystemProperties.WINDOW_SIZE_PX';
+
+const envAllowTypesAndArgs: Map<string, string> = new Map([
+  [envSupportClass, envSupportArg],
+  [uiEnvWindowAvoidAreaInfoVPClass, envWindowAvoidArea],
+  [uiEnvWindowAvoidAreaInfoPXClass, envWindowAvoidAreaPx],
+  [sizeInVPClass, envWindowSize],
+  [sizeClass, envWindowSizePx]
+]);
 
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
@@ -1918,15 +1923,18 @@ function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequ
     });
   }
   const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(item);
-  if (!checkEnvType(propertyType)) {
-    validateEnvType(item);
+  if (!propertyType) {
+    return;
   }
-  if (recordRequire.envDecorator) {
-    checkEnvDecoratorExp(recordRequire.envDecorator);
+  const envTypeName: EnvTypeName = { currentTypeName: '' };
+  if (!checkEnvType(propertyType, envTypeName)) {
+    validateEnvType(item);
+  } else if (recordRequire.envDecorator) {
+    checkEnvDecoratorExp(recordRequire.envDecorator, envTypeName.currentTypeName);
   }
 }
 
-export function checkEnvDecoratorExp(node: ts.Decorator): void {
+export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (!checker || !node.expression || !ts.isCallExpression(node.expression) ||
     !node.expression.arguments || !node.expression.arguments.length) {
@@ -1937,20 +1945,24 @@ export function checkEnvDecoratorExp(node: ts.Decorator): void {
     !ts.isIdentifier(envExp.expression) ||
     !isIdentifierHasEnumDecl(envExp.expression, checker) ||
     !ts.isIdentifier(envExp.name)) {
-    validateEnvDecoratorExp(envExp);
+    validateEnvDecoratorExp(envExp, currentTypeName);
     return;
   }
   const argText: string = envExp.getText();
-  if (argText !== envSupportArg) {
-    validateEnvDecoratorExp(envExp);
+  if (!envAllowTypesAndArgs.has(currentTypeName)) {
+    return;
+  }
+  if (argText !== envAllowTypesAndArgs.get(currentTypeName)) {
+    validateEnvDecoratorExp(envExp, currentTypeName);
   }
 }
 
-export function validateEnvDecoratorExp(node: ts.Expression): void {
+export function validateEnvDecoratorExp(node: ts.Expression, currentTypeName: string): void {
+  const trueArg: string = envAllowTypesAndArgs.get(currentTypeName);
   transformLog.errors.push({
     type: LogType.ERROR,
     code: '10905368',
-    message: `Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.`,
+    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${trueArg}.`,
     pos: node.getStart()
   });
 }
@@ -1968,7 +1980,11 @@ function isIdentifierHasEnumDecl(
   return hasEnumDeclaration;
 }
 
-export function checkEnvType(propertyType: ts.Type): boolean {
+export interface EnvTypeName {
+  currentTypeName: string;
+}
+
+export function checkEnvType(propertyType: ts.Type, envTypeName: EnvTypeName): boolean {
   if (!propertyType) {
     return false;
   }
@@ -1984,17 +2000,18 @@ export function checkEnvType(propertyType: ts.Type): boolean {
     const typeAliasDeclaration = symbol.declarations.find(ts.isTypeAliasDeclaration);
     if (typeAliasDeclaration) {
       const aliasType = checker.getTypeAtLocation(typeAliasDeclaration);
-      return checkEnvType(aliasType);
+      return checkEnvType(aliasType, envTypeName);
     }
   }
   if (propertyType.isClassOrInterface()) {
     const typeName = checker.typeToString(propertyType);
-    if (envAllowTypes.includes(typeName)) {
+    if (envAllowTypesAndArgs.has(typeName)) {
+      envTypeName.currentTypeName = typeName;
       return true;
     }
     const baseTypes = checker.getBaseTypes(propertyType);
     for (const baseType of baseTypes) {
-      const checkBaseType = checkEnvType(baseType);
+      const checkBaseType = checkEnvType(baseType, envTypeName);
       if (checkBaseType) {
         return true;
       }
@@ -2007,7 +2024,8 @@ export function validateEnvType(item: ts.PropertyDeclaration): void {
   transformLog.errors.push({
     type: LogType.ERROR,
     code: '10905251',
-    message: `The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.`,
+    message: `The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', ` +
+      `'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.`,
     pos: item.getStart()
   });
 }

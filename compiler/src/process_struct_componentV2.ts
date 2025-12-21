@@ -59,7 +59,8 @@ import {
   validateStmgmtKeywords,
   checkEnvType,
   validateEnvType,
-  checkEnvDecoratorExp
+  checkEnvDecoratorExp,
+  EnvTypeName
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
 import { globalProgram } from '../main';
@@ -345,11 +346,11 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     checkEnvInitializerV2(member, log);
     const envDecorator: ts.Decorator | undefined = decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_ENV_DECORATOR);
     const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
-    if (member.type && !checkEnvType(propertyType)) {
+    const envTypeName: EnvTypeName = { currentTypeName: '' };
+    if (propertyType && !checkEnvType(propertyType, envTypeName)) {
       validateEnvType(member);
-    }
-    if (envDecorator) {
-      checkEnvDecoratorExp(envDecorator);
+    } else if (propertyType && envDecorator) {
+      checkEnvDecoratorExp(envDecorator, envTypeName.currentTypeName);
     }
   }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
