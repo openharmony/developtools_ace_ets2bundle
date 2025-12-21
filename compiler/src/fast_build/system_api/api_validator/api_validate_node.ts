@@ -24,7 +24,8 @@ import {
   getValidDecoratorFromNode,
   extractMinApiFromDecorator,
   getVersionByValueChecker,
-  isAvailableDecorator
+  isAvailableDecorator,
+  checkFileHasAvailableByFileName
 } from '../api_check_utils';
 import {
   AVAILABLE_TAG_NAME,
@@ -528,7 +529,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
     private readonly compatibleSdkVersion: string,
     private readonly minRequiredVersion: string,
     private readonly typeChecker: ts.TypeChecker,
-    private readonly minAvailbleVersion?: ParsedVersion
+    private readonly minAvailableVersion?: ParsedVersion
   ) {
     super();
     this.init();
@@ -563,36 +564,17 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
    * @returns true to suppress warning, false to show warning
    */
   validate(node: ts.Node): boolean {
-    if (!node || (!this.minAvailbleVersion && !this.minRequiredVersion)) {
+    if (!node || (!this.minAvailableVersion && !this.minRequiredVersion)) {
       return false;
     }
-    const nodeSourceFile = node.getSourceFile()?.fileName;
-    if (!nodeSourceFile) {
+    const nodeSourceFileName = node.getSourceFile()?.fileName;
+    if (!checkFileHasAvailableByFileName(nodeSourceFileName)){
       return false;
     }
-    // Check device info cache
-    if (fileAvailableCheckPlugin.has(nodeSourceFile)) {
-      const hasAvailale = fileAvailableCheckPlugin.get(nodeSourceFile)!;
-      if (!hasAvailale) {
-        return false;
-      }
-    } else {
-      try {
-        const fileContent: string = fs.readFileSync(nodeSourceFile, { encoding: 'utf-8' });
-        const availableContentChecker = /Available/.test(fileContent);
-        fileAvailableCheckPlugin.set(nodeSourceFile, availableContentChecker);
-        if (!availableContentChecker) {
-          return false;
-        }
-      } catch (error) {
-        return false;
-      }
-    }
-
     try {
       const curAvailableVersion = this.getParentVersion(node);
 
-      if (this.compareVersions(curAvailableVersion, this.minAvailbleVersion ? this.minAvailbleVersion : this.minRequiredVersion)) {
+      if (this.compareVersions(curAvailableVersion, this.minAvailableVersion ? this.minAvailableVersion : this.minRequiredVersion)) {
         return true;
       }
 
