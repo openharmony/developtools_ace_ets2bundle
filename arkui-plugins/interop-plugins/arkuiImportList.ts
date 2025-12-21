@@ -173,5 +173,6 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'LocalBuilder',
   'Styles',
   'Extend',
-  'AnimatableExtend'
+  'AnimatableExtend',
+  'UnionEffectContainer'
 ]);
