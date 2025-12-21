@@ -1586,44 +1586,44 @@
     ],
     "envValidateType": [
         {
-            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
             "code": "10905251",
             "type": "ERROR"
         },
         {
-            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
             "code": "10905251",
             "type": "ERROR"
         },
         {
-            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
             "code": "10905251",
             "type": "ERROR"
         },
         {
-            "message": "The '@Env' decorator can only decorate the 'WindowSizeLayoutBreakpointInfo' class or its child classes.",
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
             "code": "10905251",
             "type": "ERROR"
         }
     ],
     "envValidateArg": [
         {
-            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "message": "Invalid parameter. State variables decorated with '@Env' of type 'WindowSizeLayoutBreakpointInfo' can only accept SystemProperties.BREAK_POINT.",
             "code": "10905368",
             "type": "ERROR"
         },
         {
-            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "message": "Invalid parameter. State variables decorated with '@Env' of type 'WindowSizeLayoutBreakpointInfo' can only accept SystemProperties.BREAK_POINT.",
             "code": "10905368",
             "type": "ERROR"
         },
         {
-            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "message": "Invalid parameter. State variables decorated with '@Env' of type 'WindowSizeLayoutBreakpointInfo' can only accept SystemProperties.BREAK_POINT.",
             "code": "10905368",
             "type": "ERROR"
         },
         {
-            "message": "Invalid parameter. '@Env' only accepts SystemProperties.BREAK_POINT.",
+            "message": "IInvalid parameter. State variables decorated with '@Env' of type 'WindowSizeLayoutBreakpointInfo' can only accept SystemProperties.BREAK_POINT.",
             "code": "10905368",
             "type": "ERROR"
         }
