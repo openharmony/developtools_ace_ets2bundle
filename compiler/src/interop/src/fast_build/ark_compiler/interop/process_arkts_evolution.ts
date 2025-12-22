@@ -225,7 +225,6 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   arkTSEvoFileOHMUrlMap = new Map();
   arkTSEvoPkgNameOHMUrlMap = new Map;
   interopTransformLog.cleanUp();
-  declaredClassVars = new Set();
 }
 
 export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string,
@@ -303,10 +302,10 @@ export function interopTransform(program: ts.Program, id: string, mixCompile: bo
   // For specific scenarios, please refer to the test file process_arkts_evolution.test.ts
   const typeChecker: ts.TypeChecker = program.getTypeChecker();
   return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-    const scopeUsedNames: WeakMap<ts.Node, Set<string>> = new WeakMap<ts.Node, Set<string>>();
-    const fullNameToTmpVar: Map<string, string> = new Map();
-    const globalDeclarations: Map<string, ts.Statement> = new Map();
     return (rootNode: ts.SourceFile) => {
+      const scopeUsedNames: WeakMap<ts.Node, Set<string>> = new WeakMap<ts.Node, Set<string>>();
+      const fullNameToTmpVar: Map<string, string> = new Map();
+      const globalDeclarations: Map<string, ts.Statement> = new Map();
       interopTransformLog.sourceFile = rootNode;
       const classToInterfacesMap: Map<ts.ClassDeclaration, Set<string>> = collectInterfacesMap(rootNode, typeChecker);
       // Support for creating 1.2 type object literals in 1.1 modules
@@ -482,7 +481,7 @@ function hasZeroArgConstructor(decl: ts.ClassDeclaration, className: string): bo
 
 function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className: string, isRecordType: boolean): string {
   if (isRecordType) {
-    return 'Lescompat/Record;';
+    return 'Lstd.core.Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
   const pkgName: string = arkTSEvoPkgNameOHMUrlMap.get(basePath);
@@ -558,18 +557,12 @@ function getUniqueName(scope: ts.Node, base: string, usedNames: WeakMap<ts.Node,
 }
 
 function declareGlobalTemp(name: string, globalDeclarations: Map<string, ts.Statement>, initializer?: ts.Expression): ts.Statement {
-  if (initializer && declaredClassVars.has(name)) {
-    return globalDeclarations.get(name)!;
-  }
 
   if (!globalDeclarations.has(name)) {
     const decl = ts.factory.createVariableStatement(undefined,
       ts.factory.createVariableDeclarationList(
         [ts.factory.createVariableDeclaration(name, undefined, undefined, initializer)], ts.NodeFlags.Let));
     globalDeclarations.set(name, decl);
-    if (initializer) {
-      declaredClassVars.add(name);
-    }
   }
 
   return globalDeclarations.get(name)!;
@@ -716,4 +709,8 @@ export function redirectToDeclFileForInterop(resolvedFileName: string): ts.Resol
     return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
   }
   return undefined;
+}
+
+export function resetInteropTransformLog(): void {
+  interopTransformLog.errors = [];
 }

@@ -109,7 +109,7 @@ export enum ObservedNames {
     ADD_REF = 'addRef',
     SHOULD_ADD_REF = 'shouldAddRef',
     NEW_NAME = 'newName',
-    PROPERTY_PREFIX = '<property>',
+    PROPERTY_PREFIX = '%%property-',
     NEW_VALUE = 'newValue',
     FIRE_CHANGE = 'fireChange',
     EXECUATE_WATCHES = 'executeOnSubscribingWatches',

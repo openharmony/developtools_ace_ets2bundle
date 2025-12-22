@@ -410,14 +410,15 @@ KBoolean impl_IsETSFunctionType(KNativePointer nodePtr)
 KOALA_INTEROP_1(IsETSFunctionType, KBoolean, KNativePointer)
 
 KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputDeclEts, KStringPtr &outputEts,
-                                            KBoolean exportAll, KBoolean isolated, KStringPtr &recordFile)
+                                            KBoolean exportAll, KBoolean isolated, KStringPtr &recordFile,
+                                            KBoolean genAnnotations)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
     return GetImpl()->GenerateTsDeclarationsFromContext(context, outputDeclEts.data(), outputEts.data(),
-                                                        exportAll, isolated, recordFile.data());
+                                                        exportAll, isolated, recordFile.data(), genAnnotations);
 }
-KOALA_INTEROP_6(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean, KBoolean,
-                KStringPtr)
+KOALA_INTEROP_7(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KStringPtr, KStringPtr, KBoolean, KBoolean,
+                KStringPtr, KBoolean)
 
 KInt impl_GenerateStaticDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputPath)
 {
@@ -804,6 +805,13 @@ void impl_ScriptFunctionSetParams(
     return;
 }
 KOALA_INTEROP_V4(ScriptFunctionSetParams, KNativePointer, KNativePointer, KNativePointerArray, KUInt);
+
+void impl_FreeCompilerPartMemory(KNativePointer context)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    GetImpl()->FreeCompilerPartMemory(_context);
+}
+KOALA_INTEROP_V1(FreeCompilerPartMemory, KNativePointer);
 
 static KNativePointer impl_JsdocStringFromDeclaration(KNativePointer contextPtr, KNativePointer decl)
 {
