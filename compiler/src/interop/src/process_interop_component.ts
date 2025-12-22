@@ -87,7 +87,12 @@ export function generateBytecodePathFragement(className: string, filePath: strin
 }
 
 // create block in this.observeComponentCreation2
-export function createStaticArrowBlock(newNode: ts.NewExpression,componentParameter: ts.ObjectLiteralExpression, name: string, componentNode: ts.CallExpression): ts.Statement[] {
+export function createStaticArrowBlock(
+  newNode: ts.NewExpression,
+  componentParameter: ts.ObjectLiteralExpression,
+  name: string,
+  componentNode: ts.CallExpression
+): ts.Statement[] {
   return [
     setInteropRenderingFlag(),
     createIfStaticComponent(newNode, componentParameter, name, componentNode),
@@ -96,7 +101,12 @@ export function createStaticArrowBlock(newNode: ts.NewExpression,componentParame
 }
 
 // isInitialRender
-export function createIfStaticComponent(newNode: ts.NewExpression, componentParameter: ts.ObjectLiteralExpression, name: string, componentNode: ts.CallExpression): ts.IfStatement {
+export function createIfStaticComponent(
+  newNode: ts.NewExpression,
+  componentParameter: ts.ObjectLiteralExpression,
+  name: string,
+  componentNode: ts.CallExpression
+): ts.IfStatement {
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
