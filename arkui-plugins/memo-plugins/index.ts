@@ -32,7 +32,6 @@ export function unmemoizeTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
-            arkts.arktsGlobal.clearContext();
         },
     };
 }

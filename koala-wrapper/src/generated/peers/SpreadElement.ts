@@ -74,9 +74,6 @@ export class SpreadElement extends AnnotatedExpression {
         global.generatedEs2panda._SpreadElementSetOptional(global.context, this.peer, optional_arg);
         return this;
     }
-    get validateExpression(): ValidationInfo | undefined {
-        return new ValidationInfo(global.generatedEs2panda._SpreadElementValidateExpression(global.context, this.peer));
-    }
     get typeAnnotation(): TypeNode | undefined {
         return unpackNode(global.generatedEs2panda._SpreadElementTypeAnnotationConst(global.context, this.peer));
     }

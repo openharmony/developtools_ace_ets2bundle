@@ -25,8 +25,11 @@
 #include <tuple>
 #include <unordered_map>
 
+#include <ani_signature_builder.h>
 #include "etsapi.h"
 #include "koala-types.h"
+
+using namespace arkts::ani_signature;
 
 template<class T>
 struct InteropTypeConverter {
@@ -120,17 +123,17 @@ template<>
 struct InteropTypeConverter<KLength> {
   using InteropType = ets_object;
   static KLength convertFrom(EtsEnv* env, InteropType value) {
-    const static ets_class double_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std/core/Double")));
-    const static ets_class int_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std/core/Int")));
-    const static ets_class string_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std/core/String")));
+    const static ets_class double_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std.core.Double")));
+    const static ets_class int_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std.core.Int")));
+    const static ets_class string_class = reinterpret_cast<ets_class>(env->NewGlobalRef(env->FindClass("std.core.String")));
     const static ets_class resource_class = reinterpret_cast<ets_class>(
-      env->NewGlobalRef(env->FindClass("@koalaui/arkts-arkui/generated/ArkResourceInterfaces/Resource")));
+      env->NewGlobalRef(env->FindClass("@koalaui.arkts-arkui.generated.ArkResourceInterfaces.Resource")));
 
     if (env->IsInstanceOf(value, double_class)) {
-      const static ets_method double_p = env->Getp_method(double_class, "unboxed", ":D");
+      const static ets_method double_p = env->Getp_method(double_class, "toDouble", ":d");
       return KLength{ 1, (KFloat)env->CallDoubleMethod(value, double_p), 1, 0 };
     } else if (env->IsInstanceOf(value, int_class)) {
-      const static ets_method int_p = env->Getp_method(int_class, "unboxed", ":I");
+      const static ets_method int_p = env->Getp_method(int_class, "toInt", ":i");
       return KLength{ 1, (KFloat)env->CallIntMethod(value, int_p), 1, 0 };
     } else if (env->IsInstanceOf(value, string_class)) {
       KStringPtr ptr = InteropTypeConverter<KStringPtr>::convertFrom(env, reinterpret_cast<ets_string>(value));
@@ -140,8 +143,8 @@ struct InteropTypeConverter<KLength> {
       length.resource = 0;
       return length;
     } else if (env->IsInstanceOf(value, resource_class)) {
-      const static ets_method resource_p = env->Getp_method(resource_class, "<get>id", ":D");
-      return KLength{ 3, 0, 1, (KInt)env->CallDoubleMethod(value, resource_p) };
+      const static ets_method res_p = env->Getp_method(resource_class, Builder::BuildGetterName("id").c_str(), ":d");
+      return KLength{ 3, 0, 1, (KInt)env->CallDoubleMethod(value, res_p) };
     } else {
       return KLength( { 0, 0, 0, 0});
     }
@@ -1342,10 +1345,10 @@ void getKoalaEtsNapiCallbackDispatcher(ets_class* clazz, ets_method* method);
 #define KOALA_INTEROP_THROW_STRING(vmContext, message, ...) \
   do { \
     EtsEnv* env = reinterpret_cast<EtsEnv*>(vmContext); \
-    const static ets_class errorClass = env->FindClass("std/core/Error"); \
+    const static ets_class errorClass = env->FindClass("std.core.Error"); \
     env->ThrowErrorNew(errorClass, message); \
   } while (0)
 
 #endif // KOALA_ETS_NAPI
 
-#endif // CONVERTORS_ETS_H
+#endif // CONVERTORS_ETS_H/
