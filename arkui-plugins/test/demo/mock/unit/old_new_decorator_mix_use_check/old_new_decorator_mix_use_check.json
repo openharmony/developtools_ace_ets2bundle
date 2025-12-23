@@ -1,0 +1,119 @@
+{
+  "old_new_decorator_mix_use_check_1": {
+    "messages": [
+      {
+        "message": "The '@State' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 29,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Link' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Provide' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Consume' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 33,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Watch' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 34,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@State' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 35,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@StorageLink' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 36,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@LocalStorageLink' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 38,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@ObjectLink' annotation can only be used in a 'struct' decorated with '@Component'.",
+        "position": {
+          "line": 40,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "old_new_decorator_mix_use_check_2": {
+    "messages": [
+      {
+        "message": "The '@Local' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Param' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Param' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "old_new_decorator_mix_use_check_3": {
+    "messages": [
+      {
+        "message": "The '@Event' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 29,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Provider' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Consumer' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      }
+    ]
+  }
+}
