@@ -846,7 +846,7 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
   /**
    * Find the parent node.
    * 
-   * two scenarios:
+   * three scenarios:
    * 
    * 1.chain invocation scene
    * Example:
@@ -854,14 +854,20 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
    * Button('test')
    *  .id('test')
    *  // '@SuppressWarnind' compatibility
-   *  .fontSize('xxx')
+   *  .fontSize('xxx') // will not trigger compatible warning
+   * 
+   * // '@SuppressWarnind' compatibility
+   * Button('test')
+   *  // '@SuppressWarnind' compatibility
+   *  .id('test')
+   *  .fontSize('xxx') // will not trigger compatible warning
    * ```
    * 
    * 2.normal invocation scene
    * Example:
    * ```typescript
    * // '@SuppressWarnind' compatibility
-   * const test = a.b
+   * const test = a.b // will not trigger compatible warning
    * ```
    * @param node - The node that has generated an alarm.
    * @returns 
@@ -877,11 +883,13 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       isChainedCall: { isChain: false, chainNode: node }
     }
     while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && nodeStatement.node.parent) {
-      if (ts.isPropertyAccessExpression(nodeStatement.node)) {
-        if (ts.isCallExpression(nodeStatement.node.expression)) {
-          const expression = nodeStatement.node.expression;
-          const text = expression.getText() || expression.getFullText();
-          nodeStatement.isChainedCall.isChain = text.includes('SuppressWarnings');
+      if (ts.isPropertyAccessExpression(nodeStatement.node) && ts.isCallExpression(nodeStatement.node.expression)) {
+        const expression = nodeStatement.node;
+        const text = expression.getText() || expression.getFullText();
+        nodeStatement.isChainedCall.isChain = text.includes('SuppressWarnings');
+        if (this.hasChainCallNodeComment(nodeStatement.node)) {
+          nodeStatement.isChainedCall.chainNode = nodeStatement.node;
+          break;
         }
       }
       nodeStatement.node = nodeStatement.node.parent;
@@ -897,18 +905,31 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
    * .id('text')
    * // '@SuppressWarnings' compatibility
    * .onClick(() => {
-   *  a.b  // will not trigger compatiale warning
+   *  a.b  // will not trigger compatible warning
    * })
-   * ```
    * 
-   * ```typescript
+   * Button()
+   * .id('text')
+   * .onClick(() => {
    * // '@SuppressWarnings' compatibility
-   * Button().id('test').fontSize('10').onClick(() => {}) // will not trigger compatiale warning
+   *  a.b  // will not trigger compatible warning
+   * })
+   * 
+   * Button()
+   * // '@SuppressWarnings' compatibility
+   * .id('text')
+   * .onClick(() => {
+   *  a.b  // will trigger compatible warning
+   * })
+   * 
+   * // '@SuppressWarnings' compatibility
+   * Button().id('test').fontSize('10').onClick(() => {}) // will not trigger compatible warning
    * ```
    * @param node - The node that has generated an alarm.
    * @returns - Return the processed node after the chained call scenario.
    */
   private getChainCallNode(node: NodeParentModel): NodeParentModel | null {
+    const chainBakNode: ts.Node = node.node;
     let chainCallNode: NodeParentModel = node;
     if (chainCallNode.isChainedCall.isChain || !(ts.isBlock(chainCallNode.node.parent) &&
       ts.isArrowFunction(chainCallNode.node.parent.parent))) {
@@ -918,16 +939,40 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       if (ts.isArrowFunction(chainCallNode.node) &&
         ts.isCallExpression(chainCallNode.node.parent) &&
         ts.isPropertyAccessExpression(chainCallNode.node.parent.expression)) {
-        const expression = chainCallNode.node.parent.expression.expression;
+        if (this.hasChainCallNodeComment(chainBakNode)) {
+          chainCallNode.node = chainBakNode;
+          break;
+        }
+        const expression = chainCallNode.node.parent.expression;
         const text = expression.getText() || expression.getFullText();
         chainCallNode.isChainedCall.isChain = text.includes('SuppressWarnings');
-        chainCallNode.isChainedCall.chainNode = expression;
-        chainCallNode.node = expression;
+        chainCallNode.isChainedCall.chainNode = expression.expression;
+        chainCallNode.node = expression.expression;
         break;
       }
       chainCallNode.node = chainCallNode.node.parent;
     }
     return chainCallNode;
+  }
+
+  /**
+   * Determine whether the annotation information for the alarm node exists.
+   * 
+   * @param node - The node that has generated an alarm.
+   * @returns - Return the annotation information of the alarm node.
+   */
+  private hasChainCallNodeComment(node: ts.Node): boolean {
+    const sourceFile: ts.SourceFile = node.getSourceFile();
+    if (!sourceFile) {
+      return false;
+    }
+    const text: string = sourceFile.text;
+    const comments: string[] = [];
+    const leadingComments = ts.getLeadingCommentRanges(text, node.pos);
+    if (leadingComments && leadingComments.length > 0) {
+      comments.push(...leadingComments.map(item => text.substring(item.pos, item.end)));
+    }
+    return this.checkCommentsMessage(comments);
   }
 
   /**
