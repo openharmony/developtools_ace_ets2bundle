@@ -1,0 +1,56 @@
+{
+  "no_duplicate_entry_1": {
+    "messages": [
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 24,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 52,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "no_duplicate_entry_2": {
+    "messages": [
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 23,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "no_duplicate_entry_3": {
+    "messages": [
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 23,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can't contain more then one '@Entry' annotation.",
+        "position": {
+          "line": 33,
+          "column": 2
+        }
+      }
+    ]
+  }
+}
