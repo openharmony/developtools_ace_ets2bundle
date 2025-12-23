@@ -1,0 +1,24 @@
+{
+  "entry_struct_no_export_1": {
+    "messages": [
+      {
+        "message": "It's not a recommended way to export struct with '@Entry' annotation, which may cause ACE Engine error in component preview mode.",
+        "position": {
+          "line": 22,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_struct_no_export_2": {
+    "messages": [
+      {
+        "message": "It's not a recommended way to export struct with '@Entry' annotation, which may cause ACE Engine error in component preview mode.",
+        "position": {
+          "line": 22,
+          "column": 2
+        }
+      }
+    ]
+  }
+}
