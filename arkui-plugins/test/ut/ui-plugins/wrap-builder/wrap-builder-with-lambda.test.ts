@@ -93,7 +93,8 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Memo() function overBuilder(@MemoSkip() param: (()=> Tmp)) {
+@Memo() 
+function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
     instance.setColumnOptions(undefined).applyAttributesFinish();
     return;
@@ -173,18 +174,21 @@ function main() {}
     this.__backing_label!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -276,7 +280,8 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
-@Memo() function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
+@Memo() 
+function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (133793681)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -392,18 +397,21 @@ function main() {}
     this.__backing_label!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Parent => {
       return new Parent(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Parent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (69406103)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

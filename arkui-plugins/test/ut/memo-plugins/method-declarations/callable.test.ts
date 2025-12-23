@@ -62,7 +62,8 @@ function main() {}
     }
 });
 class A {
-    @Memo() public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() 
+    public static $_invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -80,7 +81,8 @@ class B {
     public constructor() {}
 }
 class C {
-    @Memo() public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
+    @Memo() 
+    public static $_instantiate(__memo_context: __memo_context_type, __memo_id: __memo_id_type, factory: (()=> C)): C {
         const __memo_scope = __memo_context.scope<C>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_factory = __memo_scope.param(0, factory);
         if (__memo_scope.unchanged) {

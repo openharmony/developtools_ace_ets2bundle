@@ -47,7 +47,8 @@ import { LocalStorage as LocalStorage } from \"arkui.stateManagement.storage.loc
 import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\";
 import { Component as Component, Entry as Entry } from \"@ohos.arkui.component\";
 @Entry() @Component() export default final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
+    @ComponentBuilder() 
+    public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
         throw new Error("Declare interface");
     }
     public build() {}

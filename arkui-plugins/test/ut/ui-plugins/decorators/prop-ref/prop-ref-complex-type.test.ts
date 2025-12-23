@@ -99,7 +99,7 @@ final class PropType extends BaseEnum<int> {
   }
 
   public static getValueOf(name: String): PropType {
-    for (let i = 0;((i) < (PropType.#NamesArray.length));(++i)) {
+    for (let i = ((PropType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (PropType.#NamesArray[i]))) {
         return PropType.#ItemsArray[i];
       }
@@ -108,7 +108,7 @@ final class PropType extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): PropType {
-    for (let i = 0;((i) < (PropType.#ValuesArray.length));(++i)) {
+    for (let i = ((PropType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (PropType.#ValuesArray[i]))) {
         return PropType.#ItemsArray[i];
       }
@@ -337,18 +337,21 @@ final class PropType extends BaseEnum<int> {
     this.__backing_propVar12!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___9944067 = storage;
       (((gensym___9944067) == (null)) ? undefined : gensym___9944067())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   ${dumpConstructor()}
 

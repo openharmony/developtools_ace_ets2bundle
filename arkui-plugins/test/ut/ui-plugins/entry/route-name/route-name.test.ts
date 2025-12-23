@@ -55,7 +55,8 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Entry as Entry } from "@ohos.arkui.component";
 
 @Entry({routeName:"MyPage"}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   

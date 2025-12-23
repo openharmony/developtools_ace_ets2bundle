@@ -58,7 +58,8 @@ import hilog from "@ohos.hilog";
 @Builder() function builder2() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomDialogUser {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomDialogUser {
     throw new Error("Declare interface");
   }
 
@@ -79,7 +80,8 @@ import hilog from "@ohos.hilog";
 }
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser2, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomDialogUser2 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUser2, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomDialogUser2 {
     throw new Error("Declare interface");
   }
   
@@ -141,9 +143,11 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@Memo() function builder1(@MemoSkip() str: string) {}
+@Memo() 
+function builder1(@MemoSkip() str: string) {}
 
-@Memo() function builder2() {}
+@Memo() 
+function builder2() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -170,18 +174,21 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
       return new CustomDialogUser(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -215,18 +222,21 @@ function main() {}
     this.__backing_dialogController = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomDialogUser2)=> void), initializers: ((()=> __Options_CustomDialogUser2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: CustomDialogUser2)=> void), initializers: ((()=> __Options_CustomDialogUser2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser2, __Options_CustomDialogUser2>(style, ((): CustomDialogUser2 => {
       return new CustomDialogUser2(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomDialogUser2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser2 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUser2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser2 {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

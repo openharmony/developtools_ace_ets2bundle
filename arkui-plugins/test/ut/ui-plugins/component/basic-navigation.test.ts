@@ -85,17 +85,20 @@ function main() {}
     this.__backing_pathStack = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample1)=> void), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MyStateSample1)=> void), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample1, __Options_MyStateSample1>(style, ((): MyStateSample1 => {
       return new MyStateSample1(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample1 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample1 {
     throw new Error("Declare interface");
   }
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(this.pathStack, {
         moduleName: "entry",
@@ -138,18 +141,21 @@ function main() {}
     this.__backing_pathStack = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
       return new MyStateSample2(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
       instance.setNavigationOptions(undefined, {
         moduleName: "entry",
@@ -175,22 +181,38 @@ function main() {}
 }
 
 @Component() export interface __Options_MyStateSample1 {
-  get pathStack(): (NavPathStack | undefined)
+  get pathStack(): (NavPathStack | undefined) {
+  return undefined;
+  }
   
-  set pathStack(pathStack: (NavPathStack | undefined))
-  get __options_has_pathStack(): (boolean | undefined)
+  set pathStack(pathStack: (NavPathStack | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
+  get __options_has_pathStack(): (boolean | undefined) {
+  return undefined;
+  }
   
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined))
+  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
   
 }
 
 @Component() export interface __Options_MyStateSample2 {
-  get pathStack(): (NavPathStack | undefined)
+  get pathStack(): (NavPathStack | undefined) {
+  return undefined;
+  }
   
-  set pathStack(pathStack: (NavPathStack | undefined))
-  get __options_has_pathStack(): (boolean | undefined)
+  set pathStack(pathStack: (NavPathStack | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
+  get __options_has_pathStack(): (boolean | undefined) {
+  return undefined;
+  }
   
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined))
+  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
   
 }
 `;
