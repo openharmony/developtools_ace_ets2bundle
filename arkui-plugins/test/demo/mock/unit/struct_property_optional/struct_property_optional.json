@@ -1,0 +1,42 @@
+{
+  "struct_property_optional_1": {
+    "messages": [
+      {
+        "message": "The 'Link' property 'count' cannot be an optional parameter.",
+        "position": {
+          "line": 24,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "struct_property_optional_2": {
+    "messages": [
+      {
+        "message": "The 'PropRef' property 'value' cannot be an optional parameter.",
+        "position": {
+          "line": 24,
+          "column": 18
+        }
+      },
+      {
+        "message": "The 'ObjectLink' property 'data' cannot be an optional parameter.",
+        "position": {
+          "line": 25,
+          "column": 15
+        }
+      }
+    ]
+  },
+  "struct_property_optional_3": {
+    "messages": [
+      {
+        "message": "The 'Link' property 'optionalLink' cannot be an optional parameter.",
+        "position": {
+          "line": 25,
+          "column": 3
+        }
+      }
+    ]
+  }
+}

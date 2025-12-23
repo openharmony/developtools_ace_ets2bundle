@@ -1,0 +1,36 @@
+{
+  "struct_property_decorator_1": {
+    "messages": [
+      {
+        "message": "The static variable of struct cannot be used together with built-in annotations.",
+        "position": {
+          "line": 25,
+          "column": 18
+        }
+      }
+    ]
+  },
+  "struct_property_decorator_2": {
+    "messages": [
+      {
+        "message": "The static variable of struct cannot be used together with built-in annotations.",
+        "position": {
+          "line": 32,
+          "column": 3
+        }
+      }
+    ]
+  },
+  "struct_property_decorator_3": {
+    "messages": [
+      {
+        "message": "The static variable of struct cannot be used together with built-in annotations.",
+        "position": {
+          "line": 32,
+          "column": 10
+        }
+      }
+    ]
+  }
+}
+

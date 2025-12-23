@@ -1,0 +1,35 @@
+{
+  "struct_no_extends_1": {
+    "messages": [
+      {
+        "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+        "position": {
+          "line": 30,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "struct_no_extends_2": {
+    "messages": [
+      {
+        "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "struct_no_extends_3": {
+    "messages": [
+      {
+        "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+        "position": {
+          "line": 25,
+          "column": 8
+        }
+      }
+    ]
+  }
+}
