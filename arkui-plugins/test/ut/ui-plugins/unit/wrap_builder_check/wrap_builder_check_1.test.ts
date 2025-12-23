@@ -41,11 +41,6 @@ const observedTrackTransform: Plugins = {
 };
 
 function testParsedTransformer(this: PluginTestContext): void{
-    console.log(this.errors,this.warnings)
-    console.log(
-        this.sourceContexts,
-        this.declContexts
-    );
 
     const testData = JSON.parse(fs.readFileSync(testJson.testJsonPath, "utf8"));
     const currentTest = testData[WRAP_BUILDER_ETS_NAME].messages;

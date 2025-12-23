@@ -18,7 +18,7 @@ const fs = require('fs');
 import {extractErrorWarningBlocks, LookingFor} from "../../../utils/parse-string";
 import {PluginTestContext} from "../../../utils/shared-types";
 import * as path from "node:path";
-import {getRootPath, MOCK_ENTRY_DIR_PATH} from "../../../utils/path-config";
+import {getRootPath, MOCK_ENTRY_DIR_PATH, UI_SYNTAX_PATH} from "../../../utils/path-config";
 
 export class TestJsonPath {
     testJsonPath: string;
@@ -27,6 +27,7 @@ export class TestJsonPath {
         const fullDirPath = path.resolve(
             getRootPath(),
             MOCK_ENTRY_DIR_PATH,
+            UI_SYNTAX_PATH,
             dirPath
         );
 
