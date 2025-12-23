@@ -282,6 +282,7 @@ export const UT_VALIDATE_PAGES: string[] = [
 
   'Decorators/process_struct_componentV2/param_require_once_check',
   'Decorators/process_struct_componentV2/v2Component_member_type_check',
+  'Decorators/process_struct_componentV2/syncmonitor_require_check',
 
   'Decorators/process_ui_syntax/EntryDecoParam',
   'Decorators/process_ui_syntax/ExtendOneChild',
@@ -335,6 +336,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/state',
   'Decorators/vaildate_ui_syntax/StructNameInvalid',
   'Decorators/vaildate_ui_syntax/StylesDuplicate',
+  'Decorators/vaildate_ui_syntax/syncMonitorCheckWild',
   'Decorators/vaildate_ui_syntax/v1DecoratorInComponentV2',
   'Decorators/vaildate_ui_syntax/v2DecoratorInClass',
   'Decorators/vaildate_ui_syntax/v2DecoratorInComponent',
