@@ -1,0 +1,86 @@
+{
+  "no_duplicate_preview_1": {
+    "messages": [
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 30,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 34,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 38,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 42,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 46,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 50,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 54,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 58,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 62,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 66,
+          "column": 2
+        }
+      },
+      {
+        "message": "A page can contain at most 10 '@Preview' annotations.",
+        "position": {
+          "line": 70,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "no_duplicate_preview_2": {
+    "messages": []
+  }
+}
