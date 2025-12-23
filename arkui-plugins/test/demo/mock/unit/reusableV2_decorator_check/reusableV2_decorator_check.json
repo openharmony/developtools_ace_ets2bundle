@@ -1,0 +1,70 @@
+{
+  "reusableV2_decorator_check_1": {
+    "messages": [
+      {
+        "message": "The '@Reusable' and '@ReusableV2' annotations cannot be applied simultaneously.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "The '@Reusable' and '@ReusableV2' annotations cannot be applied simultaneously.",
+        "position": {
+          "line": 32,
+          "column": 8
+        }
+      },
+      {
+        "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+        "position": {
+          "line": 32,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "reusableV2_decorator_check_2": {
+    "messages": [
+      {
+        "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+        "position": {
+          "line": 31,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "reusableV2_decorator_check_3": {
+    "messages": [
+      {
+        "message": "The '@Reusable' and '@ReusableV2' annotations cannot be applied simultaneously.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "@ReusableV2 is only applicable to custom components decorated by @ComponentV2.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      }
+    ]
+  }
+}
