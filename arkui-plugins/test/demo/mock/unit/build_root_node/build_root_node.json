@@ -1,0 +1,46 @@
+{
+  "build_root_node_1": {
+    "messages": [
+      {
+        "message": "In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.",
+        "position": {
+          "line": 24,
+          "column": 3
+        }
+      }
+    ]
+  },
+  "build_root_node_2": {
+    "messages": [
+      {
+        "message": "The 'build' function can have only one root node.",
+        "position": {
+          "line": 23,
+          "column": 3
+        }
+      }
+    ]
+  },
+  "build_root_node_3": {
+    "messages": [
+      {
+        "message": "In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.",
+        "position": {
+          "line": 25,
+          "column": 3
+        }
+      }
+    ]
+  },
+   "build_root_node_4": {
+    "messages": [
+      {
+        "message": "In an '@Entry' decorated component, the 'build' function can have only one root node, which must be a container component.",
+        "position": {
+          "line": 31,
+          "column": 3
+        }
+      }
+    ]
+  }
+}

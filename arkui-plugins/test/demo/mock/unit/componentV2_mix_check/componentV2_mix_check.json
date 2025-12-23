@@ -1,0 +1,70 @@
+{
+  "componentV2_mix_check_1": {
+    "messages": [
+      {
+        "message": "The struct 'Hunyong' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "componentV2_mix_check_2": {
+    "messages": [
+      {
+        "message": "The struct 'V21' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "componentV2_mix_check_3": {
+    "messages": [
+      {
+        "message": "The struct 'ComponentV2BothWithComponent' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 24,
+          "column": 8
+        }
+      },
+      {
+        "message": "The struct 'ComponentV2BothWithComponent1' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 35,
+          "column": 8
+        }
+      },
+      {
+        "message": "The struct 'ComponentV2BothWithComponent2' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+        "position": {
+          "line": 46,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "componentV2_mix_check_4": {
+    "messages": [
+      {
+        "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
+        "position": {
+          "line": 61,
+          "column": 7
+        }
+      },
+      {
+        "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
+        "position": {
+          "line": 109,
+          "column": 7
+        }
+      }
+    ]
+  },
+   "componentV2_mix_check_5": {
+    "messages": []
+  }
+}
