@@ -277,11 +277,6 @@ export enum NavigationNames {
     STATIC_BLOCK_TRIGGER_FIELD = 'staticBlockTriggerField',
 }
 
-export enum ConditionNames {
-    CONDITION_SCOPE = 'ConditionScope',
-    CONDITION_BRANCH = 'ConditionBranch',
-}
-
 export enum ArkTsDefaultNames {
     DEFAULT_STATIC_BLOCK_NAME = '<cctor>',
 }

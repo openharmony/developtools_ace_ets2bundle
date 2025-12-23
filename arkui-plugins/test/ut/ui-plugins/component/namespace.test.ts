@@ -46,7 +46,8 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Column as Column, Text as Text } from "@ohos.arkui.component";
 import { State as State } from "@ohos.arkui.stateManagement";
 @Component() final struct Main extends CustomComponent<Main, __Options_Main> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Main, storage?: LocalStorage, @Builder() content?: (()=> void)): Main {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Main, storage?: LocalStorage, @Builder() content?: (()=> void)): Main {
     throw new Error("Declare interface");
   }
   public build() {
@@ -73,7 +74,8 @@ export namespace NS1 {
   }
   
   @Component() export final struct Child extends CustomComponent<Child, __Options_Child> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
     @State() public propVar: string = "Prop";
@@ -96,7 +98,8 @@ export namespace NS1 {
   export namespace NS2 {
     let s1 = "hello"
     @Component() final struct NS2_struct extends CustomComponent<NS2_struct, __Options_NS2_struct> {
-      @ComponentBuilder() public static $_invoke(initializers?: __Options_NS2_struct, storage?: LocalStorage, @Builder() content?: (()=> void)): NS2_struct {
+      @ComponentBuilder() 
+      public static $_invoke(initializers?: __Options_NS2_struct, storage?: LocalStorage, @Builder() content?: (()=> void)): NS2_struct {
         throw new Error("Declare interface");
       }
       public build() {

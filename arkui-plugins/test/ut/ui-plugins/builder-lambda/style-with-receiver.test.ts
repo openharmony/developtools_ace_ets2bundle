@@ -67,13 +67,15 @@ import hilog from "@ohos.hilog";
 
 function main() {}
 
-@Memo() function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
+@Memo() 
+function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
   this.fontSize(num);
   this.backgroundColor(str);
   return this;
 }
 
-@Memo() function style22(this: TextAttribute): TextAttribute {
+@Memo() 
+function style22(this: TextAttribute): TextAttribute {
   this.fontWeight(700);
   return this;
 }
@@ -84,17 +86,20 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MM)=> void), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MM)=> void), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MM, __Options_MM>(style, ((): MM => {
       return new MM(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MM, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MM {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MM, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MM {
     throw new Error("Declare interface");
   }
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

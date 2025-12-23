@@ -55,7 +55,8 @@ import { Component as Component, RelativeContainer as RelativeContainer, Builder
 
 function main() {}
 
-@Memo() function builderTwo() {
+@Memo() 
+function builderTwo() {
   Page2._invoke(@Memo() ((instance: Page2): void => {
     instance.applyAttributesFinish();
     return;
@@ -79,18 +80,21 @@ function main() {}
     this.__backing_message = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Page2, __Options_Page2>(style, ((): Page2 => {
       return new Page2(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Page2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Page2 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Page2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Page2 {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RelativeContainerImpl(@Memo() ((instance: RelativeContainerAttribute): void => {
       instance.setRelativeContainerOptions().height("100%").width("100%").applyAttributesFinish();
       return;
@@ -107,10 +111,18 @@ function main() {}
 }
 
 @Component() export interface __Options_Page2 {
-  get message(): (string | undefined)
-  set message(message: (string | undefined))
-  get __options_has_message(): (boolean | undefined)
-  set __options_has_message(__options_has_message: (boolean | undefined))
+  get message(): (string | undefined) {
+  return undefined;
+  }
+  set message(message: (string | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
+  get __options_has_message(): (boolean | undefined) {
+  return undefined;
+  }
+  set __options_has_message(__options_has_message: (boolean | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
 }
 
 class __NavigationBuilderRegisterClass {

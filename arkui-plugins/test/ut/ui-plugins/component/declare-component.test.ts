@@ -52,7 +52,8 @@ import { Component as Component, ResourceStr as ResourceStr, Builder as Builder 
 import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement";
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() content?: (()=> void)): SwipeRefresher
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() content?: (()=> void)): SwipeRefresher
   
   @PropRef() public content?: (ResourceStr | undefined);
   
@@ -60,7 +61,8 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
   
   @State() public code: number;
 
-  @Builder() public build(): void
+  @Builder() 
+  public build(): void
 
   public constructor(useSharedStorage?: boolean, storage?: LocalStorage)
 
@@ -112,9 +114,11 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 function main() {}
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: SwipeRefresher)=> void), initializers: ((()=> __Options_SwipeRefresher) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: SwipeRefresher)=> void), initializers: ((()=> __Options_SwipeRefresher) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): SwipeRefresher
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): SwipeRefresher
   
   @PropRef() public content?: (ResourceStr | undefined);
   
@@ -122,7 +126,8 @@ function main() {}
   
   @State() public code: number;
   
-  @Memo() public build(): void
+  @Memo() 
+  public build(): void
 
   public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
   

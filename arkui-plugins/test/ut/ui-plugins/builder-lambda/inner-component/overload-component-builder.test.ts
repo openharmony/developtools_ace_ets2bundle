@@ -83,16 +83,19 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-     @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+     @MemoIntrinsic() 
+     public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
         CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
             return new A(false, ({let gensym___<some_random_number> = storage;
                 (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
         }), initializers, reuseId, content);
     }
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
+    @ComponentBuilder() 
+    public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
         throw new Error("Declare interface");
     }
-    @Memo() public build() {
+    @Memo() 
+    public build() {
         FakeComponentImpl(@Memo() ((instance: FakeComponentAttribute): void => {
             instance.setFakeComponentOptions(\"fake-component\");
             return;
@@ -110,7 +113,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(): void {
+    @Memo() 
+    public entry(): void {
         A._invoke(@Memo() ((instance: A): void => {
             instance.applyAttributesFinish();
             return;
@@ -130,15 +134,23 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 function main() {}
 
-@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
-@Memo() export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @Memo() content_?: (()=> void)): void
+@Memo() 
+export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+@Memo() 
+export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+@Memo() 
+export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @Memo() content_?: (()=> void)): void
 
-@Memo() export function FakeComponentImpl(style: @Memo() ((instance: FakeComponentAttribute)=> void), content?: @Memo() (()=> void)): void
+@Memo() 
+export function FakeComponentImpl(style: @Memo() ((instance: FakeComponentAttribute)=> void), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
-    get str(): (string | undefined)
-    set str(str: (string | undefined))
+    get str(): (string | undefined) {
+    return undefined;
+    }
+    set str(str: (string | undefined)) {
+    throw new InvalidStoreAccessError();
+    }
 }
 
 interface FakeComponentAttribute {
