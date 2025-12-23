@@ -61,6 +61,7 @@ function createTransformer(
             return undefined;
         }
         const isCoding = this.isCoding?.() ?? false;
+        processor.setComponentsInfo(projectConfig, isCoding);
         if (isCoding) {
             const codingFilePath = this.getCodingFilePath();
             if (program.absName === codingFilePath) {
