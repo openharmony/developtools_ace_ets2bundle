@@ -37,7 +37,8 @@ import {
   PROTOTYPE,
   IS_REUSABLE_,
   GET_ATTRIBUTE,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -90,6 +91,7 @@ export class StructInfo {
   computedDecoratorSet: Set<string> = new Set();
   monitorDecoratorSet: Set<string> = new Set();
   envDecoratorSet: Set<string> = new Set();
+  syncMonitorDecoratorSet: Set<string> = new Set();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -463,7 +465,7 @@ function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructIn
       parseGetAccessor(member, decorators, structInfo);
     } else if (ts.isMethodDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
-      parseMethodDeclaration(member, decorators, structInfo);
+      parseMethodDeclaration(member, decorators, structInfo, sourceFileNode, log);
     }
   });
 }
@@ -477,10 +479,31 @@ function parseGetAccessor(member: ts.GetAccessorDeclaration, decorators: readonl
 }
 
 function parseMethodDeclaration(member: ts.MethodDeclaration, decorators: readonly ts.Decorator[],
-  structInfo: StructInfo): void {
-  if (decorators.length && decorators.some((value: ts.Decorator) => getDecoratorName(value) === constantDefine.MONITOR_DECORATOR)) {
-    structInfo.monitorDecoratorSet.add(member.name.getText());
+  structInfo: StructInfo, sourceFileNode: ts.sourceFile, log: LogInfo[]): void {
+  if (!decorators.length) {
+    return;
   }
+  let hasRequire: boolean = false;
+  let hasSyncMonitor: boolean = false;
+  decorators.forEach(decorator => {
+    const decoratorName: string = getDecoratorName(decorator);
+    if(decoratorName === constantDefine.MONITOR_DECORATOR) {
+      structInfo.monitorDecoratorSet.add(member.name.getText());
+    } else if (decoratorName === COMPONENT_REQUIRE_DECORATOR) {
+      hasRequire = true;
+    } else if (decoratorName === constantDefine.SYNC_MONITOR_DECORATOR) {
+      structInfo.syncMonitorDecoratorSet.add(member.name.getText());
+      hasSyncMonitor = true;
+    }
+  });
+  hasRequire && hasSyncMonitor && checkRequireDecoratorV2(member, log, sourceFileNode);
+}
+
+function checkRequireDecoratorV2(member: ts.MethodDeclaration | ts.PropertyDeclaration, log: LogInfo[],
+  sourceFileNode: ts.sourceFile): void {
+  const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'' +
+    ' and \'@BuilderParam\'.';
+  addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
 }
 
 export function getDecoratorName(decorator: ts.Decorator): string {
@@ -635,9 +658,7 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
   }
   if (propertyDecorator.hasRequire && !propertyDecorator.hasParam && !checkHasBuilderParamDecorator(propertyDecorator,
     member, sourceFileNode, structInfo)) {
-    const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'' +
-    ' and \'@BuilderParam\'.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
+    checkRequireDecoratorV2(member, log, sourceFileNode);
   }
 }
 
