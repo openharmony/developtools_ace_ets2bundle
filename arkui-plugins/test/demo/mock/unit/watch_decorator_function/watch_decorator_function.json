@@ -1,0 +1,35 @@
+{
+  "watch_decorator_function_1": {
+    "messages": [
+      {
+        "message": "'@Watch' cannot be used with '123'. Apply it only to 'string' parameters.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "watch_decorator_function_2": {
+    "messages": [
+      {
+        "message": "'@watch' cannot be used with 'nonExistingMethod'. Apply it only to parameters that correspond to existing methods.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "watch_decorator_function_3": {
+    "messages": [
+      {
+        "message": "'@watch' cannot be used with 'missingMethod'. Apply it only to parameters that correspond to existing methods.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      }
+    ]
+  }
+}
