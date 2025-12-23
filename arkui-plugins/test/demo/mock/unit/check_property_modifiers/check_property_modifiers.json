@@ -1,0 +1,95 @@
+{
+  "check_property_modifiers_1": {
+    "messages": [
+      {
+        "message": "The StorageLink decorated 'storageLink' cannot be declared as public.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "The LocalStorageLink decorated 'localStorageLink' cannot be declared as public.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "check_property_modifiers_2": {
+    "messages": [
+      {
+        "message": "The Link decorated 'link' cannot be declared as private.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
+      },
+      {
+        "message": "The Link decorated 'link' cannot be declared as private.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
+      },
+      {
+        "message": "The ObjectLink decorated 'objectLink' cannot be declared as private.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "The ObjectLink decorated 'objectLink' cannot be declared as private.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "check_property_modifiers_3": {
+    "messages": [
+      {
+        "message": "The member attributes of a struct can not be protected.",
+        "position": {
+          "line": 24,
+          "column": 13
+        }
+      }
+    ]
+  },
+  "check_property_modifiers_4": {
+    "messages": []
+  },
+  "check_property_modifiers_5": {
+    "messages": [
+      {
+        "message": "The Link decorated 'watchedLink' cannot be declared as private.",
+        "position": {
+          "line": 25,
+          "column": 4
+      }
+      },
+      {
+        "message": "The Watch decorated 'watchedLink' cannot be declared as private.",
+        "position": {
+          "line": 25,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "check_property_modifiers_6": {
+    "messages": [
+      {
+        "message": "The member attributes of a struct can not be protected.",
+        "position": {
+          "line": 25,
+          "column": 20
+        }
+      }
+    ]
+  }
+}

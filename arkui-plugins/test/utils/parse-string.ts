@@ -57,7 +57,7 @@ function replaceWithRandomNumber(text: string): string {
  * @param {LookingFor} lookingFor - Type of message to extract (LookingFor.ERROR or LookingFor.WARNING)
  * @returns {string[]} Array of extracted message blocks with file positions
  */
-function extractErrorWarningBlocks(logs: string, lookingFor: LookingFor): string[] {
+function extractErrorWarningBlocks(logs: string | string[], lookingFor: LookingFor): string[] {
     const POSITION_PATTERN = /\[[^\]]*:\d+\s*[: ,]?\s*\d+\]/;
 
     const normalizeLine = (rawLine: string): string => {
@@ -75,8 +75,7 @@ function extractErrorWarningBlocks(logs: string, lookingFor: LookingFor): string
     const isBlockStart = (line: string): boolean => {
         return line.startsWith(`${lookingFor}:`);
     };
-
-    const lines = logs.split(/\r?\n/);
+    const lines = Array.isArray(logs) ? logs.toString() : logs.split(/\r?\n/);
     const blocks: string[] = [];
     let currentBlock: string[] = [];
     let isCollectingBlock = false;

@@ -1,0 +1,72 @@
+{
+  "check_construct_private_parameter_1": {
+    "messages": [
+      {
+        "message": "Property 'title' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 41,
+          "column": 9
+        }
+      },
+      {
+        "message": "Property 'count' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 42,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "check_construct_private_parameter_2": {
+    "messages": [
+      {
+        "message": "Property 'CostOfOneAttempt' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 76,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "check_construct_private_parameter_3": {
+    "messages": [
+      {
+        "message": "Property 'uniqueId' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 45,
+          "column": 11
+        }
+      }
+    ]
+  },
+   "check_construct_private_parameter_4": {
+    "messages": [
+      {
+        "message": "Property 'secretKey' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 41,
+          "column": 17
+        }
+      }
+    ]
+  },
+   "check_construct_private_parameter_5": {
+    "messages": [
+      {
+        "message": "Property 'statusFlag' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 44,
+          "column": 21
+        }
+      },
+      {
+        "message": "Property 'statusFlag' is private and can not be initialized through the component constructor.",
+        "position": {
+          "line": 48,
+          "column": 21
+        }
+      }
+    ]
+  }
+}
+

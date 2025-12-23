@@ -74,6 +74,13 @@ function processErrorState(state: Es2pandaContextState, context: KNativePointer,
      }
 }
 
+export function getErrorMessage(context: KNativePointer): string | undefined {
+    return withStringResult(global.es2panda._ContextErrorMessage(context));
+}
+export function getAllErrorMessage(context: KNativePointer): string | undefined {
+    return withStringResult(global.es2panda._GetAllErrorMessages(context));
+}
+
 export function nodeType(node: AstNode): Es2pandaAstNodeType {
     return global.generatedEs2panda._AstNodeTypeConst(global.context, passNode(node));
 }
