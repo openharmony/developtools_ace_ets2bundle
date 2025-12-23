@@ -1,0 +1,58 @@
+{
+  "custom_dialog_missing_controller_1": {
+    "messages": [
+      {
+        "message": "The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.",
+        "position": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "custom_dialog_missing_controller_2": {
+    "messages": [
+      {
+        "message": "The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.",
+        "position": {
+          "line": 23,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "custom_dialog_missing_controller_3": {
+    "messages": [
+      {
+        "message": "The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.",
+        "position": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "custom_dialog_missing_controller_4": {
+    "messages": [
+      {
+        "message": "The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.",
+        "position": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "custom_dialog_missing_controller_5": {
+    "messages": [
+      {
+        "message": "The @CustomDialog decorated custom component must contain a property of the CustomDialogController type.",
+        "position": {
+          "line": 27,
+          "column": 8
+        }
+      }
+    ]
+  }
+}
+
