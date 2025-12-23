@@ -1,0 +1,47 @@
+{
+  "validate_build_in_struct_1": {
+    "messages": [
+      {
+        "message": "The 'build' method can not have arguments.",
+        "position": {
+          "line": 24,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "validate_build_in_struct_2": {
+    "messages": [
+      {
+        "message": "The struct 'ValidateBuildMethodCountIndex' must have at least and at most one 'build' method.",
+        "position": {
+          "line": 23,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "validate_build_in_struct_3": {
+    "messages": [
+      {
+        "message": "The struct 'Demo2' must have at least and at most one 'build' method.",
+        "position": {
+          "line": 30,
+          "column": 8
+        }
+      }
+    ]
+  },
+   "validate_build_in_struct_4": {
+    "messages": [
+      {
+        "message": "The struct 'build' must have at least and at most one 'build' method.",
+        "position": {
+          "line": 28,
+          "column": 3
+        }
+      }
+    ]
+  }
+}
+
