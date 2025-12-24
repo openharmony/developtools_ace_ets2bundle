@@ -41,7 +41,6 @@ const entryStructTransform: Plugins = {
 };
 
 async function testParsedTransformer(this: PluginTestContext): Promise<void> {
-    console.log(this.errors,this.warnings);
     const testData = JSON.parse(fs.readFileSync(testJson.testJsonPath, "utf8"));
     const currentTest = testData[ENTRY_STRUCT_NO_EXPORT_ETS_NAME].messages;
     const missing = unitTestParsedTransformer(this, currentTest, ENTRY_STRUCT_NO_EXPORT_ETS_NAME);
