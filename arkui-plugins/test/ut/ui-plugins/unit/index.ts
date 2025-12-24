@@ -49,6 +49,7 @@ export class CompileFilePath {
         this.value = path.resolve(
             getRootPath(),
             MOCK_ENTRY_DIR_PATH,
+            UI_SYNTAX_PATH,
             dir,
             `${etsName}.ets`
         );
