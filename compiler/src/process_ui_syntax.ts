@@ -1024,7 +1024,7 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 
 function isCompileHar(isResourceModule: boolean, resourceSource: string): boolean {
   return projectConfig.compileHar && !isResourceModule && resourceSource !== 'sys' &&
-  projectConfig.minAPIVersion%1000 >= 22;
+  projectConfig.minAPIVersion%1000 >= 23;
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
