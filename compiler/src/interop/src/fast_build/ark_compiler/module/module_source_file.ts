@@ -50,7 +50,8 @@ import {
 import { ORIGIN_EXTENTION } from '../process_mock';
 import {
   TRANSFORMED_MOCK_CONFIG,
-  USER_DEFINE_MOCK_CONFIG
+  USER_DEFINE_MOCK_CONFIG,
+  USE_NORMALIZED_OHMURL
 } from '../../../pre_define';
 import {
   allSourceFilePaths,
@@ -285,8 +286,12 @@ export class ModuleSourceFile {
       path.resolve(rollupObject.share.projectConfig.aceModuleJsonPath, `../${TRANSFORMED_MOCK_CONFIG}`);
     let userDefinedMockConfigCache: string =
       path.resolve(rollupObject.share.projectConfig.cachePath, `./${USER_DEFINE_MOCK_CONFIG}`);
+    
+    // If the config of useNormalizedOHMUrl changed, the compilation should be full.
+    const useNormalizedOHMUrlChanged: boolean = rollupObject.share.projectConfig.useNormalizedOHMUrl !== rollupObject.cache.get(USE_NORMALIZED_OHMURL);
+    rollupObject.cache.set(USE_NORMALIZED_OHMURL, rollupObject.share.projectConfig.useNormalizedOHMUrl);
     // full compilation
-    if (!fs.existsSync(transformedMockConfigCache) || !fs.existsSync(userDefinedMockConfigCache)) {
+    if (!fs.existsSync(transformedMockConfigCache) || !fs.existsSync(userDefinedMockConfigCache) || useNormalizedOHMUrlChanged) {
       fs.writeFileSync(transformedMockConfig, JSON.stringify(ModuleSourceFile.newMockConfigInfo));
       fs.copyFileSync(transformedMockConfig, transformedMockConfigCache);
       fs.copyFileSync(rollupObject.share.projectConfig.mockParams.mockConfigPath, userDefinedMockConfigCache);
