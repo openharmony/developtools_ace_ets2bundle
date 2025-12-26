@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Entry, Component, ComponentV2, ObservedV2, Row, Column, Button, Text } from '@ohos.arkui.component';
-import { State } from "@ohos.arkui.stateManagement";
+import { Entry, Component, ComponentV2, Row, Column, Button, Text } from '@ohos.arkui.component';
+import { State, ObservedV2 } from "@ohos.arkui.stateManagement";
 
 // Expected: In this mixed-use validation, a property decorated with '@State' cannot be an '@ObservedV2' class.
 // Actual: The 'profile' property is typed as 'ProfileModel' (@ObservedV2), which is forbidden with '@State'.

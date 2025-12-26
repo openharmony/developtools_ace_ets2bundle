@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-import { Component, Column, Scroll, Scroller } from '@ohos.arkui.component';
+import { Entry, Component, Column, Scroll, Scroller } from '@ohos.arkui.component';
 import { State } from "@ohos.arkui.stateManagement";
 
 // Expected: For property type validation, the '@State' decorator must not be used with the 'Scroller' type.
 // Actual: The 'myScroller' property uses 'Scroller', violating the forbidden type restriction for state variables.
 
+@Entry
 @Component
 struct ScrollerFailCase {
   @State myScroller: Scroller = new Scroller();
