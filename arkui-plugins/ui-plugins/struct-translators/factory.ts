@@ -997,9 +997,6 @@ export class factory {
             const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
             updatedBody.push(...methods);
         }
-        if (externalSourceName === ARKUI_BUILDER_SOURCE_NAME) {
-            updatedBody.push(...BuilderLambdaFactory.addConditionBuilderDecls());
-        }
         return arkts.factory.updateClassDeclaration(
             node,
             arkts.factory.updateClassDefinition(

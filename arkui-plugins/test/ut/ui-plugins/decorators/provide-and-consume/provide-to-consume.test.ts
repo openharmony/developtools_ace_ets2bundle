@@ -52,7 +52,8 @@ import { Component as Component, Column as Column, Text as Text } from "@ohos.ar
 import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagement";
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
@@ -74,7 +75,8 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 }
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
   
@@ -182,18 +184,21 @@ function main() {}
     this.__backing_str!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -243,18 +248,21 @@ function main() {}
     this.__backing_str!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

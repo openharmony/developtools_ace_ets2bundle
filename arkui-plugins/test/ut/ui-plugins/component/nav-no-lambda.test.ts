@@ -84,17 +84,20 @@ function main() {}
   public set pathStack(value: NavPathStack) {
     this.__backing_pathStack = value;
   }
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: NavDestinationStruct)=> void), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: NavDestinationStruct)=> void), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<NavDestinationStruct, __Options_NavDestinationStruct>(style, ((): NavDestinationStruct => {
       return new NavDestinationStruct(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): NavDestinationStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): NavDestinationStruct {
     throw new Error("Declare interface");
   }
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -130,12 +133,20 @@ function main() {}
 }
 
 @Component() export interface __Options_NavDestinationStruct {
-  get pathStack(): (NavPathStack | undefined)
+  get pathStack(): (NavPathStack | undefined) {
+  return undefined;
+  }
   
-  set pathStack(pathStack: (NavPathStack | undefined))
-  get __options_has_pathStack(): (boolean | undefined)
+  set pathStack(pathStack: (NavPathStack | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
+  get __options_has_pathStack(): (boolean | undefined) {
+  return undefined;
+  }
   
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined))
+  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
   
 }
 `;

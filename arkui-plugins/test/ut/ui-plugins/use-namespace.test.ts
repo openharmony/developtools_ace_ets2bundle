@@ -65,18 +65,21 @@ ns.ns_num;
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;

@@ -99,7 +99,7 @@ final class StateType extends BaseEnum<int> {
   }
 
   public static getValueOf(name: String): StateType {
-    for (let i = 0;((i) < (StateType.#NamesArray.length));(++i)) {
+    for (let i = ((StateType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (StateType.#NamesArray[i]))) {
         return StateType.#ItemsArray[i];
       }
@@ -108,7 +108,7 @@ final class StateType extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): StateType {
-    for (let i = 0;((i) < (StateType.#ValuesArray.length));(++i)) {
+    for (let i = ((StateType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (StateType.#ValuesArray[i]))) {
         return StateType.#ItemsArray[i];
       }
@@ -288,18 +288,21 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar12!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 

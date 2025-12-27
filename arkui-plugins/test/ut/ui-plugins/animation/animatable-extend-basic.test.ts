@@ -84,17 +84,20 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: AnimatablePropertyExample)=> void), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: AnimatablePropertyExample)=> void), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<AnimatablePropertyExample, __Options_AnimatablePropertyExample>(style, ((): AnimatablePropertyExample => {
       return new AnimatablePropertyExample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): AnimatablePropertyExample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): AnimatablePropertyExample {
     throw new Error("Declare interface");
   }
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -121,7 +124,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     AnimatablePropertyExample._invoke(@Memo() ((instance: AnimatablePropertyExample): void => {
       instance.applyAttributesFinish();
       return;

@@ -115,18 +115,21 @@ function main() {}
   public set lambdaOne(value: (()=> void)) {
     this.__backing_lambdaOne = value;
   }
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
     return new ResourceComponent(false, ({let gensym___<some_random_number> = storage;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
     }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

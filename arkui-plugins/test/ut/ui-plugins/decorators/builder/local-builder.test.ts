@@ -68,32 +68,37 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
       return new BuilderDemo(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
     throw new Error("Declare interface");
   }
   
-  @Memo() public showTextBuilder() {
+  @Memo() 
+  public showTextBuilder() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public showTextValueBuilder(@MemoSkip() param: string) {
+  @Memo() 
+  public showTextValueBuilder(@MemoSkip() param: string) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
       instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
       return;
     }), undefined);
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

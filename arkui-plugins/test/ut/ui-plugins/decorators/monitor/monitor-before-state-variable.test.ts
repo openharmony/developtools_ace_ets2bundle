@@ -138,17 +138,20 @@ function main() {}
     this.__backing_age!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
-  @Monitor({value:["message", "name"]}) public onStrChange1(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange1(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value(path);
       (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value(path);
@@ -156,7 +159,8 @@ function main() {}
     }));
   }
 
-  @Monitor({value:["message", "name"]}) public onStrChange2(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange2(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value(path);
       (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value(path);
@@ -164,7 +168,8 @@ function main() {}
     }));
   }
 
-  @Monitor({value:["name"]}) public onStrChange3(monitor: IMonitor) {
+  @Monitor({value:["name"]}) 
+  public onStrChange3(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value(path);
       (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value(path);
@@ -172,7 +177,8 @@ function main() {}
     }));
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   public constructor() {}
 

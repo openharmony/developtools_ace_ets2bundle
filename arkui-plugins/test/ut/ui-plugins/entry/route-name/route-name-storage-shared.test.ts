@@ -58,7 +58,8 @@ import { LocalStorage as LocalStorage } from "@ohos.arkui.stateManagement";
 
 const myStorage: (()=> LocalStorage) = (() => new LocalStorage())
 @Entry({routeName:"MyPage",storage:"myStorage",useSharedStorage:true}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   

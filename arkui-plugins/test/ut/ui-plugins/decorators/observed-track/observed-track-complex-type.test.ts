@@ -90,7 +90,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): Status {
-    for (let i = 0;((i) < (Status.#NamesArray.length));(++i)) {
+    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#NamesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -99,7 +99,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): Status {
-    for (let i = 0;((i) < (Status.#ValuesArray.length));(++i)) {
+    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (Status.#ValuesArray[i]))) {
         return Status.#ItemsArray[i];
       }

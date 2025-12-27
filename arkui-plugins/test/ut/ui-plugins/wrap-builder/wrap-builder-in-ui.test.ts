@@ -58,14 +58,16 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 
 function main() {}
 
-@Memo() function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Memo() function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
     return;
@@ -77,18 +79,21 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
     throw new Error(\"Declare interface\");
   }
 
-  @Memo() public testBuilder() {
+  @Memo() 
+  public testBuilder() {
     ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
@@ -99,7 +104,8 @@ function main() {}
     }));
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -140,7 +146,8 @@ const globalBuilderArr: Array<WrappedBuilder<MyBuilderFuncType>> = [wrapBuilder(
 
 function main() {}
 
-@Memo() function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -165,7 +172,8 @@ function main() {}
   }
 }
 
-@Memo() function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
@@ -197,18 +205,21 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): ImportStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): ImportStruct {
     throw new Error(\"Declare interface\");
   }
 
-  @Memo() public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public testBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -247,7 +258,8 @@ function main() {}
     }
   }
 
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
