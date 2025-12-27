@@ -103,14 +103,16 @@ class AB {
     this.__backing_arr = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
     throw new Error("Declare interface");
   }
 
@@ -124,7 +126,8 @@ class AB {
     } as Person));
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

@@ -132,17 +132,20 @@ function main() {}
 
   private __monitor_onStrChange: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
-  @Monitor({value:["message", "name"]}) public onStrChange(monitor: IMonitor) {
+  @Monitor({value:["message", "name"]}) 
+  public onStrChange(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
       console.info(\`\${path} changed from \${({let gensym%%_43 = monitor.value(path);
       (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value(path);
@@ -150,7 +153,8 @@ function main() {}
     }));
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

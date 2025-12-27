@@ -84,18 +84,21 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(__memo_context, ((__memo_id) + (47330804)), style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   
-  @Memo() public itemHead(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() text: string) {
+  @Memo() 
+  public itemHead(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() text: string) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (30080009)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -120,7 +123,8 @@ function main() {}
     }
   }
   
-  @Memo() public itemFoot(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() num: number) {
+  @Memo() 
+  public itemFoot(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() num: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (143004952)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -145,7 +149,8 @@ function main() {}
     }
   }
   
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (75236795)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

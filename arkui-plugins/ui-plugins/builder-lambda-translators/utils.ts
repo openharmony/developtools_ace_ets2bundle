@@ -62,11 +62,6 @@ export type InstanceCallInfo = {
     call: arkts.CallExpression;
 };
 
-export type BuilderLambdaConditionBranchInfo = {
-    statements: readonly arkts.Statement[];
-    breakIndex: number;
-};
-
 export type BuilderLambdaChainingCallArgInfo = {
     arg: arkts.Expression;
     hasBuilder?: boolean;
@@ -321,8 +316,8 @@ export function isBuilderLambdaCall(
         }
         return isBuilderLambdaMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl) && !!decl.function) {
-        return hasBuilderLambdaAnnotation(decl.function);
+    if (arkts.isFunctionExpression(decl) && !!decl.scriptFunction) {
+        return hasBuilderLambdaAnnotation(decl.scriptFunction);
     }
     return false;
 }
@@ -384,8 +379,8 @@ export function findBuilderLambdaInCall(
     if (arkts.isMethodDefinition(decl)) {
         return findBuilderLambdaInMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl) && !!decl.function) {
-        return findBuilderLambdaAnnotation(decl.function);
+    if (arkts.isFunctionExpression(decl) && !!decl.scriptFunction) {
+        return findBuilderLambdaAnnotation(decl.scriptFunction);
     }
     return undefined;
 }
@@ -635,16 +630,6 @@ export function collectComponentAttributeImport(type: arkts.TypeNode | undefined
         ImportCollector.getInstance().collectSource(attributeName, moduleName);
         ImportCollector.getInstance().collectImport(attributeName);
     }
-}
-
-export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean {
-    if (!statement.parent) {
-        return false;
-    }
-    if (arkts.isIfStatement(statement.parent)) {
-        return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
-    }
-    return false;
 }
 
 function findClassInstanceFromType(

@@ -163,18 +163,21 @@ function main() {}
     this.__backing_count7!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Ancestors)=> void), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Ancestors)=> void), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Ancestors, __Options_Ancestors>(style, ((): Ancestors => {
       return new Ancestors(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Ancestors {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Ancestors {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 
