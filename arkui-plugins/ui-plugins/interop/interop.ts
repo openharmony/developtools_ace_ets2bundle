@@ -89,25 +89,17 @@ function createExtraInfo(properties: string[], value: string[]): arkts.Statement
     return body;
 }
 
-function generateTSASExpression(expression: arkts.AstNode): arkts.Expression {
-    return arkts.factory.createTSAsExpression(
-        arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                expression,
-                arkts.factory.createIdentifier('unwrap'),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            undefined
+function generateUnwrapCallExpression(expression: arkts.Expression): arkts.Expression {
+    return arkts.factory.createCallExpression(
+        arkts.factory.createMemberExpression(
+            expression,
+            arkts.factory.createIdentifier('unwrap'),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
         ),
-        arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
-                arkts.factory.createIdentifier('Object')
-            )
-        ),
-        false
+        undefined,
+        undefined
     );
 }
 
@@ -118,10 +110,10 @@ function newComponent(context: InteropContext, className: string): arkts.Stateme
             arkts.factory.createETSNewClassInstanceExpression(
                 arkts.factory.createIdentifier(className),
                 [
-                    generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
-                    generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
+                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
+                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
                     context.storage ?? arkts.factory.createUndefinedLiteral(),
-                    generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
+                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
                     arkts.factory.createTSAsExpression(
                         arkts.factory.createArrowFunction(
                             arkts.factory.createScriptFunction(
@@ -143,7 +135,7 @@ function newComponent(context: InteropContext, className: string): arkts.Stateme
                         ),
                         false
                     ),
-                    generateTSASExpression(arkts.factory.createIdentifier(InteropInternalNames.EXTRAINFO))
+                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.EXTRAINFO))
                 ]
             )
         )
