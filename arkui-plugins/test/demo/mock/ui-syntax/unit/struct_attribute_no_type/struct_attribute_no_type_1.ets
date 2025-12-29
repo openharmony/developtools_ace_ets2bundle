@@ -14,8 +14,8 @@
  */
 
 import { Entry, ComponentV2, Text } from '@ohos.arkui.component';
-import { Prop, State, Local, Event, Provide, Provider,
-  Consumer, Param, Link, Consume, Once, Builder, BuilderParam } from "@ohos.arkui.stateManagement";
+import { Local, Event, Provide, Provider, Require
+  Consumer, Param, Once, Builder, BuilderParam } from "@ohos.arkui.stateManagement";
 
 // Expected: All struct properties must explicitly declare a type.
 // Actual: Properties like 'regular_value', 'local_value', 'builder_value', etc., do not have types.

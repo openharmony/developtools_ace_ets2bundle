@@ -17,7 +17,7 @@
  * This test case is used to export child components containing the static variables for use in file 'validateStaticVariables.ets'.
  */
 
-import { Entry, Component, Column, Text, ComponentV2 } from '@ohos.arkui.component'
+import { Component, Column, Text, ComponentV2 } from '@ohos.arkui.component'
 import { Param,  Require } from "@ohos.arkui.stateManagement";
 
 @Component
