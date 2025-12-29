@@ -38,7 +38,7 @@ const compileFile = new CompileFilePath(
 const variableInitializationTransform: Plugins = {
     name: "ui-syntax-plugin",
     parsed: uiSyntaxLinterTransform().parsed,
-    checked: uiSyntaxLinterTransform().parsed,
+    checked: uiSyntaxLinterTransform().checked,
 };
 
 async function testParsedTransformer(this: PluginTestContext): Promise<void> {
