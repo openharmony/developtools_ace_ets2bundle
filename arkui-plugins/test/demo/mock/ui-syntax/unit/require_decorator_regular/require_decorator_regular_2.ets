@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Column, Text } from '@ohos.arkui.component';
-import { Require } from "@ohos.arkui.stateManagement";
+import { Require, State } from "@ohos.arkui.stateManagement";
 
 // Expected: Fields marked with '@Require' should not be private, because required properties are intended to be passed
 // in from outside the component (via the constructor) and must be accessible from the caller.

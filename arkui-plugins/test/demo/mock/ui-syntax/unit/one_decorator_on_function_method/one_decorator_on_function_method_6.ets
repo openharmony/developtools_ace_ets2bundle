@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Extend, Navigation, Entry, Component } from '@ohos.arkui.component';
+import { Entry, Component } from '@ohos.arkui.component';
 
 // Expected: A top-level function may only use the '@Builder' decorator. Any other decorator including custom 
 // decorators is not permitted on global functions.

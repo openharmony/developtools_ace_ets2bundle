@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Column } from '@ohos.arkui.component';
-import { Event, Provider, Consumer, Monitor, Computed } from "@ohos.arkui.stateManagement";
+import { Event, Provider, Consumer } from "@ohos.arkui.stateManagement";
 
 // Expected: New V2 decorators such as '@Event', '@Provider', and '@Consumer' must only be used inside structs that are 
 // annotated with '@ComponentV2'.These decorators are not allowed in components that still use the legacy

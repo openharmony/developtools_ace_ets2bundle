@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import { Entry, ComponentV2, Column } from '@ohos.arkui.component';
-import { State, Prop, Local, Provide, Consume, LocalStorageProp, LocalStorageLink, StorageProp, StorageLink,
+import { State, Prop, Provide, Consume, LocalStorageProp, LocalStorageLink, StorageProp, StorageLink,
  Link, ObjectLink, Observed, Watch } from "@ohos.arkui.stateManagement";
 
 // Expected: Legacy V1 field decorators such as '@State', '@Prop', '@Link', '@Provide', '@Consume', '@StorageLink', 
