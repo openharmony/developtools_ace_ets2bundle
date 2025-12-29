@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Builder, Styles, AnimatableExtend, Entry, Component, Text } from '@ohos.arkui.component';
+import { Builder, Styles, AnimatableExtend, Entry, Component } from '@ohos.arkui.component';
 
 // Expected: A top-level (global) function may only use the '@Builder' decorator. If a function is decorated with any 
 // other decorator — or with a combination like '@Builder' + another decorator it violates the rule and should 

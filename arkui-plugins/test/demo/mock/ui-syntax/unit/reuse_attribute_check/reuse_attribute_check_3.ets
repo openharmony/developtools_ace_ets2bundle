@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, ReusableV2, Reusable, Text } from '@ohos.arkui.component';
+import { Entry, Component, ComponentV2, ReusableV2, Reusable, Text } from '@ohos.arkui.component';
 
 // Expected: The 'reuseId' attribute is only applicable to components decorated with both @ComponentV2 and @ReusableV2.
 // Actual: 'reuseId' was used on a component not decorated with both @ComponentV2 and @ReusableV2.

@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { Column, Text, Component, ComponentV2, Entry } from '@ohos.arkui.component';
-import { State } from "@ohos.arkui.stateManagement";
+import { Column, Text, Component, ComponentV2, Entry, Reusable } from '@ohos.arkui.component';
 
 // Expected: A custom component decorated with '@ComponentV2' must not render any child component that is decorated 
 // with '@Reusable' (v1). Reusable v1 components are not supported inside a v2 component tree, so this combination

@@ -4,7 +4,7 @@
       {
         "message": "When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.",
         "position": {
-          "line": 42,
+          "line": 41,
           "column": 7
         }
       }
@@ -26,7 +26,7 @@
       {
         "message": "When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.",
         "position": {
-          "line": 43,
+          "line": 42,
           "column": 7
         }
       }

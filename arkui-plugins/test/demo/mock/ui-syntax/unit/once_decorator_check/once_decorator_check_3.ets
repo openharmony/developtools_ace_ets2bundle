@@ -30,6 +30,6 @@ struct Test {
 }
 
 class v2DecoratorInClass {
-    @Once param_once_value: string = "hello";
+    @Once @Param param_once_value: string = "hello";
     @Once once_value: string = "hello";
 }

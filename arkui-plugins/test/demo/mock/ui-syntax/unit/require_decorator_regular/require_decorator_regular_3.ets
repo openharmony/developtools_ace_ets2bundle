@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Row, Text, ComponentV2 } from '@ohos.arkui.component';
-import { Require, Param, Event } from "@ohos.arkui.stateManagement";
+import { Entry, Component, Row, Text, ComponentV2, BuilderParam } from '@ohos.arkui.component';
+import { Require, Param } from "@ohos.arkui.stateManagement";
 
 // Expected: Properties decorated with '@Require' must not be private, because required fields must be externally 
 // assignable through the component constructor. A private field cannot be provided by the caller, so '@Require' and 
