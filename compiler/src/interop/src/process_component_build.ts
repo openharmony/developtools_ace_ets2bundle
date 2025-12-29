@@ -2307,6 +2307,7 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
           isRecycleComponent, isReuseComponentInV2, isStyleFunction);
       }
+      processInteropComponent(temp.expression.getText(), node, log);
       break;
     }
     if (!flag) {
@@ -2329,6 +2330,17 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     }
   }
 }  
+
+function processInteropComponent(compName: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (componentCollection.arkoalaComponents.has(compName)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `'${node.getText()}' does not meet UI component syntax.`,
+      pos: node.getStart(),
+      code: '10905206'
+    });
+  }
+}
 
 function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: boolean): boolean {
   return (ts.isIfStatement(node) || ts.isSwitchStatement(node)) && isStylesAttr;
