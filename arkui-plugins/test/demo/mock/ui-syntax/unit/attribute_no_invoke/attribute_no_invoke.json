@@ -1,0 +1,68 @@
+{
+  "attribute_no_invoke_1": {
+    "messages": [
+      {
+        "message": "'Text(\"Hello\").onClick;' does not meet UI component syntax.",
+        "position": {
+          "line": 26,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "attribute_no_invoke_2": {
+    "messages": [
+      {
+        "message": "'Text(\"Hello\").fontSize;' does not meet UI component syntax",
+        "position": {
+          "line": 26,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "attribute_no_invoke_3": {
+    "messages": [
+      {
+        "message": "'Row().width(\"100%\").height;' does not meet UI component syntax.",
+        "position": {
+          "line": 26,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "attribute_no_invoke_4": {
+    "messages": [
+      {
+        "message": "'Column().width(100).alignItems;' does not meet UI component syntax.",
+        "position": {
+          "line": 25,
+          "column": 5
+        }
+      }
+    ]
+  },
+   "attribute_no_invoke_5": {
+    "messages": [
+      {
+        "message": "'Image(\"test.png\").objectFit;' does not meet UI component syntax.",
+        "position": {
+          "line": 27,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "attribute_no_invoke_6": {
+    "messages": [
+      {
+        "message": "'Button(\"Click me\").type(ButtonType.Capsule).stateEffect(true).backgroundColor;'",
+        "position": {
+          "line": 26,
+          "column": 7
+        }
+      }
+    ]
+  }
+}

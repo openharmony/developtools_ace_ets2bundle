@@ -1,0 +1,68 @@
+{
+  "check_decorated_property_type_1": {
+    "messages": [
+      {
+        "message": "The '@State' property 'message' cannot be a 'CustomDialogController' object.",
+        "position": {
+          "line": 27,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "check_decorated_property_type_2": {
+    "messages": [
+      {
+        "message": "The '@State' property 'myScroller' cannot be a 'Scroller' object.",
+        "position": {
+          "line": 25,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "check_decorated_property_type_3": {
+    "messages": [
+      {
+        "message": "The '@Link' property 'dialogCtrl' cannot be a 'CustomDialogController' object.",
+        "position": {
+          "line": 25,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "check_decorated_property_type_4": {
+    "messages": [
+      {
+        "message": "The '@Consume' property 'videoCtrl' cannot be a 'VideoController' object.",
+        "position": {
+          "line": 25,
+          "column": 12
+        }
+      }
+    ]
+  },
+  "check_decorated_property_type_5": {
+    "messages": [
+      {
+        "message": "The '@StoragePropRef' property 'tabCtrl' cannot be a 'TabsController' object.",
+        "position": {
+          "line": 25,
+          "column": 40
+        }
+      }
+    ]
+  },
+  "check_decorated_property_type_6": {
+    "messages": [
+      {
+        "message": "The '@StorageLink' property 'appScroller' cannot be a 'Scroller' object.",
+        "position": {
+          "line": 25,
+          "column": 34
+        }
+      }
+    ]
+  }
+}
