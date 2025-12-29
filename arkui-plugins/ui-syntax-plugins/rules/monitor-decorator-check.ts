@@ -36,6 +36,29 @@ interface HandleMapSetTypeParams {
     context: MonitorPathValidationContext;
 }
 
+interface ArrayDimension {
+    typeName: string,
+    dimension: number
+}
+
+const CONTEXT_TYPE_CLASS = 'class';
+const CONTEXT_TYPE_STRUCT = 'struct';
+
+const STRUCT_REQUIRED_DECORATORS = [
+    PresetDecorators.LOCAL,
+    PresetDecorators.PARAM,
+    PresetDecorators.PROVIDER,
+    PresetDecorators.CONSUMER,
+    PresetDecorators.COMPUTED
+];
+
+enum ArrayTypes {
+  Array = 'Array',
+  Map   = 'Map',
+  Set   = 'Set',
+  Date  = 'Date'
+}
+
 class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
@@ -73,16 +96,6 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     private collectNode: Map<string, arkts.AstNode> = new Map();
     private enumMemberValues: Map<string, string> = new Map();
-    private CONTEXT_TYPE_CLASS = 'class';
-    private CONTEXT_TYPE_STRUCT = 'struct';
-    private STRUCT_REQUIRED_DECORATORS = [
-        PresetDecorators.LOCAL,
-        PresetDecorators.PARAM,
-        PresetDecorators.PROVIDER,
-        PresetDecorators.CONSUMER,
-        PresetDecorators.COMPUTED
-    ];
-    private ARRAY_TYPES = ['Array', 'Map', 'Set', 'Date'];
     private initList(node: arkts.AstNode): void {
         if (!arkts.isEtsScript(node) || node.isNamespace) {
             return;
@@ -268,6 +281,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
 
+        const property = this.getPropertyInDeclByName(node, firstSegment);
+        if (property && !this.checkMonitorArrayIsValid(monitorDecorator, property, memberSegments, context)) {
+            return;
+        }
+
         const isGetMethod = this.isGetMethod(node, firstSegment);
         const firstSegmentTypeName = this.firstSegmentTypeName(firstSegment, node);
 
@@ -307,8 +325,228 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
+    private checkMonitorArrayIsValid(
+        monitorDecorator: arkts.AnnotationUsage,
+        property: arkts.ClassProperty,
+        memberSegments: string[],
+        context: MonitorPathValidationContext
+    ): boolean {
+        const dimMap: Map<string, Set<number>> = this.getDimMapByProperty(property);
+        const { typeName, dimension } = this.getMaxArrayDimension(dimMap);
+        if (dimension === 0 || memberSegments.length === 0) {
+            return true;
+        }
+        if (memberSegments.length === 1 && memberSegments[0] === 'length') {
+            this.checkPropHasTargetDecorator(monitorDecorator, property, context);
+            return false;
+        }
+        if (!this.isArrayIndex(memberSegments[0])) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
+            return false;
+        } else {
+            this.checkMonitorArrayElementIsValid(
+                monitorDecorator,
+                property,
+                memberSegments,
+                dimMap,
+                dimension,
+                context
+            );
+            return false;
+        }
+    }
+
+    private getDimMapByProperty(property: arkts.ClassProperty): Map<string, Set<number>> {
+        const dimMap: Map<string, Set<number>> = new Map<string, Set<number>>();
+        const typeAnnotation = property.typeAnnotation;
+        if (!typeAnnotation) {
+            return dimMap;
+        }
+
+        const addDim = (typeName: string, dim: number): void => {
+            const set = dimMap.get(typeName) ?? new Set<number>();
+            set.add(dim);
+            dimMap.set(typeName, set);
+        };
+
+        if (arkts.isETSUnionType(typeAnnotation)) {
+            const types = typeAnnotation.types;
+            types.forEach((type) => {
+                const { typeName, dimension } = this.getArrayDimensionByType(type);
+                addDim(typeName, dimension);
+            });
+        } else if (arkts.isTSArrayType(typeAnnotation)) {
+            const { typeName, dimension }= this.getArrayDimensionByType(typeAnnotation);
+            addDim(typeName, dimension);
+        }
+        return dimMap;
+    }
+
+    private getMaxArrayDimension(dimMap: Map<string, Set<number>>): ArrayDimension {
+        let typeName = '';
+        let dimension = 0;
+        for (const [name, dimSet] of dimMap) {
+            for (const dim of dimSet) {
+                if (dim > dimension) {
+                    dimension = dim;
+                    typeName = name;
+                }
+            }
+        }
+        return { typeName, dimension };
+    }
+
+    private checkPropHasTargetDecorator(
+        monitorDecorator: arkts.AnnotationUsage,
+        property: arkts.ClassProperty,
+        context: MonitorPathValidationContext
+    ): void {
+        const hasDecoratorInClass = getClassPropertyAnnotationNames(property).includes(PresetDecorators.TRACE);
+        const hasDecoratorInStruct = context.hasRequiredDecorator ?? false;
+        if ((context.type === CONTEXT_TYPE_CLASS && !hasDecoratorInClass) ||
+            (context.type === CONTEXT_TYPE_STRUCT && !hasDecoratorInStruct)) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return;
+        }
+        return;
+    }
+
+    private checkMonitorArrayElementIsValid(
+        monitorDecorator: arkts.AnnotationUsage,
+        property: arkts.ClassProperty,
+        memberSegments: string[],
+        dimMap: Map<string, Set<number>>,
+        maxDim: number,
+        context: MonitorPathValidationContext
+    ): void {
+        const nestDepth = this.getNestDepth(memberSegments);
+        if (maxDim < nestDepth) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
+            return;
+        }
+        if ((maxDim >= nestDepth) && memberSegments.length === nestDepth) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return;
+        }
+
+        const newSegments = memberSegments.slice(nestDepth);
+        const equalDimTypes: Set<string> = this.getEqualDimTypes(dimMap, nestDepth);
+        let memberExist = false;
+        let currentType = '';
+        for (const typeName of equalDimTypes) {
+            if (this.memberSegmentsTypeName(typeName, newSegments)) {
+                memberExist = true;
+                currentType = typeName;
+            }
+        }
+        if (!memberExist) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
+            return;
+        }
+        if (this.checkOtherTypePossible(dimMap, currentType, nestDepth)) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return;
+        };
+        if (!this.checkNestedPathStateVariables(currentType, newSegments)) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return;
+        }
+        this.checkPropHasTargetDecorator(monitorDecorator, property, context)
+    }
+
+    private checkOtherTypePossible(dimMap: Map<string, Set<number>>, typeName: string, dim: number): boolean {
+        for (const [name, dimSet] of dimMap) {
+            for (const d of dimSet) {
+                if (!(typeName === name && dim === d)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private getEqualDimTypes(dimMap: Map<string, Set<number>>, nestDepth: number): Set<string> {
+        let equalDimTypes: Set<string> = new Set<string>();
+        for (const [name, dimSet] of dimMap) {
+            for (const dim of dimSet) {
+                if (dim === nestDepth) {
+                    equalDimTypes.add(name);
+                }
+            }
+        }
+        return equalDimTypes;
+    }
+
+    private getArrayDimensionByType(typeNode: arkts.TypeNode): ArrayDimension {
+        let dimension = 0;
+        let curNode: arkts.TypeNode = typeNode;
+        while (arkts.isTSArrayType(curNode)) {
+            dimension ++;
+            if (!curNode.elementType) {
+                break;
+            }
+            curNode = curNode.elementType;
+        }
+        let typeName = '';
+        if (
+            arkts.isETSTypeReference(curNode) &&
+            curNode.part &&
+            arkts.isETSTypeReferencePart(curNode.part) &&
+            curNode.part.name &&
+            arkts.isIdentifier(curNode.part.name)
+        ) {
+            typeName = curNode.part.name.name;
+        }
+        return {typeName, dimension};
+    }
+
+    private getNestDepth(memberSegments: string[]): number {
+        let nestDepth = 0;
+        for (const segment of memberSegments) {
+            if (this.isArrayIndex(segment)) {
+                nestDepth ++;
+            } else {
+                break;
+            }
+        }
+        return nestDepth;
+    }
+
+    private isArrayIndex(str: string): boolean {
+        return /^[0-9]+$/.test(str) && !/^0\d/.test(str) && Number.isSafeInteger(Number(str));
+    }
+
+    private getPropertyInDeclByName(
+        node: arkts.ClassDeclaration | arkts.StructDeclaration,
+        propertyName: string
+    ): arkts.ClassProperty | undefined {
+        const property = node.definition?.body?.find(member =>
+            arkts.isClassProperty(member) &&
+            member.key &&
+            arkts.isIdentifier(member.key) &&
+            member.key.name === propertyName
+        );
+        if (property) {
+            return property as arkts.ClassProperty;
+        }
+
+        if (node.definition?.super && arkts.isETSTypeReference(node.definition.super)) {
+            const superClassPart = node.definition.super.part;
+            if (superClassPart && arkts.isETSTypeReferencePart(superClassPart) &&
+                superClassPart.name && arkts.isIdentifier(superClassPart.name)) {
+                const parentClassName = superClassPart.name.name;
+                const parentNode = this.collectNode.get(parentClassName);
+                if (parentNode && arkts.isClassDeclaration(parentNode)) {
+                    return this.getPropertyInDeclByName(parentNode, propertyName);
+                }
+            }
+        }
+
+        return undefined;
+    }
+
     private checkFirstSegmentExists(context: MonitorPathValidationContext, firstSegment: string): boolean {
-        if (context.type === this.CONTEXT_TYPE_CLASS) {
+        if (context.type === CONTEXT_TYPE_CLASS) {
             return !!(context.hasProperty && context.hasProperty(firstSegment));
         }
         return !!(context.variableMap && context.variableMap.get(firstSegment) !== undefined);
@@ -359,7 +597,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         isGetMethod: boolean,
         context: MonitorPathValidationContext
     ): void {
-        if (context.type === this.CONTEXT_TYPE_CLASS) {
+        if (context.type === CONTEXT_TYPE_CLASS) {
             if (this.checkFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context)) {
                 this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
             }
@@ -374,7 +612,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         isGetMethod: boolean,
         context: MonitorPathValidationContext
     ): boolean {
-        if (context.type === this.CONTEXT_TYPE_CLASS) {
+        if (context.type === CONTEXT_TYPE_CLASS) {
             if (!this.checkFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context)) {
                 return true;
             }
@@ -510,7 +748,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         firstSegment: string,
         context: MonitorPathValidationContext
     ): boolean {
-        const isClass = context.type === this.CONTEXT_TYPE_CLASS;
+        const isClass = context.type === CONTEXT_TYPE_CLASS;
         const hasComputed = isClass
             ? this.hasGetMethodWithDecorator(
                 context.node as arkts.ClassDeclaration,
@@ -531,7 +769,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         firstSegment: string,
         context: MonitorPathValidationContext
     ): boolean {
-        const isStateVariable = context.type === this.CONTEXT_TYPE_CLASS
+        const isStateVariable = context.type === CONTEXT_TYPE_CLASS
             ? this.hasClassPropertyWithDecorator(
                 context.node as arkts.ClassDeclaration,
                 firstSegment,
@@ -557,7 +795,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     ): void {
         monitorPaths.forEach(path => {
             this.validateMonitorPath(monitorDecorator, path, {
-                type: this.CONTEXT_TYPE_CLASS,
+                type: CONTEXT_TYPE_CLASS,
                 node,
                 hasProperty: (name: string) => this.hasClassProperty(node, name),
                 hasStateVariable: (name: string, isGetMethod: boolean) => {
@@ -588,7 +826,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             const hasRequiredDecorator = requiredDecorators.some(decorator => decorators.includes(decorator));
 
             this.validateMonitorPath(monitorDecorator, path, {
-                type: this.CONTEXT_TYPE_STRUCT,
+                type: CONTEXT_TYPE_STRUCT,
                 node,
                 variableMap,
                 requiredDecorators,
@@ -709,7 +947,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         if (isStructNode) {
             return isGetMethod
                 ? this.hasGetMethodWithDecoratorInStruct(typeNode as arkts.StructDeclaration, segment, PresetDecorators.COMPUTED)
-                : this.hasClassPropertyWithRequiredDecorators(typeNode as arkts.StructDeclaration, segment, this.STRUCT_REQUIRED_DECORATORS);
+                : this.hasClassPropertyWithRequiredDecorators(typeNode as arkts.StructDeclaration, segment, STRUCT_REQUIRED_DECORATORS);
         }
 
         return false;
@@ -866,7 +1104,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             if (!monitorDecorator || !monitorPaths) {
                 return;
             }
-            this.validateMonitorPathsInComponentV2(monitorDecorator, monitorPaths, variableMap, this.STRUCT_REQUIRED_DECORATORS, node);
+            this.validateMonitorPathsInComponentV2(monitorDecorator, monitorPaths, variableMap, STRUCT_REQUIRED_DECORATORS, node);
         })
     }
 
@@ -1215,11 +1453,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private isMapType(typeName: string): boolean {
-        return typeName === this.ARRAY_TYPES[1];
+        return typeName === ArrayTypes.Map;
     }
 
     private isSetType(typeName: string): boolean {
-        return typeName === this.ARRAY_TYPES[2];
+        return typeName === ArrayTypes.Set;
     }
 
     private findPropTypeInParentClass(node: arkts.AstNode, element: string): string | undefined {
