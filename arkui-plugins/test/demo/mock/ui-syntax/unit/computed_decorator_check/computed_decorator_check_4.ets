@@ -21,6 +21,7 @@ import { Trace, Computed } from "@ohos.arkui.stateManagement";
 // two-way bind on a computed value.
 
 @ComponentV2
+@Entry
 struct BindingError {
   @Trace firstName: string = "John";
   @Trace lastName: string = "Doe";

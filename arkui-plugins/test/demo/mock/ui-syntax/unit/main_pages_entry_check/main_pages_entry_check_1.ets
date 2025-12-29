@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, ComponentV2, Reusable, Column, Text } from '@ohos.arkui.component';
-import { State } from "@ohos.arkui.stateManagement";
+import { Component, Column, Text } from '@ohos.arkui.component';
 
 // Expected: A main page configured in 'main_pages.json' or 'build-profile.json5' must declare exactly one component
 // annotated with '@Entry' as its entry point.

@@ -21,7 +21,6 @@ import { Computed } from "@ohos.arkui.stateManagement";
 // with '@Computed', violating usage rules.
 
 @Entry
-@Entry
 @ComponentV2
 struct V2MemberDecorator {
   @Computed computed_value: string = "hello";
