@@ -96,18 +96,21 @@ function main() {}
     this.__backing_text1!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Parant)=> void), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Parant)=> void), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parant, __Options_Parant>(style, ((): Parant => {
       return new Parant(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parant {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parant {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -204,18 +207,21 @@ function main() {}
     this.__backing_childText4!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,

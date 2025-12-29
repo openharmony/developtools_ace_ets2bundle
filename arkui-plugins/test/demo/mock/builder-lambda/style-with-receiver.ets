@@ -17,13 +17,13 @@ import { Memo } from "@ohos.arkui.stateManagement" // should be insert by ui-plu
 import { Text, TextAttribute, Column, Component} from "@ohos.arkui.component"
 import hilog from '@ohos.hilog'
 
-@Memo function cardStyle(this: TextAttribute, num: number, str: string): this {
+@Memo function cardStyle(this: TextAttribute, num: number, str: string): TextAttribute {
 	this.fontSize(num);
 	this.backgroundColor(str);
 	return this;
 }
 
-@Memo function style22(this: TextAttribute): this {
+@Memo function style22(this: TextAttribute): TextAttribute {
 	this.fontWeight(700);
 	return this;
 }

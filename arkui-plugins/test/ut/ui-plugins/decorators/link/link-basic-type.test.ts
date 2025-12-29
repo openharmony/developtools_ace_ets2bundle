@@ -139,18 +139,21 @@ function main() {}
     this.__backing_linkVar5!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: LinkParent)=> void), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: LinkParent)=> void), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<LinkParent, __Options_LinkParent>(style, ((): LinkParent => {
       return new LinkParent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_LinkParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): LinkParent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_LinkParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): LinkParent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 

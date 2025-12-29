@@ -14,7 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ConditionScopeVisitor } from './condition-scope-visitor';
 import { findClassInstanceFromCallArgument } from './utils';
 import { factory as BuilderLambdaFactory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
@@ -23,7 +22,7 @@ import { coerceToAstNode } from '../../common/arkts-utils';
 
 export class BuilderFactory {
     /**
-     * rewrite `@Builder` function body with `ConditionScopeVisitor`.
+     * rewrite `@Builder` function body.
      *
      * @internal
      */
@@ -36,15 +35,6 @@ export class BuilderFactory {
         if (!funcBody || !arkts.isBlockStatement(funcBody)) {
             return _node;
         }
-        const conditionScopeVisitor = ConditionScopeVisitor.getInstance();
-        funcBody = arkts.factory.updateBlock(
-            funcBody,
-            funcBody.statements.map((st) => {
-                const newNode = conditionScopeVisitor.visitor(st);
-                conditionScopeVisitor.reset();
-                return newNode;
-            })
-        );
         return UIFactory.updateScriptFunction(_node, { params, body: funcBody });
     }
 

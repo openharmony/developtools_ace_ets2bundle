@@ -23,6 +23,7 @@ import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 interface PropertyInitInfo {
     hasRequire: boolean;
+    hasTrailingClosure: boolean;
     shouldInitViaComponentConstructor: boolean;
     cannotInitViaComponentConstructor: boolean;
     annotationName: string;
@@ -123,6 +124,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
             return;
         }
         const props: string[] = this.getChildKeyNameArray(node);
+        const hasTrailingClosure: boolean = node.isTrailingCall;
         structDecl?.getChildren?.().forEach(member => {
             if (!arkts.isClassProperty(member) || !member.key || !arkts.isIdentifier(member.key)) {
                 return;
@@ -131,7 +133,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
             if (member.annotations.length === 0 || propertyName === '') {
                 return;
             }
-            const propertyInitInfo: PropertyInitInfo = this.getStructPropertyInfo(member);
+            const propertyInitInfo: PropertyInitInfo = this.getStructPropertyInfo(member, hasTrailingClosure);
             const messageId: string | undefined = this.getMessageId(propertyInitInfo, propertyName, props);
             if (!messageId) {
                 return;
@@ -148,7 +150,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         });
     }
 
-    private getStructPropertyInfo(member: arkts.ClassProperty): PropertyInitInfo {
+    private getStructPropertyInfo(member: arkts.ClassProperty, hasTrailingClosure: boolean): PropertyInitInfo {
         let hasRequire: boolean = false;
         let shouldInitializeViaComponentConstructor: boolean = false;
         let cannotInitViaComponentConstructor: boolean = false;
@@ -168,6 +170,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         });
         return {
             hasRequire: hasRequire,
+            hasTrailingClosure: hasTrailingClosure,
             shouldInitViaComponentConstructor: shouldInitializeViaComponentConstructor,
             cannotInitViaComponentConstructor: cannotInitViaComponentConstructor,
             annotationName: annotationName
@@ -177,7 +180,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
     private getMessageId(propertyInitInfo: PropertyInitInfo, propertyName: string, props: string[]): string | undefined {
         let messageId: string | undefined = undefined;
         let hasProp: boolean = props.some(tempProp => tempProp === propertyName);
-        if (propertyInitInfo.hasRequire && !hasProp) {
+        if (propertyInitInfo.hasRequire && !propertyInitInfo.hasTrailingClosure && !hasProp) {
             messageId = this.messages.requireVariableInitializationViaComponentConstructor;
         }
         if (propertyInitInfo.shouldInitViaComponentConstructor && !hasProp) {

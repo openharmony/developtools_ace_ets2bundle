@@ -26,7 +26,7 @@ const mustInitializeDecorators = [
     PresetDecorators.PROVIDE,
 ];
 // Disables a list of decorators that are initialized locally
-const prohibitInitializeDecorators = [PresetDecorators.LINK, PresetDecorators.OBJECT_LINK, PresetDecorators.CONSUME];
+const prohibitInitializeDecorators = [PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
 
 // When used with @Require, non-initialization is allowed
 const requireCanReleaseMandatoryDecorators = [PresetDecorators.STATE, PresetDecorators.PROVIDE];

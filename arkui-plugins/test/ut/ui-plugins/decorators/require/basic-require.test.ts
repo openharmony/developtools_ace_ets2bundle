@@ -54,7 +54,8 @@ import { Component as Component, ComponentV2 as ComponentV2, BuilderParam as Bui
 import { State as State, Require as Require, PropRef as PropRef, Provide as Provide, Param as Param } from "@ohos.arkui.stateManagement";
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
   public hello: string = "hello";
@@ -86,7 +87,8 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 }
 
 @ComponentV2() final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() content?: (()=> void)): V2222 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() content?: (()=> void)): V2222 {
     throw new Error("Declare interface");
   }
 
@@ -297,18 +299,21 @@ function main() {}
     this.__backing_builder = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___56395834 = storage;
       (((gensym___56395834) == (null)) ? undefined : gensym___56395834())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 
@@ -336,17 +341,20 @@ function main() {}
     return this.__backing_select1!.get();
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<V2222, __Options_V2222>(style, ((): V2222 => {
       return new V2222();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): V2222 {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_V2222, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): V2222 {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   public constructor() {}
 

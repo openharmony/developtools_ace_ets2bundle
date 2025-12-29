@@ -168,11 +168,14 @@ class GGG {
 
   private __monitor_onJobChange: (IMonitorDecoratedVariable | undefined);
 
-  @Monitor({value:["name"]}) public onNameChange(monitor: IMonitor) {}
+  @Monitor({value:["name"]}) 
+  public onNameChange(monitor: IMonitor) {}
 
-  @Monitor({value:["strArr.0", "age"]}) public onAgeChange(monitor: IMonitor) {}
+  @Monitor({value:["strArr.0", "age"]}) 
+  public onAgeChange(monitor: IMonitor) {}
 
-  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) public onJobChange(monitor: IMonitor) {}
+  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) 
+  public onJobChange(monitor: IMonitor) {}
 
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
@@ -323,19 +326,23 @@ class GGG {
 
   private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
-  @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) public onPerChange(monitor: IMonitor) {}
+  @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) 
+  public onPerChange(monitor: IMonitor) {}
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   public constructor() {}
 

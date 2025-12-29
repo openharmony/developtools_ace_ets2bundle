@@ -54,7 +54,8 @@ import { Component as Component, Text as Text } from "@ohos.arkui.component";
 import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() content?: (()=> void)): ImportStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() content?: (()=> void)): ImportStruct {
     throw new Error("Declare interface");
   }
 
@@ -107,18 +108,21 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ImportStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ImportStruct {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     SimpleStruct._invoke(@Memo() ((instance: SimpleStruct): void => {
       instance.applyAttributesFinish();
       return;

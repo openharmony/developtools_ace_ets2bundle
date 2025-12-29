@@ -79,22 +79,27 @@ function main() {}
     this.__backing_customBuilderParam2 = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
   
-  @Memo() public doNothingBuilder() {}
+  @Memo() 
+  public doNothingBuilder() {}
   
-  @Memo() public doNothingBuilder2(@MemoSkip() str: string) {}
+  @Memo() 
+  public doNothingBuilder2(@MemoSkip() str: string) {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
@@ -156,18 +161,21 @@ function main() {}
     this.__backing_customBuilderParam2 = value;
   }
 
-  @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (47330804)), style, ((): Child => {
       return new Child(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
     throw new Error("Declare interface");
   }
   
-  @Memo() public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (174403279)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -179,7 +187,8 @@ function main() {}
     }
   }
   
-  @Memo() public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
+  @Memo() 
+  public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76253767)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
@@ -191,7 +200,8 @@ function main() {}
     }
   }
 
-  @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+  @Memo() 
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179390036)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;

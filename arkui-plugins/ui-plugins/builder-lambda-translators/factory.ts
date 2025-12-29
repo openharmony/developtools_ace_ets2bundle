@@ -42,8 +42,6 @@ import {
     isStyleChainedCall,
     isStyleWithReceiverCall,
     builderLambdaType,
-    checkIsWithInIfConditionScope,
-    BuilderLambdaConditionBranchInfo,
     BuilderLambdaChainingCallArgInfo,
     getArgumentType,
     OptionsPropertyInfo,
@@ -68,7 +66,6 @@ import { factory as UIFactory } from '../ui-factory';
 import {
     AnimationNames,
     ARKUI_BUILDER_SOURCE_NAME,
-    ConditionNames,
     DecoratorIntrinsicNames,
     DecoratorNames,
     InnerComponentNames,
@@ -89,7 +86,6 @@ import {
 } from '../../collectors/memo-collectors/utils';
 import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
-import { ConditionBreakCache } from './cache/conditionBreakCache';
 import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttributeCache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
@@ -149,11 +145,10 @@ export class factory {
             args,
             params,
             (arg, param, index) => {
-                const _param = param as arkts.ETSParameterExpression;
                 if (index === 0 && !!arg && isDoubleDollarCall(arg)) {
                     argInfo.push({ arg: BindableFactory.updateBindableStyleArguments(arg) });
                 } else if (!!arg) {
-                    argInfo.push({ arg, hasBuilder: hasDecorator(_param, DecoratorNames.BUILDER) });
+                    argInfo.push({ arg });
                 }
             },
             { isTrailingCall }
@@ -178,7 +173,7 @@ export class factory {
                 undefined,
                 argInfos.map((info) => {
                     if (arkts.isArrowFunctionExpression(info.arg)) {
-                        return this.processArgArrowFunction(info.arg, info.hasBuilder);
+                        return this.processArgArrowFunction(info.arg);
                     }
                     return info.arg;
                 })
@@ -386,8 +381,7 @@ export class factory {
      * then transform any builder lambda in the function body.
      */
     static processArgArrowFunction(
-        arg: arkts.ArrowFunctionExpression,
-        hasBuilder?: boolean
+        arg: arkts.ArrowFunctionExpression
     ): arkts.ArrowFunctionExpression {
         const func: arkts.ScriptFunction = arg.scriptFunction;
         const updateFunc = arkts.factory.updateScriptFunction(
@@ -395,7 +389,7 @@ export class factory {
             !!func.body && arkts.isBlockStatement(func.body)
                 ? arkts.factory.updateBlock(
                       func.body,
-                      func.body.statements.map((st) => this.updateContentBodyInBuilderLambda(st, hasBuilder))
+                      func.body.statements.map((st) => this.updateContentBodyInBuilderLambda(st))
                   )
                 : undefined,
             arkts.FunctionSignature.createFunctionSignature(
@@ -518,7 +512,7 @@ export class factory {
         if (arkts.isArrowFunctionExpression(arg)) {
             const memoableInfo = collectMemoableInfoInParameter(param);
             const canAddMemo = findCanAddMemoFromArrowFunction(arg) || checkIsMemoFromMemoableInfo(memoableInfo, false);
-            const newNode = this.processArgArrowFunction(arg, canAddMemo);
+            const newNode = this.processArgArrowFunction(arg);
             if (canAddMemo) {
                 addMemoAnnotation(newNode);
             }
@@ -818,168 +812,18 @@ export class factory {
     }
 
     /**
-     * update if-else in a builder lambda call's arguments.
-     */
-    static updateIfElseContentBodyInBuilderLambda(
-        statement: arkts.AstNode,
-        shouldWrap?: boolean,
-        stopAtBuilderLambda?: boolean
-    ): arkts.AstNode {
-        if (arkts.isIfStatement(statement)) {
-            const alternate = !!statement.alternate
-                ? this.updateIfElseContentBodyInBuilderLambda(statement.alternate, shouldWrap, stopAtBuilderLambda)
-                : statement.alternate;
-            const consequence = this.updateIfElseContentBodyInBuilderLambda(
-                statement.consequent,
-                shouldWrap,
-                stopAtBuilderLambda
-            );
-            const newStatement = arkts.factory.updateIfStatement(statement, statement.test, consequence!, alternate);
-            return !shouldWrap || checkIsWithInIfConditionScope(statement)
-                ? newStatement
-                : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE);
-        }
-        if (arkts.isBlockStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(
-                statement.statements,
-                shouldWrap,
-                stopAtBuilderLambda
-            );
-            if (!!shouldWrap && checkIsWithInIfConditionScope(statement)) {
-                const beforeBreak = this.wrapConditionToBlock(
-                    breakIndex > 0 ? statements.slice(0, breakIndex) : statements,
-                    ConditionNames.CONDITION_BRANCH
-                );
-                const afterBreak = breakIndex > 0 ? statements.slice(breakIndex) : [];
-                statements = [beforeBreak, ...afterBreak];
-            }
-            return arkts.factory.updateBlock(statement, statements);
-        }
-        return statement;
-    }
-
-    /**
-     * update switch-case in a builder lambda call's arguments.
-     */
-    static updateSwitchCaseContentBodyInBuilderLambda<T extends arkts.SwitchStatement | arkts.SwitchCaseStatement>(
-        statement: T,
-        shouldWrap?: boolean,
-        stopAtBuilderLambda?: boolean
-    ): T {
-        if (arkts.isSwitchStatement(statement)) {
-            const cases = statement.cases.map((c) =>
-                this.updateSwitchCaseContentBodyInBuilderLambda(c, shouldWrap, stopAtBuilderLambda)
-            );
-            const newStatement = arkts.factory.updateSwitchStatement(statement, statement.discriminant, cases);
-            return (!shouldWrap
-                ? newStatement
-                : this.wrapConditionToBlock([newStatement], ConditionNames.CONDITION_SCOPE)) as arkts.AstNode as T;
-        }
-        if (arkts.isSwitchCaseStatement(statement)) {
-            let { statements, breakIndex } = this.updateConditionBranchInScope(statement.consequent, shouldWrap);
-            if (shouldWrap && breakIndex > 0) {
-                const hasBreak = breakIndex !== statements.length;
-                const beforeBreak = this.wrapConditionToBlock(
-                    statements.slice(0, breakIndex),
-                    ConditionNames.CONDITION_BRANCH
-                );
-                const afterBreak = statements.slice(hasBreak ? breakIndex + 1 : breakIndex);
-                const breakStatement = this.createBreakBetweenConditionStatements();
-                statements = [beforeBreak, ...breakStatement, ...afterBreak];
-            }
-            ConditionBreakCache.getInstance().reset();
-            return arkts.factory.updateSwitchCaseStatement(statement, statement.test, statements) as T;
-        }
-        return statement;
-    }
-
-    static createBreakBetweenConditionStatements(): arkts.AstNode[] {
-        const cache = ConditionBreakCache.getInstance();
-        if (cache.shouldBreak) {
-            return [arkts.factory.createBreakStatement()];
-        }
-        if (cache.shouldReturn) {
-            return [arkts.factory.createReturnStatement()];
-        }
-        return [];
-    }
-
-    /**
-     * update ConditionBranch in an if-else or swith-case body.
-     * @internal
-     */
-    static updateConditionBranchInScope(
-        statements: readonly arkts.Statement[],
-        shouldWrap?: boolean,
-        stopAtBuilderLambda?: boolean
-    ): BuilderLambdaConditionBranchInfo {
-        let breakIndex = statements.length;
-        const newStatements = statements.map((st, index) => {
-            if (ConditionBreakCache.getInstance().collect(st)) {
-                breakIndex = index;
-            }
-            return this.updateContentBodyInBuilderLambda(st, shouldWrap, stopAtBuilderLambda);
-        });
-        return { statements: newStatements, breakIndex };
-    }
-
-    /**
-     * wrap `ConditionScope` or `ConditionBranch` builder function to the block statements.
-     */
-    static wrapConditionToBlock(statements: readonly arkts.AstNode[], condition: ConditionNames): arkts.AstNode {
-        const contentArg = arkts.factory.createArrowFunction(
-            UIFactory.createScriptFunction({
-                body: arkts.factory.createBlock(statements),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-            })
-        );
-        addMemoAnnotation(contentArg);
-        const newCall = arkts.factory.createCallExpression(arkts.factory.createIdentifier(condition), undefined, [
-            contentArg,
-        ]);
-        arkts.NodeCache.getInstance().collect(newCall);
-        ImportCollector.getInstance().collectSource(condition, ARKUI_BUILDER_SOURCE_NAME);
-        ImportCollector.getInstance().collectImport(condition);
-        return arkts.factory.createExpressionStatement(newCall);
-    }
-
-    /**
      * update trailing lambda contents in a builder lambda call.
      */
-    static updateContentBodyInBuilderLambda(
-        statement: arkts.Statement,
-        hasBuilder?: boolean,
-        stopAtBuilderLambda?: boolean
-    ): arkts.Statement {
+    static updateContentBodyInBuilderLambda(statement: arkts.Statement): arkts.Statement {
         if (
             arkts.isExpressionStatement(statement) &&
             arkts.isCallExpression(statement.expression) &&
             isBuilderLambda(statement.expression)
         ) {
-            if (!!stopAtBuilderLambda) {
-                return statement;
-            }
             return arkts.factory.updateExpressionStatement(
                 statement,
                 this.transformBuilderLambda(statement.expression)
             );
-        }
-        if (arkts.isIfStatement(statement)) {
-            return this.updateIfElseContentBodyInBuilderLambda(statement, hasBuilder, stopAtBuilderLambda);
-        }
-        if (arkts.isSwitchStatement(statement)) {
-            return this.updateSwitchCaseContentBodyInBuilderLambda(statement, hasBuilder, stopAtBuilderLambda);
-        }
-        if (arkts.isBlockStatement(statement)) {
-            const newStatements = statement.statements.map((st) =>
-                this.updateContentBodyInBuilderLambda(st, hasBuilder, stopAtBuilderLambda)
-            );
-            return arkts.factory.updateBlock(statement, newStatements);
-        }
-        if (arkts.isBreakStatement(statement) && statement.parent && arkts.isBlockStatement(statement.parent)) {
-            ConditionBreakCache.getInstance().collectBreak();
-            return arkts.factory.createReturnStatement();
         }
         return statement;
     }
@@ -1228,23 +1072,6 @@ export class factory {
         });
         arkts.NodeCache.getInstance().collect(method);
         return method;
-    }
-
-    /**
-     * add following declared methods at header file:
-     * - `@Builder function ConditionScope(@Builder content: () => void): void;`
-     * - `@Builder function ConditionBranch(@Builder content: () => void): void;`
-     */
-    static addConditionBuilderDecls(): arkts.MethodDefinition[] {
-        const conditionScope = this.createBuilderWithTrailingLambdaDecl(
-            ConditionNames.CONDITION_SCOPE,
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-        );
-        const conditionBranch = this.createBuilderWithTrailingLambdaDecl(
-            ConditionNames.CONDITION_BRANCH,
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-        );
-        return [conditionScope, conditionBranch];
     }
 
     /**
