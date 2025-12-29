@@ -1,0 +1,57 @@
+{
+  "entry_componentv2_invalid_params_1": {
+    "messages": [
+      {
+        "message": "The \"@Entry\" decorator that has a \"LocalStorage\" type parameter cannot be used together with the \"@ComponentV2\" decorator.",
+        "position": {
+          "line": 24,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_componentv2_invalid_params_2": {
+    "messages": [
+      {
+        "message": "The \"@Entry\" decorator that has \"storage\" or \"useSharedStorage\" parameters cannot be used together with the \"@ComponentV2\" decorator.",
+        "position": {
+          "line": 21,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_componentv2_invalid_params_3": {
+    "messages": [
+      {
+        "message": "The \"@Entry\" decorator that has \"storage\" or \"useSharedStorage\" parameters cannot be used together with the \"@ComponentV2\" decorator.",
+        "position": {
+          "line": 23,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_componentv2_invalid_params_4": {
+    "messages": [
+      {
+        "message": "The \"@Entry\" decorator that has \"storage\" or \"useSharedStorage\" parameters cannot be used together with the \"@ComponentV2\" decorator.",
+        "position": {
+          "line": 23,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "entry_componentv2_invalid_params_5": {
+    "messages": [
+      {
+        "message": "The \"@Entry\" decorator that has \"storage\" or \"useSharedStorage\" parameters cannot be used together with the \"@ComponentV2\" decorator.",
+        "position": {
+          "line": 22,
+          "column": 2
+        }
+      }
+    ]
+  }
+}

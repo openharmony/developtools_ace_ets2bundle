@@ -1,0 +1,221 @@
+{
+  "nested_reuse_component_check_1": {
+    "messages": [
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 47,
+          "column": 19
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 69,
+          "column": 26
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 74,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 77,
+          "column": 28
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 82,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 84,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 87,
+          "column": 26
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 89,
+          "column": 24
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 110,
+          "column": 14
+        }
+      },
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 110,
+          "column": 14
+        }
+      }
+    ]
+  },
+  "nested_reuse_component_check_2": {
+    "messages": [
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 35,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 39,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+        "position": {
+          "line": 69,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+        "position": {
+          "line": 75,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 91,
+          "column": 9
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 95,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "nested_reuse_component_check_3": {
+    "messages": [
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 51,
+          "column": 32
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 63,
+          "column": 41
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 65,
+          "column": 21
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 66,
+          "column": 43
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 68,
+          "column": 21
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 70,
+          "column": 21
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 73,
+          "column": 23
+        }
+      },
+      {
+        "message": "The template attribute of the Repeat component cannot contain any custom component decorated with @ReusableV2.",
+        "position": {
+          "line": 75,
+          "column": 21
+        }
+      }
+    ]
+  },
+  "nested_reuse_component_check_4": {
+    "messages": [
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 40,
+          "column": 7
+        }
+      },
+      {
+        "message": "A custom component decorated with @Component cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 44,
+          "column": 7
+        }
+      },
+      {
+        "message": "A custom component decorated with @ReusableV2 cannot contain child components decorated with @Reusable.",
+        "position": {
+          "line": 76,
+          "column": 7
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 91,
+          "column": 7
+        }
+      },
+      {
+        "message": "A custom component decorated with @Reusable cannot contain child components decorated with @ReusableV2.",
+        "position": {
+          "line": 95,
+          "column": 7
+        }
+      }
+    ]
+  }
+}

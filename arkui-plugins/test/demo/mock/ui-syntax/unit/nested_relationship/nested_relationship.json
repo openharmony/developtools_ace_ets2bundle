@@ -1,0 +1,85 @@
+{
+  "nested_relationship_1": {
+    "messages": [
+      {
+        "message": "The 'Scroll' component can have only one child component.",
+        "position": {
+          "line": 35,
+          "column": 7
+        }
+      },
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 36,
+          "column": 9
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 37,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "nested_relationship_2": {
+    "messages": [
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 35,
+          "column": 11
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 38,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "nested_relationship_3": {
+    "messages": [
+      {
+        "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+        "position": {
+          "line": 35,
+          "column": 11
+        }
+      },
+      {
+        "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+        "position": {
+          "line": 38,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "nested_relationship_4": {
+    "messages": [
+      {
+        "message": "The 'Button' component can have only one child component.",
+        "position": {
+          "line": 28,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "nested_relationship_5": {
+  "messages": [
+    {
+      "message": "The component 'Blank' can't have any child.",
+      "position": {
+        "line": 26,
+        "column": 7
+      }
+    }
+  ]
+  }
+}

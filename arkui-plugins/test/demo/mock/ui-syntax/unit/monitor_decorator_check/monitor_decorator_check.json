@@ -1,0 +1,46 @@
+{
+  "monitor_decorator_check_1": {
+    "messages": [
+      {
+        "message": "The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.",
+        "position": {
+          "line": 33,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "monitor_decorator_check_2": {
+    "messages": [
+      {
+        "message": "The member property or method can not be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "monitor_decorator_check_3": {
+    "messages": [
+      {
+        "message": "The '@Monitor' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "monitor_decorator_check_4": {
+  "messages": [
+    {
+      "message": "@Monitor can only decorate method.",
+      "position": {
+        "line": 25,
+        "column": 4
+      }
+    }
+  ]
+}
+}

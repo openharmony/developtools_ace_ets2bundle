@@ -1,0 +1,35 @@
+{
+  "no_child_in_button_1": {
+    "messages": [
+      {
+        "message": "The Button component with a label parameter can not have any child.",
+        "position": {
+          "line": 28,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "no_child_in_button_2": {
+    "messages": [
+      {
+        "message": "The Button component with a label parameter can not have any child.",
+        "position": {
+          "line": 29,
+          "column": 9
+        }
+      }
+    ]
+  },
+  "no_child_in_button_3": {
+    "messages": [
+      {
+        "message": "The Button component with a label parameter can not have any child.",
+        "position": {
+          "line": 28,
+          "column": 7
+        }
+      }
+    ]
+  }
+}
