@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Text, Flex } from '@ohos.arkui.component';
+import { Entry, Component, Text, Flex, Observed } from '@ohos.arkui.component';
 import { ObjectLink, Builder } from "@ohos.arkui.stateManagement";
 
 // Expected: In this construct parameter validation, a regular property cannot be assigned to an '@ObjectLink' property.

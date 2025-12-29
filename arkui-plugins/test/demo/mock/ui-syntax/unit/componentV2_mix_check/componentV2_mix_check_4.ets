@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { Entry, Component, ComponentV2, Observed } from '@ohos.arkui.component';
-import { Prop, State, Local, Event, Provide, Provider, Consumer, Param, BuilderParam, ObjectLink, Require, Link }
+import { Entry, Component, ComponentV2, Observed, Column } from '@ohos.arkui.component';
+import { Prop, State, Once, Local, Event, Provide, Provider, Consumer, Param, BuilderParam, ObjectLink, Require, Link }
 from "@ohos.arkui.stateManagement";
 
 @Entry

@@ -15,14 +15,14 @@
       {
         "message": "'@Computed' can only decorate 'GetAccessor'",
         "position": {
-          "line": 27,
+          "line": 26,
           "column": 4
         }
       },
       {
         "message": "'@Computed' can only decorate 'GetAccessor'",
         "position": {
-          "line": 29,
+          "line": 28,
           "column": 4
         }
       }
@@ -33,7 +33,7 @@
       {
         "message": "A property decorated by '@Computed' cannot define a set method.",
         "position": {
-          "line": 30,
+          "line": 31,
           "column": 7
         }
       }
@@ -44,7 +44,7 @@
       {
         "message": "A property decorated by '@Computed' cannot be used with two-way bind syntax.",
         "position": {
-          "line": 35,
+          "line": 36,
           "column": 25
         }
       }

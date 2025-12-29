@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Text } from '@ohos.arkui.component';
+import { Entry, Component, Span } from '@ohos.arkui.component';
 
 // Expected: In an '@Entry' decorated component, the 'build' function root must be a container component.
 // Actual: The 'build' function has a single root node, but it is an atomic component ('Span'), which is invalid for @Entry.

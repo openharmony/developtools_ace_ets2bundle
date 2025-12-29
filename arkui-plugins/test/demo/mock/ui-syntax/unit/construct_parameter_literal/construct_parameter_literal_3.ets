@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Column } from '@ohos.arkui.component';
-import { State, Builder } from "@ohos.arkui.stateManagement";
+import { State, Builder, Link } from "@ohos.arkui.stateManagement";
 
 // Expected: In this construct parameter validation, a regular property cannot be assigned to a '@Link' property.
 // Actual: The builder parameter '$$.paramA1' is assigned to 'message' (@Link), which requires

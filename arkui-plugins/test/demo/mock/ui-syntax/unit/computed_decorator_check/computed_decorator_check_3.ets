@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-import { ObservedV2, Trace, Computed } from "@ohos.arkui.stateManagement";
+import { Entry, ObservedV2, Trace, Computed } from "@ohos.arkui.stateManagement";
 
 // Expected: In this computed property validation, a '@Computed' member must be read-only and cannot define a setter.
 // Actual: The 'doubleBase' property defines a 'set' accessor alongside the '@Computed' getter, violating the rule.
 
 @ObservedV2
+@Entry
 class SetterConflict {
   @Trace base: number = 10;
 

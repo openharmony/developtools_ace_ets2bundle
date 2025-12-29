@@ -14,7 +14,7 @@
  */
 
 import { Entry, ComponentV2, Column } from '@ohos.arkui.component';
-import { Local, Monitor, Param, Require } from "@ohos.arkui.stateManagement";
+import { Local, Monitor } from "@ohos.arkui.stateManagement";
 
 // Expected: The '@Local' decorator acts as a state variable definition and must only decorate member properties. 
 // Actual: The 'aa' method is decorated with '@Local', which is invalid for method definitions in ComponentV2.

@@ -20,7 +20,6 @@ import { Local, Param, Once, Event } from "@ohos.arkui.stateManagement";
 // Actual: Methods 'aa', 'bb', 'cc', 'dd' are incorrectly decorated with state management decorators.
 
 @Entry
-@Entry
 @ComponentV2
 struct TestComponent9 {
   @Local

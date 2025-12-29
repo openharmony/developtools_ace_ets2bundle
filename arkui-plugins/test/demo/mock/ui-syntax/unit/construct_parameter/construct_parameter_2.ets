@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Text, Flex, TitleCompView } from '@ohos.arkui.component';
+import { Entry, Component, Text, Flex } from '@ohos.arkui.component';
 import { Provide, Consume, Builder } from "@ohos.arkui.stateManagement";
 
 @Component
