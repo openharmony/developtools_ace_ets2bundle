@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { ComponentV2, Column, Text, Row, Button } from '@ohos.arkui.component';
+import { ComponentV2, Column, Text, Row, Button, Entry } from '@ohos.arkui.component';
 import { Provider, Consumer } from "@ohos.arkui.stateManagement";
 
 // Expected: The property 'keyword' cannot be decorated with multiple built-in decorators (@Provider and @Consumer).
@@ -30,5 +30,12 @@ struct ChildMultiDecorators {
         Button("Action");
       }
     }
+  }
+}
+
+@Entry
+@Component
+struct Index {
+  build() {
   }
 }

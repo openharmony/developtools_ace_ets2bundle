@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Component, Text, Entry } from '@ohos.arkui.component';
+import { Component, Text, Entry, Preview } from '@ohos.arkui.component';
 
 // Expected: A single ETS page file may contain up to ten '@Preview' annotations; having nine preview components is 
 // within the allowed limit. 
