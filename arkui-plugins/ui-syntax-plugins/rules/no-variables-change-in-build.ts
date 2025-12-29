@@ -28,6 +28,33 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
 
     public parsed(node: arkts.AstNode): void {
         this.currentStructnode = arkts.isStructDeclaration(node) ? node : this.currentStructnode;
+        this.handleCallExpressionArguments(node);
+        this.handleTemplateLiterals(node);
+        this.performVariableChangeChecks(node);
+    }
+
+    private handleCallExpressionArguments(node: arkts.AstNode): void {
+        if (arkts.isCallExpression(node) && node.arguments && node.arguments.length > 0) {
+            node.arguments.forEach((element) => {
+                this.checkVariableChangeInGlobalBuilder(element);
+            });
+        }
+    }
+
+    private handleTemplateLiterals(node: arkts.AstNode): void {
+        if (arkts.isCallExpression(node) && node.expression && arkts.isIdentifier(node.expression)) {
+            node.arguments.forEach((member) => {
+                if (arkts.nodeType(member) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TEMPLATE_LITERAL) {
+                    return;
+                }
+                member.getChildren().forEach((item) => {
+                    this.checkVariableChangeInGlobalBuilder(item);
+                })
+            });
+        }
+    }
+
+    private performVariableChangeChecks(node: arkts.AstNode): void {
         if (arkts.isCallExpression(node) && node.arguments &&
             node.arguments.length && node.arguments.length !== 0) {
             node.arguments.forEach((element) => {
@@ -48,6 +75,17 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         });
     }
 
+    private checkVariableChangeInGlobalBuilder(element: arkts.AstNode): void {
+        const propertyName = this.getVariablePropertyName(element);
+        const builderFunction = this.getBuilderFunctionName(element);
+        if (builderFunction && this.checkIsVariableInGlobalBuilder(builderFunction, propertyName)) {
+            this.report({
+                node: element,
+                message: this.messages.noVariablesChangeInBuild,
+            });
+        }
+    }
+
     private isInStructBuilder(node: arkts.AstNode): boolean {
         while (!(arkts.isMethodDefinition(node) && getIdentifierName(node.name) === BUILD_NAME) ||
             !(arkts.isFunctionDeclaration(node) && findDecorator(node, PresetDecorators.BUILDER))) {
@@ -63,6 +101,80 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
             node = node.parent;
         }
         return true;
+    }
+
+    private getBuilderFunctionName(node: arkts.AstNode): arkts.FunctionDeclaration | undefined {
+        while (!(arkts.isFunctionDeclaration(node) && findDecorator(node, PresetDecorators.BUILDER))) {
+            if (!node.parent || arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) {
+                return undefined;
+            }
+            node = node.parent;
+        }
+        return node;
+    }
+
+    private checkIsVariableInGlobalBuilder(node: arkts.AstNode, propertyName: string | undefined): boolean {
+        if (!arkts.isFunctionDeclaration(node) || !findDecorator(node, PresetDecorators.BUILDER)) {
+            return false;
+        }
+        if (!node.body || !arkts.isBlockStatement(node.body)) {
+            return false;
+        }
+        for (const element of node.body.statements) {
+            if (!arkts.isVariableDeclaration(element)) {
+                continue;
+            }
+            for (const item of element.declarators) {
+                if(this.findMutableVariable(item, propertyName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private findMutableVariable(item: arkts.AstNode, propertyName: string | undefined): boolean {
+        if (!arkts.isVariableDeclarator(item) ||
+            !arkts.isIdentifier(item.name)) {
+            return false;
+        }
+        const identifierName = getIdentifierName(item.name);
+        const typeAnnotation = item.name.typeAnnotation;
+        if (!typeAnnotation || !arkts.isETSTypeReference(typeAnnotation)) {
+            return false;
+        }
+        const part = typeAnnotation.part;
+        if (
+            !part ||
+            !arkts.isETSTypeReferencePart(part) ||
+            !part.name ||
+            !arkts.isIdentifier(part.name)
+        ) {
+            return false;
+        }
+        const typeName = getIdentifierName(part.name);
+        const targetVariableType = 'MutableVariable';
+        if (targetVariableType === typeName && propertyName === identifierName) {
+            return true;
+        }
+        return false;
+    }
+
+    private getVariablePropertyName(item: arkts.AstNode): string | undefined {
+        if (!arkts.isAssignmentExpression(item) &&
+            arkts.nodeType(item) !== arkts.Es2pandaAstNodeType.AST_NODE_TYPE_UPDATE_EXPRESSION) {
+            return undefined;
+        }
+        const propertyNode = item.left ? item.left : item.argument;
+        if (!propertyNode || !arkts.isMemberExpression(propertyNode)) {
+            return undefined;
+        }
+        if (arkts.isIdentifier(propertyNode.object)) {
+            return getIdentifierName(propertyNode.object);
+        } else if (arkts.isIdentifier(propertyNode.property)) {
+            return getIdentifierName(propertyNode.property);
+        }
+        return undefined;
     }
 
     private checkVariableChange(item: arkts.AstNode): void {

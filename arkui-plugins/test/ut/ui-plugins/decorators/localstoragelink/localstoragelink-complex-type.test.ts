@@ -111,7 +111,7 @@ final class Status extends BaseEnum<int> {
   }
 
   public static getValueOf(name: String): Status {
-    for (let i = 0;((i) < (Status.#NamesArray.length));(++i)) {
+    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#NamesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -120,7 +120,7 @@ final class Status extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): Status {
-    for (let i = 0;((i) < (Status.#ValuesArray.length));(++i)) {
+    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (Status.#ValuesArray[i]))) {
         return Status.#ItemsArray[i];
       }
@@ -244,24 +244,28 @@ final class Status extends BaseEnum<int> {
     this.__backing_enumA!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._invoke(@Memo() ((instance: MyStateSample): void => {
     instance.applyAttributesFinish();
     return;

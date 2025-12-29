@@ -124,14 +124,16 @@ function main() {}
     this.__backing_numbers = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
       return new ResourceComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
     throw new Error("Declare interface");
   }
   public async test_0(res: Resource) {
@@ -149,7 +151,8 @@ function main() {}
     const a2 = await this.test_0(_r(16777216, 10003, "com.example.mock", "entry"));
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

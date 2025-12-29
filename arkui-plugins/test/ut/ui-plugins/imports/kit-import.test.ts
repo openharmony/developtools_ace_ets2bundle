@@ -64,7 +64,8 @@ import { Button as Button } from "arkui.component.button";
 import hilog from "@ohos.hilog";
 
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
     throw new Error("Declare interface");
   }
 
@@ -205,18 +206,21 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_b!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
       return new A(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -237,7 +241,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     A._invoke(@Memo() ((instance: A): void => {
       instance.applyAttributesFinish();
       return;

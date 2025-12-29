@@ -45,7 +45,8 @@ import { Memo as Memo } from "@ohos.arkui.stateManagement";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
-    @Memo() public build() {
+    @Memo() 
+    public build() {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined).applyAttributesFinish();
             return;
@@ -67,7 +68,8 @@ import { Memo as Memo } from "@ohos.arkui.stateManagement";
 import { Column as Column, ColumnAttribute as ColumnAttribute } from \"arkui.component.column\";
 function main() {}
 class MyStateSample {
-    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (263357132)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

@@ -51,10 +51,6 @@ import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateM
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { ConditionScope as ConditionScope } from "arkui.component.builder";
-
-import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
@@ -120,18 +116,21 @@ class Message {
     this.__backing_display!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
       return;
@@ -151,21 +150,17 @@ class Message {
           __options_has_message: true,
         };
       }), undefined, "res", undefined);
-      ConditionScope(@Memo() (() => {
-        if (this.display) {
-          ConditionBranch(@Memo() (() => {
-            Child._invoke(@Memo() ((instance: Child): void => {
-              instance.applyAttributesFinish();
-              return;
-            }), (() => {
-              return {
-                message: new Message("Child"),
-                __options_has_message: true,
-              };
-            }), undefined, "Child", undefined);
-          }));
-        }
-      }));
+      if (this.display) {
+        Child._invoke(@Memo() ((instance: Child): void => {
+          instance.applyAttributesFinish();
+          return;
+        }), (() => {
+          return {
+            message: new Message("Child"),
+            __options_has_message: true,
+          };
+        }), undefined, "Child", undefined);
+      }
     }));
   }
   
@@ -198,20 +193,23 @@ class Message {
     this.__backing_message!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
   
   public aboutToReuse(params: Record<string, ESObject>) {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).borderWidth(1).height(100).applyAttributesFinish();
       return;
@@ -228,7 +226,8 @@ class Message {
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     Index._invoke(@Memo() ((instance: Index): void => {
     instance.applyAttributesFinish();
     return;

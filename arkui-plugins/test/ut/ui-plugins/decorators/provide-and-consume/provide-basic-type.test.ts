@@ -127,18 +127,21 @@ function main() {}
     this.__backing_provideVar5!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
       return new PropParent(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): PropParent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): PropParent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 

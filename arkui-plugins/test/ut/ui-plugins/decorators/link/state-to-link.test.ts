@@ -111,18 +111,21 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_selectedDate!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<DateComponent, __Options_DateComponent>(style, ((): DateComponent => {
       return new DateComponent(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): DateComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): DateComponent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -172,18 +175,21 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_parentSelectedDate!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
       return new ParentComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -227,7 +233,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     ParentComponent._invoke(@Memo() ((instance: ParentComponent): void => {
     instance.applyAttributesFinish();
     return;

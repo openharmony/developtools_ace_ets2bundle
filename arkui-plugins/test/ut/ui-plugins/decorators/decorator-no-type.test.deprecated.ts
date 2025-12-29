@@ -126,7 +126,7 @@ final class StateType extends BaseEnum<int> {
   }
   
   public static getValueOf(name: String): StateType {
-    for (let i = 0;((i) < (StateType.#NamesArray.length));(++i)) {
+    for (let i = ((StateType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (StateType.#NamesArray[i]))) {
         return StateType.#ItemsArray[i];
       }
@@ -135,7 +135,7 @@ final class StateType extends BaseEnum<int> {
   }
   
   public static fromValue(value: int): StateType {
-    for (let i = 0;((i) < (StateType.#ValuesArray.length));(++i)) {
+    for (let i = ((StateType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
       if (((value) == (StateType.#ValuesArray[i]))) {
         return StateType.#ItemsArray[i];
       }

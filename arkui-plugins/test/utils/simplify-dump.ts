@@ -19,13 +19,20 @@ enum GetSetDumper {
     BOTH,
 }
 
+function dumpAnnotations(annotations: string[]): string {
+    if (annotations.length === 0) {
+        return '';
+    }
+    return annotations.join(' \n') + ' \n';
+}
+
 function dumpGetterSetter(
     getOrSet: GetSetDumper,
     name: string,
     type: string,
     annotations: string[] = [],
     paramAnnotations: string[] = [],
-    hasBody: boolean = false,
+    hasBody: boolean = true,
     body: string | undefined = undefined
 ): string {
     if (getOrSet === GetSetDumper.BOTH) {
@@ -47,8 +54,8 @@ function dumpGetterSetter(
             body = '{\nthrow new InvalidStoreAccessError();\n}\n';
         }
     }
-    const strList: string[] = [...annotations, methodStr, ...(!!body ? [body] : [])];
-    return strList.join(' ');
+    const strList: string[] = [methodStr, ...(!!body ? [body] : [])];
+    return dumpAnnotations(annotations) + strList.join(' ');
 }
 
 function stringifyWithoutKeyQuotes(obj: Record<string, unknown>): string {

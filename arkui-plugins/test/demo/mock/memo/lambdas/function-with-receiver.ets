@@ -26,7 +26,7 @@ class B {
   console.log('Good', str);
 }
 
-@Memo function foo2(this: B, str: string): this {
+@Memo function foo2(this: B, str: string): B {
   console.log('Good', str);
   return this;
 }

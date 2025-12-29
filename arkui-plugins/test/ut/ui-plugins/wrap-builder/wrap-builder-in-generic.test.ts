@@ -67,19 +67,26 @@ let wrappedBuilder2: WrappedBuilder<@Builder() ((value: string, size: number)=> 
 
 function main() {}
 
-@Memo() function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
         return;
     }), undefined);
 }
 
-@Memo() function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
         return;
     }), undefined);
 }
+
+globalBuilder = wrapBuilder(MyBuilder);
+builderArr = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)];
+wrappedBuilder1 = wrapBuilder<@Builder() ((value: string, size: number)=> void)>(MyBuilder);
+wrappedBuilder2 = new WrappedBuilder<@Builder() ((value: string, size: number)=> void)>(MyBuilder);
 
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
@@ -105,18 +112,21 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     this.__backing_message!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error(\"Declare interface\");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
       return;
@@ -138,7 +148,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(): void {
+    @Memo() 
+    public entry(): void {
         Index._invoke(@Memo() ((instance: Index): void => {
             instance.applyAttributesFinish();
             return;
@@ -188,7 +199,8 @@ let wrappedBuilder2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_
 
 function main() {}
 
-@Memo() function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -213,7 +225,8 @@ function main() {}
     }
 }
 
-@Memo() function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
+@Memo() 
+function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -237,6 +250,11 @@ function main() {}
         return;
     }
 }
+
+globalBuilder = wrapBuilder(MyBuilder);
+builderArr = [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)];
+wrappedBuilder1 = wrapBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(MyBuilder);
+wrappedBuilder2 = new WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(MyBuilder);
 
 __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     bundleName: \"com.example.mock\",
@@ -264,18 +282,21 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         this.__backing_message!.set(value);
     }
 
-    @MemoIntrinsic() public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    @MemoIntrinsic() 
+    public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Index => {
             return new Index(false, ({let gensym___<some_random_number> = storage;
                 (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
         }), initializers, reuseId, content);
     }
 
-    @ComponentBuilder() public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
+    @ComponentBuilder() 
+    public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
         throw new Error(\"Declare interface\");
     }
 
-    @Memo() public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    @Memo() 
+    public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
@@ -342,7 +363,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-    @Memo() public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
+    @Memo() 
+    public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;

@@ -47,19 +47,15 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IPropRefDecoratedVariable as IPropRefDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
-
-import { ConditionScope as ConditionScope } from "arkui.component.builder";
-
-import { ConditionBranch as ConditionBranch } from "arkui.component.builder";
-
-import { TextAttribute as TextAttribute } from "arkui.component.text";
-
-import { TextImpl as TextImpl } from "arkui.component.text";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
@@ -114,39 +110,36 @@ function main() {}
     this.__backing_costOfOneAttempt = value;
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CountDownComponent)=> void), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: CountDownComponent)=> void), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CountDownComponent, __Options_CountDownComponent>(style, ((): CountDownComponent => {
       return new CountDownComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CountDownComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CountDownComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CountDownComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CountDownComponent {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      ConditionScope(@Memo() (() => {
-        if (((this.count) > (0))) {
-          ConditionBranch(@Memo() (() => {
-            TextImpl(@Memo() ((instance: TextAttribute): void => {
-              instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined).applyAttributesFinish();
-              return;
-            }), undefined);
-          }));
-        } else {
-          ConditionBranch(@Memo() (() => {
-            TextImpl(@Memo() ((instance: TextAttribute): void => {
-              instance.setTextOptions("Game over!", undefined).applyAttributesFinish();
-              return;
-            }), undefined);
-          }));
-        }
-      }));
+      if (((this.count) > (0))) {
+        TextImpl(@Memo() ((instance: TextAttribute): void => {
+          instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined).applyAttributesFinish();
+          return;
+        }), undefined);
+      } else {
+        TextImpl(@Memo() ((instance: TextAttribute): void => {
+          instance.setTextOptions("Game over!", undefined).applyAttributesFinish();
+          return;
+        }), undefined);
+      }
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Try again", undefined).onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
@@ -178,18 +171,21 @@ function main() {}
     this.__backing_countDownStartValue!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
       return new ParentComponent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

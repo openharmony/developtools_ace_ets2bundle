@@ -57,11 +57,13 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Text as Text, Column as Column, Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainer {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainer {
     throw new Error("Declare interface");
   }
   
-  @Builder() public closerBuilder() {}
+  @Builder() 
+  public closerBuilder() {}
 
   @BuilderParam() public closer: (()=> void) = this.closerBuilder;
 
@@ -74,7 +76,8 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 }
 
 @Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainerUser {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainerUser {
     throw new Error("Declare interface");
   }
 
@@ -160,20 +163,24 @@ function main() {}
     this.__backing_closer = value;
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomContainer)=> void), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: CustomContainer)=> void), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainer, __Options_CustomContainer>(style, ((): CustomContainer => {
       return new CustomContainer(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainer {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainer {
     throw new Error("Declare interface");
   }
 
-  @Memo() public closerBuilder() {}
+  @Memo() 
+  public closerBuilder() {}
 
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
 
   ${dumpConstructor()}
 
@@ -184,18 +191,21 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: CustomContainerUser)=> void), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: CustomContainerUser)=> void), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainerUser, __Options_CustomContainerUser>(style, ((): CustomContainerUser => {
       return new CustomContainerUser(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainerUser {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainerUser {
     throw new Error("Declare interface");
   }
 
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;

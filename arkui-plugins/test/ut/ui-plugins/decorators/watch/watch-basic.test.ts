@@ -266,14 +266,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_providevar!.set(value);
   }
 
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___92334354 = storage;
       (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
 
@@ -291,7 +293,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public ProvideOnChange(propName: string) {}
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined).applyAttributesFinish();
       return;
@@ -326,20 +329,23 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_providevar!.set(value);
   }
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
   
   public ConsumeOnChange(propName: string) {}
   
-  @Memo() public build() {}
+  @Memo() 
+  public build() {}
   
   ${dumpConstructor()}
   
@@ -348,7 +354,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
-  @Memo() public entry(): void {
+  @Memo() 
+  public entry(): void {
     MyStateSample._invoke(@Memo() ((instance: MyStateSample): void => {
     instance.applyAttributesFinish();
     return;

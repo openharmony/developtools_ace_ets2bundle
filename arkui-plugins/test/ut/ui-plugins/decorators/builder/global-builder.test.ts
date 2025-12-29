@@ -66,14 +66,16 @@ import { Component as Component, Row as Row, Builder as Builder, Text as Text } 
 function main() {}
 
 
-@Memo() function showTextBuilder() {
+@Memo() 
+function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
     return;
   }), undefined);
 }
 
-@Memo() function overBuilder(@MemoSkip() params: Tmp) {
+@Memo() 
+function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@Memo() ((instance: RowAttribute): void => {
     instance.setRowOptions(undefined).applyAttributesFinish();
     return;
@@ -85,7 +87,8 @@ function main() {}
   }));
 }
 
-@Memo() function globalBuilder(@MemoSkip() param: Person) {
+@Memo() 
+function globalBuilder(@MemoSkip() param: Person) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
     return;
@@ -98,9 +101,12 @@ class Tmp {
 }
 
 interface Person {
-  get age(): (number | undefined)
-  set age(age: (number | undefined))
-  
+  get age(): (number | undefined) {
+  return undefined;
+  }
+  set age(age: (number | undefined)) {
+  throw new InvalidStoreAccessError();
+  }
 }
 
 @Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
@@ -108,18 +114,21 @@ interface Person {
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
-  @MemoIntrinsic() public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  @MemoIntrinsic() 
+  public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
       return new BuilderDemo(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
   
-  @ComponentBuilder() public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
     throw new Error("Declare interface");
   }
   
-  @Memo() public build() {
+  @Memo() 
+  public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
       instance.setRowOptions(undefined).applyAttributesFinish();
       return;
