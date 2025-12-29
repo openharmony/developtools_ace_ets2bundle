@@ -54,6 +54,6 @@ pluginTester.run(
     COMPONENT_V2_MIX_ETS_NAME,
     [componentV2MixTransform],
     { parsed: [testParsedTransformer] },
-    { stopAfter: 'parsed',}
+    { stopAfter: 'parsed' }
 
 );
