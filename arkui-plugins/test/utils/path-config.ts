@@ -23,6 +23,7 @@ export const STDLIB_STD_PATH: string = 'stdlib/std';
 export const STDLIB_ESCOMPAT_PATH: string = 'stdlib/escompat';
 export const MOCK_PROJECT_ROOT_PATH: string = 'demo';
 export const MOCK_ENTRY_DIR_PATH: string = 'demo/mock';
+export const UI_SYNTAX_PATH: string = 'ui-syntax';
 export const MOCK_ENTRY_FILE_NAME: string = 'entry.ets';
 export const MOCK_OUTPUT_CACHE_PATH: string = 'generated/cache';
 export const MOCK_OUTPUT_DIR_PATH: string = 'generated/abc';
