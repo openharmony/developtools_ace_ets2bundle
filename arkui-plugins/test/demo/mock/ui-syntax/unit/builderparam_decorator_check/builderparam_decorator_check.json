@@ -1,0 +1,52 @@
+{
+  "builderparam_decorator_check_1": {
+    "messages": [
+      {
+        "message": "In the trailing lambda case, 'CustomContainer' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
+        "position": {
+          "line": 35,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "builderparam_decorator_check_2": {
+    "messages": [
+      {
+        "message": "In the trailing lambda case, 'MultipleBuilderParamUsage' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
+        "position": {
+          "line": 42,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "builderparam_decorator_check_3": {
+    "messages": [
+      {
+        "message": "In the trailing lambda case, 'ZeroBuilderParam' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
+        "position": {
+          "line": 39,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "builderparam_decorator_check_4": {
+  "messages": []
+  },
+  "builderparam_decorator_check_5": {
+  "messages": []
+  },
+    "builderparam_decorator_check_6": {
+  "messages": [
+    {
+      "message": "In the trailing lambda case, 'AmbiguousBox' must have one and only one property decorated with @BuilderParam, and its @BuilderParam expects no parameter.",
+      "position": {
+        "line": 43,
+        "column": 9
+      }
+    }
+  ]
+  }
+}

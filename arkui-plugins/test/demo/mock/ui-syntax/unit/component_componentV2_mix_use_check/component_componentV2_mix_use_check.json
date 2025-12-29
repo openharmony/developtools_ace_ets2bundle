@@ -1,0 +1,89 @@
+{
+  "component_componentV2_mix_use_check_1": {
+    "messages": [
+      {
+        "message": "The type of the @State property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "component_componentV2_mix_use_check_2": {
+    "messages": [
+      {
+        "message": "The type of the @Link property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 33,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "component_componentV2_mix_use_check_3": {
+    "messages": [
+      {
+        "message": "The type of the @Provide property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 29,
+          "column": 4
+        }
+      },
+      {
+        "message": "The type of the @Consume property cannot be a class decorated with '@ObservedV2'",
+        "position": {
+          "line": 43,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "component_componentV2_mix_use_check_4": {
+    "messages": [
+      {
+        "message": "The type of the @StorageLink property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The type of the @LocalStorageLink property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "component_componentV2_mix_use_check_5": {
+    "messages": [
+      {
+        "message": "The type of the @State property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 34,
+          "column": 4
+        }
+      }
+    ]
+  },
+   "component_componentV2_mix_use_check_6": {
+    "messages": [
+      {
+        "message": "The type of the @State property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The type of the @Link property cannot be a class decorated with '@ObservedV2'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

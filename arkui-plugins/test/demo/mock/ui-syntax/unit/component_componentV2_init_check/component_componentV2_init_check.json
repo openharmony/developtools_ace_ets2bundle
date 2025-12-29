@@ -1,0 +1,16 @@
+{
+  "component_componentV2_init_check_1": {
+    "messages": [
+      {
+        "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
+        "position": {
+          "line": 37,
+          "column": 7
+        }
+      }
+    ]
+  },
+   "component_componentV2_init_check_2": {
+    "messages": []
+  }
+}

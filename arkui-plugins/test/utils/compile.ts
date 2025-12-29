@@ -98,6 +98,8 @@ function collectPluginTestContext(
     try {
         const program: arkts.Program = arkts.getOrUpdateGlobalContext(context.peer).program;
         // TODO: add error/warning handling after plugin
+        pluginTestContext.errors = arkts.getErrorMessage(context.peer)
+        pluginTestContext.warnings = arkts.getAllErrorMessage(context.peer)
         if (canCollectSource) {
             pluginTestContext = concatObject(
                 pluginTestContext,
