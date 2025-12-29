@@ -32,7 +32,8 @@ const {
   FAIL,
   TEST_RUNNER_DIR_SET,
   TS2ABC,
-  WORKERS_DIR
+  WORKERS_DIR,
+  APIVERSION
 } = require('./lib/pre_define');
 
 const {
@@ -1167,10 +1168,10 @@ function applicationConfig() {
 
 function partialUpdateController(minAPIVersion, metadata = null, moduleType = '') {
   projectConfig.minAPIVersion = minAPIVersion;
-  if (minAPIVersion >= 9) {
+  if (minAPIVersion >= APIVERSION.apiVersionNine) {
     partialUpdateConfig.partialUpdateMode = true;
   }
-  const MIN_VERSION_OPTIMIZE_COMPONENT = 10;
+  const MIN_VERSION_OPTIMIZE_COMPONENT = APIVERSION.apiVersionTen;
   if (minAPIVersion < MIN_VERSION_OPTIMIZE_COMPONENT) {
     partialUpdateConfig.optimizeComponent = false;
   }

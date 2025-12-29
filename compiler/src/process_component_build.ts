@@ -143,7 +143,8 @@ import {
   MUTABLEBUILDER_BUILDERPROP,
   MUTABLEBUILDER_CLASS,
   MUTABLEBUILDER_DISPATCHBUILDER,
-  GLOBAL_THIS
+  GLOBAL_THIS,
+  APIVERSION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1047,7 +1048,7 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     }
     let debugInfo: string;
     if (projectConfig.isPreview) {
-      if (projectConfig.minAPIVersion >= 11) {
+      if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven) {
         debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
           `(${posOfNode.line + line}:${posOfNode.character + col})`;
       } else {
@@ -2346,7 +2347,7 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
 
 export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
   if (!(
-    projectConfig.minAPIVersion >= 11 &&
+    projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven &&
     ts.isPropertyAccessExpression(node) &&
     node.name && ts.isIdentifier(node.name) &&
     node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP
@@ -2366,7 +2367,8 @@ export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
 }
 
 function isWrappedBuilderCallExpression(node: ts.CallExpression): boolean {
-  if (projectConfig.minAPIVersion >= 11 && ts.isCallExpression(node) && node.expression &&
+  if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven &&
+    ts.isCallExpression(node) && node.expression &&
     isWrappedBuilder(node.expression as ts.PropertyAccessExpression)) {
     return true;
   }
@@ -3447,7 +3449,7 @@ function isPartMethod(node: ts.ExpressionStatement): boolean {
 }
 
 function isWrappedBuilderExpression(node: ts.ExpressionStatement): boolean {
-  if (projectConfig.minAPIVersion >= 11 && node.expression &&
+  if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven && node.expression &&
     isWrappedBuilderCallExpression(node.expression as ts.CallExpression)) {
     return true;
   }
