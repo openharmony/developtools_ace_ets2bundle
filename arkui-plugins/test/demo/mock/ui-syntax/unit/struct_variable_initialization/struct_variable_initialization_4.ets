@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Column, Text, Button } from '@ohos.arkui.component';
-import { Prop, State, Link, Observed } from "@ohos.arkui.stateManagement";
+import { State, Link, Observed } from "@ohos.arkui.stateManagement";
 
 // Expected: @ObjectLink must not have a default value.
 // Actual: A default value ('undefined') was assigned to the @ObjectLink property 'count'.

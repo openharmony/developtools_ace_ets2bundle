@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Flex, Button, Column } from '@ohos.arkui.component';
-import { Prop, State, Link } from "@ohos.arkui.stateManagement";
+import { State, Link } from "@ohos.arkui.stateManagement";
 
 // Expected: @Link must not have a default value.
 // Actual: A default value was assigned to the @Link property 'greenButtonState'.

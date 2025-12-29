@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Text, Builder, Flex } from '@ohos.arkui.component';
-import { Prop, State, Link } from "@ohos.arkui.stateManagement";
+import { State, Link } from "@ohos.arkui.stateManagement";
 
 // Expected: A @Link property must receive a value bound with a stateful reference (e.g.,@State, @Prop).
 // Actual: A regular non-reactive property ('value2') was passed to the @Link property 'title'.

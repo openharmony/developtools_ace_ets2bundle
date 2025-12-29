@@ -14,7 +14,7 @@
  */
 
 import { Entry, Component, Text, Column } from '@ohos.arkui.component';
-import { State, Link, Observed, ObjectLink } from "@ohos.arkui.stateManagement";
+import { State, Observed, ObjectLink } from "@ohos.arkui.stateManagement";
 
 // Expected: @ObjectLink must not have a default value.
 // Actual: A default value (new Observe()) was assigned to the @ObjectLink property 'objectLink'.
