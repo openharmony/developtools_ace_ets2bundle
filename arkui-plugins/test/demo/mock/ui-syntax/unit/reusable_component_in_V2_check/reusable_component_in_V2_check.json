@@ -1,0 +1,35 @@
+{
+  "reusable_component_in_V2_check_1": {
+    "messages": [
+      {
+        "message": "When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.",
+        "position": {
+          "line": 41,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "reusable_component_in_V2_check_2": {
+    "messages": [
+      {
+        "message": "When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.",
+        "position": {
+          "line": 50,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "reusable_component_in_V2_check_3": {
+    "messages": [
+      {
+        "message": "When a custom component is decorated with @ComponentV2 and contains a child component decorated with @Reusable, the child component will not create.",
+        "position": {
+          "line": 42,
+          "column": 7
+        }
+      }
+    ]
+  }
+}
