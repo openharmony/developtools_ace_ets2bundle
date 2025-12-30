@@ -1,0 +1,49 @@
+{
+  "wrap_builder_check_1": {
+    "messages": [
+      {
+        "message": "The wrapBuilder's parameter should be @Builder function.",
+        "position": {
+          "line": 23,
+          "column": 13
+        }
+      },
+      {
+        "message": "The wrapBuilder's parameter should be @Builder function.",
+        "position": {
+          "line": 29,
+          "column": 21
+        }
+      }
+    ]
+  },
+  "wrap_builder_check_2": {
+    "messages": [
+      {
+        "message": "The wrapBuilder's parameter should be @Builder function.",
+        "position": {
+          "line": 34,
+          "column": 21
+        }
+      },
+      {
+        "message": "The wrapBuilder's parameter should be @Builder function.",
+        "position": {
+          "line": 38,
+          "column": 21
+        }
+      }
+    ]
+  },
+  "wrap_builder_check_3": {
+    "messages": [
+      {
+        "message": "The wrapBuilder's parameter should be @Builder function.",
+        "position": {
+          "line": 33,
+          "column": 13
+        }
+      }
+    ]
+  }
+}

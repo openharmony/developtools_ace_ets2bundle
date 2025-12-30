@@ -1,0 +1,49 @@
+{
+  "watch_decorator_regular_1": {
+    "messages": [
+      {
+        "message": "Regular variable 'stateOne' can not be decorated with '@Watch'.",
+        "position": {
+          "line": 31,
+          "column": 6
+        }
+      },
+      {
+        "message": "Regular variable 'count' can not be decorated with '@Watch'.",
+        "position": {
+          "line": 38,
+          "column": 6
+        }
+      }
+    ]
+  },
+  "watch_decorator_regular_2": {
+    "messages": [
+      {
+        "message": "Regular variable 'username' can not be decorated with '@Watch'.",
+        "position": {
+          "line": 32,
+          "column": 6
+        }
+      },
+      {
+        "message": "Regular variable 'email' can not be decorated with '@Watch'.",
+        "position": {
+          "line": 35,
+          "column": 6
+        }
+      }
+    ]
+  },
+  "watch_decorator_regular_3": {
+    "messages": [
+      {
+        "message": "Regular variable 'state' can not be decorated with '@Watch'.",
+        "position": {
+          "line": 31,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

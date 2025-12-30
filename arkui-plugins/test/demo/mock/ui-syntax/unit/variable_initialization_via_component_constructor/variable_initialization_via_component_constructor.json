@@ -1,0 +1,35 @@
+{
+  "variable_initialization_via_component_constructor_1": {
+    "messages": [
+      {
+        "message": "'@Require' decorated 'count1' must be initialized through the component constructor.",
+        "position": {
+          "line": 35,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "variable_initialization_via_component_constructor_2": {
+    "messages": [
+      {
+        "message": "The '@Consume' property 'message' in the custom component 'ChildComponent' cannot be initialized here (forbidden to specify).",
+        "position": {
+          "line": 31,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "variable_initialization_via_component_constructor_3": {
+    "messages": [
+      {
+        "message": "The property 'linkedVal' must be initialized through the component constructor.",
+        "position": {
+          "line": 31,
+          "column": 7
+        }
+      }
+    ]
+  }
+}
