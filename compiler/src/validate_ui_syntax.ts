@@ -70,7 +70,12 @@ import {
   COMPONENT_DECORATOR_REUSABLE_V2,
   MAIN_COMPONENT_DECORATORS,
   COMPONENT_ENV_DECORATOR,
-  NON_FUNCTION_TYPE_WITH_V1_DECORATORS
+  NON_FUNCTION_TYPE_WITH_V1_DECORATORS,
+  COMPONENTV2_LOCAL_DECORATOR,
+  COMPONENTV2_PARAM_DECORATOR,
+  COMPONENTV2_PROVIDER_DECORATOR,
+  COMPONENTV2_CONSUMER_DECORATOR,
+  COMPONENTV2_ONCE_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -101,7 +106,8 @@ import {
   hasDecorator,
   storedFileInfo,
   ExtendResult,
-  CurrentProcessFile
+  CurrentProcessFile,
+  getOriginPropertyType
 } from './utils';
 import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
@@ -192,6 +198,9 @@ export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Ma
 export const originalImportNamesMap: Map<string, string> = new Map();
 
 const classTraceVariables: Map<string, string[]> = new Map();
+const classVariables: Map<string, string[]> = new Map();
+const classGetters: Map<string, string[]> = new Map();
+const classComputedGetters: Map<string, string[]> = new Map();
 
 const envSupportClass: string = 'WindowSizeLayoutBreakpointInfo';
 const sizeInVPClass: string = 'SizeInVP';
@@ -510,17 +519,17 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
   visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false,
-    undefined, '');
+    undefined, undefined);
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
   isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean,
-  classNode: ts.ClassDeclaration | undefined, tempStructName: string): void {
+  classNode: ts.ClassDeclaration | undefined, structNode: ts.StructDeclaration | undefined): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     const structName: string = node.name.escapedText.toString();
-    tempStructName = structName;
+    structNode = node;
     const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
     if (structInfo.isComponentV2) {
       processStructComponentV2.parseComponentProperty(node, structInfo, log, sourceFileNode);
@@ -544,17 +553,17 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
-    isObservedV1Class, isSendableClass, classNode, tempStructName);
+    isObservedV1Class, isSendableClass, classNode, structNode);
   ts.forEachChild(node, (child: ts.Node) => visitAllNode(child, sourceFileNode, allComponentNames, log,
     structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass,
-    classNode, tempStructName));
+    classNode, structNode));
   structContext = false;
   classContext = false;
   isObservedClass = false;
   isObservedV1Class = false;
   isSendableClass = false;
   classNode = undefined;
-  tempStructName = '';
+  structNode = undefined;
 }
 
 const v1ComponentDecorators: string[] = [
@@ -847,12 +856,12 @@ function collectAttrsNames(node: ts.CallExpression, attrsNames: Set<string>): vo
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
   isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean,
-  classNode: ts.ClassDeclaration | undefined, structName: string): void {
+  classNode: ts.ClassDeclaration | undefined, structNode: ts.StructDeclaration | undefined): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
     setLocalBuilderInFile(decoratorName);
-    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2, structName);
+    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2, structNode);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
       isObservedV1Class, isSendableClass, classNode);
@@ -954,10 +963,8 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   }
   if (monitorDecorators.includes(decoratorName) && isObservedClass && classNode &&
   ts.isCallExpression(node.parent)) {
-    const className: string = classNode.name.escapedText.toString();
     const parentCallExpression: ts.CallExpression = node.parent;
-    const traceVariables: string[] = getOrCreateClassTraceVariables(className, classNode);
-    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, traceVariables);
+    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, classNode);
   }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
@@ -968,15 +975,14 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
 }
 
 function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceFileNode: ts.SourceFile,
-  log: LogInfo[], stateVariables: string[]): void {
+  log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
   if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
     return;
   }
   parentCallExpression.arguments.forEach(monitorArgument => {
     checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log);
-    if (ts.isStringLiteral(monitorArgument) ||
-    ts.isNoSubstitutionTemplateLiteral(monitorArgument)) {
-      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, stateVariables);
+    if (ts.isStringLiteral(monitorArgument)) {
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
     }
   });
 }
@@ -985,39 +991,305 @@ interface argWrapper {
   value: string
 }
 
-function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], stateVariables: string[]): void {
-  if (hasNumberDotPattern(monitorArgument)) {
-    return;
-  }
-  let monitorArg: argWrapper = { value: monitorArgument.text };
-  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
-  const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
-    `except in wildcard-based monitoring scenarios.`;
+export enum MonitorArgsStatus {
+  PASS = 0,
+  ERROR = 1,
+  WARN = 2
+};
+
+interface MonitorStatus {
+  currentStatus: MonitorArgsStatus;
+  needCheck: boolean;
+  currentPropertyType: ts.Type | undefined;
+  currentClassNode?: ts.ClassDeclaration | ts.StructDeclaration | undefined;
+  visitedTypes?: Set<ts.Type>
 }
 
-function hasNumberDotPattern(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral): boolean {
-  const argText: string = monitorArgument.text;
-  const regx: RegExp = /\.\d+/g;
-  const matches = argText.match(regx);
-  if (matches && matches.length > 0) {
+function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  const monitorArg: argWrapper = { value: monitorArgument.text };
+  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
+  if (!needCheckContent) {
+    return;
+  }
+  if (monitorArg.value.startsWith('.')) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const monitorArgs: string[] = monitorArg.value.trim().split('.');
+  if (!monitorArgs.length) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  if (ts.isClassDeclaration(classNode)) {
+    checkMonitorDecoratorArgInClass(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  } else {
+    checkMonitorDecoratorArgInStruct(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  }
+  return;
+}
+
+function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: checker.getTypeAtLocation(classNode)
+  };
+  for (let i = 0; i < argsLen; i++) {
+    // 无法继续检查
+    if (!status.needCheck) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker)) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker);
+  }
+  statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: undefined
+  };
+  let propertyName: string = '';
+  let isFound: boolean = false;
+  structNode.members.some(propertyMember => {
+    if (ts.isPropertyDeclaration(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      propertyName = propertyMember.name.escapedText.toString();
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+      const isStateVariable: boolean = decorators.some(decorator => {
+        return [COMPONENTV2_LOCAL_DECORATOR, COMPONENTV2_PARAM_DECORATOR, COMPONENTV2_PROVIDER_DECORATOR, COMPONENTV2_CONSUMER_DECORATOR,
+          COMPONENTV2_ONCE_DECORATOR].includes(getDecoratorName(decorator));
+      });
+      if (propertyName === firstArg) {
+        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+        status.currentPropertyType = propertyType;
+        if (!isStateVariable) {
+          status.currentStatus = MonitorArgsStatus.WARN;
+        }
+        isFound = true;
+        return true;
+      }
+    } else if (ts.isGetAccessor(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      propertyName = propertyMember.name.escapedText.toString();
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+      const hasComputed: boolean = decorators.some(decorator => {
+        return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
+      });
+      if (propertyName === firstArg) {
+        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+        status.currentPropertyType = propertyType;
+        if (!hasComputed) {
+          status.currentStatus = MonitorArgsStatus.WARN;
+        }
+        isFound = true;
+        return true;
+      }
+    }
+    return false;
+  });
+  if (!isFound) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  for (let i = 1; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker)) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker);
+  }
+  statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.TypeChecker): boolean {
+  if (status.visitedTypes) {
+    status.visitedTypes.clear();
+  }
+  const currentPropertyType: ts.Type | undefined = status.currentPropertyType;
+  if (!currentPropertyType) {
+    return false;
+  }
+  const originType: ts.Type | undefined = getOriginPropertyType(currentPropertyType, checker);
+  if (!originType) {
+    return false;
+  }
+  status.currentPropertyType = originType;
+  return true;
+}
+
+function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, checker: ts.TypeChecker): boolean {
+  if (singleArg === '') {
+    status.needCheck = false;
+    status.currentStatus = MonitorArgsStatus.ERROR;
+    return false;
+  }
+  const currentPropertyType: ts.Type = status.currentPropertyType;
+  if (!status.visitedTypes) {
+    status.visitedTypes = new Set<ts.Type>();
+  }
+  if (status.visitedTypes.has(currentPropertyType)) {
+    status.needCheck = false;
+    return false;
+  }
+  status.visitedTypes.add(currentPropertyType);
+  status.currentPropertyType = undefined;
+  if (hasNumberPattern(singleArg)) {
+    status.needCheck = false;
+    return false;
+  }
+  const symbol = currentPropertyType?.getSymbol();
+  if (!symbol || !symbol.declarations || !symbol.declarations.length ||
+    !currentPropertyType.isClassOrInterface()) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+    return false;
+  }
+  const classDeclarations = symbol.declarations.filter(declaration => ts.isClassDeclaration(declaration));
+  const interfaceDeclarations = symbol.declarations.filter(declaration => ts.isInterfaceDeclaration(declaration));
+  if (classDeclarations.length === 0 && interfaceDeclarations.length === 0) {
+    status.needCheck = false;
+    return false;
+  }
+  let classNode: ts.ClassDeclaration | ts.InterfaceDeclaration | undefined;
+  if (classDeclarations.length > 0 && ts.isClassDeclaration(classDeclarations[0])) {
+    classNode = classDeclarations[0];
+  } else if (interfaceDeclarations.length > 0 && ts.isInterfaceDeclaration(interfaceDeclarations[0])) {
+    classNode = interfaceDeclarations[0];
+  }
+  if (!classNode) {
+    status.needCheck = false;
+    return false;
+  }
+  let propertyName: string = '';
+  let isFound: boolean = false;
+  classNode.members.some(propertyMember => {
+    if (ts.isPropertyDeclaration(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      propertyName = propertyMember.name.escapedText.toString();
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+      const hasTrace: boolean = decorators.some(decorator => {
+        return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
+      });
+      if (propertyName === singleArg) {
+        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+        status.currentPropertyType = propertyType;
+        if (!hasTrace) {
+          status.currentStatus = MonitorArgsStatus.WARN;
+        }
+        isFound = true;
+        return true;
+      }
+    } else if (ts.isGetAccessor(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      propertyName = propertyMember.name.escapedText.toString();
+      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+      const hasComputed: boolean = decorators.some(decorator => {
+        return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
+      });
+      if (propertyName === singleArg) {
+        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+        status.currentPropertyType = propertyType;
+        if (!hasComputed) {
+          status.currentStatus = MonitorArgsStatus.WARN;
+        }
+        isFound = true;
+        return true;
+      }
+    }
+    return false;
+  });
+  if (isFound) {
     return true;
   }
+  const basesTypes = checker.getBaseTypes(currentPropertyType) || [];
+  for (const baseType of basesTypes) {
+    status.currentPropertyType = baseType;
+    const foundInBaseTypes: boolean = checkSingleMonitorArgContent(singleArg, status, checker);
+    if (foundInBaseTypes) {
+      return true;
+    }
+  }
+  status.currentStatus = MonitorArgsStatus.ERROR;
+  status.needCheck = false;
   return false;
 }
 
-function checkWildCard(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral,
+function statusDecideSyncMonitorArgExist(status: MonitorArgsStatus, monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  if (status === MonitorArgsStatus.PASS) {
+    return;
+  }
+  const isError: boolean = status === MonitorArgsStatus.ERROR;
+  validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, isError);
+}
+
+function validateSyncMonitorArgExist(monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isError: boolean): void {
+  const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
+    `except in wildcard-based monitoring scenarios.`;
+  isError ? addLog(LogType.ERROR, variableExistMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905366' }) :
+    addLog(LogType.WARN, variableExistMessage, monitorArgument.pos, log, sourceFileNode);
+}
+
+function hasNumberPattern(singleArg: string): boolean {
+  const regx: RegExp = /^\d+$/g;
+  return regx.test(singleArg);
+}
+
+function checkWildCard(monitorArgument: ts.StringLiteral,
   sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper): boolean {
   const argText: string = monitorArgument.text;
   const wildCardMessage: string = `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`;
-  const wildCardRegex: RegExp = /\.\*/g;
+  const wildCardRegex: RegExp = /\*/g;
   const matches = argText.match(wildCardRegex);
   if (!matches || !matches.length) {
     return true;
   }
   const wildCardCount: number = matches.length;
   const isAtEnd: boolean = argText.endsWith('.*');
-  if (wildCardCount !== 1 || !isAtEnd) {
+  const isInvalidStr: boolean = argText === '*' || argText === '.*';
+  if (wildCardCount !== 1 || !isAtEnd || isInvalidStr) {
+    addLog(LogType.ERROR, wildCardMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905367' });
+    return false;
+  }
+  const prefix: string = argText.slice(0, -2);
+  if (prefix.length > 0 && prefix.endsWith('.')) {
     addLog(LogType.ERROR, wildCardMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905367' });
     return false;
   }
@@ -1028,80 +1300,45 @@ function checkWildCard(monitorArgument: ts.StringLiteral | ts.NoSubstitutionTemp
 function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
   sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
   const typeMessage: string = `Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.`;
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (!ts.isIdentifier(monitorArgument) && !ts.isPropertyAccessExpression(monitorArgument) &&
-    !ts.isStringLiteral(monitorArgument) && !ts.isNoSubstitutionTemplateLiteral(monitorArgument)) {
+  if (!ts.isStringLiteral(monitorArgument)) {
     addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
     return;
   }
-  if (ts.isIdentifier(monitorArgument)) {
-    if (checker && !isIdentifierConst(monitorArgument, checker, log)) {
-      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
-    }
-    return;
-  }
-  if (ts.isPropertyAccessExpression(monitorArgument)) {
-    if (monitorArgument.expression.kind === ts.SyntaxKind.ThisKeyword) {
-      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
-      return;
-    }
-    if (!ts.isIdentifier(monitorArgument.expression) ||
-      (checker && !isIdentifierEnum(monitorArgument.expression, checker))) {
-      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
-    }
-  }
-}
-
-function isIdentifierConst(
-  identifier: ts.Identifier,
-  checker: ts.TypeChecker,
-  log: LogInfo[]
-): boolean {
-  const symbol = checker.getSymbolAtLocation(identifier);
-  if (!symbol) {
-    return false;
-  }
-  const declarations = symbol.getDeclarations() || [];
-  for (const decl of declarations) {
-    if (ts.isVariableDeclaration(decl) && decl.parent) {
-      const hasConstModifier: boolean = decl.parent.getText().includes('const');
-      return hasConstModifier;
-    }
-  }
-  return false;
-}
-
-function isIdentifierEnum(
-  identifier: ts.Identifier,
-  checker: ts.TypeChecker
-): boolean {
-  const symbol = checker.getSymbolAtLocation(identifier);
-  if (!symbol) {
-    return false;
-  }
-  const declarations = symbol.getDeclarations() || [];
-  const hasEnumDeclaration: boolean = declarations.some(decl => ts.isEnumDeclaration(decl));
-  return hasEnumDeclaration;
 }
 
 function getOrCreateClassTraceVariables(className: string,
   classNode: ts.ClassDeclaration): string[] {
   if (!classTraceVariables.has(className)) {
     const traceVariables: string[] = [];
+    const variables: string[] = [];
+    const computedGetters: string[] = [];
+    const getters: string[] = [];
     let propertyName: string = '';
     classNode.members.forEach(propertyMember => {
-      if (!ts.isPropertyDeclaration(propertyMember) ||
-        !ts.isIdentifier(propertyMember.name)) {
-        return;
+      if (ts.isPropertyDeclaration(propertyMember) &&
+        ts.isIdentifier(propertyMember.name)) {
+        propertyName = propertyMember.name.escapedText.toString();
+        variables.push(propertyName);
+        const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+        const hasTrace: boolean = decorators.some(decorator => {
+          return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
+        });
+        hasTrace && traceVariables.push(propertyName);
+      } else if (ts.isGetAccessor(propertyMember) &&
+        ts.isIdentifier(propertyMember.name)) {
+        propertyName = propertyMember.name.escapedText.toString();
+        getters.push(propertyName);
+        const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+        const hasComputed: boolean = decorators.some(decorator => {
+          return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
+        });
+        hasComputed && computedGetters.push(propertyName);
       }
-      propertyName = propertyMember.name.escapedText.toString();
-      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
-      const hasTrace = decorators.some(decorator => {
-        return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
-      });
-      hasTrace && traceVariables.push(propertyName);
     });
+    classVariables.set(className, variables);
     classTraceVariables.set(className, traceVariables);
+    classGetters.set(className, getters);
+    classComputedGetters.set(className, computedGetters);
   }
   return classTraceVariables.get(className);
 }
@@ -1241,7 +1478,7 @@ function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childCla
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
-  structContext: boolean, decoratorName: string, isComponentV2: boolean, structName: string): void {
+  structContext: boolean, decoratorName: string, isComponentV2: boolean, structNode: ts.StructDeclaration | undefined): void {
   const name: string = `@${decoratorName}`;
   if (structContext) {
     if (isComponentV2) {
@@ -1249,13 +1486,10 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
         const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
         addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905339' });
       }
-      if (monitorDecorators.includes(decoratorName) && node.parent &&
+      if (monitorDecorators.includes(decoratorName) && node.parent && structNode &&
         ts.isCallExpression(node.parent)) {
         const parentCallExpression: ts.CallExpression = node.parent;
-        const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
-        const stateVariables: string[] = [...structInfo.localDecoratorSet, ...structInfo.paramDecoratorMap.keys(),
-          ...structInfo.providerDecoratorSet, ...structInfo.consumerDecoratorSet];
-        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, stateVariables);
+        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, structNode);
       }
     } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
@@ -2276,6 +2510,9 @@ export function resetComponentCollection(): void {
   privateCollection.clear();
   regularStaticCollection.clear();
   classTraceVariables.clear();
+  classVariables.clear();
+  classComputedGetters.clear();
+  classGetters.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
