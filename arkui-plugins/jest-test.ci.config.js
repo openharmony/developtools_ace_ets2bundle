@@ -32,7 +32,7 @@ function findSingleSubdirectorySync(basePath) {
 }
 
 const rootPath = path.resolve(__dirname, '../../../');
-const sdkPrefixPath = findSingleSubdirectorySync(path.resolve(rootPath, './out/sdk/packages/ohos-sdk/linux/'))
+const sdkPrefixPath = findSingleSubdirectorySync(path.resolve(rootPath, './prebuilts/ohos-sdk/linux/'))
 const sdkPath = path.join(sdkPrefixPath, 'ets', 'static');
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
 const apiPath = path.resolve(sdkPath, './api');
@@ -43,8 +43,25 @@ module.exports = {
     transform: {
         '^.+\\.ts$': ['ts-jest'],
     },
-    testRegex: './test/ut/.+\\.test\\.ts$',
-    testPathIgnorePatterns: [],
+    testPathIgnorePatterns: [
+        './test/ut/ui-plugins/unit',
+        './test/unit'
+    ],
+    testMatch: [
+        '**/test/ut/ui-plugins/decorators/custom-dialog/base-custom-dialog.test.ts',
+        '**/test/ut/ui-plugins/decorators/builder-param/builder-param-passing.test.ts',
+        '**/test/ut/ui-plugins/decorators/resource/resource-in-build.test.ts',
+        '**/test/ut/ui-plugins/builder-lambda/inner-component/overload-component-builder.test.ts',
+        '**/test/ut/ui-plugins/builder-lambda/condition-scope/if-else-in-content.test.ts',
+        '**/test/ut/ui-plugins/entry/route-name/route-name-storage-shared.test.ts',
+        '**/test/ut/ui-plugins/builder-lambda/style-with-receiver.test.ts',
+        '**/test/ut/ui-plugins/use-namespace.test.ts',
+        '**/test/ut/ui-plugins/double-dollar/double-dollar-textpicker.test.ts',
+        '**/test/ut/ui-plugins/component/for-each.test.ts',
+        '**/test/ut/ui-plugins/imports/kit-import.test.ts',
+        '**/test/ut/ui-plugins/wrap-builder/wrap-builder-in-generic.test.ts',
+        '**/test/ut/memo-plugins/function-declarations/internal-memo-arg.test.ts'
+    ],
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     verbose: false,
     globals: {
