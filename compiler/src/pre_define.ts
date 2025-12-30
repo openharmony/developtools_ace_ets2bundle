@@ -374,6 +374,7 @@ export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
 export const BIND_CONTENT_COVER: string = 'bindContentCover';
 export const BIND_SHEET: string = 'bindSheet';
+export const PICKER: string = 'Picker';
 export const DATE_PICKER: string = 'DatePicker';
 export const TIME_PICKER: string = 'TimePicker';
 export const RATING: string = 'Rating';
@@ -387,6 +388,7 @@ export const SELECT_LOW: string = 'select';
 export const CHECKBOX_GROUP: string = 'CheckboxGroup';
 export const SELECT_ALL: string = 'selectAll';
 export const SELECTED: string = 'selected';
+export const SELECTED_INDEX: string = 'selectedIndex';
 export const MENU_ITEM: string = 'MenuItem';
 export const PANEL: string = 'Panel';
 export const RATING_LOW: string = 'rating';
@@ -419,7 +421,7 @@ const ZOOM_SCALE: string = 'zoomScale';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
-  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER]);
+  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER, PICKER]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const STYLE_ADD_DOUBLE_EXCLAMATION: Set<string> = new Set([
@@ -430,6 +432,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [REFRESH, new Set([REFRESHING])],
   [CHECK_BOX, new Set([SELECT_LOW])],
   [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [PICKER, new Set([SELECTED_INDEX])],
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
@@ -457,6 +460,7 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [REFRESH, new Set([REFRESHING])],
   [CHECK_BOX, new Set([SELECT_LOW])],
   [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [PICKER, new Set([SELECTED_INDEX])],
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
