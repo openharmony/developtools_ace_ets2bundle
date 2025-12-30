@@ -1,0 +1,75 @@
+{
+   "computed_decorator_check_1": {
+      "messages": [
+        {
+          "message": "The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.",
+          "position": {
+            "line": 26,
+            "column": 4
+          }
+        }
+      ]
+  },
+  "computed_decorator_check_2": {
+    "messages": [
+      {
+        "message": "'@Computed' can only decorate 'GetAccessor'",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Computed' can only decorate 'GetAccessor'",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "computed_decorator_check_3": {
+    "messages": [
+      {
+        "message": "A property decorated by '@Computed' cannot define a set method.",
+        "position": {
+          "line": 31,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "computed_decorator_check_4": {
+    "messages": [
+      {
+        "message": "A property decorated by '@Computed' cannot be used with two-way bind syntax.",
+        "position": {
+          "line": 36,
+          "column": 25
+        }
+      }
+    ]
+  },
+   "computed_decorator_check_5": {
+    "messages": [
+      {
+        "message": "The '@Computed' annotation can only be used in a 'struct' decorated with '@ComponentV2'.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+   "computed_decorator_check_6": {
+    "messages": [
+      {
+        "message": "The '@Computed' can decorate only member method within a 'class' decorated with ObservedV2.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      }
+    ]
+  }
+}
