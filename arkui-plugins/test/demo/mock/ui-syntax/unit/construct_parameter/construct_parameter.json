@@ -1,0 +1,75 @@
+{
+  "construct_parameter_1": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'value2' cannot be assigned to the '@Link' property 'title'.",
+        "position": {
+          "line": 35,
+          "column": 16
+        }
+      }
+    ]
+  },
+  "construct_parameter_2": {
+    "messages": [
+      {
+        "message": "The '@Consume' property 'value2' cannot be assigned to the 'regular' property 'title'.",
+        "position": {
+          "line": 43,
+          "column": 16
+        }
+      },
+      {
+        "message": "The '@Provide' property 'value' cannot be assigned to the 'regular' property 'title1'.",
+        "position": {
+          "line": 48,
+          "column": 17
+        }
+      }
+    ]
+  },
+  "construct_parameter_3": {
+    "messages": [
+      {
+        "message": "The '@StoragePropRef' property 'value2' cannot be assigned to the 'regular' property 'title'.",
+        "position": {
+          "line": 39,
+          "column": 16
+        }
+      }
+    ]
+  },
+  "construct_parameter_4": {
+    "messages": [
+      {
+        "message": "The 'regular' property 'message' cannot be assigned to the '@Link' property 'message'.",
+        "position": {
+          "line": 29,
+          "column": 43
+        }
+      }
+    ]
+  },
+   "construct_parameter_5": {
+    "messages": [
+      {
+        "message": "The '@LocalStorageLink' property 'storageVal' cannot be assigned to the 'regular' property 'label'.",
+        "position": {
+          "line": 38,
+          "column": 19
+        }
+      }
+    ]
+  },
+   "construct_parameter_6": {
+    "messages": [
+      {
+        "message": "'@BuilderParam' attribute 'content' can only initialized by '@Builder' function or '@Builder' method in struct.",
+        "position": {
+          "line": 39,
+          "column": 31
+        }
+      }
+    ]
+  }
+}

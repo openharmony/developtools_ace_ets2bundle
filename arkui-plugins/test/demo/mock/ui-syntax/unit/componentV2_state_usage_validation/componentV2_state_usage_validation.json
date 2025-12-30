@@ -1,0 +1,127 @@
+{
+  "componentV2_state_usage_validation_1": {
+    "messages": [
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 25,
+          "column": 11
+        }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "The member property or method cannot be decorated by multiple built-in annotations.",
+        "position": {
+          "line": 26,
+          "column": 11
+        }
+      }
+    ]
+  },
+  "componentV2_state_usage_validation_2": {
+    "messages": [
+      {
+        "message": "'@Local' can only decorate member property.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Param' can only decorate member property.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Once' can only decorate member property.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "'@Event' can only decorate member property.",
+        "position": {
+          "line": 32,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "componentV2_state_usage_validation_3": {
+    "messages": [
+      {
+        "message": "'@Local' can only decorate member property.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "componentV2_state_usage_validation_4": {
+    "messages": [
+      {
+        "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+        "position": {
+          "line": 25,
+          "column": 10
+        }
+      },
+      {
+        "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' or '@BuilderParam'.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "componentV2_state_usage_validation_5": {
+    "messages": [
+      {
+        "message": "'@Local' can only decorate member property.",
+        "position": {
+          "line": 22,
+          "column": 2
+        }
+      },
+      {
+        "message": "'@Param' can only decorate member property.",
+        "position": {
+          "line": 25,
+          "column": 2
+        }
+      },
+      {
+        "message": "'@Event' can only decorate member property.",
+        "position": {
+          "line": 30,
+          "column": 2
+        }
+      }
+    ]
+  }
+}
