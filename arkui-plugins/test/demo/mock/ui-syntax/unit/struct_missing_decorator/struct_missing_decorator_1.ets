@@ -13,26 +13,28 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, ReusableV2, Preview } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: The analyzer should report that struct 'V22'&'V23'&'V25' uses '@ReusableV2' but is missing
+// one of the required annotations: '@Component', '@ComponentV2', or '@CustomDialog'.
+// Actual: Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'V22'&'V23'&'V25'.
 
-@Component
-struct Demo2 {
+@ReusableV2
+@Entry
+struct V22 {
   build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
   }
 }
 
-@Entry
-@Component
-struct Index{
+@ReusableV2
+struct V23 {
+  build() {
+  }
+}
+
+@Preview
+@ReusableV2
+struct V25 {
   build() {
   }
 }

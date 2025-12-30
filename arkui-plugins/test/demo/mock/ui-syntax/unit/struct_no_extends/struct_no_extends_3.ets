@@ -13,26 +13,26 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Text } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: The analyzer should report that structs cannot implement interfaces.
+// Actual: Error reported - "Structs are not allowed to inherit from classes or implement interfaces."
 
-@Component
-struct Demo2 {
+interface IExample {
+  doSomething(): void
+}
+
+struct DemoStruct3 implements IExample {
   build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
+    Text("Struct cannot implement an interface")
   }
+
+  doSomething() {}
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo3{
   build() {
   }
 }

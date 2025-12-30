@@ -13,26 +13,22 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, ComponentV2 } from '@ohos.arkui.component';
+import { Link } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: @Link property must be a non-optional variable.
+// Actual: The @Link property 'optionalLink' was declared as optional (optionalLink?).
 
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
+@ComponentV2
+class DemoOptional3 {
+  @Link
+  optionalLink?: string;
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo3Entry {
   build() {
+
   }
 }

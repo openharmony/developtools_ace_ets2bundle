@@ -13,26 +13,22 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component } from '@ohos.arkui.component';
+import { Link, State, Provide } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: '@Link' can only decorate member property.
+// Expected: '@Provide' can only decorate member property.
+// Actual: Property-only decorators are applied to global variable declarations.
 
 @Entry
 @Component
-struct Index{
-  build() {
-  }
+struct VariableValidationDemo {
+  @State myState: number = 0;
+  build() {}
 }
+
+@Link
+let globalVariable: number = 10;
+
+@Provide
+const constantVariable: string = "test";

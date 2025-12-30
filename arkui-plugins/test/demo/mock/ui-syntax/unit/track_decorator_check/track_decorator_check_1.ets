@@ -13,26 +13,30 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Text } from '@ohos.arkui.component';
+import { State, Track } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: @Track only for class member variables.
+// Actual: Used on a free function && global variable.
 
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
+@Track
+struct UtilFn(a: number, b: number) {
+  return a * b;
+}
+
+@Track
+let globalVar = 123;
+
+interface SampleInterface {
+  @Track name: string;
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo1 {
+  @State count: number = 0;
+
   build() {
+    Text("Demo1 Page")
   }
 }

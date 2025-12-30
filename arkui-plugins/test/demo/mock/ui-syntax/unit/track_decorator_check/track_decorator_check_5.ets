@@ -13,26 +13,23 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Text } from '@ohos.arkui.component';
+import { Track } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: The '@Track' annotation can decorate only member variables of a class.
+// Actual: @Track is applied to a struct property and a struct method.
 
 @Entry
 @Component
-struct Index{
+struct TrackOnStructMembers {
+  @Track message: string = "Hello";
+
+  @Track
+  updateMessage() {
+    this.message = "World";
+  }
+
   build() {
+    Text(this.message)
   }
 }

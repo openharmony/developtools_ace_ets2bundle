@@ -13,26 +13,24 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: The '@Component' annotation can only be used with 'struct'.
+// Expected: The '@Entry' annotation can only be used with 'struct'.
+// Actual: Struct-only decorators are applied to a class property and a getter method.
 
 @Entry
 @Component
-struct Index{
-  build() {
+struct ClassMemberDemo {
+  build() {}
+}
+
+class InvalidDecoratorsOnMembers {
+  @Component
+  public myProperty: string = "Hello";
+
+  @Entry
+  get myGetter(): boolean {
+    return true;
   }
 }

@@ -13,26 +13,17 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: The '@Component' decorator can only be applied to a 'struct'.
+// Actual: '@Component' is applied to a class ('NekoPara'), which is invalid.
 
 @Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+class NekoPara {}
 
 @Entry
 @Component
-struct Index{
-  build() {
+struct NoStructDecoSummerPockets {
+  build(){
   }
 }

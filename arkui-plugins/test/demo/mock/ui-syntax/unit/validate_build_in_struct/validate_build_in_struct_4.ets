@@ -13,26 +13,22 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Row, Text } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: A struct must define exactly one 'build' method.
+// Actual: 'Demo2' does not define any 'build' method.
 
 @Entry
 @Component
-struct Index{
+struct Demo2Entry {
   build() {
+    Row(){}
+  }
+}
+
+@Component
+struct Demo2 {
+  init() {
+    Text("No build method");
   }
 }

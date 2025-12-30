@@ -1,0 +1,35 @@
+{
+  "specific_component_children_1": {
+    "messages": [
+      {
+        "message": " When the component 'Toggle' set 'type' as 'Checkbox', it can't have any child.",
+        "position": {
+          "line": 26,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "specific_component_children_2": {
+    "messages": [
+      {
+        "message": "When the component 'Toggle' set 'type' as 'Button', it can only have a single child component.",
+        "position": {
+          "line": 25,
+          "column": 7
+        }
+      }
+    ]
+  },
+  "specific_component_children_3": {
+    "messages": [
+      {
+        "message": "When the component 'Toggle' set 'type' as 'Checkbox', it can't have any child.",
+        "position": {
+          "line": 24,
+          "column": 5
+        }
+      }
+    ]
+  }
+}

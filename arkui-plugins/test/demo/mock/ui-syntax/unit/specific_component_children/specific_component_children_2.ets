@@ -29,10 +29,3 @@ struct Demo2 {
     }
   }
 }
-
-@Entry
-@Component
-struct Index{
-  build() {
-  }
-}

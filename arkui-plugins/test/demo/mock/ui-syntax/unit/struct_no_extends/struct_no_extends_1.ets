@@ -13,26 +13,22 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Row } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: Structs in ArkTS must not extend any class or implement any interface.
+// Actual: The struct 'UpdateHeritageClausesIndex' extends the class 'TestCase', which is not allowed.
 
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
+class TestCase {
+  private name: string;
+  constructor(name: string) {
+    this.name = name;
   }
 }
 
 @Entry
 @Component
-struct Index{
+struct UpdateHeritageClausesIndex extends TestCase{
   build() {
+    Row(){}
   }
 }
