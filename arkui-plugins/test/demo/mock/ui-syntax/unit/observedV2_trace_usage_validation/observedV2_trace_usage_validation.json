@@ -1,0 +1,56 @@
+{
+  "observedV2_trace_usage_validation_1": {
+    "messages": [
+      {
+        "message": "The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "observedV2_trace_usage_validation_2": {
+    "messages": [
+      {
+        "message": "The '@Trace' annotation can only be used in 'class'.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Trace' annotation can only decorate member variables within a 'class' decorated with '@ObservedV2'.",
+        "position": {
+          "line": 44,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "observedV2_trace_usage_validation_3": {
+    "messages": [
+      {
+        "message": "The '@Trace' annotation can only be used in 'class'",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@ObservedV2' annotation can only be used in 'class'",
+        "position": {
+          "line": 36,
+          "column": 2
+        }
+      },
+      {
+        "message": "The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.",
+        "position": {
+          "line": 45,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

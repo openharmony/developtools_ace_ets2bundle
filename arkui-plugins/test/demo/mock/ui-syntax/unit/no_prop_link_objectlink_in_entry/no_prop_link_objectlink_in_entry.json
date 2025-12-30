@@ -1,0 +1,45 @@
+{
+  "no_prop_link_objectlink_in_entry_1": {
+    "messages": [
+      {
+        "message": "The Link decorated 'link_value' cannot be declared as private.",
+        "position": {
+          "line": 29,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Entry' component 'Child2struct05' cannot have the '@Link' property 'link_value'.",
+        "position": {
+          "line": 29,
+          "column": 4
+        }
+      },
+      {
+        "message": "The ObjectLink decorated 'objectLink_value' cannot be declared as private.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      },
+      {
+        "message": "The '@Entry' component 'Child2struct05' cannot have the '@ObjectLink' property 'objectLink_value'.",
+        "position": {
+          "line": 30,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "no_prop_link_objectlink_in_entry_2": {
+    "messages": [
+      {
+        "message": "The '@Entry' component 'EntryWithPropRef' cannot have the '@PropRef' property 'title'.",
+        "position": {
+          "line": 25,
+          "column": 4
+        }
+      }
+    ]
+  }
+}
