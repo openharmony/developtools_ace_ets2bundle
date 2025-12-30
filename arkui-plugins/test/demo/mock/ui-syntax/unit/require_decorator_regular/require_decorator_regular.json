@@ -1,0 +1,77 @@
+{
+  "require_decorator_regular_1": {
+    "messages": [
+      {
+        "message": "Property 'state_value' can not be decorated with both Require and private.",
+        "position": {
+          "line": 47,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'prop_value' can not be decorated with both Require and private.",
+        "position": {
+          "line": 48,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'provide_value' can not be decorated with both Require and private.",
+        "position": {
+          "line": 49,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'builder_value' can not be decorated with both Require and private.",
+        "position": {
+          "line": 50,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'regular_value' can not be decorated with both Require and private.",
+        "position": {
+          "line": 51,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "require_decorator_regular_2": {
+    "messages": [
+      {
+        "message": "Property 'username' can not be decorated with both Require and private.",
+        "position": {
+          "line": 26,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'token' can not be decorated with both Require and private.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      }
+    ]
+  },
+  "require_decorator_regular_3": {
+    "messages": [
+      {
+        "message": "Property 'age' can not be decorated with both Require and private.",
+        "position": {
+          "line": 27,
+          "column": 4
+        }
+      },
+      {
+        "message": "Property 'onSubmit' can not be decorated with both Require and private.",
+        "position": {
+          "line": 28,
+          "column": 4
+        }
+      }
+    ]
+  }
+}

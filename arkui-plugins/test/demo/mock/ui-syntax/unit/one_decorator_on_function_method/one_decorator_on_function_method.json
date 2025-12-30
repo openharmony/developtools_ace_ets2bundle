@@ -1,0 +1,145 @@
+{
+  "one_decorator_on_function_method_1": {
+    "messages": [
+      {
+        "message": " A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 23,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "one_decorator_on_function_method_2": {
+    "messages": [
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 28,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 35,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 38,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "one_decorator_on_function_method_3": {
+    "messages": [
+      {
+        "message": " A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 26,
+          "column": 2
+        }
+      },
+      {
+        "message": " A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 31,
+          "column": 2
+        }
+      },
+      {
+        "message": " A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "one_decorator_on_function_method_4": {
+    "messages": [
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 30,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "one_decorator_on_function_method_5": {
+    "messages": [
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 33,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 38,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 39,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 49,
+          "column": 2
+        }
+      }
+    ]
+  },
+  "one_decorator_on_function_method_6": {
+    "messages": [
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 32,
+          "column": 2
+        }
+      },
+      {
+        "message": "A function can only be decorated by the 'Builder'.",
+        "position": {
+          "line": 33,
+          "column": 2
+        }
+      }
+    ]
+  }
+}
