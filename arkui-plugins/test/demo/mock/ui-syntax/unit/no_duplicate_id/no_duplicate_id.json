@@ -1,0 +1,56 @@
+{
+  "no_duplicate_id_1": {
+    "messages": [
+      {
+        "message": "The current component id \"title\" is duplicate",
+        "position": {
+          "line": 32,
+          "column": 24
+        }
+      },
+      {
+        "message": "The current component id \"btn\" is duplicate",
+        "position": {
+          "line": 36,
+          "column": 31
+        }
+      }
+    ]
+  },
+  "no_duplicate_id_2": {
+    "messages": [
+      {
+        "message": "The current component id \"label\" is duplicate",
+        "position": {
+          "line": 35,
+          "column": 25
+        }
+      },
+      {
+        "message": "The current component id \"saveBtn\" is duplicate",
+        "position": {
+          "line": 40,
+          "column": 26
+        }
+      }
+    ]
+  },
+  "no_duplicate_id_3": {
+    "messages": [
+      {
+        "message": "The current component id \"header\" is duplicate",
+        "position": {
+          "line": 32,
+          "column": 27
+        }
+      },
+      {
+        "message": "The current component id \"action\" is duplicate",
+        "position": {
+          "line": 36,
+          "column": 26
+        }
+      }
+    ]
+  }
+}

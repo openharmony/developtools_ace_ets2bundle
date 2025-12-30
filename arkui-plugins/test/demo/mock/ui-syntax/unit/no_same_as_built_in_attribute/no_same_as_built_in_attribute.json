@@ -1,0 +1,35 @@
+{
+  "no_same_as_built_in_attribute_1": {
+    "messages": [
+      {
+        "message": "The struct 'gesture' cannot have the same name as the built-in attribute 'gesture'.",
+        "position": {
+          "line": 26,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "no_same_as_built_in_attribute_2": {
+    "messages": [
+      {
+        "message": "The struct 'borderWidth' cannot have the same name as the built-in attribute 'borderWidth'.",
+        "position": {
+          "line": 26,
+          "column": 8
+        }
+      }
+    ]
+  },
+  "no_same_as_built_in_attribute_3": {
+    "messages": [
+      {
+        "message": "The struct 'align' cannot have the same name as the built-in attribute 'align'.",
+        "position": {
+          "line": 26,
+          "column": 8
+        }
+      }
+    ]
+  }
+}
