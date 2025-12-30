@@ -1122,6 +1122,35 @@ mocha.describe('test module_source_file file api', function () {
     ModuleSourceFile.projectConfig.pkgContextInfo = {};
   });
 
+    mocha.it('5-9: test generateMockConfigFile under LocalTest mode (useNormalizedOHMUrl)', function () {
+    this.rollup.share.projectConfig.isLocalTest = true;
+    let transKey = "@ohos:i18n";
+    let mockConfigCache: string =
+          path.resolve(this.rollup.share.projectConfig.aceModuleJsonPath, `../mock-config.json`);
+    
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
+    ModuleSourceFile.newMockConfigInfo = {
+      "@ohos:i18n": {
+        "source": "@bundle:com.example.demo/entry/src/mock/I18nMock"
+      }
+    }
+    ModuleSourceFile.generateMockConfigFile(this.rollup);
+    let expectBundleOHMUrl: string = "@bundle:com.example.demo/entry/src/mock/I18nMock";
+    let cachedMockConfigInfo: Object = JSON.parse(fs.readFileSync(mockConfigCache, 'utf-8'));
+    expect(cachedMockConfigInfo[transKey].source === expectBundleOHMUrl).to.be.true;
+    
+    this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
+    ModuleSourceFile.newMockConfigInfo = {
+      "@ohos:i18n": {
+        "source": "@normalized:N&entry&&entry/src/mock/I18nMock&"
+      }
+    }
+    ModuleSourceFile.generateMockConfigFile(this.rollup);
+    cachedMockConfigInfo = JSON.parse(fs.readFileSync(mockConfigCache, 'utf-8'));
+    let expectNormalizedOHMUrl: string = "@normalized:N&entry&&entry/src/mock/I18nMock&";
+    expect(cachedMockConfigInfo[transKey].source === expectNormalizedOHMUrl).to.be.true;
+  });
+
   mocha.it('6-1: test removePotentialMockConfigCache delete mock-config', function () {
     const transformedMockConfigCache: string =
       path.resolve(this.rollup.share.projectConfig.cachePath, `./${TRANSFORMED_MOCK_CONFIG}`);
