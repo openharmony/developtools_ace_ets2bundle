@@ -13,26 +13,24 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Column, Text } from '@ohos.arkui.component'
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: The analyzer should report that struct 'EntryComponent' is missing one of the
+// required annotations: '@Component', '@ComponentV2', or '@CustomDialog'.
+// Actual: Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'EntryComponent'.
 
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
+struct EntryComponent{
+  build(){
+    Column(){
+      Text('hello')
     }
+    .margin(10)
   }
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo2{
   build() {
   }
 }

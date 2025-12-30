@@ -13,26 +13,27 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Text } from '@ohos.arkui.component';
+import { ObjectLink, State, PropRef } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: @PropRef and @ObjectLink properties must be non-optional variables.
+// Actual: The @PropRef property 'value' and @ObjectLink property 'data' were declared as optional (value? and data?).
 
 @Component
 struct Demo2 {
+  @PropRef('id') value?: stringx
+  @ObjectLink data?: number
+  @State flag: boolean = true
+
   build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
+    Text("Demo2")
   }
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo2Entry {
   build() {
+
   }
 }

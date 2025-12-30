@@ -13,26 +13,23 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Column } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: All struct properties must declare a type.
+// Actual: Properties 'x' and 'y' in 'DemoNoType4' have no type.
 
 @Component
-struct Demo2 {
+struct DemoNoType4 {
+  x = 10; y = 20; z
+
   build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
+    Column() {}
   }
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo3{
   build() {
   }
 }

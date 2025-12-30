@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,26 +14,16 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component } from '@ohos.arkui.component';
+import { State } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: '@State' can only be applied to member properties of a struct.
+// Actual: '@State' is applied to the 'build' method, which is invalid.
 
 @Entry
 @Component
-struct Index{
-  build() {
+struct SummerPockets {
+  @State
+  build(){
   }
 }

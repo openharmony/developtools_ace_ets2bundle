@@ -15,24 +15,17 @@
 
 import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: Toggle with type 'Checkbox' must not have any child components.
+// Actual: Toggle with type 'Checkbox' contains child components.
 
 @Entry
 @Component
-struct Index{
+struct Demo1 {
   build() {
+    Column() {
+      Toggle({ type: ToggleType.Checkbox }) {
+        Text("Not allowed")
+      }
+    }
   }
 }

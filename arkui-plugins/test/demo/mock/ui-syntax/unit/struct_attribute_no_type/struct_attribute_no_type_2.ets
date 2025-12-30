@@ -13,26 +13,17 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Row } from '@ohos.arkui.component';
+import { State } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: All struct properties must explicitly declare a type.
+// Actual: The '@State' property 'message' does not have a type.
 
 @Entry
 @Component
-struct Index{
+struct ValidatePropertyNonTypeIndex {
+  @State message = 'Hi'
   build() {
+    Row() {}
   }
 }

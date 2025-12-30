@@ -13,26 +13,33 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, ReusableV2, Reusable, ComponentV2, Preview, CustomDialog } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: The '@ReusableV2' decorator can only be applied to 'struct' types.
+// Actual: '@ReusableV2' is applied to a 'class' or 'function' (Info, InfoReusable, InfoComponent, ...),
+// which is invalid and causes a plugin error.
 
 @Entry
 @Component
-struct Index{
-  build() {
+struct ValidateDecoratorDemo {
+  build(){
   }
 }
+
+@ReusableV2
+class Info {}
+
+@Reusable
+class InfoReusable {}
+
+@Component
+class InfoComponent {}
+
+@ComponentV2
+class InfoComponentV2 {}
+
+@Preview
+class InfoPreview {}
+
+@CustomDialog
+class InfoCustomDialog {}

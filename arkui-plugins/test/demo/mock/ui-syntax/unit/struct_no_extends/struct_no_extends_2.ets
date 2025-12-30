@@ -13,26 +13,23 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Text } from '@ohos.arkui.component';
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
+// Expected: The analyzer should report that structs cannot extend classes.
+// Actual: Error reported - "Structs are not allowed to inherit from classes or implement interfaces."
 
-@Component
-struct Demo2 {
+
+class BaseComponent {}
+
+struct DemoStruct2 extends BaseComponent {
   build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
+    Text("Struct cannot extend a class")
   }
 }
 
 @Entry
 @Component
-struct Index{
+struct Demo2{
   build() {
   }
 }

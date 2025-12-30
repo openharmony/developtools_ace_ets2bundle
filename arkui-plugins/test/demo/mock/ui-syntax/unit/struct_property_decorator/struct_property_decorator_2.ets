@@ -13,26 +13,27 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, ComponentV2, Text } from '@ohos.arkui.component';
+import { Monitor } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: Structs in ArkTS must not extend any class or implement any interface.
+// Actual: The struct was treated as if it inherits or implements something, which is not allowed.
 
 @Entry
 @Component
-struct Index{
+struct ValidateDecoratorsIndex2 {
   build() {
+  }
+}
+
+@ComponentV2
+struct DemoStruct2 {
+  @Monitor static
+  updateData() {
+    console.log("update")
+  }
+
+  build() {
+    Text("DemoStruct3")
   }
 }

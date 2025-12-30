@@ -1,0 +1,105 @@
+{
+  "struct_attribute_no_type_1": {
+    "messages": [
+      {
+        "message": "Struct property 'regular_value' has no type.",
+        "position": {
+          "line": 32,
+          "column": 3
+        }
+      },
+      {
+        "message": "Struct property 'local_value' has no type.",
+        "position": {
+          "line": 33,
+          "column": 10
+        }
+      },
+      {
+        "message": "Struct property 'builder_value' has no type.",
+        "position": {
+          "line": 34,
+          "column": 17
+        }
+      },
+      {
+        "message": "Struct property 'param_value' has no type.",
+        "position": {
+          "line": 35,
+          "column": 25
+        }
+      },
+      {
+        "message": "Struct property 'param_value1' has no type.",
+        "position": {
+          "line": 36,
+          "column": 19
+        }
+      },
+      {
+        "message": "Struct property 'param_value2' has no type.",
+        "position": {
+          "line": 37,
+          "column": 16
+        }
+      },
+      {
+        "message": "Struct property 'param_value3' has no type.",
+        "position": {
+          "line": 38,
+          "column": 10
+        }
+      },
+      {
+        "message": "Struct property 'event_value' has no type.",
+        "position": {
+          "line": 39,
+          "column": 10
+        }
+      },
+      {
+        "message": "Struct property 'provide_value' has no type.",
+        "position": {
+          "line": 40,
+          "column": 15
+        }
+      },
+      {
+        "message": "Struct property 'consumer_value' has no type.",
+        "position": {
+          "line": 41,
+          "column": 15
+        }
+      }
+    ]
+  },
+  "struct_attribute_no_type_2": {
+    "messages": [
+      {
+        "message": "Struct property 'message' has no type.",
+        "position": {
+          "line": 25,
+          "column": 10
+        }
+      }
+    ]
+  },
+  "struct_attribute_no_type_3": {
+    "messages": [
+      {
+        "message": "Struct property 'x' has no type.",
+        "position": {
+          "line": 23,
+          "column": 3
+        }
+      },
+      {
+        "message": "Struct property 'y' has no type.",
+        "position": {
+          "line": 23,
+          "column": 11
+        }
+      }
+    ]
+  }
+}

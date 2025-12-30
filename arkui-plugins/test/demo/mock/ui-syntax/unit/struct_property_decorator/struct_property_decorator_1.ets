@@ -13,26 +13,17 @@
  * limitations under the License.
  */
 
-import { Entry, Component, Column, Text, Toggle } from '@ohos.arkui.component';
+import { Entry, Component, Row } from '@ohos.arkui.component';
+import { State } from "@ohos.arkui.stateManagement";
 
-// Expected: Toggle with type 'Button' must have exactly one child component.
-// Actual: Toggle with type 'Button' contains multiple child components.
-
-@Component
-struct Demo2 {
-  build() {
-    Column() {
-      Toggle({ type: ToggleType.Button }) {
-        Text("Child 1")
-        Text("Child 2")
-      }
-    }
-  }
-}
+// Expected: Built-in annotations (e.g., @State, @Link, @Prop) cannot be applied to a static variable.
+// Actual: The static variable 'message' was declared with a built-in annotation '@State'.
 
 @Entry
 @Component
-struct Index{
+struct ValidateDecoratorsIndex {
+  @State  static message: string = 'Hello';
   build() {
+    Row() {}
   }
 }
