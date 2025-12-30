@@ -85,7 +85,8 @@ import {
   MUTABLEBUILDER_FUNCTION,
   ATTRIBUTE_ID,
   __GETRESOURCEID__,
-  __RESOURCEIDHAR__
+  __RESOURCEIDHAR__,
+  APIVERSION
 } from './pre_define';
 import {
   componentInfo,
@@ -942,7 +943,8 @@ function createBundleOrModuleNode(isDynamicBundleOrModule: boolean, type: string
 function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number,
   isTemplateStringOrString: boolean, isVariableParamR: boolean): ts.ObjectLiteralExpression {
   const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [
-    (isTemplateStringOrString || !isVariableParamR || projectConfig.minAPIVersion%1000 < 22) ? ts.factory.createPropertyAssignment(
+    (isTemplateStringOrString || !isVariableParamR || projectConfig.minAPIVersion%1000 < APIVERSION.apiVersionTwentyTwo) ?
+    ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
     ) : resourceIdName(__GETRESOURCEID__),
@@ -997,9 +999,9 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),	
       ts.factory.createNumericLiteral(resourceValue)	
     );
-  if (resourceType === 30000) {
+  if (resourceType === RESOURCE_TYPE.rawfile) {
     propertyArray.push(resourceIdKeyValue);
-  } else if (isResourceModule && projectConfig.minAPIVersion%1000 >= 22) {
+  } else if (isResourceModule && projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersionTwentyTwo) {
     propertyArray.push(resourceIdName(__GETRESOURCEID__));
   } else if (isCompileHar(isResourceModule, resourceSource)) {
     propertyArray.push(resourceIdName(__RESOURCEIDHAR__));
@@ -1024,7 +1026,7 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
 
 function isCompileHar(isResourceModule: boolean, resourceSource: string): boolean {
   return projectConfig.compileHar && !isResourceModule && resourceSource !== 'sys' &&
-  projectConfig.minAPIVersion%1000 >= 22;
+  projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersiontwentyThree;
 }
 
 function preCheckResourceData(resourceData: string[], resources: object, pos: number, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
@@ -1540,7 +1542,7 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   const entryOptionValue: EntryOptionValue = new EntryOptionValue();
   if (!entryOptionNode) {
     let originArray: ts.ExpressionStatement[];
-    if (projectConfig.minAPIVersion > 10) {
+    if (projectConfig.minAPIVersion > APIVERSION.apiVersionTen) {
       if (componentCollection.entryComponent === name && componentCollection.localSharedStorage) {
         return [judgeRouteNameAndStorageForIdentifier(context, name,
           cardRelativePath, isObject, componentCollection.localSharedStorage, undefined, undefined, argsArr)];
@@ -1802,7 +1804,7 @@ function loadDocumentWithRoute(context: ts.TransformationContext, name: string, 
       createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName),
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
-    if (projectConfig.minAPIVersion > 10) {
+    if (projectConfig.minAPIVersion > APIVERSION.apiVersionTen) {
       return [createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)];
     } else {
       return [shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,

@@ -303,6 +303,14 @@ export const RESOURCE_TYPE = {
   symbol: 40000
 };
 
+export const APIVERSION = {
+  apiVersionNine: 9,
+  apiVersionTen: 10,
+  apiVersionEleven: 11,
+  apiVersionTwentyTwo: 22,
+  apiVersiontwentyThree: 23
+}
+
 export const WORKERS_DIR: string = 'workers';
 export const WORKER_OBJECT: string = 'Worker';
 
