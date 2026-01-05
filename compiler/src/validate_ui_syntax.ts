@@ -549,6 +549,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
     }
+    if (ts.isMethodDeclaration(node) && structNode) {
+      checkComponentReuseSyntax(node, structNode, log, sourceFileNode);
+    }
     validateFunction(node, sourceFileNode, log);
   }
   checkDecoratorCount(node, sourceFileNode, log);
@@ -564,6 +567,23 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   isSendableClass = false;
   classNode = undefined;
   structNode = undefined;
+}
+
+function checkComponentReuseSyntax(
+  node: ts.MethodDeclaration,
+  structNode: ts.StructDeclaration,
+  log: LogInfo[],
+  sourceFileNode: ts.SourceFile
+): void {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const decoratorNames: string[] = decorators.map(decoratorItem => {
+    return getDecoratorName(decoratorItem);
+  });
+  for (let i = 0; i < decoratorNames.length; i++) {
+    if (constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR.includes(decoratorNames[i])) {
+      handleLifecycleDecorator(decoratorNames[i], structNode, node, log, sourceFileNode);
+    }
+  }
 }
 
 const v1ComponentDecorators: string[] = [
@@ -1495,7 +1515,8 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905338' });
     }
-  } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
+  } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name) ||
+    constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR.includes(name)) {
     const message: string = `The '@${decoratorName}' decorator can only be used with 'struct'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905337' });
   }
@@ -2613,6 +2634,64 @@ export function validateStmgmtKeywords(itemName: string, memberNode: ts.Identifi
     });
   }
 }
+
+function checkMethodArgsNum(methodNode: ts.MethodDeclaration): boolean {
+  if (methodNode.parameters && methodNode.parameters.length) {
+    return true;
+  }
+  return false;
+}
+
+function checkComponentV1Reuse(methodNode: ts.MethodDeclaration): boolean {
+  if (!methodNode.parameters || !methodNode.parameters.length) {
+    return false;
+  }
+  if (methodNode.parameters.length > 1) {
+    return true;
+  }
+  if (methodNode.parameters.length === 1) {
+    return !checkParamsMethod(methodNode);
+  }
+  return false;
+}
+
+function checkParamsMethod(
+  node: ts.MethodDeclaration
+): boolean {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!node.parameters || !node.parameters.length || node.parameters.length > 1 || !checker) {
+    return false;
+  }
+  const paramsTypeNode: ts.TypeNode | undefined = node.parameters[0]?.type;
+  if (!paramsTypeNode || !ts.isTypeReferenceNode(paramsTypeNode)) {
+    return false;
+  }
+  const paramsName: string = paramsTypeNode.typeName.getText();
+  return ['Record', 'Object', 'ESObject', 'object'].includes(paramsName);
+}
+
+function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDeclaration,
+  node: ts.MethodDeclaration, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (!structNode.name || !ts.isIdentifier(structNode.name) || !decorators || !decorators.length) {
+    return;
+  }
+  if (decoratorName !== '@ComponentReuse' && checkMethodArgsNum(node)) {
+    const message: string = `Methods decorated with '${decoratorName}' cannot have input parameters.`;
+    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905371' });
+    return;
+  }
+  const structName: string = structNode.name.escapedText.toString();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+  if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
+    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>`;
+    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
+  }
+  if (structInfo.isComponentV2 && checkMethodArgsNum(node)) {
+    const message: string = `Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.`;
+    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905370' });
+  }
+};
 
 export function resetValidateUiSyntax(): void {
   observedClassCollection.clear();

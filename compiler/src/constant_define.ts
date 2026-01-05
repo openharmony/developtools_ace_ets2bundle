@@ -29,6 +29,10 @@ const TRACE_DECORATOR: string = '@Trace';
 const COMPUTED_DECORATOR: string = '@Computed';
 const EVENT_DECORATOR: string = '@Event';
 
+const COMPONENT_LIFECYCLE_MEMBER_DECORATOR: string[] = [
+  '@ComponentInit', '@ComponentAppear', '@ComponentBuilt', '@ComponentAttach', '@ComponentDetach', '@ComponentReuse', '@ComponentRecycle', '@ComponentDisappear'
+];
+
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
   '@State', '@Prop', '@Link', '@Provide', '@Consume', '@Watch', '@StorageLink', '@StorageProp',
   '@LocalStorageLink', '@LocalStorageProp', '@ObjectLink'
@@ -75,6 +79,7 @@ export default {
   STRUCT_PARENT,
   COMPONENT_MEMBER_DECORATOR_V1,
   COMPONENT_MEMBER_DECORATOR_V2,
+  COMPONENT_LIFECYCLE_MEMBER_DECORATOR,
   INIT_PARAM,
   UPDATE_PARAM,
   RESET_PARAM,
