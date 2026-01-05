@@ -1049,7 +1049,6 @@ function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.Cl
     currentPropertyType: checker.getTypeAtLocation(classNode)
   };
   for (let i = 0; i < argsLen; i++) {
-    // 无法继续检查
     if (!status.needCheck) {
       statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
       return;
@@ -1081,44 +1080,9 @@ function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.
     currentPropertyType: undefined
   };
   let propertyName: string = '';
-  let isFound: boolean = false;
-  structNode.members.some(propertyMember => {
-    if (ts.isPropertyDeclaration(propertyMember) &&
-      ts.isIdentifier(propertyMember.name)) {
-      propertyName = propertyMember.name.escapedText.toString();
-      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
-      const isStateVariable: boolean = decorators.some(decorator => {
-        return [COMPONENTV2_LOCAL_DECORATOR, COMPONENTV2_PARAM_DECORATOR, COMPONENTV2_PROVIDER_DECORATOR, COMPONENTV2_CONSUMER_DECORATOR,
-          COMPONENTV2_ONCE_DECORATOR].includes(getDecoratorName(decorator));
-      });
-      if (propertyName === firstArg) {
-        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
-        status.currentPropertyType = propertyType;
-        if (!isStateVariable) {
-          status.currentStatus = MonitorArgsStatus.WARN;
-        }
-        isFound = true;
-        return true;
-      }
-    } else if (ts.isGetAccessor(propertyMember) &&
-      ts.isIdentifier(propertyMember.name)) {
-      propertyName = propertyMember.name.escapedText.toString();
-      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
-      const hasComputed: boolean = decorators.some(decorator => {
-        return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
-      });
-      if (propertyName === firstArg) {
-        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
-        status.currentPropertyType = propertyType;
-        if (!hasComputed) {
-          status.currentStatus = MonitorArgsStatus.WARN;
-        }
-        isFound = true;
-        return true;
-      }
-    }
-    return false;
-  });
+  const isFound: boolean = findPropertyInStruct(
+    checker, firstArg, status, structNode
+  );
   if (!isFound) {
     validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
     return;
@@ -1149,8 +1113,30 @@ function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.Type
   if (!originType) {
     return false;
   }
+  if (checkBasicType(originType)) {
+    status.currentStatus = MonitorArgsStatus.ERROR;
+    return false;
+  }
   status.currentPropertyType = originType;
   return true;
+}
+
+const MonitorBasicType = {
+  string: ts.TypeFlags.String,
+  number: ts.TypeFlags.Number,
+  boolean: ts.TypeFlags.Boolean,
+  bigint: ts.TypeFlags.BigInt,
+  null: ts.TypeFlags.Null,
+  undefined: ts.TypeFlags.Undefined,
+  void: ts.TypeFlags.Void
+};
+
+function checkBasicType(
+  originType: ts.Type
+): boolean {
+  const typeFlags: ts.TypeFlags = originType.getFlags();
+  const allBasicFlags = Object.values(MonitorBasicType).reduce((sum, flag) => sum | flag, 0);
+  return (typeFlags & allBasicFlags) !== 0;
 }
 
 function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, checker: ts.TypeChecker): boolean {
@@ -1174,80 +1160,172 @@ function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, 
     return false;
   }
   const symbol = currentPropertyType?.getSymbol();
-  if (!symbol || !symbol.declarations || !symbol.declarations.length ||
-    !currentPropertyType.isClassOrInterface()) {
-    status.currentStatus = MonitorArgsStatus.WARN;
-    status.needCheck = false;
+  const isTypeValid: boolean = checkTypeValid(symbol, currentPropertyType, status);
+  if (!isTypeValid) {
     return false;
   }
-  const classDeclarations = symbol.declarations.filter(declaration => ts.isClassDeclaration(declaration));
-  const interfaceDeclarations = symbol.declarations.filter(declaration => ts.isInterfaceDeclaration(declaration));
-  if (classDeclarations.length === 0 && interfaceDeclarations.length === 0) {
-    status.needCheck = false;
-    return false;
-  }
-  let classNode: ts.ClassDeclaration | ts.InterfaceDeclaration | undefined;
-  if (classDeclarations.length > 0 && ts.isClassDeclaration(classDeclarations[0])) {
-    classNode = classDeclarations[0];
-  } else if (interfaceDeclarations.length > 0 && ts.isInterfaceDeclaration(interfaceDeclarations[0])) {
-    classNode = interfaceDeclarations[0];
-  }
+  const classNode = getClassNodeFromSymbol(symbol);
   if (!classNode) {
     status.needCheck = false;
     return false;
   }
   let propertyName: string = '';
+  let isFound: boolean = findPropertyInClass(checker, singleArg, status, classNode);
+  if (isFound) {
+    return true;
+  }
+  isFound = findPropertyInBaseTypes(checker, currentPropertyType as ts.InterfaceType,
+    status, singleArg);
+  if (isFound) {
+    return true;
+  }
+  status.currentStatus = MonitorArgsStatus.ERROR;
+  status.needCheck = false;
+  return false;
+}
+
+function findPropertyInStruct(
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  structNode: ts.StructDeclaration
+): boolean {
   let isFound: boolean = false;
-  classNode.members.some(propertyMember => {
+  structNode.members.some(propertyMember => {
     if (ts.isPropertyDeclaration(propertyMember) &&
       ts.isIdentifier(propertyMember.name)) {
-      propertyName = propertyMember.name.escapedText.toString();
-      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
-      const hasTrace: boolean = decorators.some(decorator => {
-        return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
-      });
-      if (propertyName === singleArg) {
-        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
-        status.currentPropertyType = propertyType;
-        if (!hasTrace) {
-          status.currentStatus = MonitorArgsStatus.WARN;
-        }
+      const findInPropertyDecl: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [COMPONENTV2_LOCAL_DECORATOR,
+        COMPONENTV2_PARAM_DECORATOR, COMPONENTV2_PROVIDER_DECORATOR,
+        COMPONENTV2_CONSUMER_DECORATOR, COMPONENTV2_ONCE_DECORATOR]
+      );
+      if (findInPropertyDecl) {
         isFound = true;
         return true;
       }
     } else if (ts.isGetAccessor(propertyMember) &&
-      ts.isIdentifier(propertyMember.name)) {
-      propertyName = propertyMember.name.escapedText.toString();
-      const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
-      const hasComputed: boolean = decorators.some(decorator => {
-        return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
-      });
-      if (propertyName === singleArg) {
-        const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
-        status.currentPropertyType = propertyType;
-        if (!hasComputed) {
-          status.currentStatus = MonitorArgsStatus.WARN;
-        }
+      ts.isidentifier(propertyMember.name)) {
+      const findInGetAccessor: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
+      );
+      if (findInGetAccessor) {
         isFound = true;
         return true;
       }
     }
     return false;
   });
-  if (isFound) {
+  return isFound;
+}
+
+function findPropertyInClass(
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  classNode: ts.ClassDeclaration | ts.InterfaceDeclaration
+): boolean {
+  let isFound: boolean = false;
+  classNode.members.some(propertyMember => {
+    if (ts.isPropertyDeclaration(propertyMember) &&
+      ts.isidentifier(propertyMember.name)) {
+      const findInPropertyDecl: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.TRACE_DECORATOR]
+      );
+      if (findInPropertyDecl) {
+        isFound = true;
+        return true;
+      }
+    } else if (ts.isGetAccessor(propertyMember) &&
+      ts.isidentifier(propertyMember.name)) {
+      const findInGetAccessor: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
+      );
+      if (findInGetAccessor) {
+        isFound = true;
+        return true;
+      }
+    }
+    return false;
+  });
+  return isFound;
+}
+
+function findPropertyInDecl(
+  propertyMember: ts.PropertyDeclaration | ts.GetAccessorDeclaration,
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  targetDecorators: string[]
+): boolean {
+  const propertyName: string = (propertyMember.name as ts.Identifier).escapedText.toString();
+  if (propertyName === singleArg) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+    const hasTarget: boolean = decorators.some(decorator => {
+      return targetDecorators.includes(getDecoratorName(decorator));
+    });
+    const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+    status.currentPropertyType = propertyType;
+    if (!hasTarget) {
+      status.currentStatus = MonitorArgsStatus.WARN;
+    }
     return true;
   }
-  const basesTypes = checker.getBaseTypes(currentPropertyType) || [];
-  for (const baseType of basesTypes) {
+  return false;
+}
+
+function findPropertyInBaseTypes(
+  checker: ts.TypeChecker,
+  currentPropertyType: ts.InterfaceType,
+  status: MonitorStatus,
+  singleArg: string
+): boolean {
+  const baseTypes = checker.getBaseTypes(currentPropertyType) || [];
+  for (const baseType of baseTypes) {
     status.currentPropertyType = baseType;
     const foundInBaseTypes: boolean = checkSingleMonitorArgContent(singleArg, status, checker);
     if (foundInBaseTypes) {
       return true;
     }
   }
-  status.currentStatus = MonitorArgsStatus.ERROR;
-  status.needCheck = false;
   return false;
+}
+
+function checkTypeValid(
+  symbol: ts.Symbol | undefined,
+  currentPropertyType: ts.Type,
+  status: MonitorStatus
+): boolean {
+  if (!symbol || !symbol.declarations || !symbol.declarations.length ||
+    !currentPropertyType.isClassOrInterface()) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+    return false;
+  }
+  return true;
+}
+
+function getClassNodeFromSymbol(
+  symbol: ts.Symbol
+): ts.ClassDeclaration | ts.InterfaceDeclaration | undefined {
+  let classNode: ts.ClassDeclaration | ts.InterfaceDeclaration | undefined;
+  const classDeclarations = [];
+  const interfaceDeclarations = [];
+  symbol.declarations.forEach(declaration => {
+    if (ts.isClassDeclaration(declaration)) {
+      classDeclarations.push(declaration);
+      return;
+    }
+    if (ts.isInterfaceDeclaration(declaration)) {
+      interfaceDeclarations.push(declaration);
+    }
+  });
+  if (classDeclarations.length && classDeclarations.length > 0 && ts.isClassDeclaration(classDeclarations[0])) {
+    classNode = classDeclarations[0];
+  } else if (interfaceDeclarations.length && interfaceDeclarations.length > 0 &&
+    ts.isInterfaceDeclaration(interfaceDeclarations[0])) {
+    classNode = interfaceDeclarations[0];
+  }
+  return classNode;
 }
 
 function statusDecideSyncMonitorArgExist(status: MonitorArgsStatus, monitorArgument: ts.StringLiteral,
