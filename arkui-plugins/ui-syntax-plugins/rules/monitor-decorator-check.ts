@@ -41,6 +41,19 @@ interface ArrayDimension {
     dimension: number
 }
 
+type PathValidationResult = {
+    valid: boolean;
+    isPropertyNotExists?: boolean;
+};
+
+type ProcessArrayIndexReturn =
+    | { shouldReturn: true; result: PathValidationResult }
+    | { shouldReturn: false; newType: string; newIndex: number };
+
+type ProcessPropertyAccessReturn =
+    | { shouldReturn: true; result: PathValidationResult }
+    | { shouldReturn: false; newType: string; newPropertyNode: arkts.ClassProperty | undefined };
+
 const CONTEXT_TYPE_CLASS = 'class';
 const CONTEXT_TYPE_STRUCT = 'struct';
 
@@ -280,10 +293,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
             return;
         }
-
+        const isGetMethod = this.isGetMethod(node, firstSegment);
+        const firstSegmentIsStateVariable = this.isFirstSegmentStateVariable(firstSegment, isGetMethod, context);
         const property = this.getPropertyInDeclByName(node, firstSegment);
         if (property) {
-            const arrayValid = this.checkMonitorArrayIsValid(monitorDecorator, property, memberSegments, context);
+            const arrayValid = this.checkMonitorArrayIsValid(monitorDecorator, property, memberSegments, firstSegmentIsStateVariable);
             if (this.isOnlyLengthAccess(memberSegments)) {
                 return;
             }
@@ -291,8 +305,6 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 return;
             }
         }
-
-        const isGetMethod = this.isGetMethod(node, firstSegment);
         const firstSegmentTypeName = this.firstSegmentTypeName(firstSegment, node);
 
         if (isGetMethod && !firstSegmentTypeName) {
@@ -306,7 +318,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 memberSegments,
                 node,
                 isGetMethod,
-                context
+                context,
+                firstSegmentIsStateVariable
             );
             return;
         }
@@ -323,7 +336,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         if (memberSegments.length > 0 && firstSegmentTypeName) {
-            this.handleNestedPath(monitorDecorator, firstSegment, memberSegments, firstSegmentTypeName, isGetMethod, node, context);
+            this.handleNestedPath(monitorDecorator, firstSegment, memberSegments, firstSegmentTypeName, isGetMethod, context);
         } else {
             if (!this.checkFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context)) {
                 return;
@@ -335,7 +348,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         monitorDecorator: arkts.AnnotationUsage,
         property: arkts.ClassProperty,
         memberSegments: string[],
-        context: MonitorPathValidationContext
+        firstSegmentIsStateVariable?: boolean
     ): boolean {
         const dimMap: Map<string, Set<number>> = this.getDimMapByProperty(property);
         const { typeName, dimension } = this.getMaxArrayDimension(dimMap);
@@ -359,11 +372,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         } else {
             this.checkMonitorArrayElementIsValid(
                 monitorDecorator,
-                property,
                 memberSegments,
                 dimMap,
                 dimension,
-                context
+                firstSegmentIsStateVariable
             );
             return false;
         }
@@ -448,11 +460,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     private checkMonitorArrayElementIsValid(
         monitorDecorator: arkts.AnnotationUsage,
-        property: arkts.ClassProperty,
         memberSegments: string[],
         dimMap: Map<string, Set<number>>,
         maxDim: number,
-        context: MonitorPathValidationContext
+        firstSegmentIsStateVariable?: boolean
     ): void {
         const nestDepth = this.getNestDepth(memberSegments);
         if (maxDim < nestDepth) {
@@ -480,13 +491,25 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         const validTypes: string[] = [];
+        let hasPropertyExists = true;
         for (const typeName of typesWithProperty) {
-            if (this.checkNestedPathStateVariables(typeName, newSegments)) {
+            const result = this.checkNestedPathStateVariables(
+                typeName,
+                newSegments,
+                undefined
+            );
+            if (result.valid) {
                 validTypes.push(typeName);
+            } else if (result.isPropertyNotExists) {
+                hasPropertyExists = false;
             }
         }
 
         if (validTypes.length === typesWithProperty.length && validTypes.length > 0) {
+            if (firstSegmentIsStateVariable !== undefined && !firstSegmentIsStateVariable) {
+                this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+                return;
+            }
             const firstValidType = validTypes[0];
             const hasOtherDimension = Array.from(dimMap.values()).some(dimSet =>
                 Array.from(dimSet).some(d => d !== nestDepth)
@@ -499,7 +522,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         if (validTypes.length < typesWithProperty.length) {
-            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            const level = hasPropertyExists ? 'warn' : 'error';
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
             return;
         }
     }
@@ -718,7 +742,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         firstSegmentTypeName: string,
         firstMemberSegment: string,
         remainingSegments: string[],
-        context: MonitorPathValidationContext
+        context: MonitorPathValidationContext,
+        firstSegmentIsStateVariable: boolean
     ): boolean {
         const typeNode = this.collectNode.get(firstSegmentTypeName);
         if (!typeNode || (!arkts.isClassDeclaration(typeNode) && !arkts.isStructDeclaration(typeNode))) {
@@ -734,14 +759,13 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return false;
         }
 
-        const arrayContext = this.createMonitorPathValidationContext(typeNode, context);
-        const arrayValid = this.checkMonitorArrayIsValid(monitorDecorator, arrayProperty, remainingSegments, arrayContext);
-
+        const arrayValid = this.checkMonitorArrayIsValid(monitorDecorator, arrayProperty, remainingSegments, firstSegmentIsStateVariable);
         if (remainingSegments.length === 1 && remainingSegments[0] === 'length') {
             return true;
         }
 
-        return !arrayValid;
+        const result = !arrayValid;
+        return result;
     }
 
     private handleNestedPathUnionType(
@@ -749,7 +773,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         firstSegmentTypeName: string,
         firstMemberSegment: string,
         remainingSegments: string[],
-        context: MonitorPathValidationContext
+        context: MonitorPathValidationContext,
+        firstSegmentIsStateVariable: boolean
     ): void {
         const typeNode = this.collectNode.get(firstSegmentTypeName);
         if (!typeNode || (!arkts.isClassDeclaration(typeNode) && !arkts.isStructDeclaration(typeNode))) {
@@ -764,7 +789,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             remainingSegments,
             typeNode,
             firstMemberIsGetMethod,
-            newContext
+            newContext,
+            firstSegmentIsStateVariable
         );
     }
 
@@ -803,37 +829,47 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         memberSegments: string[],
         firstSegmentTypeName: string,
         isGetMethod: boolean,
-        node: arkts.ClassDeclaration | arkts.StructDeclaration,
         context: MonitorPathValidationContext
     ): void {
-        if (!this.checkFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context)) {
-            return;
-        }
-
         if (memberSegments.length === 0) {
             return;
         }
-
+        const firstSegmentIsStateVariable = this.isFirstSegmentStateVariable(firstSegment, isGetMethod, context);
         const firstMemberSegment = memberSegments[0];
         const remainingSegments = memberSegments.slice(1);
 
-        if (this.handleNestedPathArray(monitorDecorator, firstSegmentTypeName, firstMemberSegment, remainingSegments, context)) {
+        const handleArrayResult = this.handleNestedPathArray(
+            monitorDecorator,
+            firstSegmentTypeName,
+            firstMemberSegment,
+            remainingSegments,
+            context,
+            firstSegmentIsStateVariable
+        );
+        if (handleArrayResult) {
             return;
         }
 
-        if (!this.memberSegmentsTypeName(firstSegmentTypeName, memberSegments)) {
+        const memberSegmentsTypeNameResult = this.memberSegmentsTypeName(firstSegmentTypeName, memberSegments);
+        if (!memberSegmentsTypeNameResult) {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
             return;
         }
 
         const firstMemberTypeName = this.getPropTypeNameFromTypeName(firstSegmentTypeName, firstMemberSegment);
         if (firstMemberTypeName === TypeFlags.Union) {
-            this.handleNestedPathUnionType(monitorDecorator, firstSegmentTypeName, firstMemberSegment, remainingSegments, context);
+            this.handleNestedPathUnionType(monitorDecorator, firstSegmentTypeName, firstMemberSegment, remainingSegments, context, firstSegmentIsStateVariable);
             return;
         }
 
-        if (!this.checkNestedPathStateVariables(firstSegmentTypeName, memberSegments)) {
-            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+        const checkResult = this.checkNestedPathStateVariables(
+            firstSegmentTypeName,
+            memberSegments,
+            firstSegmentIsStateVariable
+        );
+        if (!checkResult.valid) {
+            const level = checkResult.isPropertyNotExists ? 'error' : 'warn';
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
         }
     }
 
@@ -894,7 +930,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         memberSegments: string[],
         node: arkts.ClassDeclaration | arkts.StructDeclaration,
         isGetMethod: boolean,
-        context: MonitorPathValidationContext
+        context: MonitorPathValidationContext,
+        firstSegmentIsStateVariable: boolean
     ): void {
         if (memberSegments.length === 0) {
             this.checkAndReportFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context);
@@ -903,11 +940,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const property = this.getPropertyInDeclByName(node, firstSegment);
         if (property?.typeAnnotation && arkts.isETSUnionType(property.typeAnnotation)) {
-            this.validateUnionTypeProperty(monitorDecorator, firstSegment, memberSegments, node, isGetMethod, context, property);
+            this.validateUnionTypeProperty(monitorDecorator, firstSegment, memberSegments, isGetMethod, context, property, firstSegmentIsStateVariable);
             return;
         }
 
-        this.validateNonUnionTypeProperty(monitorDecorator, firstSegment, memberSegments, node, isGetMethod, context);
+        this.validateNonUnionTypeProperty(monitorDecorator, firstSegment, memberSegments, node, isGetMethod, context, firstSegmentIsStateVariable);
     }
 
     private checkAndReportFirstSegmentStateVariable(
@@ -937,18 +974,17 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         monitorDecorator: arkts.AnnotationUsage,
         firstSegment: string,
         memberSegments: string[],
-        node: arkts.ClassDeclaration | arkts.StructDeclaration,
         isGetMethod: boolean,
         context: MonitorPathValidationContext,
-        property: arkts.ClassProperty
+        property: arkts.ClassProperty,
+        firstSegmentIsStateVariable: boolean
     ): void {
         const unionType = property.typeAnnotation as arkts.ETSUnionType;
         this.checkAndReportFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context);
 
         const membersWithProperty = this.collectMembersWithProperty(unionType, memberSegments);
         if (this.shouldUseArrayValidation(unionType, membersWithProperty, memberSegments)) {
-            const arrayContext = this.createMonitorPathValidationContext(node, context);
-            this.checkMonitorArrayIsValid(monitorDecorator, property, memberSegments, arrayContext);
+            this.checkMonitorArrayIsValid(monitorDecorator, property, memberSegments, firstSegmentIsStateVariable);
             return;
         }
 
@@ -959,7 +995,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         const allStateVariables = this.checkAllMembersStateVariables(filteredMembers, unionType, memberSegments);
-        if (!allStateVariables) {
+        if (!allStateVariables || !firstSegmentIsStateVariable) {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
         }
     }
@@ -1069,7 +1105,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 return false;
             }
             const actualSegments = this.getActualSegmentsForMember(validMember, unionType, memberSegments);
-            return this.checkNestedPathStateVariables(validMember, actualSegments);
+            return this.checkNestedPathStateVariables(validMember, actualSegments, undefined).valid;
         });
     }
 
@@ -1116,7 +1152,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         memberSegments: string[],
         node: arkts.ClassDeclaration | arkts.StructDeclaration,
         isGetMethod: boolean,
-        context: MonitorPathValidationContext
+        context: MonitorPathValidationContext,
+        firstSegmentIsStateVariable: boolean
     ): void {
         this.checkAndReportFirstSegmentStateVariable(monitorDecorator, firstSegment, isGetMethod, context);
 
@@ -1138,10 +1175,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             if (!memberNode || (!arkts.isClassDeclaration(memberNode) && !arkts.isStructDeclaration(memberNode))) {
                 return false;
             }
-            return this.checkNestedPathStateVariables(validMember, memberSegments);
+            return this.checkNestedPathStateVariables(validMember, memberSegments, firstSegmentIsStateVariable).valid;
         });
 
-        if (!allStateVariables) {
+        if (!allStateVariables || !firstSegmentIsStateVariable) {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
         }
     }
@@ -1376,39 +1413,126 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     private checkNestedPathStateVariables(
         startType: string,
-        segments: string[]
-    ): boolean {
+        segments: string[],
+        firstSegmentIsStateVariable?: boolean
+    ): PathValidationResult {
         let currentType = startType;
+        let previousPropertyNode: arkts.ClassProperty | undefined = undefined;
 
-        for (const segment of segments) {
-            const typeNode = this.collectNode.get(currentType);
-            if (!typeNode) {
-                return false;
+        for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
+
+            if (this.isArrayIndex(segment)) {
+                const arrayResult = this.processArrayIndexInPath(currentType, previousPropertyNode, segments, i);
+                if (arrayResult.shouldReturn) {
+                    return arrayResult.result;
+                }
+                currentType = arrayResult.newType;
+                i = arrayResult.newIndex;
+                previousPropertyNode = undefined;
+                continue;
             }
 
-            const isClassNode = arkts.isClassDeclaration(typeNode);
-            const isStructNode = arkts.isStructDeclaration(typeNode);
-
-            const isGetMethod = (isClassNode || isStructNode)
-                ? this.isGetMethod(typeNode, segment)
-                : false;
-            const nextType = this.getPropTypeName(typeNode, segment);
-            if (isGetMethod && !nextType) {
-                return true;
+            const propertyResult = this.processPropertyAccessInPath(segment, currentType);
+            if (propertyResult.shouldReturn) {
+                return propertyResult.result;
             }
-            const isStateVariable = this.checkSegmentStateVariable(typeNode, segment, isGetMethod, isClassNode, isStructNode);
-            if (!isStateVariable) {
-                return false;
-            }
-
-            if (!nextType) {
-                return true;
-            }
-
-            currentType = nextType;
+            currentType = propertyResult.newType;
+            previousPropertyNode = propertyResult.newPropertyNode;
         }
 
-        return true;
+        if (firstSegmentIsStateVariable !== undefined && !firstSegmentIsStateVariable) {
+            return { valid: false, isPropertyNotExists: false };
+        }
+
+        return { valid: true };
+    }
+
+    private processArrayIndexInPath(
+        currentType: string,
+        previousPropertyNode: arkts.ClassProperty | undefined,
+        segments: string[],
+        currentIndex: number
+    ): ProcessArrayIndexReturn {
+        if (!previousPropertyNode) {
+            const typeNode = this.collectNode.get(currentType);
+            const isArray = typeNode && arkts.isTypeNode(typeNode) && this.isArrayType(typeNode);
+            if (!isArray && currentType.toLowerCase() !== TypeFlags.Array) {
+                return { shouldReturn: true, result: { valid: false, isPropertyNotExists: true } };
+            }
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        const arrayTypeAnnotation = previousPropertyNode.typeAnnotation;
+        if (!arrayTypeAnnotation || !arkts.isTypeNode(arrayTypeAnnotation) || !this.isArrayType(arrayTypeAnnotation)) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        const remainingSegments = segments.slice(currentIndex);
+        const { elementType, pathIndex } = this.getArrayElementTypeAndDimension(arrayTypeAnnotation, remainingSegments);
+        if (!elementType) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        const elementTypeName = this.extractElementTypeNameFromArray(elementType);
+        if (!elementTypeName) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        const newIndex = currentIndex + pathIndex;
+        if (newIndex >= segments.length) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        return { shouldReturn: false, newType: elementTypeName, newIndex: newIndex - 1 };
+    }
+
+    private extractElementTypeNameFromArray(elementType: arkts.TypeNode): string | undefined {
+        let elementTypeName = this.getTypeFromPropertyAnnotation(elementType);
+        if (elementTypeName === TypeFlags.Array && arkts.isTypeNode(elementType) && this.isArrayType(elementType)) {
+            const arrayDimInfo = this.getArrayDimensionByType(elementType);
+            elementTypeName = arrayDimInfo.typeName || TypeFlags.Array;
+        }
+        if (!elementTypeName && arkts.isETSTypeReference(elementType)) {
+            const partName = elementType.part?.name;
+            elementTypeName = partName && arkts.isIdentifier(partName) ? partName.name : undefined;
+        }
+        return elementTypeName;
+    }
+
+    private processPropertyAccessInPath(
+        segment: string,
+        currentType: string
+    ): ProcessPropertyAccessReturn {
+        const typeNode = this.collectNode.get(currentType);
+        if (!typeNode) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        const isClassNode = arkts.isClassDeclaration(typeNode);
+        const isStructNode = arkts.isStructDeclaration(typeNode);
+        const isGetMethod = (isClassNode || isStructNode) ? this.isGetMethod(typeNode, segment) : false;
+        const nextType = this.getPropTypeName(typeNode, segment);
+
+        if (isGetMethod && !nextType) {
+            return { shouldReturn: true, result: { valid: true } };
+        }
+
+        if (!nextType && !isGetMethod) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: true } };
+        }
+
+        const isStateVariable = this.checkSegmentStateVariable(typeNode, segment, isGetMethod, isClassNode, isStructNode);
+        if (!isStateVariable) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        if (!nextType || nextType === 'unknown') {
+            return { shouldReturn: true, result: { valid: true } };
+        }
+
+        const newPropertyNode = (isClassNode || isStructNode) ? this.getPropertyInDeclByName(typeNode, segment) : undefined;
+        return { shouldReturn: false, newType: nextType, newPropertyNode };
     }
 
     private hasGetMethodWithDecorator(
@@ -1727,7 +1851,12 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return this.findPropTypeInParentClass(node, element);
         }
 
-        return this.getTypeFromPropertyAnnotation(prop.typeAnnotation) || this.findPropTypeInParentClass(node, element);
+        const typeName = this.getTypeFromPropertyAnnotation(prop.typeAnnotation);
+        if (typeName) {
+            return typeName;
+        }
+
+        return 'unknown';
     }
 
     private getTypeFromPropertyAnnotation(typeAnnotation: arkts.AstNode | undefined): string | undefined {
@@ -1746,6 +1875,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         if (arkts.isTypeNode(typeAnnotation) && this.isArrayType(typeAnnotation)) {
             return TypeFlags.Array;
+        }
+
+        if (arkts.isETSPrimitiveType(typeAnnotation)) {
+            return 'unknown';
         }
 
         return undefined;
@@ -1924,6 +2057,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const node = this.collectNode.get(currentFather);
         if (!node) {
+            if (currentFather.toLowerCase() === TypeFlags.Array && this.isArrayIndex(element)) {
+                const result = this.handleArrayTypeFather(variableArray, i, currentFather);
+                return result;
+            }
             const result = this.handleMapSetSizeWhenNodeMissing(currentFather, element, variableArray, i);
             return this.createReturnResult(true, result, false, currentFather, i);
         }
@@ -2099,13 +2236,14 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     } {
         const arrayIndexResult = this.handleArrayTypeWithIndex(variableArray, i);
         if (arrayIndexResult !== null) {
-            return {
+            const result = {
                 shouldReturn: arrayIndexResult.shouldReturn,
                 returnValue: arrayIndexResult.returnValue,
                 shouldContinue: !arrayIndexResult.shouldReturn,
                 newFather: arrayIndexResult.newFather,
                 newIndex: arrayIndexResult.newIndex
             };
+            return result;
         }
         return { shouldReturn: true, returnValue: true, shouldContinue: false, newFather: newFather, newIndex: i };
     }
