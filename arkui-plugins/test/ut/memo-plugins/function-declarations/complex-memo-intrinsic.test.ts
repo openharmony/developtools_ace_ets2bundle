@@ -128,7 +128,7 @@ class Use {
         return;
       }
     });
-    const arr = [1, 2, 3, 4];
+    const arr: Array<number> = [1, 2, 3, 4];
     impl(__memo_context, ((__memo_id) + (158199735)), style, arr);
     {
       __memo_scope.recache();
