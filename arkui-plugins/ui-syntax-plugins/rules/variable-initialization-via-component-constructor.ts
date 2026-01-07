@@ -67,6 +67,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
             shouldInitializeViaComponentConstructor: `The property '{{varName}}' must be initialized through the component constructor.`,
             requireVariableInitializationViaComponentConstructor: `'@Require' decorated '{{varName}}' must be initialized through the component constructor.`,
             disallowVariableInitializationViaComponentConstructor: `The '{{decoratorName}}' property '{{varName}}' in the custom component '{{customComponentName}}' cannot be initialized here (forbidden to specify).`,
+            variableMixVerifyMessage: `The '{{parentPropAnnotations}}' property '{{parentPropName}}' cannot be assigned to the '{{childPropAnnotation}}' property '{{childPropName}}' when interop.`,
         };
     }
 
@@ -83,6 +84,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
 
     public checked(node: arkts.StructDeclaration): void {
         this.checkVariableInitializationViaConstructor(node);
+        this.checkVariableInitializationWithDecorator(node);
     }
 
     private getChildKeyNameArray(node: arkts.CallExpression): string[] {
@@ -379,6 +381,195 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
                 }
             });
         });
+    }
+
+    private isDynStructForVerifyDecorator(node: arkts.MemberExpression): boolean {
+        const symbol: arkts.AstNode | undefined = this.getProperty(node);
+        if (!symbol || !arkts.isMethodDefinition(symbol)) {
+            return false;
+        }
+        return this.isDynStruct(symbol);
+    }
+
+    private getProperty(node: arkts.MemberExpression): arkts.AstNode | undefined {
+        const property = node.property;
+        if (!arkts.isIdentifier(property)) {
+            return undefined;
+        }
+        const propertyName: string = property.name;
+        if (propertyName !== $_INVOKE) {
+            return undefined;
+        }
+        const symbol: arkts.AstNode | undefined = arkts.getDecl(property);
+        return symbol;
+    }
+
+    private checkVariableInitializationWithDecorator(node: arkts.AstNode): void {
+        if (!arkts.isCallExpression(node) ||
+            !node.expression ||
+            !arkts.isMemberExpression(node.expression) ||
+            !this.isDynStructForVerifyDecorator(node.expression) ||
+            !node.arguments ||
+            node.arguments.length === 0) {
+            return;
+        }
+        let structDecl: arkts.AstNode | undefined = undefined;
+        if (node.expression.object && arkts.isIdentifier(node.expression.object)) {
+            structDecl = arkts.getDecl(node.expression.object);
+        }
+        if (!structDecl) {
+            return;
+        }
+        const isComponentV2InDyn = structDecl.annotations.some((annotation) =>
+            arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.COMPONENT_V2
+        );
+        const propertiesMapInDyn: Map<string, string[]> = this.getChildPropertyMap(structDecl);
+        if (propertiesMapInDyn.size <= 0) {
+            return;
+        }
+        node.arguments.forEach((member: arkts.AstNode) => {
+            if (!arkts.isObjectExpression(member)) {
+                return;
+            }
+            member.properties.forEach((item: arkts.AstNode) => {
+                this.handleCallExpression(node, item, isComponentV2InDyn, propertiesMapInDyn);
+            });
+        });
+    }
+    
+    private getChildPropertyMap(structDecl: arkts.AstNode): Map<string, string[]> {
+        const propertiesMapInDyn: Map<string, string[]> = new Map();
+        structDecl.getChildren?.().forEach((member: arkts.AstNode) => {
+            if (!arkts.isClassProperty(member) ||
+                !member.key ||
+                !arkts.isIdentifier(member.key) ||
+                !member.key.name ||
+                member.key.name === '') {
+                return;
+            }
+            const childProName: string = member.key.name;
+            if (childProName === '') {
+                return;
+            }
+            const childPropAnnotationsArray: string[] = this.getPropAnnotationsArray(member);
+            propertiesMapInDyn.set(childProName, childPropAnnotationsArray);
+        });
+        return propertiesMapInDyn;
+    }
+
+    private handleCallExpression(
+        node: arkts.AstNode,
+        item: arkts.AstNode, 
+        isComponentV2InDyn: boolean,
+        propertiesMapInDyn: Map<string, string[]>
+    ): void {
+        if (!arkts.isProperty(item) || !item.key || !arkts.isIdentifier(item.key) ||
+            !item.key.name || item.key.name === '') {
+            return;
+        }
+        const childPropName: string = item.key.name;
+        const childPropAnnotation: string[] | undefined =
+            this.getChildPropAnnotationFromMap(propertiesMapInDyn, childPropName);
+        if (!childPropAnnotation || childPropAnnotation.length === 0) {
+            return;
+        }
+        if (item.value && arkts.isMemberExpression(item.value) &&
+            item.value.property && arkts.isIdentifier(item.value.property)) {
+            const paramNode: arkts.AstNode | undefined = arkts.getDecl(item.value.property);
+            if (!paramNode) {
+                return;
+            }
+            const parentPropName: string = item.value.property.name;
+            const parentPropAnnotations: string = this.getPropAnnotationsString(paramNode);
+            const parentNodeOfParam: arkts.AstNode | undefined = paramNode.parent;
+            if (!parentNodeOfParam || !parentNodeOfParam.annotations || parentNodeOfParam.annotations.length === 0) {
+                return;
+            }
+            const isNeedReport: boolean =
+                this.getIsReport(parentNodeOfParam, item, childPropAnnotation, isComponentV2InDyn);
+            let childPropAnnotationString: string = '';
+            childPropAnnotation.forEach((name: string) => {
+                childPropAnnotationString += name;
+            });
+            if (parentPropAnnotations === '' || !isNeedReport || childPropAnnotationString === '') {
+                return;
+            }
+            this.report({
+                node: node,
+                message: this.messages.variableMixVerifyMessage,
+                data: {
+                    parentPropAnnotations: parentPropAnnotations,
+                    parentPropName: parentPropName,
+                    childPropAnnotation: childPropAnnotationString,
+                    childPropName: childPropName,
+                }
+            });
+        }
+    }
+
+    private getChildPropAnnotationFromMap(
+        propertiesMapInDyn: Map<string, string[]>,
+        childPropName: string
+    ): string[] | undefined {
+        let childPropAnnotation: string[] | undefined = undefined;
+        if (propertiesMapInDyn.has(childPropName)) {
+            childPropAnnotation = propertiesMapInDyn.get(childPropName);
+        }
+        return childPropAnnotation;
+    }
+
+    private getPropAnnotationsString(node: arkts.AstNode): string {
+        let propAnnotationsString: string = `${PresetDecorators.REGULAR}`;
+        if (arkts.isClassProperty(node) && node.annotations && node.annotations.length > 0) {
+            propAnnotationsString = '';
+            node.annotations.forEach((annotation) => {
+                if (annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name) {
+                    propAnnotationsString += `@${annotation.expr.name}`;
+                }
+            })  
+        }
+        return propAnnotationsString;
+    }
+
+    private getPropAnnotationsArray(node: arkts.AstNode): string[] {
+        let propAnnotationsArray: string[] = [];
+        propAnnotationsArray.push(`${PresetDecorators.REGULAR}`);
+        if (arkts.isClassProperty(node) && node.annotations && node.annotations.length > 0) {
+            propAnnotationsArray = [];
+            node.annotations.forEach((annotation) => {
+                if (annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name) {
+                    propAnnotationsArray.push(`@${annotation.expr.name}`);
+                }
+            })
+        }
+        return propAnnotationsArray;
+    }
+
+    private getIsReport(
+        parentNodeOfParam: arkts.AstNode,
+        item: arkts.Property,
+        childPropAnnotation: string[],
+        isComponentV2InDyn: boolean
+    ): boolean {
+        if (!item.value) {
+            return false;
+        }
+        const isComponentV2 = parentNodeOfParam.annotations.some((annotation) =>
+            arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.COMPONENT_V2);
+        const isThisExpression: boolean =
+            arkts.isMemberExpression(item.value) && arkts.isThisExpression(item.value.object);
+        let isNeedReport: boolean = false;
+        if (isComponentV2) {
+            const isBan: boolean =
+                childPropAnnotation.some(item => item === `@${PresetDecorators.STATE}`) ||
+                childPropAnnotation.some(item => item === `@${PresetDecorators.PROP}`) ||
+                childPropAnnotation.some(item => item === `@${PresetDecorators.PROVIDE}`);
+            isNeedReport = !isComponentV2InDyn && isBan && isThisExpression;
+        } else {
+            const isParam: boolean = childPropAnnotation.some(item => item === `@${PresetDecorators.PARAM}`);
+            isNeedReport = isComponentV2InDyn && isParam && isThisExpression;
+        }
+        return isNeedReport;
     }
 }
 
