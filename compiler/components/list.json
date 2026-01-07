@@ -10,6 +10,6 @@
     "maintainVisibleContentPosition", "onScrollFrameBegin", "onScrollStart", "onScrollVisibleContentChange",
     "flingSpeedLimit", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth", "backToTop",
     "stackFromEnd", "focusWrapMode", "onWillStopDragging", "syncLoad", "onWillStartDragging",
-    "onDidStopDragging", "onWillStartFling", "onDidStopFling"
+    "onDidStopDragging", "onWillStartFling", "onDidStopFling", "supportEmptyBranchInLazyLoading"
   ]
 }
