@@ -106,6 +106,7 @@ export const PresetDecorators = {
     PREVIEW: 'Preview',
     STATE: 'State',
     PARAM: 'Param',
+    PROP: 'Prop',
     PROP_REF: 'PropRef',
     PROVIDE: 'Provide',
     PROVIDER: 'Provider',
