@@ -787,8 +787,8 @@ export class ProcessFileInfo {
   resourceTableChanged: boolean = false;
   currentArkTsFile: SpecialArkTSFileInfo;
   reUseProgram: boolean = false;
-  resourcesArr: Map<string, string> = new Map(); // Rawfile and its hash
-  lastResourcesSet: Map<string, string> = new Map();
+  resourcesArr: Set<string> = new Set<string>();
+  lastResourcesSet: Set<string> = new Set<string>();
   changedResourcesSet: Set<string> = new Set(); // Rawfiles that are modified
   resourcesForFiles: Map<string, string[]> = new Map(); // Rawfiles used by each source file
   lastResourcesForFiles: Map<string, string[]> = new Map();
@@ -965,10 +965,10 @@ export class ProcessFileInfo {
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
     this.resourcesArr.clear();
-    this.lastResourcesSet.clear();
+    this.lastResourcesSet?.clear?.();
     this.changedResourcesSet.clear();
     this.resourcesForFiles.clear();
-    this.lastResourcesForFiles.clear();
+    this.lastResourcesForFiles?.clear?.();
   }
   setCurrentArkTsFile(): void {
     this.currentArkTsFile = new SpecialArkTSFileInfo();
@@ -1039,36 +1039,30 @@ export interface ExtendResult {
   componentName: string;
 }
 
-export function resourcesRawfile(rawfilePath: string, resourcesArr: Map<string, string>,
-  getHashByFilePathFunc: Function | undefined, resourceName: string = ''): void {
-  if (!getHashByFilePathFunc) {
-    getHashByFilePathFunc = (filePath: string): string => '0';
-  }
+export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>,
+  resourceName: string = ''): void {
   if (fs.existsSync(process.env.rawFileResource) && fs.statSync(rawfilePath).isDirectory()) {
     const files: string[] = fs.readdirSync(rawfilePath);
     files.forEach((file: string) => {
       if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
-        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, getHashByFilePathFunc,
+        resourcesRawfile(path.join(rawfilePath, file), resourcesArr,
           resourceName ? resourceName + '/' + file : file);
       } else {
         if (resourceName) {
-          resourcesArr.set(resourceName + '/' + file, getHashByFilePathFunc(rawfilePath + '/' + file));
+          resourcesArr.add(resourceName + '/' + file);
         } else {
-          resourcesArr.set(file, getHashByFilePathFunc(rawfilePath + '/' + file));
+          resourcesArr.add(file);
         }
       }
     });
   }
 }
 
-export function differenceResourcesRawfile(oldRawfile: Map<string, string>, newRawfile: Map<string, string>,
+export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: Set<string>,
   changedRawFile: Set<string>): boolean {
   let res: boolean = oldRawfile.size !== newRawfile.size;
-  oldRawfile.forEach((hash, file) => {
+  oldRawfile.forEach((file) => {
     if (!newRawfile.has(file)) {
-      changedRawFile.add(file);
-      res = true;
-    } else if (newRawfile.get(file) !== hash || newRawfile.get(file) === '0') {
       changedRawFile.add(file);
       res = true;
     }
