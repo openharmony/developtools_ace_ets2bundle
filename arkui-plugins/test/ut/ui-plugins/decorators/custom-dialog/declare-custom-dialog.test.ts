@@ -73,9 +73,7 @@ function main() {}
   public hh: string;
   @Memo() 
   public build(): void
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
-  public constructor(useSharedStorage: (boolean | undefined))
-  public constructor()
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage)
   public static _buildCompatibleNode(options: __Options_CustomDialogExample): void
   public __setDialogController__(controller: CustomDialogController): void
 
