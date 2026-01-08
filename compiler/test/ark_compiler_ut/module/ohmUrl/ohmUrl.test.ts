@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1523,6 +1523,7 @@ mocha.describe('generate ohmUrl', function () {
     this.rollup.share.projectConfig.cachePath = 'build/default/intermediates/preload/default/cache';
     const filePath: string = '/testHsp/hsp/src/main/ets/utils/Calc.ets';
     const outFilePath: string = 'build/default/intermediates/preload/default/preload.json';
+    const cacheFilePath: string = 'build/default/intermediates/preload/default/preload.backup.json';
     const moduleRequest: string = '@ohos.router';
     const moduleInfo = {
       id: filePath,
@@ -1560,6 +1561,8 @@ mocha.describe('generate ohmUrl', function () {
     expect(resultOhmUrl === '@ohos:router').to.be.true;
     expect(fs.existsSync(outFilePath)).to.be.true;
     expect(parsedFileContent).to.deep.equal(expectedJson);
+    fs.unlinkSync(outFilePath);
+    fs.existsSync(cacheFilePath) && fs.unlinkSync(cacheFilePath);
   });
 
   mocha.it('Collect. so libraries referenced in the project and generate JSON files,remove one file', function () {
