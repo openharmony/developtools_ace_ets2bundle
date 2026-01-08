@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@ import {
   ArkTSInternalErrorDescription,
   ErrorCode
 } from '../error_code';
+import { isCommonJsPluginVirtualFile, isCurrentProjectFiles } from '../utils';
 
 interface PreloadEntry {
   name: string;
@@ -45,8 +46,10 @@ export class PreloadFileModules {
   private static projectConfig: Object;
   private static logger: CommonLogger;
   private static moduleIds: string[] = [];
+  private static rollupObject: Object | undefined;
 
   public static initialize(rollupObject: Object): void {
+    this.rollupObject = rollupObject;
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.logger = CommonLogger.getInstance(rollupObject);
     if (this.projectConfig.widgetCompile) {
@@ -101,8 +104,9 @@ export class PreloadFileModules {
         this.logger?.printError?.(errInfo);
       }
 
-      const filtered = parsed.systemPreloadHintStartupTasks.filter(
-        entry => !this.moduleIds.includes(entry.moduleId)
+      const filtered = parsed.systemPreloadHintStartupTasks.filter(entry =>
+        !this.moduleIds.includes(entry.moduleId) &&
+        this.rollupModuleIds().includes(entry.moduleId)
       );
 
       const merged = [...this.preloadEntriesBack, ...filtered];
@@ -140,6 +144,19 @@ export class PreloadFileModules {
       });
   }
 
+  private static rollupModuleIds(): string[] {
+    const rollupModuleIds: string[] = [];
+    const entryList = this.rollupObject.getModuleIds();
+    for (const moduleId of entryList) {
+      // exclude .d.ts|.d.ets file
+      if (isCommonJsPluginVirtualFile(moduleId) || !isCurrentProjectFiles(moduleId, this.projectConfig)) {
+        continue;
+      }
+      rollupModuleIds.push(moduleId);
+    }
+    return rollupModuleIds;
+  }
+ 	 
   public static finalizeWritePreloadSoList(): void {
     if (!this.needPreloadSo) {
       return;
@@ -194,5 +211,6 @@ export class PreloadFileModules {
     this.projectConfig = undefined;
     this.moduleIds = [];
     this.needPreloadSo = true;
+    this.rollupObject = undefined;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,6 +49,7 @@ export interface ArkTSEvolutionModule {
 
 mocha.describe('test interop_manager file api', function () {
   mocha.before(function () {
+    process.env.externalApiPaths = '/hms/ets';
     const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
     const dynamicSDKPath: Set<string> = new Set([
       '/sdk/default/openharmony/ets/dynamic/api',
@@ -137,6 +138,7 @@ mocha.describe('test interop_manager file api', function () {
   });
 
   mocha.after(() => {
+    process.env.externalApiPaths = undefined;
     FileManager.cleanFileManagerObject();
   });
 
@@ -267,6 +269,12 @@ mocha.describe('test interop_manager file api', function () {
       '/static/build-tools/interop/bridge/api',
       '/static/build-tools/interop/bridge/arkts'
     ]);
+
+    if (process.env.externalApiPaths) {
+      expectedStaticGlueCode.add('/hms/static/build-tools/interop/bridge/api');
+      expectedStaticInteropDecl.add('/hms/static/build-tools/interop/declaration/api');
+    }
+
     expect([...result.dynamicSDKPath]).to.have.deep.members([...expectedDynamicSDKPath]);
     expect([...result.staticSDKInteropDecl]).to.have.deep.members([...expectedStaticInteropDecl]);
     expect([...result.staticSDKGlueCodePath]).to.have.deep.members([...expectedStaticGlueCode]);
