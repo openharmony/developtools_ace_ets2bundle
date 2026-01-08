@@ -221,7 +221,6 @@
         "Navigation",
         "Navigator",
         "NodeContainer",
-        "Option",
         "PageTransitionEnter",
         "PageTransitionExit",
         "Panel",
@@ -584,11 +583,6 @@
             "name": "NodeContainer",
             "type": "NodeContainerAttribute",
             "instance": "NodeContainerInstance"
-          },
-          {
-            "name": "Option",
-            "type": "OptionAttribute",
-            "instance": "OptionInstance"
           },
           {
             "name": "PageTransitionEnter",
