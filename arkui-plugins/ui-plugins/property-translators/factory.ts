@@ -281,7 +281,8 @@ export class factory {
         property: arkts.ClassProperty,
         stageManagementType: StateManagementTypes | undefined,
         modifiers: arkts.Es2pandaModifierFlags,
-        needMemo: boolean = false
+        needMemo: boolean = false,
+        isRequired: boolean = false
     ): arkts.ClassProperty {
         const originType = property.typeAnnotation;
         const newType: arkts.TypeNode | undefined = !stageManagementType
@@ -297,7 +298,7 @@ export class factory {
             modifiers,
             false
         );
-        return arkts.classPropertySetOptional(newProperty, true);
+        return arkts.classPropertySetOptional(newProperty, !isRequired);
     }
 
     static createStageManagementType(

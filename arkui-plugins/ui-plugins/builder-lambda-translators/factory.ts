@@ -468,6 +468,7 @@ export class factory {
     ): arkts.Property[] {
         const keyName: string = key.name;
         let newProperty: arkts.Property = prop;
+        let oriProperty: arkts.Property | undefined = undefined;
         if (isDoubleDollarCall(value)) {
             newProperty = BindableFactory.updateBindableProperty(prop, value);
         } else if (propertyInfo.isBuilderParam && arkts.isArrowFunctionExpression(value)) {
@@ -479,21 +480,28 @@ export class factory {
             arkts.isThisExpression(value.object) &&
             arkts.isIdentifier(value.property)
         ) {
+            oriProperty = prop;
             newProperty = arkts.factory.updateProperty(
                 prop,
                 arkts.factory.createIdentifier(backingField(keyName)),
                 factory.updateBackingMember(value, value.property.name)
             );
         }
-        return declInfo?.isFunctionCall
-            ? [newProperty]
-            : [
-                  newProperty,
-                  arkts.factory.createProperty(
-                      arkts.factory.createIdentifier(optionsHasField(keyName)),
-                      arkts.factory.createBooleanLiteral(true)
-                  ),
-              ];
+        if (declInfo?.isFunctionCall) {
+            return [newProperty];
+        }
+        const propertyCollections: arkts.Property[] = [];
+        if (!!oriProperty) {
+            propertyCollections.push(oriProperty);
+        }
+        propertyCollections.push(newProperty);
+        propertyCollections.push(
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(optionsHasField(keyName)),
+                arkts.factory.createBooleanLiteral(true)
+            )
+        )
+        return propertyCollections;
     }
 
     /**
