@@ -81,15 +81,15 @@ function main() {}
     meta.addRef();
   }
 
-  @JSONRename({newName:"name"}) private __backing_name: string = "Tom";
+  @JSONRename({newName:"name"}) public __backing_name: string = "Tom";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"region"}) private __backing_region: string = "North";
+  @JSONRename({newName:"region"}) public __backing_region: string = "North";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_region: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"job"}) private __backing_job: string = "Teacher";
+  @JSONRename({newName:"job"}) public __backing_job: string = "Teacher";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

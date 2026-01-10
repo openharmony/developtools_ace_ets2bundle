@@ -79,7 +79,7 @@ function main() {}
 
   public propB: number = 1;
 
-  @JSONRename({newName:"traceB"}) private __backing_traceB: number = 2;
+  @JSONRename({newName:"traceB"}) public __backing_traceB: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
@@ -123,11 +123,11 @@ function main() {}
 
   public propB: number = 1;
 
-  @JSONRename({newName:"traceE"}) private __backing_traceE: number = 2;
+  @JSONRename({newName:"traceE"}) public __backing_traceE: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"tracef"}) private __backing_tracef: number = 2;
+  @JSONRename({newName:"tracef"}) public __backing_tracef: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_tracef: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

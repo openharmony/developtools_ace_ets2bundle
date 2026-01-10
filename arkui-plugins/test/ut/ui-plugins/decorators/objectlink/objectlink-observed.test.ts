@@ -165,7 +165,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"data"}) private __backing_data: DateClass = new DateClass(11);
+  @JSONRename({newName:"data"}) public __backing_data: DateClass = new DateClass(11);
 
   public constructor(data: DateClass) {
     this.data = data;

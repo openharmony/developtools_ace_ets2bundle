@@ -97,11 +97,11 @@ function main() {}
     meta.addRef();
   }
 
-  @JSONRename({newName:"firstName"}) private __backing_firstName: string = "Hua";
+  @JSONRename({newName:"firstName"}) public __backing_firstName: string = "Hua";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"lastName"}) private __backing_lastName: string = "Li";
+  @JSONRename({newName:"lastName"}) public __backing_lastName: string = "Li";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

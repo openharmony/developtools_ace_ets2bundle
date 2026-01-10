@@ -202,7 +202,7 @@ function main() {}
     meta.addRef();
   }
 
-  @JSONRename({newName:"name"}) private __backing_name: string = "info";
+  @JSONRename({newName:"name"}) public __backing_name: string = "info";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

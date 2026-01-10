@@ -86,9 +86,9 @@ function main() {}
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"propA"}) private __backing_propA: number = 1;
+  @JSONRename({newName:"propA"}) public __backing_propA: number = 1;
 
-  @JSONRename({newName:"trackA"}) private __backing_trackA: number = 2;
+  @JSONRename({newName:"trackA"}) public __backing_trackA: number = 2;
   
   public constructor() {}
   
