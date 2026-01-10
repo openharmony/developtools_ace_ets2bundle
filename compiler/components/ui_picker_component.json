@@ -1,5 +1,5 @@
 {
-    "name": "Picker",
+    "name": "UIPickerComponent",
     "children": [
         "SymbolGlyph",
         "Text",

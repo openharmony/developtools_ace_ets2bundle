@@ -228,7 +228,6 @@
         "Particle",
         "Path",
         "PatternLock",
-        "Picker",
         "Piece",
         "PlatformView",
         "PluginComponent",
@@ -296,6 +295,7 @@
         "ArcSwiper",
         "ArcScrollBar",
         "UnionEffectContainer",
+        "UIPickerComponent"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -621,9 +621,9 @@
             "instance": "PatternLockInstance"
           },
           {
-            "name": "Picker",
-            "type": "PickerAttribute",
-            "instance": "PickerInterface"
+            "name": "UIPickerComponent",
+            "type": "UIPickerComponentAttribute",
+            "instance": "UIPickerComponentInstance"
           },
           {
             "name": "Piece",
