@@ -121,6 +121,7 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'inner_component_transform/transition_component/navDestination_component/navDestination_component',
   'inner_component_transform/transition_component/navigation/navigation_component',
   'inner_component_transform/transition_component/pageTransition/pageTransition',
+  'inner_component_transform/enum/enumTest',
 
   'questionnaireUT/questionnaireUT1',
 
