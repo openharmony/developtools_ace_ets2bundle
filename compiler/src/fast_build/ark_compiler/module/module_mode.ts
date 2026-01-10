@@ -566,7 +566,7 @@ export class ModuleMode extends CommonMode {
       recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
       BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().registerRecordNameWhiteList(metaInfo.ohmurl);
     } else {
-      recordName = getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
+      recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getOhmUrlByFilepath(filePath, this.projectConfig, this.logger, moduleName);
       if (isPackageModules) {
         packageName = this.getPkgModulesFilePkgName(metaInfo.pkgPath);
       } else {

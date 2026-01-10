@@ -138,7 +138,7 @@ const KIT_LAZY_IMPORT_CODE_EXPECT: string =
 'import { test } from "./test";\n' +
 'import lazy appAccount from "@ohos.account.appAccount";\n' +
 'import lazy socket from "@ohos.net.socket";\n' +
-'import lazy VpnExtensionContext from "@ohos.net.vpnExtension";\n' +
+'import lazy { VpnExtensionContext } from "@ohos.app.ability.VpnExtensionAbility";\n' +
 'import lazy x1 from "@ohos.app.ability.UIAbility";\n' +
 'import lazy buffer from "@ohos.buffer";\n' +
 'test;\n' +
