@@ -487,12 +487,13 @@ function checkAssignEnv(assignEnvOption: AssignEnvOptions, log: LogInfo[]): void
   const parentEnvSet: Set<string> = assignEnvOption.isParentV2 ? info.parentStructInfo.envDecoratorSet :
     envCollection.get(info.parentStructInfo.structName);
   const initializerName: string = getInitializerName(assignEnvOption.item);
-  if (!initializerName.length || !parentEnvSet.has(initializerName)) {
+  if (!initializerName.length || !parentEnvSet || !parentEnvSet.has(initializerName)) {
     return;
   }
   if (assignEnvOption.isChildV2) {
-    if (!(info.childStructInfo.paramDecoratorMap.has(assignEnvOption.itemName) &&
-      !info.childStructInfo.builderParamDecoratorSet.has(assignEnvOption.itemName))) {
+    if (!(info.childStructInfo.paramDecoratorMap && info.childStructInfo.paramDecoratorMap.has(assignEnvOption.itemName) &&
+      !(info.childStructInfo.builderParamDecoratorSet &&
+        info.childStructInfo.builderParamDecoratorSet.has(assignEnvOption.itemName)))) {
       validateAssignEnvV2(log, assignEnvOption.item);
     }
   } else {

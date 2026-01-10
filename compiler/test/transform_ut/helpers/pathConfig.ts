@@ -196,6 +196,7 @@ export const UT_PARTIAL_UPFATE_PAGES: string[] = [
   'ui_state_management/ObservedObject_GetRawObject/makeV1Observed',
   'ui_state_management/ObservedObject_GetRawObject/builderRefresh',
 
+  'v2_component_decorator/env/envTest',
   'v2_component_decorator/event/event_base',
   'v2_component_decorator/event/event_parent',
   'v2_component_decorator/monitor/monitor_base',
