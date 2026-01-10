@@ -991,8 +991,12 @@ function resourceIdName(funcName: string): ts.GetAccessorDeclaration {
 
 function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
   resourceModuleName: string, isResourceModule: boolean, resourceSource: string = ''): ts.ObjectLiteralExpression {
-  if (projectConfig.compileHar && resourceSource !== 'sys') {	
-    resourceValue = -1;
+  if (projectConfig.compileHar) {
+    if (projectConfig.minAPIVersion%1000 < APIVERSION.apiVersiontwentyThree) {
+      resourceValue = -1;
+    } else if (projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersiontwentyThree && resourceSource !== 'sys') {
+      resourceValue = -1; 
+    }
   }
   const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [];
   const resourceIdKeyValue: ts.PropertyAssignment = ts.factory.createPropertyAssignment(	
