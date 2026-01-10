@@ -24,6 +24,7 @@ import {
     hasDecoratorName,
     removeDecorator,
     removeImplementProperty,
+    findPropertyAccessModifierFlags
 } from './utils';
 import { ClassScopeInfo } from '../struct-translators/utils';
 import { factory } from './factory';
@@ -73,7 +74,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
             this.propertyType,
             this.isStatic
                 ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
-                : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+                : findPropertyAccessModifierFlags(this.property),
             false
         );
         if (!this.property.value) {

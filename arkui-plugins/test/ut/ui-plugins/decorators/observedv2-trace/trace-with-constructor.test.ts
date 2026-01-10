@@ -79,11 +79,11 @@ function main() {}
 
   public propB: number = 1;
 
-  @JSONRename({newName:"traceE"}) private __backing_traceE: number = 2;
+  @JSONRename({newName:"traceE"}) public __backing_traceE: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"vv"}) private __backing_vv?: string;
+  @JSONRename({newName:"vv"}) public __backing_vv?: string;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
