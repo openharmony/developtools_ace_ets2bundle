@@ -41,7 +41,8 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-    if (!!contextPtr) {
+    const isCoding = this.isCoding?.() ?? false;
+    if (!isCoding && !!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
         let script = program.astNode;
         debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
