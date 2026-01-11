@@ -127,7 +127,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [OldNewDecoratorMixUseCheckRule, 'error'],
     [RequireDecoratorRegularRule, 'warn'],
     [SpecificComponentChildrenRule, 'error'],
-    [EntryComponentV2InvalidParamsRule, 'warn'],
+    [EntryComponentV2InvalidParamsRule, 'error'],
     [StructAttributeNoTypeRule, 'error'],
     [CheckObjectLinkUseLiteralRule, 'error'],
 ];
