@@ -164,7 +164,7 @@ function main() {}
           })),
         }).applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
         instance.setTextPickerOptions(({
           range: this.fruits,

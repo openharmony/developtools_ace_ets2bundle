@@ -170,7 +170,7 @@ function main() {}
           text: _r(16777220, 10003, "com.example.mock", "entry"),
         }).applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str1), undefined).applyAttributesFinish();
         return;
