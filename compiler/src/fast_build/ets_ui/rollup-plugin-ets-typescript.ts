@@ -162,16 +162,16 @@ export function etsTransform() {
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
           this.cache.get('resourceToFileCacheInfo'), cacheFile);
         if (this.cache.has('lastResourcesArr') && this.cache.has('lastResourcesForFiles')) {
-          storedFileInfo.lastResourcesSet = this.cache.get('lastResourcesArr');
+          storedFileInfo.lastResourcesSet = new Set(this.cache.get('lastResourcesArr') ?? []);
           storedFileInfo.lastResourcesForFiles = this.cache.get('lastResourcesForFiles');
           storedFileInfo.hasResourcesCache = true;
         } else {
-          storedFileInfo.lastResourcesSet = new Map();
+          storedFileInfo.lastResourcesSet = new Set<string>();
           storedFileInfo.lastResourcesForFiles = new Map();
           storedFileInfo.hasResourcesCache = false;
         }
         if (process.env.rawFileResource) {
-          resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr, this.share.getHashByFilePath);
+          resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet,
             storedFileInfo.resourcesArr, storedFileInfo.changedResourcesSet);
         }
@@ -287,7 +287,7 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
-      this.cache.set('lastResourcesArr', new Map(storedFileInfo.resourcesArr));
+      this.cache.set('lastResourcesArr', new Set(storedFileInfo.resourcesArr));
       storedFileInfo.resourcesForFiles.forEach((value, key) => {
         storedFileInfo.lastResourcesForFiles.set(key, value);
       });
