@@ -65,7 +65,6 @@ import {
   COMPONENTV2_PROVIDER_DECORATOR,
   COMPONENTV2_ONCE_DECORATOR,
   COMPONENTV2_PARAM_DECORATOR,
-  COMPONENTV2_EVENT_DECORATOR,
   VIEWSTACKPROCESSOR,
 } from './pre_define';
 import {
@@ -439,25 +438,27 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   }
 }
 
-function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string[] {
-  const typeNames: string[] = [];
+function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string {
+  let typeName: string = COMPONENT_NON_DECORATOR;
   if (info.childStructInfo.localDecoratorSet.has(itemName)) {
-    typeNames.push(COMPONENTV2_LOCAL_DECORATOR);
+    typeName = COMPONENTV2_LOCAL_DECORATOR;
+  } else if (info.childStructInfo.consumerDecoratorSet.has(itemName)) {
+    typeName = COMPONENTV2_CONSUMER_DECORATOR;
+  } else if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
+    typeName = COMPONENTV2_PROVIDER_DECORATOR;
+  } else if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
+    typeName = COMPONENTV2_PARAM_DECORATOR;
   }
-  if (info.childStructInfo.consumerDecoratorSet.has(itemName)) {
-    typeNames.push(COMPONENTV2_CONSUMER_DECORATOR);
-  }
-  if (info.childStructInfo.providerDecoratorSet.has(itemName)) {
-    typeNames.push(COMPONENTV2_PROVIDER_DECORATOR);
-  }
+  return typeName;
+}
+
+function getInteropForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string[] {
+  const typeNames: string[] = [];
   if (info.childStructInfo.paramDecoratorMap.has(itemName)) {
     typeNames.push(COMPONENTV2_PARAM_DECORATOR);
   }
   if (info.childStructInfo.onceDecoratorSet.has(itemName)) {
     typeNames.push(COMPONENTV2_ONCE_DECORATOR);
-  }
-  if (info.childStructInfo.eventDecoratorMap.has(itemName)) {
-    typeNames.push(COMPONENTV2_EVENT_DECORATOR);
   }
   if (typeNames.length === 0) {
     typeNames.push(COMPONENT_NON_DECORATOR);
@@ -468,21 +469,23 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string, childParam: ts.PropertyAssignment[],
   log: LogInfo[], info: ChildAndParentComponentInfo, isArkoala: boolean = false): void {
   if (isArkoala) {
-    if (ts.isPropertyAccessExpression(item.initializer) &&
-      item.initializer.expression.kind === ts.SyntaxKind.ThisKeyword) {
-      const { parentPropertyName, parentPropertyKind } = getParentPropertyInfo(item);
+    const isThisPropertyAccess = ts.isPropertyAccessExpression(item.initializer) &&
+      item.initializer.expression.kind === ts.SyntaxKind.ThisKeyword;
+    if (!isThisPropertyAccess) return;
+    const { parentPropertyName, parentPropertyKind } = getParentPropertyInfo(item);
+    const currentPropType = getForbbidenInitPropsV2Type(itemName, info);
+    if (currentPropType === COMPONENTV2_PARAM_DECORATOR) {
       if (handleV1ParentWithV2Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
         return;
       }
-      if (handleV2ParentWithV1Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
-        return;
-      }
+    }
+    if (handleV2ParentWithV1Child(item, itemName, parentPropertyName, parentPropertyKind, info, log)) {
       return;
     }
   }
   if (info.childStructInfo.isComponentV2) {
     if (info.forbiddenInitPropsV2.includes(itemName)) {
-      const propType: string[] = getForbbidenInitPropsV2Type(itemName, info);
+      const propType: string = getForbbidenInitPropsV2Type(itemName, info);
       log.push({
         type: LogType.ERROR,
         message: `The '${propType}' property '${itemName}' in the custom component '${info.childName}'` +
@@ -544,21 +547,23 @@ function getParentPropertyInfo(item: ts.PropertyAssignment): { parentPropertyNam
   return result;
 }
 
-function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string, 
+function handleV1ParentWithV2Child(item: ts.PropertyAssignment, itemName: string, parentPropertyName: string,
   parentPropertyKind: string[], info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
   if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
-    const propTypes: string[] = getForbbidenInitPropsV2Type(itemName, info);
+    const propTypes: string[] = getInteropForbbidenInitPropsV2Type(itemName, info);
     const parentKindStr = parentPropertyKind.length
       ? parentPropertyKind.map(kind => kind === "regular" ? kind : `@${kind}`).join(', ') : 'regular';
     const propTypesStr = propTypes.join(', ');
-    log.push({
-      type: LogType.ERROR,
-      message: `The ${parentKindStr} property ${parentPropertyName} cannot be assigned to the` +
+    if (propTypes.includes(COMPONENTV2_PARAM_DECORATOR)) {
+      log.push({
+        type: LogType.ERROR,
+        message: `The ${parentKindStr} property ${parentPropertyName} cannot be assigned to the` +
           ` ${propTypesStr} properties ${itemName} when interop.`,
-      pos: item.getStart(),
-      code: '10905501'
-    });
-    return true;
+        pos: item.getStart(),
+        code: '10905501'
+      });
+      return true;
+    }
   }
   return false;
 }
@@ -569,6 +574,7 @@ function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string
     if (!info.forbiddenInitPropsV1 || info.forbiddenInitPropsV1.size === 0) {
       return true;
     }
+    const TARGET_DECORATORS = ['@State', '@Prop', '@Provide'];
     const parentKindStr = parentPropertyKind.length
       ? parentPropertyKind.map(kind => kind === "regular" ? kind : `@${kind}`).join(', ') : 'regular';
     const matchedDecorators = new Set<string>();
@@ -576,7 +582,9 @@ function handleV2ParentWithV1Child(item: ts.PropertyAssignment, itemName: string
       const keyArr = JSON.parse(keyStr) as string[];
       if (Array.isArray(keyArr) && arr.includes(itemName)) {
         keyArr.forEach(decorator => {
-          matchedDecorators.add(decorator);
+          if (TARGET_DECORATORS.includes(decorator)) {
+            matchedDecorators.add(decorator);
+          }
         });
       }
     }
