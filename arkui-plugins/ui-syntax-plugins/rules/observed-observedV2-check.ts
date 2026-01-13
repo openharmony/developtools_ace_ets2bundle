@@ -23,7 +23,7 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
   public setup(): Record<string, string> {
     return {
       conflictingDecorators: `A class cannot be decorated by both '@Observed' and '@ObservedV2' at the same time.`,
-      observedV1V2Message: `The type of the '{{annotations}}' property can not be a class decorated with '{{observedAnnotations}}' when interop`,
+      observedV1V2Message: `The type of the '{{annotations}}' property can not be a class decorated with '{{observedAnnotations}}' when interop.`,
     };
   }
 
@@ -58,16 +58,6 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
     if (!parentNode) {
       return;
     }
-    const hasObservedDecorator = parentNode.annotations?.some(annotations =>
-      annotations.expr &&
-      arkts.isIdentifier(annotations.expr) &&
-      annotations.expr.name === PresetDecorators.OBSERVED_V1
-    );
-    const hasObservedV2Decorator = parentNode.annotations?.some(annotations =>
-      annotations.expr &&
-      arkts.isIdentifier(annotations.expr) &&
-      annotations.expr.name === PresetDecorators.OBSERVED_V2
-    );
     const hasComponentDecorator = parentNode.annotations?.some(annotations =>
       annotations.expr &&
       arkts.isIdentifier(annotations.expr) &&
@@ -78,26 +68,43 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
       arkts.isIdentifier(annotations.expr) &&
       annotations.expr.name === PresetDecorators.COMPONENT_V2
     );
-    if (hasObservedDecorator || hasComponentDecorator) {
-      const isFormDynWithObservedV2: boolean = this.getHasAnnotationObserved(node, PresetDecorators.OBSERVED_V2);
-      if (isFormDynWithObservedV2) {
-        this.doReport(node, PresetDecorators.OBSERVED_V2);
-      }
+    let annotations: string = PresetDecorators.REGULAR;
+    if (hasComponentDecorator || hasComponentV2Decorator) {
+      const decorators: string[] = [];
+      node?.annotations?.forEach((anno: arkts.AnnotationUsage) => {
+        const type: string = this.getDecoratorsType(anno);
+        decorators.push(type);
+      });
+      annotations = decorators.length === 0 ? PresetDecorators.REGULAR : decorators.join(', ');
     }
-    if (hasObservedV2Decorator || hasComponentV2Decorator) {
-      const isFormDynWithObservedV1: boolean = this.getHasAnnotationObserved(node, PresetDecorators.OBSERVED_V1);
-      if (isFormDynWithObservedV1) {
-        this.doReport(node, PresetDecorators.OBSERVED_V1);
-      }
+    const isFromDynWithObservedV2: boolean = this.getHasAnnotationObserved(node, PresetDecorators.OBSERVED_V2);
+    if (hasComponentDecorator && isFromDynWithObservedV2) {
+      this.doReport(node, annotations, `@${PresetDecorators.OBSERVED_V2}`);
+    }
+    const isFormDynWithObservedV1: boolean = this.getHasAnnotationObserved(node, PresetDecorators.OBSERVED_V1);
+    if (hasComponentV2Decorator && isFormDynWithObservedV1) {
+      this.doReport(node, annotations, `@${PresetDecorators.OBSERVED_V1}`);
     }
   }
 
-  private doReport(node: arkts.ClassProperty, observedAnnotations: string): void {
+  private getDecoratorsType(anno: arkts.AnnotationUsage): string {
+      let propertyType = PresetDecorators.REGULAR;
+      if (!!anno.expr && arkts.isIdentifier(anno.expr)) {
+          propertyType = anno.expr.name;
+      }
+      if (propertyType !== PresetDecorators.REGULAR && propertyType !== '') {
+          return '@' + propertyType;
+      } else {
+          return PresetDecorators.REGULAR;
+      }
+  }
+
+  private doReport(node: arkts.ClassProperty, annotations: string, observedAnnotations: string): void {
     this.report({
       node: node,
       message: this.messages.observedV1V2Message,
       data: {
-        annotations: PresetDecorators.REGULAR,
+        annotations: annotations,
         observedAnnotations: observedAnnotations,
       }
     });
