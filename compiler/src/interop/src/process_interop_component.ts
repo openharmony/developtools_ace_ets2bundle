@@ -18,7 +18,8 @@ import { arkTSEvolutionModuleMap, arkTSHybridModuleMap } from './fast_build/ark_
 import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
 import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER, BUILDER_ATTR_BIND } from './pre_define';
 import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map';
-import { toUnixPath } from './utils';
+import { toUnixPath, LogType, LogInfo } from './utils';
+import { ChildAndParentComponentInfo } from './process_custom_component';
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -444,4 +445,57 @@ export function createStaticTuple(name: string): ts.VariableStatement {
       ts.NodeFlags.Let
     )
   )
+}
+
+export function validateInteropProperty(node: ts.CallExpression,
+  log: LogInfo[], info: ChildAndParentComponentInfo, isArkoala: boolean = false): boolean {
+  if (!isArkoala) { return false; }
+  const classOrStructNode = ts.findAncestor(node, ts.isStructDeclaration);
+  let parentStructName: string = '';
+  if (classOrStructNode && ts.isIdentifier(classOrStructNode.name)) {
+    parentStructName = classOrStructNode.name.escapedText.toString();
+  }
+  if (handleV1ParentWithV2Child(node, parentStructName, info, log)) {
+    return true;
+  }
+  if (handleV2ParentWithV1Child(node, parentStructName, info, log)) {
+    return true;
+  }
+  return false;
+}
+
+function handleV1ParentWithV2Child(node: ts.CallExpression, parentStructName: string,
+  info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+  if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
+    let childName = '';
+    if (ts.isIdentifier(node.expression)) {
+      childName = node.expression.escapedText.toString();
+      log.push({
+        type: LogType.ERROR,
+        message: `The @ComponentV2 '${childName}' cannot be used in the @Component '${parentStructName}' when interop.`,
+        pos: node.getStart(),
+        code: '10905501'
+      });
+      return true;
+    }
+  }
+  return false;
+}
+
+function handleV2ParentWithV1Child(node: ts.CallExpression, parentStructName: string,
+  info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
+  if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
+    let childName = '';
+    if (ts.isIdentifier(node.expression)) {
+      childName = node.expression.escapedText.toString();
+      log.push({
+        type: LogType.ERROR,
+        message: `The @Component '${childName}' cannot be used in the @ComponentV2 '${parentStructName}' when interop.`,
+        pos: node.getStart(),
+        code: '10905501'
+      });
+      return true;
+    }
+  }
+  return false;
 }
