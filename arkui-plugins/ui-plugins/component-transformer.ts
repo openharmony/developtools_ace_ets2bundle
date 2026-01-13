@@ -67,6 +67,8 @@ export interface ComponentTransformerOptions extends VisitorOptions {
 
 type ScopeInfo = CustomComponentInfo;
 
+const isRequiredDecorators = [DecoratorNames.LINK, DecoratorNames.OBJECT_LINK, DecoratorNames.REQUIRE];
+
 export interface InteropContext {
     className: string;
     path: string;
@@ -417,11 +419,16 @@ export class ComponentTransformer extends AbstractVisitor {
 
     createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
         const originalName: string = expectName(member.key);
+        const isRequired = isRequiredDecorators.some((decoratorName) => {
+            return hasDecoratorName(member, decoratorName);
+        });
         const originMember: arkts.ClassProperty = PropertyFactory.createOptionalClassProperty(
             originalName,
             member,
             undefined,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            false,
+            isRequired
         );
         const infos: DecoratorInfo[] = findDecoratorInfos(member);
         const buildParamInfo: DecoratorInfo | undefined = infos.find((it) =>
