@@ -169,6 +169,7 @@
     "bindPopup",
     "bindMenu",
     "bindContextMenu",
+    "bindContextMenuWithResponse",
     "bindContentCover",
     "bindSheet",
     "stateStyles",
