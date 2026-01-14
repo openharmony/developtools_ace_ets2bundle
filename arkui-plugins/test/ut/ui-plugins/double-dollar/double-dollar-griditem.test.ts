@@ -136,32 +136,38 @@ class CC {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       GridImpl(@Memo() ((instance: GridAttribute): void => {
-        instance.setGridOptions(undefined, undefined).applyAttributesFinish();
+        instance.setGridOptions(undefined, undefined);
+        instance.applyAttributesFinish();
         return;
       }), @Memo() (() => {
         GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
           instance.setGridItemOptions(undefined).selected(makeBindable(this.boo, ((value) => {
             this.boo = value;
-          }))).applyAttributesFinish();
+          })));
+          instance.applyAttributesFinish();
           return;
         }), @Memo() (() => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined).applyAttributesFinish();
+            instance.setTextOptions("nihao", undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }));
         GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
           instance.setGridItemOptions(undefined).selected(makeBindable(CC.c, ((value) => {
             CC.c = value;
-          }))).applyAttributesFinish();
+          })));
+          instance.applyAttributesFinish();
           return;
         }), @Memo() (() => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined).applyAttributesFinish();
+            instance.setTextOptions("nihao", undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }));

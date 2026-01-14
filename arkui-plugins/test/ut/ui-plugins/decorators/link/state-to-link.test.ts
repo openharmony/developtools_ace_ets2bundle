@@ -127,19 +127,22 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child increase the year by 1", undefined).onClick(((e: ClickEvent) => {
           this.selectedDate.setFullYear(((this.selectedDate.getFullYear()) + (1)));
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.selectedDate = new Date("2023-09-09");
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       DatePickerImpl(@Memo() ((instance: DatePickerAttribute): void => {
@@ -147,7 +150,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           start: new Date("1970-1-1"),
           end: new Date("2100-1-1"),
           selected: this.selectedDate,
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -191,19 +195,22 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent increase the month by 1", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate.setMonth(((this.parentSelectedDate.getMonth()) + (1)));
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).margin(10).onClick(((e: ClickEvent) => {
           this.parentSelectedDate = new Date("2023-07-07");
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       DatePickerImpl(@Memo() ((instance: DatePickerAttribute): void => {
@@ -211,7 +218,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
           start: new Date("1970-1-1"),
           end: new Date("2100-1-1"),
           selected: this.parentSelectedDate,
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       DateComponent._invoke(@Memo() ((instance: DateComponent): void => {

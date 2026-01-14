@@ -233,13 +233,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("child increase the day by 1", undefined).onClick(((e: ClickEvent) => {
           this.data.setDate(((this.data.getDate()) + (1)));
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -283,7 +285,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       Child._invoke(@Memo() ((instance: Child): void => {
@@ -300,13 +303,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("parent update the new date", undefined).onClick(((e: ClickEvent) => {
           this.newData.data = new DateClass("2023-07-07");
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("ViewB: this.newData = new NewDate(new DateClass('2023-08-20'))", undefined).onClick(((e: ClickEvent) => {
           this.newData = new NewDate(new DateClass("2023-08-20"));
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

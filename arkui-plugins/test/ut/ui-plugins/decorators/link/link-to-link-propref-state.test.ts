@@ -112,13 +112,15 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: this.text1,
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       Child._invoke(@Memo() ((instance: Child): void => {
@@ -225,7 +227,8 @@ function main() {}
     TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,
-      }).applyAttributesFinish();
+      });
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }

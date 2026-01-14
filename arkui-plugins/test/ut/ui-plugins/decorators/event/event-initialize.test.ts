@@ -245,14 +245,16 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`Child index: \${this.index}\`, undefined).onClick(((e) => {
           this.changeIndex(20);
           console.log(\`after changeIndex \${this.index}\`);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -298,7 +300,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       Child._invoke(@Memo() ((instance: Child): void => {

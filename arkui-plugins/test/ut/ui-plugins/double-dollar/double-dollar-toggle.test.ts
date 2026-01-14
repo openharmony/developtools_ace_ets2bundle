@@ -126,7 +126,8 @@ class BooleanClass {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
@@ -135,7 +136,8 @@ class BooleanClass {
           isOn: makeBindable(this.boo[0], ((value) => {
             this.boo[0] = value;
           })),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
@@ -144,7 +146,8 @@ class BooleanClass {
           isOn: makeBindable(this.booClass.isOn, ((value) => {
             this.booClass.isOn = value;
           })),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ToggleImpl(@Memo() ((instance: ToggleAttribute): void => {
@@ -153,7 +156,8 @@ class BooleanClass {
           isOn: makeBindable(c[1], ((value) => {
             c[1] = value;
           })),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

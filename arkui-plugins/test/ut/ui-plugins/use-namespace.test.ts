@@ -81,7 +81,8 @@ ns.ns_num;
   @Memo() 
   public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
-      instance.setRowOptions(undefined).applyAttributesFinish();
+      instance.setRowOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {}));
   }

@@ -99,14 +99,16 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       NavDestinationImpl(@Memo() ((instance: NavDestinationAttribute): void => {
         instance.setNavDestinationOptions({
           moduleName: "entry",
           pagePath: "mock/component/nav-no-lambda",
-        }).width(80).applyAttributesFinish();
+        }).width(80);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
@@ -114,7 +116,8 @@ function main() {}
           moduleName: "entry",
           pagePath: "mock/component/nav-no-lambda",
           isUserCreateStack: true,
-        }).width(80).applyAttributesFinish();
+        }).width(80);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
@@ -122,7 +125,8 @@ function main() {}
           moduleName: "entry",
           pagePath: "mock/component/nav-no-lambda",
           isUserCreateStack: false,
-        }).width(80).applyAttributesFinish();
+        }).width(80);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

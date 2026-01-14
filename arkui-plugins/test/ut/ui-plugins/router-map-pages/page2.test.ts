@@ -96,11 +96,13 @@ function builderTwo() {
   @Memo() 
   public build() {
     RelativeContainerImpl(@Memo() ((instance: RelativeContainerAttribute): void => {
-      instance.setRelativeContainerOptions().height("100%").width("100%").applyAttributesFinish();
+      instance.setRelativeContainerOptions().height("100%").width("100%");
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.message, undefined).applyAttributesFinish();
+        instance.setTextOptions(this.message, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
