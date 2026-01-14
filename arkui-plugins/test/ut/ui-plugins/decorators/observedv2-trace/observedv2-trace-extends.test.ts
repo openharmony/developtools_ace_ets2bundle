@@ -79,7 +79,7 @@ function main() {}
 
   public propA: number = 1;
 
-  @JSONRename({newName:"traceA"}) private __backing_traceA: number = 2;
+  @JSONRename({newName:"traceA"}) public __backing_traceA: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
@@ -128,7 +128,7 @@ class G extends A {
     meta.addRef();
   }
 
-  @JSONRename({newName:"propG"}) private __backing_propG: number = 1;
+  @JSONRename({newName:"propG"}) public __backing_propG: number = 1;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

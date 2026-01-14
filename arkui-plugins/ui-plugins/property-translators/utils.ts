@@ -455,3 +455,13 @@ export function findCachedMemoMetadata(node: arkts.AstNode, shouldWrapType: bool
     }
     return metadata;
 }
+
+export function findPropertyAccessModifierFlags(property: arkts.ClassProperty): arkts.Es2pandaModifierFlags {
+    let modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+    if(arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE)) {
+        modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
+    } else if(arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED)) {
+        modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
+    }
+    return modifierFlags;
+}

@@ -148,15 +148,15 @@ class GGG {
     meta.addRef();
   }
 
-  @JSONRename({newName:"name"}) private __backing_name: string = "Tom";
+  @JSONRename({newName:"name"}) public __backing_name: string = "Tom";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"strArr"}) private __backing_strArr: Array<string> = ["North", "east"];
+  @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"job"}) private __backing_job: AAA = new AAA();
+  @JSONRename({newName:"job"}) public __backing_job: AAA = new AAA();
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

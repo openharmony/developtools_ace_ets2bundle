@@ -88,7 +88,7 @@ interface trackInterface {
     meta.addRef();
   }
 
-  @JSONRename({newName:"bb"}) private __backing_bb?: boolean;
+  @JSONRename({newName:"bb"}) public __backing_bb?: boolean;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
