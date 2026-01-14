@@ -150,47 +150,47 @@ final class Status extends BaseEnum<int> {
     meta.addRef();
   }
 
-  @JSONRename({newName:"numA"}) private __backing_numA: number = 33;
+  @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"stringA"}) private __backing_stringA: string = "AA";
+  @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"booleanA"}) private __backing_booleanA: boolean = true;
+  @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"arrayA"}) private __backing_arrayA: Array<number> = [1, 2, 3];
+  @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"objectA"}) private __backing_objectA: Object = {};
+  @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"dateA"}) private __backing_dateA: Date = new Date("2021-08-08");
+  @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"setA"}) private __backing_setA: Set<number> = new Set<number>();
+  @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"mapA"}) private __backing_mapA: Map<number, string> = new Map<number, string>();
+  @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"unionA"}) private __backing_unionA: (string | undefined) = "";
+  @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"classA"}) private __backing_classA: Person = new Person();
+  @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({newName:"enumA"}) private __backing_enumA: Status = Status.NotFound;
+  @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

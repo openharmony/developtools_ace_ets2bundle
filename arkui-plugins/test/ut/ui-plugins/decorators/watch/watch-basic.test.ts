@@ -136,7 +136,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public propA: string = "hello";
   
-  @JSONRename({newName:"trackA"}) private __backing_trackA: string = "world";
+  @JSONRename({newName:"trackA"}) public __backing_trackA: string = "world";
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   

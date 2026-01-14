@@ -85,11 +85,11 @@ function main() {}
   
   public propB: number = 1;
   
-  @JSONRename({newName:"trackB"}) private __backing_trackB: number = 2;
+  @JSONRename({newName:"trackB"}) public __backing_trackB: number = 2;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   
-  @JSONRename({newName:"newProp"}) private __backing_newProp?: boolean;
+  @JSONRename({newName:"newProp"}) public __backing_newProp?: boolean;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

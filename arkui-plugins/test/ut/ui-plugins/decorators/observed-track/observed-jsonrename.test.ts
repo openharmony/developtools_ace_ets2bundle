@@ -89,7 +89,7 @@ function main() {}
 
   public var1: number = 1;
 
-  @JSONRename({newName:"var2"}) private __backing_var2: number = 2;
+  @JSONRename({newName:"var2"}) public __backing_var2: number = 2;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
@@ -97,17 +97,17 @@ function main() {}
 
   @TestDecor() public var4: number = 4;
 
-  @JSONRename({value:"name5"}) private __backing_var5: number = 5;
+  @JSONRename({value:"name5"}) public __backing_var5: number = 5;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
   @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
 
-  @TestDecor() @JSONRename({newName:"var7"}) private __backing_var7: number = 7;
+  @TestDecor() @JSONRename({newName:"var7"}) public __backing_var7: number = 7;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 
-  @JSONRename({value:"name8"}) @TestDecor() private __backing_var8: number = 8;
+  @JSONRename({value:"name8"}) @TestDecor() public __backing_var8: number = 8;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
 

@@ -86,7 +86,7 @@ class C implements IObservedObject, ISubscribedWatches {
   
   public propC: number = 1;
   
-  @JSONRename({newName:"trackC"}) private __backing_trackC: number = 2;
+  @JSONRename({newName:"trackC"}) public __backing_trackC: number = 2;
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
   

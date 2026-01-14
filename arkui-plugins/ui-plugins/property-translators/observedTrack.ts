@@ -24,6 +24,7 @@ import {
     hasDecoratorName,
     removeDecorator,
     removeImplementProperty,
+    findPropertyAccessModifierFlags
 } from './utils';
 import { ClassScopeInfo } from '../struct-translators/utils';
 import { factory } from './factory';
@@ -68,7 +69,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
             arkts.factory.createIdentifier(newName),
             this.property.value,
             this.propertyType,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            findPropertyAccessModifierFlags(this.property),
             false
         );
         if (!this.property.value) {
