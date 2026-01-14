@@ -238,7 +238,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
                 arkts.factory.createStringLiteral(originalName),
             ])
         );
-
+ 
         return arkts.factory.createIfStatement(
             arkts.factory.createBinaryExpression(
                 backingValue,
