@@ -456,7 +456,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   };
   if (rollupShareObject?.projectConfig?.isSourceOrExternalCode) {
     // true: SourceCode; false: ExternalCode, External Code is oh_modules/sdk-api/sdk-components
-    servicesHost.isSourceOrExternalCode = (fileName: string): boolean => rollupShareObject?.projectConfig?.isSourceOrExternalCode(fileName);
+    servicesHost.isSourceOrExternalCode = rollupShareObject?.projectConfig?.isSourceOrExternalCode;
   }
   ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 
