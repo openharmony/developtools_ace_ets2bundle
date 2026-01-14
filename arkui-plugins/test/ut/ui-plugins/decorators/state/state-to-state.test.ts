@@ -112,7 +112,8 @@ class Per {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       Child._invoke(@Memo() ((instance: Child): void => {
@@ -165,7 +166,8 @@ class Per {
   @Memo() 
   public build() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions(this.childVar1.str, undefined).applyAttributesFinish();
+      instance.setTextOptions(this.childVar1.str, undefined);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }

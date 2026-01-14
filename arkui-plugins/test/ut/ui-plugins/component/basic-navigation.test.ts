@@ -104,15 +104,18 @@ function main() {}
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
         isUserCreateStack: true,
-      }).width(80).applyAttributesFinish();
+      }).width(80);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-        instance.setColumnOptions(undefined).applyAttributesFinish();
+        instance.setColumnOptions(undefined);
+        instance.applyAttributesFinish();
         return;
       }), @Memo() (() => {
         ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
-          instance.setButtonOptions("abc", undefined).width(100).height(300).applyAttributesFinish();
+          instance.setButtonOptions("abc", undefined).width(100).height(300);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       }));
@@ -161,15 +164,18 @@ function main() {}
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
         isUserCreateStack: false,
-      }).applyAttributesFinish();
+      });
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-        instance.setColumnOptions(undefined).applyAttributesFinish();
+        instance.setColumnOptions(undefined);
+        instance.applyAttributesFinish();
         return;
       }), @Memo() (() => {
         ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
-          instance.setButtonOptions("abc", undefined).applyAttributesFinish();
+          instance.setButtonOptions("abc", undefined);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       }));

@@ -141,7 +141,8 @@ function main() {}
       return;
     }), undefined, undefined, undefined, @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("a", undefined).applyAttributesFinish();
+        instance.setTextOptions("a", undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

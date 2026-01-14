@@ -149,39 +149,47 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
+        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined).applyAttributesFinish();
+        instance.setTextOptions(((((this.lastName) + (" "))) + (this.firstName)), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       DividerImpl(@Memo() ((instance: DividerAttribute): void => {
-        instance.setDividerOptions().applyAttributesFinish();
+        instance.setDividerOptions();
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
+        instance.setTextOptions(this.fullName, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.fullName, undefined).applyAttributesFinish();
+        instance.setTextOptions(this.fullName, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changed lastName", undefined).onClick(((e) => {
           this.lastName += "a";
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changed age", undefined).onClick(((e) => {
           (this.age++);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

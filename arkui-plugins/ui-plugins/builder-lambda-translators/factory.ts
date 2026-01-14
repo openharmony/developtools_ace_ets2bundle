@@ -277,17 +277,33 @@ export class factory {
      */
     static createStyleLambdaArgument(
         lambdaBody: arkts.Expression,
-        typeNode: arkts.TypeNode | undefined
+        typeNode: arkts.TypeNode | undefined,
+        shouldApplyAttribute: boolean = true
     ): arkts.ArrowFunctionExpression {
         const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, typeNode),
             undefined
         );
 
+        const applyAttributesFinish = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME),
+                    arkts.factory.createIdentifier(BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                []
+            )
+        );
+
         const returnStatement = arkts.factory.createReturnStatement();
         arkts.NodeCache.getInstance().collect(returnStatement);
         const body: arkts.BlockStatement = arkts.factory.createBlock([
-            arkts.factory.createExpressionStatement(lambdaBody),
+            ...(arkts.isIdentifier(lambdaBody) ? [] : [arkts.factory.createExpressionStatement(lambdaBody)]),
+            ...(shouldApplyAttribute ? [applyAttributesFinish]: []),
             returnStatement,
         ]);
 
@@ -312,14 +328,15 @@ export class factory {
     static createComponentStyleArgInBuilderLambda(
         lambdaBody: arkts.Expression | undefined,
         typeNode: arkts.TypeNode | undefined,
-        moduleName: string
+        moduleName: string,
+        isFromCommonMethod: boolean | undefined
     ): arkts.UndefinedLiteral | arkts.ArrowFunctionExpression {
         if (!lambdaBody) {
             return arkts.factory.createUndefinedLiteral();
         }
         collectComponentAttributeImport(typeNode, moduleName);
         const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
-        return this.createStyleLambdaArgument(lambdaBody, safeType);
+        return this.createStyleLambdaArgument(lambdaBody, safeType, isFromCommonMethod);
     }
 
     /**
@@ -581,8 +598,7 @@ export class factory {
             { isTrailingCall }
         );
         if (!!lambdaBody) {
-            const newLambdaBody = this.addApplyAttributesFinishToLambdaBodyEnd(lambdaBody);
-            const styleArg = this.createStyleLambdaArgument(newLambdaBody, returnType);
+            const styleArg = this.createStyleLambdaArgument(lambdaBody, returnType);
             args.unshift(styleArg);
         }
         return args;
@@ -648,9 +664,8 @@ export class factory {
             lambdaBodyInfo,
             factory.addArgsInBuilderLambdaCall(modifiedArgs, typeName, moduleName ?? '', leaf),
             typeArguments,
-            isFromCommonMethod
         );
-        const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!);
+        const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!, isFromCommonMethod);
         args.unshift(styleArg);
         return args;
     }
@@ -777,15 +792,14 @@ export class factory {
     static addOptionsArgsToLambdaBodyInStyleArg(
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         args: (arkts.AstNode | undefined)[],
-        typeArguments: readonly arkts.TypeNode[] | undefined,
-        shouldApplyAttribute: boolean = true
+        typeArguments: readonly arkts.TypeNode[] | undefined
     ): arkts.CallExpression | arkts.Identifier | undefined {
         const { lambdaBody, initCallPtr } = lambdaBodyInfo;
         if (!lambdaBody) {
             return undefined;
         }
         if (!initCallPtr || arkts.isIdentifier(lambdaBody)) {
-            return this.addApplyAttributesFinishToLambdaBodyEnd(lambdaBody, shouldApplyAttribute);
+            return lambdaBody;
         }
         const styleInternalsVisitor = new StyleInternalsVisitor();
         const newLambdaBody = styleInternalsVisitor
@@ -793,30 +807,7 @@ export class factory {
             .registerInitCallArgs(filterDefined(args))
             .registerInitCallTypeArguments(typeArguments)
             .visitor(lambdaBody) as arkts.CallExpression | arkts.Identifier;
-        return this.addApplyAttributesFinishToLambdaBodyEnd(newLambdaBody, shouldApplyAttribute);
-    }
-
-    /**
-     * add `.applyAttributesFinish()` at the end of style argument body.
-     */
-    static addApplyAttributesFinishToLambdaBodyEnd(
-        lambdaBody: arkts.CallExpression | arkts.Identifier,
-        shouldApplyAttribute: boolean = true
-    ): arkts.CallExpression | arkts.Identifier {
-        if (!shouldApplyAttribute) {
-            return lambdaBody;
-        }
-        return arkts.factory.createCallExpression(
-            arkts.factory.createMemberExpression(
-                lambdaBody,
-                arkts.factory.createIdentifier(BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
-            ),
-            undefined,
-            []
-        );
+        return newLambdaBody;
     }
 
     /**

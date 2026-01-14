@@ -129,7 +129,8 @@ class AB {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
@@ -137,7 +138,8 @@ class AB {
           return this.arr;
         }), @Memo() ((item: string) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions(item, undefined).applyAttributesFinish();
+            instance.setTextOptions(item, undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
@@ -148,7 +150,8 @@ class AB {
           return this.getArray();
         }), @Memo() ((item: Person) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions(item.name, undefined).applyAttributesFinish();
+            instance.setTextOptions(item.name, undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
@@ -159,7 +162,8 @@ class AB {
           return new AB().bar;
         }), @Memo() ((item: string) => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions(item, undefined).applyAttributesFinish();
+            instance.setTextOptions(item, undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }), undefined);
@@ -186,7 +190,8 @@ class AB {
               return new Array<string>("1", "2");
             }), @Memo() ((item: string) => {
               TextImpl(@Memo() ((instance: TextAttribute): void => {
-                instance.setTextOptions(item, undefined).applyAttributesFinish();
+                instance.setTextOptions(item, undefined);
+                instance.applyAttributesFinish();
                 return;
               }), undefined);
             }), undefined);

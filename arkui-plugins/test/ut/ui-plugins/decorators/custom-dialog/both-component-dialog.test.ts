@@ -132,11 +132,13 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("CustomDialog One", undefined).fontSize(30).height(100).applyAttributesFinish();
+        instance.setTextOptions("CustomDialog One", undefined).fontSize(30).height(100);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
@@ -144,7 +146,8 @@ function main() {}
           if (((this.aaController) != (undefined))) {
             this.aaController!.close();
           }
-        })).margin(20).applyAttributesFinish();
+        })).margin(20);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -203,7 +206,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
@@ -211,7 +215,8 @@ function main() {}
           if (((this.dialogController) != (null))) {
             this.dialogController!.open();
           }
-        })).backgroundColor(0x317aff).applyAttributesFinish();
+        })).backgroundColor(0x317aff);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

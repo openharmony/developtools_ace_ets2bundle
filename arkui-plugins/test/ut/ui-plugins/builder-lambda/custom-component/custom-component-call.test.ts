@@ -207,7 +207,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
@@ -215,11 +216,13 @@ function main() {}
         return;
       }), undefined, undefined, undefined, @Memo() (() => {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-          instance.setColumnOptions(undefined).applyAttributesFinish();
+          instance.setColumnOptions(undefined);
+          instance.applyAttributesFinish();
           return;
         }), @Memo() (() => {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("hello", undefined).applyAttributesFinish();
+            instance.setTextOptions("hello", undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }));
@@ -231,7 +234,8 @@ function main() {}
         return {};
       }), undefined, undefined, @Memo() (() => {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-          instance.setColumnOptions(undefined).applyAttributesFinish();
+          instance.setColumnOptions(undefined);
+          instance.applyAttributesFinish();
           return;
         }), @Memo() (() => {}));
       }));

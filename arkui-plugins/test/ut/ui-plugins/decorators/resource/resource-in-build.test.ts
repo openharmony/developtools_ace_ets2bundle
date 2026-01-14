@@ -154,29 +154,35 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(_r(16777216, 10003, "com.example.mock", "entry"), undefined).applyAttributesFinish();
+        instance.setTextOptions(_r(16777216, 10003, "com.example.mock", "entry"), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ImageImpl(@Memo() ((instance: ImageAttribute): void => {
-        instance.setImageOptions(_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined).applyAttributesFinish();
+        instance.setImageOptions(_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: _r(16777220, 10003, "com.example.mock", "entry"),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }));
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str1), undefined).applyAttributesFinish();
+        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str1), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str2), undefined).applyAttributesFinish();
+        instance.setTextOptions(_r(-1, -1, "com.example.mock", "entry", this.str2), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       SelectImpl(@Memo() ((instance: SelectAttribute): void => {
@@ -192,14 +198,16 @@ function main() {}
         }, {
           value: "ddd",
           icon: _r(16777223, 20000, "com.example.mock", "entry"),
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ImageImpl(@Memo() ((instance: ImageAttribute): void => {
         instance.setImageOptions(_r(16777217, 20000, "com.example.mock", "entry"), undefined).margin(({
           top: _r(16777222, 10002, "com.example.mock", "entry"),
           bottom: _r(16777222, 10002, "com.example.mock", "entry"),
-        } as Margin)).applyAttributesFinish();
+        } as Margin));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ImageAnimatorImpl(@Memo() ((instance: ImageAnimatorAttribute): void => {
@@ -207,7 +215,8 @@ function main() {}
           src: _r(16777217, 20000, "com.example.mock", "entry"),
         }, {
           src: _r(16777225, 20000, "com.example.mock", "entry"),
-        }]).applyAttributesFinish();
+        }]);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
