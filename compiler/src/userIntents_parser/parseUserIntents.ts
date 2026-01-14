@@ -1768,6 +1768,8 @@ class ParseIntent {
     }
     this.verifyInheritanceChain();
     this.matchEntities();
+    // Sort the extractInsightIntents array
+    this.intentData.sort((a, b) => a.decoratorFile.localeCompare(b.decoratorFile));
     let writeJsonData: object = {};
     if (fs.existsSync(cacheSourceMapPath)) {
       const originIntents: string = fs.readFileSync(cacheSourceMapPath, 'utf8');
