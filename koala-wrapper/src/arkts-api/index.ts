@@ -77,6 +77,8 @@ export * from '../generated/peers/TSQualifiedName';
 export * from '../generated/peers/UnaryExpression';
 export * from '../generated/peers/TSEnumDeclaration';
 export * from '../generated/peers/TSEnumMember';
+export * from '../generated/peers/UpdateExpression';
+export * from '../generated/peers/TemplateLiteral';
 
 export * from './types';
 export * from './utilities/private';
