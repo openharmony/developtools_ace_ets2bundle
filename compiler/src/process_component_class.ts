@@ -746,9 +746,10 @@ function isNeedGetRawObject(node: ts.Node): boolean {
 }
 
 function isEnableV2CompatibilityOrMakeV1Observed(node: ts.Node): boolean {
+  const notNeedGetRawObjectFunctions: string[] = ['enableV2Compatibility', 'makeV1Observed', 'canBeObserved'];
   if (node.parent && ts.isCallExpression(node.parent) && ts.isPropertyAccessExpression(node.parent.expression) &&
     ts.isIdentifier(node.parent.expression.name) &&
-    ['enableV2Compatibility', 'makeV1Observed'].includes(node.parent.expression.name.escapedText.toString())) {
+    notNeedGetRawObjectFunctions.includes(node.parent.expression.name.escapedText.toString())) {
     return true;
   } else {
     return false;
