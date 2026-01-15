@@ -453,11 +453,9 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
       return languageVersion?.languageVersion === ARKTS_1_2;
     },
-  };
-  if (rollupShareObject?.projectConfig?.isSourceOrExternalCode) {
     // true: SourceCode; false: ExternalCode, External Code is oh_modules/sdk-api/sdk-components
-    servicesHost.isSourceOrExternalCode = rollupShareObject?.projectConfig?.isSourceOrExternalCode;
-  }
+    isSourceOrExternalCode: rollupShareObject?.projectConfig?.isSourceOrExternalCode,
+  };
   ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 
   if (process.env.watchMode === 'true') {
