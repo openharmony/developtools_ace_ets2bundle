@@ -233,6 +233,10 @@ export function etsTransform() {
       CreateProgramMoment.resetDeleteFiles();
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
+        const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
+        if (allowGC) {
+          global.gc();
+        }
       }
     },
     afterBuildEnd() {
