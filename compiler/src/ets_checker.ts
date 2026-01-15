@@ -444,7 +444,9 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     useDeclarationFileSignature: rollupShareObject?.projectConfig?.useDeclarationFileSignature,
     clearFileCache: function() {
       fileCache.clear();
-    }
+    },
+    // true: SourceCode; false: ExternalCode, External Code is oh_modules/sdk-api/sdk-components
+    isSourceOrExternalCode: rollupShareObject?.projectConfig?.isSourceOrExternalCode,
   };
   ts.PerformanceDotting?.setPerformanceSwitch(projectConfig?.perf);
 
