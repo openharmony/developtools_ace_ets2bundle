@@ -375,7 +375,7 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', 'string', [dumpAnnotation('__Link_intrinsic')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)', [dumpAnnotation('Watch', { value: 'linkOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkvar', '(boolean | undefined)')}
 
@@ -387,7 +387,7 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagepropvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)', [dumpAnnotation('Watch', { value: 'objectLinkOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
 

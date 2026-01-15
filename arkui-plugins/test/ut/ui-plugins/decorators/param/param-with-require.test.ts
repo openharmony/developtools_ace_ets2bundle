@@ -156,7 +156,7 @@ class Info {
 
 @ComponentV2() export interface __Options_MiddleComponent {
   ${ignoreNewLines(`
-  info?: Info;
+  info: Info;
   @Require() @Param() __backing_info?: Info;
   __options_has_info?: boolean;
   `)}
@@ -165,7 +165,7 @@ class Info {
 
 @ComponentV2() export interface __Options_SubComponent {
   ${ignoreNewLines(`
-  region?: Region;
+  region: Region;
   @Require() @Param() __backing_region?: Region;
   __options_has_region?: boolean;
   `)}
@@ -435,14 +435,14 @@ class Info {
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', '(Region | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)', [dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
   
