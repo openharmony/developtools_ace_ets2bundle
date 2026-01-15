@@ -333,7 +333,7 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', '(DateClass | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', 'DateClass', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_data', '(IObjectLinkDecoratedVariable<DateClass> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_data', '(boolean | undefined)')}
   
