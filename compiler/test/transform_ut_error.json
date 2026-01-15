@@ -1103,6 +1103,53 @@
             "code": "10905366"
         }
     ],
+    "syncMonitorDuplicateDecorators": [
+        {
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "type": "ERROR",
+            "code": "10905325"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        }
+    ],
     "vaildateDecorator": [
         {
             "message": "The struct 'VaildateDecoratorIndex' use invalid decorator.",
@@ -1415,6 +1462,10 @@
             "message": "The '@Monitor' can decorate only member 'method' within a 'class' decorated with '@ObservedV2'.",
             "type": "ERROR",
             "code": "10905343"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
         }
     ],
     "v2DecoratorInComponent": [
@@ -1784,6 +1835,10 @@
             "message": "'@Monitor' can only decorate method.",
             "type": "ERROR",
             "code": "10905115"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
         }
     ],
     "param_require_once_check": [
@@ -1950,6 +2005,10 @@
             "message": "The member property or method can not be decorated by multiple built-in decorators.",
             "type": "ERROR",
             "code": "10905121"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
         }
     ],
     "validateDuplicateMethod": [
@@ -1986,6 +2045,14 @@
             "message": "Duplicate '@Computed' decorators for method are not allowed.",
             "type": "ERROR",
             "code": "10905119"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
         }
     ],
     "validateForEachParser": {

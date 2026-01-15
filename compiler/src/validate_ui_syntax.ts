@@ -911,7 +911,7 @@ function isMemberForComponentV2(decoratorName: string, isComponentV2: boolean): 
 const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
 const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, TYPE,
   constantDefine.MONITOR, constantDefine.COMPUTED, constantDefine.SYNC_MONITOR];
-const monitorDecorators: string[] = [constantDefine.SYNC_MONITOR];
+const monitorDecorators: string[] = [constantDefine.SYNC_MONITOR, constantDefine.MONITOR];
 
 function validTypeCallback(node: ts.Identifier): boolean {
   let isSdkPath: boolean = true;
@@ -964,7 +964,8 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
   if (monitorDecorators.includes(decoratorName) && isObservedClass && classNode &&
   ts.isCallExpression(node.parent)) {
     const parentCallExpression: ts.CallExpression = node.parent;
-    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, classNode);
+    const isMonitor: boolean = decoratorName === constantDefine.MONITOR;
+    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, classNode, isMonitor);
   }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
@@ -975,16 +976,112 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
 }
 
 function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceFileNode: ts.SourceFile,
-  log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration, isMonitor: boolean): void {
   if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
     return;
   }
   parentCallExpression.arguments.forEach(monitorArgument => {
-    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log);
-    if (ts.isStringLiteral(monitorArgument)) {
-      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log, isMonitor);
+    if (!ts.isStringLiteral(monitorArgument)) {
+      return;
     }
+    if (isMonitor) {
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+      return;
+    }
+    checkSyncMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
   });
+}
+
+function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  const monitorArg: argWrapper = { value: monitorArgument.text };
+  if (monitorArg.value.startsWith('.')) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const monitorArgs: string[] = monitorArg.value.trim().split('.');
+  if (!monitorArgs.length) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  if (ts.isClassDeclaration(classNode)) {
+    checkMonitorDecoratorArgInClass(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  } else {
+    checkMonitorDecoratorArgInStruct(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  }
+  return;
+}
+
+function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: checker.getTypeAtLocation(classNode)
+  };
+  for (let i = 0; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, true)) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, true);
+  }
+  statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: undefined
+  };
+  const isFound: boolean = findPropertyInStruct(
+    checker, firstArg, status, structNode
+  );
+  if (!isFound) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  for (let i = 1; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, true)) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, true);
+  }
+  statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
 }
 
 interface argWrapper {
@@ -1003,9 +1100,10 @@ interface MonitorStatus {
   currentPropertyType: ts.Type | undefined;
   currentClassNode?: ts.ClassDeclaration | ts.StructDeclaration | undefined;
   visitedTypes?: Set<ts.Type>
+  currentPropertyTypeNode?: ts.TypeNode | undefined;
 }
 
-function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
+function checkSyncMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
   sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
   const monitorArg: argWrapper = { value: monitorArgument.text };
   const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
@@ -1022,16 +1120,16 @@ function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
     return;
   }
   if (ts.isClassDeclaration(classNode)) {
-    checkMonitorDecoratorArgInClass(monitorArgs, classNode,
+    checkSyncMonitorDecoratorArgInClass(monitorArgs, classNode,
       monitorArgument, log, sourceFileNode);
   } else {
-    checkMonitorDecoratorArgInStruct(monitorArgs, classNode,
+    checkSyncMonitorDecoratorArgInStruct(monitorArgs, classNode,
       monitorArgument, log, sourceFileNode);
   }
   return;
 }
 
-function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
+function checkSyncMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
   monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
   const argsLen: number = monitorArgs.length;
   const firstArg: string = monitorArgs[0];
@@ -1053,16 +1151,16 @@ function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.Cl
       statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
       return;
     }
-    if (!preCheckSingleMonitorArgContent(status, checker)) {
+    if (!preCheckSingleMonitorArgContent(status, checker, false)) {
       statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
       return;
     }
-    checkSingleMonitorArgContent(monitorArgs[i], status, checker);
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, false);
   }
   statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
 }
 
-function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
+function checkSyncMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
   monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
   const argsLen: number = monitorArgs.length;
   const firstArg: string = monitorArgs[0];
@@ -1092,16 +1190,16 @@ function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.
       statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
       return;
     }
-    if (!preCheckSingleMonitorArgContent(status, checker)) {
+    if (!preCheckSingleMonitorArgContent(status, checker, false)) {
       statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
       return;
     }
-    checkSingleMonitorArgContent(monitorArgs[i], status, checker);
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, false);
   }
   statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
 }
 
-function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.TypeChecker): boolean {
+function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.TypeChecker, isMonitor: boolean): boolean {
   if (status.visitedTypes) {
     status.visitedTypes.clear();
   }
@@ -1114,7 +1212,7 @@ function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.Type
     return false;
   }
   if (checkBasicType(originType)) {
-    status.currentStatus = MonitorArgsStatus.ERROR;
+    status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
     return false;
   }
   status.currentPropertyType = originType;
@@ -1128,7 +1226,8 @@ const MonitorBasicType = {
   bigint: ts.TypeFlags.BigInt,
   null: ts.TypeFlags.Null,
   undefined: ts.TypeFlags.Undefined,
-  void: ts.TypeFlags.Void
+  void: ts.TypeFlags.Void,
+  enum: ts.TypeFlags.Enum
 };
 
 function checkBasicType(
@@ -1139,10 +1238,11 @@ function checkBasicType(
   return (typeFlags & allBasicFlags) !== 0;
 }
 
-function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, checker: ts.TypeChecker): boolean {
+function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus,
+  checker: ts.TypeChecker, isMonitor: boolean): boolean {
   if (singleArg === '') {
     status.needCheck = false;
-    status.currentStatus = MonitorArgsStatus.ERROR;
+    status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
     return false;
   }
   const currentPropertyType: ts.Type = status.currentPropertyType;
@@ -1156,7 +1256,7 @@ function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, 
   status.visitedTypes.add(currentPropertyType);
   status.currentPropertyType = undefined;
   if (hasNumberPattern(singleArg)) {
-    status.needCheck = false;
+    processNumberPattern(status, isMonitor, singleArg, checker);
     return false;
   }
   const symbol = currentPropertyType?.getSymbol();
@@ -1169,17 +1269,16 @@ function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus, 
     status.needCheck = false;
     return false;
   }
-  let propertyName: string = '';
   let isFound: boolean = findPropertyInClass(checker, singleArg, status, classNode);
   if (isFound) {
     return true;
   }
   isFound = findPropertyInBaseTypes(checker, currentPropertyType as ts.InterfaceType,
-    status, singleArg);
+    status, singleArg, isMonitor);
   if (isFound) {
     return true;
   }
-  status.currentStatus = MonitorArgsStatus.ERROR;
+  status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
   status.needCheck = false;
   return false;
 }
@@ -1204,7 +1303,7 @@ function findPropertyInStruct(
         return true;
       }
     } else if (ts.isGetAccessor(propertyMember) &&
-      ts.isidentifier(propertyMember.name)) {
+      ts.isIdentifier(propertyMember.name)) {
       const findInGetAccessor: boolean = findPropertyInDecl(
         propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
       );
@@ -1227,7 +1326,7 @@ function findPropertyInClass(
   let isFound: boolean = false;
   classNode.members.some(propertyMember => {
     if (ts.isPropertyDeclaration(propertyMember) &&
-      ts.isidentifier(propertyMember.name)) {
+      ts.isIdentifier(propertyMember.name)) {
       const findInPropertyDecl: boolean = findPropertyInDecl(
         propertyMember, checker, singleArg, status, [constantDefine.TRACE_DECORATOR]
       );
@@ -1236,7 +1335,7 @@ function findPropertyInClass(
         return true;
       }
     } else if (ts.isGetAccessor(propertyMember) &&
-      ts.isidentifier(propertyMember.name)) {
+      ts.isIdentifier(propertyMember.name)) {
       const findInGetAccessor: boolean = findPropertyInDecl(
         propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
       );
@@ -1265,6 +1364,7 @@ function findPropertyInDecl(
     });
     const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
     status.currentPropertyType = propertyType;
+    status.currentPropertyTypeNode = propertyMember?.type;
     if (!hasTarget) {
       status.currentStatus = MonitorArgsStatus.WARN;
     }
@@ -1277,12 +1377,14 @@ function findPropertyInBaseTypes(
   checker: ts.TypeChecker,
   currentPropertyType: ts.InterfaceType,
   status: MonitorStatus,
-  singleArg: string
+  singleArg: string,
+  isMonitor: boolean
 ): boolean {
   const baseTypes = checker.getBaseTypes(currentPropertyType) || [];
   for (const baseType of baseTypes) {
     status.currentPropertyType = baseType;
-    const foundInBaseTypes: boolean = checkSingleMonitorArgContent(singleArg, status, checker);
+    const foundInBaseTypes: boolean = checkSingleMonitorArgContent(singleArg, status,
+      checker, isMonitor);
     if (foundInBaseTypes) {
       return true;
     }
@@ -1337,6 +1439,14 @@ function statusDecideSyncMonitorArgExist(status: MonitorArgsStatus, monitorArgum
   validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, isError);
 }
 
+function statusDecideMonitorArgExist(status: MonitorArgsStatus, monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  if(status === MonitorArgsStatus.PASS) {
+    return;
+  }
+  validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+}
+
 function validateSyncMonitorArgExist(monitorArgument: ts.StringLiteral,
   log: LogInfo[], sourceFileNode: ts.SourceFile, isError: boolean): void {
   const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
@@ -1345,9 +1455,62 @@ function validateSyncMonitorArgExist(monitorArgument: ts.StringLiteral,
     addLog(LogType.WARN, variableExistMessage, monitorArgument.pos, log, sourceFileNode);
 }
 
+function validateMonitorArgExist(monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const variableExistMessage: string = `The '@Monitor' decorator needs to monitor the state variables that exist.`;
+  addLog(LogType.WARN, variableExistMessage, monitorArgument.pos, log, sourceFileNode);
+}
+
 function hasNumberPattern(singleArg: string): boolean {
   const regx: RegExp = /^\d+$/g;
   return regx.test(singleArg);
+}
+
+function processNumberPattern(
+  status: MonitorStatus,
+  isMonitor: boolean,
+  singleArg: string,
+  checker: ts.TypeChecker
+): void {
+  if (!isMonitor) {
+    status.needCheck = false;
+    return;
+  }
+  if (!status.currentPropertyTypeNode || !checkArrayType(status, checker)) {
+    status.needCheck = false;
+    return;
+  }
+  const currentIndex: number = Number(singleArg);
+  if (isNaN(currentIndex)) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+    return;
+  }
+}
+
+function checkArrayType(
+  status: MonitorStatus,
+  checker: ts.TypeChecker
+): boolean {
+  const currentTypeNode: ts.TypeNode | undefined = status.currentPropertyTypeNode;
+  if (!currentTypeNode) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+  }
+  if (ts.isArrayTypeNode(currentTypeNode)) {
+    status.currentPropertyTypeNode = currentTypeNode.elementType;
+    status.currentPropertyType = checker.getTypeFromTypeNode(status.currentPropertyTypeNode);
+    return true;
+  }
+  if (ts.isTypeReferenceNode(currentTypeNode) && ts.isIdentifier(currentTypeNode.typeName) &&
+    currentTypeNode.typeName.escapedText.toString() === 'Array' && currentTypeNode.typeArguments) {
+    status.currentPropertyTypeNode = currentTypeNode.typeArguments[0];
+    status.currentPropertyType = checker.getTypeFromTypeNode(status.currentPropertyTypeNode);
+    return true;
+  }
+  status.currentStatus = MonitorArgsStatus.WARN;
+  status.needCheck = false;
+  return false;
 }
 
 function checkWildCard(monitorArgument: ts.StringLiteral,
@@ -1376,10 +1539,13 @@ function checkWildCard(monitorArgument: ts.StringLiteral,
 }
 
 function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
-  sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
-  const typeMessage: string = `Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.`;
+  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean): void {
+  const decoratorName: string = isMonitor ? constantDefine.MONITOR : constantDefine.SYNC_MONITOR;
+  const typeMessage: string = `Only constant expressions are supported as parameters in '@${decoratorName}'. Variables are not allowed.`;
   if (!ts.isStringLiteral(monitorArgument)) {
-    addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+    isMonitor ?
+      addLog(LogType.WARN, typeMessage, monitorArgument.pos, log, sourceFileNode) :
+      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
     return;
   }
 }
@@ -1567,7 +1733,8 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
       if (monitorDecorators.includes(decoratorName) && node.parent && structNode &&
         ts.isCallExpression(node.parent)) {
         const parentCallExpression: ts.CallExpression = node.parent;
-        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, structNode);
+        const isMonitor: boolean = decoratorName === constantDefine.MONITOR;
+        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, structNode, isMonitor);
       }
     } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
