@@ -61,8 +61,7 @@ import {
   stateInitialization,
   provideInitialization,
   privateCollection,
-  regularStaticCollection,
-  updateStructInfoWithDecorators
+  regularStaticCollection
 } from './validate_ui_syntax';
 import {
   CurrentProcessFile,
@@ -948,7 +947,6 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
       ...componentSet.provides, ...componentSet.objectLinks
     );
     asComponentNameStructInfo.linkDecoratorsV1.push(...componentSet.links);
-    updateStructInfoWithDecorators(asComponentNameStructInfo, componentSet);
     return;
   }
   const nameStructInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(name);
@@ -957,7 +955,6 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
     ...componentSet.provides, ...componentSet.objectLinks
   );
   nameStructInfo.linkDecoratorsV1.push(...componentSet.links);
-  updateStructInfoWithDecorators(nameStructInfo, componentSet);
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
