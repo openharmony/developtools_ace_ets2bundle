@@ -242,22 +242,22 @@ function main() {}
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', '(A | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_MyStateSample2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '((A | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '((A | B) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '(A | B)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar2', '(IObjectLinkDecoratedVariable<(A | B)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '((A | B | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '(A | B | null)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar3', '(IObjectLinkDecoratedVariable<(A | B | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar3', '(boolean | undefined)')}
   

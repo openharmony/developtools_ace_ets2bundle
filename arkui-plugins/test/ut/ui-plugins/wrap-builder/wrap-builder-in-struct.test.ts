@@ -1017,15 +1017,15 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderPropRef3', '(IPropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderPropRef3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('__Link_intrinsic'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('__Link_intrinsic')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLink', '(LinkSourceType<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
+  ${dumpGetterSetter(GetSetDumper.GET, 'builderLink', '@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)', [dumpAnnotation('__Link_intrinsic'), dumpAnnotation('Memo')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.SET, 'builderLink', '@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)', [dumpAnnotation('__Link_intrinsic')], [dumpAnnotation('Memo')], false)}
+  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLink', '(LinkSourceType<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [])}
   ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderLink', '(LinkSourceType<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink2', 'WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>', [dumpAnnotation('__Link_intrinsic')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLink2', '(LinkSourceType<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink3', 'Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>', [dumpAnnotation('__Link_intrinsic')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLink3', '(LinkSourceType<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink3', '(boolean | undefined)')}
   
