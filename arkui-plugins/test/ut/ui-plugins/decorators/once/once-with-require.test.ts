@@ -112,7 +112,7 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
   onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
   __options_has_onceParamNum?: boolean;
-  onceParamInfo?: Info;
+  onceParamInfo: Info;
   @Param() @Once() @Require() __backing_onceParamInfo?: Info;
   __options_has_onceParamInfo?: boolean;
   `)}
@@ -379,7 +379,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', 'Info', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamInfo', '(boolean | undefined)')}
   

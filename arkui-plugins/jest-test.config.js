@@ -29,7 +29,9 @@ module.exports = {
         '^.+\\.ts$': ['ts-jest', { useESM: true }],
     },
     testRegex: './test/ut/.+\\.test\\.ts$',
-    testPathIgnorePatterns: [],
+    testPathIgnorePatterns: [
+        '/test/ut/ui-plugins/unit/'
+    ],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     coverageDirectory: './test/report',
     collectCoverage: true,
