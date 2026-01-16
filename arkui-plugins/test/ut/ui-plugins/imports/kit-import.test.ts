@@ -222,15 +222,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("button", undefined).onClick(((e: ClickEvent) => {})).applyAttributesFinish();
+        instance.setButtonOptions("button", undefined).onClick(((e: ClickEvent) => {}));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("text", undefined).fontSize(20).applyAttributesFinish();
+        instance.setTextOptions("text", undefined).fontSize(20);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

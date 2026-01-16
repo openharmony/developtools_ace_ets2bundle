@@ -99,7 +99,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
@@ -115,7 +116,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         }).fontSize(20).animationStop({
           duration: 2000,
           curve: Curve.Ease,
-        }).width("100%").applyAttributesFinish();
+        }).width("100%");
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

@@ -192,7 +192,8 @@ function main() {}
       instance.setNavDestinationOptions({
         moduleName: "entry",
         pagePath: "mock/component/mix-navigation-nav-destination",
-      }).applyAttributesFinish();
+      });
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
@@ -200,7 +201,8 @@ function main() {}
           moduleName: "entry",
           pagePath: "mock/component/mix-navigation-nav-destination",
           isUserCreateStack: true,
-        }).hideBackButton(true).hideTitleBar(true, true).navDestination(this.SubNavDestination).navBarWidth(this.primaryWidth).applyAttributesFinish();
+        }).hideBackButton(true).hideTitleBar(true, true).navDestination(this.SubNavDestination).navBarWidth(this.primaryWidth);
+        instance.applyAttributesFinish();
         return;
       }), @Memo() (() => {
         NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
@@ -208,7 +210,8 @@ function main() {}
             moduleName: "entry",
             pagePath: "mock/component/mix-navigation-nav-destination",
             isUserCreateStack: true,
-          }).hideNavBar(true).mode(NavigationMode.Stack).navDestination(this.SubNavDestination).hideTitleBar(true, true).hideToolBar(true, true).hideBackButton(true).applyAttributesFinish();
+          }).hideNavBar(true).mode(NavigationMode.Stack).navDestination(this.SubNavDestination).hideTitleBar(true, true).hideToolBar(true, true).hideBackButton(true);
+          instance.applyAttributesFinish();
           return;
         }), @Memo() (() => {}));
       }));

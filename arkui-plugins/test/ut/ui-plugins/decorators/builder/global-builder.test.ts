@@ -69,7 +69,8 @@ function main() {}
 @Memo() 
 function showTextBuilder() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions("Hello World", undefined).applyAttributesFinish();
+    instance.setTextOptions("Hello World", undefined);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -77,11 +78,13 @@ function showTextBuilder() {
 @Memo() 
 function overBuilder(@MemoSkip() params: Tmp) {
   RowImpl(@Memo() ((instance: RowAttribute): void => {
-    instance.setRowOptions(undefined).applyAttributesFinish();
+    instance.setRowOptions(undefined);
+    instance.applyAttributesFinish();
     return;
   }), @Memo() (() => {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions((("UseStateVarByReference: ") + (params.paramA1)), undefined).applyAttributesFinish();
+      instance.setTextOptions((("UseStateVarByReference: ") + (params.paramA1)), undefined);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }));
@@ -90,7 +93,8 @@ function overBuilder(@MemoSkip() params: Tmp) {
 @Memo() 
 function globalBuilder(@MemoSkip() param: Person) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions("globalBuilder", undefined).applyAttributesFinish();
+    instance.setTextOptions("globalBuilder", undefined);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -130,7 +134,8 @@ interface Person {
   @Memo() 
   public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
-      instance.setRowOptions(undefined).applyAttributesFinish();
+      instance.setRowOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       showTextBuilder();

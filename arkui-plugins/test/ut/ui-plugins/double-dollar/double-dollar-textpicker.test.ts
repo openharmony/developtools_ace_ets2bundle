@@ -154,7 +154,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).margin(10).applyAttributesFinish();
+      instance.setColumnOptions(undefined).margin(10);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
@@ -162,7 +163,8 @@ function main() {}
           text: makeBindable(this.tt, ((value) => {
             this.tt = value;
           })),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         return;
       }));
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
@@ -174,7 +176,8 @@ function main() {}
           value: makeBindable(this.fruits[0], ((value) => {
             this.fruits[0] = value;
           })),
-        } as TextPickerOptions)).applyAttributesFinish();
+        } as TextPickerOptions));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
@@ -186,7 +189,8 @@ function main() {}
           value: makeBindable(this.fruits, ((value) => {
             this.fruits = value;
           })),
-        } as TextPickerOptions)).applyAttributesFinish();
+        } as TextPickerOptions));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
@@ -198,7 +202,8 @@ function main() {}
           value: makeBindable(this.fruits[this.index], ((value) => {
             this.fruits[this.index] = value;
           })),
-        } as TextPickerOptions)).applyAttributesFinish();
+        } as TextPickerOptions));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

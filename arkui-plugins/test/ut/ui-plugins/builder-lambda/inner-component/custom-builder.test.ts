@@ -111,7 +111,8 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC).applyAttributesFinish();
+      __memo_parameter_instance.value.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -137,7 +138,8 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setTextOptions("Foot", undefined).fontSize(16).backgroundColor(0xAABBCC).applyAttributesFinish();
+      __memo_parameter_instance.value.setTextOptions("Foot", undefined).fontSize(16).backgroundColor(0xAABBCC);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -163,7 +165,8 @@ function main() {}
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -206,7 +209,8 @@ function main() {}
               return;
             }
           }) as CustomBuilder),
-        }).applyAttributesFinish();
+        });
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;

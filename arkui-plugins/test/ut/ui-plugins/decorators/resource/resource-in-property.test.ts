@@ -131,19 +131,23 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.str, undefined).applyAttributesFinish();
+        instance.setTextOptions(this.str, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(i, undefined).applyAttributesFinish();
+        instance.setTextOptions(i, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ImageImpl(@Memo() ((instance: ImageAttribute): void => {
-        instance.setImageOptions(this.icon, undefined).applyAttributesFinish();
+        instance.setImageOptions(this.icon, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

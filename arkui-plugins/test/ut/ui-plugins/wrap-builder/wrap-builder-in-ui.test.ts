@@ -61,7 +61,8 @@ function main() {}
 @Memo() 
 function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    instance.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -69,7 +70,8 @@ function myBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
 @Memo() 
 function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    instance.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -107,7 +109,8 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       this.testBuilder();
@@ -160,7 +163,8 @@ function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -186,7 +190,8 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -272,7 +277,8 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;

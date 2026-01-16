@@ -196,7 +196,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       Child._invoke(@Memo() ((instance: Child): void => {
@@ -206,19 +207,22 @@ function main() {}
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("add new user", undefined).onClick(((e) => {
           this.users.push(new User("Molly", 18));
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("age++", undefined).onClick(((e) => {
           (this.users[0].age++);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("change name", undefined).onClick(((e) => {
           this.users[0].name = "Shelly";
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -264,7 +268,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ForEachImpl<User>(@Memo() ((instance: ForEachAttribute): void => {
@@ -272,19 +277,23 @@ function main() {}
           return this.users;
         }), @Memo() ((item: User) => {
           ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-            instance.setColumnOptions(undefined).applyAttributesFinish();
+            instance.setColumnOptions(undefined);
+            instance.applyAttributesFinish();
             return;
           }), @Memo() (() => {
             TextImpl(@Memo() ((instance: TextAttribute): void => {
-              instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30).applyAttributesFinish();
+              instance.setTextOptions(\`name: \${item.name}\`, undefined).fontSize(30);
+              instance.applyAttributesFinish();
               return;
             }), undefined);
             TextImpl(@Memo() ((instance: TextAttribute): void => {
-              instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30).applyAttributesFinish();
+              instance.setTextOptions(\`age: \${item.age}\`, undefined).fontSize(30);
+              instance.applyAttributesFinish();
               return;
             }), undefined);
             DividerImpl(@Memo() ((instance: DividerAttribute): void => {
-              instance.setDividerOptions().applyAttributesFinish();
+              instance.setDividerOptions();
+              instance.applyAttributesFinish();
               return;
             }), undefined);
           }));
