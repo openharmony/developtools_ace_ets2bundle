@@ -273,21 +273,25 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Child onceParamNum: \${this.onceParamNum}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`Child onceParamNum: \${this.onceParamNum}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`Child onceParamInfo: \${this.onceParamInfo.name}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("changeOnceParamNum", undefined).onClick(((e) => {
           (this.onceParamNum++);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -345,15 +349,18 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Parent localNum: \${this.localNum}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`Parent localNum: \${this.localNum}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`Parent localInfo: \${this.localInfo.name}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       Child._invoke(@Memo() ((instance: Child): void => {

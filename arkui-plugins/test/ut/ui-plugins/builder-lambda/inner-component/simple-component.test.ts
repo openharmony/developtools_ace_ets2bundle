@@ -48,7 +48,8 @@ class MyStateSample {
     @Memo() 
     public build() {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-            instance.setColumnOptions(undefined).applyAttributesFinish();
+            instance.setColumnOptions(undefined);
+            instance.applyAttributesFinish();
             return;
         }), @Memo() (() => {}));
     }
@@ -82,7 +83,8 @@ class MyStateSample {
                 __memo_scope.cached;
                 return;
             }
-            __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+            __memo_parameter_instance.value.setColumnOptions(undefined);
+            instance.applyAttributesFinish();
             {
                 __memo_scope.recache();
                 return;

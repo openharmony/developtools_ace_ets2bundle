@@ -101,15 +101,18 @@ function style22(this: TextAttribute): TextAttribute {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        style22(cardStyle(instance.setTextOptions("hello world", undefined).height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900).applyAttributesFinish();
+        style22(cardStyle(instance.setTextOptions("hello world", undefined).height(200).fontColor("#000000"), 600, "#eeeeee").fontSize(60).fontWeight(400)).width(900);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        cardStyle(instance.setTextOptions("hello world", undefined), 600, "#eeeeee").applyAttributesFinish();
+        cardStyle(instance.setTextOptions("hello world", undefined), 600, "#eeeeee");
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

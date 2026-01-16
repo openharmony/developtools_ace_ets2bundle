@@ -71,7 +71,8 @@ function main() {}
 function MyBuilder(): void {
   if (true) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions("within Builder function", undefined).applyAttributesFinish();
+      instance.setTextOptions("within Builder function", undefined);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }
@@ -82,7 +83,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   let param: (()=> void) = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : (() => {
     if (true) {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("within Builder parameter", undefined).applyAttributesFinish();
+        instance.setTextOptions("within Builder parameter", undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }
@@ -113,7 +115,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   public myBuilderMethod() {
     if (true) {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("within Builder method", undefined).applyAttributesFinish();
+        instance.setTextOptions("within Builder method", undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }
@@ -122,13 +125,15 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       wBuilder.builder(@Builder() (() => {
         if (true) {
           TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("with Builder lambda", undefined).applyAttributesFinish();
+            instance.setTextOptions("with Builder lambda", undefined);
+            instance.applyAttributesFinish();
             return;
           }), undefined);
         }
@@ -141,7 +146,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
           myBuilderParam: @Memo() (() => {
             if (true) {
               TextImpl(@Memo() ((instance: TextAttribute): void => {
-                instance.setTextOptions("within Builder property", undefined).applyAttributesFinish();
+                instance.setTextOptions("within Builder property", undefined);
+                instance.applyAttributesFinish();
                 return;
               }), undefined);
             }
@@ -163,7 +169,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
     (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? ((() => {
       if (true) {
         TextImpl(@Memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions("within BuilderParam property", undefined).applyAttributesFinish();
+          instance.setTextOptions("within BuilderParam property", undefined);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       }
@@ -198,7 +205,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   public build() {
     if (true) {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("within struct build", undefined).applyAttributesFinish();
+        instance.setTextOptions("within struct build", undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }
@@ -267,7 +275,8 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setTextOptions("within Builder function", undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setTextOptions("within Builder function", undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -296,7 +305,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setTextOptions("within Builder parameter", undefined).applyAttributesFinish();
+        __memo_parameter_instance.value.setTextOptions("within Builder parameter", undefined);
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -354,7 +364,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setTextOptions("within Builder method", undefined).applyAttributesFinish();
+        __memo_parameter_instance.value.setTextOptions("within Builder method", undefined);
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -381,7 +392,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -406,7 +418,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
               __memo_scope.cached;
               return;
             }
-            __memo_parameter_instance.value.setTextOptions("with Builder lambda", undefined).applyAttributesFinish();
+            __memo_parameter_instance.value.setTextOptions("with Builder lambda", undefined);
+            instance.applyAttributesFinish();
             {
               __memo_scope.recache();
               return;
@@ -425,7 +438,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.applyAttributesFinish();
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -446,7 +459,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
                   __memo_scope.cached;
                   return;
                 }
-                __memo_parameter_instance.value.setTextOptions("within Builder property", undefined).applyAttributesFinish();
+                __memo_parameter_instance.value.setTextOptions("within Builder property", undefined);
+                instance.applyAttributesFinish();
                 {
                   __memo_scope.recache();
                   return;
@@ -494,7 +508,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
             __memo_scope.cached;
             return;
           }
-          __memo_parameter_instance.value.setTextOptions("within BuilderParam property", undefined).applyAttributesFinish();
+          __memo_parameter_instance.value.setTextOptions("within BuilderParam property", undefined);
+          instance.applyAttributesFinish();
           {
             __memo_scope.recache();
             return;
@@ -547,7 +562,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           __memo_scope.cached;
           return;
         }
-        __memo_parameter_instance.value.setTextOptions("within struct build", undefined).applyAttributesFinish();
+        __memo_parameter_instance.value.setTextOptions("within struct build", undefined);
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;

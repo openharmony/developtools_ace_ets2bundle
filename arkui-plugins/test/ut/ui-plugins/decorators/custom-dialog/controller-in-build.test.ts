@@ -147,11 +147,13 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("CustomDialog One", undefined).applyAttributesFinish();
+        instance.setTextOptions("CustomDialog One", undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -185,7 +187,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
@@ -200,7 +203,8 @@ function main() {}
             baseComponent: this,
           })
           (gensym___90667230 as CustomDialogController)});
-        })).backgroundColor(0x317aff).applyAttributesFinish();
+        })).backgroundColor(0x317aff);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

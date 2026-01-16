@@ -126,24 +126,28 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       if (((this.count) > (0))) {
         TextImpl(@Memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined).applyAttributesFinish();
+          instance.setTextOptions((((("You have") + (this.count))) + ("Nuggets left")), undefined);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       } else {
         TextImpl(@Memo() ((instance: TextAttribute): void => {
-          instance.setTextOptions("Game over!", undefined).applyAttributesFinish();
+          instance.setTextOptions("Game over!", undefined);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       }
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Try again", undefined).onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -187,23 +191,27 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions((((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined).applyAttributesFinish();
+        instance.setTextOptions((((("Grant") + (this.countDownStartValue))) + ("nuggets to play.")), undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("+1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue += 1;
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("-1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       CountDownComponent._invoke(@Memo() ((instance: CountDownComponent): void => {

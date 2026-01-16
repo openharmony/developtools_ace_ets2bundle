@@ -96,11 +96,13 @@ function main() {}
 @Memo() 
 function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-    instance.setColumnOptions(undefined).applyAttributesFinish();
+    instance.setColumnOptions(undefined);
+    instance.applyAttributesFinish();
     return;
   }), @Memo() (() => {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined).applyAttributesFinish();
+      instance.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }));
@@ -190,7 +192,8 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       wBuilder.builder((() => {
@@ -201,7 +204,8 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -294,7 +298,8 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+    __memo_parameter_instance.value.setColumnOptions(undefined);
+    instance.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -312,7 +317,8 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -424,7 +430,8 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.setColumnOptions(undefined).applyAttributesFinish();
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -449,7 +456,8 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         }
         __memo_parameter_instance.value.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;

@@ -65,7 +65,8 @@ function main() {}
 @Memo() 
 function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    instance.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -73,7 +74,8 @@ function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
 @Memo() 
 function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
-    instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
+    instance.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink);
+    instance.applyAttributesFinish();
     return;
   }), undefined);
 }
@@ -111,7 +113,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   @Memo() 
   public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
-      instance.setRowOptions(undefined).height("100%").applyAttributesFinish();
+      instance.setRowOptions(undefined).height("100%");
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       globalBuilder(this.message, 50);
@@ -190,7 +193,8 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).applyAttributesFinish();
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size);
+    instance.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -216,7 +220,8 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       __memo_scope.cached;
       return;
     }
-    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink).applyAttributesFinish();
+    __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink);
+    instance.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -273,7 +278,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             __memo_scope.cached;
             return;
           }
-          __memo_parameter_instance.value.setRowOptions(undefined).height("100%").applyAttributesFinish();
+          __memo_parameter_instance.value.setRowOptions(undefined).height("100%");
+          instance.applyAttributesFinish();
           {
             __memo_scope.recache();
             return;
@@ -340,7 +346,7 @@ class __EntryWrapper extends EntryPoint {
         __memo_scope.cached;
         return;
       }
-      __memo_parameter_instance.value.applyAttributesFinish();
+      instance.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;

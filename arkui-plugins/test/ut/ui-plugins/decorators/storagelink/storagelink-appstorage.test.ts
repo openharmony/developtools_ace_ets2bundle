@@ -121,19 +121,22 @@ class Data {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLink}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLink += 1;
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions(\`From AppStorage \${this.storageLinkObject.code}\`, undefined).onClick(((e: ClickEvent) => {
           this.storageLinkObject.code += 1;
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

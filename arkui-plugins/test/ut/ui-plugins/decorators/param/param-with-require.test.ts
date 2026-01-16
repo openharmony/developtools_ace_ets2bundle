@@ -278,7 +278,8 @@ class Info {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ForEachImpl<Info>(@Memo() ((instance: ForEachAttribute): void => {
@@ -302,7 +303,8 @@ class Info {
           this.infoList[0] = new Info("Atom", 40, 27, 90);
           this.infoList[1].name = "Bob";
           this.infoList[2].region = new Region(7, 9);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));
@@ -349,15 +351,18 @@ class Info {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`name: \${this.info.name}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`name: \${this.info.name}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`age: \${this.info.age}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`age: \${this.info.age}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       SubComponent._invoke(@Memo() ((instance: SubComponent): void => {
@@ -413,11 +418,13 @@ class Info {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(\`region: \${this.region.x}-\${this.region.y}\`, undefined).applyAttributesFinish();
+        instance.setTextOptions(\`region: \${this.region.x}-\${this.region.y}\`, undefined);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

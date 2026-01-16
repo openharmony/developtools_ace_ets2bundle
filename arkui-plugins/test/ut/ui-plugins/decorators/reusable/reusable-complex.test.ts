@@ -132,17 +132,20 @@ class Message {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).height("100%").width("100%").applyAttributesFinish();
+      instance.setColumnOptions(undefined).height("100%").width("100%");
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Hello", undefined).fontSize(30).fontWeight(FontWeight.Bold).onClick(((e: ClickEvent) => {
           this.display = !(this.display);
-        })).applyAttributesFinish();
+        }));
+        instance.applyAttributesFinish();
         return;
       }), undefined);
       Child._invoke(@Memo() ((instance: Child): void => {
-        instance.reuseId("res").applyAttributesFinish();
+        instance.reuseId("res");
+        instance.applyAttributesFinish();
         return;
       }), (() => {
         return {
@@ -211,11 +214,13 @@ class Message {
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).borderWidth(1).height(100).applyAttributesFinish();
+      instance.setColumnOptions(undefined).borderWidth(1).height(100);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions(this.message.value, undefined).fontSize(30).applyAttributesFinish();
+        instance.setTextOptions(this.message.value, undefined).fontSize(30);
+        instance.applyAttributesFinish();
         return;
       }), undefined);
     }));

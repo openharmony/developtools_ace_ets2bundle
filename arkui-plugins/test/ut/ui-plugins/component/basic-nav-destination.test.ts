@@ -90,15 +90,18 @@ function main() {}
       instance.setNavDestinationOptions({
         moduleName: "entry",
         pagePath: "mock/component/basic-nav-destination",
-      }).width(80).applyAttributesFinish();
+      }).width(80);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-        instance.setColumnOptions(undefined).applyAttributesFinish();
+        instance.setColumnOptions(undefined);
+        instance.applyAttributesFinish();
         return;
       }), @Memo() (() => {
         ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
-          instance.setButtonOptions("abc", undefined).applyAttributesFinish();
+          instance.setButtonOptions("abc", undefined);
+          instance.applyAttributesFinish();
           return;
         }), undefined);
       }));

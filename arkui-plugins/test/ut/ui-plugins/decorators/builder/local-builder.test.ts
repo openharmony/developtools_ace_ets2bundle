@@ -84,7 +84,8 @@ function main() {}
   @Memo() 
   public showTextBuilder() {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions("Hello World", undefined).fontSize(30).applyAttributesFinish();
+      instance.setTextOptions("Hello World", undefined).fontSize(30);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }
@@ -92,7 +93,8 @@ function main() {}
   @Memo() 
   public showTextValueBuilder(@MemoSkip() param: string) {
     TextImpl(@Memo() ((instance: TextAttribute): void => {
-      instance.setTextOptions(param, undefined).fontSize(30).applyAttributesFinish();
+      instance.setTextOptions(param, undefined).fontSize(30);
+      instance.applyAttributesFinish();
       return;
     }), undefined);
   }
@@ -100,7 +102,8 @@ function main() {}
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined).applyAttributesFinish();
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
       this.showTextBuilder();
