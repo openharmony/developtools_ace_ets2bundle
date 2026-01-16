@@ -109,6 +109,7 @@ export class DeclfileProductor {
             tsImportSendableEnable: false,
             skipPathsInKeyForCompilationSettings: true,
         });
+        DeclfileProductor.compilerOptions.ets.customComponent = undefined;
         DeclfileProductor.projectPath = param.projectConfig.projectRootPath;
     }
     static getInstance(param?: Params): DeclfileProductor {
