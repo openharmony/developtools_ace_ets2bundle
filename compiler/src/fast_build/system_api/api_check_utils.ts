@@ -396,8 +396,8 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
         SYSCAP_TAG_CHECK_WARNING, needCanIUseCheck, ts.DiagnosticCategory.Warning, CANIUSE_FUNCTION_NAME, false, undefined,
         checkSyscapAbility, checkSyscapConditionValidCallback));
     }
-    if (projectConfig.projectRootPath) {
-      const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.projectRootPath, 'entry', 'src', 'ohosTest'));
+    if (projectConfig.projectRootPath && projectConfig.modulePath) {
+      const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.modulePath, 'src', 'ohosTest'));
       // TODO:fix error type in the feature
       if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
         permissionsArray = projectConfig.requestPermissions;
