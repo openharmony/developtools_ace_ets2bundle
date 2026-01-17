@@ -593,6 +593,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log, isArkoala), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
+    createChildElmtId(componentNode, name, log, isArkoala);
   }
   const arrowArgArr: ts.ParameterDeclaration[] = [
     ts.factory.createParameterDeclaration(undefined, undefined,
