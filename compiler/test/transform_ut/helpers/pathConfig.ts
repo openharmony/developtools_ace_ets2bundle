@@ -345,6 +345,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/StructNameInvalid',
   'Decorators/vaildate_ui_syntax/StylesDuplicate',
   'Decorators/vaildate_ui_syntax/syncMonitorCheckWild',
+  'Decorators/vaildate_ui_syntax/syncMonitorDuplicateDecorators',
   'Decorators/vaildate_ui_syntax/v1DecoratorInComponentV2',
   'Decorators/vaildate_ui_syntax/v2DecoratorInClass',
   'Decorators/vaildate_ui_syntax/v2DecoratorInComponent',
