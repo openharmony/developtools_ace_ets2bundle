@@ -29,6 +29,7 @@ export interface ArkTSEvolutionModule {
   cachePath: string;
   byteCodeHarInfo?: Object;
   packageVersion: string;
+  moduleType: string;
 }
 
 export interface Params {
