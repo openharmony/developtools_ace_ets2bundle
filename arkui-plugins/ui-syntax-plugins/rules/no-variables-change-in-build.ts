@@ -31,8 +31,6 @@ enum ArrayTypes {
 }
 
 class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
-    private inBuildMethod: boolean = false;
-    private inBuilderMethod: boolean = false;
     private collectNode: Map<string, arkts.AstNode> = new Map();
     private builderVariableCollect: Map<string, string[]> = new Map();
     private variableCollect: Map<string, string[]> = new Map();
@@ -58,17 +56,10 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         else if (arkts.isMethodDefinition(node) &&
             node.name &&
             getIdentifierName(node.name) === BUILD_NAME) {
-            this.inBuildMethod = true;
+            this.checkBuildVariableModification(node, this.variableCollect);
         }
-        else if (arkts.isMethodDefinition(node) && this.hasBuilderDecorator(node)) {
-            this.inBuilderMethod = true;
-            this.inBuildMethod = false;
-            this.builderVariableCollect.clear();
-        }
-        else if (this.inBuilderMethod && arkts.isBlockStatement(node)) {
+        else if (arkts.isMethodDefinition(node) && this.hasBuilderDecorator(node) && arkts.isBlockStatement(node)) {
             this.collectBuilderVariables(node);
-        }
-        else if (this.inBuildMethod || this.inBuilderMethod) {
             this.checkBuildVariableModification(node, this.variableCollect);
         }
     }
@@ -277,7 +268,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         }
     }
 
-    private checkBuildVariableModification(node: arkts.AstNode, veriableCollect: Map<string, string[]>): void {
+    private checkBuildVariableModification(node: arkts.AstNode, variableCollect: Map<string, string[]>): void {
         const isArrowFunction = this.isInArrowFunction(node);
         if (isArrowFunction) {
             return;
@@ -285,13 +276,13 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         if (arkts.isAssignmentExpression(node) || arkts.isUpdateExpression(node)) {
             const left = arkts.isAssignmentExpression(node) ? node.left : node.argument;
             if(left){
-                this.validateStateModification(left, node, veriableCollect);
-                this.validateNestPath(left, node, veriableCollect);
+                this.validateStateModification(left, node, variableCollect);
+                this.validateNestPath(left, node, variableCollect);
             }
             if (arkts.isUpdateExpression(node) && node.argument && arkts.isMemberExpression(node.argument)) {
-                const builderVeriable = node.argument.object;
-                if (builderVeriable && arkts.isIdentifier(builderVeriable)) {
-                    const builderGlobal = getIdentifierName(builderVeriable);
+                const builderVariable = node.argument.object;
+                if (builderVariable && arkts.isIdentifier(builderVariable)) {
+                    const builderGlobal = getIdentifierName(builderVariable);
                     this.validateMemberExpression(node, this.builderVariableCollect, builderGlobal)
                 }
             }
@@ -726,8 +717,8 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         return false;
     }
 
-    private validateMemberExpression(node: arkts.AstNode, variableCollect: Map<string, string[]>, veriableValue: string): void {
-        if (variableCollect.get(veriableValue)) {
+    private validateMemberExpression(node: arkts.AstNode, variableCollect: Map<string, string[]>, variableValue: string): void {
+        if (variableCollect.get(variableValue)) {
             this.report({
                 node: node,
                 message: this.messages.noVariablesChangeInBuild,
