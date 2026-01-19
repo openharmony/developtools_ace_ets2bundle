@@ -86,7 +86,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private shouldAddLinkIntrinsic: boolean = false;
     private projectConfig: ProjectConfig | undefined;
-    private entryRouteName: string | undefined;
+    private entryRouteName: arkts.AstNode | undefined;
     private componentType: ComponentType = {
         hasComponent: false,
         hasComponentV2: false,
@@ -318,8 +318,8 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!!scopeInfo.annotations?.entry) {
             this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
             const routeName = getEntryRouteParam(definition);
-            if (routeName && routeName.value && arkts.isStringLiteral(routeName.value)) {
-                this.entryRouteName = routeName.value.str;
+            if (routeName && routeName.value) {
+                this.entryRouteName = routeName.value;
             }
         }
         const newDefinition: arkts.ClassDefinition = this.createNewDefinition(node, className, definition);
