@@ -421,7 +421,7 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   if (hasInterop) {
     return;
   }
-  if (ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
+  if (node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
       if (ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
