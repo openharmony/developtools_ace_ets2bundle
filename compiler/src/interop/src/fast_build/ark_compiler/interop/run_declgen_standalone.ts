@@ -204,7 +204,8 @@ export class DeclfileProductor {
           : `${moduleInfo.packageName}/${projectFilePath}`;
         const declPath: string = path.join(toUnixPath(declgenV2OutPath), projectFilePath) + EXTNAME_D_ETS;
         const isNativeFlag = moduleInfo.isNative ? 'Y' : 'N';
-        const ohmUrl: string = `${isNativeFlag}&${mainModuleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
+        const moduleName: string = moduleInfo.moduleType === 'shared' ? moduleInfo.moduleName : mainModuleName;
+        const ohmUrl: string = `${isNativeFlag}&${moduleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
         this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = { declPath, filePath, ohmUrl: `@normalized:${ohmUrl}` };
     }
 
