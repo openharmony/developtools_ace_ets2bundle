@@ -45,11 +45,11 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { makeBindable as makeBindable } from "arkui.component.common";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ToggleAttribute as ToggleAttribute } from "arkui.component.toggle";
-
-import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { ToggleImpl as ToggleImpl } from "arkui.component.toggle";
 

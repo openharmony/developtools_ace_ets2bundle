@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,40 +28,37 @@ const DOUBLE_DOLLAR_DIR_PATH: string = 'double-dollar';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, DOUBLE_DOLLAR_DIR_PATH, 'double-dollar-griditem.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, DOUBLE_DOLLAR_DIR_PATH, 'double-dollar-non-ui.ets'),
 ];
 
-const pluginTester = new PluginTester('test griditem bindable capability', buildConfig);
+const pluginTester = new PluginTester('test the use of $$ in non ui', buildConfig);
 
 const parsedTransform: Plugins = {
-    name: 'double-dollar-griditem',
+    name: 'double-dollar-non-ui',
     parsed: uiTransform().parsed
 };
 
 const expectedScript: string = `
+
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
-import { makeBindable as makeBindable } from "arkui.component.common";
-
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { GridAttribute as GridAttribute } from "arkui.component.grid";
+import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
-import { GridItemAttribute as GridItemAttribute } from "arkui.component.gridItem";
+import { ButtonImpl as ButtonImpl } from "arkui.component.button";
 
-import { TextAttribute as TextAttribute } from "arkui.component.text";
+import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
 
-import { TextImpl as TextImpl } from "arkui.component.text";
-
-import { GridItemImpl as GridItemImpl } from "arkui.component.gridItem";
-
-import { GridImpl as GridImpl } from "arkui.component.grid";
+import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { Memo as Memo } from "arkui.incremental.annotation";
 
@@ -79,7 +76,7 @@ import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.loca
 
 import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
-import { Text as Text, Entry as Entry, Column as Column, Component as Component, $$ as $$, Grid as Grid, GridItem as GridItem } from "@ohos.arkui.component";
+import { Entry as Entry, Component as Component, Column as Column, Text as Text, TextInput as TextInput, Button as Button, $$ as $$, Bindable as Bindable } from "@ohos.arkui.component";
 
 import { State as State } from "@ohos.arkui.stateManagement";
 
@@ -88,43 +85,56 @@ function main() {}
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
-  pagePath: "../../../double-dollar/double-dollar-griditem",
-  pageFullPath: "test/demo/mock/double-dollar/double-dollar-griditem",
+  pagePath: "../../../double-dollar/double-dollar-non-ui",
+  pageFullPath: "test/demo/mock/double-dollar/double-dollar-non-ui",
   integratedHsp: "false",
-  } as NavInterface));
-class CC {
-  public static c: boolean = true;
-  
-  public constructor() {}
-  
-  static {
-    
-  }
-}
-
+} as NavInterface));
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_boo = STATE_MGMT_FACTORY.makeState<boolean>(this, "boo", ((({let gensym___9142460 = initializers;
-    (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? (true)));
+    this.__backing_str1 = STATE_MGMT_FACTORY.makeState<string>(this, "str1", ((({let gensym___147578113 = initializers;
+    (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("Hello World")));
+    this.__backing_str2 = STATE_MGMT_FACTORY.makeState<string>(this, "str2", ((({let gensym___220149772 = initializers;
+    (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("Hello")));
+    this.__backing_newStr = STATE_MGMT_FACTORY.makeState<Bindable<string>>(this, "newStr", ((({let gensym___85947701 = initializers;
+    (((gensym___85947701) == (null)) ? undefined : gensym___85947701.newStr)})) ?? (makeBindable(this.str1, ((value) => {
+      this.str1 = value;
+    })))));
   }
-
+  
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-
-  private __backing_boo?: IStateDecoratedVariable<boolean>;
-
-  public get boo(): boolean {
-    return this.__backing_boo!.get();
+  
+  private __backing_str1?: IStateDecoratedVariable<string>;
+  public get str1(): string {
+    return this.__backing_str1!.get();
   }
-
-  public set boo(value: boolean) {
-    this.__backing_boo!.set(value);
+  
+  public set str1(value: string) {
+    this.__backing_str1!.set(value);
+  }
+  
+  private __backing_str2?: IStateDecoratedVariable<string>;
+  public get str2(): string {
+    return this.__backing_str2!.get();
+  }
+  
+  public set str2(value: string) {
+    this.__backing_str2!.set(value);
+  }
+  
+  private __backing_newStr?: IStateDecoratedVariable<Bindable<string>>;
+  public get newStr(): Bindable<string> {
+    return this.__backing_newStr!.get();
+  }
+  
+  public set newStr(value: Bindable<string>) {
+    this.__backing_newStr!.set(value);
   }
   
   @MemoIntrinsic() 
   public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___149025070 = storage;
-      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+      return new MyStateSample(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
   
@@ -132,7 +142,13 @@ class CC {
   public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
-
+  
+  public getBindableVar(): Bindable<string> {
+    return makeBindable(this.str1, ((value) => {
+      this.str1 = value;
+    }));
+  }
+  
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -140,43 +156,34 @@ class CC {
       instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      GridImpl(@Memo() ((instance: GridAttribute): void => {
-        instance.setGridOptions(undefined, undefined);
+      TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
+        instance.setTextInputOptions({
+          text: this.newStr,
+        });
         instance.applyAttributesFinish();
         return;
-      }), @Memo() (() => {
-        GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(makeBindable(this.boo, ((value) => {
-            this.boo = value;
-          })));
-          instance.applyAttributesFinish();
-          return;
-        }), @Memo() (() => {
-          TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined);
-            instance.applyAttributesFinish();
-            return;
-          }), undefined);
-        }));
-        GridItemImpl(@Memo() ((instance: GridItemAttribute): void => {
-          instance.setGridItemOptions(undefined).selected(makeBindable(CC.c, ((value) => {
-            CC.c = value;
-          })));
-          instance.applyAttributesFinish();
-          return;
-        }), @Memo() (() => {
-          TextImpl(@Memo() ((instance: TextAttribute): void => {
-            instance.setTextOptions("nihao", undefined);
-            instance.applyAttributesFinish();
-            return;
-          }), undefined);
-        }));
       }));
+      TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
+        instance.setTextInputOptions({
+          text: this.getBindableVar(),
+        });
+        instance.applyAttributesFinish();
+        return;
+      }));
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("Test $$", undefined).onClick((() => {
+          this.newStr = makeBindable(this.str2, ((value) => {
+            this.str2 = value;
+          }));
+        }));
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
     }));
   }
   
   ${dumpConstructor()}
-
+  
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -187,16 +194,22 @@ class __EntryWrapper extends EntryPoint {
       return;
     }), undefined, undefined, undefined, undefined);
   }
-
+  
   public constructor() {}
-
+  
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
-  
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str1', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str1', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str2', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str2', '(IStateDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str2', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'newStr', '(Bindable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newStr', '(IStateDecoratedVariable<Bindable<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newStr', '(boolean | undefined)')}
+
 }
 `;
 
@@ -205,7 +218,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test griditem bindable capability',
+    'test the use of $$ in non ui',
     [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
