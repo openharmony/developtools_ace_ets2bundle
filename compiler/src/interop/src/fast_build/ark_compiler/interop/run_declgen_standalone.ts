@@ -36,7 +36,7 @@ import { EXTNAME_D_ETS, EXTNAME_JS } from '../common/ark_define';
 import { getRealModulePath } from '../../system_api/api_check_utils';
 import { generateInteropDecls } from 'declgen/build/src/generateInteropDecls';
 import { calculateFileHash } from '../utils';
-import { processInteropUI } from '../../../process_interop_ui';
+import { createCustomTransformer } from '../../../process_interop_ui';
 
 export function run(param: Params): boolean {
     FileManager.init(param.dependentModuleMap);
@@ -157,14 +157,14 @@ export class DeclfileProductor {
             rootDir: moduleInfo.modulePath,
             customResolveModuleNames: resolveModuleNames,
             customCompilerOptions: DeclfileProductor.compilerOptions,
-            includePaths: [moduleInfo.modulePath]
+            includePaths: [moduleInfo.modulePath],
+            uiInteropTransformer: createCustomTransformer
         };
         if (!fs.existsSync(config.outDir)) {
             fs.mkdirSync(config.outDir, { recursive: true });
         }
         fs.mkdirSync(config.outDir, { recursive: true });
         generateInteropDecls(config);
-        processInteropUI(FileManager.arkTSModuleMap.get(moduleInfo.packageName)?.declgenV2OutPath);
         const newCache = {
             ...existingCache,
             ...hashMap

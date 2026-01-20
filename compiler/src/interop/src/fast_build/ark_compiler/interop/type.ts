@@ -77,6 +77,7 @@ export interface RunnerParms {
   customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
   customCompilerOptions?: ts.CompilerOptions;
   includePaths?: string[];
+  uiInteropTransformer?: Function;
 }
 
 export interface DeclFilesConfig {
