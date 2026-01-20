@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1584,9 +1584,6 @@ export class Es2pandaNativeModule {
     }
     _AstNodeIsPrivateConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'AstNodeIsPrivateConst was not overloaded by native module initialization")
-    }
-    _AstNodeIsInternalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
-        throw new Error("'AstNodeIsInternalConst was not overloaded by native module initialization")
     }
     _AstNodeIsExportedConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("'AstNodeIsExportedConst was not overloaded by native module initialization")
