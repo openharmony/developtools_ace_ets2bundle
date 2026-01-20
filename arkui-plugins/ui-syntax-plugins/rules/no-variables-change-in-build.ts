@@ -52,16 +52,10 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         if (arkts.isStructDeclaration(node)) {
             this.variableCollect = this.collectVariables(node);
             this.structNode = node;
-        }
-        else if (arkts.isMethodDefinition(node) &&
-            node.name &&
-            getIdentifierName(node.name) === BUILD_NAME) {
-            this.checkBuildVariableModification(node, this.variableCollect);
-        }
-        else if (arkts.isMethodDefinition(node) && this.hasBuilderDecorator(node) && arkts.isBlockStatement(node)) {
+        } else if (arkts.isBlockStatement(node)) {
             this.collectBuilderVariables(node);
-            this.checkBuildVariableModification(node, this.variableCollect);
         }
+        this.checkBuildVariableModification(node, this.variableCollect);
     }
 
     private checkVarChangeOutsideStruct(node: arkts.AstNode): void {
@@ -71,6 +65,24 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         if (arkts.isBlockStatement(node)) {
             this.checkBuilderBody(node, this.builderVariableCollect);
         }
+    }
+
+    private checkInBuild(node: arkts.AstNode): boolean {
+        if (arkts.isMethodDefinition(node) && node.name && getIdentifierName(node.name) === BUILD_NAME) {
+            return true;
+        } else if (node.parent) {
+            return this.checkInBuild(node.parent);
+        }
+        return false;
+    }
+
+    private checkInBuilder(node: arkts.AstNode): boolean {
+        if (arkts.isMethodDefinition(node) && this.hasBuilderDecorator(node)) {
+            return true;
+        } else if (node.parent) {
+            return this.checkInBuilder(node.parent);
+        }
+        return false;
     }
 
     private handleFunctionDeclaration(node: arkts.FunctionDeclaration): void {
@@ -119,8 +131,8 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
 
     private isValidRememberVariable(declarator: arkts.VariableDeclarator): boolean {
         return !!(
-            declarator.initializer && 
-            arkts.isCallExpression(declarator.initializer) && 
+            declarator.initializer &&
+            arkts.isCallExpression(declarator.initializer) &&
             arkts.isIdentifier(declarator.initializer.expression) &&
             getIdentifierName(declarator.initializer.expression) === 'rememberVariable'
         );
@@ -274,8 +286,11 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
             return;
         }
         if (arkts.isAssignmentExpression(node) || arkts.isUpdateExpression(node)) {
+            if (!this.checkInBuild(node) && !this.checkInBuilder(node)) {
+                return;
+            }
             const left = arkts.isAssignmentExpression(node) ? node.left : node.argument;
-            if(left){
+            if (left) {
                 this.validateStateModification(left, node, variableCollect);
                 this.validateNestPath(left, node, variableCollect);
             }
