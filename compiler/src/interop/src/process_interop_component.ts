@@ -140,8 +140,8 @@ function createInteropExtendableComponent(ifUpdate: boolean): ts.ExpressionState
     ts.factory.createCallExpression(
       ts.factory.createIdentifier(
         ifUpdate
-          ? "__Interop_UpdateInteropExtendableComponent_Internal"
-          : "__Interop_ResetInteropExtendableComponent_Internal"
+          ? '__Interop_UpdateInteropExtendableComponent_Internal'
+          : '__Interop_ResetInteropExtendableComponent_Internal'
       ),
       undefined,
       ifUpdate ? [ts.factory.createThis()] : []
@@ -292,7 +292,7 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
   const transferCall = ts.isIdentifier(initializer) && STATIC_BUILDER.has(initializer.escapedText.toString()) 
     ? initializer
     : ts.factory.createCallExpression(
-      ts.factory.createIdentifier("__Interop_transferCompatibleDynamicBuilder_Internal"),
+      ts.factory.createIdentifier('__Interop_transferCompatibleDynamicBuilder_Internal'),
       undefined,
       [
         ts.factory.createCallExpression(
@@ -313,7 +313,7 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
       ts.factory.createParameterDeclaration(
         undefined,
         ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
-        ts.factory.createIdentifier("args"),
+        ts.factory.createIdentifier('args'),
         undefined,
         undefined,
         undefined
@@ -324,7 +324,7 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
     ts.factory.createCallExpression(
       transferCall,
       undefined,
-      [ ts.factory.createSpreadElement(ts.factory.createIdentifier("args")) ]
+      [ ts.factory.createSpreadElement(ts.factory.createIdentifier('args')) ]
     )
   );
 }
@@ -355,6 +355,7 @@ function getStateVar(node: ts.Expression): ts.Expression {
       ts.factory.createIdentifier(`__${node.name.getText()}`)
     )
   }
+  return node;
 }
 
 /**
