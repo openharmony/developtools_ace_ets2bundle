@@ -71,7 +71,7 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Text as Text, Column as Column, Component as Component, Entry as Entry, Button as Button, ClickEvent as ClickEvent } from "@ohos.arkui.component";
 
-import { State as State, Link as Link, Prop as Prop } from "@ohos.arkui.stateManagement";
+import { State as State, Link as Link } from "@ohos.arkui.stateManagement";
 
 import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogController, DismissDialogAction as DismissDialogAction, DismissReason as DismissReason, DialogAlignment as DialogAlignment, CustomDialogControllerOptions as CustomDialogControllerOptions } from "@ohos.arkui.component";
 

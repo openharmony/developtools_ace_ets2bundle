@@ -14,7 +14,7 @@
  */
 
 import { Text, Column, Component, Entry, Button, ClickEvent } from "@ohos.arkui.component"
-import { State, Link, Prop } from "@ohos.arkui.stateManagement"
+import { State, Link } from "@ohos.arkui.stateManagement"
 import {
   CustomDialog,
   CustomDialogController,
