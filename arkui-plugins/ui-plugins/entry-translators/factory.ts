@@ -379,7 +379,7 @@ export class factory {
      * generate __EntryWrapper.RegisterNamedRouter(...)
      */
     static callRegisterNamedRouter(
-        entryRouteName: string | undefined,
+        entryRouteName: arkts.AstNode | undefined,
         projectConfig: ProjectConfig | undefined,
         fileAbsName: string | undefined,
         range: arkts.SourceRange
@@ -395,7 +395,7 @@ export class factory {
                 ),
                 undefined,
                 [
-                    arkts.factory.createStringLiteral(entryRouteName ?? ''),
+                    entryRouteName?.clone() ?? arkts.factory.createStringLiteral(''),
                     arkts.factory.createETSNewClassInstanceExpression(
                         arkts.factory.createTypeReference(
                             arkts.factory.createTypeReferencePart(
