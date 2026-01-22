@@ -73,6 +73,7 @@ export interface ArkTSEvolutionModule {
   declgenV2OutPath?: string;
   declgenBridgeCodePath?: string;
   declFilesPath?: string;
+  staticFiles: string[];
 }
 
 interface ResolvedFileInfo {
@@ -129,19 +130,26 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
   for (const [pkgName, arkTSEvolutionModuleInfo] of combinedMap) {
     const declgenV1OutPath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenV1OutPath);
     const modulePath: string = toUnixPath(arkTSEvolutionModuleInfo.modulePath);
-    const declgenBridgeCodePath: string = toUnixPath(arkTSEvolutionModuleInfo.declgenBridgeCodePath);
-    if (resolvedFileName && resolvedFileName.startsWith(modulePath + '/') &&
-      !resolvedFileName.startsWith(declgenBridgeCodePath + '/')) {
-      arktsEvoDeclFilePath = resolvedFileName
+    const staticFiles: string[] = arkTSEvolutionModuleInfo.staticFiles.map(filePtah => {
+      return toUnixPath(filePtah);
+    });
+    if (resolvedFileName && staticFiles.length > 0 && staticFiles.indexOf(resolvedFileName) !== -1) {
+      if(resolvedFileName.endsWith(EXTNAME_D_ETS)) {
+        arktsEvoDeclFilePath = resolvedFileName
+        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)));
+        break;
+      } else {
+        arktsEvoDeclFilePath = resolvedFileName
         .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)))
         .replace(EXTNAME_ETS, EXTNAME_D_ETS);
-      break;
+        break;
+      }
     }
-    if (moduleRequest === pkgName) {
+    if (moduleRequest && moduleRequest === pkgName) {
       arktsEvoDeclFilePath = path.join(declgenV1OutPath, pkgName, 'Index.d.ets');
       break;
     }
-    if (moduleRequest.startsWith(pkgName + '/')) {
+    if (moduleRequest && moduleRequest.startsWith(pkgName + '/')) {
       arktsEvoDeclFilePath = moduleRequest.replace(
         pkgName,
         toUnixPath(path.join(declgenV1OutPath, pkgName, 'src/main/ets'))
@@ -369,15 +377,14 @@ function createObjectLiteralVisitor(rootNode: ts.SourceFile, context: ts.Transfo
     if (!contextualType) {
       return ts.visitEachChild(node, visitor, context);
     }
-    const isRecordType: boolean = contextualType.aliasSymbol?.escapedName === 'Record' &&
-      (typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType));
+    const isRecordType: boolean = typeof typeChecker.isStaticRecord === 'function' && typeChecker.isStaticRecord(contextualType);
     const finalType: ts.Type = unwrapType(node, contextualType);
     const decl : ts.Declaration = (finalType.symbol?.declarations || finalType.aliasSymbol?.declarations)?.[0];
     
     let className: string;
     let tmpObjName: string;
     if (!isRecordType) {
-      if (!decl || !isFromArkTSEvolutionModule(decl)) {
+      if (!decl || !isFromArkTSEvolutionModule(decl) || (!ts.isClassDeclaration(decl) && !ts.isInterfaceDeclaration(decl))) {
         return ts.visitEachChild(node, visitor, context);
       }
       className = finalType.symbol?.name || finalType.aliasSymbol?.name;
@@ -484,11 +491,31 @@ function buildFullClassName(decl: ts.Declaration, finalType: ts.Type, className:
     return 'Lstd.core.Record;';
   }
   const basePath: string = getArkTSEvoFileOHMUrl(finalType);
+  const fullNamespace: string = getFullNamespaceName(decl);
+  className = fullNamespace ? `${fullNamespace}$${className}` : className;
   const pkgName: string = arkTSEvoPkgNameOHMUrlMap.get(basePath);
   return ts.isInterfaceDeclaration(decl) ? 
     `L${basePath}/${pkgName}$${basePath.replace(pkgName + '/', '').split('/').join('$')}$${className}$ObjectLiteral;` :
     `L${basePath}/${className};`;
-}
+} 
+
+/**
+ 	  * Retrieves the full namespace of a declaration node, separated by `$` 
+ 	  * @param decl - TypeScript declaration node to analyze
+ 	  * @returns The full namespace path if exist ,otherwise undefined
+ 	  */
+ 	 function getFullNamespaceName(decl: ts.Declaration): string | undefined{
+ 	   let current: ts.Node | undefined = decl.parent;
+ 	   const namespaces: string[] = [];
+ 	   while(current && !ts.isSourceFile(current)){
+ 	     if(ts.isModuleDeclaration(current) && current.name){
+ 	       namespaces.unshift(current.name.text);
+ 	     }
+ 	     current = current.parent;
+ 	   }
+ 	   return namespaces.length > 0 ? namespaces.join('$') : undefined;
+ 	 }
+
 
 function buildGetConstructorCall(fullName: string, isRecord: boolean): ts.Expression {
   return ts.factory.createCallExpression(

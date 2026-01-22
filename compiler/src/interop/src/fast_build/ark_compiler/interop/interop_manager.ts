@@ -57,7 +57,7 @@ import {
 } from './pre_define';
 import { readFirstLineSync } from './utils';
 
-let entryFileLanguageInfo = new Map();
+export let entryFileLanguageInfo = new Map();
 export let workerFile = null;
 export let mixCompile = undefined;
 

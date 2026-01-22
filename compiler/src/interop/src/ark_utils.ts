@@ -506,18 +506,28 @@ export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Obj
   string | undefined {
   if (projectConfig.useNormalizedOHMUrl &&
     projectConfig.byteCodeHarInfo && Object.keys(projectConfig.byteCodeHarInfo).length > 0) {
-    const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
-    if (moduleInfoByModuleRequest) {
-       return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
-    }
-    let aliasName: string = getAliasNameFromPackageMap(projectConfig.byteCodeHarInfo, moduleRequest);
-    if (aliasName) {
-      return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
-    }
-    for (const byteCodeHarName in projectConfig.byteCodeHarInfo) {
-      if (moduleRequest.startsWith(byteCodeHarName + '/')) {
-        return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
-      }
+    return getOhmUrlByByteCodeHarInfo(rollupObject, projectConfig, moduleRequest, projectConfig.byteCodeHarInfo, logger);
+  }
+  if (isMixCompile() &&
+    projectConfig.staticByteCodeHarInfo && Object.keys(projectConfig.staticByteCodeHarInfo).length > 0) {
+    return getOhmUrlByByteCodeHarInfo(rollupObject, projectConfig, moduleRequest, projectConfig.staticByteCodeHarInfo, logger);
+  }
+  return undefined;
+}
+
+function getOhmUrlByByteCodeHarInfo(rollupObject: Object, projectConfig: Object, moduleRequest: string,
+  byteCodeHarInfo: Object, logger?: Object): string | undefined {
+  const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
+  if (moduleInfoByModuleRequest) {
+      return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
+  }
+  let aliasName: string = getAliasNameFromPackageMap(byteCodeHarInfo, moduleRequest);
+  if (aliasName) {
+    return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
+  }
+  for (const byteCodeHarName in byteCodeHarInfo) {
+    if (moduleRequest.startsWith(byteCodeHarName + '/')) {
+      return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
     }
   }
   return undefined;

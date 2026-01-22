@@ -2407,7 +2407,6 @@ mocha.describe('test module_mode file api', function () {
     this.rollup.build();
     SourceMapGenerator.initInstance(this.rollup);
     const entryObj: Object = this.rollup.share.projectConfig.entryObj;
-    console.log(this.rollup.share.projectConfig.entryObj)
     const entryObjMock: Object = Object.assign({}, entryObj, {
       'ResourceTable': `${PROJECT_ROOT}/entry/build/default/generated/r/default/ResourceTable.ts`
     });
