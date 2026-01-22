@@ -46,6 +46,8 @@ import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.
 
 import { IStateDecoratedVariable as IStateDecoratedVariable } from "arkui.stateManagement.decorator";
 
+import { makeBindable as makeBindable } from "arkui.component.common";
+
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { TextPickerAttribute as TextPickerAttribute } from "arkui.component.textPicker";
@@ -53,8 +55,6 @@ import { TextPickerAttribute as TextPickerAttribute } from "arkui.component.text
 import { TextPickerImpl as TextPickerImpl } from "arkui.component.textPicker";
 
 import { TextInputAttribute as TextInputAttribute } from "arkui.component.textInput";
-
-import { makeBindable as makeBindable } from "arkui.component.common";
 
 import { TextInputImpl as TextInputImpl } from "arkui.component.textInput";
 

@@ -71,7 +71,7 @@ import {
     getCustomComponentNameFromInfo,
 } from './utils';
 import { collectStateManagementTypeImport, generateThisBacking, hasDecorator } from '../property-translators/utils';
-import { findComponentAttributeInInterface } from '../builder-lambda-translators/utils';
+import { findComponentAttributeInInterface, isDoubleDollarCall } from '../builder-lambda-translators/utils';
 import { ProjectConfig } from '../../common/plugin-context';
 import { ImportCollector } from '../../common/import-collector';
 import {
@@ -104,6 +104,7 @@ import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { isInteropComponent } from '../interop/utils';
 import { GenSymGenerator } from '../../common/gensym-generator';
+import { BindableFactory } from '../builder-lambda-translators/bindable-factory';
 
 export class factory {
     /**
@@ -1228,6 +1229,9 @@ export class factory {
     ): arkts.CallExpression {
         if (arkts.isCallExpression(node) && isResourceNode(node)) {
             return this.transformResource(node, projectConfig, resourceInfo);
+        }
+        if (arkts.isCallExpression(node) && isDoubleDollarCall(node) && node.arguments.length === 1) {
+            return BindableFactory.generateMakeBindableCall(node.arguments[0]);
         }
         if (isInteropComponent(node)) {
             return generateArkUICompatible(node as arkts.CallExpression, globalBuilder);

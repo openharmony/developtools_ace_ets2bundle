@@ -145,9 +145,7 @@ export class factory {
             args,
             params,
             (arg, param, index) => {
-                if (index === 0 && !!arg && isDoubleDollarCall(arg)) {
-                    argInfo.push({ arg: BindableFactory.updateBindableStyleArguments(arg) });
-                } else if (!!arg) {
+                if (!!arg) {
                     argInfo.push({ arg });
                 }
             },
@@ -486,9 +484,7 @@ export class factory {
         const keyName: string = key.name;
         let newProperty: arkts.Property = prop;
         let oriProperty: arkts.Property | undefined = undefined;
-        if (isDoubleDollarCall(value)) {
-            newProperty = BindableFactory.updateBindableProperty(prop, value);
-        } else if (propertyInfo.isBuilderParam && arkts.isArrowFunctionExpression(value)) {
+        if (propertyInfo.isBuilderParam && arkts.isArrowFunctionExpression(value)) {
             addMemoAnnotation(value);
             newProperty = prop;
         } else if (
