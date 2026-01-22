@@ -99,7 +99,7 @@ export class ProvideTranslator extends PropertyTranslator implements Initializer
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
             alias,
-            factory.generateInitializeValue(this.property, this.propertyType, originalName),
+            factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName),
             allowOverride,
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
