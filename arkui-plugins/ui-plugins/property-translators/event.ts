@@ -127,7 +127,7 @@ export class EventTranslator extends PropertyTranslator implements InitializerCo
                 false
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateInitializeValue(this.property, this.propertyType, originalName)
+            factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName)
         )
         return arkts.factory.createExpressionStatement(resetStateVars);
     }
