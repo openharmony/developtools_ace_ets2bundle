@@ -157,7 +157,7 @@ function main() {}
   public static _invoke(style: @Memo() ((instance: CustomDialogUserV2)=> void), initializers: ((()=> __Options_CustomDialogUserV2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<CustomDialogUserV2, __Options_CustomDialogUserV2>(style, ((): CustomDialogUserV2 => {
       return new CustomDialogUserV2();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 

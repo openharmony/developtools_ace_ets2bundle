@@ -345,7 +345,7 @@ function main() {}
   public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<V2222, __Options_V2222>(style, ((): V2222 => {
       return new V2222();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 
