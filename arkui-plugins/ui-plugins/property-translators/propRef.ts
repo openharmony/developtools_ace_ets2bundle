@@ -99,7 +99,7 @@ export class PropRefTranslator extends PropertyTranslator implements Initializer
     generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            factory.generateInitializeValue(this.property, this.propertyType, originalName),
+            factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName),
         ];
         factory.judgeIfAddWatchFunc(args, this.property);
         collectStateManagementTypeImport(StateManagementTypes.PROP_REF_DECORATED);
