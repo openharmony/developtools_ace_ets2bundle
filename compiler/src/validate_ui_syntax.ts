@@ -2921,9 +2921,9 @@ function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDe
   if (!structNode.name || !ts.isIdentifier(structNode.name) || !decorators || !decorators.length) {
     return;
   }
-  if (decoratorName !== '@ComponentReuse' && checkMethodArgsNum(node)) {
+  if (decoratorName !== '@ComponentReuse') {
     const message: string = `Methods decorated with '${decoratorName}' cannot have input parameters.`;
-    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905371' });
+    checkMethodArgsNum(node) && addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905371' });
     return;
   }
   const structName: string = structNode.name.escapedText.toString();
@@ -2931,6 +2931,7 @@ function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDe
   if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
     const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>`;
     addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
+    return;
   }
   if (structInfo.isComponentV2 && checkMethodArgsNum(node)) {
     const message: string = `Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.`;

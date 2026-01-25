@@ -704,6 +704,9 @@ export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
+export const HDSNAVIGATION: string = 'HdsNavigation';
+export const HDSNAVDESTINATION: string = 'HdsNavDestination';
+
 export const ARKTS_1_2: string = '1.2';
 export const ARKTS_1_1: string = '1.1';
 export const ARKTS_1_0: string = '1.0';
