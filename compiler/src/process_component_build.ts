@@ -144,7 +144,9 @@ import {
   MUTABLEBUILDER_CLASS,
   MUTABLEBUILDER_DISPATCHBUILDER,
   GLOBAL_THIS,
-  APIVERSION
+  APIVERSION,
+  HDSNAVIGATION,
+  HDSNAVDESTINATION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -3756,11 +3758,11 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
 }
 
 export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
