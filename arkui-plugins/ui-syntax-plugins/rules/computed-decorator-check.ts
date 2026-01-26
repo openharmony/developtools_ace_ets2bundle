@@ -14,8 +14,16 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassAnnotationUsage, getIdentifierName, PresetDecorators, getAnnotationUsage, BUILD_NAME, findDecorator } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import {
+    getClassAnnotationUsage,
+    getIdentifierName,
+    PresetDecorators,
+    getAnnotationUsage,
+    BUILD_NAME,
+    findDecorator,
+    addImportFixes
+} from '../utils';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     private computedGetters: Map<string, arkts.MethodDefinition> = new Map();
@@ -240,36 +248,56 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
     ): void {
         const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
         if (computedDecorator && !componentV2Decorator && !componentDecorator) {
-            this.report({
-                node: computedDecorator,
-                message: this.messages.componentV2InStruct,
-                fix: () => {
-                    const startPosition = node.startPosition;
-                    const endPosition = node.startPosition;
-                    return {
-                        title: 'Add @ComponentV2 annotation',
-                        range: [startPosition, endPosition],
-                        code: `@${PresetDecorators.COMPONENT_V2}\n`,
-                    };
-                },
-            });
+            this.reportAddComponentV2(node, computedDecorator);
         }
 
         if (computedDecorator && !componentV2Decorator && componentDecorator) {
-            this.report({
-                node: computedDecorator,
-                message: this.messages.componentV2InStruct,
-                fix: () => {
-                    const startPosition = componentDecorator.startPosition;
-                    const endPosition = componentDecorator.endPosition;
-                    return {
-                        title: 'Change @Component to @ComponentV2',
-                        range: [startPosition, endPosition],
-                        code: `${PresetDecorators.COMPONENT_V2}`,
-                    };
-                },
-            });
+            this.reportChangeToComponentV2(componentDecorator, computedDecorator);
         }
+    }
+
+    private reportAddComponentV2(
+        node: arkts.StructDeclaration | arkts.ClassDeclaration,
+        computedDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ComponentV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [node.startPosition, node.startPosition],
+            code: `@${PresetDecorators.COMPONENT_V2}\n`,
+        });
+
+        addImportFixes(node, fixes, this.context, [PresetDecorators.COMPONENT_V2], fixTitle);
+
+        this.report({
+            node: computedDecorator,
+            message: this.messages.componentV2InStruct,
+            fix: () => fixes,
+        });
+    }
+
+    private reportChangeToComponentV2(
+        componentDecorator: arkts.AnnotationUsage,
+        computedDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Change @Component to @ComponentV2';
+
+        fixes.push({
+            title: fixTitle,
+            range: [componentDecorator.startPosition, componentDecorator.endPosition],
+            code: `${PresetDecorators.COMPONENT_V2}`,
+        });
+
+        addImportFixes(componentDecorator, fixes, this.context, [PresetDecorators.COMPONENT_V2], fixTitle);
+
+        this.report({
+            node: computedDecorator,
+            message: this.messages.componentV2InStruct,
+            fix: () => fixes,
+        });
     }
 
     private validateComputedInClass(
@@ -279,37 +307,59 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
         observedDecorator: arkts.AnnotationUsage | undefined
     ): void {
         const computedDecorator = findDecorator(member.scriptFunction, PresetDecorators.COMPUTED);
-        if (computedDecorator && !observedV2Decorator && !observedDecorator &&
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
-            this.report({
-                node: computedDecorator,
-                message: this.messages.onlyInObservedV2,
-                fix: () => {
-                    const startPosition = node.startPosition;
-                    return {
-                        title: 'Add @ObservedV2 annotation',
-                        range: [startPosition, startPosition],
-                        code: `@${PresetDecorators.OBSERVED_V2}\n`,
-                    };
-                },
-            });
+        const isGetter = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind;
+
+        if (computedDecorator && !observedV2Decorator && !observedDecorator && isGetter) {
+            this.reportAddObservedV2(node, computedDecorator);
         }
-        if (computedDecorator && !observedV2Decorator && observedDecorator &&
-            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET === member.kind) {
-            this.report({
-                node: computedDecorator,
-                message: this.messages.onlyInObservedV2,
-                fix: () => {
-                    const startPosition = observedDecorator.startPosition;
-                    const endPosition = observedDecorator.endPosition;
-                    return {
-                        title: 'Change @Observed to @ObservedV2',
-                        range: [startPosition, endPosition],
-                        code: `${PresetDecorators.OBSERVED_V2}`,
-                    };
-                },
-            });
+
+        if (computedDecorator && !observedV2Decorator && observedDecorator && isGetter) {
+            this.reportChangeToObservedV2(observedDecorator, computedDecorator);
         }
+    }
+
+    private reportAddObservedV2(
+        node: arkts.AstNode,
+        computedDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ObservedV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [node.startPosition, node.startPosition],
+            code: `@${PresetDecorators.OBSERVED_V2}\n`,
+        });
+
+        addImportFixes(node, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
+        this.report({
+            node: computedDecorator,
+            message: this.messages.onlyInObservedV2,
+            fix: () => fixes,
+        });
+    }
+
+    private reportChangeToObservedV2(
+        observedDecorator: arkts.AnnotationUsage,
+        computedDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Change @Observed to @ObservedV2';
+
+        fixes.push({
+            title: fixTitle,
+            range: [observedDecorator.startPosition, observedDecorator.endPosition],
+            code: `${PresetDecorators.OBSERVED_V2}`,
+        });
+
+        addImportFixes(observedDecorator, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
+        this.report({
+            node: computedDecorator,
+            message: this.messages.onlyInObservedV2,
+            fix: () => fixes,
+        });
     }
 }
 
