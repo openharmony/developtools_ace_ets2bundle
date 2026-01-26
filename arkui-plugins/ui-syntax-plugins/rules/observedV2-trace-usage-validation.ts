@@ -15,9 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    PresetDecorators, getAnnotationUsage, findDecorator, getClassDeclarationAnnotation, getClassAnnotationUsage
+    PresetDecorators,
+    getAnnotationUsage,
+    findDecorator,
+    getClassDeclarationAnnotation,
+    getClassAnnotationUsage,
+    addImportFixes
 } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -117,36 +122,47 @@ class ObservedV2TraceUsageValidationRule extends AbstractUISyntaxRule {
         });
     }
 
-    private reportTraceMustUsedWithObservedV2(traceDecorator: arkts.AnnotationUsage,
-        currentNode: arkts.ClassDeclaration): void {
+    private reportTraceMustUsedWithObservedV2(
+        traceDecorator: arkts.AnnotationUsage,
+        currentNode: arkts.ClassDeclaration
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ObservedV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [currentNode.startPosition, currentNode.startPosition],
+            code: `@${PresetDecorators.OBSERVED_V2}\n`,
+        });
+
+        addImportFixes(currentNode, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
         this.report({
             node: traceDecorator,
             message: this.messages.traceMustUsedWithObservedV2,
-            fix: () => {
-                const startPosition = currentNode.startPosition;
-                return {
-                    title: 'Add @ObservedV2 annotation',
-                    range: [startPosition, startPosition],
-                    code: `@${PresetDecorators.OBSERVED_V2}\n`,
-                };
-            },
+            fix: () => fixes,
         });
     }
 
-    private reportTraceMustUsedWithObservedV2Update(traceDecorator: arkts.AnnotationUsage,
-        observedDecorator: arkts.AnnotationUsage): void {
+    private reportTraceMustUsedWithObservedV2Update(
+        traceDecorator: arkts.AnnotationUsage,
+        observedDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Change @Observed to @ObservedV2';
+
+        fixes.push({
+            title: fixTitle,
+            range: [observedDecorator.startPosition, observedDecorator.endPosition],
+            code: `${PresetDecorators.OBSERVED_V2}`,
+        });
+
+        addImportFixes(observedDecorator, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
         this.report({
             node: traceDecorator,
             message: this.messages.traceMustUsedWithObservedV2Update,
-            fix: () => {
-                const startPosition = observedDecorator.startPosition;
-                const endPosition = observedDecorator.endPosition;
-                return {
-                    title: 'Change @Observed to @ObservedV2',
-                    range: [startPosition, endPosition],
-                    code: `${PresetDecorators.OBSERVED_V2}`,
-                };
-            },
+            fix: () => fixes,
         });
     }
 
