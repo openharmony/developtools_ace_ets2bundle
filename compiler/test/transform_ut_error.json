@@ -3390,5 +3390,142 @@
             "type": "ERROR",
             "code": "10905363"
         }
-    ]
+    ],
+    "SyncMonitor": [
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.",
+            "type": "ERROR",
+            "code": "10905365"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.",
+            "type": "ERROR",
+            "code": "10905365"
+        },
+        {
+            "message": "'@SyncMonitor' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.",
+            "type": "ERROR",
+            "code": "10905365"
+        },
+        {
+            "message": "The '@SyncMonitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@SyncMonitor' can decorate only member 'method' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "'@Track' cannot be used with classes decorated by '@ObservedV2.' Use the '@Trace' decorator instead.",
+            "type": "ERROR",
+            "code": "10905344"
+        },
+        {
+            "message": "'@Track' cannot be used with classes decorated by '@ObservedV2.' Use the '@Trace' decorator instead.",
+            "type": "ERROR",
+            "code": "10905344"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        }
+  ]
 }
