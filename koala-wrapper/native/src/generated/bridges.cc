@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -4954,15 +4954,6 @@ KBoolean impl_AstNodeIsPrivateConst(KNativePointer context, KNativePointer recei
     return result;
 }
 KOALA_INTEROP_2(AstNodeIsPrivateConst, KBoolean, KNativePointer, KNativePointer);
-
-KBoolean impl_AstNodeIsInternalConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->AstNodeIsInternalConst(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(AstNodeIsInternalConst, KBoolean, KNativePointer, KNativePointer);
 
 KBoolean impl_AstNodeIsExportedConst(KNativePointer context, KNativePointer receiver)
 {
