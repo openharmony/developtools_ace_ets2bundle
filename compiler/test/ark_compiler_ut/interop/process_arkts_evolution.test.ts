@@ -24,9 +24,11 @@ import {
   arkTSModuleMap,
   cleanUpProcessArkTSEvolutionObj,
   collectArkTSEvolutionModuleInfo,
+  getArkTSEvoDeclFilePath,
   interopTransform,
   interopTransformLog,
-  pkgDeclFilesConfig
+  pkgDeclFilesConfig,
+  resolveTargetsPath
 } from '../../../lib/fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
   BUNDLE_NAME_DEFAULT,
@@ -644,6 +646,129 @@ mocha.describe('process arkts evolution tests', function () {
     expect(pkgDeclFilesConfig['har'].files['Index'].declPath === expectDeclPath).to.be.true;
     expect(pkgDeclFilesConfig['har'].files['Index'].ohmUrl === expectOhmUrl).to.be.true;
     arkTSModuleMap.clear();
+  });
+
+  mocha.it('2-2: test resolveTargetsPath with empty sourceRoots', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      []
+    );
+    
+    expect(result).to.equal('');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-3: test resolveTargetsPath with single sourceRoot (length < 2)', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main']
+    );
+    
+    expect(result).to.equal('');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-4: test resolveTargetsPath with multiple sourceRoots (second path exists)', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync');
+    existsSyncStub.onCall(0).returns(true);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main', './src/target']
+    );
+    
+    expect(result).to.equal('/TestProject/declgenV1/testModule/src/target/SubModule.d.ets');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-5: test resolveTargetsPath with multiple sourceRoots (first path exists)', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync');
+    existsSyncStub.onCall(0).returns(false);
+    existsSyncStub.onCall(1).returns(true);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main', './src/target']
+    );
+    
+    expect(result).to.equal('/TestProject/declgenV1/testModule/src/main/SubModule.d.ets');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-6: test resolveTargetsPath with no existing path', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main', './src/target']
+    );
+    
+    expect(result).to.equal('/TestProject/declgenV1/testModule/src/main/SubModule.d.ets');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-7: test resolveTargetsPath with moduleRequest not starting with pkgName', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      'otherModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main', './src/target']
+    );
+    
+    expect(result).to.equal('');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-8: test resolveTargetsPath with empty moduleRequest', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      '',
+      'testModule',
+      '/TestProject/declgenV1',
+      ['./src/main', './src/target']
+    );
+    
+    expect(result).to.equal('');
+    existsSyncStub.restore();
+  });
+
+  mocha.it('2-9: test resolveTargetsPath with null sourceRoots', function () {
+    const fs = require('fs');
+    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    
+    const result = resolveTargetsPath(
+      'testModule/SubModule',
+      'testModule',
+      '/TestProject/declgenV1',
+      null
+    );
+    
+    expect(result).to.equal('');
+    existsSyncStub.restore();
   });
 
   mocha.describe('3: process arkts evolution tests: interop transform', function () {
