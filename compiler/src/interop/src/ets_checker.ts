@@ -1306,8 +1306,7 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           } else {
             resolvedModules.push(result.resolvedModule);
           }
-        } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName) &&
-          !/\.d\.ets$/.test(result.resolvedModule.resolvedFileName)) {
+        } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName)) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
           // the parsing result needs to be modified to the glue code path of module 1.2
           const queryResult = redirectToDeclFileForInterop(result.resolvedModule.resolvedFileName);
