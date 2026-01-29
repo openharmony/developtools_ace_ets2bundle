@@ -44,6 +44,8 @@ function createTransformer(
     const visitedPrograms: Set<any> = new Set();
     const visitedExternalSources: Set<any> = new Set();
     return tracePerformance(`UISyntaxPlugin::${phase}`, function (this: PluginContext): arkts.EtsScript | undefined {
+        const isCoding = this.isCoding?.() ?? false;
+        arkts.arktsGlobal.es2panda._SetLspUsage(isCoding);
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!contextPtr) {
             return undefined;
@@ -60,7 +62,6 @@ function createTransformer(
         if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
             return undefined;
         }
-        const isCoding = this.isCoding?.() ?? false;
         processor.setComponentsInfo(projectConfig, isCoding);
         if (isCoding) {
             const codingFilePath = this.getCodingFilePath();
