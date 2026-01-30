@@ -74,6 +74,7 @@ export interface ArkTSEvolutionModule {
   declgenBridgeCodePath?: string;
   declFilesPath?: string;
   staticFiles: string[];
+  sourceRoots?: string[]; 
 }
 
 interface ResolvedFileInfo {
@@ -133,20 +134,25 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
     const staticFiles: string[] = arkTSEvolutionModuleInfo.staticFiles.map(filePtah => {
       return toUnixPath(filePtah);
     });
+    const sourceRoots: string[] = arkTSEvolutionModuleInfo.sourceRoots;
     if (resolvedFileName && staticFiles.length > 0 && staticFiles.indexOf(resolvedFileName) !== -1) {
       if(resolvedFileName.endsWith(EXTNAME_D_ETS)) {
         arktsEvoDeclFilePath = resolvedFileName
-        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)));
+          .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)));
         break;
       } else {
         arktsEvoDeclFilePath = resolvedFileName
-        .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)))
-        .replace(EXTNAME_ETS, EXTNAME_D_ETS);
+          .replace(modulePath, toUnixPath(path.join(declgenV1OutPath, pkgName)))
+          .replace(EXTNAME_ETS, EXTNAME_D_ETS);
         break;
       }
     }
     if (moduleRequest && moduleRequest === pkgName) {
       arktsEvoDeclFilePath = path.join(declgenV1OutPath, pkgName, 'Index.d.ets');
+      break;
+    }
+    arktsEvoDeclFilePath = resolveTargetsPath(moduleRequest, pkgName, declgenV1OutPath, sourceRoots);
+    if (arktsEvoDeclFilePath) {
       break;
     }
     if (moduleRequest && moduleRequest.startsWith(pkgName + '/')) {
@@ -167,6 +173,23 @@ export function getArkTSEvoDeclFilePath(resolvedFileInfo: ResolvedFileInfo): str
         pkgName,
         toUnixPath(path.join(declgenV1OutPath, pkgName))
       ) + EXTNAME_D_ETS;
+      break;
+    }
+  }
+  return arktsEvoDeclFilePath;
+}
+
+export function resolveTargetsPath(moduleRequest: string, pkgName: string, declgenV1OutPath: string, sourceRoots: string[]): string {
+  let arktsEvoDeclFilePath: string = '';
+  if (!moduleRequest || !moduleRequest.startsWith(pkgName + '/') || !sourceRoots || sourceRoots.length < 2) {
+    return arktsEvoDeclFilePath;
+  }
+  for (const sourceRoot of sourceRoots.reverse()) {
+    arktsEvoDeclFilePath = moduleRequest.replace(
+      pkgName,
+      toUnixPath(path.join(declgenV1OutPath, pkgName, sourceRoot))
+    ) + EXTNAME_D_ETS;
+    if (fs.existsSync(arktsEvoDeclFilePath)) {
       break;
     }
   }
