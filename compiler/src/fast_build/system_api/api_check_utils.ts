@@ -27,7 +27,9 @@ import {
   ohosSystemModuleSubDirPaths,
   externalApiCheckPlugin,
   externalApiMethodPlugin,
-  fileAvailableCheckPlugin
+  fileAvailableCheckPlugin,
+  externalApiCheckerMap,
+  suppressWarningsHandleMap
 } from '../../../main';
 import {
   LogType,
@@ -91,7 +93,8 @@ import {
   AVAILABLE_OSNAME_ERROR,
   ComparisonSenario,
   AVAILABLE_TAG_NAME,
-  AVAILABLE_SCOPE_ERROR
+  AVAILABLE_SCOPE_ERROR,
+  DeviceDiffType
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -115,7 +118,8 @@ export interface CheckValidCallbackInterface {
 }
 
 export interface CheckJsDocSpecialValidCallbackInterface {
-  (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node): boolean;
+  (jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node,
+    declaration?: ts.Declaration): boolean;
 }
 
 export interface checkConditionValidCallbackInterface {
@@ -822,7 +826,7 @@ export function isOpenHarmonyRuntime(): boolean {
  * - FormatValidation → formatChecker
  */
 export function initComparisonFunctions(): void {
-  if (comparisonFunctions.valueChecker.size !== 0 ) {
+  if (comparisonFunctions.valueChecker.size !== 0) {
     return;
   }
   const tags = ['since', 'available'];
@@ -951,9 +955,12 @@ export function getFormatChecker(tag: string = 'available'): FormatCheckerFuncti
  * Determine the necessity of syscap check.
  * @param jsDocTags 
  * @param config 
+ * @param node 
+ * @param declaration 
  * @returns 
  */
-export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node, declaration?: ts.Declaration): boolean {
   let currentSyscapValue: string = '';
   for (let i = 0; i < jsDocTags.length; i++) {
     const jsDocTag: ts.JSDocTag = jsDocTags[i];
@@ -962,7 +969,45 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
       break;
     }
   }
-  return projectConfig.syscapIntersectionSet && !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
+  const defaultResult: boolean = projectConfig.syscapIntersectionSet &&
+    !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
+
+  if (defaultResult) {
+    const suppressor = suppressWarningsHandleMap.get(SYSCAP_TAG_CHECK_NAME);
+    // 执行告警消除判断
+    if (suppressor && suppressor.isApiVersionHandled(node)) {
+      return false;
+    }
+    return true;
+  }
+
+  const externalCheckers = externalApiCheckerMap.get(SYSCAP_TAG_CHECK_NAME);
+  if (!externalCheckers || externalCheckers.length === 0) {
+    // 若不存在拓展校验器，直接返回结果
+    return false;
+  }
+  for (let i = 0; i < externalCheckers.length; i++) {
+    const checker = externalCheckers[i];
+    if (!checker.check) {
+      return false;
+    }
+    const extrenalCheckResult = checker.check(node, declaration, projectConfig);
+    if (!extrenalCheckResult.checkResult) {
+      return false;
+    }
+    config.message = extrenalCheckResult.checkMessage;
+  }
+  const suppressor = suppressWarningsHandleMap.get(SYSCAP_TAG_CHECK_NAME);
+  // 执行告警消除判断
+  if (suppressor && suppressor.isApiVersionHandled(node)) {
+    return false;
+  }
+  return true;
+}
+
+interface CheckSyscapResult {
+  checkResult: boolean;
+  checkMessage?: string[];
 }
 
 interface ConfigPermission {
@@ -1377,18 +1422,18 @@ export function getValidDecoratorFromNode(node: ts.Node | ts.Declaration, predic
   return parentNode ? getValidDecoratorFromNode(parentNode, predicate) : null;
 }
 
-  /**
-   * The extension method must be converted to full format.The local default method does not support format conversion, so the converted version field is used for comparison.
-   * @param curAvailableVersion 
-   * @returns 
-   */
-  export function getVersionByValueChecker(curAvailableVersion: ParsedVersion, checker: ValueCheckerFunction): string {
-    if (checker === defaultValueChecker) {
-      return curAvailableVersion.version;
-    } else {
-      return curAvailableVersion.formatVersion;
-    }
+/**
+ * The extension method must be converted to full format.The local default method does not support format conversion, so the converted version field is used for comparison.
+ * @param curAvailableVersion 
+ * @returns 
+ */
+export function getVersionByValueChecker(curAvailableVersion: ParsedVersion, checker: ValueCheckerFunction): string {
+  if (checker === defaultValueChecker) {
+    return curAvailableVersion.version;
+  } else {
+    return curAvailableVersion.formatVersion;
   }
+}
 
 export function isSourceRetentionDeclarationValid(annoDecl: ts.AnnotationDeclaration): boolean {
   if (!annoDecl) {
