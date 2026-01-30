@@ -30,15 +30,14 @@ import { SUPPRESSWARNINGS_RULE_INFO } from '../api_check_define';
  */
 export abstract class BaseWarningSuppressor {
   public validators: NodeValidator;
-  constructor(tagName: string) {
-    if (!SUPPRESSWARNINGS_RULE_INFO.has(tagName)) {
+  constructor(warnName: string) {
+    if (!SUPPRESSWARNINGS_RULE_INFO.has(warnName)) {
       this.validators = new CompositeValidator([]);
       return;
     }
     this.validators = new CompositeValidator([
-      new AnnotateSuppressWarningsValidator(),
-      new CommentSuppressWarningsValidator()
+      new AnnotateSuppressWarningsValidator(warnName),
+      new CommentSuppressWarningsValidator(warnName)
     ])
   }
-
 }
