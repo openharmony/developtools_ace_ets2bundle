@@ -135,14 +135,14 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 function main() {}
 
 @Memo() 
-export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+export declare function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
 @Memo() 
-export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+export declare function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
 @Memo() 
-export function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @Memo() content_?: (()=> void)): void
+export declare function FakeComponent(style: @Memo() ((instance: FakeComponentAttribute)=> void), @Memo() content_?: (()=> void)): void
 
 @Memo() 
-export function FakeComponentImpl(style: @Memo() ((instance: FakeComponentAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentImpl(style: @Memo() ((instance: FakeComponentAttribute)=> void), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
     get str(): (string | undefined) {
