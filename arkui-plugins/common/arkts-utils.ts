@@ -56,8 +56,7 @@ export function createAndInsertImportDeclaration(
         source,
         [arkts.factory.createImportSpecifier(imported, local)],
         importKind,
-        program,
-        arkts.Es2pandaImportFlags.IMPORT_FLAGS_NONE
+        program
     );
     arkts.importDeclarationInsert(importDecl, program);
     return;

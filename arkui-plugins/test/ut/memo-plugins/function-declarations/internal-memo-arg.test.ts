@@ -46,9 +46,9 @@ import { StateContext as StateContext, IncrementalScope as IncrementalScope } fr
 
 function main() {}
 
-export function __context(): __memo_context_type
+export declare function __context(): __memo_context_type
 
-export function __id(): __memo_id_type
+export declare function __id(): __memo_id_type
 
 @memo_entry() 
 export function memoEntry<R>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() entry: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> R)): R {
