@@ -163,6 +163,7 @@
         "decorator": ["LocalBuilder", "Builder"]
       },
       "components": [
+        "DynamicLayout",
         "AbilityComponent",
         "AlphabetIndexer",
         "AnalogClock",
@@ -299,6 +300,11 @@
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
         "components": [
+          {
+            "name": "DynamicLayout",
+            "type": "DynamicLayoutAttribute",
+            "instance": "DynamicLayoutInstance"
+          },
           {
             "name": "AbilityComponent",
             "type": "AbilityComponentAttribute",
