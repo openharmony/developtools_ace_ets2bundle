@@ -73,6 +73,30 @@ export class EmitTransformer extends AbstractVisitor {
         return node;
     }
 
+    processConsumer(node: arkts.ClassProperty): arkts.ClassProperty {
+        const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
+        annotations.forEach((anno)=>{
+            const value = getAnnotationValue(anno, DecoratorNames.CONSUMER);
+            if (arkts.isIdentifier(node.key)) {
+                const property = anno.properties[0];
+                if (property === undefined) {
+                    return node;
+                }
+                anno.setProperties([
+                    arkts.factory.updateClassProperty(
+                        property,
+                        arkts.factory.createIdentifier('value'),
+                        value ? property.value : arkts.factory.createStringLiteral(node.key.name),
+                        property.typeAnnotation,
+                        property.modifiers,
+                        false
+                    )
+                ]);
+            }
+        })
+        return node;
+    }
+
     getClassPropByName(anno: arkts.AnnotationUsage, name: string): arkts.ClassProperty | undefined {
         return anno.properties.find (
             (p): p is arkts.ClassProperty =>
@@ -139,8 +163,10 @@ export class EmitTransformer extends AbstractVisitor {
     processClassProperty(node: arkts.ClassProperty): arkts.ClassProperty {
         if (hasDecorator(node, DecoratorNames.PROVIDE) || hasDecorator(node, DecoratorNames.PROVIDER)) {
             return this.processProvide(node);
-        } else if (hasDecorator(node, DecoratorNames.CONSUME) || hasDecorator(node, DecoratorNames.CONSUMER)) {
+        } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
             return this.processConsume(node);
+        } else if (hasDecorator(node, DecoratorNames.CONSUMER)) {
+            return this.processConsumer(node);
         } else if (hasDecorator(node, DecoratorNames.PROP_REF)) {
             return this.processPropRef(node);
         }
