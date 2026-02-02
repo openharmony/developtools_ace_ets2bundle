@@ -167,7 +167,7 @@ function main() {}
         instance.setImageOptions(_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt"), undefined);
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: _r(16777220, 10003, "com.example.mock", "entry"),
@@ -209,7 +209,7 @@ function main() {}
         } as Margin));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       ImageAnimatorImpl(@Memo() ((instance: ImageAnimatorAttribute): void => {
         instance.setImageAnimatorOptions().images([{
           src: _r(16777217, 20000, "com.example.mock", "entry"),
@@ -218,7 +218,7 @@ function main() {}
         }]);
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
     }));
   }
 
