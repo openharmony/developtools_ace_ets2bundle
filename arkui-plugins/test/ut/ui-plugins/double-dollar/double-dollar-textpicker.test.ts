@@ -179,7 +179,7 @@ function main() {}
         } as TextPickerOptions));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
         instance.setTextPickerOptions(({
           range: this.fruits,
@@ -192,7 +192,7 @@ function main() {}
         } as TextPickerOptions));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       TextPickerImpl(@Memo() ((instance: TextPickerAttribute): void => {
         instance.setTextPickerOptions(({
           range: this.fruits,
@@ -205,7 +205,7 @@ function main() {}
         } as TextPickerOptions));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
     }));
   }
   
