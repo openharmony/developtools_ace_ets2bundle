@@ -54,33 +54,12 @@ export class EmitTransformer extends AbstractVisitor {
 
     processConsume(node: arkts.ClassProperty): arkts.ClassProperty {
         const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-        annotations.forEach((anno)=>{
+        annotations.forEach((anno) => {
             const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
             if (arkts.isIdentifier(node.key)) {
                 const property = anno.properties[0];
-                anno.setProperties([
-                    arkts.factory.updateClassProperty(
-                        property,
-                        arkts.factory.createIdentifier('value'),
-                        value ? property.value : arkts.factory.createStringLiteral(node.key.name),
-                        property.typeAnnotation,
-                        property.modifiers,
-                        false
-                    )
-                ]);
-            }
-        })
-        return node;
-    }
-
-    processConsumer(node: arkts.ClassProperty): arkts.ClassProperty {
-        const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-        annotations.forEach((anno)=>{
-            const value = getAnnotationValue(anno, DecoratorNames.CONSUMER);
-            if (arkts.isIdentifier(node.key)) {
-                const property = anno.properties[0];
                 if (property === undefined) {
-                    return node;
+                    return;
                 }
                 anno.setProperties([
                     arkts.factory.updateClassProperty(
@@ -163,10 +142,8 @@ export class EmitTransformer extends AbstractVisitor {
     processClassProperty(node: arkts.ClassProperty): arkts.ClassProperty {
         if (hasDecorator(node, DecoratorNames.PROVIDE) || hasDecorator(node, DecoratorNames.PROVIDER)) {
             return this.processProvide(node);
-        } else if (hasDecorator(node, DecoratorNames.CONSUME)) {
+        } else if (hasDecorator(node, DecoratorNames.CONSUME) || hasDecorator(node, DecoratorNames.CONSUMER)) {
             return this.processConsume(node);
-        } else if (hasDecorator(node, DecoratorNames.CONSUMER)) {
-            return this.processConsumer(node);
         } else if (hasDecorator(node, DecoratorNames.PROP_REF)) {
             return this.processPropRef(node);
         }
