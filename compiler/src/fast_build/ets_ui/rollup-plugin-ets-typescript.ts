@@ -455,7 +455,6 @@ async function transform(code: string, id: string) {
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
-    metaInfo.checker = globalProgram.program.getTypeChecker();
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
@@ -533,7 +532,6 @@ async function transform(code: string, id: string) {
   try {
     const eventTsProgramEmit = createAndStartEvent(eventEtsTransformForEsmodule, 'tsProgramEmit');
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
-    metaInfo.checker = tsProgram.getTypeChecker();
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
@@ -559,7 +557,6 @@ async function transform(code: string, id: string) {
       const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
       const emitResolver: ts.EmitResolver | undefined = CurrentProcessFile.getChecker()?.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
-      metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
