@@ -543,7 +543,7 @@ async function transform(code: string, id: string) {
         {
           before: [
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
-            expandAllImportPaths(tsProgram.getTypeChecker(), this),
+            expandAllImportPaths(CurrentProcessFile.getChecker(), this),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -560,7 +560,7 @@ async function transform(code: string, id: string) {
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
-        expandAllImportPaths(tsProgram.getTypeChecker(), this),
+        expandAllImportPaths(CurrentProcessFile.getChecker(), this),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
