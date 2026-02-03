@@ -201,7 +201,8 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isGetAccessor(member) && member.modifiers?.some(isComputedDecorator) && member.name &&
       ts.isIdentifier(member.name)) {
-      const symbol: ts.Symbol = globalProgram.checker?.getSymbolAtLocation(member.name);
+      const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+      const symbol: ts.Symbol = checker?.getSymbolAtLocation(member.name);
       validateComputedGetter(symbol, log);
     }
     if (ts.isConstructorDeclaration(member)) {

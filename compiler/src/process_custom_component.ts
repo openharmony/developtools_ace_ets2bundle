@@ -1014,9 +1014,10 @@ function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
 }
 
 function validateTwoWayComputed(node: ts.PropertyAccessExpression, log: LogInfo[]): void {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (ts.isPropertyAccessExpression(node) && node.expression && 
-    node.expression.kind === ts.SyntaxKind.ThisKeyword && globalProgram.checker) {
-    const symbol: ts.Symbol = globalProgram.checker.getSymbolAtLocation(node);
+    node.expression.kind === ts.SyntaxKind.ThisKeyword && checker) {
+    const symbol: ts.Symbol = checker.getSymbolAtLocation(node);
     logMessageCollection.checkTwoWayComputed(node, symbol, log);
   }
 }
@@ -1446,11 +1447,12 @@ function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
 function getParentPropertyName(node: ts.PropertyAssignment, curPropertyKind: string,
   log: LogInfo[]): string {
   const initExpression: ts.Expression = node.initializer;
-  if (!initExpression) {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!initExpression || !checker) {
     return undefined;
   }
   let parentPropertyName: string = initExpression.getText();
-  const symbol = globalProgram.checker?.getSymbolAtLocation(initExpression);
+  const symbol = checker?.getSymbolAtLocation(initExpression);
   if (curPropertyKind === COMPONENT_LINK_DECORATOR) {
     // @ts-ignore
     const initName: ts.Identifier = initExpression.name || initExpression;
