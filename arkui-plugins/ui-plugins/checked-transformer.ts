@@ -42,14 +42,12 @@ import {
     isSpecificNewClass,
 } from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
-import { generateBuilderCompatible } from './interop/builder-interop';
+import { generateBuilderCompatible, isFromBuilder1_1, addcompatibleComponentImport } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
-import { FileManager } from '../common/file-manager';
-import { LANGUAGE_VERSION } from '../common/predefines';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -112,40 +110,13 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
-    isFromBuilder1_1(decl: arkts.AstNode | undefined): boolean {
-        if (!decl || !arkts.isMethodDefinition(decl)) {
-            return false;
-        }
-        const path = arkts.getProgramFromAstNode(decl).absName;
-        const fileManager = FileManager.getInstance();
-        if (fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
-            return false;
-        }
-
-        const annotations = decl.scriptFunction.annotations;
-        const decorators: string[] = annotations.map((annotation) => {
-            return (annotation.expr as arkts.Identifier).name;
-        });
-        for (const decorator of decorators) {
-            if (decorator === 'memo' || decorator === 'Builder' || decorator === 'Memo') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    addcompatibleComponentImport(): void {
-        ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
-        ImportCollector.getInstance().collectImport('compatibleComponent');
-    }
-
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren)) {
             const decl = arkts.getDecl(beforeChildren.expression);
-            if (arkts.isIdentifier(beforeChildren.expression) && this.isFromBuilder1_1(decl)) {
+            if (arkts.isIdentifier(beforeChildren.expression) && isFromBuilder1_1(decl)) {
                 // Builder
-                this.addcompatibleComponentImport();
+                addcompatibleComponentImport();
                 return generateBuilderCompatible(beforeChildren, beforeChildren.expression.name);
             } else if (isBuilderLambda(beforeChildren, decl)) {
                 const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
