@@ -36,6 +36,7 @@ export interface AstNodeCacheValueMetadata {
     hasMemoSkip?: boolean;
     hasMemoIntrinsic?: boolean;
     hasMemoEntry?: boolean;
+    hasBuilder?: boolean;
 }
 
 export function copyCacheToClonedNode(original: AstNode, cloned: AstNode, shouldRefresh?: boolean): void {
