@@ -161,7 +161,7 @@ export class BuilderParamInterfaceTranslator<T extends InterfacePropertyTypes> e
      */
     private updateBuilderParamPropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
         const type: arkts.TypeNode | undefined = property.typeAnnotation;
-        if (findCanAddMemoFromTypeAnnotation(type)) {
+        if (findCanAddMemoFromTypeAnnotation(type).canAddMemo) {
             addMemoAnnotation(type);
         }
         removeDecorator(property, DecoratorNames.BUILDER_PARAM);

@@ -36,7 +36,7 @@ import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id
 import { Memo as Memo } from \"arkui.incremental.annotation\";
 function main() {}
 @Memo() 
-function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
+declare function funcA(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
 @Memo() 
 function funcB(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);

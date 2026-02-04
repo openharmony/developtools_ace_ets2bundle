@@ -153,7 +153,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         });
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
     }));
   }
 
@@ -221,7 +221,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         });
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
       DateComponent._invoke(@Memo() ((instance: DateComponent): void => {
         instance.applyAttributesFinish();
         return;

@@ -61,6 +61,7 @@ export class ParamTranslator extends PropertyTranslator implements InitializerCo
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         field.range = this.property.range;
+        thisGet.range = this.property.range;
         if (this.isMemoCached) {
             const metadata = findCachedMemoMetadata(this.property, false);
             arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });

@@ -149,7 +149,7 @@ function main() {}
         instance.setImageOptions(this.icon, undefined);
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+      }));
     }));
   }
 
