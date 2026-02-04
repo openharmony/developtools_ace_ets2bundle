@@ -138,18 +138,18 @@ import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\"
 function main() {}
 
 @Memo() 
-export function FakeComponentA(style: @Memo() ((instance: FakeComponentAAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+export declare function FakeComponentA(style: @Memo() ((instance: FakeComponentAAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
 @Memo() 
-export function FakeComponentB(style: @Memo() ((instance: FakeComponentBAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+export declare function FakeComponentB(style: @Memo() ((instance: FakeComponentBAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
 @Memo() 
-export function FakeComponentC(style: @Memo() ((instance: FakeComponentCAttribute)=> void), @Memo() content_?: (()=> void)): void
+export declare function FakeComponentC(style: @Memo() ((instance: FakeComponentCAttribute)=> void), @Memo() content_?: (()=> void)): void
 
 @Memo() 
-export function FakeComponentAImpl(style: @Memo() ((instance: FakeComponentAAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentAImpl(style: @Memo() ((instance: FakeComponentAAttribute)=> void), content?: @Memo() (()=> void)): void
 @Memo() 
-export function FakeComponentBImpl(style: @Memo() ((instance: FakeComponentBAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentBImpl(style: @Memo() ((instance: FakeComponentBAttribute)=> void), content?: @Memo() (()=> void)): void
 @Memo() 
-export function FakeComponentCImpl(style: @Memo() ((instance: FakeComponentCAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentCImpl(style: @Memo() ((instance: FakeComponentCAttribute)=> void), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
     get str(): (string | undefined) {

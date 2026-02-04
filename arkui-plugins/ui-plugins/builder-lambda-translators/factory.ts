@@ -532,7 +532,7 @@ export class factory {
         }
         if (arkts.isArrowFunctionExpression(arg)) {
             const memoableInfo = collectMemoableInfoInParameter(param);
-            const canAddMemo = findCanAddMemoFromArrowFunction(arg) || checkIsMemoFromMemoableInfo(memoableInfo, false);
+            const canAddMemo = findCanAddMemoFromArrowFunction(arg).canAddMemo || checkIsMemoFromMemoableInfo(memoableInfo, false);
             const newNode = this.processArgArrowFunction(arg);
             if (canAddMemo) {
                 addMemoAnnotation(newNode);

@@ -66,9 +66,12 @@ export class RegularPropertyTranslator extends PropertyTranslator implements Ini
                 arkts.factory.createIdentifier('value')
             )
         );
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, this.getGetterReturnValue(thisValue));
+        const thisGet: arkts.ExpressionStatement = this.getGetterReturnValue(thisValue);
+        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
         const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
         field.range = this.property.range;
+        thisGet.range = this.property.range;
+        thisSet.range = this.property.range;
         if (this.isMemoCached) {
             const metadata = findCachedMemoMetadata(this.property, false);
             arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
