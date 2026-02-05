@@ -14,8 +14,16 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getAnnotationUsage, PresetDecorators, getClassAnnotationUsage, getClassPropertyName, getClassPropertyAnnotationNames, TypeFlags } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import {
+    getAnnotationUsage,
+    PresetDecorators,
+    getClassAnnotationUsage,
+    getClassPropertyName,
+    getClassPropertyAnnotationNames,
+    TypeFlags,
+    addImportFixes
+} from '../utils';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 interface MonitorPathValidationContext {
     type: string;
@@ -192,32 +200,56 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         const observedV1Decorator = getClassAnnotationUsage(node, PresetDecorators.OBSERVED_V1);
 
         if (!isObservedV2 && !observedV1Decorator) {
-            this.report({
-                node: monitorDecorator,
-                message: this.messages.monitorUsedInObservedV2Class,
-                fix: () => {
-                    return {
-                        title: 'Add @ObservedV2 annotation',
-                        range: [node.startPosition, node.startPosition],
-                        code: `@${PresetDecorators.OBSERVED_V2}\n`
-                    };
-                }
-            });
+            this.reportAddObservedV2ForMonitor(node, monitorDecorator);
             return;
         }
         if (!isObservedV2 && observedV1Decorator) {
-            this.report({
-                node: monitorDecorator,
-                message: this.messages.monitorUsedInObservedV2Class,
-                fix: () => {
-                    return {
-                        title: 'Change @Observed to @ObservedV2',
-                        range: [observedV1Decorator.startPosition, observedV1Decorator.endPosition],
-                        code: `${PresetDecorators.OBSERVED_V2}`
-                    };
-                }
-            });
+            this.reportChangeToObservedV2ForMonitor(observedV1Decorator, monitorDecorator);
         }
+    }
+
+    private reportAddObservedV2ForMonitor(
+        node: arkts.ClassDeclaration,
+        monitorDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ObservedV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [node.startPosition, node.startPosition],
+            code: `@${PresetDecorators.OBSERVED_V2}\n`,
+        });
+
+        addImportFixes(node, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
+        this.report({
+            node: monitorDecorator,
+            message: this.messages.monitorUsedInObservedV2Class,
+            fix: () => fixes,
+        });
+    }
+
+    private reportChangeToObservedV2ForMonitor(
+        observedV1Decorator: arkts.AnnotationUsage,
+        monitorDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Change @Observed to @ObservedV2';
+
+        fixes.push({
+            title: fixTitle,
+            range: [observedV1Decorator.startPosition, observedV1Decorator.endPosition],
+            code: `${PresetDecorators.OBSERVED_V2}`,
+        });
+
+        addImportFixes(observedV1Decorator, fixes, this.context, [PresetDecorators.OBSERVED_V2], fixTitle);
+
+        this.report({
+            node: monitorDecorator,
+            message: this.messages.monitorUsedInObservedV2Class,
+            fix: () => fixes,
+        });
     }
 
     private checkMonitorInStruct(
@@ -230,31 +262,57 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         const componentV1Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
         const isComponentV2 = this.checkDecorator(node, PresetDecorators.COMPONENT_V2);
         if (!isComponentV2 && !componentV1Decorator) {
-            this.report({
-                node: monitorDecorator,
-                message: this.messages.monitorUsedInComponentV2Struct,
-                fix: () => ({
-                    title: 'Add @ComponentV2 annotation',
-                    range: [node.startPosition, node.startPosition],
-                    code: `@${PresetDecorators.COMPONENT_V2}\n`
-                })
-            });
+            this.reportAddComponentV2ForMonitor(node, monitorDecorator);
             return;
         }
 
         if (!isComponentV2 && componentV1Decorator) {
-            this.report({
-                node: monitorDecorator,
-                message: this.messages.monitorUsedInComponentV2Struct,
-                fix: () => {
-                    return {
-                        title: 'Change @Component to @ComponentV2',
-                        range: [componentV1Decorator.startPosition, componentV1Decorator.endPosition],
-                        code: `${PresetDecorators.COMPONENT_V2}`
-                    };
-                }
-            });
+            this.reportChangeToComponentV2ForMonitor(componentV1Decorator, monitorDecorator);
         }
+    }
+
+    private reportAddComponentV2ForMonitor(
+        node: arkts.StructDeclaration,
+        monitorDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ComponentV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [node.startPosition, node.startPosition],
+            code: `@${PresetDecorators.COMPONENT_V2}\n`,
+        });
+
+        addImportFixes(node, fixes, this.context, [PresetDecorators.COMPONENT_V2], fixTitle);
+
+        this.report({
+            node: monitorDecorator,
+            message: this.messages.monitorUsedInComponentV2Struct,
+            fix: () => fixes,
+        });
+    }
+
+    private reportChangeToComponentV2ForMonitor(
+        componentV1Decorator: arkts.AnnotationUsage,
+        monitorDecorator: arkts.AnnotationUsage
+    ): void {
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Change @Component to @ComponentV2';
+
+        fixes.push({
+            title: fixTitle,
+            range: [componentV1Decorator.startPosition, componentV1Decorator.endPosition],
+            code: `${PresetDecorators.COMPONENT_V2}`,
+        });
+
+        addImportFixes(componentV1Decorator, fixes, this.context, [PresetDecorators.COMPONENT_V2], fixTitle);
+
+        this.report({
+            node: monitorDecorator,
+            message: this.messages.monitorUsedInComponentV2Struct,
+            fix: () => fixes,
+        });
     }
 
     private checkMonitorInObservedV2Trace(node: arkts.ClassDeclaration): void {
