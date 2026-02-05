@@ -707,9 +707,13 @@ function transferCompatibleBuilder (node: ts.CallExpression): ts.CallExpression 
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     block
   );
+  const isObjectLiteral =
+    node.arguments.length === 1 &&
+    (ts.isObjectLiteralExpression(node.arguments[0]) ||
+      isStaticObjectLiteral(node.arguments[0]));
   return ts.factory.createCallExpression(
     ts.factory.createIdentifier(
-      node.arguments.length === 1 && ts.isObjectLiteralExpression(node.arguments[0])
+      isObjectLiteral
         ? '__Interop_TransferCompatibleUpdatableBuilder_Internal'
         : '__Interop_TransferCompatibleBuilder_Internal'
     ),
