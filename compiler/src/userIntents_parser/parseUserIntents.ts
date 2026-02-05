@@ -43,7 +43,7 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_FORM
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
-import {emitLogInfo, getTransformLog, LogInfo, LogType} from '../utils';
+import {emitLogInfo, getTransformLog, LogInfo, LogType, CurrentProcessFile} from '../utils';
 import {ABILITY_SUBSYSTEM_CODE} from '../hvigor_error_code/hvigor_error_info';
 import {resetLog, transformLog} from '../process_ui_syntax';
 
@@ -131,7 +131,7 @@ class ParseIntent {
       });
     }
     if (this.hasDecorator(node, definedDecorators)) {
-      const checker: TypeChecker = metaInfo.checker;
+      const checker: TypeChecker = CurrentProcessFile.getChecker();
       this.handleIntent(node, checker, filePath, metaInfo);
       node = this.removeDecorator(node, definedDecorators.concat(COMPONENT_USER_INTENTS_DECORATOR_METHOD));
     }
