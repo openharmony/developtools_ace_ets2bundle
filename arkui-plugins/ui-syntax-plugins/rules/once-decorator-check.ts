@@ -14,8 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getClassPropertyAnnotationNames, PresetDecorators, findDecorator } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { getClassPropertyAnnotationNames, PresetDecorators, findDecorator, addImportFixes } from '../utils';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -119,24 +119,26 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
-    private reportMissingParamWithOnce(
-        onceDecorator: arkts.AnnotationUsage | undefined
-    ): void {
+    private reportMissingParamWithOnce(onceDecorator: arkts.AnnotationUsage | undefined): void {
         if (!onceDecorator) {
             return;
         }
+
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @Param annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [onceDecorator.endPosition, onceDecorator.endPosition],
+            code: `@${PresetDecorators.PARAM}`
+        });
+
+        addImportFixes(onceDecorator, fixes, this.context, [PresetDecorators.PARAM], fixTitle);
+
         this.report({
             node: onceDecorator,
             message: this.messages.invalidDecorator,
-            fix: () => {
-                const startPosition = onceDecorator.endPosition;
-                const endPosition = onceDecorator.endPosition;
-                return {
-                    title: 'Add @Param annotation',
-                    range: [startPosition, endPosition],
-                    code: `@${PresetDecorators.PARAM}`
-                };
-            }
+            fix: () => fixes,
         });
     }
 }

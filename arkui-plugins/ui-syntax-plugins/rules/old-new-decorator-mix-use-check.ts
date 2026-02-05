@@ -14,8 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PresetDecorators, getAnnotationName, getAnnotationUsage, getIdentifierName } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { PresetDecorators, getAnnotationName, getAnnotationUsage, getIdentifierName, addImportFixes } from '../utils';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
     private oldV1Decorators: string[] = [
@@ -109,24 +109,31 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
     }
 
     private reportErrorAndChangeDecorator(
-        errorDecorator: arkts.AnnotationUsage,
-        hasComponentV2Decorator: arkts.AnnotationUsage,
-        structDecoratorName: string
+        errorNode: arkts.AnnotationUsage,
+        currentDecorator: arkts.AnnotationUsage,
+        newDecoratorName: string
     ): void {
-        let propertyDecoratorName = getAnnotationName(errorDecorator);
+        const propertyDecoratorName = getAnnotationName(errorNode);
+        const currentDecoratorName = getAnnotationName(currentDecorator);
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = `change @${currentDecoratorName} to @${newDecoratorName}`;
+
+        fixes.push({
+            title: fixTitle,
+            range: [currentDecorator.startPosition, currentDecorator.endPosition],
+            code: newDecoratorName,
+        });
+
+        addImportFixes(currentDecorator, fixes, this.context, [newDecoratorName], fixTitle);
+
         this.report({
-            node: errorDecorator,
+            node: errorNode,
             message: this.messages.oldAndNewDecoratorsMixUse,
             data: {
                 decoratorName: propertyDecoratorName,
-                component: structDecoratorName,
+                component: newDecoratorName,
             },
-            fix: () => {
-                return {
-                    range: [hasComponentV2Decorator.startPosition, hasComponentV2Decorator.endPosition],
-                    code: structDecoratorName,
-                };
-            },
+            fix: () => fixes,
         });
     }
 
@@ -134,7 +141,18 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         structNode: arkts.StructDeclaration,
         errorDecorator: arkts.AnnotationUsage,
     ): void {
-        let propertyDecoratorName = getAnnotationName(errorDecorator);
+        const propertyDecoratorName = getAnnotationName(errorDecorator);
+        const fixes: FixSuggestion[] = [];
+        const fixTitle = 'Add @ComponentV2 annotation';
+
+        fixes.push({
+            title: fixTitle,
+            range: [structNode.startPosition, structNode.startPosition],
+            code: `@${PresetDecorators.COMPONENT_V2}\n`,
+        });
+
+        addImportFixes(structNode, fixes, this.context, [PresetDecorators.COMPONENT_V2], fixTitle);
+
         this.report({
             node: errorDecorator,
             message: this.messages.oldAndNewDecoratorsMixUse,
@@ -142,12 +160,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
                 decoratorName: propertyDecoratorName,
                 component: PresetDecorators.COMPONENT_V2,
             },
-            fix: () => {
-                return {
-                    range: [structNode.startPosition, structNode.startPosition],
-                    code: `@${PresetDecorators.COMPONENT_V2}\n`,
-                };
-            },
+            fix: () => fixes,
         });
     }
 
