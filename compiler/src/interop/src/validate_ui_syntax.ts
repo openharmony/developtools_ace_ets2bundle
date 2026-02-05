@@ -497,7 +497,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     }
     validateFunction(node, sourceFileNode, log);
   }
-  if (ts.isPropertyDeclaration(node) && node.modifiers == undefined) {
+  if (ts.isPropertyDeclaration(node) && node.modifiers === undefined) {
     const checkObserved = validateObservedProperty(node, isComponentV2, log, sourceFileNode);
     if (checkObserved) {
       return;
