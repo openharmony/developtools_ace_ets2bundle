@@ -58,7 +58,7 @@ action("build_ets_loader_library") {
       "//interface/sdk-js:ohos_build_dynamic_sdk_component",
       "//interface/sdk-js:ets_internal_api",
       "//interface/sdk-js:ohos_declaration_ets",
-    ]
+    ]  
   } else {
     external_deps = [
       "sdk:bundle_arkts_etc",
@@ -186,7 +186,7 @@ if (sdk_build_arkts) {
 ets_loader_sources = [
   "compiler/compile_plugin.js",
   "compiler/config/obfuscateWhiteList.json5",
-  "compiler/config/stmgmtWhiteList.json",
+  main_sources,
   "compiler/node_modules",
   "compiler/npm-install.js",
   "compiler/package-lock.json",
@@ -195,7 +195,7 @@ ets_loader_sources = [
   "compiler/tsconfig.esm.json",
   "compiler/tsconfig.json",
   "compiler/webpack.config.js",
-  main_sources,
+  "compiler/config/stmgmtWhiteList.json",
 ]
 
 ohos_copy("ets_loader") {
@@ -381,7 +381,7 @@ ohos_copy("ohos_declaration_ets_ark") {
   } else {
     external_deps = [ "sdk:ohos_declaration_ets_api" ]
     ets_ark_path = get_label_info("sdk:ohos_declaration_ets_api",
-                                  "target_out_dir") + "/../api"
+                                "target_out_dir") + "/../api"
     sources = [ ets_ark_path ]
   }
   outputs = [ target_out_dir + "/../api" ]

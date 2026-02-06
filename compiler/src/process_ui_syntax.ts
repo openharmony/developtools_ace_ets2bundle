@@ -895,17 +895,19 @@ function getAfterFirstDotRegex(str: string): string {
   return str.replace(regex, '');
 }
 
-function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration>, resourceModuleName: string, isResourceModule: boolean): void {
+function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration>,
+  resourceModuleName: string, isResourceModule: boolean): void {
   if (projectConfig.compileHar) {
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
   }
   const isDynamicBundleOrModule: boolean = isDynamic();
+  const isResetAndNoReplace: boolean = projectConfig.resetBundleName && !getGetCurrentBundleName();
   const moduleNameNode: ts.Expression = createResourceModuleNode(resourceModuleName, isResourceModule, isDynamicBundleOrModule);
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      (projectConfig.resetBundleName || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
+      (isResetAndNoReplace || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
         createBundleOrModuleNode(isDynamicBundleOrModule, 'bundleName')
     ));
   }
@@ -2244,7 +2246,15 @@ function insertImportModuleNode(statements: ts.Statement[], hasUseResource: bool
 
 // Do you want to start dynamic bundleName or moduleName.
 export function isDynamic(): boolean {
+  const isIntegratedHspUseReplaceBundleName: boolean = projectConfig.integratedHsp && getGetCurrentBundleName();
   const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
   const uiTransformOptimization: boolean = !!projectConfig.uiTransformOptimization;
-  return uiTransformOptimization ? uiTransformOptimization : isByteCodeHar;
+  return uiTransformOptimization || (isByteCodeHar || isIntegratedHspUseReplaceBundleName);
+}
+
+export function getGetCurrentBundleName(): boolean {
+ 	if (projectConfig.useGetCurrentBundleName) {
+ 	  return projectConfig.useGetCurrentBundleName;
+ 	}
+ 	return false;
 }
