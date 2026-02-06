@@ -29,7 +29,7 @@ import {
 import { IntentLogger } from './intentLogger';
 import path from 'path';
 import { getNormalizedOhmUrlByFilepath } from '../ark_utils';
-import { globalModulePaths, projectConfig } from '../../main';
+import { globalModulePaths, projectConfig, globalProgram } from '../../main';
 import fs from 'fs';
 import json5 from 'json5';
 import { ProjectCollections } from 'arkguard';
@@ -43,7 +43,7 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_FORM
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
-import {emitLogInfo, getTransformLog, LogInfo, LogType, CurrentProcessFile} from '../utils';
+import {emitLogInfo, getTransformLog, LogInfo, LogType} from '../utils';
 import {ABILITY_SUBSYSTEM_CODE} from '../hvigor_error_code/hvigor_error_info';
 import {resetLog, transformLog} from '../process_ui_syntax';
 
@@ -131,7 +131,7 @@ class ParseIntent {
       });
     }
     if (this.hasDecorator(node, definedDecorators)) {
-      const checker: TypeChecker = CurrentProcessFile.getChecker();
+      const checker: TypeChecker = globalProgram.program.getTypeChecker();
       this.handleIntent(node, checker, filePath, metaInfo);
       node = this.removeDecorator(node, definedDecorators.concat(COMPONENT_USER_INTENTS_DECORATOR_METHOD));
     }
