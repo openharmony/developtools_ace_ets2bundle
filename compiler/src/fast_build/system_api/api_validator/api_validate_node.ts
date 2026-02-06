@@ -209,12 +209,17 @@ export abstract class BaseValidator {
    * @param sceneName - comment or annotation scene.
    * @returns - Do not check when there is no data in the cache, and perform verification when there is data.
    */
-  protected checkSuppressWarningsCache(node: ts.Node, sceneName: string): boolean {
+  protected checkSuppressWarningsCache(warnName: string, node: ts.Node, sceneName: string): boolean {
     const commentRegex = /\/\/\s*@SuppressWarnings\s/g;
     const annotationRegex = /\s*@SuppressWarnings\s*(\()/g;
     const contentRegex = sceneName === 'comment_suppressWarnings' ? commentRegex : annotationRegex;
-    const nodeSourceFile = node.getSourceFile()?.fileName;
-    const mapKey = `${sceneName}_${nodeSourceFile}`;
+    const nodeSource = node.getSourceFile();
+    if (!nodeSource) {
+      return true;
+    }
+    const nodeSourceText = nodeSource.text;
+    const nodeSourceFile = nodeSource.fileName;
+    const mapKey = `${warnName}_${sceneName}_${nodeSourceFile}`;
     if (suppressWarningsCheckPlugin.has(mapKey)) {
       const hasSuppressWarnings = suppressWarningsCheckPlugin.get(mapKey)!;
       if (!hasSuppressWarnings.get(sceneName)) {
@@ -222,8 +227,7 @@ export abstract class BaseValidator {
       }
     } else {
       try {
-        const fileContent: string = fs.readFileSync(nodeSourceFile, { encoding: 'utf-8' });
-        const contentChecker = contentRegex.test(fileContent);
+        const contentChecker = contentRegex.test(nodeSourceText);
         const commentMap = new Map([
           [sceneName, contentChecker]
         ])
@@ -568,7 +572,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
       return false;
     }
     const nodeSourceFileName = node.getSourceFile()?.fileName;
-    if (!checkFileHasAvailableByFileName(nodeSourceFileName)){
+    if (!checkFileHasAvailableByFileName(nodeSourceFileName)) {
       return false;
     }
     try {
@@ -657,9 +661,10 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
  * ```
  */
 export class AnnotateSuppressWarningsValidator extends BaseValidator implements NodeValidator {
-
-  constructor() {
+  private warning_TypeName: string = '';
+  constructor(warnName: string) {
     super();
+    this.warning_TypeName = warnName;
   }
 
   /**
@@ -668,7 +673,8 @@ export class AnnotateSuppressWarningsValidator extends BaseValidator implements 
    * @returns - Whether it complies with the rules and returns the alarm suppression result.
    */
   validate(node: ts.Node): boolean {
-    return this.checkSuppressWarningsCache(node, 'annotation_suppressWarnings') && this.checkAnnotationWarning(node);
+    return this.checkSuppressWarningsCache(this.warning_TypeName, node, 'annotation_suppressWarnings') &&
+      this.checkAnnotationWarning(node);
   }
 
   /**
@@ -761,7 +767,10 @@ export class AnnotateSuppressWarningsValidator extends BaseValidator implements 
       return false;
     }
     if (pro.initializer && ts.isArrayLiteralExpression(pro.initializer) && pro.initializer.elements.length > 0) {
-      return pro.initializer.elements.some(item => ANNOTATION_RULE_INFO.includes(item.getText() || item.getFullText()));
+      const ruleValues = ANNOTATION_RULE_INFO.get(this.warning_TypeName) || [];
+      return pro.initializer.elements.some((item: ts.Node) =>
+        ruleValues.includes(item.getText() || item.getFullText())
+      );
     }
 
     return false;
@@ -781,9 +790,10 @@ export class AnnotateSuppressWarningsValidator extends BaseValidator implements 
  * ```
  */
 export class CommentSuppressWarningsValidator extends BaseValidator implements NodeValidator {
-
-  constructor() {
+  private warning_TypeName: string = '';
+  constructor(warnName: string) {
     super();
+    this.warning_TypeName = warnName;
   }
 
   /**
@@ -792,7 +802,8 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
    * @returns Whether it complies with the rules and returns the alarm suppression result.
    */
   validate(node: ts.Node): boolean {
-    return this.checkSuppressWarningsCache(node, 'comment_suppressWarnings') && this.checkCommentsWarning(node);
+    return this.checkSuppressWarningsCache(this.warning_TypeName, node, 'comment_suppressWarnings') &&
+      this.checkCommentsWarning(node);
   }
 
   /**
@@ -985,12 +996,18 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
    * @returns - Determine whether the result conforms to the rule-based scenario.
    */
   private checkCommentsMessage(comments: string[]): boolean {
-    const matchSuppressWarningsCharacter = /\/\/\s*@SuppressWarnings\s/g;
-    const matchCompatibilityCharacter = /(^|[\s,])compatibility($|[\s,])/;
-    if (!this.hasNotSupportScene(comments)) {
-      return comments.some(item => matchSuppressWarningsCharacter.test(item) && matchCompatibilityCharacter.test(item));
+    if (this.hasNotSupportScene(comments)) {
+      return false;
     }
-    return false;
+    const hasSuppressWarnings = (comment: string) => /\/\/\s*@SuppressWarnings\s/g.test(comment);
+    const hasCompatibility = (comment: string) => /(^|[\s,])compatibility($|[\s,])/.test(comment);
+    const hasSyscap = (comment: string) => /(^|[\s,])syscap($|[\s,])/.test(comment);
+    return comments.some(comment => hasSuppressWarnings(comment) &&
+      (
+        (hasCompatibility(comment) && (this.warning_TypeName === 'since' || this.warning_TypeName === 'available')) ||
+        (hasSyscap(comment) && this.warning_TypeName === 'syscap')
+      )
+    );
   }
 
   /**
