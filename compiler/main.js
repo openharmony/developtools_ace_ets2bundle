@@ -49,8 +49,8 @@ const { SYSCAP_TAG_CHECK_NAME } = require('./lib/fast_build/system_api/api_check
 const { SyscapWarningSuppressor } = require('./lib/fast_build/system_api/api_validator/syscap_warning_suppressor');
 
 configure({
-  appenders: { 'ETS': { type: 'stderr', layout: { type: 'messagePassThrough' } } },
-  categories: { 'default': { appenders: ['ETS'], level: 'info' } }
+  appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
+  categories: {'default': {appenders: ['ETS'], level: 'info'}}  
 });
 const logger = getLogger('ETS');
 
@@ -138,8 +138,7 @@ function initProjectPathConfig(projectConfig) {
     path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
-  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-    process.env.aceSuperVisualPath;
+  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath || process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
     hashProjectPath(projectConfig.projectPath);
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
@@ -164,6 +163,7 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
+
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
@@ -312,7 +312,7 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../', projectConfig.packageJson);
+  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -856,8 +856,8 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
     const pluginGroup = pluginGroups[i];
 
     for (const config of pluginGroup) {
-      let pluginKey = "";
-
+      let pluginKey = '';
+      
       if (config.type) {
         // New format: has type field
         // Key: {osName}/{tag}/{type}
@@ -1365,11 +1365,11 @@ exports.resetGlobalProgram = resetGlobalProgram;
 exports.setEntryArrayForObf = setEntryArrayForObf;
 exports.getPackageJsonEntryPath = getPackageJsonEntryPath;
 exports.setIntentEntryPages = setIntentEntryPages;
+exports.setStartupPagesForObf = setStartupPagesForObf;
 exports.externalApiCheckPlugin = externalApiCheckPlugin;
 exports.externalApiMethodPlugin = externalApiMethodPlugin;
 exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
-exports.setStartupPagesForObf = setStartupPagesForObf;
 exports.externalApiCheckerMap = externalApiCheckerMap;
 exports.suppressWarningsHandleMap = suppressWarningsHandleMap;

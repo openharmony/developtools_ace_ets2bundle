@@ -46,7 +46,6 @@ import {
   ESMODULE,
   EXTNAME_D_ETS,
   EXTNAME_JS,
-  EXTNAME_ETS,
   FOREACH_LAZYFOREACH,
   COMPONENT_IF,
   TS_WATCH_END_MSG,
@@ -157,6 +156,7 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
     fs.closeSync(fd);
   }
 };
+
 // The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
 const filesBuildInfo: Map<string, string> = new Map();
 
