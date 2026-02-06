@@ -45,9 +45,12 @@ const {
   getLogger
 } = require('log4js');
 
+const { SYSCAP_TAG_CHECK_NAME } = require('./lib/fast_build/system_api/api_check_define');
+const { SyscapWarningSuppressor } = require('./lib/fast_build/system_api/api_validator/syscap_warning_suppressor');
+
 configure({
-  appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
-  categories: {'default': {appenders: ['ETS'], level: 'info'}}
+  appenders: { 'ETS': { type: 'stderr', layout: { type: 'messagePassThrough' } } },
+  categories: { 'default': { appenders: ['ETS'], level: 'info' } }
 });
 const logger = getLogger('ETS');
 
@@ -80,6 +83,9 @@ let externalApiMethodPlugin = new Map();
 let fileDeviceCheckPlugin = new Map();
 let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
+// 拓展SDK校验插件
+let externalApiCheckerMap = new Map();
+let suppressWarningsHandleMap = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -124,18 +130,18 @@ function initProjectConfig(projectConfig) {
 
 function initProjectPathConfig(projectConfig) {
   projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
-  path.join(process.cwd(), 'sample');
+    path.join(process.cwd(), 'sample');
   projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
-  path.resolve(projectConfig.projectPath, 'build');
+    path.resolve(projectConfig.projectPath, 'build');
   projectConfig.aceModuleBuild = projectConfig.buildPath; // To be compatible with both webpack and rollup
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
-  path.join(projectConfig.projectPath, 'manifest.json');
+    path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
   projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-  process.env.aceSuperVisualPath;
+    process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
-  hashProjectPath(projectConfig.projectPath);
+    hashProjectPath(projectConfig.projectPath);
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
@@ -253,9 +259,9 @@ function loadNavigationConfig(aceBuildJson) {
         setEntryArrayForObf(filePath);
         const storedFileInfo = getStoredFileInfo();
         if (storedFileInfo.routerInfo.has(filePath)) {
-          storedFileInfo.routerInfo.get(filePath).push({name: item.name, buildFunction: item.buildFunction});
+          storedFileInfo.routerInfo.get(filePath).push({ name: item.name, buildFunction: item.buildFunction });
         } else {
-          storedFileInfo.routerInfo.set(filePath, [{name: item.name, buildFunction: item.buildFunction}]);
+          storedFileInfo.routerInfo.set(filePath, [{ name: item.name, buildFunction: item.buildFunction }]);
         }
       }
     });
@@ -669,7 +675,7 @@ function loadBuildJson() {
   }
 
   projectConfig.customizedHar = !!aceBuildJson.customizedHar;
-  
+
   if (aceBuildJson.updateVersionInfo) {
     projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;
   }
@@ -747,7 +753,7 @@ function filterWorker(workerPath) {
   return /\.(ts|js|ets)$/.test(workerPath);
 }
 
-;(function initSystemResource() {
+; (function initSystemResource() {
   const sysResourcePath = path.resolve(__dirname, './sysResource.js');
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
@@ -769,7 +775,7 @@ function filterWorker(workerPath) {
   }
 })();
 
-;(function readSystemModules() {
+; (function readSystemModules() {
   const apiDirPath = path.resolve(__dirname, '../../api');
   const arktsDirPath = path.resolve(__dirname, '../../arkts');
   const kitsDirPath = path.resolve(__dirname, '../../kits');
@@ -848,10 +854,10 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
   ].filter(Boolean);
   for (let i = 0; i < pluginGroups.length; i++) {
     const pluginGroup = pluginGroups[i];
-    
+
     for (const config of pluginGroup) {
       let pluginKey = "";
-      
+
       if (config.type) {
         // New format: has type field
         // Key: {osName}/{tag}/{type}
@@ -861,7 +867,7 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
         // Key: {osName}/{tag}
         pluginKey = [osName, config.tag].join('/');
       }
-      
+
       const pluginConfig = {
         ...config,
         path: path.resolve(sdkPath, config.path)
@@ -872,6 +878,44 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
       externalApiCheckPlugin.set(pluginKey, existingPlugins);
     }
   }
+}
+
+/**
+ * Collects external API check plugins from SDK config.
+ * Loads plugins and stores them with keys: {osName}/{tag}/{type}
+ * 
+ * Plugin key format: {osName}/{tag}/{type}
+ * Example: "since/CompatibilityCheck"
+ * 
+ * @param {Object} sdkConfig - SDK configuration object
+ * @param {string} sdkPath - Base SDK path for resolving plugin paths
+ */
+function collectExternalApiChecker(sdkConfig, sdkPath) {
+  suppressWarningsHandleMap.set(SYSCAP_TAG_CHECK_NAME, new SyscapWarningSuppressor());
+  if (!sdkConfig.apiCheckPlugins || sdkConfig.apiCheckPlugins.length === 0) {
+    return;
+  }
+  const apiCheckPlugins = sdkConfig.apiCheckPlugins;
+  if (!apiCheckPlugins || apiCheckPlugins.length === 0) {
+    return;
+  }
+  apiCheckPlugins.forEach(plugin => {
+    const externalModulePath = path.resolve(sdkPath, plugin.path);
+    if (!fs.existsSync(externalModulePath)) {
+      return;
+    }
+    try {
+      const externalModule = require(path.resolve(sdkPath, plugin.path));
+      const externalChecker = new externalModule[plugin.className];
+      if (externalApiCheckerMap.get(plugin.tagName)) {
+        externalApiCheckerMap.set(plugin.tagName, externalApiCheckerMap.get(plugin.tagName).push(externalChecker));
+      } else {
+        externalApiCheckerMap.set(plugin.tagName, [externalChecker]);
+      }
+    } catch (error) {
+      return;
+    }
+  });
 }
 
 function collectExternalModules(sdkPaths) {
@@ -887,8 +931,10 @@ function collectExternalModules(sdkPaths) {
     }
 
     if (sdkConfig.apiCheckPlugin && sdkConfig.apiCheckPlugin.length > 0) {
+      // TODO: 待合并
       collectExternalApiCheckPlugin(sdkConfig, sdkPath);
     }
+    collectExternalApiChecker(sdkConfig, sdkPath);
     let externalApiPathArray = [];
     if (Array.isArray(sdkConfig.apiPath)) {
       externalApiPathArray = sdkConfig.apiPath;
@@ -1108,7 +1154,7 @@ function isPartialUpdate(metadata, moduleType) {
         partialUpdateConfig.partialUpdateMode = false;
         if (projectConfig.aceModuleJsonPath) {
           logger.warn('\u001b[33m ArkTS:WARN File: ' + projectConfig.aceModuleJsonPath + '.' + '\n' +
-          " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
+            " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
         }
       }
       if (item.name === 'ArkTSBuilderCheck' && item.value === 'false') {
@@ -1153,7 +1199,7 @@ function applicationConfig() {
   const localProperties = path.resolve(aceBuildJson.projectRootPath, 'local.properties');
   if (fs.existsSync(localProperties)) {
     try {
-      const localPropertiesFile = fs.readFileSync(localProperties, {encoding: 'utf-8'}).split(/\r?\n/);
+      const localPropertiesFile = fs.readFileSync(localProperties, { encoding: 'utf-8' }).split(/\r?\n/);
       localPropertiesFile.some((item) => {
         const builderCheckValue = item.replace(/\s+|;/g, '');
         if (builderCheckValue === 'ArkTSConfig.ArkTSBuilderCheck=false') {
@@ -1226,6 +1272,8 @@ function resetMain() {
   fileDeviceCheckPlugin = new Map();
   fileAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
+  externalApiCheckerMap = new Map();
+  suppressWarningsHandleMap = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1323,3 +1371,5 @@ exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.setStartupPagesForObf = setStartupPagesForObf;
+exports.externalApiCheckerMap = externalApiCheckerMap;
+exports.suppressWarningsHandleMap = suppressWarningsHandleMap;
