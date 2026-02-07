@@ -31,13 +31,11 @@ import {
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
-  traverseProgramSourceFiles,
-  arkTsEvolutionModuleMap,
-  cleanUpArkTsEvolutionModuleMap,
+  traverseProgramSourceFiles
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
-  setChecker,
+  setChecker
 } from '../../utils';
 import {
   configureSyscapInfo,
@@ -57,11 +55,9 @@ import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
 import { collectArkTSEvolutionModuleInfo } from '../ark_compiler/interop/process_arkts_evolution';
 import {
-  initFileManagerInRollup,
   isBridgeCode,
   isMixCompile
 } from '../ark_compiler/interop/interop_manager';
-
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
 
@@ -76,7 +72,6 @@ export function etsChecker() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
-      initFileManagerInRollup(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -122,7 +117,7 @@ export function etsChecker() {
       }
       if (process.env.watchMode === 'true') {
         !executedOnce && serviceChecker(rootFileNames, logger, resolveModulePaths, eventServiceChecker, this.share);
-        ts.PerformanceDotting.startAdvanced('diagnostic');
+        ts.PerformanceDotting?.startAdvanced('diagnostic');
         if (executedOnce) {
           const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
           timePrinterInstance.setArkTSTimePrintSwitch(false);
@@ -142,7 +137,7 @@ export function etsChecker() {
         const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
           .getSyntacticDiagnostics()
           .concat(globalProgram.builderProgram.getSemanticDiagnostics());
-        ts.PerformanceDotting.stopAdvanced('diagnostic');
+        ts.PerformanceDotting?.stopAdvanced('diagnostic');
         emitBuildInfo();
         let errorCodeLogger: Object | undefined = this.share?.getHvigorConsoleLogger ?
           this.share?.getHvigorConsoleLogger(TSC_SYSTEM_CODE) : undefined;

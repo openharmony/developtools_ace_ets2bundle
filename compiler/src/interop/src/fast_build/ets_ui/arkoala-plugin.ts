@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import type * as ts from 'typescript'
-import { reset, yellow } from '../ark_compiler/common/ark_define'
+import type * as ts from 'typescript';
+import { reset, yellow } from '../ark_compiler/common/ark_define';
 
 export interface ArkoalaPluginOptions {
   /**
@@ -38,7 +38,7 @@ export default function arkoalaProgramTransform(
   options: ArkoalaPluginOptions,
   extras: Object,
 ): ts.Program {
-  let [,,,] = [compilerHost, options, extras]
+  let [,,,] = [compilerHost, options, extras];
   console.warn(`${yellow}WARN: Arkoala plugin is missing in the current SDK. Source transformation will not be performed.${reset}`)
-  return program
+  return program;
 }
