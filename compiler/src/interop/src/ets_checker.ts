@@ -46,14 +46,14 @@ import {
   ESMODULE,
   EXTNAME_D_ETS,
   EXTNAME_JS,
-  EXTNAME_ETS,
   FOREACH_LAZYFOREACH,
   COMPONENT_IF,
   TS_WATCH_END_MSG,
   TS_BUILD_INFO_SUFFIX,
   HOT_RELOAD_BUILD_INFO_SUFFIX,
   WATCH_COMPILER_BUILD_INFO_SUFFIX,
-  COMPONENT_STYLES_DECORATOR
+  COMPONENT_STYLES_DECORATOR,
+  COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -118,7 +118,6 @@ import {
   ARKTS_1_2
 } from './fast_build/ark_compiler/interop/pre_define';
 
-
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
   pkgJsonFileHash?: string;
@@ -165,6 +164,7 @@ const buildInfoWriteFile: ts.WriteFileCallback = (fileName: string, data: string
     fs.closeSync(fd);
   }
 };
+
 // The collection records the file name and the corresponding version, where the version is the hash value of the text in last compilation.
 const filesBuildInfo: Map<string, string> = new Map();
 
@@ -350,7 +350,7 @@ function createHash(str: string): string {
 
 export function getFileContentWithHash(fileName: string): string {
   let fileContent: string | undefined = fileCache.get(fileName);
-  if (fileContent === undefined) {
+  if (fileContent === undefined) {      
     fileContent = fs.readFileSync(fileName).toString();
     fileCache.set(fileName, fileContent);
     // Provide the hash value for hvigor's remote cache, and let them handle the cleanup.
@@ -401,12 +401,12 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       }
       let fileContent: string = getFileContentWithHash(fileName);
       if (/(?<!\.d)\.(ets|ts)$/.test(fileName)) {
-        ts.PerformanceDotting.startAdvanced('scriptSnapshot');
+        ts.PerformanceDotting?.startAdvanced('scriptSnapshot');
         appComponentCollection.set(path.join(fileName), new Set());
         let content: string = processContent(fileContent, fileName);
         const extendFunctionInfo: extendInfo[] = [];
         content = instanceInsteadThis(content, fileName, extendFunctionInfo, this.uiProps);
-        ts.PerformanceDotting.stopAdvanced('scriptSnapshot');
+        ts.PerformanceDotting?.stopAdvanced('scriptSnapshot');
         return ts.ScriptSnapshot.fromString(content);
       }
       return ts.ScriptSnapshot.fromString(fileContent);
@@ -473,7 +473,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 export let targetESVersionChanged: boolean = false;
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
-  rollupShareObject?: Object): ts.LanguageService {
+  rollupShareObject?: any): ts.LanguageService {
   let cacheKey: string = 'service';
   let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
@@ -711,7 +711,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   const timePrinterInstance = ts.ArkTSLinterTimePrinter.getInstance();
   timePrinterInstance.setArkTSTimePrintSwitch(false);
   timePrinterInstance.appendTime(ts.TimePhase.START);
-  ts.PerformanceDotting.startAdvanced('createProgram');
+  ts.PerformanceDotting?.startAdvanced('createProgram');
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GET_BUILDER_PROGRAM);
 
   globalProgram.builderProgram = languageService.getBuilderProgram(/*withLinterProgram*/ true);
@@ -720,17 +720,17 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   props = languageService.getProps();
   timePrinterInstance.appendTime(ts.TimePhase.GET_PROGRAM);
   MemoryMonitor.stopRecordStage(recordInfo);
-  ts.PerformanceDotting.stopAdvanced('createProgram');
+  ts.PerformanceDotting?.stopAdvanced('createProgram');
 
   collectAllFiles(globalProgram.program, undefined, undefined, rollupShareObject);
   collectFileToIgnoreDiagnostics(rootFileNames);
-  ts.PerformanceDotting.startAdvanced('runArkTSLinterTime');
+  ts.PerformanceDotting?.startAdvanced('runArkTSLinterTime');
   const runArkTSLinterRecordInfo = MemoryMonitor.recordStage(MemoryDefine.RUN_ARK_TS_LINTER);
   const errorCodeLogger: Object | undefined = !!rollupShareObject?.getHvigorConsoleLogger ?
     rollupShareObject?.getHvigorConsoleLogger(LINTER_SUBSYSTEM_CODE) : undefined;
   runArkTSLinter(errorCodeLogger, parentEvent);
   MemoryMonitor.stopRecordStage(runArkTSLinterRecordInfo);
-  ts.PerformanceDotting.stopAdvanced('runArkTSLinterTime');
+  ts.PerformanceDotting?.stopAdvanced('runArkTSLinterTime');
 
   if (process.env.watchMode !== 'true') {
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
@@ -740,7 +740,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
 
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
   // Release the typeChecker early and perform GC in the following scenarios:
-  // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario,
+  // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
   // and it is not a preview, hot reload, or cold reload scenario. The typeChecker is not released early in performance-priority mode.
   let shouldReleaseTypeChecker: boolean = rollupShareObject?.projectConfig?.executionMode !== 'performance' && globalProgram.program &&
     process.env.watchMode !== 'true' && !projectConfig.isPreview && !projectConfig.hotReload && !projectConfig.coldReload;
@@ -858,13 +858,13 @@ export function emitBuildInfo(): void {
 
 function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent: CompileEvent,
   rollupShareObject: Object): void {
-  ts.PerformanceDotting.startAdvanced('diagnostic');
+  ts.PerformanceDotting?.startAdvanced('diagnostic');
   const semanticRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_GET_SEMANTIC_DIAGNOSTICS);
   const allDiagnostics: ts.Diagnostic[] = globalProgram.builderProgram
     .getSyntacticDiagnostics()
     .concat(globalProgram.builderProgram.getSemanticDiagnostics());
   MemoryMonitor.stopRecordStage(semanticRecordInfo);
-  ts.PerformanceDotting.stopAdvanced('diagnostic');
+  ts.PerformanceDotting?.stopAdvanced('diagnostic');
   const emitBuildRecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP_EMIT_BUILD_INFO);
   emitBuildInfo();
   let errorCodeLogger: Object | undefined = rollupShareObject?.getHvigorConsoleLogger ?
@@ -1070,7 +1070,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for TSC error codes
-  if (flag === ErrorCodeModule.TSC &&
+  if (flag === ErrorCodeModule.TSC && 
     validateUseErrorCodeLogger(ErrorCodeModule.TSC, diagnostic.code)) {
     const errorCode = ts.getErrorCode(diagnostic);
     errorCodeLogger.printError(errorCode);
@@ -1078,7 +1078,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for LINTER error codes
-  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC &&
+  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC && 
     validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
     const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
     errorCodeLogger.printError(linterErrorInfo);
@@ -1086,7 +1086,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for ArkUI error codes
-  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC &&
+  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
     validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
     const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
       diagnostic.code, positionMessage, message);
@@ -1140,7 +1140,7 @@ function validateNewExtend(message: string): boolean {
   return false;
 }
 
-function matchMessage(message: string, nameArr: Set<string>, reg: RegExp): boolean {
+function matchMessage(message: string, nameArr: any, reg: RegExp): boolean {
   if (reg.test(message)) {
     const match: string[] = message.match(reg);
     if (match[1] && nameArr.has(match[1])) {
@@ -1285,7 +1285,7 @@ export function isOhExport(packageName: string | undefined, resolvedFileName: st
 }
 
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-  ts.PerformanceDotting.startAdvanced('resolveModuleNames');
+  ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
   const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   const cacheFileContent: ts.ResolvedModuleFull[] = resolvedModulesCache.get(path.resolve(containingFile));
@@ -1415,11 +1415,11 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
       createOrUpdateCache(resolvedModules, path.resolve(containingFile));
     }
     resolvedModulesCache.set(path.resolve(containingFile), resolvedModules);
-    ts.PerformanceDotting.stopAdvanced('resolveModuleNames');
+    ts.PerformanceDotting?.stopAdvanced('resolveModuleNames');
     return resolvedModules;
 
   }
-  ts.PerformanceDotting.stopAdvanced('resolveModuleNames');
+  ts.PerformanceDotting?.stopAdvanced('resolveModuleNames');
   return resolvedModulesCache.get(path.resolve(containingFile));
 }
 
@@ -1636,7 +1636,8 @@ function parseAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, extendFuncti
   }
   if (ts.isMethodDeclaration(node) && node.name.getText() === COMPONENT_BUILD_FUNCTION ||
     (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) &&
-    hasDecorator(node, COMPONENT_BUILDER_DECORATOR)) {
+    hasDecorator(node, COMPONENT_BUILDER_DECORATOR) ||
+    ts.isMethodDeclaration(node) && hasDecorator(node, COMPONENT_LOCAL_BUILDER_DECORATOR)) {
     if (node.body && node.body.statements && node.body.statements.length) {
       const checkProp: ts.NodeArray<ts.Statement> = node.body.statements;
       checkProp.forEach((item, index) => {
@@ -1845,14 +1846,14 @@ export function runArkTSLinter(errorCodeLogger?: Object | undefined, parentEvent
     buildInfoWriteFile,
     errorCodeLogger);
 
-  ts.PerformanceDotting.startAdvanced('updateErrorFile');
+  ts.PerformanceDotting?.startAdvanced('updateErrorFile');
   if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
     arkTSLinterDiagnostics.forEach((diagnostic: ts.Diagnostic) => {
       updateErrorFileCache(diagnostic);
     });
     timePrinterInstance.appendTime(ts.TimePhase.UPDATE_ERROR_FILE);
   }
-  ts.PerformanceDotting.stopAdvanced('updateErrorFile');
+  ts.PerformanceDotting?.stopAdvanced('updateErrorFile');
   timePrinterInstance.printTimes();
   ts.ArkTSLinterTimePrinter.destroyInstance();
 }
