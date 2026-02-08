@@ -179,11 +179,11 @@ final class MonitorNames extends BaseEnum<String> {
 
   @JSONRename({newName:"name"}) public __backing_name: string = "Tom";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
   @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
 
   private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
 

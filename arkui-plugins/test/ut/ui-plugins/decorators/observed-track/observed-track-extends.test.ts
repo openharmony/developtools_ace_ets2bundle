@@ -83,7 +83,7 @@ function main() {}
     }
   }
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
   
   @JSONRename({newName:"propA"}) public __backing_propA: number = 1;
   
@@ -155,7 +155,7 @@ class G extends A {
   
   @JSONRename({newName:"propG"}) public __backing_propG: number = 1;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_propG");
   
   public constructor() {}
   

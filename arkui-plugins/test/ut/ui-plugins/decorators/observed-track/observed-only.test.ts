@@ -84,7 +84,7 @@ function main() {}
     }
   }
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
   
   @JSONRename({newName:"propA"}) public __backing_propA: number = 1;
 

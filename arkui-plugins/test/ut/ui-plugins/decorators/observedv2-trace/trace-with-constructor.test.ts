@@ -81,11 +81,11 @@ function main() {}
 
   @JSONRename({newName:"traceE"}) public __backing_traceE: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_traceE");
 
   @JSONRename({newName:"vv"}) public __backing_vv?: string;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_vv: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_vv");
 
   public get traceE(): number {
     this.conditionalAddRef(this.__meta_traceE);

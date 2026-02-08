@@ -493,7 +493,6 @@ export class factory {
             arkts.isThisExpression(value.object) &&
             arkts.isIdentifier(value.property)
         ) {
-            oriProperty = prop;
             newProperty = arkts.factory.updateProperty(
                 prop,
                 arkts.factory.createIdentifier(backingField(keyName)),
