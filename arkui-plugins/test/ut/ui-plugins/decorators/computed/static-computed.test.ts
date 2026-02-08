@@ -96,11 +96,11 @@ function main() {}
 
   @JSONRename({newName:"firstName"}) public static __backing_firstName: string = "Hua";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_firstName");
 
   @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_lastName");
 
   public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
     return ((((Name.firstName) + (" "))) + (Name.lastName));

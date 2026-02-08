@@ -67,7 +67,7 @@ export interface ComponentTransformerOptions extends VisitorOptions {
 
 type ScopeInfo = CustomComponentInfo;
 
-const isRequiredDecorators = [DecoratorNames.LINK, DecoratorNames.OBJECT_LINK, DecoratorNames.REQUIRE];
+const isRequiredDecorators = [DecoratorNames.OBJECT_LINK, DecoratorNames.REQUIRE];
 
 export interface InteropContext {
     className: string;
