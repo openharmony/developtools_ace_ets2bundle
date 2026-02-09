@@ -31,13 +31,11 @@ import {
   targetESVersionChanged,
   collectFileToIgnoreDiagnostics,
   TSC_SYSTEM_CODE,
-  traverseProgramSourceFiles,
-  arkTsEvolutionModuleMap,
-  cleanUpArkTsEvolutionModuleMap,
+  traverseProgramSourceFiles
 } from '../../ets_checker';
 import { TS_WATCH_END_MSG } from '../../pre_define';
 import {
-  setChecker,
+  setChecker
 } from '../../utils';
 import {
   configureSyscapInfo,
