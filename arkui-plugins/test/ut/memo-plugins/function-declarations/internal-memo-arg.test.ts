@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -140,7 +140,7 @@ export declare interface ControlledScope {
 }
 
 export declare interface StateManager extends StateContext {
-  get node(): (IncrementalNode | undefined)
+  get node(): ((IncrementalNode | undefined) | undefined)
   valueBy<Value>(name: string, global?: boolean): Value
   scopeEx<Value>(id: int, paramCount?: int, create?: (()=> IncrementalNode), compute?: (()=> Value), cleanup?: ((value: (Value | undefined))=> void), once?: boolean, reuseKey?: string): IncrementalScope<Value>
   controlledScope(id: int, invalidate: (()=> void)): ControlledScope
