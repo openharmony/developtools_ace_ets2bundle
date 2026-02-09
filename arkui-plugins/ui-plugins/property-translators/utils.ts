@@ -22,6 +22,7 @@ import {
     StateManagementTypes,
     GetSetTypes,
     ObservedNames,
+    EnvInternalProperty
 } from '../../common/predefines';
 import {
     addMemoAnnotation,
@@ -129,7 +130,8 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         (hasDecoratorName(st, DecoratorNames.PARAM) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.REQUIRE) && !st.value) ||
-        (hasDecoratorName(st, DecoratorNames.BUILDER_PARAM) && !st.value)
+        (hasDecoratorName(st, DecoratorNames.BUILDER_PARAM) && !st.value) ||
+        (hasDecoratorName(st, DecoratorNames.ENV))
     );
 }
 
@@ -332,6 +334,10 @@ export interface ProvideOptions {
     allowOverride?: arkts.Expression;
 }
 
+export interface EnvOptions {
+    envValue?: arkts.Expression;
+}
+
 export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideOptions | undefined {
     const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
     for (let i = 0; i < annotations.length; i++) {
@@ -340,6 +346,18 @@ export function getValueInProvideAnnotation(node: arkts.ClassProperty): ProvideO
             const alias = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'alias');
             const allowOverride = getValueInObjectAnnotation(anno, DecoratorNames.PROVIDE, 'allowOverride');
             return { alias, allowOverride };
+        }
+    }
+    return undefined;
+}
+
+export function getValueInEnvAnnotation(node: arkts.ClassProperty): EnvOptions | undefined {
+    const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
+    for (let i = 0; i < annotations.length; i++) {
+        const anno: arkts.AnnotationUsage = annotations[i];
+        if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.ENV) {
+            const envValue = getValueInObjectAnnotation(anno, DecoratorNames.ENV, EnvInternalProperty.ENV_VALUE);
+            return { envValue };
         }
     }
     return undefined;

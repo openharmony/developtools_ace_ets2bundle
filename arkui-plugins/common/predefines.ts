@@ -177,7 +177,8 @@ export enum DecoratorNames {
     MONITOR = 'Monitor',
     COMPUTED = 'Computed',
     EVENT = 'Event',
-    REQUIRE = 'Require'
+    REQUIRE = 'Require',
+    ENV = 'Env'
 }
 
 export enum TypeNames {
@@ -215,6 +216,7 @@ export enum StateManagementTypes {
     CONSUMER_DECORATED = 'IConsumerDecoratedVariable',
     COMPUTED_DECORATED = 'IComputedDecoratedVariable',
     MONITOR_DECORATED = 'IMonitorDecoratedVariable',
+    ENV_DECORATED = 'IEnvDecoratedVariable',
     MUTABLE_STATE_META = 'IMutableStateMeta',
     OBSERVED_OBJECT = 'IObservedObject',
     WATCH_ID_TYPE = 'WatchIdType',
@@ -251,6 +253,7 @@ export enum StateManagementTypes {
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
     SET_OWNER = 'setOwner',
     RESET_ON_REUSE = 'resetOnReuse',
+    MAKE_ENV = 'makeEnv'
 }
 
 export enum AnimationNames {
@@ -312,6 +315,7 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
     [DecoratorNames.ONCE, StateManagementTypes.ONCE_DECORATED],
     [DecoratorNames.PROVIDER, StateManagementTypes.PROVIDER_DECORATED],
     [DecoratorNames.CONSUMER, StateManagementTypes.CONSUMER_DECORATED],
+    [DecoratorNames.ENV, StateManagementTypes.ENV_DECORATED]
 ]);
 
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
@@ -335,6 +339,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.CONSUMER, [StateManagementTypes.CONSUMER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.COMPUTED, [StateManagementTypes.COMPUTED_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
         [
@@ -412,4 +417,8 @@ export enum LANGUAGE_VERSION {
 export enum ReuseNames {
     REUSE_ID = 'reuseId',
     REUSE_OPTIONS = 'ReuseOptions'
+}
+
+export enum EnvInternalProperty {
+    ENV_VALUE = 'value'
 }
