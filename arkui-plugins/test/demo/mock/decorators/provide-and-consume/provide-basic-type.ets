@@ -23,6 +23,18 @@ struct PropParent {
   @Provide provideVar3: boolean = true;
   @Provide provideVar4: undefined = undefined;
   @Provide provideVar5: null = null;
+  @Provide provideVar6: string | undefined = "hello";
+  @Provide provideVar7: string | null = null;
+  @Provide({ alias: 'a' }) provideVar8: number = 10;
+  @Provide({ alias: 'b' }) provideVar9: string | undefined = 'hello';
+  @Provide({ allowOverride: true }) provideVar10: number = 10;
+  @Provide({ allowOverride: true }) provideVar11: string | undefined = undefined;
+  @Provide({ allowOverride: false }) provideVar12: number = 15;
+  @Provide({ allowOverride: false }) provideVar13: string | undefined = 'prop13';
+  @Provide({ alias: 'c', allowOverride: true }) provideVar14: boolean | undefined = false;
+  @Provide({ alias: 'd', allowOverride: true }) provideVar15: string | undefined = undefined;
+  @Provide({ alias: 'e', allowOverride: false }) provideVar16: number | undefined = 20;
+  @Provide({ alias: 'f', allowOverride: false }) provideVar17: boolean | undefined = true;
 
   build() {
   }

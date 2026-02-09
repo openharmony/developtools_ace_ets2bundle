@@ -98,6 +98,20 @@ enum PropType {
 
   @Consume() public conVar13?: (Set<string> | null);
 
+  @Consume({value:"a"}) public conVar14?: (Array<number> | undefined) = new Array<number>(1, 2, 3);
+
+  @Consume({value:"b"}) public conVar15!: Set<string> = new Set<string>(new Array<string>("a", "b", "c"));
+
+  @Consume({value:"c"}) public conVar16?: (Per[] | null | undefined) = [new Per(1), new Per(2), new Per(3)];
+
+  @Consume({value:"d"}) public conVar17?: (Date | null) = new Date("2026-02-09");
+
+  @Consume({value:"e"}) public conVar18?: (Map<string, Per> | null | undefined) = new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]);
+
+  @Consume({value:"f"}) public conVar19?: (Set<string> | Per | null) = new Per(10);
+
+  @Consume({value:"g"}) public conVar20?: (boolean[] | undefined) = [true, false];
+
   public build() {}
 
   protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
@@ -147,6 +161,27 @@ enum PropType {
   conVar13?: (Set<string> | null);
   @Consume() __backing_conVar13?: (Set<string> | null);
   __options_has_conVar13?: boolean;
+  conVar14?: (Array<number> | undefined);
+  @Consume({value:"a"}) __backing_conVar14?: (Array<number> | undefined);
+  __options_has_conVar14?: boolean;
+  conVar15?: Set<string>;
+  @Consume({value:"b"}) __backing_conVar15?: Set<string>;
+  __options_has_conVar15?: boolean;
+  conVar16?: (Per[] | null | undefined);
+  @Consume({value:"c"}) __backing_conVar16?: (Per[] | null | undefined);
+  __options_has_conVar16?: boolean;
+  conVar17?: (Date | null);
+  @Consume({value:"d"}) __backing_conVar17?: (Date | null);
+  __options_has_conVar17?: boolean;
+  conVar18?: (Map<string, Per> | null | undefined);
+  @Consume({value:"e"}) __backing_conVar18?: (Map<string, Per> | null | undefined);
+  __options_has_conVar18?: boolean;
+  conVar19?: (Set<string> | Per | null);
+  @Consume({value:"f"}) __backing_conVar19?: (Set<string> | Per | null);
+  __options_has_conVar19?: boolean;
+  conVar20?: (boolean[] | undefined);
+  @Consume({value:"g"}) __backing_conVar20?: (boolean[] | undefined);
+  __options_has_conVar20?: boolean;
   `)}
   
 }
@@ -267,6 +302,27 @@ final class PropType extends BaseEnum<int> {
     this.__backing_conVar11 = STATE_MGMT_FACTORY.makeConsume<(string | number)>(this, "conVar11", "conVar11");
     this.__backing_conVar12 = STATE_MGMT_FACTORY.makeConsume<(Set<string> | Per)>(this, "conVar12", "conVar12");
     this.__backing_conVar13 = STATE_MGMT_FACTORY.makeConsume<(Set<string> | null)>(this, "conVar13", "conVar13");
+    this.__backing_conVar14 = STATE_MGMT_FACTORY.makeConsume<(Array<number> | undefined)>(this, "conVar14", "a", undefined, {
+      defaultValue: new Array<number>(1, 2, 3),
+      });
+    this.__backing_conVar15 = STATE_MGMT_FACTORY.makeConsume<Set<string>>(this, "conVar15", "b", undefined, {
+      defaultValue: new Set<string>(new Array<string>("a", "b", "c")),
+      });
+    this.__backing_conVar16 = STATE_MGMT_FACTORY.makeConsume<(Array<Per> | null | undefined)>(this, "conVar16", "c", undefined, {
+      defaultValue: [new Per(1), new Per(2), new Per(3)],
+      });
+    this.__backing_conVar17 = STATE_MGMT_FACTORY.makeConsume<(Date | null)>(this, "conVar17", "d", undefined, {
+      defaultValue: new Date("2026-02-09"),
+      });
+    this.__backing_conVar18 = STATE_MGMT_FACTORY.makeConsume<(Map<string, Per> | null | undefined)>(this, "conVar18", "e", undefined, {
+      defaultValue: new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]),
+      });
+    this.__backing_conVar19 = STATE_MGMT_FACTORY.makeConsume<(Set<string> | Per | null)>(this, "conVar19", "f", undefined, {
+      defaultValue: new Per(10),
+      });
+    this.__backing_conVar20 = STATE_MGMT_FACTORY.makeConsume<(Array<boolean> | undefined)>(this, "conVar20", "g", undefined, {
+      defaultValue: [true, false],
+      });
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
@@ -401,6 +457,56 @@ final class PropType extends BaseEnum<int> {
     this.__backing_conVar13!.set(value);
   }
 
+  private __backing_conVar14?: IConsumeDecoratedVariable<(Array<number> | undefined)>;
+  public get conVar14(): (Array<number> | undefined) {
+    return this.__backing_conVar14!.get();
+  }
+  public set conVar14(value: (Array<number> | undefined)) {
+    this.__backing_conVar14!.set(value);
+  }
+  private __backing_conVar15?: IConsumeDecoratedVariable<Set<string>>;
+  public get conVar15(): Set<string> {
+    return this.__backing_conVar15!.get();
+  }
+  public set conVar15(value: Set<string>) {
+    this.__backing_conVar15!.set(value);
+  }
+  private __backing_conVar16?: IConsumeDecoratedVariable<(Array<Per> | null | undefined)>;
+  public get conVar16(): (Array<Per> | null | undefined) {
+    return this.__backing_conVar16!.get();
+  }
+  public set conVar16(value: (Array<Per> | null | undefined)) {
+    this.__backing_conVar16!.set(value);
+  }
+  private __backing_conVar17?: IConsumeDecoratedVariable<(Date | null)>;
+  public get conVar17(): (Date | null) {
+    return this.__backing_conVar17!.get();
+  }
+  public set conVar17(value: (Date | null)) {
+    this.__backing_conVar17!.set(value);
+  }
+  private __backing_conVar18?: IConsumeDecoratedVariable<(Map<string, Per> | null | undefined)>;
+  public get conVar18(): (Map<string, Per> | null | undefined) {
+    return this.__backing_conVar18!.get();
+  }
+  public set conVar18(value: (Map<string, Per> | null | undefined)) {
+    this.__backing_conVar18!.set(value);
+  }
+  private __backing_conVar19?: IConsumeDecoratedVariable<(Set<string> | Per | null)>;
+  public get conVar19(): (Set<string> | Per | null) {
+    return this.__backing_conVar19!.get();
+  }
+  public set conVar19(value: (Set<string> | Per | null)) {
+    this.__backing_conVar19!.set(value);
+  }
+  private __backing_conVar20?: IConsumeDecoratedVariable<(Array<boolean> | undefined)>;
+  public get conVar20(): (Array<boolean> | undefined) {
+    return this.__backing_conVar20!.get();
+  }
+  public set conVar20(value: (Array<boolean> | undefined)) {
+    this.__backing_conVar20!.set(value);
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -473,6 +579,34 @@ final class PropType extends BaseEnum<int> {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '((Set<string> | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar13', '(IConsumeDecoratedVariable<(Set<string> | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar13', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar14', '((Array<number> | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar14', '(IConsumeDecoratedVariable<(Array<number> | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar14', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar15', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar15', '(IConsumeDecoratedVariable<Set<string>> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar15', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar16', '((Array<Per> | null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar16', '(IConsumeDecoratedVariable<(Array<Per> | null | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar16', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar17', '((Date | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar17', '(IConsumeDecoratedVariable<(Date | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar17', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar18', '((Map<string, Per> | null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar18', '(IConsumeDecoratedVariable<(Map<string, Per> | null | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar18', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar19', '((Set<string> | Per | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar19', '(IConsumeDecoratedVariable<(Set<string> | Per | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar19', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar20', '((Array<boolean> | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar20', '(IConsumeDecoratedVariable<(Array<boolean> | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar20', '(boolean | undefined)')}
   
 }
 `;
