@@ -19,7 +19,7 @@ import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
-import { createVariableLet, initialArgs, getPropertyType } from './initstatevar';
+import { createVariableLet, initialArgs } from './initstatevar';
 import {
     getPropertyESValue, 
     getWrapValue, 
@@ -192,7 +192,7 @@ function createWrapperBlock(
         throw new Error('Error path of Legacy Component.');
     }
     const initial = [createGlobal(), createEmptyESValue(InteropInternalNames.PARAM)];
-    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp, node, isV2) : [];
+    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp, node) : [];
     return arkts.factory.createBlock([
         ...initial,
         ...initialArgsStatement,
@@ -446,52 +446,4 @@ export function generateArkUICompatible(node: arkts.CallExpression, globalBuilde
     );
     arkts.NodeCache.getInstance().collect(result);
     return result;
-}
-
-export function getHasAnnotationObserved(node: arkts.ClassProperty, annotationObserved: string): boolean {
-    let typeIdentifiers: string[] = [];
-    extractTypeIdentifiers(node.typeAnnotation, annotationObserved, typeIdentifiers);
-    return typeIdentifiers.length > 0;
-}
-
-function extractTypeIdentifiers(
-    typeNode: arkts.AstNode | undefined,
-    annotationObserved: string,
-    typeIdentifiers: string[]
-): void {
-    if (!typeNode) {
-        return;
-    }
-    if (arkts.isETSTypeReference(typeNode) && typeNode.part && arkts.isETSTypeReferencePart(typeNode.part)) {
-        if (checkObservedFormDynamic(typeNode.part.name, annotationObserved)) {
-            typeIdentifiers.push(typeNode.part.name);
-            return;
-        }
-        const typeParams: arkts.AstNode = typeNode.part.typeParams;
-        if (typeParams && arkts.isTSTypeParameterInstantiation(typeParams) && typeParams.params) {
-            typeParams.params.forEach((param: arkts.AstNode) => extractTypeIdentifiers(param, annotationObserved, typeIdentifiers));
-        }
-    } else if (arkts.isETSUnionType(typeNode)) {
-        typeNode.types.forEach((subType: arkts.AstNode) => extractTypeIdentifiers(subType, annotationObserved, typeIdentifiers));
-    }
-}
-
-function checkObservedFormDynamic(typeNode: arkts.AstNode, annotationObserved: string): boolean {
-    const typeDecl = arkts.getDecl(typeNode);
-    if (!typeDecl || !typeDecl.annotations) {
-        return false;
-    }
-    const program = arkts.getProgramFromAstNode(typeDecl);
-    const fileManager = FileManager.getInstance();
-    const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
-    if (!isFrom1_1) {
-        return false;
-    }
-    const hasAnnotation = typeDecl.annotations.some(
-        (annotation) => annotation.expr instanceof arkts.Identifier && annotation.expr.name === annotationObserved
-    );
-    if (hasAnnotation && isFrom1_1) {
-        return true;
-    }
-    return false;
 }
