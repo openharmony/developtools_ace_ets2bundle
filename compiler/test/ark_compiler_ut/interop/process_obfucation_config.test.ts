@@ -48,6 +48,7 @@ mocha.describe('test process_obfuscation_config file api', function () {
     mocha.it('1-1: test filterStaticObfuscationConfig with valid config', function () {
       const mockConfigPath = path.join(this.tempDir, 'test_config.txt');
       const mockConfigContent = `
+-keep-dts
 -apply-namecache ./relative-cache.txt
 -print-namecache ./relative-print-cache.txt
 -keep-class-members class *.Index.*
@@ -92,8 +93,13 @@ Index
     mocha.it('1-2: test filterStaticConfigByPath with existing file', function () {
       const mockConfigPath = path.join(this.tempDir, 'test_config_by_path.txt');
       const mockConfigContent = `
+-keep-dts
 -apply-namecache
 ./relative-cache.txt
+
+-print-namecache
+./relative-print-cache.txt
+
 # Comment line
 -keep-class-with-members class TestClass
 MainPage
@@ -119,7 +125,10 @@ MainPage
       expect(processedContent).not.to.be.empty;
       expect(processedContent.includes('-keep-class-with-members')).to.be.false;
       expect(processedContent.includes('-keep-property-name')).to.be.true;
+      expect(processedContent.includes('-apply-namecache')).to.be.true;
+      expect(processedContent.includes('-print-namecache')).to.be.true;
       expect(processedContent.includes(path.resolve(path.dirname(mockConfigPath), 'relative-cache.txt'))).to.be.true;
+      expect(processedContent.includes(path.resolve(path.dirname(mockConfigPath), 'relative-print-cache.txt'))).to.be.true;
     });
 
     mocha.it('1-3: test cleanObfuscationRules functionality', function () {
@@ -136,6 +145,20 @@ res/result.txt
 Index
 -keep class *.Index.* {*;}
 -keep src/main/Test.ets
+-keep
+src/main/TestB.ets
+-keep
+src/main/TestC.ets
+src/main/TestD.ets
+
+-keep src/main/TestE.ets
+src/main/TestF.ets
+src/main/TestG.ets
+-keep src/main/test/*.ets
+!src/main/test/TestA.ets
+!src/main/test/TestC.ets
+
+-keep-class-with-members class TestClassMainPage {*;}
 -keep-dts src/main/ets.d.ts
 -print-configuration
 ./build/default/outputs/print_configuration.log
@@ -144,6 +167,7 @@ Index
       fs.writeFileSync(mockConfigPath, mockConfigContent);
 
       const result = utProcessObfConfig.cleanObfuscationRules(mockConfigContent, mockConfigPath);
+      console.log(result);
       expect(result.includes('-enable-export-obfuscation')).to.be.true;
       expect(result.includes('-keep-global-name')).to.be.true;
 
@@ -151,6 +175,21 @@ Index
       expect(result.includes('-keep-class-members')).to.be.false;
       expect(result.includes('-print-configuration')).to.be.false;
       expect(result.includes('-keep-class-with-members')).to.be.false;
+      expect(result.includes('-keep ../../../../../../../../src/main/Test.ets')).to.be.true;
+      expect(result.includes(`-keep
+../../../../../../../../src/main/TestB.ets`)).to.be.true;
+      expect(result.includes(`-keep
+../../../../../../../../src/main/TestC.ets
+../../../../../../../../src/main/TestD.ets`)).to.be.true;
+      expect(result.includes(`-keep ../../../../../../../../src/main/TestE.ets
+../../../../../../../../src/main/TestF.ets
+../../../../../../../../src/main/TestG.ets`)).to.be.true;
+      expect(result.includes(`-keep ../../../../../../../../src/main/test/*.ets
+!../../../../../../../../src/main/test/TestA.ets
+!../../../../../../../../src/main/test/TestC.ets`)).to.be.true;
+      expect(result.includes('-keep-class-with-members')).to.be.false;
+      expect(result.includes('class TestClassMainPage')).to.be.false;
+      expect(result.includes('class *.Index.* {*;}')).to.be.false;
       expect(result.includes(path.resolve(path.dirname(mockConfigPath), 'relative-cache.txt'))).to.be.true;
       fs.unlinkSync(mockConfigPath);
     });
@@ -164,5 +203,34 @@ Index
       const nonNameCacheResult = utProcessObfConfig.processNameCacheLine('-some-other-rule value', mockConfigDir, '-some-other-rule value');
       expect(nonNameCacheResult).to.be.null;
     });
+
+    mocha.it('1-5: test not keep-dts line', function () {
+      const mockConfigPath = path.join(this.tempDir, 'test_config_by_path.txt');
+      const mockConfigContent = `
+-apply-namecache
+./relative-cache.txt
+
+-print-namecache
+./relative-print-cache.txt
+
+# Comment line
+-keep-class-with-members class TestClass
+MainPage
+-print-seeds ./sss.log
+-enable-filename-obfuscation
+-enable-export-obfuscation
+-keep-global-name Index
+-keep-property-name fun
+`;
+      fs.writeFileSync(mockConfigPath, mockConfigContent);
+
+      let logCalled = false;
+      const mockPrintObfLogger = (errorInfo: string, errorCodeInfo: any, level: string) => {
+        logCalled = true;
+      };
+      const resultPath = utProcessObfConfig.filterStaticConfigByPath(mockConfigPath, this.tempDir, mockPrintObfLogger);
+      expect(resultPath === mockConfigPath);
+    });
+    
   });
 });
