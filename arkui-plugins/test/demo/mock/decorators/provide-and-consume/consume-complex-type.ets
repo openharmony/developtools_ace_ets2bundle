@@ -44,6 +44,13 @@ struct Parent {
   @Consume conVar11: string | number;
   @Consume conVar12: Set<string> | Per;
   @Consume conVar13: Set<string> | null;
+  @Consume('a') conVar14: Array<number> | undefined = new Array<number>(1, 2, 3);
+  @Consume('b') conVar15: Set<string> = new Set<string>(new Array<string>('a', 'b', 'c'));
+  @Consume('c') conVar16?: Per[] | null = [new Per(1), new Per(2), new Per(3)];
+  @Consume('d') conVar17: Date | null = new Date('2026-02-09');
+  @Consume('e') conVar18?: Map<string, Per> | null = new Map<string, Per>([['1', new Per(1)], ['2', new Per(2)]]);;
+  @Consume('f') conVar19: Set<string> | Per | null = new Per(10);
+  @Consume('g') conVar20: boolean[] | undefined = [true, false];
 
   build() {
   }
