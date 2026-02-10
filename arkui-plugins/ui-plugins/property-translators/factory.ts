@@ -288,7 +288,7 @@ export class factory {
         const newType: arkts.TypeNode | undefined = !stageManagementType
             ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY)
             : originType;
-        if (needMemo && findCanAddMemoFromTypeAnnotation(newType)) {
+        if (needMemo && findCanAddMemoFromTypeAnnotation(newType).canAddMemo) {
             addMemoAnnotation(newType);
         }
         const newProperty = arkts.factory.createClassProperty(
