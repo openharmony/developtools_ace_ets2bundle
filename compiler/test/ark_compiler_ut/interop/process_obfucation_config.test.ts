@@ -19,7 +19,8 @@ import fs from 'fs';
 import path from 'path';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
-  utProcessObfConfig
+  utProcessObfConfig,
+  mergeNameCache
 } from '../../../lib/fast_build/ark_compiler/interop/process_obfuscation_config';
 
 mocha.describe('test process_obfuscation_config file api', function () {
@@ -232,5 +233,271 @@ MainPage
       expect(resultPath === mockConfigPath);
     });
     
+  });
+
+  mocha.describe('2: test mergeNameCache related apis', function () {
+    mocha.beforeEach(function () {
+      this.tempDir = path.join(__dirname, 'temp_merge_test_dir');
+      if (!fs.existsSync(this.tempDir)) {
+        fs.mkdirSync(this.tempDir, { recursive: true });
+      }
+      this.dynamicObfPath = path.join(this.tempDir, 'dynamic');
+      this.staticObfPath = path.join(this.tempDir, 'static');
+      fs.mkdirSync(this.dynamicObfPath, { recursive: true });
+      fs.mkdirSync(this.staticObfPath, { recursive: true });
+    });
+
+    mocha.afterEach(function () {
+      if (fs.existsSync(this.tempDir)) {
+        fs.rmSync(this.tempDir, { recursive: true, force: true });
+      }
+    });
+
+    mocha.it('2-1: test mergeNameCache with normal case', async function () {
+      // Create config files
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: false,
+          printNameCache: path.join(this.tempDir, 'merged_name_cache.json')
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create name cache files
+      const dynamicCache = { 'key1': 'value1', 'key2': 'value2' };
+      const staticCache = { 'key2': 'static_value2', 'key3': 'value3' };
+
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify(dynamicCache));
+      fs.writeFileSync(staticConfig.defaultNameCachePath, JSON.stringify(staticCache));
+
+      // Mock printObfLogger
+      let logCalled = false;
+      const originalPrintObfLogger = require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger;
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = (errorInfo: string, errorCodeInfo: any, level: string) => {
+        logCalled = true;
+      };
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Restore printObfLogger
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = originalPrintObfLogger;
+
+      // Verify result
+      expect(fs.existsSync(dynamicConfig.obfuscationRules.printNameCache)).to.be.true;
+      const mergedContent = JSON.parse(fs.readFileSync(dynamicConfig.obfuscationRules.printNameCache, 'utf8'));
+      expect(mergedContent.key1).to.equal('value1');
+      expect(mergedContent.key2).to.equal('value2'); // Dynamic should override static
+      expect(mergedContent.key3).to.equal('value3');
+    });
+
+    mocha.it('2-2: test mergeNameCache with config files not exist', async function () {
+      // Mock printObfLogger
+      let logCalled = false;
+      const originalPrintObfLogger = require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger;
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = (errorInfo: string, errorCodeInfo: any, level: string) => {
+        logCalled = true;
+      };
+
+      // Call mergeNameCache with non-existent paths
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Restore printObfLogger
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = originalPrintObfLogger;
+
+      // Verify no error was called
+      expect(logCalled).to.be.false;
+    });
+
+    mocha.it('2-3: test mergeNameCache with obfuscation disabled', async function () {
+      // Create config files with obfuscation disabled
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: true,
+          printNameCache: path.join(this.tempDir, 'merged_name_cache.json')
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create name cache files
+      const dynamicCache = { 'key1': 'value1' };
+      const staticCache = { 'key2': 'value2' };
+
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify(dynamicCache));
+      fs.writeFileSync(staticConfig.defaultNameCachePath, JSON.stringify(staticCache));
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Verify no merged file was created
+      expect(fs.existsSync(dynamicConfig.obfuscationRules.printNameCache)).to.be.false;
+    });
+
+    mocha.it('2-4: test mergeNameCache with empty printNameCache path', async function () {
+      // Create config files with empty printNameCache path
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: false,
+          printNameCache: ''
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create name cache files
+      const dynamicCache = { 'key1': 'value1' };
+      const staticCache = { 'key2': 'value2' };
+
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify(dynamicCache));
+      fs.writeFileSync(staticConfig.defaultNameCachePath, JSON.stringify(staticCache));
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Verify no merged file was created
+      expect(fs.existsSync(dynamicConfig.obfuscationRules.printNameCache)).to.be.false;
+    });
+
+    mocha.it('2-5: test mergeNameCache with name cache files not exist', async function () {
+      // Create config files
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: false,
+          printNameCache: path.join(this.tempDir, 'merged_name_cache.json')
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create only dynamic cache file
+      const dynamicCache = { 'key1': 'value1' };
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify(dynamicCache));
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Verify no merged file was created
+      expect(fs.existsSync(dynamicConfig.obfuscationRules.printNameCache)).to.be.false;
+    });
+
+    mocha.it('2-6: test mergeNameCache with error handling', async function () {
+      // Create config files
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: false,
+          printNameCache: path.join(this.tempDir, 'merged_name_cache.json')
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create invalid JSON in static cache file
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify({ 'key1': 'value1' }));
+      fs.writeFileSync(staticConfig.defaultNameCachePath, '{ invalid json }');
+
+      // Mock printObfLogger
+      let logCalled = false;
+      const originalPrintObfLogger = require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger;
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = (errorInfo: string, errorCodeInfo: any, level: string) => {
+        logCalled = true;
+      };
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Restore printObfLogger
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = originalPrintObfLogger;
+
+      // Verify log was called
+      expect(logCalled).to.be.true;
+    });
+
+    mocha.it('2-7: test mergeNameCache with Set values', async function () {
+      // Create config files
+      const dynamicConfig = {
+        obfuscationRules: {
+          disableObfuscation: false,
+          printNameCache: path.join(this.tempDir, 'merged_name_cache.json')
+        },
+        defaultNameCachePath: path.join(this.dynamicObfPath, 'name_cache.json')
+      };
+      const staticConfig = {
+        obfuscationRules: {
+          disableObfuscation: false
+        },
+        defaultNameCachePath: path.join(this.staticObfPath, 'name_cache.json')
+      };
+
+      fs.writeFileSync(path.join(this.dynamicObfPath, 'config.json'), JSON.stringify(dynamicConfig));
+      fs.writeFileSync(path.join(this.staticObfPath, 'config.json'), JSON.stringify(staticConfig));
+
+      // Create name cache files with Set values
+      const dynamicCache = { 'key1': 'value1' };
+      const staticCache = { 'key2': 'value2' };
+
+      fs.writeFileSync(dynamicConfig.defaultNameCachePath, JSON.stringify(dynamicCache));
+      fs.writeFileSync(staticConfig.defaultNameCachePath, JSON.stringify(staticCache));
+
+      // Mock printObfLogger
+      let logCalled = false;
+      const originalPrintObfLogger = require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger;
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = (errorInfo: string, errorCodeInfo: any, level: string) => {
+        logCalled = true;
+      };
+
+      // Call mergeNameCache
+      await mergeNameCache(this.dynamicObfPath, this.staticObfPath);
+
+      // Restore printObfLogger
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = originalPrintObfLogger;
+
+      // Verify result
+      expect(fs.existsSync(dynamicConfig.obfuscationRules.printNameCache)).to.be.true;
+      const mergedContent = JSON.parse(fs.readFileSync(dynamicConfig.obfuscationRules.printNameCache, 'utf8'));
+      expect(mergedContent.key1).to.equal('value1');
+      expect(mergedContent.key2).to.equal('value2');
+    });
   });
 });
