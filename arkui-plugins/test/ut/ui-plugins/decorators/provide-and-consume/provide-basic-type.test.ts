@@ -73,6 +73,30 @@ function main() {}
     (((gensym___85711435) == (null)) ? undefined : gensym___85711435.provideVar4)})) ?? (undefined)), false);
     this.__backing_provideVar5 = STATE_MGMT_FACTORY.makeProvide<null>(this, "provideVar5", "provideVar5", ((({let gensym___139253630 = initializers;
     (((gensym___139253630) == (null)) ? undefined : gensym___139253630.provideVar5)})) ?? (null)), false);
+    this.__backing_provideVar6 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "provideVar6", "provideVar6", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar6)})) ?? ("hello")), false);
+    this.__backing_provideVar7 = STATE_MGMT_FACTORY.makeProvide<(string | null)>(this, "provideVar7", "provideVar7", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar7)})) ?? (null)), false);
+    this.__backing_provideVar8 = STATE_MGMT_FACTORY.makeProvide<number>(this, "provideVar8", "a", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar8)})) ?? (10)), false);
+    this.__backing_provideVar9 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "provideVar9", "b", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar9)})) ?? ("hello")), false);
+    this.__backing_provideVar10 = STATE_MGMT_FACTORY.makeProvide<number>(this, "provideVar10", "provideVar10", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar10)})) ?? (10)), true);
+    this.__backing_provideVar11 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "provideVar11", "provideVar11", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar11)})) ?? (undefined)), true);
+    this.__backing_provideVar12 = STATE_MGMT_FACTORY.makeProvide<number>(this, "provideVar12", "provideVar12", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar12)})) ?? (15)), false);
+    this.__backing_provideVar13 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "provideVar13", "provideVar13", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar13)})) ?? ("prop13")), false);
+    this.__backing_provideVar14 = STATE_MGMT_FACTORY.makeProvide<(boolean | undefined)>(this, "provideVar14", "c", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar14)})) ?? (false)), true);
+    this.__backing_provideVar15 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "provideVar15", "d", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar15)})) ?? (undefined)), true);
+    this.__backing_provideVar16 = STATE_MGMT_FACTORY.makeProvide<(number | undefined)>(this, "provideVar16", "e", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar16)})) ?? (20)), false);
+    this.__backing_provideVar17 = STATE_MGMT_FACTORY.makeProvide<(boolean | undefined)>(this, "provideVar17", "f", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar17)})) ?? (true)), false);
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
@@ -127,6 +151,126 @@ function main() {}
     this.__backing_provideVar5!.set(value);
   }
 
+  private __backing_provideVar6?: IProvideDecoratedVariable<(string | undefined)>;
+
+  public get provideVar6(): (string | undefined) {
+    return this.__backing_provideVar6!.get();
+  }
+  
+  public set provideVar6(value: (string | undefined)) {
+    this.__backing_provideVar6!.set(value);
+  }
+  
+  private __backing_provideVar7?: IProvideDecoratedVariable<(string | null)>;
+  
+  public get provideVar7(): (string | null) {
+    return this.__backing_provideVar7!.get();
+  }
+  
+  public set provideVar7(value: (string | null)) {
+    this.__backing_provideVar7!.set(value);
+  }
+  
+  private __backing_provideVar8?: IProvideDecoratedVariable<number>;
+  
+  public get provideVar8(): number {
+    return this.__backing_provideVar8!.get();
+  }
+  
+  public set provideVar8(value: number) {
+    this.__backing_provideVar8!.set(value);
+  }
+  
+  private __backing_provideVar9?: IProvideDecoratedVariable<(string | undefined)>;
+  
+  public get provideVar9(): (string | undefined) {
+    return this.__backing_provideVar9!.get();
+  }
+  
+  public set provideVar9(value: (string | undefined)) {
+    this.__backing_provideVar9!.set(value);
+  }
+  
+  private __backing_provideVar10?: IProvideDecoratedVariable<number>;
+  
+  public get provideVar10(): number {
+    return this.__backing_provideVar10!.get();
+  }
+  
+  public set provideVar10(value: number) {
+    this.__backing_provideVar10!.set(value);
+  }
+  
+  private __backing_provideVar11?: IProvideDecoratedVariable<(string | undefined)>;
+  
+  public get provideVar11(): (string | undefined) {
+    return this.__backing_provideVar11!.get();
+  }
+  
+  public set provideVar11(value: (string | undefined)) {
+    this.__backing_provideVar11!.set(value);
+  }
+  
+  private __backing_provideVar12?: IProvideDecoratedVariable<number>;
+  
+  public get provideVar12(): number {
+    return this.__backing_provideVar12!.get();
+  }
+  
+  public set provideVar12(value: number) {
+    this.__backing_provideVar12!.set(value);
+  }
+  
+  private __backing_provideVar13?: IProvideDecoratedVariable<(string | undefined)>;
+  
+  public get provideVar13(): (string | undefined) {
+    return this.__backing_provideVar13!.get();
+  }
+  
+  public set provideVar13(value: (string | undefined)) {
+    this.__backing_provideVar13!.set(value);
+  }
+  
+  private __backing_provideVar14?: IProvideDecoratedVariable<(boolean | undefined)>;
+  
+  public get provideVar14(): (boolean | undefined) {
+    return this.__backing_provideVar14!.get();
+  }
+  
+  public set provideVar14(value: (boolean | undefined)) {
+    this.__backing_provideVar14!.set(value);
+  }
+  
+  private __backing_provideVar15?: IProvideDecoratedVariable<(string | undefined)>;
+  
+  public get provideVar15(): (string | undefined) {
+    return this.__backing_provideVar15!.get();
+  }
+  
+  public set provideVar15(value: (string | undefined)) {
+    this.__backing_provideVar15!.set(value);
+  }
+  
+  private __backing_provideVar16?: IProvideDecoratedVariable<(number | undefined)>;
+  
+  public get provideVar16(): (number | undefined) {
+    return this.__backing_provideVar16!.get();
+  }
+  
+  public set provideVar16(value: (number | undefined)) {
+    this.__backing_provideVar16!.set(value);
+  }
+  
+  private __backing_provideVar17?: IProvideDecoratedVariable<(boolean | undefined)>;
+  
+  public get provideVar17(): (boolean | undefined) {
+    return this.__backing_provideVar17!.get();
+  }
+  
+  public set provideVar17(value: (boolean | undefined)) {
+    this.__backing_provideVar17!.set(value);
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: @Memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
@@ -167,7 +311,54 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(null | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar5', '(IProvideDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar5', '(boolean | undefined)')}
-  
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar6', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar6', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar7', '((string | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar7', '(IProvideDecoratedVariable<(string | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar7', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar8', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar8', '(IProvideDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar8', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar9', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar9', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar9', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar10', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar10', '(IProvideDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar10', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar11', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar11', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar11', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar12', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar12', '(IProvideDecoratedVariable<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar12', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar13', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar13', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar13', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar14', '((boolean | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar14', '(IProvideDecoratedVariable<(boolean | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar14', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar15', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar15', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar15', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar16', '((number | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar16', '(IProvideDecoratedVariable<(number | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar16', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar17', '((boolean | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar17', '(IProvideDecoratedVariable<(boolean | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar17', '(boolean | undefined)')}
 }
 `;
 

@@ -29,6 +29,12 @@ struct PropParent {
   @Consume conVar9: null = null;
   @Consume conVar10?: null = null;
   @Consume conVar11?: undefined = undefined;
+  @Consume('a') conVar12: number | undefined = undefined;
+  @Consume('b') conVar13: string = 'hello';
+  @Consume('c') conVar14?: boolean | null = true;
+  @Consume('d') conVar15: undefined | null = null;
+  @Consume('e') conVar16: undefined | null = undefined;
+  @Consume('f') conVar17: number | string | null = 20;
 
   build() {
   }
