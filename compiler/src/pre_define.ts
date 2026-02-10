@@ -347,6 +347,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
   ['ListItem', new Set(['swipeAction'])],
+  ['ArcListItem', new Set(['swipeAction'])],
   ['MenuItem', new Set([COMPONENT_CREATE_FUNCTION])],
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
@@ -415,8 +416,8 @@ export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
-export const NAV_BAR_WIDTH: string = 'navBarWidth';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
+export const NAV_BAR_WIDTH: string = 'navBarWidth';
 const SCROLL: string = 'Scroll';
 const ZOOM_SCALE: string = 'zoomScale';
 
@@ -637,12 +638,12 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
 if (EXT_WHITE_LIST.length) {
-  for (const compName of EXT_WHITE_LIST) {
-    CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
-  }
+    for (const compName of EXT_WHITE_LIST) {
+        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
+    }
 }
 if (EXT_WHITE_LIST.length >= 2) {
-  TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
+    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
 }
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
@@ -681,6 +682,9 @@ export const WRAPBUILDER_BUILDERPROP: string = 'builder';
 export const MUTABLEBUILDER_BUILDERPROP: string = 'builder';
 export const LENGTH: string = 'length';
 
+export const HDSNAVIGATION: string = 'HdsNavigation';
+export const HDSNAVDESTINATION: string = 'HdsNavDestination';
+
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';
 
@@ -703,12 +707,5 @@ export const ARKTS_MODULE_NAME: string = 'arkts';
 export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
-
-export const HDSNAVIGATION: string = 'HdsNavigation';
-export const HDSNAVDESTINATION: string = 'HdsNavDestination';
-
-export const ARKTS_1_2: string = '1.2';
-export const ARKTS_1_1: string = '1.1';
-export const ARKTS_1_0: string = '1.0';
 
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
