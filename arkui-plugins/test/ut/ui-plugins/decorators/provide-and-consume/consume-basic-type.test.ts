@@ -79,6 +79,18 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 
   @Consume() public conVar11?: (undefined | undefined) = undefined;
 
+  @Consume({value:"a"}) public conVar12?: (number | undefined) = undefined;
+
+  @Consume({value:"b"}) public conVar13!: string = "hello";
+
+  @Consume({value:"c"}) public conVar14?: (boolean | null | undefined) = true;
+
+  @Consume({value:"d"}) public conVar15?: (undefined | null) = null;
+
+  @Consume({value:"e"}) public conVar16?: (undefined | null) = undefined;
+
+  @Consume({value:"f"}) public conVar17?: (number | string | null) = 20;
+
   public build() {}
 
   protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
@@ -122,6 +134,24 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
   conVar11?: (undefined | undefined);
   @Consume() __backing_conVar11?: (undefined | undefined);
   __options_has_conVar11?: boolean;
+  conVar12?: (number | undefined);
+  @Consume({value:"a"}) __backing_conVar12?: (number | undefined);
+  __options_has_conVar12?: boolean;
+  conVar13?: string;
+  @Consume({value:"b"}) __backing_conVar13?: string;
+  __options_has_conVar13?: boolean;
+  conVar14?: (boolean | null | undefined);
+  @Consume({value:"c"}) __backing_conVar14?: (boolean | null | undefined);
+  __options_has_conVar14?: boolean;
+  conVar15?: (undefined | null);
+  @Consume({value:"d"}) __backing_conVar15?: (undefined | null);
+  __options_has_conVar15?: boolean;
+  conVar16?: (undefined | null);
+  @Consume({value:"e"}) __backing_conVar16?: (undefined | null);
+  __options_has_conVar16?: boolean;
+  conVar17?: (number | string | null);
+  @Consume({value:"f"}) __backing_conVar17?: (number | string | null);
+  __options_has_conVar17?: boolean;
   `)}
   
 }
@@ -170,6 +200,24 @@ function main() {}
       });
     this.__backing_conVar11 = STATE_MGMT_FACTORY.makeConsume<(undefined | undefined)>(this, "conVar11", "conVar11", undefined, {
       defaultValue: undefined,
+      });
+    this.__backing_conVar12 = STATE_MGMT_FACTORY.makeConsume<(number | undefined)>(this, "conVar12", "a", undefined, {
+      defaultValue: undefined,
+      });
+    this.__backing_conVar13 = STATE_MGMT_FACTORY.makeConsume<string>(this, "conVar13", "b", undefined, {
+      defaultValue: "hello",
+      });
+    this.__backing_conVar14 = STATE_MGMT_FACTORY.makeConsume<(boolean | null | undefined)>(this, "conVar14", "c", undefined, {
+      defaultValue: true,
+      });
+    this.__backing_conVar15 = STATE_MGMT_FACTORY.makeConsume<(undefined | null)>(this, "conVar15", "d", undefined, {
+      defaultValue: null,
+      });
+    this.__backing_conVar16 = STATE_MGMT_FACTORY.makeConsume<(undefined | null)>(this, "conVar16", "e", undefined, {
+      defaultValue: undefined,
+      });
+    this.__backing_conVar17 = STATE_MGMT_FACTORY.makeConsume<(number | string | null)>(this, "conVar17", "f", undefined, {
+      defaultValue: 20,
       });
   }
 
@@ -285,6 +333,49 @@ function main() {}
     this.__backing_conVar11!.set(value);
   }
 
+  private __backing_conVar12?: IConsumeDecoratedVariable<(number | undefined)>;
+  public get conVar12(): (number | undefined) {
+    return this.__backing_conVar12!.get();
+  }
+  public set conVar12(value: (number | undefined)) {
+    this.__backing_conVar12!.set(value);
+  }
+  private __backing_conVar13?: IConsumeDecoratedVariable<string>;
+  public get conVar13(): string {
+    return this.__backing_conVar13!.get();
+  }
+  public set conVar13(value: string) {
+    this.__backing_conVar13!.set(value);
+  }
+  private __backing_conVar14?: IConsumeDecoratedVariable<(boolean | null | undefined)>;
+  public get conVar14(): (boolean | null | undefined) {
+    return this.__backing_conVar14!.get();
+  }
+  public set conVar14(value: (boolean | null | undefined)) {
+    this.__backing_conVar14!.set(value);
+  }
+  private __backing_conVar15?: IConsumeDecoratedVariable<(undefined | null)>;
+  public get conVar15(): (undefined | null) {
+    return this.__backing_conVar15!.get();
+  }
+  public set conVar15(value: (undefined | null)) {
+    this.__backing_conVar15!.set(value);
+  }
+  private __backing_conVar16?: IConsumeDecoratedVariable<(undefined | null)>;
+  public get conVar16(): (undefined | null) {
+    return this.__backing_conVar16!.get();
+  }
+  public set conVar16(value: (undefined | null)) {
+    this.__backing_conVar16!.set(value);
+  }
+  private __backing_conVar17?: IConsumeDecoratedVariable<(number | string | null)>;
+  public get conVar17(): (number | string | null) {
+    return this.__backing_conVar17!.get();
+  }
+  public set conVar17(value: (number | string | null)) {
+    this.__backing_conVar17!.set(value);
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: @Memo() ((instance: PropParent)=> void), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
@@ -349,6 +440,30 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar11', '((undefined | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar11', '(IConsumeDecoratedVariable<(undefined | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar11', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar12', '((number | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar12', '(IConsumeDecoratedVariable<(number | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar12', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar13', '(IConsumeDecoratedVariable<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar13', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar14', '((boolean | null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar14', '(IConsumeDecoratedVariable<(boolean | null | undefined)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar14', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar15', '((undefined | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar15', '(IConsumeDecoratedVariable<(undefined | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar15', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar16', '((undefined | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar16', '(IConsumeDecoratedVariable<(undefined | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar16', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar17', '((number | string | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar17', '(IConsumeDecoratedVariable<(number | string | null)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar17', '(boolean | undefined)')}
   
   
 }

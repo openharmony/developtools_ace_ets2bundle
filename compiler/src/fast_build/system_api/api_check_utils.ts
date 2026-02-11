@@ -28,8 +28,7 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
-  externalApiCheckerMap,
-  suppressWarningsHandleMap
+  externalApiCheckerMap
 } from '../../../main';
 import {
   LogType,
@@ -126,27 +125,27 @@ interface BundleInfo {
 interface JsDocNodeCheckConfigItemInterface {
   /**
   * check node
-  * @type {string[]} 
+  * @type { string[] } 
   */
   tagName: string[],
   /**
   * check message
-  * @type {string}
+  * @type { string }
   */
   message: string,
   /**
   * check type wanr/error
-  * @type {ts.DiagnosticCategory}
+  * @type { ts.DiagnosticCategory }
   */
   type: ts.DiagnosticCategory,
   /**
   * check node should exist
-  * @type {boolean}
+  * @type { boolean }
   */
   tagNameShouldExisted: boolean,
   /**
   * build analyzer
-  * @type {CompileEvent}
+  * @type { CompileEvent }
   */
   timeAnalyzerEvent?: CompileEvent,
   /**
@@ -330,6 +329,9 @@ export function checkTypeReference(node: ts.TypeReferenceNode, transformLog: IFi
 /**
  * get jsDocNodeCheckConfigItem object
  *
+ * The demandConditionCheck and specialCheckConditionFuncName in the return value are fixed values
+ * to avoid modifying the logic in the tsc warehouse and causing problems.
+ * 
  * @param {JsDocNodeCheckConfigItemInterface} config - param All
  * @returns  {ts.JsDocNodeCheckConfigItem}
  */
@@ -374,7 +376,7 @@ let permissionsArray: string[] = [];
  * @returns {ts.JsDocNodeCheckConfig}
  */
 export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string, parentEvent?: CompileEvent): ts.JsDocNodeCheckConfig {
-  const eventGetJsDocNodeCheckConfig = createAndStartEvent(parentEvent, 'getJsDocNodeCheckConfig(async)');
+  const eventGetJsDocNodeCheckConfig = createAndStartEvent(parentEvent, 'getJsDocNodeCheckConfig(async)', true);
   let byFileName: Map<string, ts.JsDocNodeCheckConfig> | undefined = jsDocNodeCheckConfigCache.get(fileName);
   if (byFileName === undefined) {
     byFileName = new Map<string, ts.JsDocNodeCheckConfig>();
@@ -382,7 +384,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
-    stopEvent(eventGetJsDocNodeCheckConfig);
+    stopEvent(eventGetJsDocNodeCheckConfig, true);
     return result;
   }
   let needCheckResult: boolean = false;
@@ -406,7 +408,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   if (systemModules.includes(apiName)) {
     byFileName.set(sourceFileName, result);
-    stopEvent(eventGetJsDocNodeCheckConfig);
+    stopEvent(eventGetJsDocNodeCheckConfig, true);
     return result;
   }
   if (checkFileHasAvailableByFileName(sourceFileName)) {
@@ -540,7 +542,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfig: checkConfigArray
   };
   byFileName.set(sourceFileName, result);
-  stopEvent(eventGetJsDocNodeCheckConfig);
+  stopEvent(eventGetJsDocNodeCheckConfig, true);
   return result;
 }
 
@@ -718,32 +720,31 @@ function checkAvailableDecorator(
   jsDocTags: readonly ts.JSDocTag[],
   config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node,
-  declaration?: ts.Declaration,
-  timeAnalyzerEvent?: CompileEvent
+  declaration?: ts.Declaration
 ): boolean {
-  const eventCheckAvailable = createAndStartEvent(timeAnalyzerEvent, 'checkAvailable(async)');
+  const eventCheckAvailable = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkAvailable(async)', true);
   // If there is no node, we cannot perform any check
   if (!projectConfig.compatibleSdkVersion || !node || !declaration) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
   let key: string = getAvailableNodeKey(node);
   if (availableNodeCheckConfigCache.has(key)) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   } else {
     availableNodeCheckConfigCache.set(key, '');
   }
   const sourcefile = node.getSourceFile();
   if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
   const declSourcefile = declaration.getSourceFile();
   if (!declSourcefile || !declSourcefile.fileName || !path.normalize(declSourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   }
   const typeChecker = CurrentProcessFile.getChecker();
@@ -752,7 +753,7 @@ function checkAvailableDecorator(
   const hasIncompatibility = checker.checkTargetVersion(declaration);
 
   if (!hasIncompatibility) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
@@ -766,7 +767,7 @@ function checkAvailableDecorator(
   );
 
   if (suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckAvailable);
+    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
@@ -774,7 +775,7 @@ function checkAvailableDecorator(
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
 
-  stopEvent(eventCheckAvailable);
+  stopEvent(eventCheckAvailable, true);
   return true;
 }
 
@@ -790,24 +791,22 @@ function checkAvailableDecorator(
 function checkSinceValue(
   jsDocTags: readonly ts.JSDocTag[],
   config: ts.JsDocNodeCheckConfigItem,
-  node?: ts.Node,
-  declaration?: ts.Declaration,
-  timeAnalyzerEvent?: CompileEvent
+  node?: ts.Node
 ): boolean {
-  const eventCheckSince = createAndStartEvent(timeAnalyzerEvent, 'checkSince(async)');
+  const eventCheckSince = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkSince(async)', true);
   if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node) {
-    stopEvent(eventCheckSince);
+    stopEvent(eventCheckSince, true);
     return false;
   }
 
   const jsDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
   if (!jsDocNode?.jsDoc) {
-    stopEvent(eventCheckSince);
+    stopEvent(eventCheckSince, true);
     return false;
   }
   const sourcefile = node.getSourceFile();
   if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckSince);
+    stopEvent(eventCheckSince, true);
     return false;
   }
   const typeChecker = CurrentProcessFile.getChecker();
@@ -816,7 +815,7 @@ function checkSinceValue(
   const hasIncompatibility = checker.checkTargetVersion(jsDocNode);
 
   if (!hasIncompatibility) {
-    stopEvent(eventCheckSince);
+    stopEvent(eventCheckSince, true);
     return false;
   }
 
@@ -828,7 +827,7 @@ function checkSinceValue(
   );
 
   if (suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckSince);
+    stopEvent(eventCheckSince, true);
     return false;
   }
 
@@ -836,7 +835,7 @@ function checkSinceValue(
     .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
 
-  stopEvent(eventCheckSince);
+  stopEvent(eventCheckSince, true);
   return true;
 }
 
@@ -1074,8 +1073,8 @@ export function getFormatChecker(tag: string = 'available'): FormatCheckerFuncti
  * @returns 
  */
 export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
-  node?: ts.Node, declaration?: ts.Declaration, timeAnalyzerEvent?: CompileEvent): boolean {
-  const eventCheckSyscap = createAndStartEvent(timeAnalyzerEvent, 'checkSyscap(async)');
+  node?: ts.Node, declaration?: ts.Declaration): boolean {
+  const eventCheckSyscap = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkSyscap(async)', true);
   let currentSyscapValue: string = '';
   for (let i = 0; i < jsDocTags.length; i++) {
     const jsDocTag: ts.JSDocTag = jsDocTags[i];
@@ -1088,42 +1087,42 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
     !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
 
   if (defaultResult) {
-    const suppressor = new SyscapWarningSuppressor(jsDocTags, config, (declaration as ts.JSDocContainer).jsDoc);
+    const suppressor = new SyscapWarningSuppressor(jsDocTags, config);
     // 执行告警消除判断
     if (suppressor && suppressor.isApiVersionHandled(node)) {
-      stopEvent(eventCheckSyscap);
+      stopEvent(eventCheckSyscap, true);
       return false;
     }
-    stopEvent(eventCheckSyscap);
+    stopEvent(eventCheckSyscap, true);
     return true;
   }
 
   const externalCheckers = externalApiCheckerMap.get(SYSCAP_TAG_CHECK_NAME);
   if (!externalCheckers || externalCheckers.length === 0) {
-    stopEvent(eventCheckSyscap);
+    stopEvent(eventCheckSyscap, true);
     // 若不存在拓展校验器，直接返回结果
     return false;
   }
   for (let i = 0; i < externalCheckers.length; i++) {
     const checker = externalCheckers[i];
     if (!checker.check) {
-      stopEvent(eventCheckSyscap);
+      stopEvent(eventCheckSyscap, true);
       return false;
     }
     const extrenalCheckResult = checker.check(node, declaration, projectConfig);
     if (!extrenalCheckResult.checkResult) {
-      stopEvent(eventCheckSyscap);
+      stopEvent(eventCheckSyscap, true);
       return false;
     }
     config.message = extrenalCheckResult.checkMessage;
   }
-  const suppressor = new SyscapWarningSuppressor(jsDocTags, config, (declaration as ts.JSDocContainer).jsDoc);
+  const suppressor = new SyscapWarningSuppressor(jsDocTags, config);
   // 执行告警消除判断
   if (suppressor && suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckSyscap);
+    stopEvent(eventCheckSyscap, true);
     return false;
   }
-  stopEvent(eventCheckSyscap);
+  stopEvent(eventCheckSyscap, true);
   return true;
 }
 
@@ -1172,14 +1171,13 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  * @param {ts.JsDocNodeCheckConfigItem} config
  * @returns {boolean}
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
-  node?: ts.Node, declaration?: ts.Declaration, timeAnalyzerEvent?: CompileEvent): boolean {
-  const eventCheckPermission = createAndStartEvent(timeAnalyzerEvent, 'checkPermission(async)');
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+  const eventCheckPermission = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkPermission(async)', true);
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
   if (!jsDocTag) {
-    stopEvent(eventCheckPermission);
+    stopEvent(eventCheckPermission, true);
     return false;
   }
   const comment: string = typeof jsDocTag.comment === 'string' ?
@@ -1187,15 +1185,18 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
   if (comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray)) {
-    stopEvent(eventCheckPermission);
+    stopEvent(eventCheckPermission, true);
     return true;
   }
-  stopEvent(eventCheckPermission);
+  stopEvent(eventCheckPermission, true);
   return false;
 }
 
 /**
  * custom condition check
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.FileCheckModuleInfo } jsDocFileCheckedInfo
  * @param { ts.JsDocTagInfo[] } jsDocTagInfos
  * @param { ?ts.JSDoc[] } jsDocs
@@ -1216,6 +1217,9 @@ export function getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo: ts.FileCh
 
 /**
  * syscap condition check
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.JSDoc[] } jsDocs
  * @returns { ts.ConditionCheckResult }
  */
@@ -1249,6 +1253,9 @@ function checkSyscapCondition(jsDocs: ts.JsDocTagInfo[]): ts.ConditionCheckResul
 
 /**
  * version condition check
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.JSDoc[] } jsDocs
  * @returns { ts.ConditionCheckResult }
  */
@@ -1274,6 +1281,9 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
 
 /**
  * version condition check, print error message
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.CallExpression } node
  * @param { string } specifyFuncName
  * @param { string } targetVersion
@@ -1292,6 +1302,9 @@ function checkVersionConditionValidCallback(node: ts.CallExpression, specifyFunc
 
 /**
  * syscap condition check, print error message
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.CallExpression } node
  * @param { string } specifyFuncName
  * @param { string } tagValue
@@ -1316,6 +1329,9 @@ function checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncN
 
 /**
  * get minversion
+ * 
+ * This logic is not enabled
+ * 
  * @param { ts.JSDoc[] } jsDocs 
  * @returns string
  */
