@@ -43,6 +43,14 @@ struct Parent {
   @Provide provideVar10: Map<number, Per> = new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]);
   @Provide provideVar11: string | number = 0.0;
   @Provide provideVar12: Set<string> | Per = new Per(6);
+  @Provide({ alias: 'a' }) provideVar13: Array<string> | undefined = new Array<string>('1', '1', '2');
+  @Provide({ alias: 'b' }) provideVar14: Set<string> | Per = new Per(6);
+  @Provide({ allowOverride: true }) provideVar15: Date = new Date('2026-02-09');
+  @Provide({ allowOverride: true }) provideVar16: Set<string> | null = new Set<string>(new Array<string>('a', 'b', 'c'));
+  @Provide({ allowOverride: false }) provideVar17: Per[] = [new Per(1), new Per(2)];
+  @Provide({ allowOverride: false }) provideVar18: Array<Per> = new Array<Per>(new Per(3), new Per(4));
+  @Provide({ alias: 'c', allowOverride: true }) provideVar19: Map<string, Per> = new Map<string, Per>([['1', new Per(1)], ['2', new Per(2)]]);
+  @Provide({ alias: 'd', allowOverride: false }) provideVar20: boolean[] = [true, false, true, true];
 
   build() {
   }

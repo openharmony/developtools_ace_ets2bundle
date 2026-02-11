@@ -24,6 +24,9 @@ import {
     getWrapValue, 
     setPropertyESValue 
 } from './utils';
+import { ImportCollector } from '../../common/import-collector';
+import { FileManager } from '../../common/file-manager';
+import { LANGUAGE_VERSION } from '../../common/predefines';
 
 interface builderParam {
     args: arkts.AstNode[],
@@ -382,8 +385,8 @@ function getWhile(): arkts.Statement {
     );
 }
 
-function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
-    if (node.arguments.length !== 1) {
+function getUpdateArgs(node: arkts.CallExpression | arkts.Property): arkts.Statement[] {
+    if (arkts.isProperty(node) || node.arguments.length !== 1) {
         return [];
     }
     let body: arkts.Statement[] = [];
@@ -430,7 +433,7 @@ function getUpdateArgs(node: arkts.CallExpression): arkts.Statement[] {
     return body;
 }
 
-function createBuilderUpdate(node: arkts.CallExpression): arkts.ArrowFunctionExpression {
+function createBuilderUpdate(node: arkts.CallExpression | arkts.Property): arkts.ArrowFunctionExpression {
     return arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             arkts.factory.createBlock(
@@ -461,18 +464,20 @@ function createBuilderUpdate(node: arkts.CallExpression): arkts.ArrowFunctionExp
     );
 }
 
-function getInitArgs(node: arkts.CallExpression): builderParam {
+function getInitArgs(node: arkts.CallExpression | arkts.Property): builderParam {
     const args: arkts.AstNode[] = [];
     let ObjectExpressionNum: number = 0;
     const body: arkts.Statement[] = [];
-    node.arguments.forEach((argument) => {
-        if (arkts.isObjectExpression(argument)) {
-            processArgument(argument, ObjectExpressionNum, body, args);
-            ObjectExpressionNum++;
-        } else {
-            args.push(getWrapValue(argument));
-        }
-    });
+    if (arkts.isCallExpression(node)) {
+        node.arguments.forEach((argument) => {
+            if (arkts.isObjectExpression(argument)) {
+                processArgument(argument, ObjectExpressionNum, body, args);
+                ObjectExpressionNum++;
+            } else {
+                args.push(getWrapValue(argument));
+            }
+        });
+    }
     return { args: args, paramsInfo: body };
 }
 
@@ -500,25 +505,47 @@ function processArgument(argument: arkts.ObjectExpression, ObjectExpressionNum:n
  * @param moduleName moduleName
  * @returns After Checked, transform builder/WrappedBuilder -> compatibleComponent
  */
-export function generateBuilderCompatible(node: arkts.CallExpression, moduleName: string): arkts.CallExpression {
+export function generateBuilderCompatible(
+    node: arkts.CallExpression | arkts.Property,
+    moduleName: string
+): arkts.AstNode {
     let functionName = getFunctionName(node);
     let param: builderParam = getInitArgs(node);
     const initializer = createBuilderInitializer(moduleName, functionName, param);
     const updater: arkts.ArrowFunctionExpression = createBuilderUpdate(node);
-    const result = arkts.factory.updateCallExpression(
-        node,
-        arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
-        undefined,
-        [
-            initializer,
-            updater,
-        ]
-    );
+    let result;
+    if (arkts.isProperty(node)) {
+        const callExpr = arkts.factory.createCallExpression(
+            arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
+            undefined,
+            [initializer, updater]
+        );
+        const newValue = arkts.factory.createArrowFunction(
+            arkts.factory.createScriptFunction(
+                arkts.BlockStatement.createBlockStatement([arkts.factory.createExpressionStatement(callExpr)]),
+                arkts.factory.createFunctionSignature(undefined, [], undefined, false),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            )
+        );
+        arkts.NodeCache.getInstance().collect(callExpr);
+        result = arkts.factory.updateProperty(node, node.key, newValue);
+    } else {
+        result = arkts.factory.updateCallExpression(
+            node,
+            arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
+            undefined,
+            [initializer, updater]
+        );
+    }
     arkts.NodeCache.getInstance().collect(result);
     return result;
 }
 
-function getFunctionName(node: arkts.CallExpression): string {
+function getFunctionName(node: arkts.CallExpression | arkts.Property): string {
+    if (arkts.isProperty(node)) {
+        return 'createCompatibleNodeWithFuncVoid';
+    }
     switch (node.arguments.length) {
         case 0:
             return 'createCompatibleNodeWithFuncVoid';
@@ -545,4 +572,31 @@ function getFunctionName(node: arkts.CallExpression): string {
         default:
             throw Error('Error arguments in Legacy Builder Function');
     }
+}
+
+export function isFromBuilder1_1(decl: arkts.AstNode | undefined): boolean {
+    if (!decl || !arkts.isMethodDefinition(decl)) {
+        return false;
+    }
+    const path = arkts.getProgramFromAstNode(decl).absName;
+    const fileManager = FileManager.getInstance();
+    if (fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
+        return false;
+    }
+
+    const annotations = decl.scriptFunction.annotations;
+    const decorators: string[] = annotations.map((annotation) => {
+        return (annotation.expr as arkts.Identifier).name;
+    });
+    for (const decorator of decorators) {
+        if (decorator === 'memo' || decorator === 'Builder' || decorator === 'Memo') {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function addcompatibleComponentImport(): void {
+    ImportCollector.getInstance().collectSource('compatibleComponent', 'arkui.component.interop');
+    ImportCollector.getInstance().collectImport('compatibleComponent');
 }

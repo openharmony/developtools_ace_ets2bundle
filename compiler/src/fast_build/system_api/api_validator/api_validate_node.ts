@@ -1066,24 +1066,14 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
 export class CanIUseValidator extends BaseValidator implements NodeValidator {
   private jsDocTags: readonly ts.JSDocTag[];
   private config: ts.JsDocNodeCheckConfigItem;
-  private jsDocs: ts.JSDoc[];
 
-  constructor(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, jsDocs: ts.JSDoc[]) {
+  constructor(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) {
     super();
     this.jsDocTags = jsDocTags;
     this.config = config;
-    this.jsDocs = jsDocs;
   }
 
-  validate(node: ts.Node) {
-    return this.conditionCheck(node, this.jsDocTags, this.config, this.jsDocs);
-  }
-
-  private conditionCheck(node: ts.Identifier, jsDocTags: readonly ts.JSDocTag[], checkConfig: ts.JsDocNodeCheckConfigItem, jsDocs?: ts.JSDoc[]) {
-    const specifyJsDocTagValue = this.getSpecifyJsDocTagValue(jsDocTags, checkConfig.tagName);
-    if (specifyJsDocTagValue === undefined) {
-      return;
-    }
+  validate(node: ts.Node): boolean {
     const nodeSource = node.getSourceFile();
     if (!nodeSource) {
       return false;
@@ -1092,7 +1082,15 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
     if (!needCanIUseCheck) {
       return false;
     }
-    const hasIfChecked = this.hasConditionChecked(node, specifyJsDocTagValue, checkConfig, jsDocs);
+    return this.conditionCheck(node, this.jsDocTags, this.config);
+  }
+
+  private conditionCheck(node: ts.Node, jsDocTags: readonly ts.JSDocTag[], checkConfig: ts.JsDocNodeCheckConfigItem): boolean {
+    const specifyJsDocTagValue = this.getSpecifyJsDocTagValue(jsDocTags, checkConfig.tagName);
+    if (specifyJsDocTagValue === undefined) {
+      return true;
+    }
+    const hasIfChecked = this.hasConditionChecked(node, specifyJsDocTagValue, checkConfig);
     if (!hasIfChecked) {
       const jsDocTagInfos: ts.JsDocTagInfo[] = [];
       jsDocTags.forEach(item => {
@@ -1107,12 +1105,14 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
       } else {
         return false;
       }
+    } else {
+      return true;
     }
   }
 
-  private getSpecifyJsDocTagValue(jsDocs: readonly ts.JSDocTag[], specifyTag: string[]): string | undefined {
+  private getSpecifyJsDocTagValue(jsDocTags: readonly ts.JSDocTag[], specifyTag: string[]): string | undefined {
     let specifyJsDocTagValue: string | ts.NodeArray<ts.JSDocComment> = '';
-    jsDocs.forEach(item => {
+    jsDocTags.forEach(item => {
       if (specifyTag.includes(item.tagName.escapedText.toString())) {
         specifyJsDocTagValue = item.comment ?? "";
       }
@@ -1120,19 +1120,19 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
     return specifyJsDocTagValue;
   }
 
-  private hasConditionChecked(expression: ts.Identifier, importSymbol: string,
-    checkConfig: ts.JsDocNodeCheckConfigItem, jsDocs?: ts.JSDoc[]): boolean {
+  private hasConditionChecked(expression: ts.Node, importSymbol: string,
+    checkConfig: ts.JsDocNodeCheckConfigItem): boolean {
     const result = { hasIfChecked: false };
     const container = ts.findAncestor(expression, ts.isSourceFile);
     if (!container) {
       return result.hasIfChecked;
     }
-    this.traversalNode(expression, importSymbol, container, result, checkConfig, jsDocs);
+    this.traversalNode(expression, importSymbol, container, result, checkConfig);
     return result.hasIfChecked;
   }
 
   private traversalNode(node: ts.Node, importSymbol: string, parent: ts.Node, result: { hasIfChecked: boolean },
-    checkConfig: ts.JsDocNodeCheckConfigItem, jsDocs?: ts.JSDoc[]): void {
+    checkConfig: ts.JsDocNodeCheckConfigItem): void {
     const specifyFuncName: string = 'canIUse';
     if (result.hasIfChecked) {
       return;
@@ -1140,15 +1140,15 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
 
     if (node.parent !== parent) {
       if (ts.isIfStatement(node.parent)) {
-        if (ts.isCallExpression(node.parent.expression) && this.checkSyscapConditionValidCallback(node.parent.expression, specifyFuncName, importSymbol, jsDocs)) {
+        if (ts.isCallExpression(node.parent.expression) && this.checkSyscapConditionValidCallback(node.parent.expression, specifyFuncName, importSymbol)) {
           result.hasIfChecked = true;
           return;
         }
         else {
-          this.traversalNode(node.parent, importSymbol, parent, result, checkConfig, jsDocs);
+          this.traversalNode(node.parent, importSymbol, parent, result, checkConfig);
         }
       }
-      this.traversalNode(node.parent, importSymbol, parent, result, checkConfig, jsDocs);
+      this.traversalNode(node.parent, importSymbol, parent, result, checkConfig);
     }
     else {
       return;
@@ -1157,16 +1157,16 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
 
   /**
    * syscap condition check
-   * @param { ts.JSDoc[] } jsDocs
+   * @param { ts.JSDoc[] } jsDocTagInfos
    * @returns { ts.ConditionCheckResult }
    */
-  private checkSyscapCondition(jsDocs: ts.JsDocTagInfo[]): ts.ConditionCheckResult {
+  private checkSyscapCondition(jsDocTagInfos: ts.JsDocTagInfo[]): ts.ConditionCheckResult {
     const result: ts.ConditionCheckResult = {
       valid: true
     };
     let currentSyscapValue: string = '';
-    for (let i = 0; i < jsDocs.length; i++) {
-      const jsDocTag: ts.JsDocTagInfo = jsDocs[i];
+    for (let i = 0; i < jsDocTagInfos.length; i++) {
+      const jsDocTag: ts.JsDocTagInfo = jsDocTagInfos[i];
       if (jsDocTag.name === SYSCAP_TAG_CHECK_NAME) {
         currentSyscapValue = jsDocTag.text as string;
         break;
@@ -1181,7 +1181,7 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
       result.message = SYSCAP_TAG_CONDITION_CHECK_WARNING;
     } else if (!projectConfig.syscapUnionSet.has(currentSyscapValue)) {
       result.valid = false;
-      // TODO: fix to error in the feature
+      // fix to error in the feature
       result.type = ts.DiagnosticCategory.Warning;
       result.message = SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage);
     }
@@ -1193,10 +1193,9 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
    * @param { ts.CallExpression } node
    * @param { string } specifyFuncName
    * @param { string } tagValue
-   * @param { ?ts.JSDoc[] } jsDocs
    * @returns { boolean }
    */
-  private checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncName: string, tagValue: string, jsDocs?: ts.JSDoc[]): boolean {
+  private checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncName: string, tagValue: string): boolean {
     if (ts.isIdentifier(node.expression) && node.arguments.length === 1 && node.expression.escapedText.toString() === specifyFuncName) {
       const expression = node.arguments[0];
       if (ts.isStringLiteral(expression) && tagValue === expression.text) {

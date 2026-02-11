@@ -16,7 +16,7 @@
 import ts from 'typescript';
 import { BaseWarningSuppressor } from './base_warning_suppressor';
 import { SYSCAP_TAG_CHECK_NAME } from '../api_check_define';
-import { CanIUseValidator } from '../api_validator/api_validate_node'
+import { CanIUseValidator } from '../api_validator/api_validate_node';
 
 
 /**
@@ -26,17 +26,15 @@ export class SyscapWarningSuppressor extends BaseWarningSuppressor {
 
   constructor(
     jsDocTags: readonly ts.JSDocTag[],
-    config: ts.JsDocNodeCheckConfigItem,
-    jsDocs: ts.JSDoc[]
+    config: ts.JsDocNodeCheckConfigItem
   ) {
     super(SYSCAP_TAG_CHECK_NAME);
     this.validators.addValidator([
       new CanIUseValidator(
         jsDocTags,
-        config,
-        jsDocs
+        config
       )
-    ])
+    ]);
   }
 
   /**

@@ -45,7 +45,7 @@ function main() {}
 
 
 @memo_intrinsic() 
-export function factory<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, compute: (()=> Value)): Value
+export declare function factory<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, compute: (()=> Value)): Value
 
 export function cb(callback?: (()=> void)) {
   if (callback) {
