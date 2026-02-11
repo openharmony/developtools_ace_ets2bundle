@@ -33,7 +33,7 @@ struct ResourceComponent {
     for (let item of this.numbers) {
       arr.push($r('app.string.app_name'))
     }
-    const a2 = await this.test_0($r('app.string.app_name'));
+    waitForCompletion(async ()=>{const a2 = await this.test_0($r('app.string.app_name'));})
   }
 
   build() {
