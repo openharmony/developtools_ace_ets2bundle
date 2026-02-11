@@ -33,7 +33,8 @@ import {
   ArkTSEvolutionModule,
   FileInfo,
   AliasConfig,
-  InteropConfig
+  InteropConfig,
+  InteropInfo
 } from './type';
 import {
   hasExistingPaths,
@@ -501,8 +502,9 @@ export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): 
 }
 
 
-export function transformAbilityPages(abilityPath: string): boolean {
-  const entryBridgeCodePath = getBrdigeCodeRootPath(abilityPath, FileManager.getInstance().getInteropConfig());
+export function transformAbilityPages(projectConfig: Object, abilityPath: string): boolean {
+  const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
+  const entryBridgeCodePath = getBrdigeCodeRootPath(moduleJson?.module?.name, FileManager.getInstance().getInteropConfig());
   if (!entryBridgeCodePath) {
     const errInfo = LogDataFactory.newInstance(
       ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -517,7 +519,7 @@ export function transformAbilityPages(abilityPath: string): boolean {
   if (abilityPath.includes(':')) {
     abilityPath = abilityPath.substring(0, abilityPath.lastIndexOf(':'));
   }
-  const bridgeCodePath = path.join(entryBridgeCodePath, abilityPath + EXTNAME_TS);
+  const bridgeCodePath = path.join(entryBridgeCodePath.declgenBridgeCodePath, abilityPath + EXTNAME_TS);
   if (fs.existsSync(bridgeCodePath)) {
     projectConfig.entryObj[transformModuleNameToRelativePath(abilityPath)] = bridgeCodePath;
     return true;
@@ -575,8 +577,9 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
     if (!firstLine.includes('use static')) {
       newEntry[newKey] = rawPath;
     } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const bridgePath = getBrdigeCodeRootPath(rawPath, interopConfig);
-      if (!bridgePath) {
+      const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
+      const interopInfo = getBrdigeCodeRootPath(moduleJson?.module?.name, interopConfig);
+      if (!interopInfo) {
         const errInfo = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
           ArkTSInternalErrorDescription,
@@ -585,9 +588,9 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
         throw Error(errInfo.toString());
       }
 
-      const relativePath = path.relative(projectConfig.projectRootPath, rawPath);
+      const relativePath = path.relative(interopInfo.moduleRootPath, rawPath);
       const withoutExt = removeExt(relativePath);
-      newEntry[newKey] = path.join(bridgePath, withoutExt + '.ts');
+      newEntry[newKey] = path.join(interopInfo.declgenBridgeCodePath, interopInfo.packageName, withoutExt + '.ts');
     }
 
     return newEntry;
@@ -634,14 +637,11 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
   };
 }
 
-export function getBrdigeCodeRootPath(filePath: string, interopConfig: InteropConfig): string | undefined {
-  if (!interopConfig) {
-    return process.env.entryBridgeCodePath;
-  }
-
-  for (const [moduleRootPath, InteropInfo] of interopConfig.interopModuleInfo) {
-    if (isSubPathOf(filePath, moduleRootPath)) {
-      return InteropInfo.declgenBridgeCodePath;
+export function getBrdigeCodeRootPath(moduleName: string, interopConfig: InteropConfig): InteropInfo | undefined {
+  for (const [moduleRootPath, interopInfo] of interopConfig.interopModuleInfo) {
+    if (moduleName === interopInfo.moduleName) {
+      interopInfo.moduleRootPath = moduleRootPath;
+      return interopInfo;
     }
   }
 
