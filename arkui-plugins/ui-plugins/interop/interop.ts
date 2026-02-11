@@ -16,7 +16,7 @@
 
 
 import * as arkts from '@koalaui/libarkts';
-import { BuilderMethodNames, ESValueMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
+import { ESValueMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { getCustomComponentOptionsName } from '../utils';
 import { InteropContext } from '../component-transformer';
 import { createVariableLet, initialArgs } from './initstatevar';
@@ -29,9 +29,8 @@ import {
     createELMTID, 
     createInitReturn
 } from './utils';
-import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
+import { DecoratorNames } from '../../common/predefines';
 import { hasDecoratorInterop } from './utils';
-import { FileManager } from '../../common/file-manager';
 
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
