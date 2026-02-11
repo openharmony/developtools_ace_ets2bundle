@@ -15,6 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -188,12 +189,15 @@ export const useOSFiles: Set<string> = new Set();
 export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
 export const originalImportNamesMap: Map<string, string> = new Map();
 
+export let stmgmtWhiteList: Set<string> = new Set();
+
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
   let log: LogInfo[] = [];
   if (process.env.compileMode === 'moduleJson' ||
     path.resolve(filePath) !== path.resolve(projectConfig.projectPath || '', 'app.ets')) {
     componentCollection = new ComponentCollection();
+    readStmgmtWhiteList();
     const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery, sourceFile);
     if (res) {
       log = log.concat(res);
@@ -497,7 +501,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     }
     validateFunction(node, sourceFileNode, log);
   }
-  if (ts.isPropertyDeclaration(node) && node.modifiers == undefined) {
+  if (ts.isPropertyDeclaration(node) && node.modifiers === undefined) {
     const checkObserved = validateObservedProperty(node, isComponentV2, log, sourceFileNode);
     if (checkObserved) {
       return;
@@ -1620,6 +1624,9 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
     node.members.forEach(item => {
+      if (uiCheck && item && item.name && ts.isIdentifier(item.name)) {
+        validateStmgmtKeywords(item.name.getText(), item.name);
+      }
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
         const propertyName: string = item.name.getText();
         componentSet.properties.add(propertyName);
@@ -2094,6 +2101,34 @@ export function getLocalStorageCollection(componentName: string, collection: Set
   }
 }
 
+function readStmgmtWhiteList(): void {
+  const relPath: string = '../stmgmtWhiteList.json';
+  const absolutePath: string = path.join(__dirname, relPath);
+  if (!fs.existsSync(absolutePath)) {
+    return;
+  }
+  const stats: any = fs.statSync(absolutePath);
+  if (!stats.isFile()) {
+    return;
+  }
+  const fileContent: any = require(absolutePath);
+  if (fileContent) {
+    stmgmtWhiteList = new Set(fileContent.attrs ?? []);
+  }
+}
+
+export function validateStmgmtKeywords(itemName: string, memberNode: ts.Identifier): void {
+  const message: string = `Methods, properties and accessors in structures decorated by '@Component'` +
+    ` and '@ComponentV2' cannot have name as '${itemName}'.`;
+  if (stmgmtWhiteList.size && stmgmtWhiteList.has(itemName)) {
+    transformLog.errors.push({
+      message: message,
+      pos: memberNode.getStart(),
+      type: LogType.WARN
+    });
+  }
+}
+
 export function resetValidateUiSyntax(): void {
   observedClassCollection.clear();
   enumCollection.clear();
@@ -2112,4 +2147,5 @@ export function resetValidateUiSyntax(): void {
   useOSFiles.clear();
   sourcemapNamesCollection.clear();
   originalImportNamesMap.clear();
+  stmgmtWhiteList.clear();
 }

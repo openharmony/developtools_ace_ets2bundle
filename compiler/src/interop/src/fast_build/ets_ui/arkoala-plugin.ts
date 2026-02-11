@@ -39,6 +39,6 @@ export default function arkoalaProgramTransform(
   extras: Object,
 ): ts.Program {
   let [,,,] = [compilerHost, options, extras];
-  console.warn(`${yellow}WARN: Arkoala plugin is missing in the current SDK. Source transformation will not be performed.${reset}`)
+  console.warn(`${yellow}WARN: Arkoala plugin is missing in the current SDK. Source transformation will not be performed.${reset}`);
   return program;
 }
