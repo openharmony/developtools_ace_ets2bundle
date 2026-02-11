@@ -28,8 +28,7 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
-  externalApiCheckerMap,
-  suppressWarningsHandleMap
+  externalApiCheckerMap
 } from '../../../main';
 import {
   LogType,
@@ -101,7 +100,7 @@ import { SinceJSDocChecker } from './api_checker/since_version_checker';
 import { AvailableAnnotationChecker } from './api_checker/available_version_checker';
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
-
+import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
 
 /**
  * bundle info
@@ -973,7 +972,7 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
     !projectConfig.syscapIntersectionSet.has(currentSyscapValue);
 
   if (defaultResult) {
-    const suppressor = suppressWarningsHandleMap.get(SYSCAP_TAG_CHECK_NAME);
+    const suppressor = new SyscapWarningSuppressor();
     // 执行告警消除判断
     if (suppressor && suppressor.isApiVersionHandled(node)) {
       return false;
@@ -997,7 +996,7 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
     }
     config.message = extrenalCheckResult.checkMessage;
   }
-  const suppressor = suppressWarningsHandleMap.get(SYSCAP_TAG_CHECK_NAME);
+  const suppressor = new SyscapWarningSuppressor();
   // 执行告警消除判断
   if (suppressor && suppressor.isApiVersionHandled(node)) {
     return false;

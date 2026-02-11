@@ -45,9 +45,6 @@ const {
   getLogger
 } = require('log4js');
 
-const { SYSCAP_TAG_CHECK_NAME } = require('./lib/fast_build/system_api/api_check_define');
-const { SyscapWarningSuppressor } = require('./lib/fast_build/system_api/api_validator/syscap_warning_suppressor');
-
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
   categories: {'default': {appenders: ['ETS'], level: 'info'}}  
@@ -85,7 +82,6 @@ let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
-let suppressWarningsHandleMap = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -891,7 +887,6 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
  * @param {string} sdkPath - Base SDK path for resolving plugin paths
  */
 function collectExternalApiChecker(sdkConfig, sdkPath) {
-  suppressWarningsHandleMap.set(SYSCAP_TAG_CHECK_NAME, new SyscapWarningSuppressor());
   if (!sdkConfig.apiCheckPlugins || sdkConfig.apiCheckPlugins.length === 0) {
     return;
   }
@@ -1273,7 +1268,6 @@ function resetMain() {
   fileAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
   externalApiCheckerMap = new Map();
-  suppressWarningsHandleMap = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1372,4 +1366,3 @@ exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
-exports.suppressWarningsHandleMap = suppressWarningsHandleMap;
