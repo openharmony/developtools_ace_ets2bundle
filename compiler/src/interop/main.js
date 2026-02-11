@@ -83,6 +83,13 @@ let sdkConfigPrefix = 'ohos|system|kit|arkts';
 let ohosSystemModulePaths = [];
 let ohosSystemModuleSubDirPaths = [];
 let allModulesPaths = [];
+let externalApiCheckPlugin = new Map();
+let externalApiMethodPlugin = new Map();
+let fileDeviceCheckPlugin = new Map();
+let fileAvailableCheckPlugin = new Map();
+let suppressWarningsCheckPlugin = new Map();
+// 拓展SDK校验插件
+let externalApiCheckerMap = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -801,6 +808,81 @@ function filterWorker(workerPath) {
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })();
 
+function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
+  const osName = sdkConfig.osName;
+  if (!osName) {
+    return;
+  }
+
+  const pluginGroups = [
+    sdkConfig.apiCheckPlugin,
+    sdkConfig.annotationCheckPlugin
+  ].filter(Boolean);
+  for (let i = 0; i < pluginGroups.length; i++) {
+    const pluginGroup = pluginGroups[i];
+
+    for (const config of pluginGroup) {
+      let pluginKey = '';
+      
+      if (config.type) {
+        // New format: has type field
+        // Key: {osName}/{tag}/{type}
+        pluginKey = [osName, config.tag, config.type].join('/');
+      } else {
+        // Old format: no type field
+        // Key: {osName}/{tag}
+        pluginKey = [osName, config.tag].join('/');
+      }
+
+      const pluginConfig = {
+        ...config,
+        path: path.resolve(sdkPath, config.path)
+      };
+
+      const existingPlugins = externalApiCheckPlugin.get(pluginKey) || [];
+      existingPlugins.push(pluginConfig);
+      externalApiCheckPlugin.set(pluginKey, existingPlugins);
+    }
+  }
+}
+
+/**
+ * Collects external API check plugins from SDK config.
+ * Loads plugins and stores them with keys: {osName}/{tag}/{type}
+ * 
+ * Plugin key format: {osName}/{tag}/{type}
+ * Example: "since/CompatibilityCheck"
+ * 
+ * @param {Object} sdkConfig - SDK configuration object
+ * @param {string} sdkPath - Base SDK path for resolving plugin paths
+ */
+function collectExternalApiChecker(sdkConfig, sdkPath) {
+  if (!sdkConfig.apiCheckPlugins || sdkConfig.apiCheckPlugins.length === 0) {
+    return;
+  }
+  const apiCheckPlugins = sdkConfig.apiCheckPlugins;
+  if (!apiCheckPlugins || apiCheckPlugins.length === 0) {
+    return;
+  }
+  apiCheckPlugins.forEach(plugin => {
+    const externalModulePath = path.resolve(sdkPath, plugin.path);
+    if (!fs.existsSync(externalModulePath)) {
+      return;
+    }
+    try {
+      const externalModule = require(path.resolve(sdkPath, plugin.path));
+      const externalChecker = new externalModule[plugin.className];
+      if (externalApiCheckerMap.get(plugin.tagName)) {
+        externalApiCheckerMap.set(plugin.tagName, externalApiCheckerMap.get(plugin.tagName).push(externalChecker));
+      } else {
+        externalApiCheckerMap.set(plugin.tagName, [externalChecker]);
+      }
+    } catch (error) {
+      return;
+    }
+  });
+}
+
 function collectExternalModules(sdkPaths) {
   for (let i = 0; i < sdkPaths.length; i++) {
     const sdkPath = sdkPaths[i];
@@ -812,6 +894,12 @@ function collectExternalModules(sdkPaths) {
     if (!sdkConfig.apiPath) {
       continue;
     }
+
+    if (sdkConfig.apiCheckPlugin && sdkConfig.apiCheckPlugin.length > 0) {
+      // TODO: 待合并
+      collectExternalApiCheckPlugin(sdkConfig, sdkPath);
+    }
+    collectExternalApiChecker(sdkConfig, sdkPath);
     let externalApiPathArray = [];
     if (Array.isArray(sdkConfig.apiPath)) {
       externalApiPathArray = sdkConfig.apiPath;
@@ -1137,6 +1225,12 @@ function resetMain() {
   ohosSystemModulePaths = [];
   ohosSystemModuleSubDirPaths = [];
   allModulesPaths = [];
+  externalApiCheckPlugin = new Map();
+  externalApiMethodPlugin = new Map();
+  fileDeviceCheckPlugin = new Map();
+  fileAvailableCheckPlugin = new Map();
+  suppressWarningsCheckPlugin = new Map();
+  externalApiCheckerMap = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1225,3 +1319,9 @@ exports.allModulesPaths = allModulesPaths;
 exports.resetProjectConfig = resetProjectConfig;
 exports.resetGlobalProgram = resetGlobalProgram;
 exports.setEntryArrayForObf = setEntryArrayForObf;
+exports.externalApiCheckPlugin = externalApiCheckPlugin;
+exports.externalApiMethodPlugin = externalApiMethodPlugin;
+exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
+exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
+exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
+exports.externalApiCheckerMap = externalApiCheckerMap;
