@@ -64,12 +64,9 @@ interface A {
 }
 class AA {
     @Memo() public a: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
-    public constructor(arg: (A | undefined)) {
+    public constructor(arg?: A) {
         this.a = ({let gensym%%_<some_random_number> = arg;
         (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.a)});
-    }
-    public constructor() {
-        this(undefined);
     }
     @Memo() 
     public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {

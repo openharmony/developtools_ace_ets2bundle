@@ -74,16 +74,8 @@ function ignoreNewLines(dumpStr: string): string {
 
 function dumpConstructor(): string {
     return `
-  protected constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined)) {
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
     super(useSharedStorage, storage);
-  }
-
-  protected constructor(useSharedStorage: (boolean | undefined)) {
-    this(useSharedStorage, undefined);
-  }
-    
-  protected constructor() {
-    this(undefined, undefined);
   }`
 }
 
