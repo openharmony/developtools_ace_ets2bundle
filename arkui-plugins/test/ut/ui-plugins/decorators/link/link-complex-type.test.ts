@@ -337,51 +337,51 @@ final class LinkType extends BaseEnum<int> {
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', 'Per', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', 'Array<number>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(Array<number> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', 'LinkType', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(LinkType | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<LinkType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', 'Set<string>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(Set<string> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', 'Array<boolean>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(Array<boolean> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar6', 'Array<Per>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar6', '(Array<Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar6', '(LinkSourceType<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar7', 'Array<Per>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar7', '(Array<Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar7', '(LinkSourceType<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar8', '((sr: string)=> void)', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar8', '(LinkSourceType<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar9', 'Date', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar9', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar9', '(LinkSourceType<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar10', 'Map<number, Per>', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar10', '(LinkSourceType<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar11', '(string | number)', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar11', '((string | number) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar11', '(LinkSourceType<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar12', '(Set<string> | Per)', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar12', '(LinkSourceType<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar12', '(boolean | undefined)')}
   

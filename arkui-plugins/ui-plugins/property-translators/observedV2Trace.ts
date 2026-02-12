@@ -197,9 +197,18 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
 
     metaField(originalName: string): arkts.ClassProperty {
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
+        const metaName = `${StateManagementTypes.META}V2_${originalName}`;
+        const args = this.isStatic
+            ? [arkts.factory.createUndefinedLiteral(), arkts.factory.createStringLiteral(metaName)]
+            : [arkts.factory.createStringLiteral(metaName)];
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(`${StateManagementTypes.META}_${originalName}`),
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_MUTABLESTATE_META, undefined, [], false),
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_MUTABLESTATE_META,
+                undefined,
+                args,
+                !this.isStatic
+            ),
             uiFactory.createTypeReferenceFromString(StateManagementTypes.MUTABLE_STATE_META),
             this.isStatic
                 ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC

@@ -552,7 +552,12 @@ export class factory {
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         const meta = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(StateManagementTypes.META),
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_MUTABLESTATE_META, undefined, [], false),
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_MUTABLESTATE_META,
+                undefined,
+                [arkts.factory.createStringLiteral(`${StateManagementTypes.META}_`)],
+                true
+            ),
             UIFactory.createTypeReferenceFromString(StateManagementTypes.MUTABLE_STATE_META),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false

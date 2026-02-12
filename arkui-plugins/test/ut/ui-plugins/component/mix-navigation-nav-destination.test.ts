@@ -381,7 +381,7 @@ type OnHomeShowOnTopCallback = ((name: string)=> void);
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_SubNavigation {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'isPortrait', 'boolean', ['@__Link_intrinsic()'], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'isPortrait', '(boolean | undefined)', ['@__Link_intrinsic()'])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isPortrait', '(LinkSourceType<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isPortrait', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'displayMode', '(number | undefined)')}

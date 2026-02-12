@@ -204,7 +204,7 @@ function main() {}
 
   @JSONRename({newName:"name"}) public __backing_name: string = "info";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);

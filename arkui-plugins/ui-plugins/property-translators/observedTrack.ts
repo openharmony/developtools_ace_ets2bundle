@@ -190,7 +190,12 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator {
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(`${StateManagementTypes.META}_${originalName}`),
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_MUTABLESTATE_META, undefined, [], false),
+            factory.generateStateMgmtFactoryCall(
+                StateManagementTypes.MAKE_MUTABLESTATE_META,
+                undefined,
+                [arkts.factory.createStringLiteral(`${StateManagementTypes.META}_${originalName}`)],
+                true
+            ),
             uiFactory.createTypeReferenceFromString(StateManagementTypes.MUTABLE_STATE_META),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false

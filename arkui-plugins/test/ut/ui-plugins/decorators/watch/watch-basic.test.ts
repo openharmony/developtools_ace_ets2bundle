@@ -138,7 +138,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONRename({newName:"trackA"}) public __backing_trackA: string = "world";
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackA");
   
   public constructor() {}
   
@@ -376,7 +376,7 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', 'string', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)', [dumpAnnotation('Watch', { value: 'linkOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkvar', '(boolean | undefined)')}
 

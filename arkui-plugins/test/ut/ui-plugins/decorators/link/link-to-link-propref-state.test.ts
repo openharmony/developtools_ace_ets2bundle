@@ -128,7 +128,6 @@ function main() {}
         return;
       }), (() => {
         return {
-          childText: this.text1,
           __backing_childText: this.__backing_text1,
           __options_has_childText: true,
           childText2: this.text1,
@@ -241,14 +240,14 @@ function main() {}
 @Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 @Component() export interface __Options_Parant {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', 'string', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', 'string', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}
 
