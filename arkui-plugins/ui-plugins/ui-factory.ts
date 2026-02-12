@@ -26,7 +26,7 @@ import {
 import { GenSymGenerator } from '../common/gensym-generator';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
 import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
-import { needDefiniteOrOptionalModifier } from './property-translators/utils';
+import { needDefiniteOrOptionalModifier, hasDecoratorName } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 
 export interface ScriptFunctionConfiguration {
@@ -370,6 +370,9 @@ export class factory {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
             } else {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
+            }
+            if (st.typeAnnotation && hasDecoratorName(st, DecoratorNames.ENV)) {
+                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
             }
         }
         return st;
