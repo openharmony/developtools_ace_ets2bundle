@@ -43,6 +43,7 @@ import { ConsumerInterfaceTranslator, ConsumerTranslator } from './consumer';
 import { EventInterfaceTranslator, EventTranslator } from './event';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
+import { EnvTranslator, EnvInterfaceTranslator } from './env';
 
 export { PropertyTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
@@ -145,6 +146,9 @@ export function classifyV2Property(
     if (hasDecorator(property, DecoratorNames.EVENT)) {
         return new EventTranslator({ property, structInfo });
     }
+    if (hasDecorator(property, DecoratorNames.ENV)) {
+        return new EnvTranslator({ property, structInfo });
+    }
     return undefined;
 }
 
@@ -222,6 +226,9 @@ export function classifyV2PropertyInInterface(property: arkts.AstNode): Interfac
     }
     if (EventInterfaceTranslator.canBeTranslated(property)) {
          return new EventInterfaceTranslator({ property });
+    }
+    if (EnvInterfaceTranslator.canBeTranslated(property)) {
+         return new EnvInterfaceTranslator({ property });
     }
     return undefined;
 }
