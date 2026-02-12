@@ -24,8 +24,7 @@ import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
 
 
-export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>,
-    updateProp: arkts.Property[], node: arkts.CallExpression): arkts.Statement[] {
+export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>, updateProp: arkts.Property[]): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     const proxySet = new Set<string>();
     for (const property of args.properties) {
@@ -35,8 +34,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         const key = property.key;
         const value = property.value!;
         if (!(key instanceof arkts.Identifier)) {
-            const errorMessage = 'Error arguments in Legacy Component.';
-            logDiagnostic(errorMessage, node);
+            throw Error('Error arguments in Legacy Component');
         }
         const keyName = key.name;
         const keyProperty = varMap.get(keyName);
@@ -49,8 +47,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const valueProperty = arkts.getDecl(value);
             if (valueProperty instanceof arkts.ClassProperty && (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
                 hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))) {
-                const errorMessage = 'Cannot assign @Provide or @Consume decorated data to regular property.';
-                logDiagnostic(errorMessage, node);
+                throw Error('Cannot assign @Provide or @Consume decorated data to regular property.');
             }
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
@@ -58,8 +55,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const initParam = processLink(keyName, value, keyType, proxySet);
             result.push(...initParam);
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
-            const errorMessage = 'The @Consume property cannot be assigned.';
-            logDiagnostic(errorMessage, node);
+            throw Error('The @Consume property cannot be assigned.');
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.PROP) || hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK) ||
             hasDecoratorInterop(keyProperty, DecoratorNames.PARAM)) {
             updateProp.push(property);
@@ -69,8 +65,7 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
-            const errorMessage = 'The @Consume property cannot be assigned.';
-            logDiagnostic(errorMessage, node);
+            throw Error('The @Consume property cannot be assigned.');
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.BUILDER_PARAM)) {
             const initParam = processBuilderParam(keyName, value);
             result.push(...initParam);
@@ -80,11 +75,6 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         }
     }
     return result;
-}
-
-export function logDiagnostic(errorMessage: string, node: arkts.AstNode): void {
-    const diagnosticKind = arkts.DiagnosticKind.create(errorMessage, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
-    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(node));
 }
 
 export function createVariableLet(varName: string, expression: arkts.AstNode): arkts.VariableDeclaration {
