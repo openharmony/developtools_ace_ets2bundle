@@ -99,11 +99,11 @@ import { generateArkUICompatible } from '../interop/interop';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
 import { MethodTranslator } from '../property-translators/base';
+import { GenSymGenerator } from '../../common/gensym-generator';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
-import { ComputedCache } from '../property-translators/cache/computedCache';
 import { isInteropComponent } from '../interop/utils';
-import { GenSymGenerator } from '../../common/gensym-generator';
+import { ComputedCache } from '../property-translators/cache/computedCache';
 import { BindableFactory } from '../builder-lambda-translators/bindable-factory';
 
 export class factory {
@@ -1235,7 +1235,7 @@ export class factory {
         }
         if (isInteropComponent(node)) {
             return generateArkUICompatible(node as arkts.CallExpression, globalBuilder);
-        }
+         }
         return node;
     }
 
@@ -1717,7 +1717,7 @@ export class factory {
     /**
      * create  `_invoke` static method in struct
      */
-    static createInvokeImplMethod(structName: string, scopeInfo: CustomComponentScopeInfo) {
+    static createInvokeImplMethod(structName: string, scopeInfo: CustomComponentScopeInfo): arkts.MethodDefinition {
         const { isDecl, annotations } = scopeInfo;
         const params: arkts.Expression[] = [];
         const isCustomComponent = !!annotations.component || !!annotations.componentV2;

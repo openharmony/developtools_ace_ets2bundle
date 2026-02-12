@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
-import { UISyntaxRuleContext } from 'ui-syntax-plugins/rules/ui-syntax-rule';
+import { UISyntaxRuleContext, FixSuggestion } from '../rules/ui-syntax-rule';
 import { ProjectConfig } from 'common/plugin-context';
 
 export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
@@ -36,6 +36,7 @@ export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
     /ability\..*/,
 ];
 
+export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL = 2;
 export const BUILD_NAME: string = 'build';
 
 export const SINGLE_CHILD_COMPONENT: number = 1;
@@ -47,8 +48,6 @@ export const COMPONENT_BUILDER: string = 'ComponentBuilder';
 
 export const COMPONENT_REPEAT: string = 'Repeat';
 export const TEMPLATE: string = 'template';
-
-export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL = 2;
 
 export const CheckObjectLinkUseLiteralKeyword = {
     GLOBAL: 'GLOBAL',
@@ -603,4 +602,131 @@ export const TypeFlags = {
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
     return program.absName;
+}
+
+export interface ImportInfo {
+    importedNames: Set<string>;
+    arkUIImportNode?: arkts.ImportDeclaration;
+    lastImportNode?: arkts.ImportDeclaration;
+}
+
+export function collectFileImports(scriptFile: arkts.EtsScript): ImportInfo {
+    const importedNames = new Set<string>();
+    let arkUIImportNode: arkts.ImportDeclaration | undefined = undefined;
+    let lastImportNode: arkts.ImportDeclaration | undefined = undefined;
+    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements) {
+        return { importedNames, arkUIImportNode, lastImportNode };
+    }
+
+    for (const stmt of scriptFile.statements) {
+        if (!arkts.isImportDeclaration(stmt)) {
+            continue;
+        }
+        lastImportNode = stmt;
+
+        const moduleName = getImportModuleName(stmt);
+        if (!moduleName) {
+            continue;
+        }
+
+        collectImportedNames(stmt.specifiers, importedNames);
+        if (moduleName === '@kit.ArkUI' && !arkUIImportNode) {
+            arkUIImportNode = stmt;
+        }
+    }
+
+    return { importedNames, arkUIImportNode, lastImportNode };
+}
+
+function collectImportedNames(
+    specifiers: readonly arkts.AstNode[] | undefined,
+    importedNames: Set<string>
+): void {
+    if (!specifiers) {
+        return;
+    }
+
+    for (const spec of specifiers) {
+        if (!arkts.isImportSpecifier(spec) || !spec.imported) {
+            continue;
+        }
+        importedNames.add(getIdentifierName(spec.imported));
+    }
+}
+
+function getImportModuleName(importNode: arkts.ImportDeclaration): string | undefined {
+    if (!importNode.source || !arkts.isStringLiteral(importNode.source)) {
+        return undefined;
+    }
+    return importNode.source.str;
+}
+
+export function findFirstStmtPosition(program: arkts.Program): arkts.SourcePosition {
+    const scriptFile = program.astNode;
+    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements || scriptFile.statements.length === 0) {
+        return arkts.SourcePosition.create(0, 0);
+    }
+    return scriptFile.statements[0].endPosition;
+}
+
+export function createImportFixes(
+    importsInfo: ImportInfo | undefined,
+    program: arkts.Program,
+    importNames: string[],
+    title: string
+): FixSuggestion[] {
+    const missingImports = importsInfo ? importNames.filter(name => !importsInfo.importedNames.has(name)) : importNames;
+    if (missingImports.length === 0) {
+        return [];
+    }
+
+    const fixes: FixSuggestion[] = [];
+    if (importsInfo?.arkUIImportNode) {
+        const specifiers = importsInfo.arkUIImportNode.specifiers;
+        if (specifiers && specifiers.length > 0) {
+            const lastSpecifier = specifiers[specifiers.length - 1];
+            const insertPos = lastSpecifier.endPosition;
+
+            fixes.push({
+                title: title,
+                range: [insertPos, insertPos],
+                code: ', ' + missingImports.join(', '),
+            });
+        }
+    } else if (importsInfo?.lastImportNode) {
+        const importCode = `\nimport { ${missingImports.join(', ')} } from '@kit.ArkUI';`;
+        const insertPos = importsInfo.lastImportNode.endPosition;
+        fixes.push({
+            title: title,
+            range: [insertPos, insertPos],
+            code: importCode,
+        });
+    } else {
+        const importCode = `import { ${missingImports.join(', ')} } from '@kit.ArkUI';\n`;
+        const firstStmtPos = findFirstStmtPosition(program);
+        fixes.push({
+            title: title,
+            range: [firstStmtPos, firstStmtPos],
+            code: importCode,
+        });
+    }
+
+    return fixes;
+}
+
+export function addImportFixes(
+    node: arkts.AstNode,
+    fixes: FixSuggestion[],
+    context: UISyntaxRuleContext,
+    importNames: string[],
+    fixTitle: string
+): void {
+    const program = arkts.getProgramFromAstNode(node);
+    const importsInfo = context.getImportsInfo(program);
+    const importFixes = createImportFixes(importsInfo, program, importNames, fixTitle);
+    importFixes.forEach((fix) => {
+        if (fix) {
+            fixes.push(fix);
+        }
+    });
 }

@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ProjectConfig } from 'common/plugin-context';
-import { UISyntaxRuleComponents } from 'ui-syntax-plugins/utils';
+import { UISyntaxRuleComponents, ImportInfo } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
     range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
@@ -27,7 +27,7 @@ export type ReportOptions = {
     node: arkts.AstNode;
     message: string;
     data?: Record<string, string>;
-    fix?: (node: arkts.AstNode) => FixSuggestion;
+    fix?: (node: arkts.AstNode) => FixSuggestion | FixSuggestion[];
     level?: UISyntaxRuleLevel;
 };
 
@@ -36,6 +36,8 @@ export type UISyntaxRuleContext = {
     componentsInfo: UISyntaxRuleComponents | undefined;
     report(options: ReportOptions): void;
     getMainPages(): string[];
+    getImportsInfo(program: arkts.Program): ImportInfo;
+    clearImportsInfo(): void;
 };
 
 export type UISyntaxRulePhaseHandler = (node: arkts.AstNode) => void;
@@ -56,7 +58,7 @@ export type UISyntaxRuleReportOptions = {
     message: string;
     level?: UISyntaxRuleLevel;
     data?: Record<string, string>;
-    fix?: (node: arkts.AstNode) => FixSuggestion;
+    fix?: (node: arkts.AstNode) => FixSuggestion | FixSuggestion[];
 };
 
 export type UISyntaxRuleLevel = 'error' | 'warn' | 'none';

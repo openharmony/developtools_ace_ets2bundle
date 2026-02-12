@@ -26,10 +26,16 @@ const mustInitializeDecorators = [
     PresetDecorators.PROVIDE,
 ];
 // Disables a list of decorators that are initialized locally
-const prohibitInitializeDecorators = [PresetDecorators.LINK, PresetDecorators.OBJECT_LINK];
+const prohibitInitializeDecorators = [
+    PresetDecorators.LINK,
+    PresetDecorators.OBJECT_LINK,
+];
 
 // When used with @Require, non-initialization is allowed
-const requireCanReleaseMandatoryDecorators = [PresetDecorators.STATE, PresetDecorators.PROVIDE];
+const requireCanReleaseMandatoryDecorators = [
+    PresetDecorators.STATE,
+    PresetDecorators.PROVIDE,
+];
 
 class StructVariableInitializationRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
@@ -52,20 +58,14 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
         const valueExists = !!node.value;
         // Check for the presence of require decorator
         const hasRequire = findDecorator(node, PresetDecorators.REQUIRE);
-        node.annotations.some((annotation) => {
-            if (
-                annotation.expr &&
-                arkts.isIdentifier(annotation.expr) &&
-                mustInitializeDecorators.includes(annotation.expr.name)
-            ) {
+        node.annotations.some(annotation => {
+            if (annotation.expr &&arkts.isIdentifier(annotation.expr) &&
+                mustInitializeDecorators.includes(annotation.expr.name)) {
                 const decoratorName = annotation.expr.name;
                 this.reportInitializeError(decoratorName, valueExists, annotation, hasRequire);
                 return true;
-            } else if (
-                annotation.expr &&
-                arkts.isIdentifier(annotation.expr) &&
-                prohibitInitializeDecorators.includes(annotation.expr.name)
-            ) {
+            } else if (annotation.expr && arkts.isIdentifier(annotation.expr) &&
+                prohibitInitializeDecorators.includes(annotation.expr.name)) {
                 const decoratorName = annotation.expr.name;
                 this.reportProHibitInitializeError(decoratorName, valueExists, annotation);
                 return true;
@@ -74,12 +74,8 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
         });
     }
 
-    private reportInitializeError(
-        decoratorName: string,
-        valueExists: boolean,
-        annotation: arkts.AnnotationUsage,
-        hasRequire: arkts.AnnotationUsage | undefined
-    ): void {
+    private reportInitializeError(decoratorName: string, valueExists: boolean,
+        annotation: arkts.AnnotationUsage, hasRequire: arkts.AnnotationUsage | undefined): void {
         // Used with @require allows non-initialization
         if (hasRequire && requireCanReleaseMandatoryDecorators.includes(decoratorName)) {
             return;
@@ -95,11 +91,8 @@ class StructVariableInitializationRule extends AbstractUISyntaxRule {
         }
     }
 
-    private reportProHibitInitializeError(
-        decoratorName: string,
-        valueExists: boolean,
-        annotation: arkts.AnnotationUsage
-    ): void {
+    private reportProHibitInitializeError(decoratorName: string, valueExists: boolean,
+        annotation: arkts.AnnotationUsage): void {
         // If it is a decorator that prohibits initialization
         if (valueExists) {
             // If an initialization expression exists, an error is reported

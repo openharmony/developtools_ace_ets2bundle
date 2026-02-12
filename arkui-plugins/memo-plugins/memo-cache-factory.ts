@@ -239,7 +239,7 @@ export class RewriteFactory {
         const _internalsTransformer = metadata?.internalsTransformer;
         const _isWithinTypeParams = metadata?.isWithinTypeParams;
         const _isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const newParams = prepareRewriteScriptFunctionParameters(
+        const newParams: readonly arkts.Expression[] = prepareRewriteScriptFunctionParameters(
             node,
             _isSetter,
             _isGetter,

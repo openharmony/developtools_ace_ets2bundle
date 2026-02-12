@@ -1004,6 +1004,15 @@ export class Es2pandaNativeModule {
     ): void {
         throw new Error('This methods was not overloaded by native module initialization');
     }
+
+    _LogDiagnosticWithSuggestions(
+        context: KNativePointer,
+        diagnosticInfo: KNativePointer,
+        suggestionInfoList: BigUint64Array,
+        suggestionInfoLength: KUInt
+    ): KNativePointer {
+        throw new Error('LogDiagnosticWithSuggestions was not overloaded by native module initialization');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

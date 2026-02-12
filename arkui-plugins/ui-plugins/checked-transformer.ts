@@ -47,9 +47,9 @@ import { builderRewriteByType } from './builder-lambda-translators/builder-facto
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MonitorCache } from './property-translators/cache/monitorCache';
-import { ComputedCache } from './property-translators/cache/computedCache';
 import { FileManager } from '../common/file-manager';
 import { LANGUAGE_VERSION } from '../common/predefines';
+import { ComputedCache } from './property-translators/cache/computedCache';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;

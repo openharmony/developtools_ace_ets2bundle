@@ -162,9 +162,9 @@ export function hasMemoSkipAnnotation(node: arkts.ETSParameterExpression): boole
 export function removeMemoAnnotation<T extends MemoAstNode>(node: T): T {
     const newAnnotations: arkts.AnnotationUsage[] = node.annotations.filter(
         (it) => {
-            return !isMemoAnnotation(it, RuntimeNames.ANNOTATION) 
-                && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE) 
-                && !isMemoAnnotation(it, RuntimeNames.ANNOTATION_UI)
+            return !isMemoAnnotation(it, RuntimeNames.ANNOTATION) &&
+                   !isMemoAnnotation(it, RuntimeNames.ANNOTATION_STABLE) &&
+                   !isMemoAnnotation(it, RuntimeNames.ANNOTATION_UI)
         }
     );
     if (arkts.isEtsParameterExpression(node)) {
