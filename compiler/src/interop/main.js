@@ -496,7 +496,7 @@ function setAbilityFile(projectConfig, abilityPages) {
       if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
         return;
       }
-      if (isMixCompile() && transformAbilityPages(abilityPath)) {
+      if (isMixCompile() && transformAbilityPages(projectConfig, abilityPath)) {
         return;
       }
       throw Error(
