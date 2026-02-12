@@ -129,11 +129,7 @@ function main() {}
   @Memo() 
   public build(): void
 
-  public constructor(useSharedStorage: (boolean | undefined), storage: (LocalStorage | undefined))
-  
-  public constructor(useSharedStorage: (boolean | undefined))
-  
-  public constructor()
+  public constructor(useSharedStorage?: boolean, storage?: LocalStorage)
   
   public static _buildCompatibleNode(options: __Options_SwipeRefresher): void
 
