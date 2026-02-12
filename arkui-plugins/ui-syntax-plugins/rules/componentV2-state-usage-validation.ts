@@ -15,9 +15,12 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    getClassPropertyAnnotationNames, PresetDecorators, getAnnotationUsage, getClassPropertyName, getIdentifierName
+    getClassPropertyAnnotationNames,
+    PresetDecorators,
+    getAnnotationUsage,
+    createImportFixes
 } from '../utils';
-import { AbstractUISyntaxRule } from './ui-syntax-rule';
+import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
 const builtInDecorators = [PresetDecorators.LOCAL, PresetDecorators.PARAM, PresetDecorators.EVENT];
 
@@ -154,17 +157,34 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         if (propertyDecorators.includes(PresetDecorators.PARAM) && !member.value &&
             !propertyDecorators.includes(PresetDecorators.REQUIRE) && member.key) {
             const memberKey = member.key;
+            const startPosition = memberKey.startPosition;
+            const fixTitle = 'Add @Require annotation';
+            const fixes: FixSuggestion[] = [];
+
+            fixes.push({
+                title: fixTitle,
+                range: [startPosition, startPosition],
+                code: `@${PresetDecorators.REQUIRE} `
+            });
+
+            const program = arkts.getProgramFromAstNode(memberKey);
+            const importsInfo = this.context.getImportsInfo(program);
+            const importFixes = createImportFixes(
+                importsInfo,
+                program,
+                [PresetDecorators.REQUIRE],
+                fixTitle
+            );
+            importFixes.forEach((fix) => {
+                if (fix) {
+                    fixes.push(fix);
+                }
+            });
+
             this.report({
                 node: memberKey,
                 message: this.messages.paramRequiresRequire,
-                fix: (memberKey) => {
-                    const startPosition = memberKey.startPosition;
-                    return {
-                        title: 'Add @Require annotation',
-                        range: [startPosition, startPosition],
-                        code: `@${PresetDecorators.REQUIRE} `,
-                    };
-                },
+                fix: () => fixes,
             });
         }
     };

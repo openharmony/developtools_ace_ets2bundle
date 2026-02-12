@@ -50,9 +50,9 @@ import {
     getDeclaredSetAttribtueMethodName,
     checkIsTrailingLambdaInLastParam,
     getTransformedComponentName,
+    isForEach,
     isNavigationOrNavDestination,
     getIsUserCreateStack,
-    isForEach,
     findReuseId,
     getStructCalleeInfoFromCallee,
 } from './utils';
@@ -132,7 +132,7 @@ export class factory {
     /**
      * transform arguments in style node.
      */
-    static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
+   static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
         const decl = arkts.getDecl(call.expression);
         if (!decl || !arkts.isMethodDefinition(decl)) {
             return call.arguments.map((arg) => ({ arg }));
@@ -222,7 +222,7 @@ export class factory {
             initCallPtr: undefined,
             reuseId: undefined,
             defaultReuseId: undefined,
-            structEntryStroage: undefined,
+            structEntryStorage: undefined,
         };
         const structInfo = !isFunctionCall ? getStructCalleeInfoFromCallee(leaf.expression) : {};
         if (!!structInfo?.isFromCustomDialog) {
@@ -242,8 +242,8 @@ export class factory {
                 })
             )
         }
-        if (!!structInfo?.structEntryStroage && arkts.isStringLiteral(structInfo.structEntryStroage)) {
-            lambdaBodyInfo.structEntryStroage = structInfo.structEntryStroage.str;
+        if (!!structInfo?.structEntryStorage && arkts.isStringLiteral(structInfo.structEntryStorage)) {
+            lambdaBodyInfo.structEntryStorage = structInfo.structEntryStorage.str;
         }
         const lambdaBody = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
         arkts.NodeCache.getInstance().collect(lambdaBody);
@@ -571,7 +571,7 @@ export class factory {
         declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
         const { params, returnType } = declInfo;
-        const { lambdaBody, reuseId, defaultReuseId, structEntryStroage } = lambdaBodyInfo;
+        const { lambdaBody, reuseId, defaultReuseId, structEntryStorage } = lambdaBodyInfo;
         const args: Array<arkts.AstNode | undefined> = [];
         const isTrailingCall = leaf.isTrailingCall;
         forEachArgWithParam(
@@ -581,7 +581,7 @@ export class factory {
                 const fallback = arkts.factory.createUndefinedLiteral();
                 let modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
                 if (index !== params.length - 1) {
-                    const processedArg = factory.preprocessArgWithParamName(param, modifiedArg, structEntryStroage);
+                    const processedArg = factory.preprocessArgWithParamName(param, modifiedArg, structEntryStorage);
                     modifiedArg = arkts.isUndefinedLiteral(processedArg)
                         ? modifiedArg
                         : this.rewriteArgumentToLambda(processedArg as arkts.Expression);
