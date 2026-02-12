@@ -135,7 +135,7 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
     }
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   @JSONRename({newName:"paramA2"}) public __backing_paramA2: string = "hello";
 
@@ -362,7 +362,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     }
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   @JSONRename({newName:"paramA2"}) public __backing_paramA2: string = "hello";
 

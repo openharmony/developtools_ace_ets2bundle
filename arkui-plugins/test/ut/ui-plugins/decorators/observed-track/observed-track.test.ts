@@ -87,11 +87,11 @@ function main() {}
   
   @JSONRename({newName:"trackB"}) public __backing_trackB: number = 2;
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackB");
   
   @JSONRename({newName:"newProp"}) public __backing_newProp?: boolean;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_newProp");
 
   public constructor(newProp: boolean) {
     this.newProp = newProp;

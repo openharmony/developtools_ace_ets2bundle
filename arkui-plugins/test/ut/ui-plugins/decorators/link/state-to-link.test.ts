@@ -227,7 +227,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         return;
       }), (() => {
         return {
-          selectedDate: this.parentSelectedDate,
           __backing_selectedDate: this.__backing_parentSelectedDate,
           __options_has_selectedDate: true,
         };
@@ -256,7 +255,7 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Component() export interface __Options_DateComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', 'Date', [dumpAnnotation('__Link_intrinsic')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
   

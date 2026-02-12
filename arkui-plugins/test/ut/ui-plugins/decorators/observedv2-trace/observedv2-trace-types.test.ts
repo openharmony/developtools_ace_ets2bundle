@@ -152,47 +152,47 @@ final class Status extends BaseEnum<int> {
 
   @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_numA");
 
   @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_stringA");
 
   @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_booleanA");
 
   @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_arrayA");
 
   @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_objectA");
 
   @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_dateA");
 
   @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_setA");
 
   @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_mapA");
 
   @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_unionA");
 
   @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_classA");
 
   @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_enumA");
 
   public numB: number = 33;
 

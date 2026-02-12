@@ -92,7 +92,7 @@ class E implements IObservedObject, ISubscribedWatches {
   
   @JSONRename({newName:"trackE"}) public __backing_trackE: Info = new Info();
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackE");
   
   public constructor() {}
   
@@ -138,7 +138,7 @@ class E implements IObservedObject, ISubscribedWatches {
     }
   }
   
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
   
   @JSONRename({newName:"propE1"}) public __backing_propE1: Info = new Info();
 

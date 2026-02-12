@@ -90,11 +90,11 @@ interface trackInterface {
 
   @JSONRename({newName:"bb"}) public __backing_bb?: boolean;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_bb");
 
   @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propF: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propF: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_propF");
 
   private _$property$_trackF: number = 2;
 

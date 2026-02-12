@@ -150,15 +150,15 @@ class GGG {
 
   @JSONRename({newName:"name"}) public __backing_name: string = "Tom";
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
   @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
 
   @JSONRename({newName:"job"}) public __backing_job: AAA = new AAA();
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_job");
 
   public age: number = 25;
 

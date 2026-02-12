@@ -81,7 +81,7 @@ function main() {}
 
   @JSONRename({newName:"traceA"}) public __backing_traceA: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_traceA");
 
   public get traceA(): number {
     this.conditionalAddRef(this.__meta_traceA);
@@ -130,7 +130,7 @@ class G extends A {
 
   @JSONRename({newName:"propG"}) public __backing_propG: number = 1;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_propG");
 
   public get propG(): number {
     this.conditionalAddRef(this.__meta_propG);

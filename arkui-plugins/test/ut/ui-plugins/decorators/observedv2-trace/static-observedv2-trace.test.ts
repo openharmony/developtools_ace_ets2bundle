@@ -85,7 +85,7 @@ function main() {}
 
   @JSONRename({newName:"traceB"}) public static __backing_traceB: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_traceB");
 
   static {
 

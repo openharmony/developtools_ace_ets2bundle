@@ -124,7 +124,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   public constructor(args: (number | string)) {}
   
@@ -163,7 +163,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   @JSONRename({newName:"data"}) public __backing_data: DateClass = new DateClass(11);
 

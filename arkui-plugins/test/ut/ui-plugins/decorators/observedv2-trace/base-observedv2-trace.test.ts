@@ -81,7 +81,7 @@ function main() {}
 
   @JSONRename({newName:"traceB"}) public __backing_traceB: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_traceB");
 
   public get traceB(): number {
     this.conditionalAddRef(this.__meta_traceB);
@@ -125,11 +125,11 @@ function main() {}
 
   @JSONRename({newName:"traceE"}) public __backing_traceE: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_traceE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_traceE");
 
   @JSONRename({newName:"tracef"}) public __backing_tracef: number = 2;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_tracef: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_tracef: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_tracef");
 
   public vv: string;
 
