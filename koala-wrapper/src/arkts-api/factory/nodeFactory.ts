@@ -89,8 +89,8 @@ import {
     ETSNullType,
     TSThisType,
     TSQualifiedName,
-    ThrowStatement,
     UnaryExpression,
+    ThrowStatement,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateAwaitExpression } from '../node-utilities/AwaitExpression';
@@ -160,8 +160,8 @@ import { updateTSArrayType } from '../node-utilities/TSArrayType';
 import { updateETSNullType } from '../node-utilities/ETSNullType';
 import { updateTSThisType } from '../node-utilities/TSThisType';
 import { updateTSQualifiedName } from '../node-utilities/TSQualifiedName';
-import { updateThrowStatement } from '../node-utilities/ThrowStatement';
 import { updateUnaryExpression } from '../node-utilities/UnaryExpression';
+import { updateThrowStatement } from '../node-utilities/ThrowStatement';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {

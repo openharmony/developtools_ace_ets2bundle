@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { checkIsTrailingLambdaInLastParam, isForEach, isNavigationOrNavDestination } from '../utils';
 import {
     collectTypeRecordFromParameter,
     collectTypeRecordFromTypeParameterDeclaration,
@@ -23,7 +24,6 @@ import {
     TypeRecord,
 } from '../../../collectors/utils/collect-types';
 import { factory as BuilderLambdaFactory } from '../factory';
-import { checkIsTrailingLambdaInLastParam, isForEach, isNavigationOrNavDestination } from '../utils';
 import { expectNameInTypeReference } from '../../utils';
 import { factory as UIFactory } from '../../ui-factory';
 
@@ -47,7 +47,7 @@ function findAttributeInfoFromComponentMethod(component: arkts.MethodDefinition)
     const type = component.scriptFunction.returnTypeAnnotation;
     const name = expectNameInTypeReference(type);
     if (!name) {
-        return;
+        return undefined;
     }
     return {
         name: name.name,
@@ -82,9 +82,9 @@ export class ComponentAttributeCache {
     }
 
     private collectComponentRecord(name: string, record: ComponentRecord): void {
-        const colelctedRecords: ComponentRecord[] = this._cache.get(name) ?? [];
-        colelctedRecords.push(record);
-        this._cache.set(name, colelctedRecords);
+        const collectedRecords: ComponentRecord[] = this._cache.get(name) ?? [];
+        collectedRecords.push(record);
+        this._cache.set(name, collectedRecords);
     }
 
     private collectAttributeName(name: string, attributeName: string): void {

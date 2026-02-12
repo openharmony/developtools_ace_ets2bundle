@@ -81,7 +81,6 @@ export interface InteropContext {
 
 export class ComponentTransformer extends AbstractVisitor {
     private scopeInfos: ScopeInfo[] = [];
-    private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
     private entryAnnoInfo: EntryAnnoInfo[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private shouldAddLinkIntrinsic: boolean = false;
@@ -104,9 +103,9 @@ export class ComponentTransformer extends AbstractVisitor {
 
     reset(): void {
         super.reset();
+        NamespaceProcessor.getInstance().reset();
         this.importCollector.reset();
         this.scopeInfos = [];
-        this.componentInterfaceCollection = [];
         this.entryAnnoInfo = [];
         NamespaceProcessor.getInstance().reset();
         this.structMembersMap = new Map();
@@ -159,10 +158,7 @@ export class ComponentTransformer extends AbstractVisitor {
             const expr = arkts.factory.createIdentifier(DecoratorIntrinsicNames.LINK);
             updateStatements.push(UIFactory.createIntrinsicAnnotationDeclaration({ expr }));
         }
-        if (this.componentInterfaceCollection.length > 0) {
-            this.insertComponentImport();
-            updateStatements.push(...this.componentInterfaceCollection);
-        }
+
         if (this.entryAnnoInfo.length > 0) {
             // normally, we should only have at most one @Entry component in a single file.
             // probably need to handle error message here.

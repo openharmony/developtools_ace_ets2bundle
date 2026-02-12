@@ -25,7 +25,7 @@ export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
     'std',
     'escompat',
     'global',
-    /@arkts\..*/,
+    /@arkts\..*/
 ];
 
 export const ARKUI_IMPORT_PREFIX_NAMES: (string | RegExp)[] = [/arkui\..*/, /@ohos\..*/, /@kit\..*/];

@@ -54,10 +54,13 @@ export class EmitTransformer extends AbstractVisitor {
 
     processConsume(node: arkts.ClassProperty): arkts.ClassProperty {
         const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
-        annotations.forEach((anno)=>{
+        annotations.forEach((anno) => {
             const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
             if (arkts.isIdentifier(node.key)) {
                 const property = anno.properties[0];
+                if (property === undefined) {
+                    return;
+                }
                 anno.setProperties([
                     arkts.factory.updateClassProperty(
                         property,

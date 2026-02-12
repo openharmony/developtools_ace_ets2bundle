@@ -35,6 +35,7 @@ import {
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
+import { ComponentAttributeCache } from './cache/componentAttributeCache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 export type BuilderLambdaDeclInfo = {
@@ -52,7 +53,7 @@ export type BuilderLambdaStyleBodyInfo = {
     initCallPtr: AstNodePointer | undefined;
     reuseId: arkts.AstNode | undefined;
     defaultReuseId: arkts.AstNode | undefined;
-    structEntryStroage: string | undefined;
+    structEntryStorage: string | undefined;
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -77,7 +78,7 @@ export type StructCalleeInfo = {
     isFromReuse?: boolean;
     isFromReuseV2?: boolean;
     structName?: string;
-    structEntryStroage?: arkts.Expression;
+    structEntryStorage?: arkts.Expression;
 };
 
 export function getStructCalleeInfoFromCallee(
@@ -100,7 +101,7 @@ export function getStructCalleeInfoFromCallee(
             StructDecoratorNames.CUSTOMDIALOG,
             shouldIgnoreDecl
         );
-        info.structEntryStroage ||= getValueInObjectAnnotation(
+        info.structEntryStorage ||= getValueInObjectAnnotation(
             anno,
             StructDecoratorNames.ENTRY,
             BuilderLambdaNames.STORAGE_PARAM_NAME
@@ -714,7 +715,7 @@ export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpress
     return true;
 }
 
-export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, ignoreDecl: boolean = false, shouldIgnoreAnnotation: boolean = false): boolean {
+function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, ignoreDecl: boolean = false, shouldIgnoreAnnotation: boolean = false): boolean {
     if (!typeNode) {
         return false;
     }
@@ -753,6 +754,7 @@ export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, i
         } else if (!arkts.isETSUndefinedType(node)) {
             otherTypeLength ++;
         }
+
     }
     return hasTrailingLambdaType && hasBuilderAnnotation && otherTypeLength === 0;
 }

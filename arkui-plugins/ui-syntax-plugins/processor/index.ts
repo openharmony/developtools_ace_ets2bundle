@@ -23,7 +23,7 @@ import {
     UISyntaxRuleContext,
     UISyntaxRuleHandler,
 } from '../rules/ui-syntax-rule';
-import { getComponentsInfo, readJSON, UISyntaxRuleComponents } from '../utils';
+import { getComponentsInfo, readJSON, UISyntaxRuleComponents, collectFileImports, ImportInfo } from '../utils';
 import { ProjectConfig } from 'common/plugin-context';
 
 export type UISyntaxRuleProcessor = {
@@ -51,9 +51,26 @@ const ETS_PATH = 'src/main/ets';
 class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
     public componentsInfo: UISyntaxRuleComponents | undefined;
     public projectConfig?: ProjectConfig;
+    private currentImportInfo: ImportInfo | undefined;
+    private currentFilePath: string | undefined;
 
     constructor() {
         this.componentsInfo = undefined;
+    }
+
+    getImportsInfo(program: arkts.Program): ImportInfo {
+        const filePath = program.absName;
+        if (this.currentFilePath === filePath && this.currentImportInfo) {
+            return this.currentImportInfo;
+        }
+        this.currentFilePath = filePath;
+        this.currentImportInfo = collectFileImports(program.astNode as arkts.EtsScript);
+        return this.currentImportInfo;
+    }
+
+    clearImportsInfo(): void {
+        this.currentImportInfo = undefined;
+        this.currentFilePath = undefined;
     }
 
     public report(options: ReportOptions): void {
@@ -73,20 +90,22 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
         if (options.fix) {
             const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind,
                 arkts.getStartPosition(options.node));
-            const fixSuggestion = options.fix(options.node);
+            const fixSuggestions = [options.fix(options.node) ?? []].flat();
             const suggestionKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
                 message,
                 arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
             );
-            const [startPosition, endPosition] = fixSuggestion.range;
-            const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
-            const suggestionInfo: arkts.SuggestionInfo = arkts.SuggestionInfo.create(
-                suggestionKind,
-                fixSuggestion.code,
-                fixSuggestion.title ? fixSuggestion.title : '',
-                sourceRange
-            );
-            arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
+            const suggestionInfos = fixSuggestions.map((fixSuggestion) => {
+                const [startPosition, endPosition] = fixSuggestion.range;
+                const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
+                return arkts.SuggestionInfo.create(
+                    suggestionKind,
+                    fixSuggestion.code,
+                    fixSuggestion.title ? fixSuggestion.title : '',
+                    sourceRange
+                );
+            });
+            arkts.Diagnostic.logDiagnosticWithSuggestions(diagnosticInfo, suggestionInfos);
         } else {
             arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
         }
@@ -167,6 +186,7 @@ class ConcreteUISyntaxRuleProcessor implements UISyntaxRuleProcessor {
                 handler.afterTransform();
             }
         }
+        this.context.clearImportsInfo();
     }
 
     parsed(node: arkts.AstNode): void {
