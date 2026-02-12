@@ -34,10 +34,12 @@ export class CommonLogger {
   private logger: Object;
   private hvigorConsoleLoggerMap: { [key in SubsystemCode]?: Object };
   throwArkTsCompilerError: Object;
+  recordErrorFileId?: Object;
 
   private constructor(rollupObject: Object) {
     this.logger = rollupObject.share.getLogger(GEN_ABC_PLUGIN_NAME);
     this.throwArkTsCompilerError = rollupObject.share.throwArkTsCompilerError;
+    this.recordErrorFileId = rollupObject.share?.recordErrorFileId;
     this.hvigorConsoleLoggerMap = this.initializeHvigorConsoleLoggers(rollupObject);
   }
 
@@ -101,6 +103,13 @@ export class CommonLogger {
       hvigorConsoleLogger.printErrorAndExit(error);
     } else {
       this.throwArkTsCompilerError(error.toString());
+    }
+  }
+
+  // return the file name that failed to process ohmurl during compilation.
+  returnErrorFileId(filePath?: string): void {
+    if (filePath) {
+      this?.recordErrorFileId?.(filePath);
     }
   }
 
