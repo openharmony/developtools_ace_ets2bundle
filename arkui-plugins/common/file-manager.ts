@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
 import { LANGUAGE_VERSION } from './predefines';
 import { BuildConfig, DependentModuleConfig } from './plugin-context';
 

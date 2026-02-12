@@ -758,6 +758,17 @@ void impl_LogDiagnosticWithSuggestion(KNativePointer context, KNativePointer dia
 }
 KOALA_INTEROP_V3(LogDiagnosticWithSuggestion, KNativePointer, KNativePointer, KNativePointer);
 
+void impl_LogDiagnosticWithSuggestions(KNativePointer context, KNativePointer diagnosticInfo,
+                                       KNativePointerArray suggestionInfos, KUInt suggestionInfoLength)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _diagnosticInfo = reinterpret_cast<es2panda_DiagnosticInfo*>(diagnosticInfo);
+    auto _suggestionInfos = reinterpret_cast<es2panda_SuggestionInfo**>(suggestionInfos);
+    const auto _suggestionInfoLength = static_cast<std::size_t>(suggestionInfoLength);
+    GetImpl()->LogDiagnosticWithSuggestions(_context, _diagnosticInfo, _suggestionInfos, _suggestionInfoLength);
+}
+KOALA_INTEROP_V4(LogDiagnosticWithSuggestions, KNativePointer, KNativePointer, KNativePointerArray, KUInt);
+
 KBoolean impl_CallExpressionIsTrailingCallConst(KNativePointer context, KNativePointer receiver)
 {
     const auto _context = reinterpret_cast<es2panda_Context *>(context);
