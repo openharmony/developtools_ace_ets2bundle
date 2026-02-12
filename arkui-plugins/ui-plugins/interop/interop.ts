@@ -29,8 +29,9 @@ import {
     createELMTID, 
     createInitReturn
 } from './utils';
-import { DecoratorNames } from '../../common/predefines';
+import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { hasDecoratorInterop } from './utils';
+import { FileManager } from '../../common/file-manager';
 
 
 function paramsLambdaDeclaration(name: string, args?: arkts.ObjectExpression): arkts.Statement[] {
@@ -191,7 +192,7 @@ function createWrapperBlock(
         throw new Error('Error path of Legacy Component.');
     }
     const initial = [createGlobal(), createEmptyESValue(InteropInternalNames.PARAM)];
-    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp, node) : [];
+    const initialArgsStatement = args ? initialArgs(args, varMap, updateProp) : [];
     return arkts.factory.createBlock([
         ...initial,
         ...initialArgsStatement,
