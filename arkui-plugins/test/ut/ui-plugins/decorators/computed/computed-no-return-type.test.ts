@@ -224,7 +224,7 @@ function main() {}
   public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 

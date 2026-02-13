@@ -1619,6 +1619,7 @@ export class factory {
         const optionsName = getCustomComponentOptionsName(structName);
         const isFromCustomDialog = !!scopeInfo.annotations.customDialog;
         const isFromComponent = !!scopeInfo.annotations.component;
+        const isFromComponentV2 = !!scopeInfo.annotations.componentV2;
         const styleParams: arkts.Expression[] = [];
         const restIdents: arkts.Expression[] = [
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
@@ -1648,6 +1649,32 @@ export class factory {
                 )
             );
         }
+        let returnType = [];
+        if (isFromComponentV2) {
+            returnType.push(
+                arkts.factory.createObjectExpression(
+                    arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                    [
+                        arkts.factory.createProperty(
+                            arkts.factory.createIdentifier('sClass'),
+                            arkts.factory.createCallExpression(
+                                arkts.factory.createMemberExpression(
+                                    arkts.factory.createIdentifier('Class'),
+                                    arkts.factory.createIdentifier('from'),
+                                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                    false,
+                                    false
+                                ),
+                                [UIFactory.createTypeReferenceFromString(structName)],
+                                []
+                            )
+                        )
+                    ],
+                    false
+                )
+            )
+        }
+
         const intrinsicCall = arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(customComponentName),
@@ -1661,6 +1688,7 @@ export class factory {
                 ...styleParams,
                 factory.createComponentFactoryParameter(structName, factoryParams, isFromCustomDialog),
                 ...restIdents,
+                ...returnType,
             ]
         );
         arkts.NodeCache.getInstance().collect(intrinsicCall);
