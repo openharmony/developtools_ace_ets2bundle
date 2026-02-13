@@ -999,9 +999,9 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
     if (this.hasNotSupportScene(comments)) {
       return false;
     }
-    const hasSuppressWarnings = (comment: string) => /\/\/\s*@SuppressWarnings\s/g.test(comment);
-    const hasCompatibility = (comment: string) => /(^|[\s,])compatibility($|[\s,])/.test(comment);
-    const hasSyscap = (comment: string) => /(^|[\s,])syscap($|[\s,])/.test(comment);
+    const hasSuppressWarnings = (comment: string): boolean => /\/\/\s*@SuppressWarnings\s/g.test(comment);
+    const hasCompatibility = (comment: string): boolean => /(^|[\s,])compatibility($|[\s,])/.test(comment);
+    const hasSyscap = (comment: string): boolean => /(^|[\s,])syscap($|[\s,])/.test(comment);
     return comments.some(comment => hasSuppressWarnings(comment) &&
       (
         (hasCompatibility(comment) && (this.warning_TypeName === 'since' || this.warning_TypeName === 'available')) ||

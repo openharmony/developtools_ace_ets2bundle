@@ -1422,7 +1422,8 @@ export function getValidDecoratorFromNode(node: ts.Node | ts.Declaration, predic
 }
 
 /**
- * The extension method must be converted to full format.The local default method does not support format conversion, so the converted version field is used for comparison.
+ * The extension method must be converted to full format.The local default method does not support format conversion,
+ * so the converted version field is used for comparison.
  * @param curAvailableVersion 
  * @returns 
  */
@@ -1472,7 +1473,7 @@ export function isSourceRetentionAnnotationContentValid(annotation: ts.Annotatio
       let minApiVersion = prop.initializer.text;
 
       if (minApiVersion === null || minApiVersion === undefined) {
-        minApiVersion = "";
+        minApiVersion = '';
       }
       let parseVersion = parseVersionString(minApiVersion);
       let checkResult = checkFormatResult(parseVersion);
