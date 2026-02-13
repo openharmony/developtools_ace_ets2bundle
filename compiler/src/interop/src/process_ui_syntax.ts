@@ -748,7 +748,7 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
-      isResourcefile(node, previewLog, isResourceModule, isTemplateString);
+      isResourcefile(node, previewLog, isResourceModule, isTemplateString, filePath);
       if (resourceData && resourceData[0] && isResourceModule) {
         return createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true);
       } else { 
@@ -805,7 +805,7 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
 }
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
-  isTemplateString: boolean): void {
+  isTemplateString: boolean, filePath: string): void {
   if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
     transformLog.errors.push({
@@ -814,6 +814,11 @@ function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePrevie
       pos: node.getStart(),
       code: '10904333'
     });
+  } else if (!isResourceModule && process.env.rawFileResource) {
+    if (!storedFileInfo.resourcesForFiles.has(filePath)) {
+ 	    storedFileInfo.resourcesForFiles.set(filePath, []);
+ 	  }
+ 	  storedFileInfo.resourcesForFiles.get(filePath).push(node.arguments[0].text);
   }
 }
 
