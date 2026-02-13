@@ -67,8 +67,8 @@ export enum ComparisonResult {
   Greater = 1
 }
 
-export const SDK_SUBSYSTEM_CODE = "117";
-export const ERROR_DESCRIPTION = "ArkTS Compiler Error";
+export const SDK_SUBSYSTEM_CODE = '117';
+export const ERROR_DESCRIPTION = 'ArkTS Compiler Error';
 
 
 export const SUPPRESSWARNINGS_RULE_INFO: Map<string, string> = new Map([
