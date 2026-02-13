@@ -356,7 +356,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index2, __Options_Index2>(__memo_context, ((__memo_id) + (241913892)), style, ((): Index2 => {
       return new Index2();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 

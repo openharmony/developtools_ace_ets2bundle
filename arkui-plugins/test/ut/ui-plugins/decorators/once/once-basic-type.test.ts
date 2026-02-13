@@ -144,7 +144,7 @@ function main() {}
   public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 

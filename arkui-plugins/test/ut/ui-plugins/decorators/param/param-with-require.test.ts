@@ -267,7 +267,7 @@ class Info {
   public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 
@@ -340,7 +340,7 @@ class Info {
   public static _invoke(style: @Memo() ((instance: MiddleComponent)=> void), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<MiddleComponent, __Options_MiddleComponent>(style, ((): MiddleComponent => {
       return new MiddleComponent();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 
@@ -407,7 +407,7 @@ class Info {
   public static _invoke(style: @Memo() ((instance: SubComponent)=> void), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<SubComponent, __Options_SubComponent>(style, ((): SubComponent => {
       return new SubComponent();
-    }), initializers, reuseId, content);
+    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
   }
   
   @ComponentBuilder() 
