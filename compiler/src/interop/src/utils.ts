@@ -787,8 +787,12 @@ export class ProcessFileInfo {
   resourceTableChanged: boolean = false;
   currentArkTsFile: SpecialArkTSFileInfo;
   reUseProgram: boolean = false;
-  resourcesArr: Set<string> = new Set();
-  lastResourcesSet: Set<string> = new Set();
+  resourcesArr: Set<string> = new Set<string>();
+  lastResourcesSet: Set<string> = new Set<string>();
+  changedResourcesSet: Set<string> = new Set(); // Rawfiles that are modified
+  resourcesForFiles: Map<string, string[]> = new Map(); // Rawfiles used by each source file
+  lastResourcesForFiles: Map<string, string[]> = new Map();
+  hasResourcesCache: boolean = false;
   transformCacheFiles: { [fileName: string]: CacheFile } = {};
   processBuilder: boolean = false;
   processGlobalBuilder: boolean = false;
@@ -961,6 +965,10 @@ export class ProcessFileInfo {
     this.lastResourceList = new Set([...this.resourceList]);
     this.shouldInvalidFiles.clear();
     this.resourcesArr.clear();
+    this.lastResourcesSet?.clear?.();
+    this.changedResourcesSet.clear();
+    this.resourcesForFiles.clear();
+    this.lastResourcesForFiles?.clear?.();
   }
   setCurrentArkTsFile(): void {
     this.currentArkTsFile = new SpecialArkTSFileInfo();
@@ -1048,19 +1056,16 @@ export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>,
   }
 }
 
-export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: Set<string>): boolean {
-  if (oldRawfile.size !== 0 && oldRawfile.size === newRawfile.size) {
-    for (const singleRawfiles of oldRawfile.values()) {
-      if (!newRawfile.has(singleRawfiles)) {
-        return true;
-      }
+export function differenceResourcesRawfile(oldRawfile: Set<string>, newRawfile: Set<string>,
+  changedRawFile: Set<string>): boolean {
+  let res: boolean = oldRawfile.size !== newRawfile.size;
+  oldRawfile.forEach((file) => {
+    if (!newRawfile.has(file)) {
+      changedRawFile.add(file);
+      res = true;
     }
-    return false;
-  } else if (oldRawfile.size === 0 && oldRawfile.size === newRawfile.size) {
-    return false;
-  } else {
-    return true;
-  }
+  });
+  return res;
 }
 
 export function isString(text: unknown): text is string {

@@ -168,12 +168,19 @@ export function etsTransform() {
         cacheFile = this.cache.get('transformCacheFiles');
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
           this.cache.get('resourceToFileCacheInfo'), cacheFile);
-        if (this.cache.get('lastResourcesArr')) {
-          storedFileInfo.lastResourcesSet = new Set([...this.cache.get('lastResourcesArr')]);
+        if (this.cache.has('lastResourcesArr') && this.cache.has('lastResourcesForFiles')) {
+          storedFileInfo.lastResourcesSet = new Set(this.cache.get('lastResourcesArr') ?? []);
+          storedFileInfo.lastResourcesForFiles = this.cache.get('lastResourcesForFiles');
+          storedFileInfo.hasResourcesCache = true;
+        } else {
+          storedFileInfo.lastResourcesSet = new Set<string>();
+          storedFileInfo.lastResourcesForFiles = new Map();
+          storedFileInfo.hasResourcesCache = false;
         }
         if (process.env.rawFileResource) {
           resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
-          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
+          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet,
+            storedFileInfo.resourcesArr, storedFileInfo.changedResourcesSet);
         }
       }
       if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
@@ -205,7 +212,7 @@ export function etsTransform() {
       const fileName: string = path.resolve(options.id);
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || ShouldEnableDebugLine.enableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
-        shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || this.share.rawfilechanged;
+        shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || checkRawFileChange(fileName);
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
             const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
@@ -244,7 +251,7 @@ export function etsTransform() {
       const eventEtsTransformAfterBuildEnd = createAndStartEvent(hookEventFactory, 'etsTransformafterBuildEnd');
       const harIntentDataObj: object = parseIntent.getHarData();
       if (parseIntent.intentData.length > 0 || parseIntent.isUpdateCompile || Object.keys(harIntentDataObj).length !== 0) {
-        parseIntent.writeUserIntentJsonFile(harIntentDataObj);
+        parseIntent.writeUserIntentJsonFile(harIntentDataObj, this.share);
       }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
@@ -291,7 +298,11 @@ export function etsTransform() {
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
-      this.cache.set('lastResourcesArr', [...storedFileInfo.resourcesArr]);
+      this.cache.set('lastResourcesArr', new Set(storedFileInfo.resourcesArr));
+      storedFileInfo.resourcesForFiles.forEach((value, key) => {
+        storedFileInfo.lastResourcesForFiles.set(key, value);
+      });
+      this.cache.set('lastResourcesForFiles', new Map(storedFileInfo.lastResourcesForFiles));
       if (projectConfig.enableDebugLine) {
         this.cache.set('enableDebugLine', true);
       } else {
@@ -347,6 +358,33 @@ function judgeCacheShouldDisabled(): void {
     }
     storedFileInfo.judgeShouldHaveEntryFiles(abilityPagesFullPath);
   }
+}
+
+
+/**
+ * Checks if a given file needs to be recompiled due to changes in raw resource files.
+ *
+ * This function determines whether the specified file has dependencies on raw files
+ * (resources) that have been modified since the last compilation. It checks against
+ * a cache of stored file information and a set of changed resources.
+ *
+ * @param {string} file - The path or identifier of the file to check for recompilation need
+ * @returns {boolean} Returns true if the file needs recompilation due to raw file changes,
+ *                    false otherwise
+ */
+function checkRawFileChange(file: string): boolean {
+  if (!storedFileInfo.hasResourcesCache) {
+    return true;
+  }
+  if (!storedFileInfo.lastResourcesForFiles.has(file)) {
+    return false;
+  }
+  for (const singleRawfiles of storedFileInfo.lastResourcesForFiles.get(file)) {
+    if (storedFileInfo.changedResourcesSet.has(singleRawfiles)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 interface EmitResult {
