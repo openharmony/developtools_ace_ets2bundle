@@ -97,7 +97,9 @@ import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_conf
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
 import {
-  CompileEvent
+  CompileEvent,
+  createAndStartEvent,
+  stopEvent
 } from './performance';
 import {
   LINTER_SUBSYSTEM_CODE,
@@ -198,7 +200,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   checkArkTSVersion();
   Object.assign(compilerOptions, {
     'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
-    'checkJs': (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) ? true : 
+    'checkJs': (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) ? true :
       (getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined),
     'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
@@ -240,7 +242,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     });
   }
   if (projectConfig.packageDir === 'oh_modules') {
-    Object.assign(compilerOptions, {'packageManagerType': 'ohpm'});
+    Object.assign(compilerOptions, { 'packageManagerType': 'ohpm' });
   }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
 }
@@ -302,7 +304,7 @@ function readTsBuildInfoFileInCrementalMode(buildInfoPath: string, projectConfig
   };
   let buildInfoProgram: ProgramType;
   try {
-    const content: {program: ProgramType} = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
+    const content: { program: ProgramType } = JSON.parse(fs.readFileSync(buildInfoPath, 'utf-8'));
     buildInfoProgram = content.program;
     if (!buildInfoProgram || !buildInfoProgram.fileNames || !buildInfoProgram.fileInfos) {
       throw new Error('.tsbuildinfo content is invalid');
@@ -340,7 +342,7 @@ function createHash(str: string): string {
 
 export function getFileContentWithHash(fileName: string): string {
   let fileContent: string | undefined = fileCache.get(fileName);
-  if (fileContent === undefined) {      
+  if (fileContent === undefined) {
     fileContent = fs.readFileSync(fileName).toString();
     fileCache.set(fileName, fileContent);
     // Provide the hash value for hvigor's remote cache, and let them handle the cleanup.
@@ -379,13 +381,14 @@ let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   parentEvent?: CompileEvent, rollupShareObject?: Object): ts.LanguageService {
+  const eventCreateLanguageService = createAndStartEvent(parentEvent, 'createLanguageService');
   setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
   getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
   const servicesHost: ts.LanguageServiceHost = {
     getScriptFileNames: () => [...rootFileNames, ...readDeaclareFiles()],
     getScriptVersion: fileHashScriptVersion,
-    getScriptSnapshot: function(fileName) {
+    getScriptSnapshot: function (fileName) {
       if (!fs.existsSync(fileName)) {
         return undefined;
       }
@@ -412,7 +415,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
     getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
-      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
+      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName, eventCreateLanguageService);
     },
     getFileCheckedModuleInfo: (containFilePath: string) => {
       return {
@@ -431,7 +434,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       return isSourceRetentionAnnotationContentValid(annotation);
     },
     uiProps: new Set(),
-    clearProps: function() {
+    clearProps: function () {
       dollarCollection.clear();
       extendCollection.clear();
       newExtendCollection.clear();
@@ -442,7 +445,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
       return reuseLanguageServiceForDepChange && needReCheckForChangedDepUsers;
     },
     useDeclarationFileSignature: rollupShareObject?.projectConfig?.useDeclarationFileSignature,
-    clearFileCache: function() {
+    clearFileCache: function () {
       fileCache.clear();
     },
     // true: SourceCode; false: ExternalCode, External Code is oh_modules/sdk-api/sdk-components
@@ -459,6 +462,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
   const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
   MemoryMonitor.stopRecordStage(recordInfo);
+  stopEvent(eventCreateLanguageService);
   return tsLanguageService;
 }
 
@@ -616,7 +620,7 @@ function deleteBuildInfoCache(tsBuildInfoFilePath: string): void {
 
 function deleteFile(filePath: string): void {
   if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    fs.unlinkSync(filePath);
   }
 }
 
@@ -977,7 +981,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   globalProgram.program.getResolvedTypeReferenceDirectives().forEach(
     (elem: ts.ResolvedTypeReferenceDirective | undefined) => {
       elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
-  });
+    });
 
   const ignoreDiagnosticsRecordInfo = MemoryMonitor.recordStage(MemoryDefine.FILE_TO_IGNORE_DIAGNOSTICS);
   fileToIgnoreDiagnostics = new Set<string>();
@@ -985,9 +989,9 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
     // like: hypium library
     sourceFile.fileName &&
-    (!isInSDK(sourceFile.fileName) || (/\.(c|m)?js$/).test(sourceFile.fileName)) &&
-    !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
-    fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
+      (!isInSDK(sourceFile.fileName) || (/\.(c|m)?js$/).test(sourceFile.fileName)) &&
+      !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
+      fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
   });
 
   fileToThrowDiagnostics.forEach(file => {
@@ -996,12 +1000,12 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
 
   // Remove the atomicservice's JavaScript file from the list of ignored errors.
   const atomicJsFiles = new Set<string>();
-  for(const file of fileToIgnoreDiagnostics) {
-    if(isAtomicJsFile(file)) {
+  for (const file of fileToIgnoreDiagnostics) {
+    if (isAtomicJsFile(file)) {
       atomicJsFiles.add(file);
     }
   }
-  
+
   atomicJsFiles.forEach(file => fileToIgnoreDiagnostics.delete(file));
 
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
@@ -1024,7 +1028,7 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
   }
 
   // Eliminate syntax errors in the JS files, retaining only API validation errors related to the atomService
-  if (fileToIgnoreDiagnostics &&diagnostic.file && diagnostic.file.fileName &&
+  if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
     isAtomicJsFile(diagnostic.file.fileName) && !matchJSGrammarErrorMessage(diagnostic.messageText)) {
     return;
   }
@@ -1106,7 +1110,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for TSC error codes
-  if (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.TSC, diagnostic.code)) {
     const errorCode = ts.getErrorCode(diagnostic);
     errorCodeLogger.printError(errorCode);
@@ -1114,7 +1118,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for LINTER error codes
-  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
     const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
     errorCodeLogger.printError(linterErrorInfo);
@@ -1122,7 +1126,7 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   }
 
   // Check for ArkUI error codes
-  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
+  if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
     let uiErrorInfo: HvigorErrorInfo | SdkHvigorErrorInfo | undefined;
     if (DIAGNOSTIC_SDK_CODE_MAP.get(String(diagnostic.code))) {
@@ -1495,7 +1499,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
   }
   // Change the buildInfo file path, or it will cover the buildInfo file created before.
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', WATCH_COMPILER_BUILD_INFO_SUFFIX);
-  const watchCompilerOptions = {...compilerOptions, tsBuildInfoFile: buildInfoPath};
+  const watchCompilerOptions = { ...compilerOptions, tsBuildInfoFile: buildInfoPath };
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
     [...rootFileNames, ...readDeaclareFiles()], watchCompilerOptions,
