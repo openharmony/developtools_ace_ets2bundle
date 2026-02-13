@@ -36,9 +36,12 @@ import {
   RUNTIME_OS_OH,
   VersionValidationResult,
   ANNOTATION_RULE_INFO,
-  NodeParentModel
+  NodeParentModel,
+  SYSCAP_TAG_CHECK_WARNING,
+  SYSCAP_TAG_CHECK_NAME,
+  SYSCAP_TAG_CONDITION_CHECK_WARNING
 } from '../api_check_define';
-import { fileDeviceCheckPlugin, fileAvailableCheckPlugin, suppressWarningsCheckPlugin } from '../../../../main';
+import { fileDeviceCheckPlugin, fileAvailableCheckPlugin, suppressWarningsCheckPlugin, projectConfig, globalProgram } from '../../../../main';
 import fs from 'fs';
 
 /**
@@ -999,9 +1002,9 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
     if (this.hasNotSupportScene(comments)) {
       return false;
     }
-    const hasSuppressWarnings = (comment: string) => /\/\/\s*@SuppressWarnings\s/g.test(comment);
-    const hasCompatibility = (comment: string) => /(^|[\s,])compatibility($|[\s,])/.test(comment);
-    const hasSyscap = (comment: string) => /(^|[\s,])syscap($|[\s,])/.test(comment);
+    const hasSuppressWarnings = (comment: string): boolean => /\/\/\s*@SuppressWarnings\s/g.test(comment);
+    const hasCompatibility = (comment: string): boolean => /(^|[\s,])compatibility($|[\s,])/.test(comment);
+    const hasSyscap = (comment: string): boolean => /(^|[\s,])syscap($|[\s,])/.test(comment);
     return comments.some(comment => hasSuppressWarnings(comment) &&
       (
         (hasCompatibility(comment) && (this.warning_TypeName === 'since' || this.warning_TypeName === 'available')) ||
@@ -1044,5 +1047,167 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       }
     }
     return isSupportScene;
+  }
+}
+
+/**
+ * Validator that checks if a node is wrapped in a canIUse block.
+ * 
+ * If a node appears within the canIUse statement, it is considered valid.
+ * This suppression strategy assumes that runtime errors are properly handled.
+ * 
+ * Example:
+ * ```typescript
+ * if (canIUse('xxx')) {
+ *  a.b
+ * }
+ * ```
+ */
+export class CanIUseValidator extends BaseValidator implements NodeValidator {
+  private jsDocTags: readonly ts.JSDocTag[];
+  private config: ts.JsDocNodeCheckConfigItem;
+
+  constructor(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem) {
+    super();
+    this.jsDocTags = jsDocTags;
+    this.config = config;
+  }
+
+  validate(node: ts.Node): boolean {
+    const nodeSource = node.getSourceFile();
+    if (!nodeSource) {
+      return false;
+    }
+    const needCanIUseCheck: boolean = /canIUse\(.*\)/.test(nodeSource.text);
+    if (!needCanIUseCheck) {
+      return false;
+    }
+    return this.conditionCheck(node, this.jsDocTags, this.config);
+  }
+
+  private conditionCheck(node: ts.Node, jsDocTags: readonly ts.JSDocTag[], checkConfig: ts.JsDocNodeCheckConfigItem): boolean {
+    const specifyJsDocTagValue = this.getSpecifyJsDocTagValue(jsDocTags, checkConfig.tagName);
+    if (specifyJsDocTagValue === undefined) {
+      return true;
+    }
+    const hasIfChecked = this.hasConditionChecked(node, specifyJsDocTagValue, checkConfig);
+    if (!hasIfChecked) {
+      const jsDocTagInfos: ts.JsDocTagInfo[] = [];
+      jsDocTags.forEach(item => {
+        jsDocTagInfos.push({
+          name: item.tagName.escapedText.toString(),
+          text: ts.getTextOfJSDocComment(item.comment),
+        });
+      });
+      const conditionCheckResult = this.checkSyscapCondition(jsDocTagInfos);
+      if (conditionCheckResult.valid) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  private getSpecifyJsDocTagValue(jsDocTags: readonly ts.JSDocTag[], specifyTag: string[]): string | undefined {
+    let specifyJsDocTagValue: string | ts.NodeArray<ts.JSDocComment> = '';
+    jsDocTags.forEach(item => {
+      if (specifyTag.includes(item.tagName.escapedText.toString())) {
+        specifyJsDocTagValue = item.comment ?? "";
+      }
+    });
+    return specifyJsDocTagValue;
+  }
+
+  private hasConditionChecked(expression: ts.Node, importSymbol: string,
+    checkConfig: ts.JsDocNodeCheckConfigItem): boolean {
+    const result = { hasIfChecked: false };
+    const container = ts.findAncestor(expression, ts.isSourceFile);
+    if (!container) {
+      return result.hasIfChecked;
+    }
+    this.traversalNode(expression, importSymbol, container, result, checkConfig);
+    return result.hasIfChecked;
+  }
+
+  private traversalNode(node: ts.Node, importSymbol: string, parent: ts.Node, result: { hasIfChecked: boolean },
+    checkConfig: ts.JsDocNodeCheckConfigItem): void {
+    const specifyFuncName: string = 'canIUse';
+    if (result.hasIfChecked) {
+      return;
+    }
+
+    if (node.parent !== parent) {
+      if (ts.isIfStatement(node.parent)) {
+        if (ts.isCallExpression(node.parent.expression) && this.checkSyscapConditionValidCallback(node.parent.expression, specifyFuncName, importSymbol)) {
+          result.hasIfChecked = true;
+          return;
+        }
+        else {
+          this.traversalNode(node.parent, importSymbol, parent, result, checkConfig);
+        }
+      }
+      this.traversalNode(node.parent, importSymbol, parent, result, checkConfig);
+    }
+    else {
+      return;
+    }
+  }
+
+  /**
+   * syscap condition check
+   * @param { ts.JSDoc[] } jsDocTagInfos
+   * @returns { ts.ConditionCheckResult }
+   */
+  private checkSyscapCondition(jsDocTagInfos: ts.JsDocTagInfo[]): ts.ConditionCheckResult {
+    const result: ts.ConditionCheckResult = {
+      valid: true
+    };
+    let currentSyscapValue: string = '';
+    for (let i = 0; i < jsDocTagInfos.length; i++) {
+      const jsDocTag: ts.JsDocTagInfo = jsDocTagInfos[i];
+      if (jsDocTag.name === SYSCAP_TAG_CHECK_NAME) {
+        currentSyscapValue = jsDocTag.text as string;
+        break;
+      }
+    }
+    if (!projectConfig.syscapIntersectionSet || !projectConfig.syscapUnionSet) {
+      return result;
+    }
+    if (!projectConfig.syscapIntersectionSet.has(currentSyscapValue) && projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+      result.valid = false;
+      result.type = ts.DiagnosticCategory.Warning;
+      result.message = SYSCAP_TAG_CONDITION_CHECK_WARNING;
+    } else if (!projectConfig.syscapUnionSet.has(currentSyscapValue)) {
+      result.valid = false;
+      // fix to error in the feature
+      result.type = ts.DiagnosticCategory.Warning;
+      result.message = SYSCAP_TAG_CHECK_WARNING.replace('$DT', projectConfig.deviceTypesMessage);
+    }
+    return result;
+  }
+
+  /**
+   * syscap condition check, print error message
+   * @param { ts.CallExpression } node
+   * @param { string } specifyFuncName
+   * @param { string } tagValue
+   * @returns { boolean }
+   */
+  private checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncName: string, tagValue: string): boolean {
+    if (ts.isIdentifier(node.expression) && node.arguments.length === 1 && node.expression.escapedText.toString() === specifyFuncName) {
+      const expression = node.arguments[0];
+      if (ts.isStringLiteral(expression) && tagValue === expression.text) {
+        return true;
+      } else if (ts.isIdentifier(expression)) {
+        const typeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker();
+        const arguSymbol: ts.Symbol | undefined = typeChecker.getSymbolAtLocation(expression);
+        return arguSymbol && arguSymbol.valueDeclaration && ts.isVariableDeclaration(arguSymbol.valueDeclaration) &&
+          arguSymbol.valueDeclaration.initializer && ts.isStringLiteral(arguSymbol.valueDeclaration.initializer) &&
+          arguSymbol.valueDeclaration.initializer.text === tagValue;
+      }
+    }
+    return false;
   }
 }
