@@ -61,7 +61,8 @@ export function watchChangeFiles() {
         readAppResource(process.env.appResource);
         if (process.env.rawFileResource) {
           resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
-          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet, storedFileInfo.resourcesArr);
+          this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet,
+            storedFileInfo.resourcesArr, storedFileInfo.changedResourcesSet);
         }
       }
       ShouldEnableDebugLine.enableDebugLine = false;
