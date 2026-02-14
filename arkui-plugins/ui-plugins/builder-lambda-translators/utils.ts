@@ -616,7 +616,7 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
 
 function findAttributeNameFromTypeName(typeName: arkts.Identifier | undefined): string | undefined {
     if (!typeName) {
-        return;
+        return undefined;
     }
     const regex: RegExp = /(?<source>\w+Attribute)(?:<.*>)?$/;
     const match: RegExpExecArray | null = regex.exec(typeName.name);
