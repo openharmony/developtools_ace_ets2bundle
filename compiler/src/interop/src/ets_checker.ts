@@ -89,7 +89,9 @@ import {
   getJsDocNodeCheckConfig,
   isCardFile,
   getRealModulePath,
-  getJsDocNodeConditionCheckResult
+  getJsDocNodeConditionCheckResult,
+  isSourceRetentionDeclarationValid,
+  isSourceRetentionAnnotationContentValid
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
@@ -434,6 +436,12 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     getJsDocNodeConditionCheckedResult: (jsDocFileCheckedInfo: ts.FileCheckModuleInfo, jsDocInfos: ts.JsDocTagInfo[], jsDocs?: ts.JSDoc[]) => {
       return getJsDocNodeConditionCheckResult(jsDocFileCheckedInfo, jsDocInfos, jsDocs);
     },
+    isSourceRetentionDeclarationValid: (annoDecl: ts.AnnotationDeclaration) => {
+      return isSourceRetentionDeclarationValid(annoDecl);
+    },
+    isSourceRetentionAnnotationContentValid: (annotation: ts.Annotation) => {
+      return isSourceRetentionAnnotationContentValid(annotation);
+    },    
     uiProps: new Set(),
     clearProps: function() {
       dollarCollection.clear();
