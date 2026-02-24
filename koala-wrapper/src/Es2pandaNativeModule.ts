@@ -782,7 +782,7 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
-    _GenerateTsDeclarationsFromContext(
+    _CreateTsDeclgen(
         config: KPtr,
         fileNamesCount: KUInt,
         inputFiles: string[] | Uint8Array,
@@ -792,7 +792,23 @@ export class Es2pandaNativeModule {
         isolated: KBoolean,
         recordFile: String,
         genAnnotations: KBoolean
-    ): KInt {
+    ): KPtr {
+        throw new Error('Not implemented');
+    }
+
+    _GenerateTsDeclarationsAfterParsed(declgen: KPtr): KInt {
+        throw new Error('Not implemented');
+    }
+
+    _GenerateTsDeclarationsAfterCheck(declgen: KPtr): KInt {
+        throw new Error('Not implemented');
+    }
+
+    _WriteTsDeclarations(declgen: KPtr): KInt {
+        throw new Error('Not implemented');
+    }
+
+    _DestroyTsDeclgen(declgen: KPtr): void {
         throw new Error('Not implemented');
     }
 
