@@ -2909,7 +2909,7 @@ function checkParamsMethod(
   }
   const paramsTypeNode: ts.TypeNode | undefined = node.parameters[0]?.type;
   if (!paramsTypeNode || !ts.isTypeReferenceNode(paramsTypeNode)) {
-    return false;
+    return paramsTypeNode?.kind === ts.SyntaxKind.ObjectKeyword;
   }
   const paramsName: string = paramsTypeNode.typeName.getText();
   return ['Record', 'Object', 'ESObject', 'object'].includes(paramsName);
@@ -2929,7 +2929,7 @@ function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDe
   const structName: string = structNode.name.escapedText.toString();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
   if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
-    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>`;
+    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.`;
     addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
     return;
   }
