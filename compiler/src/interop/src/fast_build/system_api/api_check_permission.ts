@@ -58,7 +58,9 @@ export class JsDocCheckService {
       const leftParenthesisItem: string[] = JsDocCheckService.getSplitsArrayWithDesignatedCharAndArrayStr([item], '(');
       //STEP1.2 Parse')'
       const rightParenthesisItem: string[] = JsDocCheckService.getSplitsArrayWithDesignatedCharAndArrayStr(leftParenthesisItem, ')');
-      permissionsQueue.push(...rightParenthesisItem);
+      //STEP1.3 Parse'\n'
+      const wrapItem: string[] = JsDocCheckService.getSplitsArrayWithDesignatedCharAndArrayStr(rightParenthesisItem, '\n');
+      permissionsQueue.push(...wrapItem);
     });
     //STEP2
     const calcValidResult: PermissionVaildCalcInfo = {
