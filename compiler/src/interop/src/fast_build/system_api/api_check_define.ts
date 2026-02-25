@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import ts from 'typescript';
 export const PERMISSION_TAG_CHECK_NAME: string = 'permission';
 export const PERMISSION_TAG_CHECK_ERROR: string = "To use this API, you need to apply for the permissions: $DT";
 export const SYSTEM_API_TAG_CHECK_NAME: string = 'systemapi';
@@ -28,7 +28,7 @@ export const RUNTIME_OS_OH: string = 'OpenHarmony';
 export const FORM_TAG_CHECK_NAME: string = 'form';
 export const FORM_TAG_CHECK_ERROR: string = "'{0}' can't support form application.";
 export const CROSSPLATFORM_TAG_CHECK_NAME: string = 'crossplatform';
-export const CROSSPLATFORM_TAG_CHECK_ERROER: string = "'{0}' can't support crossplatform application.";
+export const CROSSPLATFORM_TAG_CHECK_ERROR: string = "'{0}' can't support crossplatform application.";
 export const DEPRECATED_TAG_CHECK_NAME: string = 'deprecated';
 export const DEPRECATED_TAG_CHECK_WARNING: string = "'{0}' has been deprecated.";
 export const FA_TAG_CHECK_NAME: string = 'famodelonly';
@@ -40,11 +40,18 @@ export const STAGE_TAG_CHECK_ERROR: string = 'This API is used only in Stage Mod
 export const STAGE_COMPILE_MODE: string = 'moduleJson';
 export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
 export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
-export const ATOMICSERVICE_TAG_CHECK_ERROER: string = "'{0}' can't support atomicservice application.";
+export const ATOMICSERVICE_TAG_CHECK_ERROR: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
-export const SINCE_TAG_CHECK_ERROER: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const SINCE_TAG_CHECK_ERROR: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
+export const AVAILABLE_TAG_NAME: string = 'available';
+export const AVAILABLE_DECORATOR_WARNING: string = "The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
+export const AVAILABLE_VERSION_FORMAT_ERROR_PREFIX: string = 'The runtime OS for the current project is $RUNTIMEOS. The OS version number $VERSION is invalid.';
+export const AVAILABLE_OSNAME_ERROR: string = 'The runtime OS for the current project is $RUNTIMEOS. @Available is not supported on the OS: $OSNAME.';
+export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation already indicates that the version is greater than or equal to $VERSION.';
+export const AVAILABLE_VERSION_FORMAT_ERROR: string = 'The OpenHarmony version must be an integer between 1 and 999.'
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
@@ -53,3 +60,235 @@ export const CONSTANT_STEP_3: number = 3;
 
 export const GLOBAL_DECLARE_WHITE_LIST: Set<string> = new Set(['Context', 'PointerStyle', 'PixelMap', 'UnifiedData',
   'Summary', 'UniformDataType', 'IntentionCode', 'NavDestinationInfo', 'UIContext', 'Resource', 'WebviewController']);
+
+export enum ComparisonResult {
+  Less = -1,
+  Equal = 0,
+  Greater = 1
+}
+
+export const SDK_SUBSYSTEM_CODE = '117';
+export const ERROR_DESCRIPTION = 'ArkTS Compiler Error';
+
+
+export const SUPPRESSWARNINGS_RULE_INFO: Map<string, string> = new Map([
+  [SINCE_TAG_NAME, 'SuppressWarnings'],
+  [AVAILABLE_TAG_NAME, 'SuppressWarnings'],
+  [SYSCAP_TAG_CHECK_NAME, 'SuppressWarnings']
+]);
+
+export const ANNOTATION_RULE_INFO: Map<string, string> = new Map([
+  [SINCE_TAG_NAME, 'SuppressWarningsType.COMPATIBILITY'],
+  [AVAILABLE_TAG_NAME, 'SuppressWarningsType.COMPATIBILITY'],
+  [SYSCAP_TAG_CHECK_NAME, 'SuppressWarningsType.SYSCAP']
+]);
+
+interface ChainedModel {
+  isChain: boolean
+  chainNode: ts.Node
+}
+
+export interface NodeParentModel {
+  node: ts.Node
+  isChainedCall: ChainedModel
+}
+
+interface MoreInfo {
+  cn: string;
+  en: string;
+}
+
+export interface SdkHvigorLogInfo {
+  code: string;
+  description: string;
+  cause: string;
+  position: string;
+  solutions: string[];
+  moreInfo?: MoreInfo;
+}
+
+export class SdkHvigorErrorInfo implements SdkHvigorLogInfo {
+  code: string = '';
+  description: string = ERROR_DESCRIPTION;
+  cause: string = '';
+  position: string = '';
+  solutions: string[] = [];
+
+  getCode(): string {
+    return this.code;
+  }
+
+  setCode(code: string): SdkHvigorErrorInfo {
+    this.code = code;
+    return this;
+  }
+
+  getDescription(): string {
+    return this.description;
+  }
+
+  setDescription(description: string): SdkHvigorErrorInfo {
+    this.description = description;
+    return this;
+  }
+
+  getCause(): string {
+    return this.cause;
+  }
+
+  setCause(cause: string): SdkHvigorErrorInfo {
+    this.cause = cause;
+    return this;
+  }
+
+  getPosition(): string {
+    return this.position;
+  }
+
+  setPosition(position: string): SdkHvigorErrorInfo {
+    this.position = position;
+    return this;
+  }
+
+  getSolutions(): string[] {
+    return this.solutions;
+  }
+
+  setSolutions(solutions: string[]): SdkHvigorErrorInfo {
+    this.solutions = solutions;
+    return this;
+  }
+}
+
+interface BuildDiagnosticInterface {
+  code: number;
+  description: string;
+  positionMessage: string;
+  message: string;
+  solutions: string[];
+}
+
+export class BuildDiagnosticInfo implements BuildDiagnosticInterface {
+  code: number;
+  description: string;
+  positionMessage: string;
+  message: string;
+  solutions: string[];
+
+  setCode(code: number): BuildDiagnosticInfo {
+    this.code = code;
+    return this;
+  }
+
+  getCode(): number {
+    return this.code;
+  }
+
+  setDescription(description: string): BuildDiagnosticInfo {
+    this.description = description;
+    return this;
+  }
+
+  getDescription(): string {
+    return this.description;
+  }
+
+  setPositionMessage(positionMessage: string): BuildDiagnosticInfo {
+    this.positionMessage = positionMessage;
+    return this;
+  }
+
+  getPositionMessage(): string {
+    return this.positionMessage;
+  }
+
+  setMessage(message: string): BuildDiagnosticInfo {
+    this.message = message;
+    return this;
+  }
+
+  getMessage(): string {
+    return this.message;
+  }
+
+  setSolutions(solutions: string[]): BuildDiagnosticInfo {
+    this.solutions = solutions;
+    return this;
+  }
+
+  getSolutions(): string[] {
+    return this.solutions;
+  }
+}
+
+export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>> = new Map([
+  [FORM_TAG_CHECK_ERROR, { code: '11706006', description: 'can\'t support form application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation,and switch to the supported Stage model interfaces.'] }],
+  [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation,and switch to the supported FA model interfaces.'] }],
+  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
+])
+
+export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
+  ['28007', ERROR_CODE_INFO]
+])
+
+/**
+ * Version validation result structure
+ */
+export interface VersionValidationResult {
+  result: boolean;
+  message?: string;
+}
+
+/**
+ * Value checker function type
+ * @param sinceVersion - Required API version
+ * @param targetVersion - Available/current version
+ * @param triggerScene - Trigger scenario (0: warning, 1: suppress with open source target, 2: suppress with other target)
+ */
+export type ValueCheckerFunction = (
+  sinceVersion: string,
+  targetVersion: string,
+  triggerScene: number
+) => VersionValidationResult;
+
+/**
+ * Format checker function type
+ * @param version - Version string to validate
+ */
+export type FormatCheckerFunction = (version: string) => VersionValidationResult;
+
+/**
+ * Runtime OS constants
+ */
+export const RUNTIME_OS = {
+  OPEN_HARMONY: 'OpenHarmony'
+} as const;
+
+/**
+ * Comparison functions cache
+ */
+export const comparisonFunctions = {
+  valueChecker: new Map<string, ValueCheckerFunction>(),
+  formatChecker: new Map<string, FormatCheckerFunction>()
+};
+
+export enum ComparisonSenario {
+  Trigger = 0,
+  SuppressByOHVersion = 1,
+  SuppressByOtherOSVersion = 2,
+}
+
+export interface ParsedVersion {
+  os?: string;       // Optional OS name (e.g., OpenHarmony and OtherOS)
+  version: string;   // Version number (e.g., "21")
+  formatVersion: string;       // raw string (e.g., "21", "OpenHarmony 21")
+  raw: string;       // raw string (e.g., "21", "OpenHarmony 21")
+}
+
+export enum DeviceDiffType {
+  SINCE = 'since',
+  SYSCAP = 'syscap',
+  NONE = 'none'
+}

@@ -328,6 +328,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate',
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate2',
   'Decorators/vaildate_ui_syntax/animatableExtendAttributeDuplicate',
+  'Decorators/vaildate_ui_syntax/componentReuseCheck',
   'Decorators/vaildate_ui_syntax/MethodNoExtend',
   'Decorators/vaildate_ui_syntax/mutiDecoratorInComponentV2',
   'Decorators/vaildate_ui_syntax/NoChild',

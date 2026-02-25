@@ -219,9 +219,9 @@ export class DeclfileProductor {
     }
 
     static initSdkConfig(): void {
-        const apiDirPath = path.resolve(__dirname, '../../../../../api');
-        const arktsDirPath = path.resolve(__dirname, '../../../../../arkts');
-        const kitsDirPath = path.resolve(__dirname, '../../../../../kits');
+        const apiDirPath = path.resolve(__dirname, '../../../../../../api');
+        const arktsDirPath = path.resolve(__dirname, '../../../../../../arkts');
+        const kitsDirPath = path.resolve(__dirname, '../../../../../../kits');
         const systemModulePathArray = [apiDirPath];
         if (!process.env.isFaMode) {
             systemModulePathArray.push(arktsDirPath, kitsDirPath);
