@@ -49,6 +49,7 @@ export const COMPONENT_LOCAL_STORAGE_LINK_DECORATOR: string = '@LocalStorageLink
 export const COMPONENT_LOCAL_STORAGE_PROP_DECORATOR: string = '@LocalStorageProp';
 export const COMPONENT_CUSTOM_DECORATOR: string = 'COMPONENT_CUSTOM_DECORATOR';
 export const COMPONENT_REQUIRE_DECORATOR: string = '@Require';
+export const COMPONENT_ENV_DECORATOR: string = '@Env';
 
 export const COMPONENTV2_LOCAL_DECORATOR: string = '@Local';
 export const COMPONENTV2_PARAM_DECORATOR: string = '@Param';
@@ -65,20 +66,35 @@ export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
 export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
 
+export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
+export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
+export const COMPONENT_USER_INTENTS_DECORATOR_ENTRY: string = '@InsightIntentEntry';
+export const COMPONENT_USER_INTENTS_DECORATOR_FUNCTION: string = '@InsightIntentFunction';
+export const COMPONENT_USER_INTENTS_DECORATOR_METHOD: string = '@InsightIntentFunctionMethod';
+export const COMPONENT_USER_INTENTS_DECORATOR_ENTITY: string = '@InsightIntentEntity';
+export const COMPONENT_USER_INTENTS_DECORATOR_FORM: string = '@InsightIntentForm';
+
 export const COMPONENT_DECORATORS_PARAMS: Set<string> = new Set([COMPONENT_CONSUME_DECORATOR,
   COMPONENT_STORAGE_PROP_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR,
   COMPONENT_WATCH_DECORATOR]);
 export const INNER_COMPONENT_DECORATORS: Set<string> = new Set([COMPONENT_DECORATOR_ENTRY,
   COMPONENT_DECORATOR_PREVIEW, COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_CUSTOM_DIALOG,
-  COMPONENT_DECORATOR_REUSEABLE, COMPONENT_DECORATOR_COMPONENT_V2, COMPONENT_DECORATOR_REUSABLE_V2]);
+  COMPONENT_DECORATOR_REUSEABLE, COMPONENT_DECORATOR_COMPONENT_V2, COMPONENT_DECORATOR_REUSABLE_V2, COMPONENT_USER_INTENTS_DECORATOR_PAGE]);
 export const INNER_COMPONENT_MEMBER_DECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR,
   COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_STORAGE_PROP_DECORATOR,
   COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR,
   COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_WATCH_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR,
   COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR,
-  COMPONENT_REQUIRE_DECORATOR]);
+  COMPONENT_REQUIRE_DECORATOR, COMPONENT_ENV_DECORATOR]);
 export const STRUCT_DECORATORS: Set<string> = new Set([...INNER_COMPONENT_DECORATORS,
   ...INNER_COMPONENT_MEMBER_DECORATORS]);
+export const MAIN_COMPONENT_DECORATORS: Set<string> = new Set([COMPONENT_DECORATOR_COMPONENT, COMPONENT_DECORATOR_COMPONENT_V2,
+  COMPONENT_DECORATOR_CUSTOM_DIALOG]);
+export const NON_FUNCTION_TYPE_WITH_V1_DECORATORS: Set<string> = new Set([COMPONENT_STATE_DECORATOR,
+  COMPONENT_PROP_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_STORAGE_PROP_DECORATOR,
+  COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_PROVIDE_DECORATOR, COMPONENT_CONSUME_DECORATOR,
+  COMPONENT_LOCAL_STORAGE_LINK_DECORATOR, COMPONENT_LOCAL_STORAGE_PROP_DECORATOR]);
+
 
 export const COMPONENT_OBSERVED_DECORATOR: string = '@Observed';
 export const COMPONENT_OBSERVEDV2_DECORATOR: string = '@ObservedV2';
@@ -86,6 +102,7 @@ export const OBSERVED: string = 'Observed';
 export const MIN_OBSERVED: string = 'ObservedV2';
 export const SENDABLE: string = 'Sendable';
 export const TYPE: string = 'Type';
+export const ENV: string = 'Env';
 export const COMPONENT_BUILDER_DECORATOR: string = '@Builder';
 export const COMPONENT_LOCAL_BUILDER_DECORATOR: string = '@LocalBuilder';
 export const COMPONENT_EXTEND_DECORATOR: string = '@Extend';
@@ -93,13 +110,6 @@ export const COMPONENT_STYLES_DECORATOR: string = '@Styles';
 export const COMPONENT_ANIMATABLE_EXTEND_DECORATOR: string = '@AnimatableExtend';
 export const COMPONENT_CONCURRENT_DECORATOR: string = '@Concurrent';
 export const COMPONENT_SENDABLE_DECORATOR: string = '@Sendable';
-export const COMPONENT_USER_INTENTS_DECORATOR: string = '@InsightIntentLink';
-export const COMPONENT_USER_INTENTS_DECORATOR_ENTRY: string = '@InsightIntentEntry';
-export const COMPONENT_USER_INTENTS_DECORATOR_FUNCTION: string = '@InsightIntentFunction';
-export const COMPONENT_USER_INTENTS_DECORATOR_METHOD: string = '@InsightIntentFunctionMethod';
-export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
-export const COMPONENT_USER_INTENTS_DECORATOR_ENTITY: string = '@InsightIntentEntity';
-export const COMPONENT_USER_INTENTS_DECORATOR_FORM: string = '@InsightIntentForm';
 export const CHECK_COMPONENT_EXTEND_DECORATOR: string = 'Extend';
 export const STRUCT_CONTEXT_METHOD_DECORATORS: Set<string> = new Set([COMPONENT_BUILDER_DECORATOR,
   COMPONENT_STYLES_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR]);
@@ -275,6 +285,9 @@ export const RESOURCE_NAME_TYPE: string = 'type';
 export const RESOURCE_NAME_PARAMS: string = 'params';
 export const RESOURCE_NAME_BUNDLE: string = 'bundleName';
 export const RESOURCE_NAME_MODULE: string = 'moduleName';
+export const __GETRESOURCEID__: string = '__getResourceId__';
+export const __RESOURCEIDHAR__: string = '__resourceIdHar__';
+
 export const RESOURCE_TYPE = {
   color: 10001,
   float: 10002,
@@ -290,6 +303,14 @@ export const RESOURCE_TYPE = {
   symbol: 40000
 };
 
+export const APIVERSION = {
+  apiVersionNine: 9,
+  apiVersionTen: 10,
+  apiVersionEleven: 11,
+  apiVersionTwentyTwo: 22,
+  apiVersiontwentyThree: 23
+}
+
 export const WORKERS_DIR: string = 'workers';
 export const WORKER_OBJECT: string = 'Worker';
 
@@ -303,6 +324,8 @@ export const CUSTOM_DIALOG_CONTROLLER_BUILDER: string = 'builder';
 
 export const BUILDER_ATTR_NAME: string = 'builder';
 export const BUILDER_ATTR_BIND: string = 'bind';
+
+export const MUTABLEBUILDER_DISPATCHBUILDER: string = '_dispatchBuilder';
 
 export const GEOMETRY_VIEW: string = 'GeometryView';
 
@@ -324,6 +347,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Navigation', new Set(['title'])],
   ['NavDestination', new Set(['title'])],
   ['ListItem', new Set(['swipeAction'])],
+  ['ArcListItem', new Set(['swipeAction'])],
   ['MenuItem', new Set([COMPONENT_CREATE_FUNCTION])],
   ['MenuItemGroup', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Refresh', new Set([COMPONENT_CREATE_FUNCTION])],
@@ -351,6 +375,7 @@ export const $$: string = '$$';
 export const $$_VISIBILITY: string = 'visibility';
 export const BIND_CONTENT_COVER: string = 'bindContentCover';
 export const BIND_SHEET: string = 'bindSheet';
+export const PICKER: string = 'Picker';
 export const DATE_PICKER: string = 'DatePicker';
 export const TIME_PICKER: string = 'TimePicker';
 export const RATING: string = 'Rating';
@@ -364,6 +389,7 @@ export const SELECT_LOW: string = 'select';
 export const CHECKBOX_GROUP: string = 'CheckboxGroup';
 export const SELECT_ALL: string = 'selectAll';
 export const SELECTED: string = 'selected';
+export const SELECTED_INDEX: string = 'selectedIndex';
 export const MENU_ITEM: string = 'MenuItem';
 export const PANEL: string = 'Panel';
 export const RATING_LOW: string = 'rating';
@@ -390,12 +416,14 @@ export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
-export const NAV_BAR_WIDTH: string = 'navBarWidth';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
+export const NAV_BAR_WIDTH: string = 'navBarWidth';
+const SCROLL: string = 'Scroll';
+const ZOOM_SCALE: string = 'zoomScale';
 
 export const DOLLAR_BLOCK_INTERFACE: Set<string> = new Set([
   CHECK_BOX, CHECKBOX_GROUP, DATE_PICKER, TIME_PICKER, MENU_ITEM, PANEL, RATING, SIDE_BAR_CONTAINER, STEPPER, SWIPER, TABS, TEXT_PICKER, TOGGLE, SELECT,
-  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER]);
+  REFRESH, CALENDAR, GRID_ITEM, LIST_ITEM, TEXT_TIMER, SEAECH, TEXT_INPUT, SLIDER, TEXT_AREA, ALPHABET_INDEXER, ARC_ALPHABET_INDEXER, PICKER]);
 export const STYLE_ADD_DOUBLE_DOLLAR: Set<string> = new Set([
   BIND_POPUP, $$_VISIBILITY, BIND_CONTENT_COVER, BIND_SHEET]);
 export const STYLE_ADD_DOUBLE_EXCLAMATION: Set<string> = new Set([
@@ -406,6 +434,7 @@ export const PROPERTIES_ADD_DOUBLE_DOLLAR: Map<string, Set<string>> = new Map([
   [REFRESH, new Set([REFRESHING])],
   [CHECK_BOX, new Set([SELECT_LOW])],
   [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [PICKER, new Set([SELECTED_INDEX])],
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
@@ -433,6 +462,7 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [REFRESH, new Set([REFRESHING])],
   [CHECK_BOX, new Set([SELECT_LOW])],
   [CHECKBOX_GROUP, new Set([SELECT_ALL])],
+  [PICKER, new Set([SELECTED_INDEX])],
   [DATE_PICKER, new Set([SELECTED])],
   [TIME_PICKER, new Set([SELECTED])],
   [MENU_ITEM, new Set([SELECTED])],
@@ -454,7 +484,8 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [SELECT, new Set([SELECTED, VALUE])],
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
-  [LIST_ITEM, new Set([SELECTED])]
+  [LIST_ITEM, new Set([SELECTED])],
+  [SCROLL, new Set([ZOOM_SCALE])]
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
@@ -607,12 +638,12 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
 if (EXT_WHITE_LIST.length) {
-  for (const compName of EXT_WHITE_LIST) {
-    CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
-  }
+    for (const compName of EXT_WHITE_LIST) {
+        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
+    }
 }
 if (EXT_WHITE_LIST.length >= 2) {
-  TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
+    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
 }
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
@@ -645,9 +676,15 @@ export const TRANSFORMED_MOCK_CONFIG: string = 'mock-config.json';
 export const USER_DEFINE_MOCK_CONFIG: string = 'mock-config.json5';
 
 export const WRAPBUILDER_FUNCTION: string = 'wrapBuilder';
+export const MUTABLEBUILDER_FUNCTION: string = 'mutableBuilder';
 export const WRAPPEDBUILDER_CLASS: string = 'WrappedBuilder';
+export const MUTABLEBUILDER_CLASS: string = 'MutableBuilder';
 export const WRAPBUILDER_BUILDERPROP: string = 'builder';
+export const MUTABLEBUILDER_BUILDERPROP: string = 'builder';
 export const LENGTH: string = 'length';
+
+export const HDSNAVIGATION: string = 'HdsNavigation';
+export const HDSNAVDESTINATION: string = 'HdsNavDestination';
 
 export const PREVIEW: string = 'preview';
 export const TITLE: string = 'title';
@@ -674,6 +711,8 @@ export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
 export const CREATESTATICCOMPONENT: string = '__Interop_CreateStaticComponent_Internal';
 export const UPDATESTATICCOMPONENT: string = '__Interop_UpdateStaticComponent_Internal';
+
+export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
 
 export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
 export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';
