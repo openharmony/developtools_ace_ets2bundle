@@ -207,7 +207,7 @@
                     types: ["returnType"],
                 },
                 {
-                    name: "CreateContextGenerateAbcForExternalSourceFiles",
+                    name: "CreateContextSimultaneousMode",
                     types: ["returnType"],
                 },
                 {

@@ -89,7 +89,7 @@ export class ProgramSkipper {
 
     public static canSkipProgram(program: arkts.Program | undefined): boolean {
         if (!arkts.arktsGlobal.configObj ||
-            arkts.arktsGlobal.configObj.compilationMode !== arkts.Es2pandaCompilationMode.COMPILATION_MODE_GEN_ABC_FOR_EXTERNAL_SOURCE) {
+            arkts.arktsGlobal.configObj.compilationMode !== arkts.Es2pandaCompilationMode.COMPILATION_MODE_SIMULTANEOUS) {
             return false;
         }
         if (!program) {

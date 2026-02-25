@@ -55,13 +55,17 @@ export class Context extends ArktsObject {
         );
     }
 
-    static createContextGenerateAbcForExternalSourceFiles(
-        filenames: string[]): Context {
+    // NOTE: this API is deprecated
+    static createContextGenerateAbcForExternalSourceFiles(filenames: string[]): Context {
+        return this.createContextSimultaneousMode(filenames);
+    }
+
+    static createContextSimultaneousMode(filenames: string[]): Context {
         if (!global.configIsInitialized()) {
             throwError(`Config not initialized`);
         }
         return new Context(
-            global.es2panda._CreateContextGenerateAbcForExternalSourceFiles(global.config, filenames.length, passStringArray(filenames))
+            global.es2panda._CreateContextSimultaneousMode(global.config, filenames.length, passStringArray(filenames))
         );
     }
 
