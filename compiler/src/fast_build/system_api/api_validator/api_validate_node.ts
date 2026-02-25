@@ -896,7 +896,7 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       node: node,
       isChainedCall: { isChain: false, chainNode: node }
     }
-    while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && nodeStatement.node.parent) {
+    while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && !ts.isPropertyDeclaration(nodeStatement.node) && nodeStatement.node.parent) {
       if (ts.isPropertyAccessExpression(nodeStatement.node) && ts.isCallExpression(nodeStatement.node.expression)) {
         const expression = nodeStatement.node;
         const text = expression.getText() || expression.getFullText();
