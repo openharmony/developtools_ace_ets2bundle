@@ -110,6 +110,14 @@ export class Es2pandaNativeModule {
     _CreateContextFromString(config: KPtr, source: String, filename: String): KPtr {
         throw new Error('Not implemented');
     }
+    _FormOutputPathForFile(context: KPtr, inputPath: String): KPtr {
+        throw new Error('Not implemented');
+    }
+    _CreateContextSimultaneousMode(config: KPtr, fileCount: KInt, filenames:
+        string[]): KPtr {
+        throw new Error('Not implemented');
+    }
+    // NOTE: this API is deprecated
     _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames:
         string[]): KPtr {
         throw new Error('Not implemented');

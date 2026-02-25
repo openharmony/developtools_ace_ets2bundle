@@ -115,10 +115,10 @@ export function runTransformer(
 }
 
 function isProgramForCodegeneration(program: Program, isMainProgram: boolean): boolean {
-    if (arktsGlobal.configObj?.compilationMode != Es2pandaCompilationMode.COMPILATION_MODE_GEN_ABC_FOR_EXTERNAL_SOURCE) {
+    if (arktsGlobal.configObj?.compilationMode != Es2pandaCompilationMode.COMPILATION_MODE_SIMULTANEOUS) {
         return isMainProgram;
     }
-    return program.isGenAbcForExternal;
+    return program.isBuiltSimultaneously;
 }
 
 const isDebugDump: boolean = false;
