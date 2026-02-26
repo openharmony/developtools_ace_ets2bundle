@@ -20,7 +20,8 @@
           "node",
           "sdk",
           "ets_frontend",
-          "typescript"
+          "typescript",
+          "bounds_checking_function"
         ],
         "third_party": [
           "typescript"
@@ -47,6 +48,9 @@
             },
             {
                 "name": "//developtools/ace_ets2bundle:ets_loader_ark_hap"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle/ets1.2:ohos_ets_libarkts"
             }
         ]
       }

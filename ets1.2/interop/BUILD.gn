@@ -1,0 +1,235 @@
+# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+if (!defined(koala_mr)) {
+  # OHOS build tree workaround
+  import("../../koala_integration.gni")
+}
+if (!koala_mr.is_rri) {
+  import("//build/config/components/ets_frontend/ets2abc_config.gni")
+  import("//build/ohos.gni")
+}
+import("${koala_mr.root_path}/gn/import/bash.gni")
+import("${koala_mr.root_path}/gn/import/npm.gni")
+
+# has_ui2abc = exec_script("${koala_mr.root_path}/gn/script/check_path.py",
+#     [ rebase_path("${koala_mr.root_path}/ui2abc") ], "value")
+has_ui2abc = koala_mr.is_rri || defined(koala_mr.ui2abc_path)
+if (has_ui2abc) {
+  npm_cmd("interop_abc") {
+    outputs = [ "$target_out_dir/interop.abc" ]
+    if (!koala_mr.is_rri) {
+      project_path = rebase_path("..")
+      run_tasks = [ "build:interop" ]
+    } else {
+      project_path = rebase_path(".")
+      run_tasks = [ "build" ]
+    }
+
+    deps = [ "${koala_mr.root_path}/ui2abc:ui2abc_base" ]
+
+    if (!koala_mr.is_rri) {
+      external_deps = [
+        ets2abc_build_deps,
+        static_linker_build_deps,
+      ]
+    }
+  }
+}
+
+npm_cmd("interop_compile") {
+  outputs = [ "$target_out_dir/interop_compile" ]
+  if (!koala_mr.is_rri) {
+    project_path = rebase_path("..")
+    run_tasks = [ "compile:interop" ]
+  } else {
+    project_path = rebase_path(".")
+    run_tasks = [ "compile" ]
+  }
+}
+
+if (has_ui2abc) {
+  node_api_headers = koala_mr.root_path + "/node_modules/node-api-headers"
+
+  template("interop_native") {
+    interop_native_target_name = target_name
+    vm_kind = invoker.vm_kind
+
+    _output_name_prefix = ""
+    _output_name_suffix = ""
+    _output_extension = ""
+    if (target_os == "win") {
+      _output_extension = "dll"
+    }
+    if (target_os == "linux") {
+      _output_name_prefix = "lib"
+      _output_extension = "so"
+    }
+    if (target_os == "mac") {
+      _output_name_prefix = "lib"
+      _output_extension = "dylib"
+    }
+    if (target_os == "ohos") {
+      _output_name_prefix = "lib"
+      _output_extension = "so"
+    }
+    if (vm_kind == "node") {
+      _output_name_prefix = ""
+      _output_extension = "node"
+    }
+
+    cp("$target_name:cp") {
+      output_name_full = _output_name_prefix + "InteropNativeModule" +
+                         _output_name_suffix + "." + _output_extension
+      src = [ rebase_path("$root_out_dir/$output_name_full") ]
+      dest = rebase_path("./build/$output_name_full")
+      deps = [ ":$interop_native_target_name:build" ]
+    }
+
+    shared_library("$target_name:build") {
+      deps = [ "${koala_mr.root_path}:npm_install_all" ]
+      interop_src = "./src/cpp"
+
+      output_prefix_override = true
+      output_name =
+          _output_name_prefix + "InteropNativeModule" + _output_name_suffix
+      output_extension = _output_extension
+
+      sources = [
+        "$interop_src/callback-resource.cpp",
+        "$interop_src/common-interop.cpp",
+        "$interop_src/interop-logging.cpp",
+      ]
+      include_dirs = [
+        interop_src,
+        "$interop_src/types",
+      ]
+      cflags = []
+      ldflags = []
+
+      if (target_os == "win") {
+        cflags += [ "-DKOALA_WINDOWS" ]
+        if (vm_kind == "node" || vm_kind == "hzvm") {
+          sources += [ "$interop_src/napi/win-dynamic-node.cpp" ]
+          cflags += [ "/Gy-" ]
+        }
+      }
+      if (target_os == "linux") {
+        cflags += [
+          "-DKOALA_LINUX",
+          "-Wno-unused",
+        ]
+      }
+      if (target_os == "mac") {
+        cflags += [
+          "-DKOALA_MACOS",
+          "-mmacosx-version-min=13.3",
+        ]
+      }
+      if (target_os == "ohos") {
+        include_dirs += [ "$interop_src/ohos" ]
+        cflags += [
+          "-Wno-non-virtual-dtor",
+          "-fno-rtti",
+          "-Wall",
+
+          # "-Werror", Improve: turn back on once generated part compiles without warnings
+          "-Wno-error=attributes",
+          "-Wno-unused",
+          "-DKOALA_OHOS",
+          "-D__MUSL__",
+        ]
+        ldflags += [
+          "-lEGL",
+          "-lGLESv3",
+          "-lhilog_ndk.z",
+          "-lace_ndk.z",
+          "-lace_napi.z",
+          "-luv",
+          "-static-libstdc++",
+        ]
+      }
+
+      if (vm_kind == "node" || vm_kind == "hzvm") {
+        sources += [ "$interop_src/napi/convertors-napi.cpp" ]
+        include_dirs += [
+          "$interop_src/napi",
+          "$node_api_headers/include",
+        ]
+        cflags += [ "-DKOALA_NAPI" ]
+        if (vm_kind == "node") {
+          cflags += [ "-DKOALA_USE_NODE_VM" ]
+        }
+        if (vm_kind == "hzvm") {
+          cflags += [ "-DKOALA_USE_HZ_VM" ]
+        }
+      }
+
+      if (vm_kind == "panda") {
+        sources += [
+          "$interop_src/ani/convertors-ani.cpp",
+          "$interop_src/types/signatures.cpp",
+        ]
+        include_dirs += [
+          "$interop_src/ani",
+          "$interop_src/ani/panda",
+          "$interop_src/types",
+        ]
+        cflags += [ "-DKOALA_ANI" ]
+      }
+
+      if (vm_kind == "jvm") {
+        sources += [
+          "$interop_src/jni/convertors-jni.cpp",
+          "$interop_src/types/signatures.cpp",
+        ]
+        include_dirs += [
+          "$interop_src/jni",
+          "$interop_src/types",
+          "${invoker.jdk_dir}/include",
+          "${invoker.jdk_dir}/include/$target_os",
+        ]
+        cflags += [ "-DKOALA_JNI" ]
+      }
+
+      if (vm_kind == "kotlin") {
+        sources += [ "$interop_src/kotlin/convertors-kotlin.cpp" ]
+        include_dirs += [
+          "$interop_src/kotlin",
+          "$interop_src/types",
+        ]
+        cflags += [ "-DKOALA_KOTLIN" ]
+      }
+    }
+
+    group(target_name) {
+      deps = [
+        ":$target_name:build",
+        ":$target_name:cp",
+      ]
+    }
+  }
+
+  interop_native("interop_native:panda") {
+    vm_kind = "panda"
+  }
+  interop_native("interop_native:node") {
+    vm_kind = "node"
+  }
+  group("interop_native:all") {
+    deps = [
+      ":interop_native:node",
+      ":interop_native:panda",
+    ]
+  }
+}
