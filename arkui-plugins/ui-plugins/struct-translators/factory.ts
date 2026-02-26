@@ -29,6 +29,7 @@ import {
     isKnownMethodDefinition,
     isStatic,
 } from '../utils';
+import { expectName } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
@@ -627,9 +628,17 @@ export class factory {
         }
         const className: string = classIdent.name;
         const body: readonly arkts.AstNode[] = definition.body;
+        let lastBuilderParam: string | undefined;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
-            body.map((member) => classifyStructMembers(member, scope))
+            body.map((member) => {
+                if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+                    const paramName = expectName(member.key);
+                    lastBuilderParam = paramName;
+                }
+                return classifyStructMembers(member, scope);
+            })
         );
+        scope.lastBuilderParam = lastBuilderParam;
         scope.keyRange = classIdent.range;
         const translatedMembers: arkts.AstNode[] = [];
         if (!isDecl || isCustomComponentClass) {
@@ -1787,3 +1796,4 @@ export class factory {
         );
     }
 }
+

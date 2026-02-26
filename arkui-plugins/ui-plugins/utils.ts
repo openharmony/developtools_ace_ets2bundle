@@ -164,6 +164,7 @@ export type CustomComponentInfo = {
     isDecl: boolean;
     isCustomComponentClass: boolean;
     annotations: CustomComponentAnontations;
+    lastBuilderParam?: string;
 };
 
 export type CustomComponentAnontations = {
