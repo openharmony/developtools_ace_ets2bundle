@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./build",
+        "baseUrl": "./user",
+        "dependencies": {
+            "library": {
+                "path": "../build/deps/library.etscache"
+            },
+            "headers": {
+                "path": "../build/deps/headers.etscache"
+            }
+        }
+    }
+}

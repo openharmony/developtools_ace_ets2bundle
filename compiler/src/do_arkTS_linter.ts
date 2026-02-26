@@ -25,6 +25,9 @@ import {
   EXTENSION_CODE,
   HvigorErrorInfo,
 } from './hvigor_error_code/hvigor_error_info';
+import {
+  TSC_SYSTEM_CODE,
+} from './ets_checker';
 
 const arkTSDir: string = 'ArkTS';
 const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
@@ -200,6 +203,9 @@ export function transfromErrorCode(code: number, positionMessage: string, messag
 
 function formatNumber(num: number): string {
   // The minimum code in strict mode starts from 1000
-  const extendedCode = num > 1000 ? EXTENSION_CODE : num.toString().padStart(complementSize, complementCode);
-  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + extendedCode;
+  if (num > 1000) {
+    const code = projectConfig.strictCheckerOnly ? TSC_SYSTEM_CODE : LINTER_SUBSYSTEM_CODE;
+    return code + ERROR_TYPE_CODE + EXTENSION_CODE;
+  }
+  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + num.toString().padStart(complementSize, complementCode);
 }

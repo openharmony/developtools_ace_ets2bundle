@@ -241,7 +241,7 @@ export function etsTransform() {
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
         const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
-        if (allowGC) {
+        if (allowGC && projectConfig.executeMode !== 'performance') {
           global.gc();
         }
       }
