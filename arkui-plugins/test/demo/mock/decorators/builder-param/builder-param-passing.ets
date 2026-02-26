@@ -19,9 +19,11 @@ import { Component, Entry, Builder, BuilderParam, Column, Text } from "@ohos.ark
 struct Child {
   @Builder customBuilder() {};
   @BuilderParam customBuilderParam: () => void = this.customBuilder;
+  @BuilderParam customBuilderParam1: () => void = this.customBuilder;
 
   build() {
     this.customBuilderParam()
+    this.customBuilderParam1()
   }
 }
 
