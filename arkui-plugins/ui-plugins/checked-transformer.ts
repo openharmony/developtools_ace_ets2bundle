@@ -48,6 +48,7 @@ import { MetaDataCollector } from '../common/metadata-collector';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
+import { ComponentLifecycleCache } from './property-translators/cache/componentLifecycleCache';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -78,6 +79,7 @@ export class CheckedTransformer extends AbstractVisitor {
         PropertyCache.getInstance().reset();
         MonitorCache.getInstance().reset();
         ComputedCache.getInstance().reset();
+        ComponentLifecycleCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();

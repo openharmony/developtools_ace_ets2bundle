@@ -32,6 +32,7 @@ import { factory as entryFactory } from '../entry-translators/factory';
 import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
+import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
 
 export class StructTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
@@ -51,6 +52,7 @@ export class StructTransformer extends AbstractVisitor {
         super.reset();
         this.scope = { customComponents: [] };
         PropertyCache.getInstance().reset();
+        ComponentLifecycleCache.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
     }
