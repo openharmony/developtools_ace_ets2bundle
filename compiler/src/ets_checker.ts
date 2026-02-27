@@ -460,7 +460,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     return tsLanguageService;
   }
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
-  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, parentEvent, rollupShareObject);
   MemoryMonitor.stopRecordStage(recordInfo);
   stopEvent(eventCreateLanguageService);
   return tsLanguageService;
@@ -469,7 +469,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
 export let targetESVersionChanged: boolean = false;
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
-  rollupShareObject?: any): ts.LanguageService {
+  parentEvent: CompileEvent, rollupShareObject?: any): ts.LanguageService {
   let cacheKey: string = 'service';
   let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
@@ -516,12 +516,25 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   }
 
   if (!service || shouldRebuild) {
+    const eventShouldRebuild = createAndStartEvent(parentEvent,
+      '!service: ' + !service + '\n' +
+      'the reason of shouldRebuild: ' + 'shouldRebuild: ' + shouldRebuild + ';' + '\n' +
+      'shouldRebuildForDepDiffers: ' + shouldRebuildForDepDiffers + ';' + '\n' +
+      'shouldInvalidCache: ' + shouldInvalidCache + ';' + '\n' +
+      'targetESVersionDiffers: ' + targetESVersionDiffers + ';' + 'useTsHarDiff: ' + useTsHarDiff + ';' + '\n' +
+      'onlyDeleteBuildInfoCache: ' + onlyDeleteBuildInfoCache + ';' + '\n' +
+      'tsImportSendableDiff: ' + tsImportSendableDiff + ';' + 'maxFlowDepthDiffers: ' + maxFlowDepthDiffers + ';' +
+      'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' + 'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
+    );
     rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
     service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    stopEvent(eventShouldRebuild);
   } else {
     // Found language service from cache, update root files
     const updateRootFileNames = [...rootFileNames, ...readDeaclareFiles()];
+    const eventUpdateRootFileNames = createAndStartEvent(parentEvent, 'eventUpdateRootFileNumber: ' + updateRootFileNames.length);
     service.updateRootFiles(updateRootFileNames);
+    stopEvent(eventUpdateRootFileNames);
   }
 
   const newCache: LanguageServiceCache = {
