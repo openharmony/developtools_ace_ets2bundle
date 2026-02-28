@@ -17,16 +17,35 @@ import * as arkts from '@koalaui/libarkts';
 import { PresetDecorators } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
-// Can only be used with decorators for struct
-const structOnlyDecorators = [
-    PresetDecorators.REUSABLE_V1,
-    PresetDecorators.REUSABLE_V2,
-    PresetDecorators.COMPONENT_V1,
-    PresetDecorators.COMPONENT_V2,
+const ComponentDecorators: Set<string> = new Set([
     PresetDecorators.ENTRY,
     PresetDecorators.PREVIEW,
+    PresetDecorators.COMPONENT_V1,
+    PresetDecorators.COMPONENT_V2,
     PresetDecorators.CUSTOM_DIALOG,
-];
+    PresetDecorators.REUSABLE_V1,
+    PresetDecorators.REUSABLE_V2,
+]);
+
+const ComponentMemberDecorators: Set<string> = new Set([
+    PresetDecorators.STATE,
+    PresetDecorators.PROP_REF,
+    PresetDecorators.STORAGE_PROP_REF,
+    PresetDecorators.LOCAL_STORAGE_PROP_REF,
+    PresetDecorators.LINK,
+    PresetDecorators.OBJECT_LINK,
+    PresetDecorators.STORAGE_LINK,
+    PresetDecorators.LOCAL_STORAGE_LINK,
+    PresetDecorators.PROVIDE,
+    PresetDecorators.CONSUME,
+    PresetDecorators.WATCH,
+    PresetDecorators.BUILDER_PARAM,
+    PresetDecorators.REQUIRE,
+    PresetDecorators.EVENT,
+]);
+
+// Can only be used with decorators for struct
+const structOnlyDecorators = [...ComponentDecorators, ...ComponentMemberDecorators];
 
 // Can only be used with decorators for property
 const propertyOnlyDecorators = [
@@ -43,64 +62,88 @@ const propertyOnlyDecorators = [
     PresetDecorators.OBJECT_LINK,
 ];
 
+interface DecoratorInfo {
+    decorator: arkts.AnnotationUsage;
+    isInStruct: boolean;
+}
+
+type PropertyOnlyNodeType =
+    | arkts.ScriptFunction
+    | arkts.VariableDeclaration
+    | arkts.TSInterfaceDeclaration
+    | arkts.TSTypeAliasDeclaration;
+
 class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
+    private allDecorators: DecoratorInfo[] = [];
+    private propertyOnlyNodes: PropertyOnlyNodeType[] = [];
+
     public setup(): Record<string, string> {
         return {
             decoratorOnlyWithStruct: `The '@{{decoratorName}}' annotation can only be used with 'struct'.`,
-            decoratorOnlyWithMemberProperty: `'@{{decoratorName}}' can only decorate member property.`
+            decoratorOnlyWithProperty: `'@{{decoratorName}}' can only decorate member property.`
         };
     }
 
+    public beforeTransform(): void {
+        this.allDecorators = [];
+        this.propertyOnlyNodes = [];
+    }
+
     public parsed(node: arkts.AstNode): void {
-        this.validateDecoratorPropertyOnly(node);
-
-        if (!arkts.isStructDeclaration(node)) {
-            this.validateDecoratorStructOnly(node);
+        if (arkts.isEtsScript(node)) {
+            this.collectNodes(node);
         }
     }
 
-    private validateDecoratorPropertyOnly(
-        node: arkts.AstNode,
-    ): void {
-        if (arkts.isScriptFunction(node) || arkts.isVariableDeclaration(node) || arkts.isTSInterfaceDeclaration(node) ||
-            arkts.isTSTypeAliasDeclaration(node)) {
-            node.annotations.forEach((annotation) => {
-                this.validateDecorator(annotation, propertyOnlyDecorators, this.messages.decoratorOnlyWithMemberProperty);
-            });
-        }
+    public afterTransform(): void {
+        this.validateDecoratorStructOnly();
+        this.validateDecoratorPropertyOnly();
     }
 
-    private validateDecoratorStructOnly(node: arkts.AstNode): void {
-        // class
-        if (arkts.isClassDeclaration(node)) {
-            node.definition?.annotations?.forEach((annotation) => {
-                this.validateDecorator(annotation, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
+    private collectNodes(node: arkts.EtsScript): void {
+        this.traverseNodes(node, false);
+    }
+
+    private traverseNodes(node: arkts.AstNode, isInStruct: boolean): void {
+        if (arkts.isAnnotationUsage(node)) {
+            this.allDecorators.push({
+                decorator: node,
+                isInStruct: isInStruct
             });
         }
-        // function/ variable/ method/ classproperty/ interface/ type alias declaration
-        if (arkts.isFunctionDeclaration(node) ||
-            arkts.isVariableDeclaration(node) ||
-            arkts.isClassProperty(node) ||
+        if (
             arkts.isScriptFunction(node) ||
+            arkts.isVariableDeclaration(node) ||
             arkts.isTSInterfaceDeclaration(node) ||
             arkts.isTSTypeAliasDeclaration(node)
         ) {
-            node.annotations.forEach((annotation) => {
-                this.validateDecorator(annotation, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
-            });
+            this.propertyOnlyNodes.push(node);
         }
+        if (arkts.isStructDeclaration(node)) {
+            isInStruct = true;
+        }
+        node.getChildren().forEach((child) => {
+            this.traverseNodes(child, isInStruct);
+        });
+    }
 
-        // get /set method
-        if (arkts.isMethodDefinition(node) &&
-            (node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET ||
-                node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET)) {
-            node.scriptFunction.annotations.forEach((annotation) => {
-                this.validateDecorator(annotation, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
+    private validateDecoratorPropertyOnly(): void {
+        for (const item of this.propertyOnlyNodes) {
+            item.annotations.forEach((annotation) => {
+                this.validateDecorator(annotation, propertyOnlyDecorators, this.messages.decoratorOnlyWithProperty);
             });
         }
     }
 
-    // decorator check function
+    private validateDecoratorStructOnly(): void {
+        for (const item of this.allDecorators) {
+            if (item.isInStruct) {
+                continue;
+            }
+            this.validateDecorator(item.decorator, structOnlyDecorators, this.messages.decoratorOnlyWithStruct);
+        }
+    }
+
     private validateDecorator(
         annotation: arkts.AnnotationUsage,
         decorator: string[],
