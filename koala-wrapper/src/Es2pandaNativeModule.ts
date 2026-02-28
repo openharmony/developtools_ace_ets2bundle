@@ -964,6 +964,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _SetLspUsage(isLspUsage: KBoolean): void {
+        throw new Error('Not implemented');
+    }
+
     _MemoryTrackerReset(context: KNativePointer): void {
         throw new Error('MemoryTrackerReset was not overloaded by native module initialization');
     }
