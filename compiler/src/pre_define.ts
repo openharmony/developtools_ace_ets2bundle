@@ -14,7 +14,6 @@
  */
 
 import path from 'path';
-import { EXT_WHITE_LIST } from './component_map';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
@@ -637,14 +636,6 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 ]);
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
-if (EXT_WHITE_LIST.length) {
-    for (const compName of EXT_WHITE_LIST) {
-        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
-    }
-}
-if (EXT_WHITE_LIST.length >= 2) {
-    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
-}
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
