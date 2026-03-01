@@ -22,7 +22,8 @@ import {
   ERROR_DESCRIPTION,
   LINTER_SUBSYSTEM_CODE,
   ERROR_TYPE_CODE,
-  EXTENSION_CODE,
+  TSC_EXTENSION_CODE,
+  LINTER_EXTENSION_CODE,
   HvigorErrorInfo,
 } from './hvigor_error_code/hvigor_error_info';
 import {
@@ -34,6 +35,7 @@ const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
 const spaceNumBeforeJsonLine = 2;
 const complementSize: number = 3;
 const complementCode: string = '0';
+const STRICT_MODE_MIN_CODE = 1000;
 
 interface OutputInfo {
   categoryInfo: string | undefined;
@@ -201,11 +203,14 @@ export function transfromErrorCode(code: number, positionMessage: string, messag
     .setSolutions([]);
 }
 
-function formatNumber(num: number): string {
+function formatNumber(code: number): string {
   // The minimum code in strict mode starts from 1000
-  if (num > 1000) {
-    const code = projectConfig.strictCheckerOnly ? TSC_SYSTEM_CODE : LINTER_SUBSYSTEM_CODE;
-    return code + ERROR_TYPE_CODE + EXTENSION_CODE;
+  const isStrictModeCode = code > STRICT_MODE_MIN_CODE;
+  if (isStrictModeCode) {
+    const systemCode = projectConfig.strictCheckerOnly ? TSC_SYSTEM_CODE : LINTER_SUBSYSTEM_CODE;
+    // Extended Codes Defined by Various Subsystems
+    const extensionCode = projectConfig.strictCheckerOnly ? TSC_EXTENSION_CODE : LINTER_EXTENSION_CODE;
+    return systemCode + ERROR_TYPE_CODE + extensionCode;
   }
-  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + num.toString().padStart(complementSize, complementCode);
+  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + code.toString().padStart(complementSize, complementCode);
 }
