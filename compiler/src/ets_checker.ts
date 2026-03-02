@@ -18,6 +18,7 @@ import path from 'path';
 import * as ts from 'typescript';
 import * as crypto from 'crypto';
 const fse = require('fs-extra');
+import { fileInfoCache } from './file_info_cache';
 
 import {
   projectConfig,
@@ -839,7 +840,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object): void {
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
-    if (fs.existsSync(moduleId)) {
+    if (moduleId.indexOf('\x00') < 0 && fileInfoCache.fileExists(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
       allModuleIds.add(moduleId);
       addLocalPackageSet(moduleId, rollupObject);
@@ -1247,7 +1248,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
   }
 
   const value: CacheFileName = cache[file];
-  const mtimeMs: number = fs.statSync(file).mtimeMs;
+  const mtimeMs: number = fileInfoCache.getMtimeMs(file);
   if (value) {
     if (value.error || value.mtimeMs !== mtimeMs) {
       needUpdate.flag = true;
@@ -1479,7 +1480,7 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
   resolvedModules.forEach(moduleObj => {
     if (moduleObj && moduleObj.resolvedFileName && /\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
       const file: string = path.resolve(moduleObj.resolvedFileName);
-      const mtimeMs: number = fs.statSync(file).mtimeMs;
+      const mtimeMs: number = fileInfoCache.getMtimeMs(file);
       children.push(file);
       const value: CacheFileName = cache[file];
       if (value) {
@@ -1494,7 +1495,7 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
     }
   });
   cache[path.resolve(containingFile)] = {
-    mtimeMs: fs.statSync(containingFile).mtimeMs, children,
+    mtimeMs: fileInfoCache.getMtimeMs(containingFile), children,
     parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
       cache[path.resolve(containingFile)].parent : [], error
   };

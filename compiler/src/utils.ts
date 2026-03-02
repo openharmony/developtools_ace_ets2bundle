@@ -18,6 +18,7 @@ import ts from 'typescript';
 import fs from 'fs';
 import os from 'os';
 import uglifyJS from 'uglify-js';
+import { fileInfoCache } from './file_info_cache';
 
 import {
   partialUpdateConfig,
@@ -270,8 +271,7 @@ export function readFile(dir: string, utFiles: string[]): void {
     const files: string[] = fs.readdirSync(dir);
     files.forEach((element) => {
       const filePath: string = path.join(dir, element);
-      const status: fs.Stats = fs.statSync(filePath);
-      if (status.isDirectory()) {
+      if (fileInfoCache.isDirectory(filePath)) {
         readFile(filePath, utFiles);
       } else {
         utFiles.push(filePath);
@@ -306,10 +306,10 @@ export function circularFile(inputPath: string, outputPath: string): void {
 function copyFile(inputFile: string, outputFile: string): void {
   try {
     const parent: string = path.join(outputFile, '..');
-    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
+    if (!(fileInfoCache.isDirectory(parent))) {
       mkDir(parent);
     }
-    if (fs.existsSync(outputFile)) {
+    if (fileInfoCache.fileExists(outputFile)) {
       return;
     }
     const readStream: fs.ReadStream = fs.createReadStream(inputFile);
@@ -352,9 +352,9 @@ export function toHashData(path: string): string {
 }
 
 export function writeFileSync(filePath: string, content: string): void {
-  if (!fs.existsSync(filePath)) {
+if (!fileInfoCache.fileExists(filePath)) {
     const parent: string = path.join(filePath, '..');
-    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+    if (!fileInfoCache.isDirectory(parent)) {
       mkDir(parent);
     }
   }
@@ -1326,7 +1326,7 @@ export function removeDecorator(decorators: readonly ts.Decorator[], decoratorNa
 export function isFileInProject(filePath: string, projectRootPath: string): boolean {
   const relativeFilePath: string = toUnixPath(path.relative(toUnixPath(projectRootPath), toUnixPath(filePath)));
   // When processing ohmurl, hsp's filePath is consistent with moduleRequest
-  return fs.existsSync(filePath) && fs.statSync(filePath).isFile() && !relativeFilePath.startsWith('../');
+  return fileInfoCache.isFile(filePath) && !relativeFilePath.startsWith('../');
 }
 
 export function getProjectRootPath(filePath: string, projectConfig: Object, rootPathSet: Object): string {
