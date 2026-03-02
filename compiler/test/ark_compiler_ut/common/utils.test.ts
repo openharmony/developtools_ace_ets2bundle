@@ -38,6 +38,7 @@ import {
   compilingEtsOrTsFiles,
   cleanUpFilesList
 } from '../../../lib/fast_build/ark_compiler/utils';
+import { fileInfoCache } from '../../../lib/file_info_cache';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { ModuleInfo } from '../mock/rollup_mock/module_info';
 import {
@@ -1309,15 +1310,11 @@ mocha.describe('test utils file api', function () {
     const filePath: string = '/testHar/har/src/main/ets/utils/Calc.ets';
     this.rollup.share.projectConfig.rootPathSet = ['/testHar', `${PROJECT_ROOT}/${DEFAULT_PROJECT}`];
     const projectConfig = this.rollup.share.projectConfig;
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
-    const statSyncStub = sinon.stub(fs, 'statSync').returns({
-      isFile: sinon.stub().returns(true)
-    });
+    const isFileStub = sinon.stub(fileInfoCache, 'isFile').returns(true);
     const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
     const expectProjectConfig: string = '/testHar';
     expect(projectRootPath === expectProjectConfig).to.be.true;
-    existsSyncStub.restore();
-    statSyncStub.restore();
+    isFileStub.restore();
   });
 
   mocha.it('17-2: test getProjectRootPath adapt external modules(multiple project names contain a relationship)',
@@ -1326,14 +1323,15 @@ mocha.describe('test utils file api', function () {
     const filePath: string = '/project/testA/har/src/main/ets/utils/Calc.ets';
     this.rollup.share.projectConfig.rootPathSet = ['/project/test', '/project/testA', '/project/testAB'];
     const projectConfig = this.rollup.share.projectConfig;
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+    const isFileStub = sinon.stub(fileInfoCache, 'fileExists').returns(true);
     const statSyncStub = sinon.stub(fs, 'statSync').returns({
-      isFile: sinon.stub().returns(true)
+      isFile: sinon.stub().returns(true),
+      isDirectory: sinon.stub().returns(false)
     });
     const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
     const expectProjectConfig: string = '/project/testA';
     expect(projectRootPath === expectProjectConfig).to.be.true;
-    existsSyncStub.restore();
+    isFileStub.restore();
     statSyncStub.restore();
   });
 
@@ -1341,8 +1339,15 @@ mocha.describe('test utils file api', function () {
     this.rollup.build();
     const filePath: string = `${PROJECT_ROOT}/${DEFAULT_PROJECT}/har/src/main/ets/utils/Calc.ets`;
     const projectConfig = this.rollup.share.projectConfig;
+    const isFileStub = sinon.stub(fileInfoCache, 'isFile').returns(true);
+    const statSyncStub = sinon.stub(fs, 'statSync').returns({
+      isFile: sinon.stub().returns(true),
+      isDirectory: sinon.stub().returns(false)
+    });
     const projectRootPath: string = getProjectRootPath(filePath, projectConfig, projectConfig.rootPathSet);
     expect(projectRootPath === projectConfig.projectRootPath).to.be.true;
+    isFileStub.restore();
+    statSyncStub.restore();
   });
 
   mocha.it('18-1: test getBelongModuleInfo under build file is local dependency', function () {
