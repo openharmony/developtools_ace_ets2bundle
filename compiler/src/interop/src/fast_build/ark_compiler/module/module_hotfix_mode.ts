@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -74,6 +74,12 @@ export class ModuleHotfixMode extends ModuleMode {
     if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableColumnNum') ||
       this.projectConfig.enableColumnNum) {
       this.cmdArgs.push('--enable-release-column');
+    }
+
+    // Include the function name in call instructions, only available for API24 and above
+    if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableCallableName') ||
+      this.projectConfig.enableCallableName) {
+      this.cmdArgs.push('--enable-callable-name');
     }
 
     this.cmdArgs.push('--merge-abc');
