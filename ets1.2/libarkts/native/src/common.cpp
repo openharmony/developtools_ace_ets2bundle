@@ -30,7 +30,6 @@ constexpr int MAX_ALLOC_SIZE = 1 << 25;
 
 es2panda_Impl* es2pandaImplementation = nullptr;
 static thread_local StageArena g_currentArena;
-static bool g_isLspUsage = false;
 
 StageArena* StageArena::Instance()
 {
@@ -124,8 +123,6 @@ const char* DEFAULT_SDK_PATH = "../../../incremental/tools/panda/node_modules/@p
 
 const char* LIB_ES2PANDA_PUBLIC_ALT = LIB_PREFIX "es2panda-public" LIB_SUFFIX;
 const char* LIB_ES2PANDA_PUBLIC = LIB_PREFIX "es2panda_public" LIB_SUFFIX;
-const char* LIB_ES2PANDA_PUBLIC_ALT_LSP = LIB_PREFIX "es2panda-public-lsp" LIB_SUFFIX;
-const char* LIB_ES2PANDA_PUBLIC_LSP = LIB_PREFIX "es2panda_public_lsp" LIB_SUFFIX;
 const char* IS_UI_FLAG = "IS_UI_FLAG";
 const char* NOT_UI_FLAG = "NOT_UI_FLAG";
 const string MODULE_SUFFIX = ".d.ets";
@@ -158,13 +155,6 @@ void impl_SetUpSoPath(KStringPtr& soPath)
     ES2PANDA_LIB_PATH = std::string(soPath.c_str());
 }
 KOALA_INTEROP_V1(SetUpSoPath, KStringPtr);
-
-void impl_SetLspUsage(KBoolean isLspUsage)
-{
-    g_isLspUsage = isLspUsage;
-    return;
-}
-KOALA_INTEROP_V1(SetLspUsage, KBoolean);
 
 void* TryLibrary(const char* name)
 {
@@ -216,8 +206,7 @@ void* FindLibrary()
         return res;
     }
 
-    const char* libName = g_isLspUsage ? LIB_ES2PANDA_PUBLIC_ALT_LSP : LIB_ES2PANDA_PUBLIC_ALT;
-    res = TryLibrary(libName);
+    res = TryLibrary(LIB_ES2PANDA_PUBLIC_ALT);
     if (res) {
         return res;
     }
@@ -232,9 +221,7 @@ es2panda_Impl* GetImplSlow()
     }
     auto library = FindLibrary();
     if (!library) {
-        const char* libName = g_isLspUsage ? LIB_ES2PANDA_PUBLIC_LSP : LIB_ES2PANDA_PUBLIC;
-        const char* libNameAlt = g_isLspUsage ? LIB_ES2PANDA_PUBLIC_ALT_LSP : LIB_ES2PANDA_PUBLIC_ALT;
-        INTEROP_FATAL("No library (common.cpp): %s and %s", libName, libNameAlt);
+        INTEROP_FATAL("No library (common.cpp): %s and %s", LIB_ES2PANDA_PUBLIC, LIB_ES2PANDA_PUBLIC_ALT);
     }
     auto symbol = findSymbol(library, "es2panda_GetImpl");
     if (!symbol) {
