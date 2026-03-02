@@ -105,7 +105,8 @@ export function etsChecker() {
         compileSdkVersion: projectConfig.compileSdkVersion,
         compatibleSdkVersion: projectConfig.compatibleSdkVersion,
         runtimeOS: projectConfig.runtimeOS,
-        ignoreCrossplatformCheck: projectConfig.ignoreCrossplatformCheck
+        ignoreCrossplatformCheck: projectConfig.ignoreCrossplatformCheck,
+        strictCheckerOnly: projectConfig.strictCheckerOnly
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
