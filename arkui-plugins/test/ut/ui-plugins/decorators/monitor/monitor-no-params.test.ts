@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,23 +15,26 @@
 
 import * as path from 'path';
 import { PluginTester } from '../../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { mockBuildConfig, mockProjectConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
 import { recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
-import { Plugins } from '../../../../../common/plugin-context';
+import { Plugins, ProjectConfig } from '../../../../../common/plugin-context';
 
 const STATE_DIR_PATH: string = 'decorators/monitor';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'monitor-in-struct.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'monitor-no-params.ets'),
 ];
 
-const pluginTester = new PluginTester('test @Monitor decorator in struct transformation', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.compatibleSdkVersion = 24;
+
+const pluginTester = new PluginTester('test @Monitor decorator with compatibleSdkVersion >= 24 and no parameters', buildConfig, projectConfig);
 
 const parsedTransform: Plugins = {
     name: 'parsedTrans',
@@ -40,6 +43,8 @@ const parsedTransform: Plugins = {
 
 const expectedScript: string = `
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
+
+import { IMonitor as IMonitor } from "arkui.stateManagement.decorator";
 
 import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -75,7 +80,6 @@ function main() {}
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
-    this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
     this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([{
       path: "message",
       valueCallback: ((): Any => {
@@ -87,8 +91,22 @@ function main() {}
         return this.name;
       }),
     }], ((_m: IMonitor) => {
-      this.onStrChange(_m);
-    }), this);
+      this.onStrChange();
+    }), {
+      owner: this,
+      functionName: "onStrChange",
+    });
+    this.__monitor_onMsgChange = STATE_MGMT_FACTORY.makeMonitor([{
+      path: "message",
+      valueCallback: ((): Any => {
+        return this.message;
+      }),
+    }], ((_m: IMonitor) => {
+      this.onMsgChange();
+    }), {
+      owner: this,
+      functionName: "onMsgChange",
+    });
   }
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -96,8 +114,8 @@ function main() {}
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
     this.__backing_message!.resetOnReuse("Hello World");
     this.__backing_name!.resetOnReuse("Tom");
-    this.__backing_age!.resetOnReuse(24);
     this.__monitor_onStrChange!.resetOnReuse();
+    this.__monitor_onMsgChange!.resetOnReuse();
   }
 
   private __backing_message?: ILocalDecoratedVariable<string>;
@@ -120,17 +138,9 @@ function main() {}
     this.__backing_name!.set(value);
   }
 
-  private __backing_age?: ILocalDecoratedVariable<number>;
-
-  public get age(): number {
-    return this.__backing_age!.get();
-  }
-
-  public set age(value: number) {
-    this.__backing_age!.set(value);
-  }
-
   private __monitor_onStrChange: (IMonitorDecoratedVariable | undefined);
+
+  private __monitor_onMsgChange: (IMonitorDecoratedVariable | undefined);
 
   @MemoIntrinsic() 
   public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -140,19 +150,20 @@ function main() {}
       sClass: Class.from<Index>(),
     });
   }
-  
+
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
 
   @Monitor({value:["message", "name"]}) 
-  public onStrChange(monitor: IMonitor) {
-    monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_43 = monitor.value(path);
-      (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value(path);
-      (((gensym%%_44) == (null)) ? undefined : gensym%%_44.now)})}\`);
-    }));
+  public onStrChange() {
+    console.info("some string changed");
+  }
+
+  @Monitor({value:["message"]}) 
+  public onMsgChange() {
+    console.info("message changed");
   }
 
   @Memo() 
@@ -186,10 +197,6 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_name', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_name', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'age', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_age', '(ILocalDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_age', '(boolean | undefined)')}
-  
 }
 `;
 
@@ -198,7 +205,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test @Monitor decorator in struct transformation',
+    'test @Monitor decorator with no parameters',
     [parsedTransform, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
