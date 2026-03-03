@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "package": "interop",
+        "outDir": "./build/test-abc",
+        "baseUrl": "./test/arkts",
+        "paths": {
+            "@koalaui/interop": ["../../src/arkts"],
+            "@koalaui/compat": ["../../../compat/src/arkts"],
+            "@koalaui/common": ["../../../common/src"]
+        }
+    },
+    "include": ["./test/arkts/*.ts"]
+}

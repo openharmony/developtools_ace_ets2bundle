@@ -18,6 +18,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { UISyntaxRuleContext, FixSuggestion } from '../rules/ui-syntax-rule';
 import { ProjectConfig } from 'common/plugin-context';
+import { FileManager } from '../../common/file-manager';
+import { LANGUAGE_VERSION } from '../../common/predefines';
 
 export const EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
     'std',
@@ -102,6 +104,7 @@ export const PresetDecorators = {
     CONSUMER: 'Consumer',
     CUSTOM_DIALOG: 'CustomDialog',
     ENTRY: 'Entry',
+    ENV: 'Env',
     EVENT: 'Event',
     PREVIEW: 'Preview',
     STATE: 'State',
@@ -731,3 +734,37 @@ export function addImportFixes(
         }
     });
 }
+
+export function isComponentBuilder(node: arkts.MemberExpression): boolean {
+    const property = node.property;
+    if (!arkts.isIdentifier(property)) {
+        return false;
+    }
+    const propertyName: string = property.name;
+    if (propertyName !== $_INVOKE) {
+        return false;
+    }
+    const symbol: arkts.AstNode | undefined = arkts.getDecl(property);
+    if (!symbol || !arkts.isMethodDefinition(symbol)) {
+        return false;
+    }
+    return symbol.scriptFunction.annotations.some(annotation => {
+        return annotation.expr && arkts.isIdentifier(annotation.expr) &&
+            annotation.expr.name === COMPONENT_BUILDER;
+    }) || isDynStruct(symbol);
+}
+
+export function isDynStruct(symbol: arkts.AstNode): boolean {
+    const fileManager: FileManager = FileManager.getInstance();
+    const path: string = arkts.getProgramFromAstNode(symbol)?.absName;
+    const version: string = LANGUAGE_VERSION.ARKTS_1_1;
+    return fileManager.getLanguageVersionByFilePath(path) === version;
+}
+
+export const ENV_TYPE_ARG_MAP: Map<string, string> = new Map([
+  ['WindowSizeLayoutBreakpointInfo', 'SystemProperties.BREAK_POINT'],
+  ['UIEnvWindowAvoidAreaInfoVP', 'SystemProperties.WINDOW_AVOID_AREA'],
+  ['UIEnvWindowAvoidAreaInfoPX', 'SystemProperties.WINDOW_AVOID_AREA_PX'],
+  ['SizeInVP', 'SystemProperties.WINDOW_SIZE'],
+  ['Size', 'SystemProperties.WINDOW_SIZE_PX']
+]);

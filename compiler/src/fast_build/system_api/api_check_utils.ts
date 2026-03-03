@@ -368,6 +368,228 @@ export function isCardFile(file: string): boolean {
 const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig>> = new Map<string, Map<string, ts.JsDocNodeCheckConfig>>();
 const availableNodeCheckConfigCache: Map<string, string> = new Map<string, string>();
 let permissionsArray: string[] = [];
+
+/**
+ * get find find module check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const cannotFindNameConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [],
+    message: FIND_MODULE_WARNING,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: true
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(cannotFindNameConfig));
+}
+
+/**
+ * get available check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
+ * @returns {void}
+ */
+function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+  const availableConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [SINCE_TAG_NAME],
+    message: SINCE_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: true,
+    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
+    checkJsDocSuppressorValidCallback: checkAvailableDecorator
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(availableConfig));
+}
+
+/**
+ * get deprecated check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getDeprecatedCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const deprecatedConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [DEPRECATED_TAG_CHECK_NAME],
+    message: DEPRECATED_TAG_CHECK_WARNING,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(deprecatedConfig));
+}
+
+/**
+ * get system api check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const systemApiConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [SYSTEM_API_TAG_CHECK_NAME],
+    message: SYSTEM_API_TAG_CHECK_WARNING,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(systemApiConfig));
+}
+
+/**
+ * get since check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
+ * @returns {void}
+ */
+function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+  const sinceConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [SINCE_TAG_NAME],
+    message: SINCE_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false,
+    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
+    checkJsDocSuppressorValidCallback: checkSinceValue
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(sinceConfig));
+}
+
+/**
+ * get syscap check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
+ * @returns {void}
+ */
+function getSyscapCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+  const syscapConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [SYSCAP_TAG_CHECK_NAME],
+    message: SYSCAP_TAG_CHECK_WARNING,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false,
+    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
+    checkJsDocSuppressorValidCallback: checkSyscapAbility
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(syscapConfig));
+}
+
+/**
+ * get test check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const testConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [TEST_TAG_CHECK_NAME],
+    message: TEST_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(testConfig));
+}
+
+/**
+ * get permission check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
+ * @returns {void}
+ */
+function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+  const permissionConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [PERMISSION_TAG_CHECK_NAME],
+    message: PERMISSION_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false,
+    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
+    checkJsDocSuppressorValidCallback: checkPermissionValue
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
+}
+
+/**
+ * get form check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const formConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [FORM_TAG_CHECK_NAME],
+    message: FORM_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error,
+    tagNameShouldExisted: true
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(formConfig));
+}
+
+/**
+ * get crossplatform check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @param {ts.DiagnosticCategory} logType - diagnostic category
+ * @returns {void}
+ */
+function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], logType: ts.DiagnosticCategory): void {
+  const crossplatformConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [CROSSPLATFORM_TAG_CHECK_NAME],
+    message: CROSSPLATFORM_TAG_CHECK_ERROR,
+    type: logType,
+    tagNameShouldExisted: true
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
+}
+
+/**
+ * get FA module check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const faModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
+    message: FA_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error,
+    tagNameShouldExisted: false
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(faModelOnlyConfig));
+}
+
+/**
+ * get stage module check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const stageModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
+    message: STAGE_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error,
+    tagNameShouldExisted: false
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(stageModelOnlyConfig));
+}
+
+/**
+ * get atomicservice check config
+ *
+ * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
+ * @returns {void}
+ */
+function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const atomicserviceConfig: JsDocNodeCheckConfigItemInterface = {
+    tagName: [ATOMICSERVICE_TAG_CHECK_NAME],
+    message: ATOMICSERVICE_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error,
+    tagNameShouldExisted: true
+  }
+  checkConfigArray.push(getJsDocNodeCheckConfigItem(atomicserviceConfig));
+}
+
 /**
  * get tagName where need to be determined based on the file path
  *
@@ -398,13 +620,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   initComparisonFunctions();
   if (/(?<!\.d)\.ts$/g.test(fileName) && isArkuiDependence(sourceFileName) &&
     sourceBaseName !== 'common_ts_ets_api.d.ts' && sourceBaseName !== 'global.d.ts') {
-    const cannotFindNameConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [],
-      message: FIND_MODULE_WARNING,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: true
-    }
-    checkConfigArray.push(getJsDocNodeCheckConfigItem(cannotFindNameConfig));
+    getFindModuleCheckConfig(checkConfigArray);
   }
   if (systemModules.includes(apiName)) {
     byFileName.set(sourceFileName, result);
@@ -413,128 +629,48 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   if (checkFileHasAvailableByFileName(sourceFileName)) {
     needCheckResult = true;
-    const availableConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [SINCE_TAG_NAME],
-      message: SINCE_TAG_CHECK_ERROR,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: true,
-      timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
-      checkJsDocSuppressorValidCallback: checkAvailableDecorator
-    }
-    checkConfigArray.push(getJsDocNodeCheckConfigItem(availableConfig));
+    getAvailableCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
   } else if (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
     permissionsArray = projectConfig.requestPermissions;
-    const deprecatedConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [DEPRECATED_TAG_CHECK_NAME],
-      message: DEPRECATED_TAG_CHECK_WARNING,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: false
-    }
-    checkConfigArray.push(getJsDocNodeCheckConfigItem(deprecatedConfig));
-    const systemApiConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [SYSTEM_API_TAG_CHECK_NAME],
-      message: SYSTEM_API_TAG_CHECK_WARNING,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: false
-    }
-    checkConfigArray.push(getJsDocNodeCheckConfigItem(systemApiConfig));
+    getDeprecatedCheckConfig(checkConfigArray);
+    getSystemApiCheckConfig(checkConfigArray);
     if (sourceBaseName !== AVAILABLE_FILE_NAME) {
-      const sinceConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [SINCE_TAG_NAME],
-        message: SINCE_TAG_CHECK_ERROR,
-        type: ts.DiagnosticCategory.Warning,
-        tagNameShouldExisted: false,
-        timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
-        checkJsDocSuppressorValidCallback: checkSinceValue
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(sinceConfig));
+      getSinceCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
     }
     // TODO: the third param is to be opened
     if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
-      const syscapConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [SYSCAP_TAG_CHECK_NAME],
-        message: SYSCAP_TAG_CHECK_WARNING,
-        type: ts.DiagnosticCategory.Warning,
-        tagNameShouldExisted: false,
-        timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
-        checkJsDocSuppressorValidCallback: checkSyscapAbility
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(syscapConfig));
+      getSyscapCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
     }
     if (projectConfig.projectRootPath && projectConfig.modulePath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.modulePath, 'src', 'ohosTest'));
       // TODO:fix error type in the feature
       if (!ts.sys.resolvePath(fileName).startsWith(ohosTestDir)) {
         permissionsArray = projectConfig.requestPermissions;
-        const testConfig: JsDocNodeCheckConfigItemInterface = {
-          tagName: [TEST_TAG_CHECK_NAME],
-          message: TEST_TAG_CHECK_ERROR,
-          type: ts.DiagnosticCategory.Warning,
-          tagNameShouldExisted: false
-        }
-        checkConfigArray.push(getJsDocNodeCheckConfigItem(testConfig));
+        getTestCheckConfig(checkConfigArray);
       }
     }
-    const permissionConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [PERMISSION_TAG_CHECK_NAME],
-      message: PERMISSION_TAG_CHECK_ERROR,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: false,
-      timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
-      checkJsDocSuppressorValidCallback: checkPermissionValue
-    }
-    checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
+    getPermissionCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
     if (isCardFile(fileName)) {
       needCheckResult = true;
-      const formConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [FORM_TAG_CHECK_NAME],
-        message: FORM_TAG_CHECK_ERROR,
-        type: ts.DiagnosticCategory.Error,
-        tagNameShouldExisted: true
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(formConfig));
+      getFormCheckConfig(checkConfigArray);
     }
     if (projectConfig.isCrossplatform) {
       needCheckResult = true;
       const logType: ts.DiagnosticCategory = projectConfig.ignoreCrossplatformCheck !== true ? ts.DiagnosticCategory.Error :
         ts.DiagnosticCategory.Warning;
-      const crossplatformConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [CROSSPLATFORM_TAG_CHECK_NAME],
-        message: CROSSPLATFORM_TAG_CHECK_ERROR,
-        type: logType,
-        tagNameShouldExisted: true
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
+      getCrossplatformCheckConfig(checkConfigArray, logType);
     }
     if (process.env.compileMode === STAGE_COMPILE_MODE) {
       needCheckResult = true;
-      const faModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-        message: FA_TAG_CHECK_ERROR,
-        type: ts.DiagnosticCategory.Error,
-        tagNameShouldExisted: false
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(faModelOnlyConfig));
+      getFAModuleCheckConfig(checkConfigArray);
     } else if (process.env.compileMode !== '') {
       needCheckResult = true;
-      const stageModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
-        message: STAGE_TAG_CHECK_ERROR,
-        type: ts.DiagnosticCategory.Error,
-        tagNameShouldExisted: false
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(stageModelOnlyConfig));
+      getStageModuleCheckConfig(checkConfigArray);
     }
     if (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE &&
       projectConfig.compileSdkVersion >= ATOMICSERVICE_TAG_CHECK_VERSION) {
       needCheckResult = true;
-      const atomicserviceConfig: JsDocNodeCheckConfigItemInterface = {
-        tagName: [ATOMICSERVICE_TAG_CHECK_NAME],
-        message: ATOMICSERVICE_TAG_CHECK_ERROR,
-        type: ts.DiagnosticCategory.Error,
-        tagNameShouldExisted: true
-      }
-      checkConfigArray.push(getJsDocNodeCheckConfigItem(atomicserviceConfig));
+      getAtomicserviceCheckConfig(checkConfigArray);
     }
   }
   result = {
@@ -1317,7 +1453,10 @@ function checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncN
     if (ts.isStringLiteral(expression) && tagValue === expression.text) {
       return true;
     } else if (ts.isIdentifier(expression)) {
-      const typeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker();
+      const typeChecker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+      if (!typeChecker) {
+        return false;
+      }
       const arguSymbol: ts.Symbol | undefined = typeChecker.getSymbolAtLocation(expression);
       return arguSymbol && arguSymbol.valueDeclaration && ts.isVariableDeclaration(arguSymbol.valueDeclaration) &&
         arguSymbol.valueDeclaration.initializer && ts.isStringLiteral(arguSymbol.valueDeclaration.initializer) &&

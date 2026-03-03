@@ -130,6 +130,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.strictCheckerOnly = false;
   projectConfig.isolatedDeclarations = false;
   projectConfig.noCheck = false;
 }
@@ -658,9 +659,9 @@ function loadBuildJson() {
   if (!!aceBuildJson.byteCodeHar) {
     projectConfig.useTsHar = true;
   }
-  if (!!aceBuildJson.customizedHar) {
-    projectConfig.customizedHar = true;
-  }
+
+  projectConfig.customizedHar = !!aceBuildJson.customizedHar;
+
   if (aceBuildJson.updateVersionInfo) {
     projectConfig.updateVersionInfo = aceBuildJson.updateVersionInfo;
   }
@@ -1262,6 +1263,7 @@ function resetProjectConfig() {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.strictCheckerOnly = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',

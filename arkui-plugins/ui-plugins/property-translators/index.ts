@@ -44,6 +44,7 @@ import { EventInterfaceTranslator, EventTranslator } from './event';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
 import { EnvTranslator, EnvInterfaceTranslator } from './env';
+import { ComponentLifecycleTranslator } from './componentLifecycle';
 
 export { PropertyTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
@@ -261,6 +262,14 @@ export function classifyMethod(
     }
     if (hasDecorator(member, DecoratorNames.MONITOR)) {
         return new MonitorTranslator(member, { isFromStruct, className });
+    }
+    if (hasDecorator(member, DecoratorNames.COMPONENT_INIT) ||
+        hasDecorator(member, DecoratorNames.COMPONENT_APPEAR) ||
+        hasDecorator(member, DecoratorNames.COMPONENT_BUILT) ||
+        hasDecorator(member, DecoratorNames.COMPONENT_DISAPPEAR) ||
+        hasDecorator(member, DecoratorNames.COMPONENT_REUSE) ||
+        hasDecorator(member, DecoratorNames.COMPONENT_RECYCLE)) {
+        return new ComponentLifecycleTranslator(member, { isFromStruct, className });
     }
     return undefined;
 }
