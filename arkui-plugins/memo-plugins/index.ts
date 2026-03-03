@@ -32,6 +32,7 @@ export function unmemoizeTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
+            PositionalIdTracker.clear();
         },
     };
 }

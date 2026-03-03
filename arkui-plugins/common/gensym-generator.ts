@@ -57,4 +57,8 @@ export class GenSymGenerator {
         // compiler use gensym%%_ but % is illegal before after-check phase
         return `gensym___${coreceToStr}`;
     }
+
+    static clear(): void {
+        GenSymGenerator.callCount = 0;
+    }
 }
