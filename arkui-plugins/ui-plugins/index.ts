@@ -22,6 +22,7 @@ import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugLog, getDumpFileName } from '../common/debug';
 import { ProgramSkipper } from '../common/program-skipper';
 import { MetaDataCollector } from '../common/metadata-collector';
+import { GenSymGenerator } from '../common/gensym-generator';
 
 export function uiTransform(): Plugins {
     return {
@@ -30,6 +31,7 @@ export function uiTransform(): Plugins {
         checked: checkedTransform,
         clean() {
             ProgramSkipper.clear();
+            GenSymGenerator.clear();
         },
     };
 }
