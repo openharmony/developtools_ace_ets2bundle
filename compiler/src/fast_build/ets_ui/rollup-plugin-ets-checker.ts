@@ -104,6 +104,9 @@ export function etsChecker() {
       const rootFileNames: string[] = [];
       const resolveModulePaths: string[] = [];
       rootFileNamesCollect(rootFileNames);
+      const rootFileNamesEventName: string = `rootFileNamesCollectFinished${rootFileNames?.length ?? 0}`;
+      const rootFileNamesEvent = createAndStartEvent(eventServiceChecker, rootFileNamesEventName);
+      stopEvent(rootFileNamesEvent);
       if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);
