@@ -795,12 +795,12 @@ export class ModuleMode extends CommonMode {
           stopEvent(eventGenAbc, true);
           this.processAotIfNeeded();
           processExternalEvents(this.projectConfig, ExternalEventType.ES2ABC, { parentEvent: eventGenAbc, filePath: this.perfReportPath });
-          BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().execute(this.moduleInfos);
 
           if (this.beforeObfuscate) {
             await this.beforeObfuscate(this.moduleAbcPath , {isArkGuardEnabled: this.isArkguardEnabled});
           }
 
+          BytecodeObfuscator.enable && BytecodeObfuscator.getInstance().execute(this.moduleInfos);
           this.triggerEndSignal();
           return;
         }

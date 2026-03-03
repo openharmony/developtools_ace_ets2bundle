@@ -14,6 +14,7 @@
  */
 import path from 'path';
 import fs from 'fs';
+import { printObfLogger } from '../common/ob_config_resolver';
 
 const CLASS_DECLARATION_KEYWORDS = [
   /\bpackage\b/,
@@ -167,7 +168,8 @@ function createProcessLineResult(
   return { skipUntilDirective, pendingNameCacheLine, pendingKeepLine, output };
 }
 
-function processObfuscationRuleLine(line: string, configDir: string, skipUntilDirective: boolean, pendingNameCacheLine: string, pendingKeepLine: string): ProcessLineResult {
+function processObfuscationRuleLine(line: string, configDir: string,
+  skipUntilDirective: boolean, pendingNameCacheLine: string, pendingKeepLine: string): ProcessLineResult {
   const effectiveLine = line.trimStart();
   const isNewDirective = effectiveLine.startsWith('-');
   const combinedLine = pendingNameCacheLine ? `${pendingNameCacheLine} ${effectiveLine}` : effectiveLine;
@@ -208,7 +210,8 @@ function handleEmptyLine(effectiveLine: string, originalLine: string, pendingKee
   return null;
 }
 
-function handlePendingKeepLineWithNewDirective(effectiveLine: string, pendingKeepLine: string, isNewDirective: boolean, configDir: string, originalLine: string): ProcessLineResult {
+function handlePendingKeepLineWithNewDirective(effectiveLine: string, pendingKeepLine: string,
+  isNewDirective: boolean, configDir: string, originalLine: string): ProcessLineResult {
   const result = handlePendingKeepLine(effectiveLine, pendingKeepLine, isNewDirective);
   
   if (isNewDirective && !result.pendingKeepLine) {
@@ -444,6 +447,59 @@ function isRelativePath(line: string): boolean {
   }
   
   return false;
+}
+
+export async function mergeNameCache(dynamicObfPath: string, staticObfPath: string): Promise<void> {
+  const dynamicObfConfigPath = path.join(dynamicObfPath, 'config.json');
+  const staticObfConfigPath = path.join(staticObfPath, 'config.json');
+  
+  if (!fs.existsSync(dynamicObfConfigPath) || !fs.existsSync(staticObfConfigPath)) {
+    return;
+  }
+
+  try {
+    await doMergeNameCache(dynamicObfConfigPath, staticObfConfigPath);
+  } catch (error) {
+    handleMergeError(error as Error);
+  }
+}
+
+async function doMergeNameCache(dynamicConfigPath: string, staticConfigPath: string): Promise<void> {
+  const dynamicConfig = JSON.parse(fs.readFileSync(dynamicConfigPath, 'utf8'));
+  const staticConfig = JSON.parse(fs.readFileSync(staticConfigPath, 'utf8'));
+  
+  const printNameCachePath = dynamicConfig.obfuscationRules?.printNameCache;
+  if (dynamicConfig.obfuscationRules?.disableObfuscation || 
+      staticConfig.obfuscationRules?.disableObfuscation || 
+      !printNameCachePath) {
+    return;
+  }
+
+  const dynamicCachePath = dynamicConfig.defaultNameCachePath;
+  const staticCachePath = staticConfig.defaultNameCachePath;
+  if (!fs.existsSync(dynamicCachePath) || !fs.existsSync(staticCachePath)) {
+    return;
+  }
+
+  const dynamicCache = JSON.parse(fs.readFileSync(dynamicCachePath, 'utf8'));
+  const staticCache = JSON.parse(fs.readFileSync(staticCachePath, 'utf8'));
+  const mergedResult = { ...staticCache, ...dynamicCache };
+
+  fs.writeFileSync(printNameCachePath, JSON.stringify(mergedResult, (key, value) => {
+    return value instanceof Set ? Array.from(value) : value;
+  }, 2), 'utf8');
+}
+
+function handleMergeError(error: Error): void {
+  const errorInfo = `Failed to merge name cache. Error message: ${error.message}`;
+  const errorCodeInfo = {
+    code: '10804001',
+    description: 'ArkTS compiler Error',
+    cause: error.message,
+    position: '',
+    solutions: ['Please check if config files and cache files exist.']
+  };
+  printObfLogger(errorInfo, errorCodeInfo, 'error');
 }
 
 export const utProcessObfConfig = {

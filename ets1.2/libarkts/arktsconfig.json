@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+	    "package": "test",
+        "outDir": "./build/abc",
+        "baseUrl": "."
+    },
+    "plugins": {
+        "printer": "./lib/plugins/printer-plugin.js",
+        "printer2": "./lib/plugins/printer-plugin.js"
+    },
+    "include": ["./plugins/input/main.ets", "./plugins/input/library.ets"]
+}

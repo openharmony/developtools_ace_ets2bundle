@@ -1173,7 +1173,10 @@ function checkSyscapConditionValidCallback(node: ts.CallExpression, specifyFuncN
     if (ts.isStringLiteral(expression) && tagValue === expression.text) {
       return true;
     } else if (ts.isIdentifier(expression)) {
-      const typeChecker: ts.TypeChecker = globalProgram.program.getTypeChecker();
+      const typeChecker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+      if (!typeChecker) {
+        return false;
+      }
       const arguSymbol: ts.Symbol | undefined = typeChecker.getSymbolAtLocation(expression);
       return arguSymbol && arguSymbol.valueDeclaration && ts.isVariableDeclaration(arguSymbol.valueDeclaration) &&
         arguSymbol.valueDeclaration.initializer && ts.isStringLiteral(arguSymbol.valueDeclaration.initializer) &&
