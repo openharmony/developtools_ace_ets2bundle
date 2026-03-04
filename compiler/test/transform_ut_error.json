@@ -3,13 +3,17 @@
         "message": "The '@Link' property cannot be specified a default value.",
         "type": "ERROR",
         "code": "10905304",
-        "solutions": ["Please initialize the rules according to the decorator."]
+        "solutions": [
+            "Please initialize the rules according to the decorator."
+        ]
     },
     "@objectLinkInitialize": {
         "message": "The '@ObjectLink' property cannot be specified a default value.",
         "type": "ERROR",
         "code": "10905304",
-        "solutions": ["Please initialize the rules according to the decorator."]
+        "solutions": [
+            "Please initialize the rules according to the decorator."
+        ]
     },
     "rootContainerCheck": {
         "message": "In an '@Entry' decorated component, the 'build' method can have only one root node, which must be a container component.",
@@ -91,7 +95,9 @@
         "message": "The struct 'ValidateBuildMethodCountIndex' must have at least and at most one 'build' method.",
         "type": "ERROR",
         "code": "10905103",
-        "solutions": ["A structurally modified page must have at least one and no more than one 'build' method."]
+        "solutions": [
+            "A structurally modified page must have at least one and no more than one 'build' method."
+        ]
     },
     "validateHasController": {
         "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
@@ -122,7 +128,9 @@
         "message": "The '@Link' property cannot be specified a default value.",
         "type": "ERROR",
         "code": "10905304",
-        "solutions": ["Please initialize the rules according to the decorator."]
+        "solutions": [
+            "Please initialize the rules according to the decorator."
+        ]
     },
     "validatePropertyNonType": {
         "message": "The property 'message' must specify a type.",
@@ -162,13 +170,17 @@
             "message": "The '@Link' property cannot be specified a default value.",
             "type": "ERROR",
             "code": "10905304",
-            "solutions": ["Please initialize the rules according to the decorator."]
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
         },
         {
             "message": "The '@ObjectLink' property cannot be specified a default value.",
             "type": "ERROR",
             "code": "10905304",
-            "solutions": ["Please initialize the rules according to the decorator."]
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
         }
     ],
     "validateCustomDecorator": {
@@ -995,7 +1007,9 @@
             "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
             "type": "ERROR",
             "code": "10905402",
-            "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
         }
     ],
     "notConcurrent": [
@@ -1264,7 +1278,7 @@
         "code": "10903329"
     },
     "NotSupportResrcType": {
-        "message": "The resource type 'font' is not supported.",    
+        "message": "The resource type 'font' is not supported.",
         "type": "ERROR",
         "code": "10906334"
     },
@@ -1311,7 +1325,9 @@
             "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
             "type": "ERROR",
             "code": "10905402",
-            "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
         }
     ],
     "extendAttributeDuplicate": [
@@ -1348,7 +1364,9 @@
         "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
         "type": "ERROR",
         "code": "10905402",
-        "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
+        "solutions": [
+            "Please make sure that the splash page has one and only one '@Entry' decorator."
+        ]
     },
     "notMethodDeco": {
         "message": "'@State' can not decorate the method.",
@@ -2385,7 +2403,7 @@
         },
         {
             "message": "A custom component decorated with '@Component' cannot contain child components decorated with '@ReusableV2'.",
-            "type": "ERROR", 
+            "type": "ERROR",
             "code": "10905244"
         },
         {
@@ -3532,5 +3550,180 @@
             "type": "ERROR",
             "code": "10905367"
         }
-  ]
+    ],
+    "observedInheritanceConflicts": [
+        {
+            "message": "A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.",
+            "type": "ERROR",
+            "code": "10905226"
+        }
+    ],
+    "structValidationErrors": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'StructWithoutComponentDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'AnotherStructWithoutDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        }
+    ],
+    "resourceValidationErrors": [
+        {
+            "message": "Unknown resource source 'unknown'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource source 'invalid'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource source 'wrong'.",
+            "type": "ERROR",
+            "code": "10903331"
+        }
+    ],
+    "decoratorUsageRestrictions": [
+        {
+            "message": "The property 'message' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        },
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        }
+    ],
+    "componentMemberErrors": [
+        {
+            "message": "Regular variable 'regularVar' can not be decorated with '@Watch'.",
+            "type": "ERROR",
+            "code": "10905310"
+        },
+        {
+            "message": "Regular variable 'anotherVar' can not be decorated with '@Watch'.",
+            "type": "ERROR",
+            "code": "10905310"
+        }
+    ],
+    "uiBuildErrors": [
+        {
+            "message": "The Button component with a label parameter can not have any child.",
+            "type": "ERROR",
+            "code": "10905202"
+        }
+    ],
+    "structNamingErrors": [
+        {
+            "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
+            "type": "ERROR",
+            "code": "10905227"
+        }
+    ],
+    "v2SpecificErrors": [
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        }
+    ],
+    "envDecoratorErrors": [
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        }
+    ],
+    "v1V2Incompatibility": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
+    ]
 }
