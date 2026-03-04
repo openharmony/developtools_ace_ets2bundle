@@ -467,7 +467,7 @@ export function validateInteropProperty(node: ts.CallExpression,
 
 function handleV1ParentWithV2Child(node: ts.CallExpression, parentStructName: string,
   info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
-  if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
+  if (info.parentStructInfo.isComponentV1 && info.childStructInfo.isComponentV2) {
     let childName = '';
     if (ts.isIdentifier(node.expression)) {
       childName = node.expression.escapedText.toString();
@@ -485,7 +485,7 @@ function handleV1ParentWithV2Child(node: ts.CallExpression, parentStructName: st
 
 function handleV2ParentWithV1Child(node: ts.CallExpression, parentStructName: string,
   info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
-  if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
+  if (info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV1) {
     let childName = '';
     if (ts.isIdentifier(node.expression)) {
       childName = node.expression.escapedText.toString();
