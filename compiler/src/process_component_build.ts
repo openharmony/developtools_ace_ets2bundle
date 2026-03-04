@@ -857,8 +857,7 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
-  } else if (partialUpdateConfig.partialUpdateMode && (TabContentAndNavDestination.has(nameResult.name) ||
-    (isCompatibleVersionOver20() && !!EXT_WHITE_LIST[1] && EXT_WHITE_LIST[1] === nameResult.name))) {
+  } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
     processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
@@ -3686,9 +3685,7 @@ function navigationCreateParam(compName: string, type: string,
       ));
     }
   }
-  if ((CREATE_ROUTER_COMPONENT_COLLECT.has(compName) ||
-    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName))) &&
-    isCreate && partialUpdateMode) {
+  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       navigationOrNavDestinationCreateContent(compName, isHaveParam),
       false
@@ -3761,17 +3758,11 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  if (!isCompatibleVersionOver20()) {
-    return false;
-  }
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  if (!isCompatibleVersionOver20()) {
-    return false;
-  }
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
 }
 
 export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
@@ -3868,16 +3859,6 @@ function isMutableBuilderCallExpression(node: ts.CallExpression): boolean {
 function isMutableBuilderExpression(node: ts.ExpressionStatement): boolean {
   if (node.expression &&
     isMutableBuilderCallExpression(node.expression as ts.CallExpression)) {
-    return true;
-  }
-  return false;
-}
-
-function isCompatibleVersionOver20(): boolean {
-  const COMPATIBLE_SDK_VERSION = 20;
-  if (projectConfig &&
-    projectConfig.compatibleSdkVersion &&
-    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION) {
     return true;
   }
   return false;
