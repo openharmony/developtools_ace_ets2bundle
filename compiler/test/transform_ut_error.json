@@ -3725,5 +3725,114 @@
             "type": "ERROR",
             "code": "10905339"
         }
+    ],
+    "builderParamInitError": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "stylesWithArgsError": [
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905105"
+        },
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905105"
+        }
+    ],
+    "builderParamTypeError": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "consumeWithoutProvide": [],
+    "provideConsumeTypeMismatch": [],
+    "builderRestrictionError": [],
+    "consumeInitError": [],
+    "customDialogOnNonStruct": [
+        {
+            "message": "The '@CustomDialog' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@CustomDialog' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@CustomDialog' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        }
+    ],
+    "previewUsageError": [
+        {
+            "message": "The '@Preview' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Preview' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Preview' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        }
+    ],
+    "structNameIdentifierError": [],
+    "reusableConflictError": [
+        {
+            "message": "The struct 'ReusableConflict' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        },
+        {
+            "message": "The '@Reusable' and '@ReusableV2' decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
+        },
+        {
+            "message": "'@ReusableV2' is only applicable to custom components decorated by '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905242"
+        },
+        {
+            "message": "The '@Reusable' and '@ReusableV2' decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
+        }
+    ],
+    "reusableV2RestrictionError": [
+        {
+            "message": "'@ReusableV2' is only applicable to custom components decorated by '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905242"
+        },
+        {
+            "message": "'@ReusableV2' is only applicable to custom components decorated by '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905242"
+        }
     ]
 }
