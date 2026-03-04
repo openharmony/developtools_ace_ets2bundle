@@ -43,7 +43,7 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_FORM
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
-import { LogInfo, LogType } from '../utils';
+import { LogInfo, LogType, CurrentProcessFile } from '../utils';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
 
@@ -123,7 +123,7 @@ class ParseIntent {
       });
     }
     if (this.hasDecorator(node, definedDecorators)) {
-      const checker: TypeChecker = metaInfo.checker;
+      const checker: TypeChecker = CurrentProcessFile.getChecker();
       this.handleIntent(node, checker, filePath, metaInfo);
       node = this.removeDecorator(node, definedDecorators.concat(COMPONENT_USER_INTENTS_DECORATOR_METHOD));
     }
@@ -813,7 +813,7 @@ class ParseIntent {
   }
 
   private processProperty(prop: ts.Symbol, intentName: string): Record<string, string> {
-    const propType: ts.Type = this.checker.getTypeOfSymbol(prop);
+    const propType: ts.Type = this.checker.getNonNullableType(this.checker.getTypeOfSymbol(prop));
     const { category } = this.getTypeCategory(propType);
     const obj: Record<string, string> = {};
     const propName: string = prop.getName();
