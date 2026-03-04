@@ -1017,6 +1017,10 @@ export class Es2pandaNativeModule {
     ): KNativePointer {
         throw new Error('LogDiagnosticWithSuggestions was not overloaded by native module initialization');
     }
+
+    _ExtractDeclarationsFromAbcFile(abcFile: string, cacheDir: string): KInt {
+        throw new Error('Not implemented');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
