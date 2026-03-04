@@ -361,7 +361,18 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validateLazyForEachParser',
   'Decorators/vaildate_ui_syntax/validateStaticBlock',
   'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithDecorator',
-  'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithV1Decorator'
+  'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithV1Decorator',
+  // Supplementary validation test cases for uncovered error codes
+  'Decorators/supplementary_validation/observedInheritanceConflicts',
+  'Decorators/supplementary_validation/structValidationErrors',
+  'Decorators/supplementary_validation/resourceValidationErrors',
+  'Decorators/supplementary_validation/decoratorUsageRestrictions',
+  'Decorators/supplementary_validation/componentMemberErrors',
+  'Decorators/supplementary_validation/uiBuildErrors',
+  'Decorators/supplementary_validation/structNamingErrors',
+  'Decorators/supplementary_validation/v2SpecificErrors',
+  'Decorators/supplementary_validation/envDecoratorErrors',
+  'Decorators/supplementary_validation/v1V2Incompatibility'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
