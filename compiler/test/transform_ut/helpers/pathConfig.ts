@@ -372,7 +372,21 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/structNamingErrors',
   'Decorators/supplementary_validation/v2SpecificErrors',
   'Decorators/supplementary_validation/envDecoratorErrors',
-  'Decorators/supplementary_validation/v1V2Incompatibility'
+  'Decorators/supplementary_validation/v1V2Incompatibility',
+  // New supplementary validation test cases for additional error codes
+  'Decorators/supplementary_validation/builderParamInitError',
+  'Decorators/supplementary_validation/stylesWithArgsError',
+  'Decorators/supplementary_validation/builderParamTypeError',
+  'Decorators/supplementary_validation/consumeWithoutProvide',
+  'Decorators/supplementary_validation/customDialogOnNonStruct',
+  'Decorators/supplementary_validation/provideConsumeTypeMismatch',
+  'Decorators/supplementary_validation/previewUsageError',
+  'Decorators/supplementary_validation/builderRestrictionError',
+  'Decorators/supplementary_validation/consumeInitError',
+  'Decorators/supplementary_validation/structNameIdentifierError',
+  // Additional test cases for @Reusable decorators
+  'Decorators/supplementary_validation/reusableConflictError',
+  'Decorators/supplementary_validation/reusableV2RestrictionError'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
