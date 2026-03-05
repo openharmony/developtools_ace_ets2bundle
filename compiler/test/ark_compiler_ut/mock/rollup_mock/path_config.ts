@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -76,6 +76,7 @@ export const ENABLE_ABC_INPUT: string ="--enable-abc-input";
 export const CACHE_FILE: string ="--cache-file";
 export const SIMBOL_TABLE: string ="--dump-symbol-table";
 export const ENABLE_RELEASE_COLUMN: string ="--enable-release-column";
+export const ENABLE_CALLABLE_NAME: string ="--enable-callable-name";
 export const TARGET_API_VERSION: string = "--target-api-version=";
 export const ARKCONFIG_TS2ABC_PATH: string = 'bin/ark/build/legacy_api8/src/index.js';
 

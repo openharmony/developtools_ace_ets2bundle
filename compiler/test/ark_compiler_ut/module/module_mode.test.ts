@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1741,6 +1741,15 @@ mocha.describe('test module_mode file api', function () {
     moduleMode.generateEs2AbcCmd();
 
     expect(moduleMode.cmdArgs.includes('--enable-release-column')).to.be.true;
+  });
+
+  mocha.it('10-6: test generateEs2AbcCmd with enable callable name', function () {
+    this.rollup.build();
+    this.rollup.share.projectConfig.enableCallableName = true;
+    const moduleMode = new ModuleHotreloadMode(this.rollup);
+    moduleMode.generateEs2AbcCmd();
+
+    expect(moduleMode.cmdArgs.includes('--enable-callable-name')).to.be.true;
   });
 
   mocha.it('11-1: test addCacheFileArgs under build debug', function () {
