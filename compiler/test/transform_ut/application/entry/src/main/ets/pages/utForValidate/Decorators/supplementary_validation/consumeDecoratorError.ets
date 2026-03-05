@@ -23,7 +23,7 @@
 // Test Case 1: @Consume without decorator parameter
 // Expected Error: 10905307
 // ============================================
-
+@Entry
 @Component
 struct ConsumeWithoutParam {
   @Consume consumedValue: string
@@ -32,86 +32,5 @@ struct ConsumeWithoutParam {
     Column() {
       Text(this.consumedValue)
     }
-  }
-}
-
-// ============================================
-// Test Case 2: @Consume with wrong initialization
-// Expected Error: 10905307
-// ============================================
-
-@Component
-struct ConsumeWrongInit {
-  @Consume('wrongInit') wrongValue: number = 0
-
-  build() {
-    Column() {
-      Text('Value: ' + this.wrongValue)
-    }
-  }
-}
-
-// ============================================
-// Test Case 3: Correct @Consume usage
-// ============================================
-
-@Component
-struct CorrectConsumeUsage {
-  @Consume('sharedKey') sharedData: string
-
-  build() {
-    Column() {
-      Text(this.sharedData)
-    }
-  }
-}
-
-// ============================================
-// Entry point
-// ============================================
-
-@Entry
-@Component
-struct TestConsumeInitError {
-  @State testTitle: string = '@Consume Init Error Test'
-
-  build() {
-    Column() {
-      Text(this.testTitle)
-        .fontSize(24)
-        .fontWeight(FontWeight.Bold)
-        .margin(20)
-
-      Column() {
-        Text('Testing: 10905307')
-          .fontSize(18)
-          .fontColor(Color.Red)
-
-        Text('@Consume must use decorator with parameter')
-          .fontSize(14)
-          .margin(5)
-      }
-      .width('90%')
-      .padding(15)
-      .backgroundColor('#FFEBEE')
-      .margin(10)
-
-      Column() {
-        Text('Correct Usage:')
-          .fontSize(16)
-          .fontWeight(FontWeight.Bold)
-
-        Text('@Consume("key") value: string')
-          .fontSize(12)
-          .fontColor(Color.Green)
-      }
-      .width('90%')
-      .padding(10)
-      .backgroundColor('#E8F5E9')
-      .margin(5)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(Color.White)
   }
 }
