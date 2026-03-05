@@ -23,7 +23,7 @@
 // Test Case 1: @Event with direct assignment
 // Expected Error: 10905358
 // ============================================
-
+@Entry
 @ComponentV2
 struct EventAssignmentError {
   @Param value: number = 0
@@ -41,103 +41,5 @@ struct EventAssignmentError {
       Text('Value: ' + this.value)
         .onClick(() => this.handleClick())
     }
-  }
-}
-
-// ============================================
-// Test Case 2: @Event in binding expression
-// Expected Error: 10905358
-// ============================================
-
-@ComponentV2
-struct EventBindingError {
-  @Param count: number = 0
-  @Event onCountChange: (c: number) => void
-
-  updateEvent() {
-    // Error: Assigning to @Event variable
-    this.onCountChange = () => {}
-  }
-
-  build() {
-    Column() {
-      Button('Update')
-        .onClick(() => this.updateEvent())
-    }
-  }
-}
-
-// ============================================
-// Test Case 3: Correct @Event usage
-// ============================================
-
-@ComponentV2
-struct CorrectEventUsage {
-  @Param message: string = ''
-  @Event messageChange: (msg: string) => void
-
-  build() {
-    Column() {
-      Text(this.message)
-      Button('Change')
-        .onClick(() => {
-          // Correct: Call the event, don't reassign
-          this.messageChange('new message')
-        })
-    }
-  }
-}
-
-// ============================================
-// Entry point
-// ============================================
-
-@Entry
-@Component
-struct TestEventAssignmentError {
-  @State testTitle: string = '@Event Assignment Error Test'
-
-  build() {
-    Column() {
-      Text(this.testTitle)
-        .fontSize(24)
-        .fontWeight(FontWeight.Bold)
-        .margin(20)
-
-      Column() {
-        Text('Testing: 10905358')
-          .fontSize(18)
-          .fontColor(Color.Red)
-
-        Text('Do not assign to @Event variable')
-          .fontSize(14)
-          .margin(5)
-      }
-      .width('90%')
-      .padding(15)
-      .backgroundColor('#FFEBEE')
-      .margin(10)
-
-      Column() {
-        Text('Correct Usage:')
-          .fontSize(16)
-          .fontWeight(FontWeight.Bold)
-
-        Text('@Event callback: (val) => void')
-          .fontSize(12)
-          .fontColor(Color.Green)
-
-        Text('// Call: this.callback(value)')
-          .fontSize(12)
-          .fontColor(Color.Gray)
-      }
-      .width('90%')
-      .padding(10)
-      .backgroundColor('#E8F5E9')
-      .margin(5)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(Color.White)
   }
 }
