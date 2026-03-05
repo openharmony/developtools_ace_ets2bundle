@@ -118,6 +118,7 @@ import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 import { expandAllImportPaths } from '../../import_path_expand';
+import { fileInfoCache } from '../../file_info_cache';
 
 let switchTsAst: boolean = true;
 
@@ -159,6 +160,7 @@ export function etsTransform() {
       const judgeCacheShouldDisableInBS = createAndStartEvent(eventEtsTransformBuildStart, 'judgeCacheShouldDsiableInBS');
       judgeCacheShouldDisabled.call(this);
       stopEvent(judgeCacheShouldDisableInBS);
+      fileInfoCache.setShare(this.share);
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
@@ -222,7 +224,7 @@ export function etsTransform() {
         stopEvent(checkRawFileChangeEvent);
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
-            const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
+            const newTimeMs: number = fileInfoCache.getMtimeMs(child.fileName);
             const getFileHashInShouldInvalidCache = createAndStartEvent(eventEtsShouldInvalidCache, 'getFileHashInShouldInvalidCache');
             const fileHash: string = this.share?.getHashByFilePath ? this.share?.getHashByFilePath(child.fileName) : '';
             stopEvent(getFileHashInShouldInvalidCache);

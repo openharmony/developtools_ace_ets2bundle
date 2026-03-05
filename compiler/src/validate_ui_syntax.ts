@@ -16,6 +16,7 @@
 import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
+import { fileInfoCache } from './file_info_cache';
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -2855,11 +2856,7 @@ export function getLocalStorageCollection(componentName: string, collection: Set
 function readStmgmtWhiteList(): void {
   const relPath: string = '../stmgmtWhiteList.json';
   const absolutePath: string = path.join(__dirname, relPath);
-  if (!fs.existsSync(absolutePath)) {
-    return;
-  }
-  const stats: any = fs.statSync(absolutePath);
-  if (!stats.isFile()) {
+  if (!fileInfoCache.isFile(absolutePath)) {
     return;
   }
   const fileContent: any = require(absolutePath);
