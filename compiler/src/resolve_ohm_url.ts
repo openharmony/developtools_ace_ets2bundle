@@ -16,6 +16,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from './compile_info';
+import { fileInfoCache } from './file_info_cache';
 const { projectConfig } = require('../main');
 
 const red: string = '\u001b[31m';
@@ -54,16 +55,16 @@ export function isOhmUrl(moduleRequest: string): boolean {
 
 function addExtension(file: string, srcPath: string): string {
   let extension: string = '.d.ts';
-  if (fs.existsSync(file + '.ets') && fs.statSync(file + '.ets').isFile()) {
+  if (fileInfoCache.isFile(file + '.ets')) {
     extension = '.ets';
   }
-  if (fs.existsSync(file + '.ts') && fs.statSync(file + '.ts').isFile()) {
+  if (fileInfoCache.isFile(file + '.ts')) {
     if (extension !== '.d.ts') {
       logger.error(red, `ArkTS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
     }
     extension = '.ts';
   }
-  if (fs.existsSync(file + '.js') && fs.statSync(file + '.js').isFile()) {
+  if (fileInfoCache.isFile(file + '.js')) {
     if (extension !== '.d.ts') {
       logger.error(red, `ArkTS:ERROR Failed to compile with files with same name ${srcPath} in the same directory`, reset);
     }
@@ -87,12 +88,12 @@ export function resolveSourceFile(ohmUrl: string): string {
   let file: string = path.join(modulePath, srcRoot, srcKind, result[4]);
   file = addExtension(file, result[4]);
 
-  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
+  if (!fileInfoCache.isFile(file)) {
     if (projectConfig.isOhosTest) {
       file = path.join(modulePath, 'src/main', srcKind, result[4]);
       file = addExtension(file, result[4]);
 
-      if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+      if (fileInfoCache.isFile(file)) {
         return file;
       }
     }
