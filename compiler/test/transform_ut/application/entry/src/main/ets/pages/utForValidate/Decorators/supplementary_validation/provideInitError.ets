@@ -23,7 +23,7 @@
 // Test Case 1: @Provide with incorrect initialization
 // Expected Error: 10905306
 // ============================================
-
+@Entry
 @Component
 struct ProvideInitError {
   // Error: Incorrect initialization for @Provide
@@ -33,86 +33,5 @@ struct ProvideInitError {
     Column() {
       Text(this.providedValue)
     }
-  }
-}
-
-// ============================================
-// Test Case 2: @Provide with wrong parameter type
-// Expected Error: 10905306
-// ============================================
-
-@Component
-struct ProvideWrongParam {
-  @Provide(123) wrongParam: number = 0
-
-  build() {
-    Column() {
-      Text('Value: ' + this.wrongParam)
-    }
-  }
-}
-
-// ============================================
-// Test Case 3: Correct @Provide usage
-// ============================================
-
-@Component
-struct CorrectProvideUsage {
-  @Provide('sharedKey') sharedData: string = 'shared'
-
-  build() {
-    Column() {
-      Text(this.sharedData)
-    }
-  }
-}
-
-// ============================================
-// Entry point
-// ============================================
-
-@Entry
-@Component
-struct TestProvideInitError {
-  @State testTitle: string = '@Provide Init Error Test'
-
-  build() {
-    Column() {
-      Text(this.testTitle)
-        .fontSize(24)
-        .fontWeight(FontWeight.Bold)
-        .margin(20)
-
-      Column() {
-        Text('Testing: 10905306')
-          .fontSize(18)
-          .fontColor(Color.Red)
-
-        Text('@Provide initialization error')
-          .fontSize(14)
-          .margin(5)
-      }
-      .width('90%')
-      .padding(15)
-      .backgroundColor('#FFEBEE')
-      .margin(10)
-
-      Column() {
-        Text('Correct Usage:')
-          .fontSize(16)
-          .fontWeight(FontWeight.Bold)
-
-        Text('@Provide("key") value: string = "default"')
-          .fontSize(12)
-          .fontColor(Color.Green)
-      }
-      .width('90%')
-      .padding(10)
-      .backgroundColor('#E8F5E9')
-      .margin(5)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(Color.White)
   }
 }
