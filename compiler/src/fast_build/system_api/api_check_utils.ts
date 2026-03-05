@@ -1020,26 +1020,26 @@ export function defaultValueChecker(
  * @returns true if format is valid
  */
 export function defaultFormatChecker(since: string): boolean {
-  const regex = /^(?:[1-9]\d{0,2}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}\([1-9]\d{0,2}\))$/;
+  const regex = /^(?:[1-9]\d{0,2}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}|[1-9]\d{0,2}\.\d{1,3}\.\d{1,3}\([1-9]\d{0,2}\)|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
   return regex.test(since);
 }
 
 /**
- * Format checker for integer-only versions (e.g., "19", "20").
- * Used for OpenHarmony runtime where multi-segment format (MSF) is not allowed.
+ * Format checker for integer and multi-segment format (MSF) versions (e.g., "19", "20", "26.0.0").
+ * Used for OpenHarmony runtime.
  * 
  * Rules:
  * - Major version only: 1-999 (no leading zero)
- * - No decimal points allowed
  * 
- * Valid examples: "19", "20", "999"
- * Invalid examples: "0", "01", "1000", "19.1"
+ * Valid examples: "19", "20", "999", "26.0.0"
+ * Invalid examples: "0", "01", "1000", "19.1", "26.0"
  * 
  * @param since - Version string to validate
  * @returns true if format is valid
  */
-export function defaultFormatCheckerWithoutMSF(since: string): VersionValidationResult {
-  if (/^[1-9]\d{0,2}$/.test(since)) {
+export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): VersionValidationResult {
+  const compatibileReg = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
+  if (compatibileReg.test(since)) {
     return {
       result: true
     }
@@ -1152,7 +1152,7 @@ export function initFormatChecker(osName: string, tag: string): void {
   // Try to load external plugin
   const plugins = externalApiCheckPlugin.get(pluginKey);
   if (!plugins || plugins.length === 0) {
-    comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerWithoutMSF);
+    comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerCompatibileIntegerAndMSF);
     return;
   }
   for (const plugin of plugins) {
@@ -1169,7 +1169,7 @@ export function initFormatChecker(osName: string, tag: string): void {
   }
 
   // Fallback to default
-  comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerWithoutMSF);
+  comparisonFunctions.formatChecker.set(cacheKey, defaultFormatCheckerCompatibileIntegerAndMSF);
 }
 
 /**
@@ -1197,7 +1197,7 @@ export function getFormatChecker(tag: string = 'available'): FormatCheckerFuncti
   const cacheKey = `${runtimeOS}/${tag}`;
   const checker = comparisonFunctions.formatChecker.get(cacheKey);
 
-  return checker || defaultFormatCheckerWithoutMSF;
+  return checker || defaultFormatCheckerCompatibileIntegerAndMSF;
 }
 
 /**
@@ -1498,15 +1498,27 @@ function getMinVersion(jsDocs: ts.JSDoc[]): string {
  * @returns { number }
  */
 export function comparePointVersion(firstVersion: string, secondVersion: string): ComparisonResult {
-  const firstParts = firstVersion.split('.');
-  const secondParts = secondVersion.split('.');
+  const parseVersion = (version: string): number[] => {
+    const trimmed = version.trim();
+    if (trimmed.includes('.')) {
+      const parts = trimmed.split('.').map(p => parseInt(p, 10));
+      return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+    }
+    const num = parseInt(trimmed, 10);
+    return [num, 0, 0];
+  };
+  const p1 = parseVersion(firstVersion);
+  const p2 = parseVersion(secondVersion);
 
   for (let i = 0; i < 3; i++) {
-    const part1 = parseInt(firstParts[i] || '0', 10);
-    const part2 = parseInt(secondParts[i] || '0', 10);
-
-    if (part1 !== part2) {
-      return part1 > part2 ? ComparisonResult.Greater : ComparisonResult.Less;
+    if (Number.isNaN(p1[i]) || Number.isNaN(p2[i])) {
+      return ComparisonResult.Less;
+    };
+    if (p1[i] > p2[i]) {
+      return ComparisonResult.Greater;
+    }
+    if (p1[i] < p2[i]) {
+      return ComparisonResult.Less;
     }
   }
 
@@ -1804,7 +1816,7 @@ export const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
     return false;
   }
   const isValidFormat = parseVersion.os === RUNTIME_OS_OH
-    ? defaultFormatCheckerWithoutMSF(parseVersion.version)
+    ? defaultFormatCheckerCompatibileIntegerAndMSF(parseVersion.version)
     : getFormatChecker(AVAILABLE_TAG_NAME)(parseVersion.formatVersion);
 
   if (!isValidFormat || !isValidFormat.result) {
@@ -1848,7 +1860,7 @@ function hasLargerVersionInParentNode(node: ts.Node, curAvailableVersion: Parsed
 export function checkFormatResult(parseVersion: ParsedVersion | null): ts.ConditionCheckResult | null {
   let checkResult: VersionValidationResult;
   if (parseVersion.os === RUNTIME_OS_OH) {
-    checkResult = defaultFormatCheckerWithoutMSF(parseVersion.version);
+    checkResult = defaultFormatCheckerCompatibileIntegerAndMSF(parseVersion.version);
   } else if (parseVersion.os === projectConfig.runtimeOS) {
     checkResult = getFormatChecker()(parseVersion.formatVersion);
   } else {
