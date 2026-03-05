@@ -1134,8 +1134,17 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   // Check for LINTER error codes
   if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
-    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
-    errorCodeLogger.printError(linterErrorInfo);
+    let linterErrorInfo: HvigorErrorInfo | SdkHvigorErrorInfo | undefined;
+    if (DIAGNOSTIC_SDK_CODE_MAP.get(String(diagnostic.code))) {
+      linterErrorInfo = sdkBuildErrorInfoFromDiagnostic(positionMessage, message);
+    } else {
+      linterErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
+    }
+    if (!linterErrorInfo) {
+      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    } else {
+      errorCodeLogger.printError(linterErrorInfo);
+    }
     return;
   }
 
