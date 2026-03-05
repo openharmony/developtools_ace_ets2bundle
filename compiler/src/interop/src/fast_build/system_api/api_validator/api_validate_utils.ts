@@ -17,13 +17,15 @@ import ts from 'typescript';
 import { projectConfig } from '../../../../main';
 import { 
   getValueChecker,
-  defaultValueChecker 
+  defaultValueChecker,
+  comparePointVersion
 } from '../api_check_utils';
 import { SINCE_TAG_NAME,
   ComparisonSenario,
   ValueCheckerFunction,
   ParsedVersion,
-  VersionValidationResult
+  VersionValidationResult,
+  ComparisonResult
 } from '../api_check_define';
 
 /**
@@ -247,7 +249,7 @@ export class SdkComparisonHelper {
     
     // OpenHarmony runtime: Simple integer comparison
     if (runtimeType === this.openSourceRuntime) {
-      return this.sdkOpenSourceComparison(assignedSdkVersion);
+      return comparePointVersion(String(assignedSdkVersion), this.minRequiredVersion) !== ComparisonResult.Less;
     }
     
     // Other runtimes: Use external value checker with appropriate scenario
