@@ -3941,18 +3941,7 @@
             "code": "10905101"
         }
     ],
-    "duplicateMethodDecorators": [
-        {
-            "message": "Duplicate '@Local' decorators for method are not allowed.",
-            "type": "ERROR",
-            "code": "10905119"
-        },
-        {
-            "message": "The property 'duplicateDecorated' cannot have multiple state management decorators.",
-            "type": "ERROR",
-            "code": "10905302"
-        }
-    ],
+    "duplicateMethodDecorators": [],
     "provideInitError": [],
     "consumeDecoratorError": [],
     "linkInitError": [
