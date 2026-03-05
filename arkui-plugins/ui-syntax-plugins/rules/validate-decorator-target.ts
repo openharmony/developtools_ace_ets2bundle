@@ -42,6 +42,11 @@ const ComponentMemberDecorators: Set<string> = new Set([
     PresetDecorators.BUILDER_PARAM,
     PresetDecorators.REQUIRE,
     PresetDecorators.EVENT,
+    PresetDecorators.CONSUMER,
+    PresetDecorators.PROVIDER,
+    PresetDecorators.ONCE,
+    PresetDecorators.LOCAL,
+    PresetDecorators.PARAM,
 ]);
 
 // Can only be used with decorators for struct
