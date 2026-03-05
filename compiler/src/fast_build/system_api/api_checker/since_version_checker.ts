@@ -25,7 +25,7 @@ import { BaseVersionChecker } from './base_version_checker';
 import { 
   getValueChecker, 
   getFormatChecker,
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker,
   defaultFormatChecker
 } from '../api_check_utils';
@@ -51,7 +51,7 @@ export class SinceJSDocChecker extends BaseVersionChecker {
    * 
    * Plugin loading strategy for @since:
    * - CompatibilityCheck: Loads from external plugin (checkSinceValue) or uses default
-   * - FormatValidation: NOT in config, always uses built-in default (defaultFormatCheckerWithoutMSF)
+   * - FormatValidation: NOT in config, always uses built-in default (defaultFormatCheckerCompatibileIntegerAndMSF)
    * 
    * Process:
    * 1. Set SDK version from project config
@@ -79,13 +79,13 @@ export class SinceJSDocChecker extends BaseVersionChecker {
 
     // Load format checker (validation function) for @since tag
     // NOTE: Config does NOT include FormatValidation for @since
-    // Will always use default format checker (defaultFormatCheckerWithoutMSF)
+    // Will always use default format checker (defaultFormatCheckerCompatibileIntegerAndMSF)
     const formatChecker = getFormatChecker(SINCE_TAG_NAME);
     if (formatChecker) {
       this.versionValidFunction = formatChecker;
     } else {
       // Expected path: No FormatValidation plugin configured for @since
-      this.versionValidFunction = defaultFormatCheckerWithoutMSF;
+      this.versionValidFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
     }
   }
 

@@ -19,7 +19,7 @@ import {
   getValueChecker,
   getFormatChecker,
   isOpenHarmonyRuntime,
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker,
   getValidDecoratorFromNode,
   extractMinApiFromDecorator,
@@ -529,7 +529,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
   private readonly VERSION_MATCH_REGEX: RegExp = /(['"])([^'"]+)\1/;
 
   // Comparison functions loaded from central system
-  private formatChecker: FormatCheckerFunction = defaultFormatCheckerWithoutMSF;
+  private formatChecker: FormatCheckerFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
   private valueChecker: ValueCheckerFunction = defaultValueChecker;
 
   constructor(
@@ -553,7 +553,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
   private init(): void {
     // Load format checker for 'available' tag
     const formatChecker = getFormatChecker(AVAILABLE_TAG_NAME);
-    this.formatChecker = formatChecker || defaultFormatCheckerWithoutMSF;
+    this.formatChecker = formatChecker || defaultFormatCheckerCompatibileIntegerAndMSF;
 
     // Load value checker for 'available' tag
     // Used for version comparison with runtime-specific logic
@@ -1114,7 +1114,7 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
     let specifyJsDocTagValue: string | ts.NodeArray<ts.JSDocComment> = '';
     jsDocTags.forEach(item => {
       if (specifyTag.includes(item.tagName.escapedText.toString())) {
-        specifyJsDocTagValue = item.comment ?? "";
+        specifyJsDocTagValue = item.comment ?? '';
       }
     });
     return specifyJsDocTagValue;
