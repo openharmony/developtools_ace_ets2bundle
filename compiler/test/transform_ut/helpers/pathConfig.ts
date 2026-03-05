@@ -328,7 +328,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate',
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate2',
   'Decorators/vaildate_ui_syntax/animatableExtendAttributeDuplicate',
-  'Decorators/vaildate_ui_syntax/componentReuseCheck',
   'Decorators/vaildate_ui_syntax/MethodNoExtend',
   'Decorators/vaildate_ui_syntax/mutiDecoratorInComponentV2',
   'Decorators/vaildate_ui_syntax/NoChild',
@@ -386,7 +385,18 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/structNameIdentifierError',
   // Additional test cases for @Reusable decorators
   'Decorators/supplementary_validation/reusableConflictError',
-  'Decorators/supplementary_validation/reusableV2RestrictionError'
+  'Decorators/supplementary_validation/reusableV2RestrictionError',
+  // Fourth batch - Builder and decorator tests
+  'Decorators/supplementary_validation/builderReturnTypeError',
+  'Decorators/supplementary_validation/builderParamUninitialized',
+  'Decorators/supplementary_validation/extendDecoratorError',
+  'Decorators/supplementary_validation/animatableExtendError',
+  'Decorators/supplementary_validation/concurrentDecoratorError',
+  'Decorators/supplementary_validation/sendableDecoratorError',
+  'Decorators/supplementary_validation/componentConflictError',
+  'Decorators/supplementary_validation/builderInvalidStatement',
+  'Decorators/supplementary_validation/stylesDecoratorError',
+  'Decorators/supplementary_validation/builderFunctionParamError'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
