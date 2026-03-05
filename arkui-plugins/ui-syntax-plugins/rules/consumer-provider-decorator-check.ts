@@ -25,7 +25,6 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
         return {
             providerAndConsumerOnlyOnProperty: `'@{{decorator}}' can only decorate member property.`,
             multipleBuiltInDecorators: `The struct member variable can not be decorated by multiple built-in annotations.`,
-            providerAndConsumerOnlyInStruct: `The '@{{decorator}}' annotation can only be used with 'struct'.`,
             forbiddenInitialization: `The '@{{decorator}}' property '{{value}}' in the custom component '{{structName}}' cannot be initialized here (forbidden to specify).`,
         };
     }
@@ -38,7 +37,6 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     public parsed(node: arkts.AstNode): void {
         this.collectStructsWithConsumerAndProvider(node);
         this.validateDecoratorsOnMember(node);
-        this.validateOnlyInStruct(node);
 
         if (arkts.isCallExpression(node)) {
             this.validateConsumerInitialization(node);
@@ -172,66 +170,6 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
             annotation.expr && arkts.isIdentifier(annotation.expr) &&
             annotation.expr.name !== decoratorName
         );
-    }
-
-    private validateOnlyInStruct(node: arkts.AstNode): void {
-        if (arkts.isClassDeclaration(node)) {
-            node.definition?.body.forEach(member => {
-                if (arkts.isClassProperty(member)) {
-                    this.validateDecorator(member, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
-                    this.validateDecorator(member, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
-                }
-                if (arkts.isMethodDefinition(member)) {
-                    this.validateDecorator(
-                        member.scriptFunction, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
-                    this.validateDecorator(
-                        member.scriptFunction, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
-                }
-            });
-
-            node.definition?.annotations.forEach(member => {
-                if (
-                    member.expr &&
-                    arkts.isIdentifier(member.expr) &&
-                    (member.expr.name === PresetDecorators.CONSUMER || member.expr.name === PresetDecorators.PROVIDER)
-                ) {
-                    this.reportNotInStruct(member, this.messages.providerAndConsumerOnlyInStruct);
-                }
-            });
-
-            return;
-        }
-
-        // function/ variable/ interface/ type alias declaration
-        if (arkts.isFunctionDeclaration(node) ||
-            arkts.isVariableDeclaration(node) ||
-            arkts.isTSInterfaceDeclaration(node) ||
-            arkts.isTSTypeAliasDeclaration(node)
-        ) {
-            this.validateDecorator(node, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.CONSUMER);
-            this.validateDecorator(node, this.messages.providerAndConsumerOnlyInStruct, PresetDecorators.PROVIDER);
-            return;
-        }
-    }
-
-    private reportNotInStruct(decorator: arkts.AnnotationUsage, message: string): void {
-        this.report({
-            node: decorator,
-            message: message,
-            data: {
-                decorator: getAnnotationName(decorator),
-            },
-            fix: (decorator) => {
-                let startPosition = decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
-                const endPosition = decorator.endPosition;
-                return {
-                    title: 'Remove the annotation',
-                    range: [startPosition, endPosition],
-                    code: '',
-                };
-            }
-        });
     }
 
     private validateDecorator(
