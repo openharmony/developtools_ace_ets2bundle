@@ -1355,11 +1355,6 @@
         "message": "Duplicate '@Styles' decorators for function are not allowed.",
         "type": "WARN"
     },
-    "componentReuseCheck": {
-        "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.",
-        "type": "ERROR",
-        "code": "10905369"
-    },
     "OneEntry": {
         "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
         "type": "ERROR",
@@ -3834,5 +3829,58 @@
             "type": "ERROR",
             "code": "10905242"
         }
-    ]
+    ],
+    "builderReturnTypeError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "builderParamUninitialized": [],
+    "extendDecoratorError": [],
+    "animatableExtendError": [],
+    "concurrentDecoratorError": [],
+    "sendableDecoratorError": [],
+    "componentConflictError": [
+        {
+            "message": "The struct 'ConflictingComponent' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "builderInvalidStatement": [
+        {
+            "message": "'console.log(\"Invalid statement in builder\");' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "stylesDecoratorError": [],
+    "builderFunctionParamError": []
 }
