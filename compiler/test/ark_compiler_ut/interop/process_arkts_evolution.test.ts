@@ -20,10 +20,12 @@ import ts from 'typescript';
 import path from 'path';
 import {
   addDeclFilesConfig,
+  arkTSHybridModuleMap,
   arkTSEvolutionModuleMap,
   arkTSModuleMap,
   cleanUpProcessArkTSEvolutionObj,
   collectArkTSEvolutionModuleInfo,
+  genCachePathForBridgeCode,
   getArkTSEvoDeclFilePath,
   interopTransform,
   interopTransformLog,
@@ -614,6 +616,43 @@ mocha.describe('process arkts evolution tests', function () {
       `Error Message: Failed to collect arkTs evolution module "har" info from rollup.`;
     expect(throwArkTsCompilerErrorStub.getCall(0).args[1] === errMsg).to.be.true;
     throwArkTsCompilerErrorStub.restore();
+  });
+
+  mocha.it('1-4 test cacheFilePath of genCachePathForBridgeCode: hap1 depend on har2 of third party package', function() {
+    const cachePath = 'D:/ProjectName/hap1_har2/build/default'
+    const moduleId = 'D:/ProjectName/build/declgen/har2/declgenBridgeCode/har2/Index.ts';
+    arkTSHybridModuleMap.set('hap1_har2', {
+      language: 'hybrid',
+      packageName: 'hap1_har2',
+      moduleName: 'hap1_har2',
+      declgenBridgeCodePath: 'D:/ProjectName/hap1_har2/build/default/intermediates/declgen/default/declgenBridgeCode',
+      dynamicFiles: [
+        'D:/ProjectName/hap1_har2/src/main/ets/pages/Index.ets'
+      ],
+      staticFiles: [],
+    });
+    arkTSEvolutionModuleMap.set('har2', {
+      language: '1.2',
+      packageName: 'har2',
+      moduleName: 'har2',
+      declgenBridgeCodePath: 'D:/ProjectName/build/declgen/har2/declgenBridgeCode',
+      dynamicFiles: [],
+      staticFiles: [
+        'D:/ProjectName/oh_modules/.ohpm/har2@xxx=/oh_modules/har2/Index.d.ets'
+      ],
+    });
+    const metaInfo = {
+      isLocalDependency: false,
+      pkgName: 'har2',
+      belongProjectPath: 'D:/ProjectName',
+      belongModulePath: 'D:/ProjectName/oh_modules/.ohpm/har2@xxx=/oh_modules/har2'
+    }
+    const expectCacheFilePath = 'D:/ProjectName/hap1_har2/build/default/oh_modules/.ohpm/har2@xxx=/oh_modules/har2/Index.ts';
+    let cacheFilePath = '';
+    cacheFilePath = genCachePathForBridgeCode(moduleId, metaInfo, cachePath);
+    arkTSHybridModuleMap.delete('hap1_har2');
+    arkTSEvolutionModuleMap.delete('har2');
+    expect(cacheFilePath === expectCacheFilePath).to.be.true;
   });
 
   mocha.it('2-1: test generate declFilesInfo in mixed compilation', function () {
