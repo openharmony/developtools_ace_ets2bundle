@@ -299,7 +299,7 @@ function main() {}
         return;
       }
       __memo_parameter_instance.value.setTextOptions("Parent builder", undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -326,7 +326,7 @@ function main() {}
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -344,7 +344,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -362,7 +362,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -391,7 +391,7 @@ function main() {}
           __memo_scope.cached;
           return;
         }
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -410,7 +410,7 @@ function main() {}
             return;
           }
           __memo_parameter_instance.value.setTextOptions("Parent builder", undefined);
-          instance.applyAttributesFinish();
+          __memo_parameter_instance.value.applyAttributesFinish();
           {
             __memo_scope.recache();
             return;
