@@ -1355,6 +1355,11 @@
         "message": "Duplicate '@Styles' decorators for function are not allowed.",
         "type": "WARN"
     },
+    "componentReuseCheck": { 
+         "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.", 
+         "type": "ERROR", 
+         "code": "10905369" 
+     },
     "OneEntry": {
         "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
         "type": "ERROR",
@@ -3882,5 +3887,147 @@
         }
     ],
     "stylesDecoratorError": [],
-    "builderFunctionParamError": []
+    "builderFunctionParamError": [],
+    "extendAnimatableExtendConflict": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.",
+            "type": "ERROR",
+            "code": "10905111"
+        }
+    ],
+    "computedPropertyErrors": [
+        {
+            "message": "A property decorated by '@Computed' cannot define a set method.",
+            "type": "ERROR",
+            "code": "10905130"
+        }
+    ],
+    "componentChildRestrictions": [
+        {
+            "message": "The 'GridItem' component can only be nested in the 'Grid' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "The 'TabContent' component can only be nested in the 'Tabs' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        }
+    ],
+    "builderParamInitValidation": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "duplicateMethodDecorators": [],
+    "provideInitError": [],
+    "consumeDecoratorError": [],
+    "linkInitError": [
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        },
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        }
+    ],
+    "eventAssignmentError": [],
+    "componentReuseParamError": [
+        {
+            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>",
+            "type": "ERROR",
+            "code": "10905369"
+        },
+        {
+            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>",
+            "type": "ERROR",
+            "code": "10905369"
+        }
+    ],
+    "decoratorMethodParams": [],
+    "singleChildRestriction": [
+        {
+            "message": "The 'Navigator' component can have only one child component.",
+            "type": "ERROR",
+            "code": "10905220"
+        },
+        {
+            "message": "The 'Refresh' component can have only one child component.",
+            "type": "ERROR",
+            "code": "10905220"
+        }
+    ],
+    "noChildRestriction": [
+        {
+            "message": "The component 'TextInput' can't have any child.",
+            "type": "ERROR",
+            "code": "10905222"
+        }
+    ],
+    "v2ReuseParamsError": [
+        {
+            "message": "Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905370"
+        }
+    ],
+    "concurrentFunctionError": [
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@Concurrent' can not be used on 'Generator' function declaration.",
+            "type": "ERROR",
+            "code": "10905122"
+        },
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@Concurrent' can not be used on 'Async generator' function declaration.",
+            "type": "ERROR",
+            "code": "10905122"
+        },
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        }
+    ]
 }
