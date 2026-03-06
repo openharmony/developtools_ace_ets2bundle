@@ -328,6 +328,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate',
   'Decorators/vaildate_ui_syntax/extendAttributeDuplicate2',
   'Decorators/vaildate_ui_syntax/animatableExtendAttributeDuplicate',
+  'Decorators/vaildate_ui_syntax/componentReuseCheck',
   'Decorators/vaildate_ui_syntax/MethodNoExtend',
   'Decorators/vaildate_ui_syntax/mutiDecoratorInComponentV2',
   'Decorators/vaildate_ui_syntax/NoChild',
@@ -396,7 +397,24 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/componentConflictError',
   'Decorators/supplementary_validation/builderInvalidStatement',
   'Decorators/supplementary_validation/stylesDecoratorError',
-  'Decorators/supplementary_validation/builderFunctionParamError'
+  'Decorators/supplementary_validation/builderFunctionParamError',
+  // Fifth batch - Additional error code tests
+  'Decorators/supplementary_validation/extendAnimatableExtendConflict',
+  'Decorators/supplementary_validation/computedPropertyErrors',
+  'Decorators/supplementary_validation/componentChildRestrictions',
+  'Decorators/supplementary_validation/builderParamInitValidation',
+  'Decorators/supplementary_validation/duplicateMethodDecorators',
+  // New batch - Additional error code tests
+  'Decorators/supplementary_validation/provideInitError',
+  'Decorators/supplementary_validation/consumeDecoratorError',
+  'Decorators/supplementary_validation/linkInitError',
+  'Decorators/supplementary_validation/eventAssignmentError',
+  'Decorators/supplementary_validation/componentReuseParamError',
+  'Decorators/supplementary_validation/decoratorMethodParams',
+  'Decorators/supplementary_validation/singleChildRestriction',
+  'Decorators/supplementary_validation/noChildRestriction',
+  'Decorators/supplementary_validation/v2ReuseParamsError',
+  'Decorators/supplementary_validation/concurrentFunctionError'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
