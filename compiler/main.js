@@ -511,6 +511,9 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
 
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
+    if (abilityPath.endsWith('.so')) {
+      return;
+    }
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
