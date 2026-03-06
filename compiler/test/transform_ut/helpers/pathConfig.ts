@@ -404,7 +404,7 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/componentChildRestrictions',
   'Decorators/supplementary_validation/builderParamInitValidation',
   'Decorators/supplementary_validation/duplicateMethodDecorators',
-  // New batch - Additional error code tests
+  // New batch - Additional error code tests (10 cases)
   'Decorators/supplementary_validation/provideInitError',
   'Decorators/supplementary_validation/consumeDecoratorError',
   'Decorators/supplementary_validation/linkInitError',
@@ -414,7 +414,38 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/singleChildRestriction',
   'Decorators/supplementary_validation/noChildRestriction',
   'Decorators/supplementary_validation/v2ReuseParamsError',
-  'Decorators/supplementary_validation/concurrentFunctionError'
+  'Decorators/supplementary_validation/concurrentFunctionError',
+  // Batch 1 - New test cases (10 cases)
+  'Decorators/supplementary_validation/propInitError',
+  'Decorators/supplementary_validation/stateInitError',
+  'Decorators/supplementary_validation/objectLinkInitError',
+  'Decorators/supplementary_validation/linkDefaultError',
+  'Decorators/supplementary_validation/builderReturnError',
+  'Decorators/supplementary_validation/storageLinkInitError',
+  'Decorators/supplementary_validation/storagePropInitError',
+  'Decorators/supplementary_validation/localStorageLinkInitError',
+  'Decorators/supplementary_validation/localStoragePropInitError',
+  'Decorators/supplementary_validation/consumeParentError',
+  // Batch 2 - New test cases (8 cases)
+  'Decorators/supplementary_validation/resourceNameError',
+  'Decorators/supplementary_validation/resourceTypeError',
+  'Decorators/supplementary_validation/structInheritanceError',
+  'Decorators/supplementary_validation/ifConditionNullError',
+  'Decorators/supplementary_validation/customDialogControllerError',
+  'Decorators/supplementary_validation/watchParamError',
+  'Decorators/supplementary_validation/provideTypeMismatch',
+  'Decorators/supplementary_validation/consumeNotInChild',
+  // Batch 3 - New test cases (10 cases)
+  'Decorators/supplementary_validation/whileLoopError',
+  'Decorators/supplementary_validation/doWhileLoopError',
+  'Decorators/supplementary_validation/switchStatementError',
+  'Decorators/supplementary_validation/tryCatchError',
+  'Decorators/supplementary_validation/variableDeclarationError',
+  'Decorators/supplementary_validation/breakStatementError',
+  'Decorators/supplementary_validation/continueStatementError',
+  'Decorators/supplementary_validation/binaryExpressionError',
+  'Decorators/supplementary_validation/ternaryExpressionError',
+  'Decorators/supplementary_validation/functionCallError'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
