@@ -4040,5 +4040,166 @@
             "type": "ERROR",
             "code": "10905123"
         }
+    ],
+    "propInitError": [],
+    "stateInitError": [
+        {
+            "message": "The '@State' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "objectLinkInitError": [],
+    "linkDefaultError": [
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        }
+    ],
+    "builderReturnError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "storageLinkInitError": [
+        {
+            "message": "The '@StorageLink' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "storagePropInitError": [
+        {
+            "message": "The '@StorageProp' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "localStorageLinkInitError": [
+        {
+            "message": "The '@LocalStorageLink' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "localStoragePropInitError": [
+        {
+            "message": "The '@LocalStorageProp' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "consumeParentError": [],
+    "resourceNameError": [
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "resourceTypeError": [
+        {
+            "message": "Unknown resource type 'unknown'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "structInheritanceError": [
+        {
+            "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+            "type": "ERROR",
+            "code": "10905212"
+        }
+    ],
+    "ifConditionNullError": [],
+    "customDialogControllerError": [
+        {
+            "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
+            "type": "ERROR",
+            "code": "10905211"
+        }
+    ],
+    "watchParamError": [
+        {
+            "message": "'@Watch' cannot be used with ''. Apply it only to parameters that correspond to existing methods.",
+            "type": "ERROR",
+            "code": "10905301"
+        }
+    ],
+    "provideTypeMismatch": [],
+    "consumeNotInChild": [],
+    "whileLoopError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "doWhileLoopError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "switchStatementError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "tryCatchError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "variableDeclarationError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "breakStatementError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "continueStatementError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "binaryExpressionError": [
+        {
+            "message": "'1 + 1' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "ternaryExpressionError": [
+        {
+            "message": "'this.flag ? Text('True') : Text('False')' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "functionCallError": [
+        {
+            "message": "'this.myFunction()' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
     ]
 }
