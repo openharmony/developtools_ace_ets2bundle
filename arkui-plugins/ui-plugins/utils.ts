@@ -67,10 +67,12 @@ export enum BuilderLambdaNames {
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
     APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
+    DEBUG_LINE_METHOD = 'debugLine'
 }
 
 export type EntryAnnoInfo = {
-    range: arkts.SourceRange;
+    entryAnnoRange: arkts.SourceRange;
+    structRange: arkts.SourceRange;
     name: string;
 };
 

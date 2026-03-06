@@ -227,7 +227,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
       return;
     }
     __memo_parameter_instance.value.setTextOptions("Hello World", undefined);
-    instance.applyAttributesFinish();
+    __memo_parameter_instance.value.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -297,7 +297,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
         return;
       }
       __memo_parameter_instance.value.setRowOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -363,7 +363,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
         return;
       }
       __memo_parameter_instance.value.setTextOptions("Parent builder", undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -390,7 +390,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -408,7 +408,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
           __memo_scope.cached;
           return;
         }
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
