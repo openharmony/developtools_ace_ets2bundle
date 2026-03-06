@@ -37,6 +37,9 @@ import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
+const ENTRY_WRAPPER_NAME = '__EntryWrapper';
+const ENTRY_WRAPPER_LAYER = 6;
+
 export type BuilderLambdaDeclInfo = {
     name: string;
     isFunctionCall: boolean; // isFunctionCall means it is from $_invoke.
@@ -819,4 +822,22 @@ export function getIsUserCreateStack(
         return args.length > 1 || (args.length === 1 && !arkts.isArrowFunctionExpression(args[0]));
     }
     return undefined;
+}
+
+export function isInEntryWrapper(node: arkts.AstNode): boolean {
+    let currentNode: arkts.AstNode | undefined = node;
+    for (let i = 0; i < ENTRY_WRAPPER_LAYER; i++) {
+        if (!currentNode) {
+            return false;
+        }
+        currentNode = currentNode.parent;
+    }
+    if (
+        currentNode &&
+        arkts.isClassDefinition(currentNode) &&
+        currentNode.ident?.name === ENTRY_WRAPPER_NAME
+    ) {
+        return true;
+    }
+    return false;
 }

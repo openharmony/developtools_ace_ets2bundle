@@ -132,6 +132,7 @@ export interface ProjectConfig {
     externalApiPaths: string[];
     externalApiPath: string;
     compatibleSdkVersion?: number;
+    debugLine?: boolean;
 }
 
 export type PluginHandlerFunction = () => void;
