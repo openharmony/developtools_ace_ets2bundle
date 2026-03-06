@@ -261,7 +261,8 @@ export enum StateManagementTypes {
     RESET_ON_REUSE = 'resetOnReuse',
     MAKE_ENV = 'makeEnv',
     CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
-    REUSE_OBJECT = 'ReuseObject'
+    REUSE_OBJECT = 'ReuseObject',
+    I_MONITOR = 'IMonitor',
 }
 
 export enum AnimationNames {
@@ -346,7 +347,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.PROVIDER, [StateManagementTypes.PROVIDER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.CONSUMER, [StateManagementTypes.CONSUMER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.COMPUTED, [StateManagementTypes.COMPUTED_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY, StateManagementTypes.I_MONITOR]],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,

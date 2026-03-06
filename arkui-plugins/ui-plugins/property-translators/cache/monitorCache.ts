@@ -21,6 +21,7 @@ export interface MonitorInfo {
     originalName: string;
     newName: string;
     isFromStruct: boolean;
+    paramsLength: number;
 }
 
 export class MonitorCache {
@@ -47,8 +48,8 @@ export class MonitorCache {
             return [];
         }
         return Object.entries(this._cache.get(className)!).map((item: [string, MonitorInfo]) => {
-            const { monitorItem, originalName, newName, isFromStruct } = item[1];
-            return factory.generateinitAssignment(monitorItem, originalName, newName, isFromStruct);
+            const { monitorItem, originalName, newName, isFromStruct, paramsLength } = item[1];
+            return factory.generateinitAssignment(monitorItem, originalName, newName, isFromStruct, paramsLength);
         });
     }
 
