@@ -131,6 +131,7 @@ export interface ProjectConfig {
     frameworkMode?: string;
     externalApiPaths: string[];
     externalApiPath: string;
+    compatibleSdkVersion?: number;
 }
 
 export type PluginHandlerFunction = () => void;

@@ -35,6 +35,7 @@ import {
 import { CustomComponentNames, optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export class factory {
     /**
@@ -743,10 +744,31 @@ export class factory {
         originalName: string,
         newName: string,
         isFromStruct: boolean,
+        paramsLength: number
     ): arkts.ExpressionStatement {
+        if (paramsLength === 0) {
+            collectStateManagementTypeImport(StateManagementTypes.I_MONITOR);
+        }
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
-        const args: arkts.AstNode[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName)];
-        if (isFromStruct) {
+        const args: arkts.AstNode[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName, paramsLength)];
+        const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
+        if (compatibleVersion !== undefined && compatibleVersion >= 24) {
+            const makeMonitorOptions = arkts.factory.createObjectExpression(
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                [
+                    arkts.factory.createProperty(
+                        arkts.factory.createIdentifier('owner'),
+                        isFromStruct ? arkts.factory.createThisExpression() : arkts.factory.createUndefinedLiteral()
+                    ),
+                    arkts.factory.createProperty(
+                        arkts.factory.createIdentifier('functionName'),
+                        arkts.factory.createStringLiteral(originalName)
+                    ),
+                ],
+                false
+            );
+            args.push(makeMonitorOptions);
+        } else if (isFromStruct) {
             args.push(arkts.factory.createThisExpression());
         }
         const right: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
@@ -774,15 +796,14 @@ export class factory {
         return arkts.factory.createArrayExpression(params);
     }
 
-    static generateLambdaArg(originalName: string): arkts.ArrowFunctionExpression {
+    static generateLambdaArg(originalName: string, paramsLength: number): arkts.ArrowFunctionExpression {
         return arkts.factory.createArrowFunction(
             UIFactory.createScriptFunction({
                 params: [UIFactory.createParameterDeclaration(MonitorNames.M_PARAM, MonitorNames.I_MONITOR)],
                 body: arkts.factory.createBlock([
                     arkts.factory.createExpressionStatement(
-                        arkts.factory.createCallExpression(generateThisBacking(originalName), undefined, [
-                            arkts.factory.createIdentifier(MonitorNames.M_PARAM),
-                        ])
+                        arkts.factory.createCallExpression(generateThisBacking(originalName), undefined, 
+                            paramsLength > 0 ? [arkts.factory.createIdentifier(MonitorNames.M_PARAM)] : [])
                     ),
                 ]),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
