@@ -379,7 +379,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setRowOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -831,7 +831,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setRowOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;

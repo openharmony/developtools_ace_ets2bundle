@@ -217,7 +217,7 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
             return;
         }
         __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size);
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
             __memo_scope.recache();
             return;
@@ -244,7 +244,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
             return;
         }
         __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size).fontColor(Color.Pink);
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
             __memo_scope.recache();
             return;
@@ -315,7 +315,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
                 return;
             }
             __memo_parameter_instance.value.setRowOptions(undefined).height(\"100%\");
-            instance.applyAttributesFinish();
+            __memo_parameter_instance.value.applyAttributesFinish();
             {
                 __memo_scope.recache();
                 return;
@@ -383,7 +383,7 @@ class __EntryWrapper extends EntryPoint {
                 __memo_scope.cached;
                 return;
             }
-            instance.applyAttributesFinish();
+            __memo_parameter_instance.value.applyAttributesFinish();
             {
                 __memo_scope.recache();
                 return;

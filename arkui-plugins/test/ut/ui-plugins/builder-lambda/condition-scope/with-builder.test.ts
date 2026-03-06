@@ -276,7 +276,7 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
         return;
       }
       __memo_parameter_instance.value.setTextOptions("within Builder function", undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -306,7 +306,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           return;
         }
         __memo_parameter_instance.value.setTextOptions("within Builder parameter", undefined);
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -365,7 +365,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           return;
         }
         __memo_parameter_instance.value.setTextOptions("within Builder method", undefined);
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -393,7 +393,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -419,7 +419,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
               return;
             }
             __memo_parameter_instance.value.setTextOptions("with Builder lambda", undefined);
-            instance.applyAttributesFinish();
+            __memo_parameter_instance.value.applyAttributesFinish();
             {
               __memo_scope.recache();
               return;
@@ -438,7 +438,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           __memo_scope.cached;
           return;
         }
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
@@ -460,7 +460,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
                   return;
                 }
                 __memo_parameter_instance.value.setTextOptions("within Builder property", undefined);
-                instance.applyAttributesFinish();
+                __memo_parameter_instance.value.applyAttributesFinish();
                 {
                   __memo_scope.recache();
                   return;
@@ -509,7 +509,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
             return;
           }
           __memo_parameter_instance.value.setTextOptions("within BuilderParam property", undefined);
-          instance.applyAttributesFinish();
+          __memo_parameter_instance.value.applyAttributesFinish();
           {
             __memo_scope.recache();
             return;
@@ -563,7 +563,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           return;
         }
         __memo_parameter_instance.value.setTextOptions("within struct build", undefined);
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;

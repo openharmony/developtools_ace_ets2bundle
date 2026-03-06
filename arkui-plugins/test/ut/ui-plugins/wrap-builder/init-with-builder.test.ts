@@ -143,7 +143,7 @@ function myBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
       return;
     }
     __memo_parameter_instance.value.setTextOptions(value, undefined).fontSize(size);
-    instance.applyAttributesFinish();
+    __memo_parameter_instance.value.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -191,7 +191,7 @@ globalBuilder = wrapBuilder(myBuilder);
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;

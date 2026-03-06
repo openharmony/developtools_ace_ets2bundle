@@ -84,7 +84,7 @@ class MyStateSample {
                 return;
             }
             __memo_parameter_instance.value.setColumnOptions(undefined);
-            instance.applyAttributesFinish();
+            __memo_parameter_instance.value.applyAttributesFinish();
             {
                 __memo_scope.recache();
                 return;
