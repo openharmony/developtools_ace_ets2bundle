@@ -577,8 +577,7 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
     if (!firstLine.includes('use static')) {
       newEntry[newKey] = rawPath;
     } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
-      const interopInfo = getBrdigeCodeRootPath(moduleJson?.module?.name, interopConfig);
+      const interopInfo = getBrdigeCodeRootPath(rawPath, interopConfig);
       if (!interopInfo) {
         const errInfo = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -639,7 +638,7 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
 
 export function getBrdigeCodeRootPath(moduleName: string, interopConfig: InteropConfig): InteropInfo | undefined {
   for (const [moduleRootPath, interopInfo] of interopConfig.interopModuleInfo) {
-    if (moduleName === interopInfo.moduleName) {
+    if (moduleName === interopInfo.moduleName || isSubPathOf(moduleName, moduleRootPath)) {
       interopInfo.moduleRootPath = moduleRootPath;
       return interopInfo;
     }
