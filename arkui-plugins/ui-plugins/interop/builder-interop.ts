@@ -33,7 +33,9 @@ interface builderParam {
     paramsInfo: arkts.Statement[]
 }
 
-function invokeFunctionWithParam(functionName: string, result: string, className: string, args: arkts.AstNode[]): arkts.Statement {
+function invokeFunctionWithParam(functionName: string, result: string, className: string, args: arkts.AstNode[], node: arkts.CallExpression): arkts.Statement {
+    let builderNode = getWrapValue(arkts.factory.createIdentifier(className));
+    builderNode.range = node.range;
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
@@ -50,7 +52,7 @@ function invokeFunctionWithParam(functionName: string, result: string, className
                 ),
                 undefined,
                 [
-                    getWrapValue(arkts.factory.createIdentifier(className)),
+                    builderNode,
                     arkts.factory.createIdentifier(InteropInternalNames.ELMTID),
                     ...args
                 ]
@@ -105,14 +107,14 @@ function invokeComponent(): arkts.Statement[] {
     return [viewPU, create];
 }
 
-function createBuilderInitializer(className: string, functionName: string, param: builderParam): arkts.ArrowFunctionExpression {
+function createBuilderInitializer(className: string, functionName: string, param: builderParam, node: arkts.CallExpression): arkts.ArrowFunctionExpression {
     const block = arkts.factory.createBlock(
         [
             createGlobal(),
             createELMTID(),
             getPropertyESValue(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.GLOBAL, functionName),
             ...param.paramsInfo,
-            invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.COMPONENT, className, param.args),
+            invokeFunctionWithParam(BuilderMethodNames.CREATECOMPATIBLENODE, InteropInternalNames.COMPONENT, className, param.args, node),
             ...invokeComponent(),
             createInitReturn(className)
         ]
@@ -511,7 +513,7 @@ export function generateBuilderCompatible(
 ): arkts.AstNode {
     let functionName = getFunctionName(node);
     let param: builderParam = getInitArgs(node);
-    const initializer = createBuilderInitializer(moduleName, functionName, param);
+    const initializer = createBuilderInitializer(moduleName, functionName, param, node);
     const updater: arkts.ArrowFunctionExpression = createBuilderUpdate(node);
     let result;
     if (arkts.isProperty(node)) {
