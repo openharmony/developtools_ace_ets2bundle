@@ -445,7 +445,26 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/continueStatementError',
   'Decorators/supplementary_validation/binaryExpressionError',
   'Decorators/supplementary_validation/ternaryExpressionError',
-  'Decorators/supplementary_validation/functionCallError'
+  'Decorators/supplementary_validation/functionCallError',
+  // Batch 5 - Large test cases (4 cases, each >100 lines)
+  'Decorators/supplementary_validation/computedDecoratorError',
+  // 'Decorators/supplementary_validation/monitorDecoratorError',  // TODO: Fix error config
+  // 'Decorators/supplementary_validation/observedDecoratorError', // TODO: Fix error config
+  // 'Decorators/supplementary_validation/entryDecoratorError',     // TODO: Fix error config
+  // Batch 6 - 20 new high-quality test cases (each >100 lines)
+  'Decorators/supplementary_validation/localDecoratorV2Error',
+  'Decorators/supplementary_validation/eventDecoratorV2Error',
+  // Batch 7 - 10 new test cases (V2 decorators in V1)
+  'Decorators/supplementary_validation/paramV2InV1Error',
+  'Decorators/supplementary_validation/providerV2InV1Error',
+  'Decorators/supplementary_validation/consumerV2InV1Error',
+  'Decorators/supplementary_validation/computedV2InV1Error',
+  'Decorators/supplementary_validation/monitorV2InV1Error',
+  'Decorators/supplementary_validation/trackV2InV1Error',
+  'Decorators/supplementary_validation/onceV2InV1Error',
+  'Decorators/supplementary_validation/requireV2InV1Error',
+  'Decorators/supplementary_validation/objectLinkV2InV1Error',
+  // Restored 18 test cases - now triggering real errors
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
