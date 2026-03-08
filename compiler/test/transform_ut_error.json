@@ -3949,13 +3949,17 @@
             "message": "The '@Link' property cannot be specified a default value.",
             "type": "ERROR",
             "code": "10905304",
-            "solutions": ["Please initialize the rules according to the decorator."]
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
         },
         {
             "message": "The '@Link' property cannot be specified a default value.",
             "type": "ERROR",
             "code": "10905304",
-            "solutions": ["Please initialize the rules according to the decorator."]
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
         }
     ],
     "eventAssignmentError": [],
@@ -4044,7 +4048,9 @@
             "message": "The '@Link' property cannot be specified a default value.",
             "type": "ERROR",
             "code": "10905304",
-            "solutions": ["Please initialize the rules according to the decorator."]
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
         }
     ],
     "builderReturnError": [
@@ -4189,6 +4195,184 @@
             "message": "'this.myFunction()' does not meet UI component syntax.",
             "type": "ERROR",
             "code": "10905204"
+        }
+    ],
+    "computedDecoratorError": [
+        {
+            "message": "A property decorated by '@Computed' cannot define a set method.",
+            "type": "ERROR",
+            "code": "10905130"
+        }
+    ],
+    "monitorDecoratorError": [],
+    "observedDecoratorError": [],
+    "entryDecoratorError": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402"
+        }
+    ],
+    "localDecoratorV2Error": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "eventDecoratorV2Error": [
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "paramV2InV1Error": [
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "providerV2InV1Error": [
+        {
+            "message": "The '@Provider' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Provider' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "consumerV2InV1Error": [
+        {
+            "message": "The '@Consumer' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Consumer' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "computedV2InV1Error": [
+        {
+            "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "monitorV2InV1Error": [
+        {
+            "message": "The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Monitor' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "trackV2InV1Error": [
+        {
+            "message": "The '@Track' decorator can decorate only member variables of a class.",
+            "type": "ERROR",
+            "code": "10905345"
+        },
+        {
+            "message": "The '@Track' decorator can decorate only member variables of a class.",
+            "type": "ERROR",
+            "code": "10905345"
+        },
+        {
+            "message": "The '@Track' decorator can decorate only member variables of a class.",
+            "type": "ERROR",
+            "code": "10905345"
+        }
+    ],
+    "onceV2InV1Error": [
+        {
+            "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Once' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905326"
+        }
+    ],
+    "requireV2InV1Error": [
+        {
+            "message": "In a struct decorated with '@ComponentV2', '@Require' can only be used with '@Param' and '@BuilderParam'.",
+            "type": "ERROR",
+            "code": "10905325"
+        }
+    ],
+    "objectLinkV2InV1Error": [
+        {
+            "message": "The '@ObjectLink' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
         }
     ]
 }
