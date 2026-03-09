@@ -19,6 +19,7 @@ import { factory as BuilderLambdaFactory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { coerceToAstNode } from '../../common/arkts-utils';
+import { generateBuilderCompatible, addcompatibleComponentImport, isFromBuilder1_1 } from '../interop/builder-interop';
 
 export class BuilderFactory {
     /**
@@ -73,7 +74,14 @@ export class BuilderFactory {
     static rewriteBuilderProperty<T extends arkts.AstNode = arkts.Property>(node: T): arkts.Property {
         const _node = coerceToAstNode<arkts.Property>(node);
         const value = _node.value;
-        if (!value || !arkts.isArrowFunctionExpression(value)) {
+        if (!value) {
+            return _node;
+        }
+        if (isFromBuilder1_1(arkts.getDecl(value))) {
+            addcompatibleComponentImport();
+            return generateBuilderCompatible(_node, value.name) as arkts.Property;
+        }
+        if (!arkts.isArrowFunctionExpression(value)) {
             return _node;
         }
         const newValue = BuilderFactory.rewriteBuilderArrowFunction(value);
