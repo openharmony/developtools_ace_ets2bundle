@@ -1114,7 +1114,7 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
     let specifyJsDocTagValue: string | ts.NodeArray<ts.JSDocComment> = '';
     jsDocTags.forEach(item => {
       if (specifyTag.includes(item.tagName.escapedText.toString())) {
-        specifyJsDocTagValue = item.comment ?? "";
+        specifyJsDocTagValue = item.comment ?? '';
       }
     });
     return specifyJsDocTagValue;

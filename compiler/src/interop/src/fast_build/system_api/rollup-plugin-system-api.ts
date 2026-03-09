@@ -130,7 +130,6 @@ export function apiTransform() {
   };
 }
 
-
 function processSystemApi(content: string, sourcePath: string): string {
   // 'arkui-x' represents cross platform related APIs, processed as 'ohos'
   const REG_SYSTEM: RegExp =

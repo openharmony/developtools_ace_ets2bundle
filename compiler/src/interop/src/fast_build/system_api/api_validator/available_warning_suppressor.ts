@@ -36,7 +36,7 @@ export class AvailableWarningSuppressor extends BaseWarningSuppressor {
   constructor(
     projectCompatibleSdkVersion: string,
     minRequiredVersion: string,
-    minAvaileableVersion: ParsedVersion,
+    minAvailableVersion: ParsedVersion,
     typeChecker?: ts.TypeChecker
   ) {
     super(AVAILABLE_TAG_NAME);
@@ -46,13 +46,13 @@ export class AvailableWarningSuppressor extends BaseWarningSuppressor {
         projectCompatibleSdkVersion,
         minRequiredVersion,
         typeChecker,
-        minAvaileableVersion
+        minAvailableVersion
       ),
       new SdkComparisonValidator(
         projectCompatibleSdkVersion,
         minRequiredVersion,
         typeChecker,
-        minAvaileableVersion
+        minAvailableVersion
       )
     ]);
   }
