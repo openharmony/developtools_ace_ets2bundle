@@ -180,7 +180,7 @@ export function createGetter(
     isStatic: boolean = false
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
-    if (needMemo && findCanAddMemoFromTypeAnnotation(returnType)) {
+    if (needMemo && findCanAddMemoFromTypeAnnotation(returnType).canAddMemo) {
         addMemoAnnotation(returnType);
     }
     const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
@@ -222,7 +222,7 @@ export function createSetter(
         arkts.factory.createIdentifier('value', type?.clone()),
         undefined
     );
-    if (needMemo && findCanAddMemoFromParameter(param)) {
+    if (needMemo && findCanAddMemoFromParameter(param).canAddMemo) {
         addMemoAnnotation(param);
     }
     const scriptFunction = arkts.factory.createScriptFunction(
