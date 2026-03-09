@@ -464,6 +464,18 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/onceV2InV1Error',
   'Decorators/supplementary_validation/requireV2InV1Error',
   'Decorators/supplementary_validation/objectLinkV2InV1Error',
+  // First comprehensive validation - comprehensive test cases for error codes
+  'Decorators/supplementary_validation/first_comprehensive_validation/extendAnimatableConflict',
+  'Decorators/supplementary_validation/first_comprehensive_validation/componentReuseWithParams',
+  'Decorators/supplementary_validation/first_comprehensive_validation/componentSpecificChildError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/computedWithSetterError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/multipleDecoratorsError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/breakInBuilderError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/continueInBuilderError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/binaryInBuilderError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/ternaryInBuilderError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/functionCallInBuilderError',
+  'Decorators/supplementary_validation/first_comprehensive_validation/whileLoopInBuilderError',
   // Restored 18 test cases - now triggering real errors
 ]
 
