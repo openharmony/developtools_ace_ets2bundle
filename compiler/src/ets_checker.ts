@@ -383,7 +383,6 @@ let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   parentEvent?: CompileEvent, rollupShareObject?: Object): ts.LanguageService {
-  const eventCreateLanguageService = createAndStartEvent(parentEvent, 'createLanguageService');
   setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
   getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
@@ -417,7 +416,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
     getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
-      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName, eventCreateLanguageService);
+      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
     },
     getFileCheckedModuleInfo: (containFilePath: string) => {
       return {
@@ -464,7 +463,6 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
   const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, parentEvent, rollupShareObject);
   MemoryMonitor.stopRecordStage(recordInfo);
-  stopEvent(eventCreateLanguageService);
   return tsLanguageService;
 }
 
