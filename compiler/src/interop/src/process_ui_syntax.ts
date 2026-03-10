@@ -16,6 +16,7 @@
 import ts, { TypeChecker } from 'typescript';
 import path from 'path';
 import fs from 'fs';
+import { fileInfoCache } from './file_info_cache';
 
 import {
   PAGE_ENTRY_FUNCTION_NAME,
@@ -199,7 +200,7 @@ export function processUISyntax(program: ts.Program, ut = false,
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
         storedFileInfo.transformCacheFiles[pageFile] = {
-          mtimeMs: fs.existsSync(pageFile) ? fs.statSync(pageFile).mtimeMs : 0,
+          mtimeMs: fileInfoCache.getMtimeMs(pageFile),
           hash: fileHash,
           children: []
         };
