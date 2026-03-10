@@ -4374,5 +4374,122 @@
             "type": "ERROR",
             "code": "10905339"
         }
+    ],
+    "extendAnimatableConflict": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.",
+            "type": "ERROR",
+            "code": "10905111"
+        },
+        {
+            "message": "The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.",
+            "type": "ERROR",
+            "code": "10905111"
+        }
+    ],
+    "componentReuseWithParams": [
+        {
+            "message": "Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905370"
+        },
+        {
+            "message": "Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905370"
+        }
+    ],
+    "componentSpecificChildError": [
+        {
+            "message": "The component 'List' can only have the child component 'ListItem,Section,ListItemGroup'.",
+            "type": "ERROR",
+            "code": "10905219"
+        },
+        {
+            "message": "The component 'Grid' can only have the child component 'GridItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        }
+    ],
+    "computedWithSetterError": [
+        {
+            "message": "A property decorated by '@Computed' cannot define a set method.",
+            "type": "ERROR",
+            "code": "10905130"
+        },
+        {
+            "message": "A property decorated by '@Computed' cannot define a set method.",
+            "type": "ERROR",
+            "code": "10905130"
+        }
+    ],
+    "multipleDecoratorsError": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "breakInBuilderError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "continueInBuilderError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "binaryInBuilderError": [
+        {
+            "message": "'1 + 1' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "ternaryInBuilderError": [
+        {
+            "message": "'this.flag ? Text('True') : Text('False')' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "functionCallInBuilderError": [
+        {
+            "message": "'this.myFunction()' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "whileLoopInBuilderError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
     ]
 }
