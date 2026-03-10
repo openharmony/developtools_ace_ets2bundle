@@ -4491,5 +4491,121 @@
             "type": "ERROR",
             "code": "10905209"
         }
+    ],
+    "builderParamTypeMismatch": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "extendInvalidComponent": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "forEachInvalidIndex": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "linkInvalidSource": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "localBuilderInvalidParam": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "reusableInvalidDecorator": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "sendableInvalidType": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
+    ],
+    "stylesInvalidUsage": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        }
     ]
 }
