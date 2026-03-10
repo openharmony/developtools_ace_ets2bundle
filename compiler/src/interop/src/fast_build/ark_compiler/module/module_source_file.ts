@@ -128,7 +128,7 @@ export class ModuleSourceFile {
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
     }
-    if (metaInfo?.language === ARKTS_1_2 || (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo))) {
+    if (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo)) {
       this.isArkTSEvolution = true;
     }
   }
