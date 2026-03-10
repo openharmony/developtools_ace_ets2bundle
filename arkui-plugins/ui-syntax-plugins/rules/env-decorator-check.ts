@@ -67,7 +67,6 @@ interface EnvTypeName {
 class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            envOnlyWithStruct: `The '@Env' annotation can only be used with 'struct'.`,
             envOnlyInComponentOrComponentV2: `The '@Env' annotation can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
             envCannotHaveDefault: `The '@Env' property cannot be specified a default value.`,
             envInvalidParameter: `Invalid parameter. State variables decorated with '@Env' of '{{typeName}}' can only accept {{enumName}}.`,
@@ -88,16 +87,6 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
 
-        if (arkts.isClassDeclaration(node)) {
-            this.checkEnvUsagePositionInClass(node);
-            return;
-        }
-
-        if (arkts.isTSInterfaceDeclaration(node)) {
-            this.checkEnvUsagePositionInInterface(node);
-            return;
-        }
-
         if (arkts.isClassProperty(node)) {
             this.checkEnvInitialization(node);
         }
@@ -110,50 +99,6 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
 
         if (arkts.isClassProperty(node)) {
             this.checkEnvVariableType(node);
-        }
-    }
-
-    // Reports error when @Env decorator is used in class members
-    private checkEnvUsagePositionInClass(node: arkts.ClassDeclaration): void {
-        if (!node.definition || !node.definition.body) {
-            return;
-        }
-
-        for (const member of node.definition.body) {
-            if (!arkts.isClassProperty(member) && !arkts.isMethodDefinition(member)) {
-                continue;
-            }
-
-            const memberNode = arkts.isClassProperty(member) ? member : member.scriptFunction;
-            const envDecorator = findDecorator(memberNode, PresetDecorators.ENV);
-            if (envDecorator) {
-                this.report({
-                    node: envDecorator,
-                    message: this.messages.envOnlyWithStruct,
-                });
-            }
-        }
-    }
-
-    // Reports error when @Env decorator is used in interface members.
-    private checkEnvUsagePositionInInterface(node: arkts.TSInterfaceDeclaration): void {
-        if (!node.body || !node.body.body) {
-            return;
-        }
-
-        for (const member of node.body.body) {
-            if (!arkts.isClassProperty(member) && !arkts.isMethodDefinition(member)) {
-                continue;
-            }
-
-            const memberNode = arkts.isClassProperty(member) ? member : member.scriptFunction;
-            const envDecorator = findDecorator(memberNode, PresetDecorators.ENV);
-            if (envDecorator) {
-                this.report({
-                    node: envDecorator,
-                    message: this.messages.envOnlyWithStruct,
-                });
-            }
         }
     }
     
