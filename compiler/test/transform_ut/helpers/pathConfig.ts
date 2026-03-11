@@ -478,26 +478,6 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/onceV2InV1Error',
   'Decorators/supplementary_validation/requireV2InV1Error',
   'Decorators/supplementary_validation/objectLinkV2InV1Error',
-  // Comprehensive validation test cases - all in gap_fill_v1
-  'Decorators/supplementary_validation/gap_fill_v1/extendAnimatableConflict',
-  'Decorators/supplementary_validation/gap_fill_v1/componentReuseWithParams',
-  'Decorators/supplementary_validation/gap_fill_v1/componentSpecificChildError',
-  'Decorators/supplementary_validation/gap_fill_v1/computedWithSetterError',
-  'Decorators/supplementary_validation/gap_fill_v1/multipleDecoratorsError',
-  'Decorators/supplementary_validation/gap_fill_v1/breakInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/continueInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/binaryInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/ternaryInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/functionCallInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/whileLoopInBuilderError',
-  'Decorators/supplementary_validation/gap_fill_v1/builderParamTypeMismatch',
-  'Decorators/supplementary_validation/gap_fill_v1/extendInvalidComponent',
-  'Decorators/supplementary_validation/gap_fill_v1/forEachInvalidIndex',
-  'Decorators/supplementary_validation/gap_fill_v1/linkInvalidSource',
-  'Decorators/supplementary_validation/gap_fill_v1/localBuilderInvalidParam',
-  'Decorators/supplementary_validation/gap_fill_v1/reusableInvalidDecorator',
-  'Decorators/supplementary_validation/gap_fill_v1/sendableInvalidType',
-  'Decorators/supplementary_validation/gap_fill_v1/stylesInvalidUsage',
   // Restored 18 test cases - now triggering real errors
 ]
 
