@@ -136,6 +136,12 @@ export const PresetDecorators = {
     VARIABLE: 'variable',
     PARAMETER: 'parameter',
     ANIMATABLE_EXTEND: 'AnimatableExtend',
+    COMPONENTINIT: 'ComponentInit',
+    COMPONENTAPPEAR: 'ComponentAppear',
+    COMPONENTBUILT: 'ComponentBuilt',
+    COMPONENTRECYCLE: 'ComponentRecycle',
+    COMPONENTREUSE: 'ComponentReuse',
+    COMPONENTDISAPPEAR: 'ComponentDisappear',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';

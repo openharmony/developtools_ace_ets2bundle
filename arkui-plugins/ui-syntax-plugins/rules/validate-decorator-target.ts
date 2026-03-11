@@ -49,8 +49,17 @@ const ComponentMemberDecorators: Set<string> = new Set([
     PresetDecorators.PARAM,
 ]);
 
+const LifecycleDecorators: Set<string> = new Set([
+    PresetDecorators.COMPONENTINIT,
+    PresetDecorators.COMPONENTAPPEAR,
+    PresetDecorators.COMPONENTBUILT,
+    PresetDecorators.COMPONENTRECYCLE,
+    PresetDecorators.COMPONENTREUSE,
+    PresetDecorators.COMPONENTDISAPPEAR,
+]);
+
 // Can only be used with decorators for struct
-const structOnlyDecorators = [...ComponentDecorators, ...ComponentMemberDecorators];
+const structOnlyDecorators = [...ComponentDecorators, ...ComponentMemberDecorators, ...LifecycleDecorators];
 
 // Can only be used with decorators for property
 const propertyOnlyDecorators = [
