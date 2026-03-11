@@ -89,22 +89,47 @@ export class BuilderParamTranslator extends PropertyTranslator implements Initia
         if (!!value && arkts.isArrowFunctionExpression(value)) {
             arkts.NodeCache.getInstance().collect(value);
         }
-        return arkts.factory.createAssignmentExpression(
-            mutableThis,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createBinaryExpression(
-                arkts.factory.createBinaryExpression(
-                    factory.createBlockStatementForOptionalExpression(
-                        arkts.factory.createIdentifier('initializers'),
-                        originalName
-                    ),
-                    arkts.factory.createIdentifier('content'),
-                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-                ),
-                value ?? arkts.factory.createUndefinedLiteral(),
+        const isLastBuilderParam = this.structInfo.lastBuilderParam === originalName;
+        const initialValue = value ?? arkts.factory.createUndefinedLiteral();
+        if (isLastBuilderParam) {
+            const initializersAccess = factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier('initializers'),
+                originalName
+            );
+            const trailingClosure = arkts.factory.createBinaryExpression(
+                initializersAccess,
+                arkts.factory.createIdentifier('content'),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-            )
-        );
+            );
+            const explicitParam = initializersAccess.clone();
+            return arkts.factory.createAssignmentExpression(
+                mutableThis,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                arkts.factory.createBinaryExpression(
+                    trailingClosure,
+                    arkts.factory.createBinaryExpression(
+                        explicitParam,
+                        initialValue,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                    ),
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                )
+            );
+        } else {
+            const initializersAccess = factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier('initializers'),
+                originalName
+            );
+            return arkts.factory.createAssignmentExpression(
+                mutableThis,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                arkts.factory.createBinaryExpression(
+                    initializersAccess,
+                    initialValue,
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                )
+            );
+        }
     }
 }
 
