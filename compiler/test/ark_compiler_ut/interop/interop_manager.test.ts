@@ -128,13 +128,31 @@ mocha.describe('test interop_manager file api', function () {
       cachePath: '/MyApplication16/hybrid/build/cache',
       byteCodeHarInfo: {}
     });
+
+    dependentModuleMap.set('remoteHar', {
+      language: ARKTS_1_2,
+      packageName: 'remoteHar',
+      moduleName: 'remoteHar',
+      modulePath: '/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar',
+      declgenV1OutPath: '/MyApplication16/build/declgen/remoteHar/declgenV1',
+      declgenV2OutPath: '/MyApplication16/build/declgen/remoteHar/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/build/declgen/remoteHar/declgenBridgeCode',
+      declFilesPath: undefined,
+      dynamicFiles: [],
+      staticFiles: ['/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar/Index.d.ets'],
+      cachePath: '/MyApplication16/build/declgen/remoteHar/cache',
+      byteCodeHarInfo: {}
+    });
+
     FileManager.cleanFileManagerObject();
     FileManager.initForTest(
       dependentModuleMap,
       undefined,
       dynamicSDKPath,
       staticSDKDeclPath,
-      staticSDKGlueCodePath);
+      staticSDKGlueCodePath,
+      '/MyApplication16'
+    );
   });
 
   mocha.after(() => {
@@ -212,18 +230,25 @@ mocha.describe('test interop_manager file api', function () {
     expect(result?.pkgName).to.equal('hybrid');
   });
 
+  mocha.it('1-11: test remote har declaration file from remoteHar module', function() {
+    const filePath = '/MyApplication16/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
+    const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
+    expect(result?.languageVersion).to.equal(ARKTS_1_2);
+    expect(result?.pkgName).to.equal('remoteHar');
+  });
+
   mocha.it('2-1: test matchModulePath api with 1.1 module', function() {
     const filePath = '/MyApplication16/dynamic1/sourceCode.ets';
     const moduleInfo = FileManager.matchModulePath(filePath);
-    expect(moduleInfo.languageVersion).to.equal(ARKTS_1_1);
-    expect(moduleInfo.pkgName).to.equal('dynamic1');
+    expect(moduleInfo?.languageVersion).to.equal(ARKTS_1_1);
+    expect(moduleInfo?.pkgName).to.equal('dynamic1');
   })
 
   mocha.it('2-2: test matchModulePath api with 1.2 module', function() {
     const filePath = '/MyApplication16/harv2/sourceCode.ets';
     const moduleInfo = FileManager.matchModulePath(filePath);
-    expect(moduleInfo.languageVersion).to.equal(ARKTS_1_2);
-    expect(moduleInfo.pkgName).to.equal('harv2');
+    expect(moduleInfo?.languageVersion).to.equal(ARKTS_1_2);
+    expect(moduleInfo?.pkgName).to.equal('harv2');
   })
 
   mocha.it('2-3: test matchModulePath api with isHybrid module', function() {
@@ -231,13 +256,27 @@ mocha.describe('test interop_manager file api', function () {
     const staticFilePath = '/MyApplication16/hybrid/fileV2.ets';
 
     const moduleInfoV1 = FileManager.matchModulePath(dymanicFilePath);
-    expect(moduleInfoV1.languageVersion).to.equal(ARKTS_1_1);
-    expect(moduleInfoV1.pkgName).to.equal('hybrid');
+    expect(moduleInfoV1?.languageVersion).to.equal(ARKTS_1_1);
+    expect(moduleInfoV1?.pkgName).to.equal('hybrid');
 
     const moduleInfoV2 = FileManager.matchModulePath(staticFilePath);
-    expect(moduleInfoV2.languageVersion).to.equal(ARKTS_1_2);
-    expect(moduleInfoV2.pkgName).to.equal('hybrid');
+    expect(moduleInfoV2?.languageVersion).to.equal(ARKTS_1_2);
+    expect(moduleInfoV2?.pkgName).to.equal('hybrid');
   })
+
+  mocha.it('2-4: test matchModulePath api with remote har module', function() {
+    const filePath = '/MyApplication16/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
+    const moduleInfo = FileManager.matchModulePath(filePath);
+    expect(moduleInfo?.pkgName).to.equal('remoteHar');
+    expect(moduleInfo?.languageVersion).to.equal(ARKTS_1_2);
+  });
+
+  mocha.it('2-4-1: test matchModulePathByDeclenPath api with remote har module', function() {
+    const filePath = '/MyApplication16/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
+    const moduleInfo = FileManager.matchModulePathByDeclenPath(filePath);
+    expect(moduleInfo?.language).to.equal(ARKTS_1_2);
+    expect(moduleInfo?.packageName).to.equal('remoteHar');
+  });
 
   mocha.it('3-1: test init SDK', function () {
     const share = {
