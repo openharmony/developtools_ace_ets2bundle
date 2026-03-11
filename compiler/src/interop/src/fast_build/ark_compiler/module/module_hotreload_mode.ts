@@ -44,6 +44,7 @@ import {
   createAndStartEvent,
   stopEvent
 } from '../../../performance';
+import { fileInfoCache } from '../../../file_info_cache';
 
 let isFirstBuild: boolean = true;
 
@@ -101,7 +102,7 @@ export class ModuleHotreloadMode extends ModuleMode {
   }
 
   private compileChangeListFiles(rollupObject: Object, parentEvent: CompileEvent): void {
-    if (!fs.existsSync(this.projectConfig.changedFileList)) {
+    if (!fileInfoCache.fileExists(this.projectConfig.changedFileList)) {
       this.logger.debug(blue, `ArkTS: Cannot find file: ${
         this.projectConfig.changedFileList}, skip hot reload build`, reset);
       return;

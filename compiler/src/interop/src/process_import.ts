@@ -17,6 +17,7 @@ import ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
 import JSON5 from 'json5';
+import { fileInfoCache } from './file_info_cache';
 
 import {
   EXTNAME_ETS,
@@ -141,8 +142,7 @@ export default function processImport(node: ts.ImportDeclaration | ts.ImportEqua
 
   try {
     const fileResolvePath: string = getFileFullPath(filePath, pagesDir);
-    if (fs.existsSync(fileResolvePath) && fs.statSync(fileResolvePath).isFile() &&
-      !pathCollection.has(fileResolvePath)) {
+    if (fileInfoCache.isFile(fileResolvePath) && !pathCollection.has(fileResolvePath)) {
       let sourceFile: ts.SourceFile;
       pathCollection.add(fileResolvePath);
       if (IMPORT_FILE_ASTCACHE.has(fileResolvePath)) {
@@ -629,8 +629,7 @@ function isPackageJsonEntry(filePath: string): boolean {
 }
 
 function entryExist(filePath: string, entry: string): boolean {
-  return typeof entry === 'string' && fs.existsSync(path.resolve(filePath, entry)) &&
-    fs.statSync(path.resolve(filePath, entry)).isFile();
+  return typeof entry === 'string' && fileInfoCache.isFile(path.resolve(filePath, entry));
 }
 
 function getModuleFilePath(filePath: string): string {
@@ -682,16 +681,16 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
       fileResolvePath = fileResolvePath + EXTNAME_ETS;
     } else if (isPackageJsonEntry(fileResolvePath)) {
       fileResolvePath = packageJsonEntry;
-      if (fs.statSync(fileResolvePath).isDirectory()) {
-        if (fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
+      if (fileInfoCache.isDirectory(fileResolvePath)) {
+        if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_ETS))) {
           fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
-        } else if (fs.existsSync(path.join(fileResolvePath, INDEX_TS))) {
+        } else if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_TS))) {
           fileResolvePath = path.join(fileResolvePath, INDEX_TS);
         }
       }
-    } else if (fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
+    } else if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_ETS))) {
       fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
-    } else if (fs.existsSync(path.join(fileResolvePath, INDEX_TS))) {
+    } else if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_TS))) {
       fileResolvePath = path.join(fileResolvePath, INDEX_TS);
     }
     if (curPageDir === path.parse(curPageDir).root) {
@@ -722,7 +721,7 @@ function getFileFullPath(filePath: string, pagesDir: string): string {
   if (/^(\.|\.\.)\//.test(filePath) && filePath.indexOf(projectConfig.packageDir) < 0) {
     fileResolvePath = path.resolve(pagesDir, filePath);
   } else if (/^\//.test(filePath) && filePath.indexOf(projectConfig.packageDir) < 0 ||
-    fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    fileInfoCache.isFile(filePath)) {
     fileResolvePath = filePath;
   } else {
     fileResolvePath = getFileResolvePath(fileResolvePath, pagesDir, filePath, projectConfig.projectPath);
@@ -910,7 +909,7 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
     const fileHash = share?.getHashByFilePath ? share.getHashByFilePath(childFile) : '';
     storedFileInfo.transformCacheFiles[pageInfo.pageFile].children.push({
       fileName: childFile,
-      mtimeMs: fs.existsSync(childFile) ? fs.statSync(childFile).mtimeMs : 0,
+      mtimeMs: fileInfoCache.getMtimeMs(childFile),
       hash: fileHash
     });
     pageInfo.setChildOnce = true;
