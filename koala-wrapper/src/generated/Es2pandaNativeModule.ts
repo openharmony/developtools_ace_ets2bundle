@@ -3623,18 +3623,6 @@ export class Es2pandaNativeModule {
     _TSParameterPropertyParameterConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSParameterPropertyParameterConst was not overloaded by native module initialization")
     }
-    _CreateETSWildcardType(context: KNativePointer, typeReference: KNativePointer, flags: KInt): KNativePointer {
-        throw new Error("'CreateETSWildcardType was not overloaded by native module initialization")
-    }
-    _UpdateETSWildcardType(context: KNativePointer, original: KNativePointer, typeReference: KNativePointer, flags: KInt): KNativePointer {
-        throw new Error("'UpdateETSWildcardType was not overloaded by native module initialization")
-    }
-    _ETSWildcardTypeTypeReference(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ETSWildcardTypeTypeReference was not overloaded by native module initialization")
-    }
-    _ETSWildcardTypeTypeReferenceConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
-        throw new Error("'ETSWildcardTypeTypeReferenceConst was not overloaded by native module initialization")
-    }
     _CreateTSThisType(context: KNativePointer): KNativePointer {
         throw new Error("'CreateTSThisType was not overloaded by native module initialization")
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -86,7 +86,6 @@ export enum Es2pandaAstNodeType {
     AST_NODE_TYPE_ETS_STRING_LITERAL_TYPE,
     AST_NODE_TYPE_ETS_INTRINSIC_NODE_TYPE,
     AST_NODE_TYPE_ETS_FUNCTION_TYPE,
-    AST_NODE_TYPE_ETS_WILDCARD_TYPE,
     AST_NODE_TYPE_ETS_GENERIC_INSTANTIATED_NODE,
     AST_NODE_TYPE_ETS_PRIMITIVE_TYPE,
     AST_NODE_TYPE_ETS_PACKAGE_DECLARATION,
