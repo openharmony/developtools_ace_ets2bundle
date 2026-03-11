@@ -53,6 +53,7 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
+import { fileInfoCache } from '../../file_info_cache';
 import { collectArkTSEvolutionModuleInfo } from '../ark_compiler/interop/process_arkts_evolution';
 import {
   isBridgeCode,
@@ -72,6 +73,7 @@ export function etsChecker() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
+      fileInfoCache.setShare(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
