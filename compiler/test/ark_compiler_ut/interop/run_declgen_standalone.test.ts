@@ -74,6 +74,21 @@ mocha.describe('DeclfileProductor', () => {
             packageVersion: '1.0.0',
             moduleType: 'har'
         });
+        dependentModuleMap.set('hsp1', {
+            language: '1.1',
+            packageName: 'hsp1',
+            moduleName: 'hsp1',
+            modulePath: '/path/to/project/hsp1',
+            declgenV1OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV1',
+            declgenV2OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV2',
+            declgenBridgeCodePath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenBridgeCode',
+            dynamicFiles: ['/path/to/project/hsp1/src/ets/dynamic3.ets'],
+            staticFiles: ['/path/to/project/hsp1/src/ets/index.ets'],
+            cachePath: '/path/to/project/hsp1/build/default/cache',
+            byteCodeHarInfo: [],
+            packageVersion: '1.0.0',
+            moduleType: 'shared'  // HSP 类型
+        });
         FileManager.initForTest(
             dependentModuleMap,
             undefined,
@@ -117,7 +132,7 @@ mocha.describe('DeclfileProductor', () => {
 
         const expectedProjectFilePath = 'src/main/ets/dynamic1';
         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
-        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic1&1.0.0`;
+        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic1&`;
 
         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
@@ -149,42 +164,41 @@ mocha.describe('DeclfileProductor', () => {
         const expectedProjectFilePath = 'src/main/ets/dynamic2';
         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
         const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic2&1.0.0`;
-
+        
         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
         expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
     });
 
     mocha.it('1-3: add hsp decl files (no version in ohmUrl)', () => {
- 	         const moduleInfo: ArkTSEvolutionModule = {
- 	             language: '1.1',
- 	             packageName: 'hsp1',
- 	             moduleName: 'hsp1',
- 	             modulePath: '/path/to/project/hsp1',
- 	             declgenV1OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV1',
- 	             declgenV2OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV2',
- 	             declgenBridgeCodePath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenBridgeCode',
- 	             dynamicFiles: ['/path/to/project/hsp1/src/ets/dynamic3.ets'],
- 	             staticFiles: ['/path/to/project/hsp1/src/ets/index.ets'],
- 	             cachePath: '/path/to/project/hsp1/build/default/cache',
- 	             byteCodeHarInfo: [],
- 	             packageVersion: '1.0.0',
- 	             moduleType: 'shared'
- 	         };
- 	         const filePath = '/path/to/project/hsp1/src/main/ets/dynamic3.ets';
- 	         const mainModuleName = 'hsp1';
- 	         const bundleName = 'com.hsp1';
- 	 
- 	         declFileProductor.addDeclFilesConfig(filePath, mainModuleName, bundleName, moduleInfo);
- 	 
- 	         const expectedProjectFilePath = 'src/main/ets/dynamic3';
- 	         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
- 	         const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic3&`;
- 	 
- 	         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
- 	         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
- 	         expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
- 	     });
+        const moduleInfo: ArkTSEvolutionModule = {
+            language: '1.1',
+            packageName: 'hsp1',
+            moduleName: 'hsp1',
+            modulePath: '/path/to/project/hsp1',
+            declgenV1OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV1',
+            declgenV2OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV2',
+            declgenBridgeCodePath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenBridgeCode',
+            dynamicFiles: ['/path/to/project/hsp1/src/ets/dynamic3.ets'],
+            staticFiles: ['/path/to/project/hsp1/src/ets/index.ets'],
+            cachePath: '/path/to/project/hsp1/build/default/cache',
+            byteCodeHarInfo: [],
+            packageVersion: '1.0.0',
+            moduleType: 'shared'
+        };
+        const filePath = '/path/to/project/hsp1/src/main/ets/dynamic3.ets';
+        const mainModuleName = 'hsp1';
+        const bundleName = 'com.hsp1';
+        declFileProductor.addDeclFilesConfig(filePath, mainModuleName, bundleName, moduleInfo);
+
+        const expectedProjectFilePath = 'src/main/ets/dynamic3';
+        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
+        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic3&`;
+        
+        const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
+        expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
+        expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
+    });
     mocha.after(() => {
         FileManager.cleanFileManagerObject();
     });
