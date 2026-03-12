@@ -119,25 +119,27 @@ export class ComponentLifecycleTranslator extends MethodTranslator {
             handler.handle(this.method, this.classInfo, methodName);
         }
 
-        const lifecycleType = this.getLifecycleMethodType();
-        if (this.shouldSkipLifecycleCollection(methodName, lifecycleType)) {
-            return;
-        }
-        if (!this.classInfo.isFromStruct || !lifecycleType) {
+        if (!this.classInfo.isFromStruct) {
             return;
         }
 
-        const hasReuseParam =
-            lifecycleType === LifecycleMethodType.ABOUT_TO_REUSE && this.method.scriptFunction.params.length > 0;
-        const methodInfo: LifecycleMethodInfo = {
-            methodName: methodName,
-            methodType: lifecycleType,
-            hasReuseParam: hasReuseParam,
-            reuseParams: hasReuseParam
-                ? (this.method.scriptFunction.params as arkts.ETSParameterExpression[])
-                : undefined,
-        };
-        ComponentLifecycleCache.getInstance().collectLifecycleMethod(this.classInfo.className, methodInfo);
+        for (const lifecycleType of this.getLifecycleMethodTypes()) {
+            if (this.shouldSkipLifecycleCollection(methodName, lifecycleType)) {
+                continue;
+            }
+
+            const hasReuseParam =
+                lifecycleType === LifecycleMethodType.ABOUT_TO_REUSE && this.method.scriptFunction.params.length > 0;
+            const methodInfo: LifecycleMethodInfo = {
+                methodName: methodName,
+                methodType: lifecycleType,
+                hasReuseParam: hasReuseParam,
+                reuseParams: hasReuseParam
+                    ? (this.method.scriptFunction.params as arkts.ETSParameterExpression[])
+                    : undefined,
+            };
+            ComponentLifecycleCache.getInstance().collectLifecycleMethod(this.classInfo.className, methodInfo);
+        }
     }
 
     private shouldSkipLifecycleCollection(
@@ -147,14 +149,15 @@ export class ComponentLifecycleTranslator extends MethodTranslator {
         return !!lifecycleType && methodName === lifecycleType;
     }
 
-    private getLifecycleMethodType(): LifecycleMethodType | undefined {
+    private getLifecycleMethodTypes(): LifecycleMethodType[] {
+        const lifecycleTypes: LifecycleMethodType[] = [];
         for (const handler of ComponentLifecycleTranslator.lifecycleMethodTypeHandlers) {
             const lifecycleType = handler.handle(this.method);
             if (lifecycleType) {
-                return lifecycleType;
+                lifecycleTypes.push(lifecycleType);
             }
         }
-        return undefined;
+        return lifecycleTypes;
     }
 
 }
