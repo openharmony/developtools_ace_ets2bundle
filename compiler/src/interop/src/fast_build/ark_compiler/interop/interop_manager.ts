@@ -602,6 +602,7 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
  * As the entry  for mix compile,so mixCompile status will be set true
  */
 export function initConfigForInterop(interopConfig: InteropConfig): Object {
+  mixCompile = true;
   initFileManagerInRollup(interopConfig);
 
   function getEntryObj(): void {
@@ -623,7 +624,6 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
       return newEntry;
     }, {});
   }
-  mixCompile = true;
   getEntryObj();
   if (process.env.appResource) {
     readAppResource(process.env.appResource);
