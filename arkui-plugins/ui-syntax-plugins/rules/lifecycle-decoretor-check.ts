@@ -14,7 +14,7 @@
  */
 import * as arkts from '@koalaui/libarkts';
 
-import { PresetDecorators } from '../utils';
+import { PresetDecorators, getAnnotationName } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
 // Lifecycle decorators can not have parameters
@@ -26,15 +26,24 @@ const LIFECYCLE_DECORATORS_WITHOUT_PARAMS: Set<string> = new Set([
     PresetDecorators.COMPONENTDISAPPEAR,
 ]);
 
+const LIFECYCLE_METHODS: Set<string> = new Set([
+    'aboutToAppear',
+    'onDidBuild',
+    'aboutToRecycle',
+    'aboutToReuse',
+    'aboutToDisappear',
+]);
+
 // @ComponentReuse param type in @Component
 const REUSE_OBJECT_TYPE_NAME: string = 'ReuseObject';
 
 class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
     public setup(): Record<string, string> {
         return {
-            lifecycleDecoratorInvalidParameter: `Methods decorated with '{{propertyName}}' cannot have input parameters.`,
+            lifecycleDecoratorInvalidParameter: `Methods decorated with '{{decoratorName}}' cannot have input parameters.`,
             componentReuseInComponentV2Parameter: `Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters`,
-            componentReuseInComponentParameter: `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: ReuseObject.`,
+            componentReuseInComponentParameter: `In the struct decorated with '@Component', the '@ComponentReuse' decorated function can have either no parameters or a single parameter of the 'ReuseObject' type.`,
+            lifecycleDecoratorInvalidMethod:`'{{decoratorName}}' cannot decorate '{{LifecycleMethod}}'.`,
         };
     }
 
@@ -70,22 +79,23 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
             // Check method decorators
             const methodHasParams = member.scriptFunction.params.length > 0;
             for (const annotation of annotations) {
-                const decoratorName = this.getDecoratorName(annotation);
+                const decoratorName = getAnnotationName(annotation);
                 if (!decoratorName) {
                     continue;
                 }
 
-                if (LIFECYCLE_DECORATORS_WITHOUT_PARAMS.has(decoratorName)) {
+                if (this.checkLifecycleDecoratorInvalidMethod(member, annotation, decoratorName)) {
+                    continue;
+                }
+
+                if (LIFECYCLE_DECORATORS_WITHOUT_PARAMS.has(decoratorName) && methodHasParams) {
                     // @ComponentInit/@ComponentAppear/@ComponentBuilt
                     // @ComponentRecycle/@ComponentDisappearcan not have parameters
-                    if (!methodHasParams) {
-                        continue;
-                    }
                     this.report({
                         node: annotation,
                         message: this.messages.lifecycleDecoratorInvalidParameter,
                         data: {
-                            propertyName: `@${decoratorName}`,
+                            decoratorName: `@${decoratorName}`,
                         },
                     });
                     continue;
@@ -104,6 +114,36 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
                 this.checkComponentReuseInComponentStructs(member, annotation, isComponentV1Struct, isComponentV2Struct);
             }
         }
+    }
+
+    private checkLifecycleDecoratorInvalidMethod(
+        method: arkts.MethodDefinition,
+        annotation: arkts.AnnotationUsage,
+        decoratorName: string,
+    ): boolean {
+        if (!LIFECYCLE_DECORATORS_WITHOUT_PARAMS.has(decoratorName) && decoratorName !== PresetDecorators.COMPONENTREUSE) {
+            return false;
+        }
+        const methodName = this.getMethodName(method);
+        if (!methodName || !LIFECYCLE_METHODS.has(methodName)) {
+            return false;
+        }
+        this.report({
+            node: annotation,
+            message: this.messages.lifecycleDecoratorInvalidMethod,
+            data: {
+                decoratorName: `@${decoratorName}`,
+                LifecycleMethod: methodName,
+            },
+        });
+        return true;
+    }
+
+    private getMethodName(method: arkts.MethodDefinition): string | undefined {
+        if (!method.name || !arkts.isIdentifier(method.name)) {
+            return undefined;
+        }
+        return method.name.name;
     }
 
     private checkComponentReuseInComponentStructs(
@@ -151,23 +191,21 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private getTypeName(typeNode: arkts.TypeNode | undefined): string | undefined {
-        // Get type name from type reference (ReuseObject / xxx.ReuseObject)
+        // Get type name from type reference (only simple ReuseObject, not SomeNs.ReuseObject)
         if (!typeNode) {
             return undefined;
         }
         if (!arkts.isETSTypeReference(typeNode)) {
             return undefined;
         }
-
-        const typeName = typeNode.part?.name;
-        if (!typeName) {
-            return undefined;
-        }
-        if (arkts.isIdentifier(typeName)) {
-            return typeName.name;
-        }
-        if (arkts.isTSQualifiedName(typeName) && typeName.right && arkts.isIdentifier(typeName.right)) {
-            return typeName.right.name;
+        const typeRef = typeNode as arkts.ETSTypeReference;
+        
+        // Check part and name exist and are correct types
+        if (typeRef.part && arkts.isETSTypeReferencePart(typeRef.part)) {
+            const part = typeRef.part as arkts.ETSTypeReferencePart;
+            if (part.name && arkts.isIdentifier(part.name)) {
+                return part.name.name;
+            }
         }
         return undefined;
     }
@@ -180,24 +218,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         annotations: readonly arkts.AnnotationUsage[],
         decoratorName: string,
     ): arkts.AnnotationUsage | undefined {
-        return annotations.find((annotation) => this.getDecoratorName(annotation) === decoratorName);
-    }
-
-    private getDecoratorName(annotation: arkts.AnnotationUsage): string | undefined {
-        if (!annotation.expr) {
-            return undefined;
-        }
-
-        if (arkts.isIdentifier(annotation.expr)) {
-            return annotation.expr.name;
-        }
-        if (arkts.isCallExpression(annotation.expr)) {
-            const callee = annotation.expr.expression;
-            if (arkts.isIdentifier(callee)) {
-                return callee.name;
-            }
-        }
-        return undefined;
+        return annotations.find((annotation) => getAnnotationName(annotation) === decoratorName);
     }
 
 }
