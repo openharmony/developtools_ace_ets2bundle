@@ -22,6 +22,7 @@ import { sdkConfigPrefix } from '../main';
 interface ImportInfo {
   defaultImport?: {
     name: ts.Identifier;
+    isTypeOnly?: boolean;
   };
   namedImports: ts.ImportSpecifier[];
 }
@@ -39,10 +40,11 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
   }
   const exclude: string[] = expandImportPath?.exclude ? expandImportPath?.exclude : [];
   return (context: ts.TransformationContext) => {
+    const resolver = context.getEmitResolver();
     // @ts-ignore
     const visitor: ts.Visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
       if (ts.isImportDeclaration(node)) {
-        const result: ts.ImportDeclaration[] = transformImportDecl(node, checker, exclude,
+        const result: ts.ImportDeclaration[] = transformImportDecl(node, checker, exclude, resolver,
           Object.assign(rollupObejct.share.projectConfig, rollupObejct.share.arkProjectConfig));
         return result.length > 0 ? result : node;
       }
@@ -56,7 +58,7 @@ export function expandAllImportPaths(checker: ts.TypeChecker, rollupObejct: Obje
 }
 
 function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker, exclude: string[],
-  projectConfig: Object): ts.ImportDeclaration[] {
+  resolver: ts.EmitResolver | undefined, projectConfig: Object): ts.ImportDeclaration[] {
   const moduleSpecifier: ts.StringLiteral = node.moduleSpecifier as ts.StringLiteral;
   const moduleRequest: string = moduleSpecifier.text;
   const REG_SYSTEM_MODULE: RegExp = new RegExp(`@(${sdkConfigPrefix})\\.(\\S+)`);
@@ -79,9 +81,9 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
 
   const importMap = new Map<string, ImportInfo>();
   // default import
-  processDefaultImport(checker, importMap, importClause, moduleSpecifier, packageDir, depName2DepInfo);
+  processDefaultImport(checker, importMap, importClause, moduleSpecifier, packageDir, depName2DepInfo, resolver);
   // named imports
-  processNamedImport(checker, importMap, importClause, moduleSpecifier, packageDir, depName2DepInfo);
+  processNamedImport(checker, importMap, importClause, moduleSpecifier, packageDir, depName2DepInfo, resolver);
   if (importMap.size === 0) {
     return [];
   }
@@ -92,7 +94,8 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
     if (filePath.endsWith('.ets') || filePath.endsWith('.ts')) {
       realModuleRequest = filePath.replace(/\.(ets|ts)$/, '');
     }
-    results.push(createImportDeclarationFromInfo(info, node, realModuleRequest));
+    const importDecls: ts.ImportDeclaration[] = createImportDeclarationFromInfo(info, node, realModuleRequest);
+    results.push(...importDecls);
   }
 
   return results;
@@ -100,10 +103,14 @@ function transformImportDecl(node: ts.ImportDeclaration, checker: ts.TypeChecker
 
 
 function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, ImportInfo>, importClause: ts.ImportClause,
-  moduleSpecifier: ts.StringLiteral, packageDir: string, depName2DepInfo: Object): void {
+  moduleSpecifier: ts.StringLiteral, packageDir: string, depName2DepInfo: Object, resolver: ts.EmitResolver | undefined): void {
   if (importClause.name) {
+    const defaultImportIsTypeOnly: boolean = importClause.isTypeOnly || (resolver && !resolver.isReferencedAliasDeclaration(importClause));
     const resolved = getRealFilePath(checker, moduleSpecifier, 'default', packageDir, depName2DepInfo);
     if (!resolved) {
+      return;
+    }
+    if (resolver && !resolver.isReferenced(importClause)) {
       return;
     }
     const { filePath, isDefault, exportName } = resolved;
@@ -113,12 +120,13 @@ function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, Im
     }
     if (isDefault) {
       importMap.get(filePath)!.defaultImport = {
-        name: importClause.name
+        name: importClause.name,
+        isTypeOnly: defaultImportIsTypeOnly
       };
     } else {
       // fallback: was re-exported as default, but originally named
       importMap.get(filePath)!.namedImports.push(
-        ts.factory.createImportSpecifier(importClause.isTypeOnly,
+        ts.factory.createImportSpecifier(defaultImportIsTypeOnly,
           exportName && (exportName !== importClause.name.text) ?
           ts.factory.createIdentifier(exportName) : ts.factory.createIdentifier(importClause.name.text),
           importClause.name)
@@ -128,7 +136,7 @@ function processDefaultImport(checker: ts.TypeChecker, importMap: Map<string, Im
 }
 
 function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, ImportInfo>, importClause: ts.ImportClause,
-  moduleSpecifier: ts.StringLiteral, packageDir: string, depName2DepInfo: Object): void {
+  moduleSpecifier: ts.StringLiteral, packageDir: string, depName2DepInfo: Object, resolver: ts.EmitResolver | undefined): void {
   if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
     for (const element of importClause.namedBindings.elements) {
       const name: string = element.propertyName?.text || element.name.text;
@@ -136,21 +144,32 @@ function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, Impo
       if (!resolved) {
         continue;
       }
+      if (resolver && !resolver.isReferenced(element)) {
+        continue;
+      }
       let { filePath, isDefault, exportName } = resolved;
-      if (element.isTypeOnly) {
+      const finalIsTypeOnly: boolean = element.isTypeOnly || (resolver && !resolver.isReferencedAliasDeclaration(element));
+      if (finalIsTypeOnly) {
         filePath = moduleSpecifier.text;
       }
 
       if (!importMap.has(filePath)) {
         importMap.set(filePath, { namedImports: [] });
       }
+      if (isDefault && finalIsTypeOnly) {
+          importMap.get(filePath)!.namedImports.push(
+            ts.factory.createImportSpecifier(true, element.propertyName, element.name)
+          );
+          continue;
+      }
       if (isDefault) {
         importMap.get(filePath)!.defaultImport = {
-          name: element.name
+          name: element.name,
+          isTypeOnly: false
         };
       } else {
         importMap.get(filePath)!.namedImports.push(
-          ts.factory.createImportSpecifier(element.isTypeOnly,
+          ts.factory.createImportSpecifier(finalIsTypeOnly,
             exportName && (exportName !== name) ?
             ts.factory.createIdentifier(exportName) : element.propertyName,
             element.name)
@@ -161,15 +180,35 @@ function processNamedImport(checker: ts.TypeChecker, importMap: Map<string, Impo
 }
 
 function createImportDeclarationFromInfo(importInfo: ImportInfo, originalNode: ts.ImportDeclaration,
-  modulePath: string): ts.ImportDeclaration {
-  const importClause = ts.factory.createImportClause(false, importInfo.defaultImport?.name,
-    importInfo.namedImports.length > 0 ? ts.factory.createNamedImports(importInfo.namedImports) : undefined);
+  modulePath: string): ts.ImportDeclaration[] {
+  const results: ts.ImportDeclaration[] = [];
 
-  // @ts-ignore
-  importClause.isLazy = originalNode.importClause?.isLazy;
+  if (importInfo.defaultImport?.isTypeOnly) {
+    const defaultClause = ts.factory.createImportClause(false, importInfo.defaultImport.name, undefined);
+    // @ts-ignore
+    defaultClause.isLazy = originalNode.importClause?.isLazy;
+    defaultClause.isTypeOnly = true;
+    results.push(ts.factory.updateImportDeclaration(originalNode, originalNode.modifiers, defaultClause,
+      ts.factory.createStringLiteral(modulePath), originalNode.assertClause));
 
-  return ts.factory.updateImportDeclaration(originalNode, originalNode.modifiers, importClause,
-    ts.factory.createStringLiteral(modulePath), originalNode.assertClause);
+    if (importInfo.namedImports.length > 0) {
+      const namedClause = ts.factory.createImportClause(false, undefined,
+        ts.factory.createNamedImports(importInfo.namedImports));
+      // @ts-ignore
+      namedClause.isLazy = originalNode.importClause?.isLazy;
+      results.push(ts.factory.updateImportDeclaration(originalNode, originalNode.modifiers, namedClause,
+        ts.factory.createStringLiteral(modulePath), originalNode.assertClause));
+    }
+  } else {
+    const importClause = ts.factory.createImportClause(false, importInfo.defaultImport?.name,
+      importInfo.namedImports.length > 0 ? ts.factory.createNamedImports(importInfo.namedImports) : undefined);
+    // @ts-ignore
+    importClause.isLazy = originalNode.importClause?.isLazy;
+    results.push(ts.factory.updateImportDeclaration(originalNode, originalNode.modifiers, importClause,
+      ts.factory.createStringLiteral(modulePath), originalNode.assertClause));
+  }
+
+  return results;
 }
 
 function genModuleRequest(filePath: string, moduleRequest: string, depName2DepInfo: Object): string {
