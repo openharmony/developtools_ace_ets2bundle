@@ -95,7 +95,7 @@ function showTextBuilder() {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -134,7 +134,7 @@ function showTextBuilder() {
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -162,10 +162,7 @@ function showTextBuilder() {
       instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      Child._invoke(@Memo() ((instance: Child): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      Child._invoke(undefined, (() => {
         return {
           customBuilderParam2: @Memo() (() => {
             this.componentBuilder();
@@ -270,7 +267,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (137225318)), style, ((): Child => {
       return new Child(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -336,7 +333,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (211301233)), style, ((): Parent => {
       return new Parent(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -401,19 +398,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
         __memo_scope.cached;
         return;
       }
-      Child._invoke(__memo_context, ((__memo_id) + (257873411)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (72614054)), 1);
-        const __memo_parameter_instance = __memo_scope.param(0, instance);
-        if (__memo_scope.unchanged) {
-          __memo_scope.cached;
-          return;
-        }
-        __memo_parameter_instance.value.applyAttributesFinish();
-        {
-          __memo_scope.recache();
-          return;
-        }
-      }), (() => {
+      Child._invoke(__memo_context, ((__memo_id) + (257873411)), undefined, (() => {
         return {
           customBuilderParam2: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (5605714)), 0);

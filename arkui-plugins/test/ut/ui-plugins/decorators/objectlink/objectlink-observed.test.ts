@@ -218,7 +218,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
@@ -270,7 +270,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
@@ -289,10 +289,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      Child._invoke(@Memo() ((instance: Child): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      Child._invoke(undefined, (() => {
         return {
           label: "date",
           __options_has_label: true,
@@ -324,10 +321,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    Parent._invoke(@Memo() ((instance: Parent): void => {
-    instance.applyAttributesFinish();
-    return;
-    }), undefined, undefined, undefined, undefined);
+    Parent._invoke(undefined, undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

@@ -69,7 +69,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: BuilderDemo)=> void), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: BuilderDemo)=> void) | undefined), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<BuilderDemo, __Options_BuilderDemo>(style, ((): BuilderDemo => {
       return new BuilderDemo(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));

@@ -75,7 +75,7 @@ type TestUpdateCallback = (()=> void);
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___249621102 = storage;
       (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));

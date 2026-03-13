@@ -117,7 +117,7 @@ class Message {
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -154,10 +154,7 @@ class Message {
         };
       }), undefined, "res", undefined);
       if (this.display) {
-        Child._invoke(@Memo() ((instance: Child): void => {
-          instance.applyAttributesFinish();
-          return;
-        }), (() => {
+        Child._invoke(undefined, (() => {
           return {
             message: new Message("Child"),
             __options_has_message: true,
@@ -197,7 +194,7 @@ class Message {
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
@@ -233,10 +230,7 @@ class Message {
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    Index._invoke(@Memo() ((instance: Index): void => {
-    instance.applyAttributesFinish();
-    return;
-    }), undefined, undefined, undefined, undefined);
+    Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}
