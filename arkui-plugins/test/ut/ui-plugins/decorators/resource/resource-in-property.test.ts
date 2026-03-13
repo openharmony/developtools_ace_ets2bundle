@@ -116,7 +116,7 @@ function main() {}
     this.__backing_lambdaOne = value;
   }
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
     return new ResourceComponent(false, ({let gensym___<some_random_number> = storage;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));

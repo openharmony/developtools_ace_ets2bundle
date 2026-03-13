@@ -94,7 +94,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_DebugLineComponent | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: DebugLineComponent)=> void), initializers: ((()=> __Options_DebugLineComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: DebugLineComponent)=> void) | undefined), initializers: ((()=> __Options_DebugLineComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<DebugLineComponent, __Options_DebugLineComponent>(__memo_context, ((__memo_id) + (47330804)), style, ((): DebugLineComponent => {
       return new DebugLineComponent(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
@@ -183,7 +183,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyComponent | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyComponent)=> void), initializers: ((()=> __Options_MyComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyComponent)=> void) | undefined), initializers: ((()=> __Options_MyComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyComponent, __Options_MyComponent>(__memo_context, ((__memo_id) + (223657391)), style, ((): MyComponent => {
       return new MyComponent(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -260,19 +260,7 @@ class __EntryWrapper extends EntryPoint {
       __memo_scope.cached;
       return;
     }
-    DebugLineComponent._invoke(__memo_context, ((__memo_id) + (155886964)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: DebugLineComponent): void => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (173773669)), 1);
-      const __memo_parameter_instance = __memo_scope.param(0, instance);
-      if (__memo_scope.unchanged) {
-        __memo_scope.cached;
-        return;
-      }
-      __memo_parameter_instance.value.applyAttributesFinish();
-      {
-        __memo_scope.recache();
-        return;
-      }
-    }), undefined, undefined, undefined, undefined);
+    DebugLineComponent._invoke(__memo_context, ((__memo_id) + (155886964)), undefined, undefined, undefined, undefined, undefined);
     {
       __memo_scope.recache();
       return;

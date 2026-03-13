@@ -78,7 +78,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
@@ -100,10 +100,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    MyStateSample._invoke(@Memo() ((instance: MyStateSample): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, (() => {
+    MyStateSample._invoke(undefined, undefined, (() => {
       return myStorage();
     }), undefined, undefined);
   }
