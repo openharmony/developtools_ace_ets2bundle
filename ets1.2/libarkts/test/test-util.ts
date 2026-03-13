@@ -101,7 +101,7 @@ export function contextToAbc(): void {
 export function runAbc(path: string = './generated/main.abc', modules?: readonly string[]): void {
     const modulesStr: string = (modules === undefined) ? '' : (':' + modules.join(':'))
 
-    exec(`../../incremental/tools/panda/node_modules/@panda/sdk/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=../../incremental/tools/panda/node_modules/@panda/sdk/ets/etsstdlib.abc${modulesStr} ${path} ETSGLOBAL::main`,
+    exec(`../../incremental/tools/panda/node_modules/@panda/sdk/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=../../incremental/tools/panda/node_modules/@panda/sdk/ets/etsstdlib.abc${modulesStr} ${path} main::main`,
         (error: any, stdout: string, stderr: string) => {
             if (error !== null) {
                 assert(false, `failed to run abc: ${error}`)

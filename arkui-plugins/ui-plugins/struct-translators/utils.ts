@@ -106,7 +106,7 @@ export function getResourceParams(id: number, type: number, params: arkts.Expres
  * @param node class declaration node
  */
 export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
-    if (node.definition?.ident?.name === 'ETSGLOBAL') {
+    if (node.definition?.isGlobal) {
         return true;
     }
     return false;
