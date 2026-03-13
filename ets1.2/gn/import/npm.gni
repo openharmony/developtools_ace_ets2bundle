@@ -84,6 +84,15 @@ template("npm_cmd") {
     if (defined(invoker.run_tasks)) {
       args += [ "--run-tasks" ] + invoker.run_tasks
     }
+    if (defined(invoker.pack) && invoker.pack) {
+      args += [ "--pack" ]
+    }
+    if (defined(invoker.pack_destination)) {
+      args += [
+        "--pack-destination",
+        invoker.pack_destination
+      ]
+    }
   }
 }
 

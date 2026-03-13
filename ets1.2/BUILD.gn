@@ -36,8 +36,19 @@ ohos_copy("ets2panda_libarkts") {
   part_name = "ace_ets2bundle"
 }
 
+npm_cmd("ohos_ets_libarkts_pack") {
+    deps = [ "${koala_mr.libarkts_path}:libarkts_sdk_copy" ]
+    project_path = rebase_path("./libarkts")
+    pack = true
+    pack_destination = rebase_path("$target_out_dir/libarkts.tgz")
+    outputs = [  "$target_out_dir/libarkts.tgz" ]
+}
+
 ohos_copy("ohos_ets_libarkts") {
-  deps = [ "${koala_mr.libarkts_path}:libarkts_sdk_copy" ]
+  deps = [
+    "${koala_mr.libarkts_path}:libarkts_sdk_copy",
+    ":ohos_ets_libarkts_pack",
+  ]
   sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
   outputs = [ ohos_ets_libarkts_path ]
   subsystem_name = "developtools"
