@@ -75,25 +75,6 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
         return false;
     }
 
-    private getBuilderParamProperties(structNode: arkts.StructDeclaration): Array<{name: string, hasParams: boolean}> {
-        const properties: Array<{name: string, hasParams: boolean}> = [];
-        if (!structNode.definition || !structNode.definition.body) {
-            return properties;
-        }
-        structNode.definition.body.forEach((item) => {
-            if (!arkts.isClassProperty(item) || !item.key) {
-                return;
-            }
-            const builderParam = findDecorator(item, PresetDecorators.BUILDER_PARAM);
-            if (builderParam) {
-                const paramName = getIdentifierName(item.key);
-                const hasParams = this.hasFunctionTypeParams(item.typeAnnotation);
-                properties.push({ name: paramName, hasParams });
-            }
-        });
-        return properties;
-    }
-    
     private hasFunctionTypeParams(typeAnnotation: arkts.TypeNode | undefined): boolean {
         if (!typeAnnotation) {
             return false;
@@ -143,20 +124,19 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
         const structDecl = arkts.getDecl(targetNode);
-
-        if (structDecl) {
-            if (arkts.isClassDefinition(structDecl)) {
-                this.tryValidateFromClassDefinition(node, structDecl, structName);
-                return;
-            }
-            if (arkts.isStructDeclaration(structDecl)) {
-                this.performBuilderParamValidation(node, structDecl, structName);
-                return;
-            }
+        if (!structDecl || !arkts.isClassDefinition(structDecl)) {
+            return;
         }
+        const hasComponent = findDecorator(structDecl, PresetDecorators.COMPONENT_V1);
+        const hasComponentV2 = findDecorator(structDecl, PresetDecorators.COMPONENT_V2);
+        const hasCustomDialog = findDecorator(structDecl, PresetDecorators.CUSTOM_DIALOG); 
+        if (!hasComponent && !hasComponentV2 && !hasCustomDialog) {
+            return;
+        }
+        this.tryValidateFromClassDefinition(node, structDecl, structName);
     }
     
-    private tryValidateFromClassDefinition(
+    public tryValidateFromClassDefinition(
         node: arkts.CallExpression,
         classDef: arkts.ClassDefinition,
         structName: string
@@ -186,60 +166,6 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
     
-    private performBuilderParamValidation(
-        node: arkts.CallExpression,
-        structNode: arkts.StructDeclaration,
-        structName: string
-    ): void {
-        const builderParamProperties = this.getBuilderParamProperties(structNode);
-        let hasTrailingClosure = false;
-        if (node.parent) {
-            const siblings = node.parent.getChildren();
-            const nodeIndex = siblings.indexOf(node);
-            if (nodeIndex >= 0 && nodeIndex < siblings.length - 1) {
-                const nextSibling = siblings[nodeIndex + 1];
-                if (arkts.isBlockStatement(nextSibling)) {
-                    hasTrailingClosure = true;
-                }
-            }
-        }
-        if (!hasTrailingClosure && node.arguments && node.arguments.length > 0) {
-            const lastArg = node.arguments[node.arguments.length - 1];
-            if (arkts.isBlockStatement(lastArg)) {
-                hasTrailingClosure = true;
-            }
-        }
-        if (hasTrailingClosure) {
-            if (builderParamProperties.length === 0) {
-                this.report({
-                    node: node,
-                    message: this.messages.atLeastOneBuilderParamProperty,
-                    data: { structName },
-                });
-            } else {
-                const isFrom1_1 = this.isFrom1_1(structNode);
-                if (isFrom1_1 && builderParamProperties.length !== 1) {
-                    this.report({
-                        node: node,
-                        message: this.messages.onlyOneBuilderParamProperty,
-                        data: { structName },
-                    });
-                    return;
-                }
-                
-                const lastBuilderParam = builderParamProperties[builderParamProperties.length - 1];
-                if (lastBuilderParam.hasParams) {
-                    this.report({
-                        node: node,
-                        message: this.messages.builderParamAsTrailingClosureCannotHaveParam,
-                        data: { paramName: lastBuilderParam.name },
-                    });
-                }
-                this.checkBuilderParamArgsConflict(node, builderParamProperties, lastBuilderParam);
-            }
-        }
-    }
-
     private performBuilderParamValidationWithProperties(
         node: arkts.CallExpression,
         builderParamProperties: Array<{name: string, hasParams: boolean}>,
@@ -255,7 +181,6 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
             const program = arkts.getProgramFromAstNode(node);
             const fileManager = FileManager.getInstance();
             const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
-            
             if (isFrom1_1 && builderParamProperties.length !== 1) {
                 this.report({
                     node: node,
@@ -325,11 +250,6 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
         return !!(prop && arkts.isProperty(prop) && prop.key);
     }
 
-    private isFrom1_1(structDecl: arkts.StructDeclaration): boolean {
-        const program = arkts.getProgramFromAstNode(structDecl);
-        const fileManager = FileManager.getInstance();
-        return fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
-    }
 }
 
 export default BuilderParamDecoratorCheckRule;

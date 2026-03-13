@@ -239,7 +239,8 @@ export function getClassDeclarationAnnotation(
 
 export function findDecorator(
     member: arkts.ClassProperty | arkts.VariableDeclaration | arkts.FunctionDeclaration |
-        arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration,
+        arkts.ScriptFunction | arkts.TSInterfaceDeclaration | arkts.TSTypeAliasDeclaration |
+        arkts.ClassDefinition,
     decoratorName: string
 ): arkts.AnnotationUsage | undefined {
     return member.annotations.find(annotation =>
