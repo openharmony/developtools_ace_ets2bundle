@@ -71,8 +71,7 @@ export enum BuilderLambdaNames {
 }
 
 export type EntryAnnoInfo = {
-    entryAnnoRange: arkts.SourceRange;
-    structRange: arkts.SourceRange;
+    range: arkts.SourceRange;
     name: string;
 };
 
