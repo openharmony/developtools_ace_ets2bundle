@@ -90,12 +90,10 @@ export class factory {
      *
      * @param name class/struct name that has `@Entry` annotation.
      */
-    static generateEntryFunction(name: string, entryAnnoInfo?: EntryAnnoInfo): arkts.MethodDefinition {
-        const callExpr = arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, []);
-        if (entryAnnoInfo?.structRange) {
-            callExpr.range = entryAnnoInfo.structRange;
-        }
-        const exp = arkts.factory.createExpressionStatement(callExpr);
+    static generateEntryFunction(name: string): arkts.MethodDefinition {
+        const exp = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, [])
+        );
         const key: arkts.Identifier = arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_FUNC);
         const block = arkts.factory.createBlock([exp]);
         const entryScript = arkts.factory
@@ -205,7 +203,7 @@ export class factory {
                         arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
                     )
                 ),
-                [factory.generateEntryFunction(entryAnnoInfo.name, entryAnnoInfo), ctor],
+                [factory.generateEntryFunction(entryAnnoInfo.name), ctor],
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
                     arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
@@ -214,7 +212,7 @@ export class factory {
             .setCtor(ctor as any);
         const newClass = arkts.factory.createClassDeclaration(definition);
         newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
-        newClass.range = entryAnnoInfo.entryAnnoRange;
+        newClass.range = entryAnnoInfo.range;
         return newClass;
     }
 
