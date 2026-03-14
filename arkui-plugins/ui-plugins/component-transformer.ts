@@ -173,7 +173,7 @@ export class ComponentTransformer extends AbstractVisitor {
                         this.entryRouteName,
                         this.projectConfig,
                         this.program?.absName,
-                        item.entryAnnoRange
+                        item.range
                     )
                 )
             );
@@ -316,11 +316,7 @@ export class ComponentTransformer extends AbstractVisitor {
         NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
         if (!!scopeInfo.annotations?.entry) {
-            this.entryAnnoInfo.push({
-                name: className,
-                entryAnnoRange: scopeInfo.annotations.entry.range,
-                structRange: node.range
-            });
+            this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
             const routeName = getEntryRouteParam(definition);
             if (routeName && routeName.value) {
                 this.entryRouteName = routeName.value;
