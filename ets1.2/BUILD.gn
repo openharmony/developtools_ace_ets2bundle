@@ -44,10 +44,19 @@ npm_cmd("ohos_ets_libarkts_pack") {
     outputs = [  "$target_out_dir/libarkts.tgz" ]
 }
 
+ohos_prebuilt_etc("ohos_ets_libarkts_pack_prebuilt") {
+  deps = [ ":ohos_ets_libarkts_pack" ]
+  target_outputs = get_target_outputs(":ohos_ets_libarkts_pack")
+  source = target_outputs[0]
+  install_enable=false
+  subsystem_name = "developtools"
+  part_name = "ace_ets2bundle"
+}
+
 ohos_copy("ohos_ets_libarkts") {
   deps = [
     "${koala_mr.libarkts_path}:libarkts_sdk_copy",
-    ":ohos_ets_libarkts_pack",
+    ":ohos_ets_libarkts_pack_prebuilt",
   ]
   sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
   outputs = [ ohos_ets_libarkts_path ]
