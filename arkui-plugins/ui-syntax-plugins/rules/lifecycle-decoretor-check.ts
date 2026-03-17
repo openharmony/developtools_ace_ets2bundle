@@ -34,6 +34,11 @@ const LIFECYCLE_METHODS: Set<string> = new Set([
     'aboutToDisappear',
 ]);
 
+const LIFECYCLE_DECORATORS: Set<string> = new Set([
+    ...LIFECYCLE_DECORATORS_WITHOUT_PARAMS,
+    PresetDecorators.COMPONENTREUSE,
+]);
+
 // @ComponentReuse param type in @Component
 const REUSE_OBJECT_TYPE_NAME: string = 'ReuseObject';
 
@@ -44,6 +49,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
             componentReuseInComponentV2Parameter: `Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters`,
             componentReuseInComponentParameter: `In the struct decorated with '@Component', the '@ComponentReuse' decorated function can have either no parameters or a single parameter of the 'ReuseObject' type.`,
             lifecycleDecoratorInvalidMethod:`'{{decoratorName}}' cannot decorate '{{LifecycleMethod}}'.`,
+            lifecycleDecoratorDecorateMethod:`'{{decoratorName}}' can only decorate methods.`,
         };
     }
 
@@ -52,8 +58,59 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
         // Struct only check is in validate-decorator-target.ts
-        // Only check method params in struct here
+        // Only check lifecycle decorators in struct here
+        this.checkLifecycleDecoratorDecorateMethod(node);
         this.checkLifecycleMethodParameters(node);
+    }
+
+    private checkLifecycleDecoratorDecorateMethod(structNode: arkts.StructDeclaration): void {
+        if (!structNode.definition) {
+            return;
+        }
+
+        // Lifecycle decorators can only decorate methods, not the struct itself.
+        const structAnnotations = structNode.definition.annotations;
+        for (const annotation of structAnnotations) {
+            const decoratorName = getAnnotationName(annotation);
+            if (!decoratorName || !LIFECYCLE_DECORATORS.has(decoratorName)) {
+                continue;
+            }
+            this.reportLifecycleDecoratorDecorateMethod(annotation, decoratorName);
+        }
+
+        if (!structNode.definition.body) {
+            return;
+        }
+
+        // Check lifecycle decorators are not used on member properties.
+        for (const member of structNode.definition.body) {
+            if (arkts.isMethodDefinition(member) || !arkts.isClassProperty(member)) {
+                continue;
+            }
+
+            const annotations = member.annotations;
+            if (!annotations || annotations.length === 0) {
+                continue;
+            }
+
+            for (const annotation of annotations) {
+                const decoratorName = getAnnotationName(annotation);
+                if (!decoratorName || !LIFECYCLE_DECORATORS.has(decoratorName)) {
+                    continue;
+                }
+                this.reportLifecycleDecoratorDecorateMethod(annotation, decoratorName);
+            }
+        }
+    }
+
+    private reportLifecycleDecoratorDecorateMethod(annotation: arkts.AnnotationUsage, decoratorName: string): void {
+        this.report({
+            node: annotation,
+            message: this.messages.lifecycleDecoratorDecorateMethod,
+            data: {
+                decoratorName: `@${decoratorName}`,
+            },
+        });
     }
 
     private checkLifecycleMethodParameters(structNode: arkts.StructDeclaration): void {
