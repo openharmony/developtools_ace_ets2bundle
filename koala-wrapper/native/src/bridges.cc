@@ -859,3 +859,9 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     return _typeAnnotation;
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
+
+KInt impl_ExtractDeclarationsFromAbcFile(KStringPtr &abcFile, KStringPtr &cacheDir)
+{
+    return GetImpl()->ExtractDeclarationsFromAbcFile(getStringCopy(abcFile), getStringCopy(cacheDir));
+}
+KOALA_INTEROP_2(ExtractDeclarationsFromAbcFile, KInt, KStringPtr, KStringPtr)

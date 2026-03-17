@@ -310,6 +310,10 @@ export function memFinalize(): void {
     global.es2panda._MemFinalize();
 }
 
+export function ExtractDeclarationsFromAbcFile(abcFile: string, cacheDir: string): number {
+    return global.es2panda._ExtractDeclarationsFromAbcFile(abcFile, cacheDir);
+}
+
 export function createGlobalContext(
     config: KNativePointer,
     externalFileList: string[],
