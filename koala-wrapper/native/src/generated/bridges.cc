@@ -6673,26 +6673,28 @@ KNativePointer impl_TSModuleBlockStatementsConst(KNativePointer context, KNative
 }
 KOALA_INTEROP_2(TSModuleBlockStatementsConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateETSNewArrayInstanceExpression(KNativePointer context, KNativePointer typeReference, KNativePointer dimension)
+KNativePointer impl_CreateETSNewArrayInstanceExpression(KNativePointer context, KNativePointer typeReference, KNativePointer dimension, KNativePointer initializer)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _typeReference = reinterpret_cast<es2panda_AstNode*>(typeReference);
     const auto _dimension = reinterpret_cast<es2panda_AstNode*>(dimension);
-    auto result = GetImpl()->CreateETSNewArrayInstanceExpression(_context, _typeReference, _dimension);
+    const auto _initializer = reinterpret_cast<es2panda_AstNode*>(initializer);
+    auto result = GetImpl()->CreateETSNewArrayInstanceExpression(_context, _typeReference, _dimension, _initializer);
     return result;
 }
-KOALA_INTEROP_3(CreateETSNewArrayInstanceExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+KOALA_INTEROP_4(CreateETSNewArrayInstanceExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_UpdateETSNewArrayInstanceExpression(KNativePointer context, KNativePointer original, KNativePointer typeReference, KNativePointer dimension)
+KNativePointer impl_UpdateETSNewArrayInstanceExpression(KNativePointer context, KNativePointer original, KNativePointer typeReference, KNativePointer dimension, KNativePointer initializer)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
     const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
     const auto _typeReference = reinterpret_cast<es2panda_AstNode*>(typeReference);
     const auto _dimension = reinterpret_cast<es2panda_AstNode*>(dimension);
-    auto result = GetImpl()->UpdateETSNewArrayInstanceExpression(_context, _original, _typeReference, _dimension);
+    const auto _initializer = reinterpret_cast<es2panda_AstNode*>(initializer);
+    auto result = GetImpl()->UpdateETSNewArrayInstanceExpression(_context, _original, _typeReference, _dimension, _initializer);
     return result;
 }
-KOALA_INTEROP_4(UpdateETSNewArrayInstanceExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
+KOALA_INTEROP_5(UpdateETSNewArrayInstanceExpression, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KNativePointer);
 
 KNativePointer impl_ETSNewArrayInstanceExpressionTypeReference(KNativePointer context, KNativePointer receiver)
 {
@@ -6729,6 +6731,24 @@ KNativePointer impl_ETSNewArrayInstanceExpressionDimensionConst(KNativePointer c
     return (void*)result;
 }
 KOALA_INTEROP_2(ETSNewArrayInstanceExpressionDimensionConst, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ETSNewArrayInstanceExpressionInitializer(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto result = GetImpl()->ETSNewArrayInstanceExpressionInitializer(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ETSNewArrayInstanceExpressionInitializer, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ETSNewArrayInstanceExpressionInitializerConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto result = GetImpl()->ETSNewArrayInstanceExpressionInitializerConst(_context, _receiver);
+    return (void*)result;
+}
+KOALA_INTEROP_2(ETSNewArrayInstanceExpressionInitializerConst, KNativePointer, KNativePointer, KNativePointer);
 
 void impl_ETSNewArrayInstanceExpressionSetDimension(KNativePointer context, KNativePointer receiver, KNativePointer dimension)
 {
