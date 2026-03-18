@@ -121,7 +121,12 @@ export class DeclTransformer extends AbstractVisitor {
     }
 
     updateImportDeclaration(astNode: arkts.AstNode):arkts.AstNode {
-        if (!arkts.isETSImportDeclaration(astNode) || (astNode?.source?.str !== '@ohos.arkui.component' && astNode?.source?.str !== '@ohos.arkui.stateManagement')) {
+        if (
+            !arkts.isETSImportDeclaration(astNode) ||
+            (astNode?.source?.str !== '@ohos.arkui.component' &&
+                astNode?.source?.str !== '@ohos.arkui.stateManagement' &&
+                astNode?.source?.str !== '@kit.ArkUI')
+        ) {
             return astNode;
         }
         astNode.specifiers.forEach((element) => {
