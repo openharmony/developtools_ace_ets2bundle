@@ -64,7 +64,7 @@
         "run": "npm run compile && npm run compile:plugins && npm run simultaneous",
         "run:current": "npm run compile:current && npm run compile:plugins && npm run simultaneous",
         "run:memo": "npm run compile && npm run compile:plugins && npm run compile --prefix ../memo-plugin-ng && npm run memo",
-        "run:abc": "$npm_package_config_panda_sdk_path/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=$npm_package_config_panda_sdk_path/ets/etsstdlib.abc ./main.abc main.ETSGLOBAL::main",
+        "run:abc": "$npm_package_config_panda_sdk_path/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=$npm_package_config_panda_sdk_path/ets/etsstdlib.abc ./main.abc main::main",
         "mocha": "PANDA_SDK_PATH=${PANDA_SDK_PATH:=$npm_package_config_panda_sdk_path} TS_NODE_PROJECT=./test/tsconfig.json mocha -r tsconfig-paths/register --reporter-option maxDiffSize=0",
         "test:light": "npm run mocha",
         "test": "npm run compile:native && npm run test:light",
