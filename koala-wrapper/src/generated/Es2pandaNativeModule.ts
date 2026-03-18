@@ -2134,10 +2134,10 @@ export class Es2pandaNativeModule {
     _TSModuleBlockStatementsConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'TSModuleBlockStatementsConst was not overloaded by native module initialization")
     }
-    _CreateETSNewArrayInstanceExpression(context: KNativePointer, typeReference: KNativePointer, dimension: KNativePointer): KNativePointer {
+    _CreateETSNewArrayInstanceExpression(context: KNativePointer, typeReference: KNativePointer, dimension: KNativePointer, initializer: KNativePointer): KNativePointer {
         throw new Error("'CreateETSNewArrayInstanceExpression was not overloaded by native module initialization")
     }
-    _UpdateETSNewArrayInstanceExpression(context: KNativePointer, original: KNativePointer, typeReference: KNativePointer, dimension: KNativePointer): KNativePointer {
+    _UpdateETSNewArrayInstanceExpression(context: KNativePointer, original: KNativePointer, typeReference: KNativePointer, dimension: KNativePointer, initializer: KNativePointer): KNativePointer {
         throw new Error("'UpdateETSNewArrayInstanceExpression was not overloaded by native module initialization")
     }
     _ETSNewArrayInstanceExpressionTypeReference(context: KNativePointer, receiver: KNativePointer): KNativePointer {
@@ -2151,6 +2151,12 @@ export class Es2pandaNativeModule {
     }
     _ETSNewArrayInstanceExpressionDimensionConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
         throw new Error("'ETSNewArrayInstanceExpressionDimensionConst was not overloaded by native module initialization")
+    }
+    _ETSNewArrayInstanceExpressionInitializer(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("'ETSNewArrayInstanceExpressionInitializer was not overloaded by native module initialization")
+    }
+    _ETSNewArrayInstanceExpressionInitializerConst(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("'ETSNewArrayInstanceExpressionInitializerConst was not overloaded by native module initialization")
     }
     _ETSNewArrayInstanceExpressionSetDimension(context: KNativePointer, receiver: KNativePointer, dimension: KNativePointer): void {
         throw new Error("'ETSNewArrayInstanceExpressionSetDimension was not overloaded by native module initialization")
