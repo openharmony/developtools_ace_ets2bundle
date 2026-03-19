@@ -93,7 +93,8 @@ import {
   ComparisonSenario,
   AVAILABLE_TAG_NAME,
   AVAILABLE_SCOPE_ERROR,
-  DeviceDiffType
+  DeviceDiffType,
+  SINCE_LEVEL_CONFIG
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -381,10 +382,11 @@ function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  * @returns {void}
  */
 function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
   const availableConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
-    type: ts.DiagnosticCategory.Warning,
+    type: diagnosticType,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkAvailableDecorator
   }
@@ -430,10 +432,11 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
  * @returns {void}
  */
 function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
   const sinceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
-    type: ts.DiagnosticCategory.Warning,
+    type: diagnosticType,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkSinceValue
   }
@@ -1473,20 +1476,43 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
 }
 
 /**
+ * Restore version number to placeholder and match error code.
+ * @param messageRegex - Message containing actual version number
+ * @returns error message or undefined
+ */
+function matchWithPlaceholders(messageRegex: string): string {
+  return messageRegex.replace(/version\s+(?:(\S+))/, 'version $SINCE1.').replace(/version\s+is\s+(?:(\S+))/, 'version is $SINCE2.');
+}
+
+/**
  * Handle the error information passed over from tsc.
  * @param positionMessage - Location of error message
  * @param message - Error message
  * @returns - Error message processed locally
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
+  let description: string = '';
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined = ERROR_CODE_INFO.get(messageRegex);
+  const diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
+
   if (!diagnosticInfo || !diagnosticInfo.code) {
     return undefined;
   }
+
+  if (diagnosticInfo.code === '11706011' || diagnosticInfo.code === '11706012') {
+    const apiVersion: RegExpMatchArray = messageRegex.match(/version\s+([\S+.]+(?=\. However,))/i);
+    if (apiVersion) {
+      description = diagnosticInfo.description.replace(/\$ApiVersion/g, `${apiVersion[1].trim()}`);
+    } else {
+      description = diagnosticInfo.description;
+    }
+  } else {
+    description = diagnosticInfo.description;
+  }
+
   return new BuildDiagnosticInfo()
     .setCode(Number(diagnosticInfo.code))
-    .setDescription(diagnosticInfo.description)
+    .setDescription(description)
     .setPositionMessage(positionMessage)
     .setMessage(message)
     .setSolutions(diagnosticInfo.solutions);
@@ -1890,4 +1916,18 @@ export function checkFileHasAvailableByFileName(sourceFileName: string): boolean
     }
   }
   return true;
+}
+
+/**
+ * Obtaining the alarm categort of the @since tag
+ * 
+ * @param sinceErrorLevel - Configured error level
+ * @returns TypeScript alarm type
+ */
+function getSinceDiagnosticType(sinceErrorLevel?: string): ts.DiagnosticCategory {
+  if (!sinceErrorLevel) {
+    return ts.DiagnosticCategory.Warning;
+  }
+
+  return SINCE_LEVEL_CONFIG.get(sinceErrorLevel) || ts.DiagnosticCategory.Warning;
 }
