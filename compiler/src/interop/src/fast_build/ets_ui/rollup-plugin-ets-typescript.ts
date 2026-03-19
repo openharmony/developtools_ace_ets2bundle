@@ -559,7 +559,7 @@ async function transform(code: string, id: string) {
             // 2. Support 1.1 classes to implement 1.2 interfaces
             interopTransform(tsProgram, id, mixCompile),
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
-            expandAllImportPaths(CurrentProcessFile.getChecker(), this),
+            expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventEmit),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -581,7 +581,7 @@ async function transform(code: string, id: string) {
         // 2. Support 1.1 classes to implement 1.2 interfaces
         interopTransform(tsProgram, id, mixCompile),
         processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
-        expandAllImportPaths(CurrentProcessFile.getChecker(), this),
+        expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventTransformNodes),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
