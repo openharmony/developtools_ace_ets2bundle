@@ -133,6 +133,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.strictCheckerOnly = false;
   projectConfig.isolatedDeclarations = false;
   projectConfig.noCheck = false;
+  projectConfig.tsImportSoCheck = false;
 }
 
 function initProjectPathConfig(projectConfig) {
