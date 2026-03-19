@@ -1039,15 +1039,11 @@ export function defaultFormatChecker(since: string): boolean {
  */
 export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): VersionValidationResult {
   const compatibileReg = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
-  const msfVersionReg = /^[1-9]\d?\.\d{1,2}\.\d{1,2}$/;
   if (compatibileReg.test(since)) {
-    if (msfVersionReg.test(since)) {
-      const majorVersion = parseInt(since.split('.')[0]);
-      if (majorVersion < 26) {
-        return {
-          result: false,
-          message: AVAILABLE_VERSION_FORMAT_ERROR
-        }
+    if (!checkIntegerLessVersion(since)) {
+      return {
+        result: false,
+        message: AVAILABLE_VERSION_FORMAT_ERROR
       }
     }
     return {
@@ -1061,6 +1057,21 @@ export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): Ver
   }
 }
 
+/**
+ * Determine if the MSF version is less than 26, Integer does not make judgments.
+ * @param since - Version string to validate
+ * @returns When MSF (26.0.0) is less than 26, return false and do not judge integers
+ */
+function checkIntegerLessVersion(since: string): boolean {
+  const msfVersionReg = /^[1-9]\d?\.\d{1,2}\.\d{1,2}$/;
+  if (msfVersionReg.test(since)) {
+    const majorVersion = parseInt(since.split('.')[0]);
+    if (majorVersion < 26) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Checks if current runtime is OpenHarmony.
