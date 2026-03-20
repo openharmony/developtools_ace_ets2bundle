@@ -77,6 +77,16 @@ export class ProgramSkipper {
             if (p.absName.endsWith(LIB_SUFFIX) && p.absName.includes(ARKUI)) {
                 this.dfs(p);
             }
+            for (const statement of p.astNode.statements) {
+                if (arkts.isETSImportDeclaration(statement)) {
+                    const source = statement.resolvedSource || "";
+                    if (source.includes("@kit.AbilityKit") || source.includes("InsightIntentDecorator")) {
+                        if(statement.dumpSrc().includes('Intent')||statement.dumpSrc().includes('LinkParamCategory')){
+                            this.dfs(p);
+                        }
+                    }
+                }
+            }
         });
         const end = performance.now();
         debugLog(`[program skipper] initialization duration ${(end - start).toFixed(2)} ms`);

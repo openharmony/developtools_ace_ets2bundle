@@ -109,6 +109,7 @@ import type { LifecycleObserverCallInfo } from '../property-translators/cache/co
 import { isInteropComponent } from '../interop/utils';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { BindableFactory } from '../builder-lambda-translators/bindable-factory';
+import { ResourceSourceCache } from '../insight-intent/resource-source-cache';
 
 export class factory {
     /**
@@ -839,6 +840,7 @@ export class factory {
 
     /**
      * transform `$r` and `$rawfile` function calls.
+     * 同时缓存原始的$r()表达式，供 InsightIntent 处理时能获取原始形式
      */
     static transformResource(
         resourceNode: arkts.CallExpression,
@@ -849,8 +851,14 @@ export class factory {
             return resourceNode;
         }
         const resourceKind: Dollars = resourceNode.expression.name as Dollars;
+        let originalSource: string | undefined = undefined;
+        let transformedNode: arkts.CallExpression = undefined;
         if (arkts.isStringLiteral(resourceNode.arguments[0])) {
-            return factory.processStringLiteralResourceNode(
+            const resourcePath = resourceNode.arguments[0].str;
+            originalSource = `${resourceKind}('${resourcePath}')`;
+        }
+        if (arkts.isStringLiteral(resourceNode.arguments[0])) {
+            transformedNode = factory.processStringLiteralResourceNode(
                 resourceNode,
                 resourceInfo,
                 projectConfig,
@@ -858,7 +866,7 @@ export class factory {
                 resourceNode.arguments[0]
             );
         } else if (resourceNode.arguments && resourceNode.arguments.length) {
-            return factory.generateTransformedResourceCall(
+            transformedNode = factory.generateTransformedResourceCall(
                 resourceNode,
                 getResourceParams(
                     -1,
@@ -870,8 +878,13 @@ export class factory {
                 projectConfig,
                 resourceKind
             );
+        } else {
+            transformedNode = resourceNode;
         }
-        return resourceNode;
+        if (originalSource && transformedNode !== resourceNode) {
+            ResourceSourceCache.getInstance().set(transformedNode, originalSource);
+        }
+        return transformedNode;
     }
 
     /*
