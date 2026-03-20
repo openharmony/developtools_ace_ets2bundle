@@ -31,12 +31,12 @@ const ajv = new Ajv({
 
 // 装饰器常量
 const INSIGHT_INTENT_LINK_DECORATOR = 'InsightIntentLink';
-const INSIGHT_INTENT_ENTRY_DECORATOR = 'InsightIntentEntry';
-const INSIGHT_INTENT_PAGE_DECORATOR = 'InsightIntentPage';
-const INSIGHT_INTENT_FUNCTION_DECORATOR = 'InsightIntentFunction';
-const INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR = 'InsightIntentFunctionMethod';
-const INSIGHT_INTENT_FORM_DECORATOR = 'InsightIntentForm';
-const INSIGHT_INTENT_ENTITY_DECORATOR = 'InsightIntentEntity';
+// const INSIGHT_INTENT_ENTRY_DECORATOR = 'InsightIntentEntry';
+// const INSIGHT_INTENT_PAGE_DECORATOR = 'InsightIntentPage';
+// const INSIGHT_INTENT_FUNCTION_DECORATOR = 'InsightIntentFunction';
+// const INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR = 'InsightIntentFunctionMethod';
+// const INSIGHT_INTENT_FORM_DECORATOR = 'InsightIntentForm';
+// const INSIGHT_INTENT_ENTITY_DECORATOR = 'InsightIntentEntity';
 
 // 参数校验规则
 const BASE_REQUIRED_FIELDS = ['intentName', 'domain', 'intentVersion', 'displayName'];
@@ -250,6 +250,7 @@ function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean
  * - Check阶段直接解析：使用arkts.getDecl()获取变量值，无需缓存
  */
 export class InsightIntentHandler {
+    private intentNameSet = new Set<string>();
     private projectConfig: ProjectConfig | undefined;
     private collector: InsightIntentCollector;
     
@@ -283,12 +284,12 @@ export class InsightIntentHandler {
         // 初始化装饰器处理器映射表
         this.decoratorHandlers = new Map([
             [INSIGHT_INTENT_LINK_DECORATOR, this.extractLinkIntentData.bind(this)],
-            [INSIGHT_INTENT_ENTRY_DECORATOR, this.extractEntryIntentData.bind(this)],
-            [INSIGHT_INTENT_PAGE_DECORATOR, this.extractPageIntentData.bind(this)],
-            [INSIGHT_INTENT_FUNCTION_DECORATOR, this.extractFunctionIntentData.bind(this)],
-            [INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR, this.extractFunctionMethodIntentData.bind(this)],
-            [INSIGHT_INTENT_FORM_DECORATOR, this.extractFormIntentData.bind(this)],
-            [INSIGHT_INTENT_ENTITY_DECORATOR, this.extractEntityIntentData.bind(this)],
+            // [INSIGHT_INTENT_ENTRY_DECORATOR, this.extractEntryIntentData.bind(this)],
+            // [INSIGHT_INTENT_PAGE_DECORATOR, this.extractPageIntentData.bind(this)],
+            // [INSIGHT_INTENT_FUNCTION_DECORATOR, this.extractFunctionIntentData.bind(this)],
+            // [INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR, this.extractFunctionMethodIntentData.bind(this)],
+            // [INSIGHT_INTENT_FORM_DECORATOR, this.extractFormIntentData.bind(this)],
+            // [INSIGHT_INTENT_ENTITY_DECORATOR, this.extractEntityIntentData.bind(this)],
         ]);
     }
 
@@ -493,16 +494,14 @@ export class InsightIntentHandler {
 
         // 处理类级别的装饰器
         if (node.definition.annotations) {
-            // console.log('[[[[2222===='+node.dumpSrc())
             this.processClassAnnotations(node.definition.annotations, node);
         }
         
         // 处理方法级别的装饰器（如 @InsightIntentFunctionMethod）
-        if (node.definition.body) {
-            this.processMethodAnnotations(node.definition.body, node);
-        }
+        // if (node.definition.body) {
+        //     this.processMethodAnnotations(node.definition.body, node);
+        // }
     }
-    
     /**
      * 处理类级别的装饰器
      */
@@ -514,30 +513,33 @@ export class InsightIntentHandler {
             anno.expr.name.startsWith('InsightIntent')
         );
         if (!hasInsightDecorator) {
-            // console.log("[[[[[[")
             return;
         }
-        // console.log("fffffffff")
         // 遍历所有注解
         for (const anno of annotations) {
             if (!anno.expr || !arkts.isIdentifier(anno.expr)) {
-        // console.log("continue111")
                 continue;
             }
 
             const decoratorName = anno.expr.name;
-            // console.log("decoratorName="+decoratorName)
             const handler = this.decoratorHandlers.get(decoratorName);
             if (!handler) {
-        // console.log("continue111")
                 continue;
             }
 
             try {
                 const intentData = handler(anno, classNode);
-
                 if (intentData) {
-                    // console.log("有节点！")
+                    if (this.intentNameSet.has(intentData.intentName)) {
+                        LogCollector.getInstance().collectLogInfo({
+                            node: classNode,
+                            type: LogType.ERROR,
+                            code: '10110012',
+                            message: `Duplicate intentName definitions found: ${intentData.intentName}`
+                        });
+                        // return 
+                    }
+                    this.intentNameSet.add(intentData.intentName);
                     this.collector.addIntent(intentData);
                 }
             } catch (error) {
@@ -571,9 +573,9 @@ export class InsightIntentHandler {
                     const decoratorName = anno.expr.name;
                     
                     // 只处理 InsightIntentFunctionMethod
-                    if (decoratorName !== INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR) {
-                        continue;
-                    }
+                    // if (decoratorName !== INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR) {
+                    //     continue;
+                    // }
                     
                     try {
                         const intentData = this.extractFunctionMethodIntentDataFromMethod(anno, member, classNode);
@@ -711,11 +713,9 @@ export class InsightIntentHandler {
         
         return undefined;
     }
-
     private extractLinkIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
         const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentLink');
         if (!baseData) return null;
-        
         const data: any = { ...baseData };
         const properties = annotation.properties;
         for (const prop of properties) {
@@ -1097,19 +1097,13 @@ export class InsightIntentHandler {
                 case 'domain':
                 case 'intentVersion':
                 case 'displayName':
-                    // 必填字段，直接赋值
-                    data[propName] = this.extractStringValue(propValue, classNode);
-                    break;
                 case 'displayDescription':
                 case 'schema':
                 case 'icon':
                 case 'llmDescription':
                 case 'example': {
-                    // 非必填字段，空字符串不写入
-                    const value = this.extractStringValue(propValue, classNode);
-                    if (this.isValidOptionalValue(value, classNode, decoratorType)) {
-                        data[propName] = value;
-                    }
+                    // 必填字段，直接赋值
+                    data[propName] = propValue.str
                     break;
                 }
                 case 'keywords': {
@@ -1137,10 +1131,10 @@ export class InsightIntentHandler {
 
         if (!data.intentName || !data.domain || !data.intentVersion) {
             LogCollector.getInstance().collectLogInfo({
-                node: classNode,
                 type: LogType.ERROR,
-                code: '10110003',
-                message: `Required parameters are missing for the decorator in ${decoratorType}`
+                node: classNode,
+                message: `Required parameters are missing for the decorator in ${decoratorType}`,
+                code: '10110003'
             });
             return null;
         }
@@ -1187,7 +1181,6 @@ export class InsightIntentHandler {
         if (node.constructor.name === 'TemplateLiteral') {
             return this.extractTemplateLiteralValue(node as any) || undefined;
         }
-
         // 使用 arkts.getDecl() 获取变量值
         if (arkts.isIdentifier(node)) {
             const value = this.getVariableValueFromDecl(node);
@@ -1201,7 +1194,6 @@ export class InsightIntentHandler {
             }
             return value;
         }
-
         return undefined;
     }
 
