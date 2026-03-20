@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,23 +31,11 @@ const ajv = new Ajv({
 
 // 装饰器常量
 const INSIGHT_INTENT_LINK_DECORATOR = 'InsightIntentLink';
-// const INSIGHT_INTENT_ENTRY_DECORATOR = 'InsightIntentEntry';
-// const INSIGHT_INTENT_PAGE_DECORATOR = 'InsightIntentPage';
-// const INSIGHT_INTENT_FUNCTION_DECORATOR = 'InsightIntentFunction';
-// const INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR = 'InsightIntentFunctionMethod';
-// const INSIGHT_INTENT_FORM_DECORATOR = 'InsightIntentForm';
-// const INSIGHT_INTENT_ENTITY_DECORATOR = 'InsightIntentEntity';
 
 // 参数校验规则
 const BASE_REQUIRED_FIELDS = ['intentName', 'domain', 'intentVersion', 'displayName'];
 const DECORATOR_REQUIRED_FIELDS: Record<string, string[]> = {
-    'Link': [...BASE_REQUIRED_FIELDS, 'uri'],
-    'Entry': [...BASE_REQUIRED_FIELDS, 'abilityName', 'executeMode'],
-    'Page': [...BASE_REQUIRED_FIELDS, 'pagePath'],
-    'Function': BASE_REQUIRED_FIELDS,
-    'FunctionMethod': BASE_REQUIRED_FIELDS,
-    'Form': [...BASE_REQUIRED_FIELDS, 'formName'],
-    'Entity': ['entityCategory']
+    'Link': [...BASE_REQUIRED_FIELDS, 'uri']
 };
 
 function validateRequiredFields(data: any, decoratorType: string, node: arkts.AstNode): boolean {
@@ -85,13 +73,6 @@ function validateRequiredFields(data: any, decoratorType: string, node: arkts.As
     }
     
     return true;
-}
-
-function validateExecuteMode(executeMode: any): boolean {
-    if (!Array.isArray(executeMode) || executeMode.length === 0) {
-        return false;
-    }
-    return executeMode.every(mode => [0, 1, 2, 3].includes(mode));
 }
 
 function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
@@ -276,6 +257,8 @@ export class InsightIntentHandler {
         identifierNode: arkts.Identifier  // 保存 Identifier 节点用于延迟解析
     }> = new Map();
     
+    // 用于跟踪已添加的 intentName，确保唯一性（全局）
+    private static intentNames: Set<string> = new Set();
 
     constructor(projectConfig: ProjectConfig | undefined) {
         this.projectConfig = projectConfig;
@@ -283,16 +266,39 @@ export class InsightIntentHandler {
         
         // 初始化装饰器处理器映射表
         this.decoratorHandlers = new Map([
-            [INSIGHT_INTENT_LINK_DECORATOR, this.extractLinkIntentData.bind(this)],
-            // [INSIGHT_INTENT_ENTRY_DECORATOR, this.extractEntryIntentData.bind(this)],
-            // [INSIGHT_INTENT_PAGE_DECORATOR, this.extractPageIntentData.bind(this)],
-            // [INSIGHT_INTENT_FUNCTION_DECORATOR, this.extractFunctionIntentData.bind(this)],
-            // [INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR, this.extractFunctionMethodIntentData.bind(this)],
-            // [INSIGHT_INTENT_FORM_DECORATOR, this.extractFormIntentData.bind(this)],
-            // [INSIGHT_INTENT_ENTITY_DECORATOR, this.extractEntityIntentData.bind(this)],
+            [INSIGHT_INTENT_LINK_DECORATOR, this.extractLinkIntentData.bind(this)]
         ]);
     }
-
+        /**
+     * 加载现有的 insight_intent.json 文件中的 intentName
+     */
+    private loadExistingIntentNames(): void {
+        if (!this.projectConfig || !this.projectConfig.aceProfilePath) {
+            return;
+        }
+        
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const insightIntentPath = path.join(this.projectConfig.aceProfilePath, 'insight_intent.json');
+            
+            if (fs.existsSync(insightIntentPath)) {
+                const content = fs.readFileSync(insightIntentPath, 'utf-8');
+                const config = JSON.parse(content);
+                
+                // 检查 insightIntents 中的 intentName
+                if (config.insightIntents && Array.isArray(config.insightIntents)) {
+                    config.insightIntents.forEach((intent: any) => {
+                        if (intent.intentName) {
+                            InsightIntentHandler.intentNames.add(intent.intentName);
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            // 忽略文件读取或解析错误
+        }
+    }
     reset(): void {    
         // 清理路径规范化缓存
         this.normalizedPathCache.clear();
@@ -491,16 +497,13 @@ export class InsightIntentHandler {
         if (!node.definition) {
             return;
         }
+        // 加载现有的 insight_intent.json 文件中的 intentName
+        this.loadExistingIntentNames();
 
         // 处理类级别的装饰器
         if (node.definition.annotations) {
             this.processClassAnnotations(node.definition.annotations, node);
         }
-        
-        // 处理方法级别的装饰器（如 @InsightIntentFunctionMethod）
-        // if (node.definition.body) {
-        //     this.processMethodAnnotations(node.definition.body, node);
-        // }
     }
     /**
      * 处理类级别的装饰器
@@ -529,6 +532,19 @@ export class InsightIntentHandler {
 
             try {
                 const intentData = handler(anno, classNode);
+                // 检查 intentName 唯一性
+                if ('intentName' in intentData && intentData.intentName) {
+                    if (InsightIntentHandler.intentNames.has(intentData.intentName)) {
+                        LogCollector.getInstance().collectLogInfo({
+                            node: classNode,
+                            type: LogType.ERROR,
+                            code: '10110012',
+                            message: `Duplicate intentName definitions found: ${intentData.intentName}`
+                        });
+                        continue;
+                    }
+                    InsightIntentHandler.intentNames.add(intentData.intentName);
+                }
                 if (intentData) {
                     if (this.intentNameSet.has(intentData.intentName)) {
                         LogCollector.getInstance().collectLogInfo({
@@ -552,49 +568,6 @@ export class InsightIntentHandler {
             }
         }
     }
-    
-    /**
-     * 处理方法级别的装饰器（如 @InsightIntentFunctionMethod）
-     */
-    private processMethodAnnotations(body: readonly arkts.AstNode[], classNode: arkts.ClassDeclaration): void {
-        for (const member of body) {
-            // 处理方法定义
-            if (arkts.isMethodDefinition(member)) {
-                const methodAnnotations = member.scriptFunction?.annotations;
-                if (!methodAnnotations || methodAnnotations.length === 0) {
-                    continue;
-                }
-                
-                for (const anno of methodAnnotations) {
-                    if (!anno.expr || !arkts.isIdentifier(anno.expr)) {
-                        continue;
-                    }
-                    
-                    const decoratorName = anno.expr.name;
-                    
-                    // 只处理 InsightIntentFunctionMethod
-                    // if (decoratorName !== INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR) {
-                    //     continue;
-                    // }
-                    
-                    try {
-                        const intentData = this.extractFunctionMethodIntentDataFromMethod(anno, member, classNode);
-                        if (intentData) {
-                            this.collector.addIntent(intentData);
-                        }
-                    } catch (error) {
-                        LogCollector.getInstance().collectLogInfo({
-                            node: classNode,
-                            type: LogType.ERROR,
-                            code: '10110005',
-                            message: `Unsupported parameters found in the decorator. Failed to process @${decoratorName}: ${error}`
-                        });
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * 获取变量的值（按需查找策略）
      * 优先从缓存查找，缓存未命中时从 ETSGLOBAL 中提取
@@ -743,304 +716,6 @@ export class InsightIntentHandler {
         }
         return data;
     }
-
-    private extractEntryIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentEntry');
-        if (!baseData) return null;
-
-        const data: any = { ...baseData };
-        const properties = annotation.properties;
-        
-        for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
-            const propName = prop.key.name;
-            const propValue = prop.value;
-            if (!propValue) continue;
-
-            if (propName === 'abilityName') {
-                data.abilityName = this.extractStringValue(propValue, classNode);
-            } else if (propName === 'executeMode') {
-                data.executeMode = this.extractExecuteModeArray(propValue);
-            }
-        }
-        
-        // 验证必填字段和数据类型
-        if (!validateRequiredFields(data, 'Entry', classNode) ||
-            (data.executeMode && !validateExecuteMode(data.executeMode)) ||
-            (data.keywords && !validateKeywords(data.keywords, classNode)) ||
-            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode))) {
-            return null;
-        }
-        
-        // 将 executeMode 从数字数组转换成字符串数组（必须在验证之后）
-        if (data.executeMode) {
-            this.processExecuteModeParam(data);
-        }
-        
-        // 分析基类继承信息（InsightIntentEntryExecutor）
-        this.analyzeBaseClass(classNode, data, '@InsightIntentEntry');
-        
-        return data;
-    }
-
-    private extractPageIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentPage');
-        if (!baseData) return null;
-
-        const data: any = { ...baseData };
-        const properties = annotation.properties;
-        
-        for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
-            const propName = prop.key.name;
-            const propValue = prop.value;
-            if (!propValue) continue;
-            switch (propName) {
-                case 'pagePath':
-                    // pagePath 是必填字段，直接赋值
-                    data[propName] = this.extractStringValue(propValue, classNode);
-                    break;
-                case 'uiAbility':
-                case 'navigationId':
-                case 'navDestinationName': {
-                    // 非必填字段，空字符串不写入
-                    const value = this.extractStringValue(propValue, classNode);
-                    if (this.isValidOptionalValue(value, classNode, '@InsightIntentPage')) {
-                        data[propName] = value;
-                    }
-                    break;
-                }
-            }
-        }
-
-        if (!validateRequiredFields(data, 'Page', classNode) ||
-            (data.keywords && !validateKeywords(data.keywords, classNode)) ||
-            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode)) ||
-            (data.result && !validateJsonSchema(data.result, 'result', classNode))) {
-            return null;
-        }
-
-        return data;
-    }
-
-    private extractFunctionIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentFunction');
-        if (!baseData) return null;
-
-        if (!validateRequiredFields(baseData, 'Function', classNode) ||
-            (baseData.keywords && !validateKeywords(baseData.keywords, classNode)) ||
-            (baseData.parameters && !validateJsonSchema(baseData.parameters, 'parameters', classNode)) ||
-            (baseData.result && !validateJsonSchema(baseData.result, 'result', classNode))) {
-            return null;
-        }
-
-        return baseData;
-    }
-
-    private extractFunctionMethodIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentFunctionMethod');
-        if (!baseData) return null;
-
-        if (!validateRequiredFields(baseData, 'FunctionMethod', classNode) ||
-            (baseData.keywords && !validateKeywords(baseData.keywords, classNode)) ||
-            (baseData.parameters && !validateJsonSchema(baseData.parameters, 'parameters', classNode)) ||
-            (baseData.result && !validateJsonSchema(baseData.result, 'result', classNode))) {
-            return null;
-        }
-
-        return baseData;
-    }
-    
-    /**
-     * 从方法装饰器中提取 FunctionMethod 意图数据
-     */
-    private extractFunctionMethodIntentDataFromMethod(
-        annotation: arkts.AnnotationUsage, 
-        methodDef: arkts.MethodDefinition,
-        classNode: arkts.ClassDeclaration
-    ): InsightIntentData | null {
-        const properties = annotation.properties;
-        if (!properties || properties.length === 0) {
-            return null;
-        }
-
-        const data: any = {};
-        
-        // 获取类名和方法名
-        const className = classNode.definition?.ident?.name || 'UnknownClass';
-        const methodName = methodDef.name && arkts.isIdentifier(methodDef.name) 
-            ? methodDef.name.name 
-            : 'UnknownMethod';
-        
-        // 获取文件路径
-        const program = arkts.getProgramFromAstNode(classNode);
-        const filePath = program?.absName || '';
-
-        data.decoratorClass = className;
-        data.functionName = methodName;
-        // 从 scriptFunction.params 获取方法参数列表
-        const params = methodDef.scriptFunction?.params;
-        if (params && params.length > 0) {
-            data.functionParamList = params
-                .map((param: arkts.Expression) => {
-                    if (arkts.isIdentifier(param)) {
-                        return param.name;
-                    }
-                    // ETSParameterExpression 的情况
-                    if (param && (param as any).identifier && arkts.isIdentifier((param as any).identifier)) {
-                        return (param as any).identifier.name;
-                    }
-                    return undefined;
-                })
-                .filter((name: string | undefined) => name !== undefined);
-        }
-        data.decoratorFile = this.normalizeFilePath(filePath);
-        data.decoratorType = '@InsightIntentFunctionMethod';
-        data.moduleName = this.projectConfig?.moduleName || 'entry';
-        data.bundleName = this.projectConfig?.bundleName || '';
-
-        // 提取装饰器参数
-        for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
-            const propName = prop.key.name;
-            const propValue = prop.value;
-            if (!propValue) continue;
-
-            switch (propName) {
-                case 'intentName':
-                case 'domain':
-                case 'intentVersion':
-                case 'displayName':
-                    // 必填字段，直接赋值
-                    data[propName] = this.extractStringValue(propValue, classNode);
-                    break;
-                case 'displayDescription':
-                case 'schema':
-                case 'icon':
-                case 'llmDescription':
-                case 'example': {
-                    // 非必填字段，空字符串不写入
-                    const value = this.extractStringValue(propValue, classNode);
-                    if (this.isValidOptionalValue(value, classNode, '@InsightIntentFunctionMethod')) {
-                        data[propName] = value;
-                    }
-                    break;
-                }
-                case 'keywords': {
-                    // 非必填字段，空数组不写入
-                    const keywords = this.extractArrayValue(propValue);
-                    if (this.isValidOptionalValue(keywords, classNode, '@InsightIntentFunctionMethod')) {
-                        data.keywords = keywords;
-                    }
-                    break;
-                }
-                case 'parameters':
-                case 'result': {
-                    // 非必填字段，undefined 或空字符串不写入
-                    // 注意：SDK 定义中这些字段有默认值 = ""，需要额外过滤空字符串
-                    const jsonValue = this.extractJsonValue(propValue, classNode);
-                    // 过滤掉 undefined、null 和空字符串（SDK 默认值导致的）
-                    if (this.isValidOptionalValue(jsonValue, classNode, '@InsightIntentFunctionMethod') && 
-                        !(typeof jsonValue === 'string' && jsonValue.trim() === '')) {
-                        data[propName] = jsonValue;
-                    }
-                    break;
-                }
-            }
-        }
-
-        // 验证必填字段
-        if (!data.intentName || !data.domain || !data.intentVersion) {
-            LogCollector.getInstance().collectLogInfo({
-                node: classNode,
-                type: LogType.ERROR,
-                code: '10110003',
-                message: 'Required parameters are missing for the decorator in @InsightIntentFunctionMethod'
-            });
-            return null;
-        }
-
-        if (!validateRequiredFields(data, 'FunctionMethod', classNode) ||
-            (data.keywords && !validateKeywords(data.keywords, classNode)) ||
-            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode)) ||
-            (data.result && !validateJsonSchema(data.result, 'result', classNode))) {
-            return null;
-        }
-
-        return data;
-    }
-
-    private extractFormIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentForm');
-        if (!baseData) return null;
-
-        const data: any = { ...baseData };
-        const properties = annotation.properties;
-        
-        for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
-            const propName = prop.key.name;
-            const propValue = prop.value;
-            if (!propValue) continue;
-
-            if (propName === 'formName') {
-                data.formName = this.extractStringValue(propValue, classNode);
-            }
-        }
-
-        if (!validateRequiredFields(data, 'Form', classNode) ||
-            (data.keywords && !validateKeywords(data.keywords, classNode)) ||
-            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode)) ||
-            (data.result && !validateJsonSchema(data.result, 'result', classNode))) {
-            return null;
-        }
-
-        return data;
-    }
-
-    private extractEntityIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
-        const properties = annotation.properties;
-        if (!properties || properties.length === 0) {
-            return null;
-        }
-
-        const data: any = {};
-        const className = classNode.definition?.ident?.name || 'UnknownClass';
-        const program = arkts.getProgramFromAstNode(classNode);
-        const filePath = program?.absName || '';
-
-        data.className = className;
-        data.decoratorFile = this.normalizeFilePath(filePath);
-        data.decoratorType = '@InsightIntentEntity';
-
-        for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
-            const propName = prop.key.name;
-            const propValue = prop.value;
-            if (!propValue) continue;
-
-            if (propName === 'entityCategory') {
-                // entityCategory 是必填字段，直接赋值
-                data.entityCategory = this.extractStringValue(propValue, classNode);
-            } else if (propName === 'parameters') {
-                // parameters 是非必填字段，undefined 或空字符串不写入
-                // 注意：SDK 定义中这些字段有默认值 = ""，需要额外过滤空字符串
-                const parameters = this.extractJsonValue(propValue, classNode);
-                // 过滤掉 undefined、null 和空字符串（SDK 默认值导致的）
-                if (this.isValidOptionalValue(parameters, classNode, '@InsightIntentEntity') && 
-                    !(typeof parameters === 'string' && parameters.trim() === '')) {
-                    data.parameters = parameters;
-                }
-            }
-        }
-
-        if (!validateRequiredFields(data, 'Entity', classNode) ||
-            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode))) {
-            return null;
-        }
-
-        return data;
-    }
     /**
      * 判断是否为有效的非空值（用于非必填字段）
      * @param value 要检查的值
@@ -1080,8 +755,8 @@ export class InsightIntentHandler {
         data.decoratorClass = className;
         data.decoratorFile = this.normalizeFilePath(filePath);
         data.decoratorType = decoratorType;
-        data.moduleName = this.projectConfig?.moduleName || 'entry';
-        data.bundleName = this.projectConfig?.bundleName || '';
+        data.moduleName = this.projectConfig?.moduleName;
+        data.bundleName = this.projectConfig?.bundleName;
 
         // 必填字段列表
         const requiredFields = ['intentName', 'domain', 'intentVersion', 'displayName'];
@@ -1225,220 +900,6 @@ export class InsightIntentHandler {
 
         return result;
     }
-    private extractExecuteModeArray(node: arkts.Expression): number[] | undefined {
-        if (!arkts.isArrayExpression(node)) {
-            return undefined;
-        }
-        
-        const result: number[] = [];
-        const modeMap: Record<string, number> = {
-            'UI_ABILITY_FOREGROUND': 0,
-            'UI_ABILITY_BACKGROUND': 1,
-            'UI_EXTENSION_ABILITY': 2,
-            'SERVICE_EXTENSION_ABILITY': 3
-        };
-        
-        for (const element of node.elements) {
-            let numValue: number | undefined;
-            
-            if (arkts.isMemberExpression(element)) {
-                const enumValue = this.extractEnumValueFromMemberExpression(element);
-                if (enumValue && modeMap[enumValue] !== undefined) {
-                    result.push(modeMap[enumValue]);
-                }
-            }
-        }
-
-        return result.length > 0 ? result : undefined;
-    }
-    
-    /**
-     * 从 MemberExpression 中提取枚举值
-     * 例如: insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND -> UI_ABILITY_FOREGROUND
-     */
-    private extractEnumValueFromMemberExpression(expr: arkts.MemberExpression): string | undefined {
-        // 获取最右侧的属性名
-        if (expr.property && arkts.isIdentifier(expr.property)) {
-            return expr.property.name;
-        }
-        
-        // 如果 property 不是 Identifier，尝试递归处理
-        if (expr.property && arkts.isMemberExpression(expr.property)) {
-            return this.extractEnumValueFromMemberExpression(expr.property);
-        }
-        
-        return undefined;
-    }
-    
-    /**
-     * 处理 executeMode 参数：将数字数组转换为字符串数组
-     * 0 -> 'foreground'
-     * 1 -> 'background'
-     * 2 -> 'uiextension'
-     * 3 -> 'serviceextension'
-     */
-    private processExecuteModeParam(intentObj: any): void {
-        if (intentObj.executeMode && Array.isArray(intentObj.executeMode)) {
-            intentObj.executeMode = intentObj.executeMode.map((item: number) => {
-                if (item === 0) {
-                    return 'foreground';
-                }
-                if (item === 1) {
-                    return 'background';
-                }
-                if (item === 2) {
-                    return 'uiextension';
-                }
-                if (item === 3) {
-                    return 'serviceextension';
-                }
-                return item;
-            });
-        }
-    }
-    
-    /**
-     * 分析类的基类继承信息
-     * 用于 Entry 和 Entity 装饰器
-     */
-    private analyzeBaseClass(classNode: arkts.ClassDeclaration, intentObj: any, decoratorType: string): void {
-        if (!classNode.definition || !classNode.definition.super) {
-            return;
-        }
-        
-        const superClass = classNode.definition.super;
-        
-        if (decoratorType === '@InsightIntentEntry') {
-            // Entry 装饰器需要继承 InsightIntentEntryExecutor
-            if (arkts.isExpression(superClass)) {
-                this.processEntryBaseClass(superClass, classNode, intentObj);
-            }
-        }
-    }
-    
-    /**
-     * 处理 Entry 类的基类信息
-     */
-    private processEntryBaseClass(superClass: arkts.Expression, classNode: arkts.ClassDeclaration, intentObj: any): void {
-        // 获取父类名称和泛型参数
-        let parentClassName: string | undefined;
-        let typeArguments: arkts.TypeNode[] = [];
-        
-        // 处理 ETSTypeReference（包含泛型参数）
-        if (arkts.isETSTypeReference(superClass)) {
-            const part = superClass.part;
-            if (part && arkts.isETSTypeReferencePart(part)) {
-                if (part.name && arkts.isIdentifier(part.name)) {
-                    parentClassName = part.name.name;
-                }
-                // 获取泛型参数
-                if (part.typeArguments) {
-                    typeArguments = part.typeArguments;
-                }
-            }
-        }
-        // 处理简单的 Identifier
-        else if (arkts.isIdentifier(superClass)) {
-            parentClassName = superClass.name;
-        }
-        
-        if (!parentClassName) {
-            return;
-        }
-        
-        // 验证是否继承自 InsightIntentEntryExecutor
-        if (parentClassName !== 'InsightIntentEntryExecutor') {
-            LogCollector.getInstance().collectLogInfo({
-                node: classNode,
-                type: LogType.ERROR,
-                code: '10110018',
-                message: 'Classes decorated with @InsightIntentEntry must inherit from InsightIntentEntryExecutor.'
-            });
-            return;
-        }
-        
-        // 收集类继承信息
-        this.collectClassInheritanceInfo(parentClassName, typeArguments, intentObj);
-    }
-    
-    /**
-     * 收集类继承信息，包括泛型参数
-     */
-    private collectClassInheritanceInfo(parentClassName: string, typeArguments: arkts.TypeNode[], intentObj: any): void {
-        const ClassInheritanceInfo: any = {
-            'parentClassName': parentClassName,
-            'definitionFilePath': 'sdk', // 父类来自 SDK
-            'generics': []
-        };
-        
-        // 提取泛型参数
-        for (const typeArg of typeArguments) {
-            const generic = this.extractGenericInfo(typeArg, intentObj);
-            if (generic) {
-                ClassInheritanceInfo.generics.push(generic);
-            }
-        }
-        
-        intentObj.ClassInheritanceInfo = ClassInheritanceInfo;
-    }
-    
-    /**
-     * 提取泛型信息
-     * @param typeNode 类型节点
-     * @param intentObj intent 对象（可选，用于记录 entity 关联）
-     */
-    private extractGenericInfo(typeNode: arkts.TypeNode, intentObj?: any): any | null {
-        let typeName: string | undefined;
-        let definitionFilePath: string = 'lib.es5.d.ts'; // 默认路径
-        
-        // 处理 ETSTypeReference
-        if (arkts.isETSTypeReference(typeNode)) {
-            const part = typeNode.part;
-            if (part && arkts.isETSTypeReferencePart(part)) {
-                if (part.name && arkts.isIdentifier(part.name)) {
-                    typeName = part.name.name;
-                }
-            }
-        }
-        // 处理 TypeReference（兼容）
-        else if (arkts.isTypeReference(typeNode)) {
-            if (arkts.isIdentifier(typeNode.typeName)) {
-                typeName = typeNode.typeName.name;
-            } else if (arkts.isQualifiedName(typeNode.typeName)) {
-                // 处理限定名称，如 Namespace.Type
-                typeName = typeNode.typeName.right.name;
-            }
-        } 
-        // 处理 Identifier
-        else if (arkts.isIdentifier(typeNode)) {
-            typeName = typeNode.name;
-        }
-        
-        // 处理基本类型
-        const primitiveTypes = ['string', 'number', 'boolean'];
-        if (typeName && primitiveTypes.includes(typeName.toLowerCase())) {
-            return {
-                'typeName': typeName,
-                'definitionFilePath': 'lib.es5.d.ts'
-            };
-        }
-        
-        if (!typeName) {
-            return null;
-        }
-        
-        // 如果不是基本类型，可能是 Entity 类，记录到 entityOwnerMap
-        if (intentObj && intentObj.intentName && typeName && 
-            !primitiveTypes.includes(typeName.toLowerCase())) {
-            this.collector.addEntityOwner(intentObj.intentName, typeName);
-        }
-        
-        return {
-            'typeName': typeName,
-            'definitionFilePath': definitionFilePath
-        };
-    }
-    
     /**
      * 提取 JSON 值
      * @param node 
@@ -1651,7 +1112,7 @@ export class InsightIntentHandler {
             return cached;
         }
 
-        const moduleName = this.projectConfig?.moduleName || 'entry';
+        const moduleName = this.projectConfig?.moduleName;
         
         let relativePath = filePath;
         const srcIndex = filePath.indexOf('/src/');
