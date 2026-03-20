@@ -49,12 +49,14 @@ import { ComponentAttributeCache } from './builder-lambda-translators/cache/comp
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
 import { ComponentLifecycleCache } from './property-translators/cache/componentLifecycleCache';
+import { InsightIntentHandler } from './insight-intent/insight-intent-handler';
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
     aceBuildJson: LoaderJson;
     resourceInfo: ResourceInfo;
+    private insightIntentHandler: InsightIntentHandler;
 
     constructor(projectConfig: ProjectConfig | undefined) {
         super();
@@ -62,6 +64,7 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
         this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
+        this.insightIntentHandler = new InsightIntentHandler(projectConfig);
         MetaDataCollector.getInstance()
             .setProjectConfig(this.projectConfig)
             .setRouterInfo(initRouterInfo(this.aceBuildJson));
@@ -71,11 +74,14 @@ export class CheckedTransformer extends AbstractVisitor {
         MetaDataCollector.getInstance()
             .setAbsName(this.program?.absName)
             .setExternalSourceName(this.externalSourceName);
+        // 初始化 InsightIntentHandler，收集当前文件的顶层变量
+        this.insightIntentHandler.init(this.program);
     }
 
     reset(): void {
         super.reset();
         this.scope = { customComponents: [] };
+        this.insightIntentHandler.reset();
         PropertyCache.getInstance().reset();
         MonitorCache.getInstance().reset();
         ComputedCache.getInstance().reset();
@@ -140,6 +146,8 @@ export class CheckedTransformer extends AbstractVisitor {
             this.scope.customComponents.length > 0 &&
             isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
         ) {
+            // 处理 InsightIntent 装饰器（对于 struct/自定义组件）
+            this.insightIntentHandler.handleClass(node);
             const scope: CustomComponentScopeInfo = this.scope.customComponents[this.scope.customComponents.length - 1];
             const newClass: arkts.ClassDeclaration = structFactory.tranformClassMembers(node, scope);
             this.exit(beforeChildren);
@@ -154,6 +162,8 @@ export class CheckedTransformer extends AbstractVisitor {
             entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
         } else if (arkts.isClassDeclaration(node)) {
+            // 新增节点处理入口
+            this.insightIntentHandler.nodeHandleEntry(node)
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
             return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo, this.scope.customComponents.length === 0);
