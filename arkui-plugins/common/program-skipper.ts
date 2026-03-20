@@ -23,6 +23,7 @@ const ARKUI = 'arkui';
 export class ProgramSkipper {
     private static _absName2programs: Map<string, arkts.Program[]> = new Map();
     private static _uiProgramSet: Set<number> = new Set();
+    private static _intentProgramSet: Set<number> = new Set();
     private static _edges: Map<number, arkts.Program[]> = new Map();
     private static _initedCanSkip: boolean = false;
 
@@ -77,12 +78,14 @@ export class ProgramSkipper {
             if (p.absName.endsWith(LIB_SUFFIX) && p.absName.includes(ARKUI)) {
                 this.dfs(p);
             }
-            for (const statement of p.astNode.statements) {
-                if (arkts.isETSImportDeclaration(statement)) {
-                    const source = statement.resolvedSource || "";
-                    if (source.includes("@kit.AbilityKit") || source.includes("InsightIntentDecorator")) {
-                        if(statement.dumpSrc().includes('Intent')||statement.dumpSrc().includes('LinkParamCategory')){
-                            this.dfs(p);
+            if (!this._uiProgramSet.has(p.peer)) {
+                for (const statement of p.astNode.statements) {
+                    if (arkts.isETSImportDeclaration(statement)) {
+                        const source = statement.resolvedSource || "";
+                        if (source.includes("@kit.AbilityKit") || source.includes("InsightIntentDecorator")) {
+                            if (statement.dumpSrc().includes('Intent')||statement.dumpSrc().includes('LinkParamCategory')) {
+                                this._intentProgramSet.add(p.peer);
+                            }
                         }
                     }
                 }
@@ -94,6 +97,7 @@ export class ProgramSkipper {
 
     public static clear(): void {
         this._uiProgramSet.clear();
+        this._intentProgramSet.clear();
         this._initedCanSkip = false;
     }
 
@@ -112,6 +116,6 @@ export class ProgramSkipper {
             this._absName2programs.clear();
             this._edges.clear();
         }
-        return !this._uiProgramSet.has(program.peer);
+        return !this._uiProgramSet.has(program.peer) && !this._intentProgramSet.has(program.peer);
     }
 }
