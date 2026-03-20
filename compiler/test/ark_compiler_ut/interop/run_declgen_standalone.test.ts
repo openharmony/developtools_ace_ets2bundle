@@ -125,14 +125,12 @@ mocha.describe('DeclfileProductor', () => {
             moduleType: 'entry'
         }
         const filePath = '/path/to/project/entry/src/main/ets/dynamic1.ets';
-        const mainModuleName = 'entry';
-        const bundleName = 'com.entry';
 
-        declFileProductor.addDeclFilesConfig(filePath, mainModuleName, bundleName, moduleInfo);
+        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic1';
         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
-        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic1&`;
+        const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic1&`;
 
         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
@@ -156,14 +154,12 @@ mocha.describe('DeclfileProductor', () => {
             moduleType: 'har'
         }
         const filePath = '/path/to/project/har1/src/main/ets/dynamic2.js';
-        const mainModuleName = 'har1';
-        const bundleName = 'com.har1';
 
-        declFileProductor.addDeclFilesConfig(filePath, mainModuleName, bundleName, moduleInfo);
+        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic2';
         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
-        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic2&1.0.0`;
+        const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic2&`;
         
         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
@@ -187,13 +183,11 @@ mocha.describe('DeclfileProductor', () => {
             moduleType: 'shared'
         };
         const filePath = '/path/to/project/hsp1/src/main/ets/dynamic3.ets';
-        const mainModuleName = 'hsp1';
-        const bundleName = 'com.hsp1';
-        declFileProductor.addDeclFilesConfig(filePath, mainModuleName, bundleName, moduleInfo);
+        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic3';
         const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
-        const expectedOhmUrl = `@normalized:N&${mainModuleName}&${bundleName}&${moduleInfo.packageName}/src/main/ets/dynamic3&`;
+        const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic3&`;
         
         const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
