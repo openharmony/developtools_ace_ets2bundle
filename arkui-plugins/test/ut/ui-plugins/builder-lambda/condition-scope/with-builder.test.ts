@@ -166,7 +166,8 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_myBuilderParam = ((((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? ((() => {
+    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? (((({let gensym___76154828 = initializers;
+    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? ((() => {
       if (true) {
         TextImpl(@Memo() ((instance: TextAttribute): void => {
           instance.setTextOptions("within BuilderParam property", undefined);
@@ -174,7 +175,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
           return;
         }), undefined);
       }
-    })))
+    })))))
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
@@ -494,7 +495,8 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_myBuilderParam = ((((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? (((({let gensym___76154828 = initializers;
+    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
       const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (167252533)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -520,7 +522,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
         __memo_scope.recache();
         return;
       }
-    })))
+    })))))
   }
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}

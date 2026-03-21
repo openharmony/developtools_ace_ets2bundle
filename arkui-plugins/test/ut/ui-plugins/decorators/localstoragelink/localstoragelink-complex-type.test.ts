@@ -87,7 +87,7 @@ final class Status extends BaseEnum<int> {
 
   private static <cctor>() {}
 
-  public constructor(ordinal: int, value: int) {
+  private constructor(ordinal: int, value: int) {
     super(value);
     this.#ordinal = ordinal;
   }

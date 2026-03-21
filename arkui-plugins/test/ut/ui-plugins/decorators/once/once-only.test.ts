@@ -102,7 +102,9 @@ function main() {}
   public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Child>(),
+    });
   }
   
   @ComponentBuilder() 

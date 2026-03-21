@@ -185,7 +185,7 @@ function main() {}
           return;
         }
         __memo_parameter_instance.value.setListItemGroupOptions({
-          header: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          header: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -197,7 +197,7 @@ function main() {}
               return;
             }
           }),
-          footer: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          footer: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -215,17 +215,7 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
-        if (__memo_scope.unchanged) {
-          __memo_scope.cached;
-          return;
-        }
-        {
-          __memo_scope.recache();
-          return;
-        }
-      }));
+      }), (() => {}));
       {
         __memo_scope.recache();
         return;
