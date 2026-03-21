@@ -93,8 +93,13 @@ function main() {}
   @JSONRename({newName:"value"}) public __backing_value: int = 10;
 
   public foo(): void {
-    if ((StaticClassObserved.count) < (this.value)) {
+    if (((StaticClassObserved.count) < (this.value))) {
     }
+  }
+
+  public constructor() {}
+
+  static {
   }
 
   public static get count(): int {

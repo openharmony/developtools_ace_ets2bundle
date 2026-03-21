@@ -128,23 +128,6 @@ class G extends A {
     meta.addRef();
   }
 
-  @JSONRename({newName:"propG"}) public __backing_propG: number = 1;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_propG");
-
-  public get propG(): number {
-    this.conditionalAddRef(this.__meta_propG);
-    return UIUtils.makeObserved(this.__backing_propG);
-  }
-
-  public set propG(newValue: number) {
-    if (((this.__backing_propG) !== (newValue))) {
-      this.__backing_propG = newValue;
-      this.__meta_propG.fireChange();
-      this.executeOnSubscribingWatches("propG");
-    }
-  }
-
   public constructor() {}
 
 }
