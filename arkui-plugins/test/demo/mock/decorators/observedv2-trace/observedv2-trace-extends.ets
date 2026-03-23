@@ -28,5 +28,4 @@ class G extends A {
 
 @ObservedV2
 class H extends G {
-  @Trace propG: number = 1;
 }
