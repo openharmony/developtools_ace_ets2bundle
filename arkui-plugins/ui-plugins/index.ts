@@ -23,6 +23,7 @@ import { debugLog, getDumpFileName } from '../common/debug';
 import { ProgramSkipper } from '../common/program-skipper';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { GenSymGenerator } from '../common/gensym-generator';
+import { InsightIntentCollector } from './insight-intent/insight-intent-collector';
 
 export function uiTransform(): Plugins {
     return {
@@ -32,6 +33,7 @@ export function uiTransform(): Plugins {
         clean() {
             ProgramSkipper.clear();
             GenSymGenerator.clear();
+            InsightIntentCollector.getInstance().clear();
         },
     };
 }
@@ -111,6 +113,8 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         this.setArkTSAst(script);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
+        // 多文件编译时，每次都会更新文件，最后一次包含所有数据
+        InsightIntentCollector.getInstance().tryWriteFromContext(this);
         arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
         return script;
     }
