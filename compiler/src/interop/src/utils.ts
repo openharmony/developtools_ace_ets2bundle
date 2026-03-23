@@ -1295,6 +1295,32 @@ export function setRollupCache(rollupShareObject: object, projectConfig: object,
   }
 }
 
+export function getRollupCommonCache(rollupShareObject: object, key: string): object | undefined {
+  if (!rollupShareObject) {
+    return undefined;
+  }
+
+  // Preferentially get commonCache object from the rollup’s cache interface.
+  if (rollupShareObject.commonCache) {
+    // Only the commonCache object’s name as the cache key is required.
+    return rollupShareObject.commonCache.get(key);
+  }
+
+  return undefined;
+}
+
+export function setRollupCommonCache(rollupShareObject: object, key: string, value: object): void {
+  if (!rollupShareObject) {
+    return;
+  }
+
+  // Preferentially set commonCache object to the rollup’s cache interface.
+  if (rollupShareObject.commonCache) {
+    // Only the commonCache object’s name as the cache key is required.
+    rollupShareObject.commonCache.set(key, value);
+  }
+}
+
 export function removeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): readonly ts.Decorator[] {
   return decorators.filter((item: ts.Node) => {
     if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
