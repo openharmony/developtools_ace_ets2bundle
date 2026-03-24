@@ -181,6 +181,7 @@ import {
   stopEvent
 } from './performance';
 import parseIntent from './userIntents_parser/parseUserIntents';
+import { isApiAvailableStatement, isPointVersion, processAvailableStatement } from './process_available_statement';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -198,11 +199,13 @@ export function processUISyntax(program: ts.Program, ut = false,
     let hasUseResource: boolean = false;
     let hasStruct: boolean = false;
     let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
+    let needProcessAvailable: boolean = false;
     return (node: ts.SourceFile) => {
       eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
+      needProcessAvailable = /\.apiAvailable\(.*\)/.test(node.getText());
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
         storedFileInfo.transformCacheFiles[pageFile] = {
@@ -441,6 +444,10 @@ export function processUISyntax(program: ts.Program, ut = false,
         if (node && node.illegalDecorators) {
           node.illegalDecorators = undefined;
         }
+      // 若CompatibleSdkVersion为点分格式，且首位大于等于26时，不进行转换
+      } else if (needProcessAvailable && !isPointVersion(projectConfig.originCompatibleSdkVersion) &&
+        ts.isCallExpression(node) && isApiAvailableStatement(node)) {
+        node = processAvailableStatement(node);
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
