@@ -82,7 +82,7 @@ function builderOne() {
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Page1)=> void), initializers: ((()=> __Options_Page1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Page1)=> void) | undefined), initializers: ((()=> __Options_Page1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Page1, __Options_Page1>(style, ((): Page1 => {
       return new Page1(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));

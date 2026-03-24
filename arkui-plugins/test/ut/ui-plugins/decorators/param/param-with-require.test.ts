@@ -264,7 +264,7 @@ class Info {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index();
     }), initializers, reuseId, content, {
@@ -288,10 +288,7 @@ class Info {
         instance.setForEachOptions<Info>((() => {
           return this.infoList;
         }), @Memo() ((info: Info) => {
-          MiddleComponent._invoke(@Memo() ((instance: MiddleComponent): void => {
-            instance.applyAttributesFinish();
-            return;
-          }), (() => {
+          MiddleComponent._invoke(undefined, (() => {
             return {
               info: info,
               __options_has_info: true,
@@ -339,7 +336,7 @@ class Info {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MiddleComponent)=> void), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MiddleComponent)=> void) | undefined), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<MiddleComponent, __Options_MiddleComponent>(style, ((): MiddleComponent => {
       return new MiddleComponent();
     }), initializers, reuseId, content, {
@@ -369,10 +366,7 @@ class Info {
         instance.applyAttributesFinish();
         return;
       }), undefined);
-      SubComponent._invoke(@Memo() ((instance: SubComponent): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      SubComponent._invoke(undefined, (() => {
         return {
           region: this.info.region,
           __options_has_region: true,
@@ -408,7 +402,7 @@ class Info {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: SubComponent)=> void), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: SubComponent)=> void) | undefined), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<SubComponent, __Options_SubComponent>(style, ((): SubComponent => {
       return new SubComponent();
     }), initializers, reuseId, content, {

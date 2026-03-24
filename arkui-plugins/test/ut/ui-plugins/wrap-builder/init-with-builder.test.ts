@@ -75,7 +75,7 @@ globalBuilder = wrapBuilder(myBuilder);
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -164,7 +164,7 @@ globalBuilder = wrapBuilder(myBuilder);
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));

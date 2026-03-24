@@ -99,7 +99,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(style, ((): MyStruct => {
       return new MyStruct(false, ({let gensym___249621102 = storage;
       (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
@@ -138,10 +138,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
           }), undefined);
         }
       }));
-      Child._invoke(@Memo() ((instance: Child): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      Child._invoke(undefined, (() => {
         return {
           myBuilderParam: @Memo() (() => {
             if (true) {
@@ -190,7 +187,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
@@ -338,7 +335,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(__memo_context, ((__memo_id) + (219763513)), style, ((): MyStruct => {
       return new MyStruct(false, ({let gensym___249621102 = storage;
       (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
@@ -432,19 +429,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           return;
         }
       }));
-      Child._invoke(__memo_context, ((__memo_id) + (6301141)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (23694753)), 1);
-        const __memo_parameter_instance = __memo_scope.param(0, instance);
-        if (__memo_scope.unchanged) {
-          __memo_scope.cached;
-          return;
-        }
-        __memo_parameter_instance.value.applyAttributesFinish();
-        {
-          __memo_scope.recache();
-          return;
-        }
-      }), (() => {
+      Child._invoke(__memo_context, ((__memo_id) + (6301141)), undefined, (() => {
         return {
           myBuilderParam: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (231953030)), 0);
@@ -537,7 +522,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   }
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (97753005)), style, ((): Child => {
       return new Child(false, ({let gensym___29142858 = storage;
       (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
