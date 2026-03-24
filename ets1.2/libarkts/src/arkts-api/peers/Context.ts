@@ -50,8 +50,13 @@ export class Context extends ArktsObject {
         return compiler.createCacheContextFromFile(config, filePath, globalContext, isExternal);
     }
 
+    // NOTE: this API is deprecated
     static createContextGenerateAbcForExternalSourceFiles(filenames: string[]): Context {
-        return compiler.createContextGenerateAbcForExternalSourceFiles(global.configObj, filenames);
+        return this.createContextSimultaneousMode(filenames);
+    }
+
+    static createContextSimultaneousMode(filenames: string[]): Context {
+        return compiler.createContextSimultaneousMode(global.configObj, filenames);
     }
 
     static createFromStringWithHistory(source: string): Context {
