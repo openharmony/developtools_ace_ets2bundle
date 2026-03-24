@@ -228,7 +228,9 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
   [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation,and switch to the supported Stage model interfaces.'] }],
   [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation,and switch to the supported FA model interfaces.'] }],
-  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
+  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API is only since in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
 ])
 
 export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
@@ -294,3 +296,17 @@ export enum DeviceDiffType {
   SYSCAP = 'syscap',
   NONE = 'none'
 }
+
+/**
+ * @since Label error level configuration constant
+ */
+export const SINCE_LEVEL_WARNING: string = 'warning';
+export const SINCE_LEVEL_ERROR: string = 'error';
+
+/**
+ * @since Mapping from error level to TypeScript diagnostic category
+ */
+export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
+  [SINCE_LEVEL_WARNING, ts.DiagnosticCategory.Warning],
+  [SINCE_LEVEL_ERROR, ts.DiagnosticCategory.Error]
+]);
