@@ -175,7 +175,7 @@ function builder2() {}
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: CustomDialogUser)=> void), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
       return new CustomDialogUser(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -224,7 +224,7 @@ function builder2() {}
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: CustomDialogUser2)=> void), initializers: ((()=> __Options_CustomDialogUser2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: CustomDialogUser2)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser2, __Options_CustomDialogUser2>(style, ((): CustomDialogUser2 => {
       return new CustomDialogUser2(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));

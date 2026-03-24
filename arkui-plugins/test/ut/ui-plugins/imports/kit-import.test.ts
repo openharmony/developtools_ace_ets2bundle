@@ -207,7 +207,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
       return new A(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
@@ -246,10 +246,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    A._invoke(@Memo() ((instance: A): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
+    A._invoke(undefined, undefined, undefined, undefined, undefined);
   }
 
   public constructor() {}

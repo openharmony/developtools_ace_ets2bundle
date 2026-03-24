@@ -159,7 +159,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -222,7 +222,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStateSample2)=> void), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
       return new MyStateSample2(false, ({let gensym___64599093 = storage;
       (((gensym___64599093) == (null)) ? undefined : gensym___64599093())}));

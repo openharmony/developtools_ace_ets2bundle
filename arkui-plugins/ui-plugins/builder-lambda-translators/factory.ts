@@ -56,6 +56,7 @@ import {
     findReuseId,
     getStructCalleeInfoFromCallee,
     isInEntryWrapper,
+    isDebugLineEnabled,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
@@ -416,9 +417,10 @@ export class factory {
             ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
+        const unionType = arkts.factory.createUnionType([funcType, arkts.factory.createETSUndefinedType()]);
         addMemoAnnotation(funcType);
         const parameter = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, funcType),
+            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, unionType),
             undefined
         );
         arkts.NodeCache.getInstance().collect(parameter, { hasMemoSkip });
@@ -652,8 +654,14 @@ export class factory {
             { isTrailingCall }
         );
         if (!!lambdaBody) {
-            const styleArg = this.createStyleLambdaArgument(lambdaBody, returnType, { shouldSkipDebugLine: isInEntryWrapper(leaf) }, leaf);
-            args.unshift(styleArg);
+            const shouldSkipDebugLine = isInEntryWrapper(leaf);
+            const shouldAddDebugLine = !shouldSkipDebugLine && isDebugLineEnabled();
+            if (!shouldAddDebugLine && arkts.isIdentifier(lambdaBody)) {
+                args.unshift(arkts.factory.createUndefinedLiteral());
+            } else {
+                const styleArg = this.createStyleLambdaArgument(lambdaBody, returnType, { shouldSkipDebugLine: shouldSkipDebugLine }, leaf);
+                args.unshift(styleArg);
+            }
         }
         return args;
     }
@@ -923,7 +931,7 @@ export class factory {
         if (isFunctionCall) {
             ComponentAttributeCache.getInstance().collect(node);
         }
-        const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
+        const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,
             [this.createStyleArgInBuilderLambdaDecl(typeNode)],

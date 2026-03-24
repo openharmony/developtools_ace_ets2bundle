@@ -111,7 +111,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: CountDownComponent)=> void), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: CountDownComponent)=> void) | undefined), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CountDownComponent, __Options_CountDownComponent>(style, ((): CountDownComponent => {
       return new CountDownComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
@@ -176,7 +176,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
       return new ParentComponent(false, ({let gensym___192738000 = storage;
       (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
@@ -214,10 +214,7 @@ function main() {}
         instance.applyAttributesFinish();
         return;
       }), undefined);
-      CountDownComponent._invoke(@Memo() ((instance: CountDownComponent): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      CountDownComponent._invoke(undefined, (() => {
         return {
           count: this.countDownStartValue,
           __options_has_count: true,

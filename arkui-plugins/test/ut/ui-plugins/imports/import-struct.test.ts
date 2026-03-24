@@ -109,7 +109,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
@@ -123,23 +123,14 @@ function main() {}
   
   @Memo() 
   public build() {
-    SimpleStruct._invoke(@Memo() ((instance: SimpleStruct): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
-    SimpleStruct._invoke(@Memo() ((instance: SimpleStruct): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), (() => {
+    SimpleStruct._invoke(undefined, undefined, undefined, undefined, undefined);
+    SimpleStruct._invoke(undefined, (() => {
       return {
         message: "str1",
         __options_has_message: true,
       };
     }), undefined, undefined, undefined);
-    SimpleStruct._invoke(@Memo() ((instance: SimpleStruct): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, @Memo() (() => {
+    SimpleStruct._invoke(undefined, undefined, undefined, undefined, @Memo() (() => {
       TextImpl(@Memo() ((instance: TextAttribute): void => {
         instance.setTextOptions("a", undefined);
         instance.applyAttributesFinish();
