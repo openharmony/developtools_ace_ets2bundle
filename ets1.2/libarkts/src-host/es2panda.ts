@@ -131,7 +131,7 @@ function dumpCompilationInfo(simultaneous: boolean) {
     traceGlobal(() => {
         const programs = listPrograms(global.compilerContext!.program);
         if (simultaneous) {
-            const programsForCodegeneration = programs.filter((it) => it.isGenAbcForExternal);
+            const programsForCodegeneration = programs.filter((it) => it.isBuiltSimultaneously);
             traceGlobal(() => `Programs for codegeneration        : ${programsForCodegeneration.length}`);
             traceGlobal(
                 () => `External programs passed to plugins: ${programs.length - programsForCodegeneration.length - 1}`
@@ -300,7 +300,7 @@ export function main() {
             profileMemory,
             trace,
             simultaneous,
-            Context.createContextGenerateAbcForExternalSourceFiles
+            Context.createContextSimultaneousMode
         );
     } else {
         for (var i = 0; i < files.length; i++) {
