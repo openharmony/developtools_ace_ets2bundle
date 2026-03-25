@@ -1132,8 +1132,16 @@ export class factory {
         if (!node.definition) {
             return node;
         }
+        const existingImplNames: Set<string> = new Set();
         const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
-            arkts.isMethodDefinition(member) && PropertyFactory.addMemoToBuilderClassMethod(member);
+            if (arkts.isMethodDefinition(member)) {
+                PropertyFactory.addMemoToBuilderClassMethod(member);
+                const methodName = member.name?.name;
+                if (methodName && methodName.endsWith('Impl')) {
+                    const componentName = methodName.slice(0, -'Impl'.length);
+                    existingImplNames.add(componentName);
+                }
+            }
             if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
                 member = arkts.factory.updateMethodDefinition(
                     member,
@@ -1148,7 +1156,7 @@ export class factory {
         });
         if (ComponentAttributeCache.getInstance().isCollected()) {
             const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
-            const names = attributeCache.getAllComponentNames();
+            const names = attributeCache.getAllComponentNames().filter(name => !existingImplNames.has(name));
             const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
             updatedBody.push(...methods);
         }

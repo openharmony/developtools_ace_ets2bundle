@@ -1306,6 +1306,18 @@ export class factory {
         if (!node.body) {
             return node;
         }
+
+        const hasSetOptions = node.body.body.find((member) => {
+            if (arkts.isMethodDefinition(member)) {
+                const methodName = member.name.name;
+                return methodName.startsWith('set') && methodName.endsWith('Options');
+            }
+            return false;
+        });
+        if (hasSetOptions) {
+            return node;
+        }
+
         const records = ComponentAttributeCache.getInstance().getComponentRecord(componentName);
         if (!records || records.length === 0) {
             return node;
