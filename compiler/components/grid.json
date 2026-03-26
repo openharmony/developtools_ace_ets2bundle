@@ -11,6 +11,6 @@
     "alignItems", "onReachStart", "onReachEnd", "onScrollFrameBegin", "flingSpeedLimit",
     "clipContent", "backToTop", "focusWrapMode", "onWillStopDragging", "syncLoad", "onWillStartDragging",
     "onDidStopDragging", "onWillStartFling", "onDidStopFling", "contentStartOffset", "contentEndOffset",
-    "supportEmptyBranchInLazyLoading"
+    "supportEmptyBranchInLazyLoading", "autoAdjustScrollBarMargin"
   ]
 }
