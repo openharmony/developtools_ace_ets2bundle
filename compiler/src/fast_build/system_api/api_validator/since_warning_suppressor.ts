@@ -15,7 +15,15 @@
 
 import ts from 'typescript';
 import { BaseWarningSuppressor } from './base_warning_suppressor';
-import { NodeValidator, CompositeValidator, TryCatchValidator, UndefinedCheckValidator, SdkComparisonValidator, AvailableComparisonValidator } from './api_validate_node';
+import {
+  NodeValidator,
+  CompositeValidator,
+  TryCatchValidator,
+  UndefinedCheckValidator,
+  SdkComparisonValidator,
+  AvailableComparisonValidator,
+  WhiteListValidator
+} from './api_validate_node';
 import { SINCE_TAG_NAME } from '../api_check_define';
 
 
@@ -28,18 +36,20 @@ import { SINCE_TAG_NAME } from '../api_check_define';
  * 
  * Uses composite pattern to combine validators.
  */
-export class SinceWarningSuppressor extends BaseWarningSuppressor{
+export class SinceWarningSuppressor extends BaseWarningSuppressor {
 
   constructor(
     projectCompatibleSdkVersion: string,
     minRequiredVersion: string,
-    typeChecker?: ts.TypeChecker
+    typeChecker?: ts.TypeChecker,
+    declaration?: ts.Declaration
   ) {
     super(SINCE_TAG_NAME);
     // Create all validators
     this.validators.addValidator([
       new TryCatchValidator(),
       new UndefinedCheckValidator(),
+      new WhiteListValidator(declaration),
       new AvailableComparisonValidator(
         projectCompatibleSdkVersion,
         minRequiredVersion,
