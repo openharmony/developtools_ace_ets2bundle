@@ -21,6 +21,20 @@ function reportErrorAndExit(message: string): never {
     process.exit(1);
 }
 
+export function resolveSDK(): void {
+    if (process.env.PANDA_SDK_PATH && fs.existsSync(process.env.PANDA_SDK_PATH)) {
+        return;
+    }
+    const possiblePaths: string[] = []
+    try { possiblePaths.push(path.dirname(require.resolve('@panda/sdk/package.json'))) } catch {}
+    for (const path of possiblePaths) {
+        if (fs.existsSync(path)) {
+            process.env.PANDA_SDK_PATH = path;
+            return;
+        }
+    }
+}
+
 export function checkSDK() {
     const panda = process.env.PANDA_SDK_PATH;
     if (!panda) reportErrorAndExit(`Variable PANDA_SDK_PATH is not set, please fix`);
