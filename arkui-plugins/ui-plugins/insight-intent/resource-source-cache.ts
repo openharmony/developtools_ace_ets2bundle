@@ -42,7 +42,7 @@ export class ResourceSourceCache {
      * @param originalSource 原始源代码（如 "$r('app.media.app_icon')"）
      */
     set(newNode: arkts.CallExpression, originalSource: string): void {
-        const peer = (newNode as any).peer;
+        const peer = (newNode as arkts.CallExpression).peer;
         if (peer !== undefined && peer !== null) {
             this.cache.set(peer, originalSource);
         }
@@ -54,7 +54,7 @@ export class ResourceSourceCache {
      * @returns 原始源代码，如果没有找到返回 undefined
      */
     get(node: arkts.CallExpression): string | undefined {
-        const peer = (node as any).peer;
+        const peer = (node as arkts.CallExpression).peer;
         if (peer !== undefined && peer !== null) {
             return this.cache.get(peer);
         }
@@ -65,7 +65,7 @@ export class ResourceSourceCache {
      * 检查是否有缓存
      */
     has(node: arkts.CallExpression): boolean {
-        const peer = (node as any).peer;
+        const peer = (node as arkts.CallExpression).peer;
         if (peer !== undefined && peer !== null) {
             return this.cache.has(peer);
         }
