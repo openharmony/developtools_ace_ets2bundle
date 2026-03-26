@@ -417,11 +417,10 @@ export class InsightIntentCollector {
             if (intentsCount === 0) {
                 return false;
             }
-            
-            // aceProfilePath 应该指向 profile 目录，如果没有则使用模块根目录
-            const aceProfilePath = projectConfig.aceProfilePath || 
-                                   projectConfig.moduleRootPath || 
-                                   projectConfig.projectPath;
+            if (!projectConfig || !projectConfig.aceProfilePath) {
+                return false;
+            }
+            const aceProfilePath = projectConfig.aceProfilePath
             
             const bundleName = projectConfig.bundleName || '';
             
