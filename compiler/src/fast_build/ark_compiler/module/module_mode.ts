@@ -620,7 +620,8 @@ export class ModuleMode extends CommonMode {
       this.cmdArgs.push(`--compile-context-info`);
       this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
     }
-    if (this.abcPaths.length > 0 && !this.byteCodeHar) {
+    if (this.abcPaths.length > 0 && (!this.byteCodeHar ||
+      this.projectConfig.projectArkOption?.bundle?.bundledAllDependencies)) {
       this.cmdArgs.push('--enable-abc-input');
       this.cmdArgs.push('--remove-redundant-file');
     }
