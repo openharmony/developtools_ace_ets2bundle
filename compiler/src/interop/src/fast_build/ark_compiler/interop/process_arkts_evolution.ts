@@ -327,6 +327,9 @@ export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolea
 
     // Concatenate the corresponding source code path based on the bridge code path.
     const declgenCodeBrigdePath = path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName);
+    if (normalizedFilePath.startWith(toUnixPath(hybridModule.declgenBridgeCodePath) + '/') && fs.existsSync(normalizedFilePath)) {
+      return true;
+    }
     let moduleId = normalizedFilePath.replace(toUnixPath(declgenCodeBrigdePath), toUnixPath(metaInfo.pkgPath));
     const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
     const arktsEvolutionDeclFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_D_ETS);
