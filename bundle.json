@@ -51,6 +51,9 @@
             },
             {
                 "name": "//developtools/ace_ets2bundle/ets1.2:ohos_ets_libarkts"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle/ets1.2:ohos_ets_libarkts_pack_prebuilt"
             }
         ]
       }
