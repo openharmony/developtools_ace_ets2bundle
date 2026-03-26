@@ -11,6 +11,6 @@
     "flingSpeedLimit", "clipContent", "onWillScroll", "onDidScroll", "scrollBarColor", "scrollBarWidth", "backToTop",
     "stackFromEnd", "focusWrapMode", "onWillStopDragging", "syncLoad", "onWillStartDragging",
     "onDidStopDragging", "onWillStartFling", "onDidStopFling", "supportEmptyBranchInLazyLoading",
-    "SetBackPressBehavior", "autoAdjustScrollBarMargin"
+    "SetBackPressBehavior", "autoAdjustScrollBarMargin", "enableScrollWithMouse"
   ]
 }
