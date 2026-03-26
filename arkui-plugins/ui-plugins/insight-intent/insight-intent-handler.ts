@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ProjectConfig } from '../../common/plugin-context';
-import { InsightIntentCollector, InsightIntentData } from './insight-intent-collector';
+import { InsightIntentCollector, InsightIntentData, InsightIntentLinkData, InsightIntentDataBase } from './insight-intent-collector';
 import { LogCollector } from '../../common/log-collector';
 import { LogType } from '../../common/predefines';
 import { ResourceSourceCache } from './resource-source-cache';
@@ -28,17 +28,18 @@ const ajv = new Ajv({
     validateFormats: false,  // 暂不验证 format
     verbose: true  // 提供更详细的错误信息
 });
-
 // 装饰器常量
 const INSIGHT_INTENT_LINK_DECORATOR = 'InsightIntentLink';
-
+interface DecoratorData {
+    [key: string]: unknown;
+}
 // 参数校验规则
 const BASE_REQUIRED_FIELDS = ['intentName', 'domain', 'intentVersion', 'displayName'];
 const DECORATOR_REQUIRED_FIELDS: Record<string, string[]> = {
     'Link': [...BASE_REQUIRED_FIELDS, 'uri']
 };
 
-function validateRequiredFields(data: any, decoratorType: string, node: arkts.AstNode): boolean {
+function validateRequiredFields(data: InsightIntentLinkData, decoratorType: string, node: arkts.AstNode): boolean {
     const requiredFields = DECORATOR_REQUIRED_FIELDS[decoratorType] || [];
     
     for (const field of requiredFields) {
@@ -75,7 +76,7 @@ function validateRequiredFields(data: any, decoratorType: string, node: arkts.As
     return true;
 }
 
-function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
+function validateKeywords(keywords: string[] | null | undefined, node: arkts.AstNode): boolean {
     if (!keywords) {
         return true;
     }
@@ -89,7 +90,7 @@ function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
         });
         return false;
     }
-    const valid = keywords.every((keyword: any) => typeof keyword === 'string');
+    const valid = keywords.every((keyword: string | null | undefined) => typeof keyword === 'string');
     if (!valid) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
@@ -115,7 +116,7 @@ function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
  * 3. 必须是对象类型，不能是数组
  * 4. 使用 Ajv 验证 schema 本身是否为有效的 JSON Schema
  */
-function validateJsonSchema(schema: any, fieldName: string, node: arkts.AstNode): boolean {
+function validateJsonSchema(schema: Record<string, unknown> | null | undefined, fieldName: string, node: arkts.AstNode): boolean {
     // 空值被视为有效（可选字段）
     if (!schema) {
         return true;
@@ -141,9 +142,14 @@ function validateJsonSchema(schema: any, fieldName: string, node: arkts.AstNode)
     try {
         ajv.compile(schema); // 尝试编译 schema，如果编译失败说明 schema 格式不正确
         return true;
-    } catch (compileError: any) {
+    } catch (compileError: unknown) {
         // 捕获 Ajv 编译错误并转换为 LogCollector 格式
-        const errorMessage = compileError.message || String(compileError);
+        let errorMessage = 'Unknown error';
+        if (compileError instanceof Error) {
+            errorMessage = compileError.message;
+        } else {
+            errorMessage = String(compileError);
+        }
         // 解析错误类型并报告适当的错误码
         if (errorMessage.includes('unknown keyword') || errorMessage.includes('strict mode')) {
             LogCollector.getInstance().collectLogInfo({
@@ -171,7 +177,7 @@ function validateJsonSchema(schema: any, fieldName: string, node: arkts.AstNode)
     }
 }
 
-function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean {
+function validateParamMappings(paramMappings: Record<string, unknown> | null | undefined | string, node: arkts.AstNode): boolean {
     if (!paramMappings) {
         return true;
     }
@@ -239,10 +245,10 @@ export class InsightIntentHandler {
     private normalizedPathCache: Map<string, string> = new Map();
     
     // 性能优化：装饰器处理器映射表
-    private readonly decoratorHandlers: Map<string, (anno: any, node: any) => InsightIntentData | null>;
+    private readonly decoratorHandlers: Map<string, (anno: arkts.Decorator, node: arkts.AstNode) => InsightIntentData | null>;
     
     // 缓存当前文件的变量（从ETSGLOBAL类成员中按需提取）
-    private topLevelVariables: Map<string, any> = new Map();
+    private topLevelVariables: Map<string, unknown> = new Map();
     
     // 缓存ETSGLOBAL类节点
     private etsGlobalClass: arkts.ClassDeclaration | null = null;
@@ -288,7 +294,7 @@ export class InsightIntentHandler {
                 
                 // 检查 insightIntents 中的 intentName
                 if (config.insightIntents && Array.isArray(config.insightIntents)) {
-                    config.insightIntents.forEach((intent: any) => {
+                    config.insightIntents.forEach((intent: InsightIntentLinkData) => {
                         if (intent.intentName) {
                             this.intentNames.add(intent.intentName);
                         }
@@ -430,16 +436,18 @@ export class InsightIntentHandler {
     /**
      * 从表达式中提取值
      */
-    private extractValueFromExpression(expr: arkts.Expression): any {
+    private extractValueFromExpression(expr: arkts.Expression): unknown {
         // 使用 arkts API 解包 TSAsExpression
-        let actualExpr: any = expr;
+        let actualExpr: arkts.Expression | undefined = expr;
         while (arkts.isTSAsExpression(actualExpr)) {
             actualExpr = actualExpr.expr;
-            if (!actualExpr) break;
+            if (!actualExpr) {
+                break;
+            }
         }
         
         if (arkts.isObjectExpression(actualExpr)) {
-            return this.convertObjectExpressionToJson(actualExpr);
+            return this.convertObjectToJson(actualExpr);
         }
         
         if (arkts.isArrayExpression(actualExpr)) {
@@ -561,7 +569,7 @@ export class InsightIntentHandler {
      * 获取变量的值（按需查找策略）
      * 优先从缓存查找，缓存未命中时从 ETSGLOBAL 中提取
      */
-    private getVariableValueFromDecl(identifier: arkts.Identifier): any {
+    private getVariableValueFromDecl(identifier: arkts.Identifier): unknown {
         const varName = identifier.name;
         
         // 1. 先查缓存（按需缓存）
@@ -587,7 +595,7 @@ export class InsightIntentHandler {
      * 只在首次访问该变量时调用，之后使用缓存
      * 性能优化：使用索引查找，O(1) 复杂度
      */
-    private extractVariableFromETSGlobal(varName: string): any {
+    private extractVariableFromETSGlobal(varName: string): unknown {
         // 使用索引快速查找
         const member = this.etsGlobalMemberIndex.get(varName);
         if (member?.value) {
@@ -601,7 +609,7 @@ export class InsightIntentHandler {
      * 从导入的变量中提取值（跨文件）
      * 使用保存的 Identifier 节点引用进行延迟解析
      */
-    private extractImportedVariable(varName: string): any {
+    private extractImportedVariable(varName: string): unknown {
         
         // 检查是否是导入的变量
         const importInfo = this.importedVariables.get(varName);
@@ -629,7 +637,7 @@ export class InsightIntentHandler {
      * 从变量声明节点中提取值（支持跨文件）
      * 处理 VariableDeclarator 和 ClassProperty 两种情况
      */
-    private extractValueFromDeclaration(decl: arkts.AstNode): any {
+    private extractValueFromDeclaration(decl: arkts.AstNode): unknown {
         // 处理变量声明：const MY_VAR = ...
         if (arkts.isIdentifier(decl) && decl.parent && arkts.isVariableDeclarator(decl.parent)) {
             return this.extractValueFromDeclarator(decl.parent);
@@ -646,7 +654,7 @@ export class InsightIntentHandler {
     /**
      * 从变量声明器中提取值
      */
-    private extractValueFromDeclarator(declarator: arkts.VariableDeclarator): any {
+    private extractValueFromDeclarator(declarator: arkts.VariableDeclarator): unknown {
         const init = declarator.initializer;
         
         if (!init) {
@@ -654,7 +662,7 @@ export class InsightIntentHandler {
         }
         
         if (arkts.isObjectExpression(init)) {
-            return this.convertObjectExpressionToJson(init);
+            return this.convertObjectToJson(init);
         }
         
         if (arkts.isArrayExpression(init)) {
@@ -677,17 +685,32 @@ export class InsightIntentHandler {
     }
     private extractLinkIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
         const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentLink');
-        if (!baseData) return null;
-        const data: any = { ...baseData };
+        if (!baseData) {
+            return null;
+        }
+        const data: InsightIntentLinkData = { ...baseData };
         const properties = annotation.properties;
         for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
+            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) {
+                continue
+            };
             const propName = prop.key.name;
             const propValue = prop.value;
-            if (!propValue) continue;
+            if (!propValue)  {
+                continue
+            };
             if (propName === 'uri') {
                 // uri 是必填字段，直接赋值
                 data.uri = propValue.str;
+            } else if (propName === 'paramMappings') { 
+                // paramMappings 是非必填字段，空值不写入 
+                const paramMappings = this.extractJsonValue(propValue, classNode); 
+                if (this.isValidOptionalValue(paramMappings, classNode, '@InsightIntentLink')) { 
+                    data.paramMappings = paramMappings; 
+                }
+                if (data.paramMappings === '') {
+                    delete data.paramMappings;
+                }
             }
         }
         if (!validateRequiredFields(data, 'Link', classNode) || 
@@ -704,7 +727,7 @@ export class InsightIntentHandler {
      * @param value 要检查的值
      * @returns 如果值不是 undefined 或 null 返回 true（只要注解传参了就写入）
      */
-    private isValidOptionalValue(value: any, classNode: arkts.ClassDeclaration, decoratorType: string): boolean {
+    private isValidOptionalValue(value: unknown, classNode: arkts.ClassDeclaration, decoratorType: string): boolean {
         if (value === undefined || value === null) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
@@ -724,13 +747,19 @@ export class InsightIntentHandler {
      * @param decoratorType 
      * @returns 
      */
-    private extractBaseIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration, decoratorType: string): any | null {
+    private extractBaseIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration, decoratorType: string): InsightIntentLinkData | null {
         const properties = annotation.properties;
         if (!properties || properties.length === 0) {
             return null;
         }
 
-        const data: any = {};
+        const data: InsightIntentLinkData = {
+            uri: '',
+            decoratorFile: undefined,
+            decoratorType: undefined,
+            moduleName: undefined,
+            bundleName: undefined
+        };
         const className = classNode.definition?.ident?.name || 'UnknownClass';
         const program = arkts.getProgramFromAstNode(classNode);
         const filePath = program?.absName || '';
@@ -745,11 +774,14 @@ export class InsightIntentHandler {
         const requiredFields = ['intentName', 'domain', 'intentVersion', 'displayName'];
 
         for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
+            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) {
+                continue
+            };
             const propName = prop.key.name;
             const propValue = prop.value;
-            if (!propValue) continue;
-
+            if (!propValue){
+                continue
+            };
             switch (propName) {
                 case 'intentName':
                 case 'domain':
@@ -800,7 +832,7 @@ export class InsightIntentHandler {
         return data;
     }
 
-    private extractStringValue(node: arkts.Expression, classNode?: arkts.ClassDeclaration): string | undefined {
+    private extractStringValue(node: arkts.Expression, classNode?: arkts.ClassDeclaration): unknown {
         if (arkts.isStringLiteral(node)) {
             const strValue = node.str;
             // 判断是否可能是变量名（字面量形式的变量引用，如 icon: "icon1"）
@@ -837,7 +869,7 @@ export class InsightIntentHandler {
         }
 
         if (node.constructor.name === 'TemplateLiteral') {
-            return this.extractTemplateLiteralValue(node as any) || undefined;
+            return this.extractTemplateLiteralValue(node as arkts.TemplateLiteral) || undefined;
         }
         // 使用 arkts.getDecl() 获取变量值
         if (arkts.isIdentifier(node)) {
@@ -861,7 +893,7 @@ export class InsightIntentHandler {
                 return null;
             }
             if (node.quasis && node.quasis.length > 0) {
-                return node.quasis.map((q: any) => q.cooked || q.raw || '').join('');
+                return node.quasis.map((q: arkts.TemplateLiteralElement) => q.cooked || q.raw || '').join('');
             }
             return null;
         } catch (error) {
@@ -895,7 +927,7 @@ export class InsightIntentHandler {
      * @param classNode 
      * @returns 
      */
-    private extractJsonValue(node: arkts.Expression, classNode?: arkts.ClassDeclaration): any {
+    private extractJsonValue(node: arkts.Expression, classNode?: arkts.ClassDeclaration): unknown{
         // 使用 arkts.getDecl() 获取变量值
         if (arkts.isIdentifier(node)) {
             const value = this.getVariableValueFromDecl(node);
@@ -947,7 +979,7 @@ export class InsightIntentHandler {
         }
 
         if (arkts.isObjectExpression(node)) {
-            return this.convertObjectExpressionToJson(node);
+            return this.convertObjectToJson(node);
         }
 
         if (arkts.isArrayExpression(node)) {
@@ -969,14 +1001,18 @@ export class InsightIntentHandler {
      * @param node 
      * @returns 
      */
-    private convertObjectExpressionToJson(node: arkts.ObjectExpression): any {
-        const obj: any = {};
+    private convertObjectToJson(node: arkts.ObjectExpression): unknown {
+        const obj: DecoratorData = {};
         for (const prop of node.properties) {
-            if (!arkts.isProperty(prop) && !arkts.isClassProperty(prop)) continue;
+            if (!arkts.isProperty(prop) && !arkts.isClassProperty(prop)) {
+                continue
+            }
 
             const key = prop.key;
             const value = prop.value;
-            if (!key || !value) continue;
+            if (!key || !value) {
+                continue
+            }
 
             let keyName: string | null = null;
             if (arkts.isIdentifier(key)) {
@@ -985,9 +1021,11 @@ export class InsightIntentHandler {
                 keyName = key.str;
             }
 
-            if (!keyName) continue;
+            if (!keyName) {
+                continue
+            }
 
-            const jsonValue = this.convertExpressionToJsonValue(value);
+            const jsonValue = this.convertExpressionToJson(value);
             if (jsonValue !== undefined) {
                 obj[keyName] = jsonValue;
             }
@@ -1000,10 +1038,10 @@ export class InsightIntentHandler {
      * @param node 
      * @returns 
      */
-    private convertArrayExpressionToJson(node: arkts.ArrayExpression): any[] {
-        const arr: any[] = [];
+    private convertArrayExpressionToJson(node: arkts.ArrayExpression): unknown[] {
+        const arr: unknown[] = [];
         for (const element of node.elements) {
-            arr.push(this.convertExpressionToJsonValue(element));
+            arr.push(this.convertExpressionToJson(element));
         }
         return arr;
     }
@@ -1013,16 +1051,18 @@ export class InsightIntentHandler {
      * @param node 
      * @returns 
      */
-    private convertExpressionToJsonValue(node: arkts.Expression): any {
+    private convertExpressionToJson(node: arkts.Expression): unknown {
         if (!node) {
             return undefined;
         }
         
         // 使用 arkts API 解包 TSAsExpression
-        let actualNode: any = node;
+        let actualNode: arkts.Expression | undefined = node;
         while (arkts.isTSAsExpression(actualNode)) {
             actualNode = actualNode.expr;
-            if (!actualNode) break;
+            if (!actualNode) {
+                break
+            }
         }
         if (arkts.isMemberExpression(actualNode)) {
             if (arkts.isIdentifier (actualNode.property)) {
@@ -1064,7 +1104,7 @@ export class InsightIntentHandler {
         }
 
         if (arkts.isObjectExpression(actualNode)) {
-            return this.convertObjectExpressionToJson(actualNode);
+            return this.convertObjectToJson(actualNode);
         }
 
         if (arkts.isArrayExpression(actualNode)) {

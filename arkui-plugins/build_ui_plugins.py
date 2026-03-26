@@ -47,6 +47,7 @@ def build(options):
     build_cmd = [options.npm, 'run', 'compile:plugins']
     run_cmd(build_cmd, options.source_path)
 
+
 def copy_runtime_deps(source_path, output_path, deps):
     """Copy specific npm packages and their dependencies."""
     for dep in deps:

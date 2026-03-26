@@ -16,29 +16,31 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import * as fs from 'fs';
+import { PluginContext } from '../../common/plugin-context';
 
 /**
  * InsightIntent 数据项基础接口
  */
 export interface InsightIntentDataBase {
-    decoratorClass?: string;
-    className?: string; // For Entity
-    decoratorFile: string;
-    decoratorType: string;
-    moduleName: string;
-    bundleName: string;
-    intentName?: string;
-    domain?: string;
-    intentVersion?: string;
-    displayName?: string;
-    displayDescription?: string;
-    schema?: string;
-    icon?: string;
-    llmDescription?: string;
+    decoratorClass?: string | undefined;
+    className?: string | undefined; // For Entity
+    decoratorFile: string | undefined;
+    decoratorType: string | undefined;
+    moduleName: string | undefined;
+    bundleName: string | undefined;
+    intentName?: string | undefined;
+    domain?: string | undefined;
+    intentVersion?: string | undefined;
+    displayName?: string | undefined;
+    displayDescription?: string | undefined;
+    schema?: string | undefined;
+    icon?: string | undefined;
+    llmDescription?: string | undefined;
     keywords?: string[];
-    parameters?: any;
-    result?: any;
+    parameters?: Record<string, unknown> | null | undefined;
+    result?: Record<string, unknown> | null | undefined;
     example?: string;
+    [key: string]: unknown;
 }
 
 /**
@@ -46,7 +48,8 @@ export interface InsightIntentDataBase {
  */
 export interface InsightIntentLinkData extends InsightIntentDataBase {
     uri: string;
-    paramMappings?: any[];
+    paramMappings?: Record<string, unknown> | null | undefined | string;
+    [key: string]: unknown;
 }
 
 /**
@@ -82,7 +85,6 @@ export interface InsightIntentFormData extends InsightIntentDataBase {
     formName: string;
     abilityName?: string;
 }
-
 /**
  * InsightIntentEntity 数据接口
  */
@@ -92,7 +94,7 @@ export interface InsightIntentEntityData {
     decoratorType: string;
     entityCategory: string;
     entityId?: string;
-    parameters?: any;
+    parameters?: Record<string, unknown> | null | undefined;
 }
 
 /**
@@ -111,7 +113,7 @@ export type InsightIntentData =
  */
 export interface InsightIntentConfig {
     insightIntents: InsightIntentData[];  // 主要的 intent 列表（Link, Entry, Page, Function, Form）
-    insightIntentsSrcEntry: any[];        // 源文件入口信息
+    insightIntentsSrcEntry: Map<string, object[]>;        // 源文件入口信息
     extractInsightIntents: InsightIntentData[];  // 提取的 intent 数据（旧版兼容字段）
     insightEntities?: InsightIntentEntityData[];  // Entity 类型单独存储
 }
@@ -181,7 +183,7 @@ export class InsightIntentCollector {
      * 将 entities 关联到对应的 intents
      * 根据 entityOwnerMap 中的映射关系，将 entity 数据添加到对应的 intent 中
      */
-    private matchEntities(regularIntents: any[], entities: InsightIntentEntityData[]): void {
+    private matchEntities(regularIntents: InsightIntentDataBase[], entities: InsightIntentEntityData[]): void {
         if (entities.length === 0 || this.entityOwnerMap.size === 0) {
             return;
         }
@@ -193,7 +195,7 @@ export class InsightIntentCollector {
         }
         
         // 创建 intentName 到 intent 的映射
-        const intentNameMap: Map<string, any> = new Map();
+        const intentNameMap: Map<string, InsightIntentDataBase> = new Map();
         for (const intent of regularIntents) {
             if (intent.intentName) {
                 intentNameMap.set(intent.intentName, intent);
@@ -226,13 +228,13 @@ export class InsightIntentCollector {
      * 遍历 intent 的 parameters 和 result，查找 $ref 引用，
      * 并用匹配的 entity parameters 内容替换
      */
-    private resolveEntityRefs(regularIntents: any[], entities: InsightIntentEntityData[]): void {
+    private resolveEntityRefs(regularIntents: InsightIntentDataBase[], entities: InsightIntentEntityData[]): void {
         if (entities.length === 0) {
             return;
         }
 
         // 构建 $id -> parameters 映射
-        const entitySchemaMap: Map<string, any> = new Map();
+        const entitySchemaMap: Map<string, Record<string, unknown>> = new Map();
         for (const entity of entities) {
             if (entity.parameters && entity.parameters.$id) {
                 entitySchemaMap.set(entity.parameters.$id, entity.parameters);
@@ -245,11 +247,11 @@ export class InsightIntentCollector {
 
         // 遍历所有 intent，解析 $ref 引用
         for (const intent of regularIntents) {
-            if ((intent as any).parameters) {
-                this.resolveRefsInObject((intent as any).parameters, entitySchemaMap);
+            if ((intent as InsightIntentDataBase).parameters) {
+                this.resolveRefsInObject((intent as InsightIntentDataBase).parameters, entitySchemaMap);
             }
-            if ((intent as any).result) {
-                this.resolveRefsInObject((intent as any).result, entitySchemaMap);
+            if ((intent as InsightIntentDataBase).result) {
+                this.resolveRefsInObject((intent as InsightIntentDataBase).result, entitySchemaMap);
             }
         }
     }
@@ -259,7 +261,7 @@ export class InsightIntentCollector {
      * 当某个属性值对象包含 $ref 字段且其值与 entitySchemaMap 中的 $id 匹配时，
      * 将该属性值替换为对应 entity 的 parameters 内容
      */
-    private resolveRefsInObject(obj: any, entitySchemaMap: Map<string, any>): void {
+    private resolveRefsInObject(obj: unknown, entitySchemaMap: Map<string, Record<string, unknown>>): void {
         if (!obj || typeof obj !== 'object') {
             return;
         }
@@ -289,7 +291,7 @@ export class InsightIntentCollector {
         }
     }
 
-    private collectSchemaInfo(intent: InsightIntentDataBase): void {
+    private collectSchemaInfo(intent: InsightIntentLinkData): void {
         // 1. 校验 Intent 对象是否包含 schema 字段
         if (intent.schema) {
             // 2. 拼接 JSON Schema 文件的完整路径
@@ -302,7 +304,7 @@ export class InsightIntentCollector {
                 // 4. 读取 Schema 文件的文本内容（编码为 utf-8）
                 const schemaContent: string = fs.readFileSync(schemaPath, 'utf-8');
                 // 5. 将 JSON 文本解析为 JavaScript 对象
-                const schemaObj: InsightIntentDataBase = JSON.parse(schemaContent);
+                const schemaObj: InsightIntentLinkData = JSON.parse(schemaContent);
                 // 6. 将 Schema 文件中的核心字段赋值到 Intent 对象
                 intent.parameters = schemaObj.parameters ?? intent.parameters;
                 intent.llmDescription = schemaObj.llmDescription ?? intent.llmDescription;
@@ -347,7 +349,7 @@ export class InsightIntentCollector {
             }
             
             // 性能优化：合并分类、变量替换为单次遍历
-            const regularIntents: InsightIntentData[] = [];
+            const regularIntents: InsightIntentDataBase[] = [];
             const entities: InsightIntentEntityData[] = [];
 
             // 单次遍历：分类 + 更新bundleName
@@ -403,7 +405,7 @@ export class InsightIntentCollector {
      * @param context - 插件上下文对象
      * @returns 写入是否成功
      */
-    public tryWriteFromContext(context: any): boolean {
+    public tryWriteFromContext(context: PluginContext): boolean {
         try {
             const projectConfig = context.getProjectConfig?.();
             
