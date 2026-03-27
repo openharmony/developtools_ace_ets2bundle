@@ -53,6 +53,9 @@ export const AVAILABLE_OSNAME_ERROR: string = 'The runtime OS for the current pr
 export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation already indicates that the version is greater than or equal to $VERSION.';
 export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version must be an integer between 1 and 999,
  and when the OpenHarmony version is greater than or equal to 26, the version number format also supports the M.S.F format.`;
+export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
+  ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']]
+]);
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
