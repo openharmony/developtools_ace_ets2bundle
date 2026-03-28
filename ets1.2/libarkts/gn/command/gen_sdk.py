@@ -16,6 +16,7 @@ import os
 import shutil
 import json
 import argparse
+import subprocess
 
 
 def load_config(config_file):
@@ -95,6 +96,7 @@ def main():
     parser.add_argument("--out-root", required=True, help="Relative out directory to src, used to replace $out_root.")
     parser.add_argument('--current-os', required=True, help='current OS')
     parser.add_argument('--current-cpu', required=True, help='current CPU')
+    parser.add_argument('--output', required=True, help='Output directory for panda_sdk.tgz')
     args = parser.parse_args()
 
     print(f"gen_sdk: current-cpu={args.current_cpu} current-os={args.current_os} out-root={args.out_root}")
@@ -123,6 +125,16 @@ def main():
 }"""
     with open(os.path.join(args.dist, "package.json"), "w") as file:
         file.write(content)
+
+    # Bundle sdk directory into panda_sdk.tgz
+    os.makedirs(args.output, exist_ok=True)
+    tgz_path = os.path.join(args.output, "panda_sdk.tgz")
+    subprocess.run([
+        "tar", "czf", tgz_path,
+        "-C", os.path.dirname(args.dist),
+        os.path.basename(args.dist),
+    ], check=True)
+    print(f"Created tarball: {tgz_path}")
 
 
 if __name__ == '__main__':
