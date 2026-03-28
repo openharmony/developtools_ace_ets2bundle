@@ -215,7 +215,7 @@ class AB {
 `;
 
 const expectedForEachHeaderScript: string = `
-setForEachOptions<T>(arr: (()=> Array<T>), itemGenerator: ItemGeneratorFunc<T>, keyGenerator?: KeyGeneratorFunc<T>): this
+setForEachOptions<T = Any>(arr: (()=> Array<T>), itemGenerator: ItemGeneratorFunc<T>, keyGenerator?: KeyGeneratorFunc<T>): this
 `
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
