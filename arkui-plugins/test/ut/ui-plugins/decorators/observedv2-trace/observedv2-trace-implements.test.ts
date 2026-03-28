@@ -88,15 +88,15 @@ interface trackInterface {
     meta.addRef();
   }
 
-  @JSONRename({newName:"bb"}) public __backing_bb?: boolean;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_bb");
-
-  @JSONRename({newName:"propF"}) private __backing_propF: number = 1;
+  @JSONRename({newName:"propF"}) public __backing_propF: number = 1;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propF: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_propF");
 
-  private _$property$_trackF: number = 2;
+  public trackF: number = 2;
+
+  @JSONRename({newName:"bb"}) public __backing_bb?: boolean;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_bb");
 
   public get propF(): number {
     this.conditionalAddRef(this.__meta_propF);
@@ -112,11 +112,11 @@ interface trackInterface {
   }
   
   public get trackF(): number {
-    return this._$property$_trackF;
+    return this.trackF;
   }
 
-  public set trackF(_$property$_trackF: number) {
-    this._$property$_trackF = _$property$_trackF;
+  public set trackF(trackF: number) {
+    this.trackF = trackF;
     return;
   }
   
