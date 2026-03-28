@@ -16,6 +16,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {
+    resolveSDK,
     checkSDK,
     arktsGlobal as global,
     findStdlib,
@@ -248,6 +249,7 @@ function loadPlugins(configDir: string, plugins: Object) {
 }
 
 export function main() {
+    resolveSDK();
     checkSDK();
     const performance = Performance.getInstance();
     performance.enableMemoryTracker(true);

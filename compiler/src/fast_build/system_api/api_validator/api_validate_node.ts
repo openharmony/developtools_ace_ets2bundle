@@ -14,6 +14,8 @@
  */
 
 import ts from 'typescript';
+import fs from 'fs';
+import path from 'path';
 import { SdkComparisonHelper } from './api_validate_utils';
 import {
   getValueChecker,
@@ -39,10 +41,10 @@ import {
   NodeParentModel,
   SYSCAP_TAG_CHECK_WARNING,
   SYSCAP_TAG_CHECK_NAME,
-  SYSCAP_TAG_CONDITION_CHECK_WARNING
+  SYSCAP_TAG_CONDITION_CHECK_WARNING,
+  API_INTERFACE_WHITE_LIST
 } from '../api_check_define';
 import { fileDeviceCheckPlugin, fileAvailableCheckPlugin, suppressWarningsCheckPlugin, projectConfig, globalProgram } from '../../../../main';
-import fs from 'fs';
 
 /**
  * Validator interface for node suppression checks.
@@ -1209,5 +1211,46 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
       }
     }
     return false;
+  }
+}
+
+/**
+ * Validates if a node is part of a whitelisted API usage.
+ *
+ * A node is considered valid if it is part of an API that is included in the API_INTERFACE_WHITE_LIST for the file.
+ * This is a static whitelist check based on file and API name, without any strategy dependency.
+ * Example:
+ * ```typescript
+ * // In a file that is whitelisted for 'Retention':
+ * @Retention({ policy: RetentionPolicy.SOURCE })
+ * someApi(); // This would be considered valid
+ * ```
+ */
+export class WhiteListValidator extends BaseValidator implements NodeValidator {
+  private declaration: ts.Declaration;
+
+  constructor(declaration: ts.Declaration) {
+    super();
+    this.declaration = declaration;
+  }
+
+  validate(node: ts.Node): boolean {
+    return this.checkWhiteList(node);
+  }
+
+  private checkWhiteList(node: ts.Node): boolean {
+    const apiName: string = node.getText().trim();
+    const declSourceFile: ts.SourceFile = this.declaration.getSourceFile();
+    if (!declSourceFile || !declSourceFile.fileName) {
+      return false;
+    }
+    return this.hasApiFileName(declSourceFile.fileName, apiName);
+  }
+
+  private hasApiFileName(declSourceFileName: string, apiName: string): boolean {
+    return projectConfig.globalModulePaths.some((globalModulePath: string) => {
+      let fileName: string = path.relative(globalModulePath, declSourceFileName).replace(/\\/g, '/');
+      return API_INTERFACE_WHITE_LIST.get(fileName)?.includes(apiName);
+    });
   }
 }

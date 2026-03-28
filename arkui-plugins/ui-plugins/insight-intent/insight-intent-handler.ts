@@ -48,7 +48,7 @@ function validateRequiredFields(data: any, decoratorType: string, node: arkts.As
                 node: node,
                 type: LogType.ERROR,
                 code: '10110003',
-                message: `Required parameters are missing for the decorator. Missing field: "${field}" in @InsightIntent${decoratorType}`
+                message: `Required parameters are missing for the decorator.`,
             });
             return false;
         }
@@ -57,7 +57,7 @@ function validateRequiredFields(data: any, decoratorType: string, node: arkts.As
                 node: node,
                 type: LogType.ERROR,
                 code: '10110003',
-                message: `Required parameters are missing for the decorator. Empty field: "${field}" in @InsightIntent${decoratorType}`
+                message: `Required parameters are missing for the decorator.`,
             });
             return false;
         }
@@ -66,7 +66,7 @@ function validateRequiredFields(data: any, decoratorType: string, node: arkts.As
                 node: node,
                 type: LogType.ERROR,
                 code: '10110003',
-                message: `Required parameters are missing for the decorator. Empty array: "${field}" in @InsightIntent${decoratorType}`
+                message: `Required parameters are missing for the decorator.`,
             });
             return false;
         }
@@ -85,7 +85,7 @@ function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
             node: node,
             type: LogType.ERROR,
             code: '10110004',
-            message: 'The parameter type does not match the decorator\'s requirement. keywords must be an array'
+            message: 'The parameter type does not match the decorator\'s requirement.'
         });
         return false;
     }
@@ -95,7 +95,7 @@ function validateKeywords(keywords: any, node: arkts.AstNode): boolean {
             node: node,
             type: LogType.ERROR,
             code: '10110004',
-            message: 'The parameter type does not match the decorator\'s requirement. All keywords must be strings'
+            message: 'The parameter type does not match the decorator\'s requirement.'
         });
     }
     return valid;
@@ -126,8 +126,8 @@ function validateJsonSchema(schema: any, fieldName: string, node: arkts.AstNode)
         LogCollector.getInstance().collectLogInfo({
             node: node,
             type: LogType.ERROR,
-            code: '10110004',
-            message: `The parameter type does not match the decorator's requirement. ${fieldName} must be a valid JSON Schema object`
+            code: '10110007',
+            message: `The root type of the JSON Schema for Parameters must be object. ${fieldName}`
         });
         return false;
     }
@@ -150,21 +150,21 @@ function validateJsonSchema(schema: any, fieldName: string, node: arkts.AstNode)
                 node: node,
                 type: LogType.ERROR,
                 code: '10110005',
-                message: `Unsupported parameters found in the decorator. ${fieldName} contains unsupported JSON Schema keywords: ${errorMessage}`
+                message: `Unsupported parameters found in the decorator.`
             });
         } else if (errorMessage.includes('type') || errorMessage.includes('should be')) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
                 type: LogType.ERROR,
                 code: '10110004',
-                message: `The parameter type does not match the decorator's requirement. ${fieldName} validation error: ${errorMessage}`
+                message: `The parameter type does not match the decorator\'s requirement.`
             });
         } else {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
                 type: LogType.ERROR,
                 code: '10110005',
-                message: `Unsupported parameters found in the decorator. ${fieldName} is not a valid JSON Schema: ${errorMessage}`
+                message: `Unsupported parameters found in the decorator.`
             });
         }
         return false;
@@ -181,7 +181,7 @@ function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean
             node: node,
             type: LogType.ERROR,
             code: '10110004',
-            message: 'The parameter type does not match the decorator\'s requirement. paramMappings must be an array'
+            message: `The parameter type does not match the decorator\'s requirement.`
         });
         return false;
     }
@@ -192,7 +192,7 @@ function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean
                 node: node,
                 type: LogType.ERROR,
                 code: '10110004',
-                message: 'The parameter type does not match the decorator\'s requirement. Each paramMapping must be an object'
+                message: `The parameter type does not match the decorator\'s requirement.`
             });
             return false;
         }
@@ -201,7 +201,7 @@ function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean
                 node: node,
                 type: LogType.ERROR,
                 code: '10110003',
-                message: 'Required parameters are missing for the decorator. Each paramMapping must have a valid paramName string'
+                message: `Required parameters are missing for the decorator.`,
             });
             return false;
         }
@@ -210,7 +210,7 @@ function validateParamMappings(paramMappings: any, node: arkts.AstNode): boolean
                 node: node,
                 type: LogType.ERROR,
                 code: '10110004',
-                message: `The parameter type does not match the decorator's requirement. Invalid paramCategory: ${mapping.paramCategory}, must be 'link' or 'want'`
+                message: `The parameter type does not match the decorator\'s requirement.`
             });
             return false;
         }
@@ -258,7 +258,7 @@ export class InsightIntentHandler {
     }> = new Map();
     
     // 用于跟踪已添加的 intentName，确保唯一性（全局）
-    private static intentNames: Set<string> = new Set();
+    private intentNames: Set<string> = new Set();
 
     constructor(projectConfig: ProjectConfig | undefined) {
         this.projectConfig = projectConfig;
@@ -290,7 +290,7 @@ export class InsightIntentHandler {
                 if (config.insightIntents && Array.isArray(config.insightIntents)) {
                     config.insightIntents.forEach((intent: any) => {
                         if (intent.intentName) {
-                            InsightIntentHandler.intentNames.add(intent.intentName);
+                            this.intentNames.add(intent.intentName);
                         }
                     });
                 }
@@ -343,12 +343,11 @@ export class InsightIntentHandler {
         if (paramCategoryEnum.has(enumValue)) {
             return paramCategoryEnum.get(enumValue)||'';
         } else {
-            const errorMessage: string = `Unsupported parameters found in the decorator.`;
             LogCollector.getInstance().collectLogInfo({
                 node: actualNode,
                 type: LogType.ERROR,
                 code: '10110005',
-                message: 'InsightIntent Compiler Error'
+                message: `Unsupported parameters found in the decorator.`
             });
             return '';
         }
@@ -532,30 +531,20 @@ export class InsightIntentHandler {
 
             try {
                 const intentData = handler(anno, classNode);
-                // 检查 intentName 唯一性
-                if ('intentName' in intentData && intentData.intentName) {
-                    if (InsightIntentHandler.intentNames.has(intentData.intentName)) {
-                        LogCollector.getInstance().collectLogInfo({
-                            node: classNode,
-                            type: LogType.ERROR,
-                            code: '10110012',
-                            message: `Duplicate intentName definitions found: ${intentData.intentName}`
-                        });
-                        continue;
-                    }
-                    InsightIntentHandler.intentNames.add(intentData.intentName);
-                }
                 if (intentData) {
-                    if (this.intentNameSet.has(intentData.intentName)) {
-                        LogCollector.getInstance().collectLogInfo({
-                            node: classNode,
-                            type: LogType.ERROR,
-                            code: '10110012',
-                            message: `Duplicate intentName definitions found: ${intentData.intentName}`
-                        });
-                        // return 
+                    // 检查 intentName 唯一性
+                    if ('intentName' in intentData && intentData.intentName) {
+                        if (this.intentNames.has(intentData.intentName)) {
+                            LogCollector.getInstance().collectLogInfo({
+                                node: classNode,
+                                type: LogType.ERROR,
+                                code: '10110012',
+                                message: `Duplicate intentName definitions found: ${intentData.intentName}`
+                            });
+                            continue;
+                        }
+                        this.intentNames.add(intentData.intentName);
                     }
-                    this.intentNameSet.add(intentData.intentName);
                     this.collector.addIntent(intentData);
                 }
             } catch (error) {
@@ -563,7 +552,7 @@ export class InsightIntentHandler {
                     node: classNode,
                     type: LogType.ERROR,
                     code: '10110005',
-                    message: `Unsupported parameters found in the decorator. Failed to process @${decoratorName}: ${error}`
+                    message: `Unsupported parameters found in the decorator.`
                 });
             }
         }
@@ -698,13 +687,7 @@ export class InsightIntentHandler {
             if (!propValue) continue;
             if (propName === 'uri') {
                 // uri 是必填字段，直接赋值
-                data.uri = this.extractStringValue(propValue, classNode);
-            } else if (propName === 'paramMappings') {
-                // paramMappings 是非必填字段，空值不写入
-                const paramMappings = this.extractJsonValue(propValue, classNode);
-                if (this.isValidOptionalValue(paramMappings, classNode, '@InsightIntentLink')) {
-                    data.paramMappings = paramMappings;
-                }
+                data.uri = propValue.str;
             }
         }
         if (!validateRequiredFields(data, 'Link', classNode) || 
@@ -725,9 +708,9 @@ export class InsightIntentHandler {
         if (value === undefined || value === null) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
+                message: `The parameter type does not match the decorator\'s requirement.`,
                 type: LogType.ERROR,
-                code: '10110003',
-                message: `Invalid value for the decorator in ${decoratorType}`
+                code: '10110004'
             });
             return false;
         }
@@ -808,8 +791,8 @@ export class InsightIntentHandler {
             LogCollector.getInstance().collectLogInfo({
                 type: LogType.ERROR,
                 node: classNode,
-                message: `Required parameters are missing for the decorator in ${decoratorType}`,
-                code: '10110003'
+                message: `The parameter type does not match the decorator's requirement.`,
+                code: '10110004'
             });
             return null;
         }
@@ -862,9 +845,9 @@ export class InsightIntentHandler {
             if (!value && classNode) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.WARN,
+                    type: LogType.ERROR,
                     code: '10110005',
-                    message: `Unsupported parameters found in the decorator. Variable not found or cannot extract value: ${node.name}`
+                    message: `Unsupported parameters found in the decorator.`
                 });
             }
             return value;
@@ -888,6 +871,12 @@ export class InsightIntentHandler {
 
     private extractArrayValue(node: arkts.Expression): string[] | undefined {
         if (!arkts.isArrayExpression(node)) {
+            LogCollector.getInstance().collectLogInfo({
+                node: node,
+                type: LogType.ERROR,
+                code: '10110004',
+                message: `The parameter type does not match the decorator's requirement.`
+            });
             return undefined;
         }
 
@@ -916,9 +905,9 @@ export class InsightIntentHandler {
             if (classNode) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.WARN,
+                    type: LogType.ERROR,
                     code: '10110005',
-                    message: `Unsupported parameters found in the decorator. Variable not found: ${node.name}`
+                    message: `Unsupported parameters found in the decorator.`
                 });
             }
             return undefined;
@@ -968,9 +957,9 @@ export class InsightIntentHandler {
         if (classNode) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.WARN,
+                type: LogType.ERROR,
                 code: '10110005',
-                message: 'Unsupported parameters found in the decorator. Cannot extract JSON value, unknown node type'
+                message: `Unsupported parameters found in the decorator.`
             });
         }
         return undefined;
@@ -1097,6 +1086,13 @@ export class InsightIntentHandler {
                     return initValue;
                 }
             }
+            // 如果仍然找不到值，记录错误
+            LogCollector.getInstance().collectLogInfo({
+                node: actualNode,
+                type: LogType.ERROR,
+                code: '10110005',
+                message: `Unsupported parameters found in the decorator.`
+            });
         }
         return undefined;
     }

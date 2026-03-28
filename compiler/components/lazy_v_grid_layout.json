@@ -1,7 +1,7 @@
 {
     "name": "LazyVGridLayout",
-    "parents": ["WaterFlow", "FlowItem"],
+    "parents": ["WaterFlow", "FlowItem", "Scroll"],
     "attrs": [
-      "rowsGap", "columnsGap", "columnsTemplate"
+      "rowsGap", "columnsGap", "columnsTemplate", "onVisibleIndexesChange"
     ]
 }

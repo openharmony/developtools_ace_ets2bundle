@@ -112,7 +112,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: DateComponent)=> void), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: DateComponent)=> void) | undefined), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<DateComponent, __Options_DateComponent>(style, ((): DateComponent => {
       return new DateComponent(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -180,7 +180,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ParentComponent)=> void), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
       return new ParentComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
@@ -222,10 +222,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
         instance.applyAttributesFinish();
         return;
       }));
-      DateComponent._invoke(@Memo() ((instance: DateComponent): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      DateComponent._invoke(undefined, (() => {
         return {
           __backing_selectedDate: this.__backing_parentSelectedDate,
           __options_has_selectedDate: true,
@@ -243,10 +240,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    ParentComponent._invoke(@Memo() ((instance: ParentComponent): void => {
-    instance.applyAttributesFinish();
-    return;
-    }), undefined, undefined, undefined, undefined);
+    ParentComponent._invoke(undefined, undefined, undefined, undefined, undefined);
 
   }
   
