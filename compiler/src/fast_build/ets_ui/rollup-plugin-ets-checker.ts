@@ -53,6 +53,7 @@ import {
 } from '../../performance';
 import { LINTER_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from '../../hvigor_error_code/const/error_code_module';
+import { fileInfoCache } from '../../file_info_cache';
 
 export let tsWatchEmitter: EventEmitter | undefined = undefined;
 export let tsWatchEndPromise: Promise<void>;
@@ -65,6 +66,7 @@ export function etsChecker() {
       const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ROLLUP_PLUGIN_BUILD_START);
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsChecker', 'buildStart');
       const eventServiceChecker = createAndStartEvent(hookEventFactory, 'serviceChecker');
+      fileInfoCache.setShare(this.share);
       if (process.env.watchMode === 'true' && process.env.triggerTsWatch === 'true') {
         tsWatchEmitter = new EventEmitter();
         tsWatchEndPromise = new Promise<void>(resolve => {
@@ -98,12 +100,16 @@ export function etsChecker() {
         compileSdkVersion: projectConfig.compileSdkVersion,
         compatibleSdkVersion: projectConfig.compatibleSdkVersion,
         runtimeOS: projectConfig.runtimeOS,
-        ignoreCrossplatformCheck: projectConfig.ignoreCrossplatformCheck
+        ignoreCrossplatformCheck: projectConfig.ignoreCrossplatformCheck,
+        strictCheckerOnly: projectConfig.strictCheckerOnly
       });
       const logger = this.share.getLogger('etsChecker');
       const rootFileNames: string[] = [];
       const resolveModulePaths: string[] = [];
       rootFileNamesCollect(rootFileNames);
+      const rootFileNamesEventName: string = `rootFileNamesCollectFinished${rootFileNames?.length ?? 0}`;
+      const rootFileNamesEvent = createAndStartEvent(eventServiceChecker, rootFileNamesEventName);
+      stopEvent(rootFileNamesEvent);
       if (this.share && this.share.projectConfig && this.share.projectConfig.resolveModulePaths &&
         Array.isArray(this.share.projectConfig.resolveModulePaths)) {
         resolveModulePaths.push(...this.share.projectConfig.resolveModulePaths);

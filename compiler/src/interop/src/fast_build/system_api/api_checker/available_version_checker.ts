@@ -27,7 +27,7 @@ import {
 import { 
   getValueChecker, 
   getFormatChecker,
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker,
   getValidDecoratorFromNode,
   extractMinApiFromDecorator,
@@ -86,8 +86,8 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       this.versionValidFunction = formatChecker;
     } else {
       // Fallback to default format checker
-      this.formatChecker = defaultFormatCheckerWithoutMSF;
-      this.versionValidFunction = defaultFormatCheckerWithoutMSF;
+      this.formatChecker = defaultFormatCheckerCompatibileIntegerAndMSF;
+      this.versionValidFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
     }
   }
 

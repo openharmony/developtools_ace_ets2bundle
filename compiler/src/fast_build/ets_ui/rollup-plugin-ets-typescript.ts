@@ -118,6 +118,7 @@ import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 import { expandAllImportPaths } from '../../import_path_expand';
+import { fileInfoCache } from '../../file_info_cache';
 
 let switchTsAst: boolean = true;
 
@@ -156,7 +157,10 @@ export function etsTransform() {
     buildStart() {
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'buildStart');
       const eventEtsTransformBuildStart = createAndStartEvent(hookEventFactory, 'etsTransformBuildStart');
+      const judgeCacheShouldDisableInBS = createAndStartEvent(eventEtsTransformBuildStart, 'judgeCacheShouldDsiableInBS');
       judgeCacheShouldDisabled.call(this);
+      stopEvent(judgeCacheShouldDisableInBS);
+      fileInfoCache.setShare(this.share);
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
         storedFileInfo.addGlobalCacheInfo(this.cache.get('resourceListCacheInfo'),
@@ -171,9 +175,15 @@ export function etsTransform() {
           storedFileInfo.hasResourcesCache = false;
         }
         if (process.env.rawFileResource) {
+          const rawfileResourceProcess = createAndStartEvent(eventEtsTransformBuildStart, 'rawfileResourceProcess');
+          const collectRawfileResource = createAndStartEvent(rawfileResourceProcess, 'collectRawfileResource');
           resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
+          stopEvent(collectRawfileResource);
+          const differenceRawfile = createAndStartEvent(rawfileResourceProcess, 'differenceRawfile'); 
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet,
             storedFileInfo.resourcesArr, storedFileInfo.changedResourcesSet);
+          stopEvent(differenceRawfile);
+          stopEvent(rawfileResourceProcess);
         }
       }
       if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
@@ -182,7 +192,9 @@ export function etsTransform() {
       // Initialize the baseline of trggering GC by the maxMemory at the end of serviceChecker. 
       // In etsTransform plugin, if the memory after transforming a file exceeds the baseline,
       // trigger GC and update a new baseline.
+      const TSMemoryInitializeBaseMemory = createAndStartEvent(eventEtsTransformBuildStart, 'TS_MemoryInitializeBaseMemory');
       ts.MemoryUtils.initializeBaseMemory(maxMemoryInServiceChecker);
+      stopEvent(TSMemoryInitializeBaseMemory);
       stopEvent(eventEtsTransformBuildStart);
     },
     load(id: string) {
@@ -202,14 +214,20 @@ export function etsTransform() {
       stopEvent(eventEtsTransformLoad);
     },
     shouldInvalidCache(options) {
+      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'shouldInvalidCache');
+      const eventEtsShouldInvalidCache = createAndStartEvent(hookEventFactory, 'etsTransformShouldInvalidCache');
       const fileName: string = path.resolve(options.id);
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || ShouldEnableDebugLine.enableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
+        const checkRawFileChangeEvent = createAndStartEvent(eventEtsShouldInvalidCache, 'checkRawFileChangeEvent');
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || checkRawFileChange(fileName);
+        stopEvent(checkRawFileChangeEvent);
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
             const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
+            const getFileHashInShouldInvalidCache = createAndStartEvent(eventEtsShouldInvalidCache, 'getFileHashInShouldInvalidCache');
             const fileHash: string = this.share?.getHashByFilePath ? this.share?.getHashByFilePath(child.fileName) : '';
+            stopEvent(getFileHashInShouldInvalidCache);
             if (this.share?.getHashByFilePath && (fileHash !== child.hash || fileHash === '')) {
               shouldDisable = true;
               break;
@@ -225,6 +243,7 @@ export function etsTransform() {
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
+      stopEvent(eventEtsShouldInvalidCache);
       return shouldDisable;
     },
     buildEnd(): void {
@@ -234,7 +253,7 @@ export function etsTransform() {
       if (process.env.watchMode !== 'true' && !projectConfig.hotReload && !projectConfig.isPreview) {
         resetEtsCheckTypeScript();
         const allowGC: boolean = global && global.gc && typeof global.gc === 'function';
-        if (allowGC) {
+        if (allowGC && projectConfig.executeMode !== 'performance') {
           global.gc();
         }
       }
@@ -248,6 +267,7 @@ export function etsTransform() {
       }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
+        const compileHarNotByteCodeHar = createAndStartEvent(eventEtsTransformAfterBuildEnd, 'compileHarNotByteCodeHar');
         for (let moduleInfoId of allModuleIds.keys()) {
           const moduleInfo: Object = this.getModuleInfo(moduleInfoId);
           if (!moduleInfo && !moduleInfoId.match(/\.d\.e?ts$/)) {
@@ -288,6 +308,7 @@ export function etsTransform() {
             writeFileSync(buildFilePath, sourceCode);
           }
         });
+        stopEvent(compileHarNotByteCodeHar);
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
@@ -429,11 +450,13 @@ async function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
+  const preTransform = createAndStartEvent(hookEventFactory, 'preTransform');
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.STORED_FILE_INFO_TRANSFORM);
   storedFileInfo.collectTransformedFiles(path.resolve(id));
   MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
   const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
+  stopEvent(preTransform);
 
   if (projectConfig.compileMode !== 'esmodule') {
     const eventEtsTransformForJsbundle = createAndStartEvent(hookEventFactory, 'transform for jsbundle');
@@ -483,20 +506,31 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
+    const noSourceFileTask = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceFileTask', true);
     await processNoTargetSourceFile(id, code, eventEtsTransformForEsmodule);
+    stopEvent(noSourceFileTask);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
+
+    const noSourceGetChecker = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceGetChecker');
     globalProgram.checker = tsProgram.getTypeChecker();
     globalProgram.strictChecker = tsProgram.getLinterTypeChecker();
+    stopEvent(noSourceGetChecker);
+
     MemoryMonitor.stopRecordStage(recordInfo);
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
+
+    const noSourceCollectFiles = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceCollectFiles');
     collectAllFiles(tsProgram);
+    stopEvent(noSourceCollectFiles);
   } else {
     if (!storedFileInfo.reUseProgram) {
 	  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
+    const noReuseProgramGetChecker = createAndStartEvent(eventEtsTransformForEsmodule, 'noReuseProgramGetChecker');
       globalProgram.checker = globalProgram.program.getTypeChecker();
       globalProgram.strictChecker = globalProgram.program.getLinterTypeChecker();
+    stopEvent(noReuseProgramGetChecker);
       MemoryMonitor.stopRecordStage(recordInfo);
     }
     storedFileInfo.reUseProgram = true;
@@ -543,7 +577,7 @@ async function transform(code: string, id: string) {
         {
           before: [
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
-            expandAllImportPaths(tsProgram.getTypeChecker(), this),
+            expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventEmit),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
               shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
@@ -560,7 +594,7 @@ async function transform(code: string, id: string) {
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
         [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
-        expandAllImportPaths(tsProgram.getTypeChecker(), this),
+        expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventTransformNodes),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
           shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
@@ -573,7 +607,7 @@ async function transform(code: string, id: string) {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
   }
-  const eventmemoryUtils = createAndStartEvent(eventEtsTransformForEsmodule, 'typeScriptMemoryUtils');
+  const eventmemoryUtils = createAndStartEvent(eventEtsTransformForEsmodule, 'TSMemoryUtilsGC');
   ts.MemoryUtils.tryGC();
   stopEvent(eventmemoryUtils);
   resetCollection();
@@ -606,34 +640,63 @@ async function transform(code: string, id: string) {
 async function processNoTargetSourceFile(id: string, code: string, parentEvent?: CompileEvent): Promise<void> {
   const eventNoSourceFileRebuildProgram = createAndStartEvent(parentEvent, 'noSourceFileRebuildProgram');
   if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
+    const eventFirstBuildCreateProgram = createAndStartEvent(eventNoSourceFileRebuildProgram, 'eventFirstBuildCreateProgram');
     storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
+    stopEvent(eventFirstBuildCreateProgram);
+    const changeFilesNum: number = storedFileInfo.changeFiles?.length ?? 0;
+    const firstBuildChangeFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, `firstBuildChangeFilesEvent${changeFilesNum}`);
     storedFileInfo.isFirstBuild = false;
+    stopEvent(firstBuildChangeFilesEvent);
   }
-  await CreateProgramMoment.block(id, code);
+  const eventBlock = createAndStartEvent(eventNoSourceFileRebuildProgram, 'block', true);
+  await CreateProgramMoment.block(id, code, eventNoSourceFileRebuildProgram);
+  stopEvent(eventBlock);
+  const eventRelease = createAndStartEvent(eventNoSourceFileRebuildProgram, 'release');
   CreateProgramMoment.release(id);
+  stopEvent(eventRelease);
+
+  const initProcessingFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'initProcessingFiles');
   globalProgram.program.initProcessingFiles();
+  stopEvent(initProcessingFilesEvent);
+
   for (const root of CreateProgramMoment.getRoots(id, code)) {
     if (!globalProgram.program.getSourceFile(root.id)) {
+      const createRootSourceEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'createRootSourceEvent');
       const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
         true, undefined, etsCheckerCompilerOptions);
+      stopEvent(createRootSourceEvent);
       newSourceFile.originalFileName = newSourceFile.fileName;
       newSourceFile.resolvedPath = root.id;
       newSourceFile.path = root.id;
+      const importModulesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'importModulesEvent');
       globalProgram.program.processImportedModules(newSourceFile, true);
+      stopEvent(importModulesEvent);
+      const setSourceFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'setSourceFilesEvent');
       globalProgram.program.setProgramSourceFiles(newSourceFile);
+      stopEvent(setSourceFilesEvent);
       CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
     }
   }
+
   const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
+  const processingFilesNum: number = processingFiles?.length ?? 0;
+  const processingFilesNumEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, `processingFilesNumEvent${processingFilesNum}`);
+  stopEvent(processingFilesNumEvent);
   if (processingFiles) {
     processingFiles.forEach(file => {
       if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
         CreateProgramMoment.deleteFileCollect.add(file.fileName);
       }
+      const setProcessingSourceFileEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'setProcessingSourceFileEvent');
       globalProgram.program.setProgramSourceFiles(file);
+      stopEvent(setProcessingSourceFileEvent);
     });
   }
+
+  const TSRefreshTypeChecker = createAndStartEvent(eventNoSourceFileRebuildProgram, 'TSRefreshTypeChecker');
   globalProgram.program.refreshTypeChecker();
+  stopEvent(TSRefreshTypeChecker);
+
   stopEvent(eventNoSourceFileRebuildProgram);
 }
 
@@ -853,11 +916,15 @@ class CreateProgramMoment {
     };
   }
 
-  static async block(id: string, code: string): Promise<void> {
+  static async block(id: string, code: string, parentEvent?: CompileEvent): Promise<void> {
+    const initInBlock = createAndStartEvent(parentEvent, 'initInBlock');
     CreateProgramMoment.init();
+    stopEvent(initInBlock);
     CreateProgramMoment.awaitFileCollect.add(id);
     CreateProgramMoment.roots.set(id, code);
+    const emitInBlock = createAndStartEvent(parentEvent, 'emitInBlock');
     CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
+    stopEvent(emitInBlock);
     return CreateProgramMoment.promise;
   }
 

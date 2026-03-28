@@ -70,7 +70,7 @@
         "memo": "PANDA_SDK_PATH=../../incremental/tools/panda/node_modules/@panda/sdk node . --file ./plugins/input/memo.sts --output ./build/abc/memo.abc --dump-plugin-ast --arktsconfig ./arktsconfig-memo.json --restart-stages",
         "run": "npm run compile && npm run compile:plugins && npm run restart",
         "run:memo": "npm run compile && npm run compile:plugins && npm run compile --prefix ../memo-plugin && npm run memo",
-        "run:abc": "../../incremental/tools/panda/node_modules/@panda/sdk/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=../../incremental/tools/panda/node_modules/@panda/sdk/ets/etsstdlib.abc ./main.abc main.ETSGLOBAL::main",
+        "run:abc": "../../incremental/tools/panda/node_modules/@panda/sdk/linux_host_tools/bin/ark --load-runtimes=ets --boot-panda-files=../../incremental/tools/panda/node_modules/@panda/sdk/ets/etsstdlib.abc ./main.abc main::main",
         "compile:playground": "cd playground && meson setup build && meson compile -C build",
         "run:playground": "npm run compile:playground && ./playground/build/playground.out",
         "panda:sdk:clean": "cd ../../incremental/tools/panda && rimraf node_modules",

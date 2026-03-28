@@ -65,6 +65,7 @@ interface DeclFilesConfig {
 }
 
 export interface ArkTSEvolutionModule {
+  dynamicFiles: string[];
   language: string; // "1.1" | "1.2"
   packageName: string;
   moduleName: string;
@@ -273,8 +274,14 @@ export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleI
 export function genCachePathForBridgeCode(moduleId: string, metaInfo: Object, cachePath?: string): string {
   const bridgeCodePath: string = getDeclgenBridgeCodePath(metaInfo.pkgName);
   const filePath: string = toUnixPath(moduleId);
-  const relativeFilePath: string = filePath.replace(
-    toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), metaInfo.moduleName);
+  // adapt third party package do not has moduleName
+  let relativeFilePath: string = filePath;
+  if (metaInfo.isLocalDependency) {
+    relativeFilePath = filePath.replace(toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), metaInfo.moduleName);
+  } else {
+    relativeFilePath = filePath.replace(toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), toUnixPath(metaInfo.belongModulePath));
+    relativeFilePath = relativeFilePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
+  }
   const cacheFilePath: string = path.join(cachePath ? cachePath : process.env.cachePath, relativeFilePath);
   return cacheFilePath;
 }
@@ -298,29 +305,36 @@ function getDeclgenV2OutPath(pkgName: string): string {
 }
 
 export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolean {
-  if (metaInfo.language === ARKTS_1_0 || metaInfo.language === ARKTS_1_1) {
+  // hvigor has remove metaInfo.language
+  if (arkTSModuleMap.has(metaInfo.pkgName)) {
     return false;
   }
 
-  if (metaInfo.language === ARKTS_1_2) {
-    return true;
-  }
-
-  if (metaInfo.language === ARKTS_HYBRID || arkTSHybridModuleMap.has(metaInfo.pkgName)) {
-    const hybridModule = arkTSHybridModuleMap.get(metaInfo.pkgName);
+  const combinedMap = new Map([...arkTSEvolutionModuleMap, ...arkTSHybridModuleMap]);
+  if (combinedMap.has(metaInfo.pkgName)) {
+    const hybridModule = combinedMap.get(metaInfo.pkgName);
     if (!hybridModule) {
       return false;
     }
 
     const normalizedFilePath = toUnixPath(filePath);
     const staticFileList = hybridModule.staticFiles || [];
-    
+    const dynamicFilesList = hybridModule.dynamicFiles || [];
+
+    if (dynamicFilesList.includes(normalizedFilePath)) {
+      return false;
+    }
+
     // Concatenate the corresponding source code path based on the bridge code path.
     const declgenCodeBrigdePath = path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName);
+    if (normalizedFilePath.startWith(toUnixPath(hybridModule.declgenBridgeCodePath) + '/') && fs.existsSync(normalizedFilePath)) {
+      return true;
+    }
     let moduleId = normalizedFilePath.replace(toUnixPath(declgenCodeBrigdePath), toUnixPath(metaInfo.pkgPath));
     const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
+    const arktsEvolutionDeclFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_D_ETS);
 
-    return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile);
+    return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile) || new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionDeclFile);
   }
 
   return false;

@@ -14,12 +14,14 @@
  */
 
 import ts from 'typescript';
+import fs from 'fs';
+import path from 'path';
 import { SdkComparisonHelper } from './api_validate_utils';
 import {
   getValueChecker,
   getFormatChecker,
   isOpenHarmonyRuntime,
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker,
   getValidDecoratorFromNode,
   extractMinApiFromDecorator,
@@ -39,10 +41,10 @@ import {
   NodeParentModel,
   SYSCAP_TAG_CHECK_WARNING,
   SYSCAP_TAG_CHECK_NAME,
-  SYSCAP_TAG_CONDITION_CHECK_WARNING
+  SYSCAP_TAG_CONDITION_CHECK_WARNING,
+  API_INTERFACE_WHITE_LIST
 } from '../api_check_define';
 import { fileDeviceCheckPlugin, fileAvailableCheckPlugin, suppressWarningsCheckPlugin, projectConfig, globalProgram } from '../../../../main';
-import fs from 'fs';
 
 /**
  * Validator interface for node suppression checks.
@@ -529,7 +531,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
   private readonly VERSION_MATCH_REGEX: RegExp = /(['"])([^'"]+)\1/;
 
   // Comparison functions loaded from central system
-  private formatChecker: FormatCheckerFunction = defaultFormatCheckerWithoutMSF;
+  private formatChecker: FormatCheckerFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
   private valueChecker: ValueCheckerFunction = defaultValueChecker;
 
   constructor(
@@ -553,7 +555,7 @@ export class AvailableComparisonValidator extends BaseValidator implements NodeV
   private init(): void {
     // Load format checker for 'available' tag
     const formatChecker = getFormatChecker(AVAILABLE_TAG_NAME);
-    this.formatChecker = formatChecker || defaultFormatCheckerWithoutMSF;
+    this.formatChecker = formatChecker || defaultFormatCheckerCompatibileIntegerAndMSF;
 
     // Load value checker for 'available' tag
     // Used for version comparison with runtime-specific logic
@@ -896,7 +898,7 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       node: node,
       isChainedCall: { isChain: false, chainNode: node }
     }
-    while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && nodeStatement.node.parent) {
+    while (nodeStatement.node && !ts.isStatement(nodeStatement.node) && !ts.isPropertyDeclaration(nodeStatement.node) && nodeStatement.node.parent) {
       if (ts.isPropertyAccessExpression(nodeStatement.node) && ts.isCallExpression(nodeStatement.node.expression)) {
         const expression = nodeStatement.node;
         const text = expression.getText() || expression.getFullText();
@@ -1114,7 +1116,7 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
     let specifyJsDocTagValue: string | ts.NodeArray<ts.JSDocComment> = '';
     jsDocTags.forEach(item => {
       if (specifyTag.includes(item.tagName.escapedText.toString())) {
-        specifyJsDocTagValue = item.comment ?? "";
+        specifyJsDocTagValue = item.comment ?? '';
       }
     });
     return specifyJsDocTagValue;
@@ -1209,5 +1211,46 @@ export class CanIUseValidator extends BaseValidator implements NodeValidator {
       }
     }
     return false;
+  }
+}
+
+/**
+ * Validates if a node is part of a whitelisted API usage.
+ *
+ * A node is considered valid if it is part of an API that is included in the API_INTERFACE_WHITE_LIST for the file.
+ * This is a static whitelist check based on file and API name, without any strategy dependency.
+ * Example:
+ * ```typescript
+ * // In a file that is whitelisted for 'Retention':
+ * @Retention({ policy: RetentionPolicy.SOURCE })
+ * someApi(); // This would be considered valid
+ * ```
+ */
+export class WhiteListValidator extends BaseValidator implements NodeValidator {
+  private declaration: ts.Declaration;
+
+  constructor(declaration: ts.Declaration) {
+    super();
+    this.declaration = declaration;
+  }
+
+  validate(node: ts.Node): boolean {
+    return this.checkWhiteList(node);
+  }
+
+  private checkWhiteList(node: ts.Node): boolean {
+    const apiName: string = node.getText().trim();
+    const declSourceFile: ts.SourceFile = this.declaration.getSourceFile();
+    if (!declSourceFile || !declSourceFile.fileName) {
+      return false;
+    }
+    return this.hasApiFileName(declSourceFile.fileName, apiName);
+  }
+
+  private hasApiFileName(declSourceFileName: string, apiName: string): boolean {
+    return projectConfig.globalModulePaths.some((globalModulePath: string) => {
+      let fileName: string = path.relative(globalModulePath, declSourceFileName).replace(/\\/g, '/');
+      return API_INTERFACE_WHITE_LIST.get(fileName)?.includes(apiName);
+    });
   }
 }

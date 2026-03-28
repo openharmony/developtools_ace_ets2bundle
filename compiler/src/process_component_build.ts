@@ -857,8 +857,7 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
-  } else if (partialUpdateConfig.partialUpdateMode && (TabContentAndNavDestination.has(nameResult.name) ||
-    (isCompatibleVersionOver20() && !!EXT_WHITE_LIST[1] && EXT_WHITE_LIST[1] === nameResult.name))) {
+  } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
     processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
@@ -2184,6 +2183,7 @@ export interface ComponentAttrInfo {
   hasIdAttr: boolean,
   attrCount: number,
   reuse: string,
+  reuseAttribute?: ts.Expression,
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
@@ -2282,38 +2282,57 @@ function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: b
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, componentAttrInfo: ComponentAttrInfo, log: LogInfo[],
   isReusableV2NodeAttr: boolean = false): void {
-  if (componentAttrInfo) {
+  if (componentAttrInfo && node.arguments.length > 0) {
+    const param: ts.Expression = node.arguments[0];
     const attrName: string = attr.escapedText.toString();
     if (attrName === RECYCLE_REUSE_ID) {
       logMessageCollection.checkUsageOfReuseIdAttribute(node, isReusableV2NodeAttr, log);
-      componentAttrInfo.reuseId = node.arguments[0];
+      componentAttrInfo.reuseId = param;
     } else if (attrName === ATTRIBUTE_ID) {
       componentAttrInfo.hasIdAttr = true;
     } else if (attrName === REUSE_ATTRIBUTE) {
       logMessageCollection.checkUsageOfReuseAttribute(node, isReusableV2NodeAttr, log);
-      if (ts.isObjectLiteralExpression(node.arguments[0]) && !!getReuseIdInReuse(node.arguments[0])) {
-        componentAttrInfo.reuse = getReuseIdInReuse(node.arguments[0]);
-      } else {
-        componentAttrInfo.reuse = '';
-      }
+      setReuseAttributeInfo(componentAttrInfo, param);
     }
     componentAttrInfo.attrCount++;
   }
 }
 
-function getReuseIdInReuse(node: ts.ObjectLiteralExpression): string {
-  let reuse: string = '';
-  if (node.properties && node.properties.length) {
-    node.properties.forEach((item: ts.ObjectLiteralElementLike) => {
-      if (ts.isPropertyAssignment(item) && item.name && ts.isIdentifier(item.name) &&
-        item.name.getText() === RECYCLE_REUSE_ID && item.initializer && 
-        ts.isArrowFunction(item.initializer) && item.initializer.body &&
-        ts.isStringLiteral(item.initializer.body)) {
-        reuse = item.initializer.body.text;
-      }
-    });
+function setReuseAttributeInfo(componentAttrInfo: ComponentAttrInfo, param: ts.Expression): void {
+  componentAttrInfo.reuse = '';
+  componentAttrInfo.reuseAttribute = undefined;
+  if (!ts.isObjectLiteralExpression(param)) {
+    return;
   }
-  return reuse;
+  const reuseIdProperty = getReuseIdProperty(param);
+  if (reuseIdProperty) {
+    componentAttrInfo.reuse = getReuseIdInReuse(reuseIdProperty);
+    componentAttrInfo.reuseAttribute = reuseIdProperty;
+  }
+}
+
+function getReuseIdProperty(
+  node: ts.ObjectLiteralExpression
+): ts.Expression | undefined {
+  if (!node.properties || node.properties.length <= 0) {
+    return undefined;
+  }
+  const reuseIdProperty: ts.PropertyAssignment | undefined =
+    node.properties.find(
+      (item: ts.ObjectLiteralElementLike) =>
+        ts.isPropertyAssignment(item) &&
+        item.name &&
+        ts.isIdentifier(item.name) &&
+        item.name.getText() === RECYCLE_REUSE_ID
+    ) as ts.PropertyAssignment | undefined;
+  return reuseIdProperty?.initializer;
+}
+
+function getReuseIdInReuse(node: ts.Expression): string {
+  if (ts.isArrowFunction(node) && node.body && ts.isStringLiteral(node.body)) {
+    return node.body.text;
+  }
+  return '';
 }
 
 function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: ts.Identifier,
@@ -3686,9 +3705,7 @@ function navigationCreateParam(compName: string, type: string,
       ));
     }
   }
-  if ((CREATE_ROUTER_COMPONENT_COLLECT.has(compName) ||
-    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName))) &&
-    isCreate && partialUpdateMode) {
+  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       navigationOrNavDestinationCreateContent(compName, isHaveParam),
       false
@@ -3761,17 +3778,11 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  if (!isCompatibleVersionOver20()) {
-    return false;
-  }
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  if (!isCompatibleVersionOver20()) {
-    return false;
-  }
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
 }
 
 export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
@@ -3868,16 +3879,6 @@ function isMutableBuilderCallExpression(node: ts.CallExpression): boolean {
 function isMutableBuilderExpression(node: ts.ExpressionStatement): boolean {
   if (node.expression &&
     isMutableBuilderCallExpression(node.expression as ts.CallExpression)) {
-    return true;
-  }
-  return false;
-}
-
-function isCompatibleVersionOver20(): boolean {
-  const COMPATIBLE_SDK_VERSION = 20;
-  if (projectConfig &&
-    projectConfig.compatibleSdkVersion &&
-    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION) {
     return true;
   }
   return false;

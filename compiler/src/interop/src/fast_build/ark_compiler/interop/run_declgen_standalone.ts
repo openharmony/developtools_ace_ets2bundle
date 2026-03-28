@@ -64,6 +64,7 @@ export class DeclfileProductor {
     static compilerOptions: ts.CompilerOptions;
     static sdkConfigPrefix = 'ohos|system|kit|arkts';
     static sdkConfigs = [];
+    static interopSdkConfigs = [];
     static systemModules = [];
     static defaultSdkConfigs = [];
     static projectPath;
@@ -75,6 +76,7 @@ export class DeclfileProductor {
         DeclfileProductor.compilerOptions = ts.readConfigFile(
             path.join(__dirname, '../../../../tsconfig.json'), ts.sys.readFile).config.compilerOptions;
         DeclfileProductor.initSdkConfig();
+        DeclfileProductor.initInteropSdkConfig();    
         Object.assign(DeclfileProductor.compilerOptions, {
             emitNodeModulesFiles: true,
             importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Preserve,
@@ -176,7 +178,7 @@ export class DeclfileProductor {
     writeDeclFileInfo(moduleInfo: ArkTSEvolutionModule, mainModuleName: string): void {
       moduleInfo.isNative = moduleInfo.isNative ?? moduleInfo.packageName.endsWith('.so');
       moduleInfo.dynamicFiles.forEach(file => {
-        this.addDeclFilesConfig(file, mainModuleName, this.projectConfig.bundleName, moduleInfo);
+        this.addDeclFilesConfig(file, moduleInfo);
       });
 
       const declFilesConfigFile: string = toUnixPath(moduleInfo.declFilesPath);
@@ -186,7 +188,7 @@ export class DeclfileProductor {
       }
     }
 
-    addDeclFilesConfig(filePath: string, mainModuleName: string, bundleName: string, moduleInfo: ArkTSEvolutionModule): void {
+    addDeclFilesConfig(filePath: string, moduleInfo: ArkTSEvolutionModule): void {
         const projectFilePath = getRelativePath(filePath, moduleInfo.modulePath);
 
         const declgenV2OutPath: string = this.getDeclgenV2OutPath(moduleInfo.packageName);
@@ -205,8 +207,7 @@ export class DeclfileProductor {
           : `${moduleInfo.packageName}/${projectFilePath}`;
         const declPath: string = path.join(toUnixPath(declgenV2OutPath), projectFilePath) + EXTNAME_D_ETS;
         const isNativeFlag = moduleInfo.isNative ? 'Y' : 'N';
-        const moduleName: string = moduleInfo.moduleType === 'shared' ? moduleInfo.moduleName : mainModuleName;
-        const ohmUrl: string = `${isNativeFlag}&${moduleName}&${bundleName}&${normalizedFilePath}&${moduleInfo.packageVersion}`;
+        const ohmUrl: string = `${isNativeFlag}&&&${normalizedFilePath}&`;
         this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = { declPath, filePath, ohmUrl: `@normalized:${ohmUrl}` };
     }
 
@@ -216,6 +217,47 @@ export class DeclfileProductor {
             return arkTsModuleInfo.declgenV2OutPath;
         }
         return '';
+    }
+
+    static initInteropSdkConfig(): void {
+        const apiDirPath = path.resolve(__dirname, '../../../../../../../static/build-tools/interop/declaration/api');
+        const arktsDirPath = path.resolve(__dirname, '../../../../../../../static/build-tools/interop/declaration/arkts');
+        const kitsDirPath = path.resolve(__dirname, '../../../../../../../static/build-tools/interop/declaration/kits');
+        const systemModulePathArray = [apiDirPath];
+        if (!process.env.isFaMode) {
+            systemModulePathArray.push(arktsDirPath, kitsDirPath);
+        }
+        systemModulePathArray.forEach(systemModulesPath => {
+            if (fs.existsSync(systemModulesPath)) {
+                const modulePaths = [];
+                readFile(systemModulesPath, modulePaths);
+                DeclfileProductor.systemModules.push(...fs.readdirSync(systemModulesPath));
+                const moduleSubdir = modulePaths.filter(filePath => {
+                    const dirName = path.dirname(filePath);
+                    return !(dirName === apiDirPath || dirName === arktsDirPath || dirName === kitsDirPath);
+                }).map(filePath => {
+                    return filePath
+                        .replace(apiDirPath, '')
+                        .replace(arktsDirPath, '')
+                        .replace(kitsDirPath, '')
+                        .replace(/(^\\)|(.d.e?ts$)/g, '')
+                        .replace(/\\/g, '/');
+                });
+            }
+        });
+        DeclfileProductor.defaultSdkConfigs = [
+            {
+                'apiPath': systemModulePathArray,
+                'prefix': '@ohos'
+            }, {
+                'apiPath': systemModulePathArray,
+                'prefix': '@system'
+            }, {
+                'apiPath': systemModulePathArray,
+                'prefix': '@arkts'
+            }
+        ];
+        DeclfileProductor.interopSdkConfigs = [...DeclfileProductor.defaultSdkConfigs];
     }
 
     static initSdkConfig(): void {
@@ -278,6 +320,12 @@ function resolveModuleNames(moduleNames: string[], containingFile: string): ts.R
             continue;
         }
 
+        resolvedModule = resolveInteropSdkModule(moduleName);
+        if (resolvedModule) {
+            resolvedModules.push(resolvedModule);
+            continue;
+        }
+
         resolvedModule = resolveEtsModule(moduleName, containingFile);
         if (resolvedModule) {
             resolvedModules.push(resolvedModule);
@@ -324,6 +372,26 @@ function resolveEtsModule(moduleName: string, containingFile: string): ts.Resolv
 
     const modulePath = path.resolve(path.dirname(containingFile), moduleName);
     return ts.sys.fileExists(modulePath) ? getResolveModule(modulePath, '.ets') : null;
+}
+
+function resolveInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
+    const prefixRegex = new RegExp(`^@(${DeclfileProductor.sdkConfigPrefix})\\.`, 'i');
+    if (!prefixRegex.test(moduleName.trim())) {
+        return null;
+    }
+
+    for (const sdkConfig of DeclfileProductor.interopSdkConfigs) {
+        const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, moduleName, ['.d.ts', '.d.ets']);
+        const modulePath: string = resolveModuleInfo.modulePath;
+        const isDETS: boolean = resolveModuleInfo.isEts;
+
+        const moduleKey = moduleName + (isDETS ? '.d.ets' : '.d.ts');
+        if (DeclfileProductor.systemModules.includes(moduleKey) && ts.sys.fileExists(modulePath)) {
+            return getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts');
+        }
+    }
+
+    return null;
 }
 
 function resolveSdkModule(moduleName: string): ts.ResolvedModuleFull | null {

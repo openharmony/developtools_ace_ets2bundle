@@ -153,24 +153,9 @@ class G extends A {
     }
   }
   
-  @JSONRename({newName:"propG"}) public __backing_propG: number = 1;
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_propG: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_propG");
-  
   public constructor() {}
-  
-  public get propG(): number {
-    this.conditionalAddRef(this.__meta_propG);
-    return this.__backing_propG;
-  }
-  
-  public set propG(newValue: number) {
-    if (((this.__backing_propG) !== (newValue))) {
-      this.__backing_propG = newValue;
-      this.__meta_propG.fireChange();
-      this.executeOnSubscribingWatches("propG");
-    }
-  }
   
 }
 `;

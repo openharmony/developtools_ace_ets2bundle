@@ -55,6 +55,8 @@ import {
     isForEach,
     findReuseId,
     getStructCalleeInfoFromCallee,
+    isInEntryWrapper,
+    isDebugLineEnabled,
 } from './utils';
 import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
@@ -88,6 +90,11 @@ import { TypeRecord } from '../../collectors/utils/collect-types';
 import { StyleInternalsVisitor } from './style-internals-visitor';
 import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttributeCache';
 import { MetaDataCollector } from '../../common/metadata-collector';
+
+interface CreateStyleLambdaArgumentOptions {
+    shouldApplyAttribute?: boolean;
+    shouldSkipDebugLine?: boolean;
+}
 
 export class factory {
     /**
@@ -276,17 +283,22 @@ export class factory {
     static createStyleLambdaArgument(
         lambdaBody: arkts.Expression,
         typeNode: arkts.TypeNode | undefined,
-        shouldApplyAttribute: boolean = true
+        options?: CreateStyleLambdaArgumentOptions,
+        sourceNode?: arkts.CallExpression
     ): arkts.ArrowFunctionExpression {
+        const shouldApplyAttribute = options?.shouldApplyAttribute ?? true;
+        const shouldSkipDebugLine = options?.shouldSkipDebugLine ?? false;
         const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, typeNode),
             undefined
         );
-
+        const debugLineStatement = sourceNode && !shouldSkipDebugLine ? factory.createDebugLineStatement(sourceNode) : undefined;
+        const instanceIdentifier = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
+        arkts.NodeCache.getInstance().collect(instanceIdentifier);
         const applyAttributesFinish = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME),
+                    instanceIdentifier,
                     arkts.factory.createIdentifier(BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD),
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
@@ -300,11 +312,11 @@ export class factory {
         const returnStatement = arkts.factory.createReturnStatement();
         arkts.NodeCache.getInstance().collect(returnStatement);
         const body: arkts.BlockStatement = arkts.factory.createBlock([
+            ...(debugLineStatement ? [debugLineStatement] : []),
             ...(arkts.isIdentifier(lambdaBody) ? [] : [arkts.factory.createExpressionStatement(lambdaBody)]),
             ...(shouldApplyAttribute ? [applyAttributesFinish]: []),
             returnStatement,
         ]);
-
         const func = arkts.factory.createScriptFunction(
             body,
             arkts.FunctionSignature.createFunctionSignature(
@@ -316,8 +328,55 @@ export class factory {
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
-
         return addMemoAnnotation(arkts.factory.createArrowFunction(func));
+    }
+
+    /**
+     * create debugLine statement for component.
+     */
+    static createDebugLineStatement(sourceNode: arkts.CallExpression): arkts.ExpressionStatement | undefined {
+        const projectConfig = MetaDataCollector.getInstance().projectConfig;
+        const compatibleSdkVersion = projectConfig?.compatibleSdkVersion;
+        if (compatibleSdkVersion === undefined || compatibleSdkVersion < 24) {
+            return undefined;
+        }
+
+        const isDebugMode = projectConfig?.debugLine === true;
+        if (!isDebugMode || !sourceNode) {
+            return undefined;
+        }
+
+        const fileAbsName = MetaDataCollector.getInstance().fileAbsName;
+        const moduleName = projectConfig?.moduleName;
+        const projectRootPath = projectConfig?.projectRootPath;
+        if (!fileAbsName || !moduleName || !projectRootPath) {
+            return undefined;
+        }
+
+        const relativeFilePath = path.relative(projectRootPath, fileAbsName);
+        const formattedFilePath = relativeFilePath.replace(/\//g, '\\\\');
+        const line = sourceNode.startPosition.line() + 1;
+        const column = sourceNode.startPosition.col();
+        const locationString = `${formattedFilePath}(${line}:${column})`;
+        const instanceIdentifier = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
+        arkts.NodeCache.getInstance().collect(instanceIdentifier);
+        const debugLineStatement = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    instanceIdentifier,
+                    arkts.factory.createIdentifier(BuilderLambdaNames.DEBUG_LINE_METHOD),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [
+                    arkts.factory.createStringLiteral(locationString),
+                    arkts.factory.createStringLiteral(moduleName)
+                ]
+            )
+        );
+        return debugLineStatement;
     }
 
     /**
@@ -327,14 +386,15 @@ export class factory {
         lambdaBody: arkts.Expression | undefined,
         typeNode: arkts.TypeNode | undefined,
         moduleName: string,
-        isFromCommonMethod: boolean | undefined
+        isFromCommonMethod: boolean | undefined,
+        sourceNode?: arkts.CallExpression
     ): arkts.UndefinedLiteral | arkts.ArrowFunctionExpression {
         if (!lambdaBody) {
             return arkts.factory.createUndefinedLiteral();
         }
         collectComponentAttributeImport(typeNode, moduleName);
         const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
-        return this.createStyleLambdaArgument(lambdaBody, safeType, isFromCommonMethod);
+        return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute: isFromCommonMethod }, sourceNode);
     }
 
     /**
@@ -357,9 +417,10 @@ export class factory {
             ),
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
+        const unionType = arkts.factory.createUnionType([funcType, arkts.factory.createETSUndefinedType()]);
         addMemoAnnotation(funcType);
         const parameter = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, funcType),
+            arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, unionType),
             undefined
         );
         arkts.NodeCache.getInstance().collect(parameter, { hasMemoSkip });
@@ -593,8 +654,14 @@ export class factory {
             { isTrailingCall }
         );
         if (!!lambdaBody) {
-            const styleArg = this.createStyleLambdaArgument(lambdaBody, returnType);
-            args.unshift(styleArg);
+            const shouldSkipDebugLine = isInEntryWrapper(leaf);
+            const shouldAddDebugLine = !shouldSkipDebugLine && isDebugLineEnabled();
+            if (!shouldAddDebugLine && arkts.isIdentifier(lambdaBody)) {
+                args.unshift(arkts.factory.createUndefinedLiteral());
+            } else {
+                const styleArg = this.createStyleLambdaArgument(lambdaBody, returnType, { shouldSkipDebugLine: shouldSkipDebugLine }, leaf);
+                args.unshift(styleArg);
+            }
         }
         return args;
     }
@@ -660,7 +727,7 @@ export class factory {
             factory.addArgsInBuilderLambdaCall(modifiedArgs, typeName, moduleName ?? '', leaf),
             typeArguments,
         );
-        const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!, isFromCommonMethod);
+        const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!, isFromCommonMethod, leaf);
         args.unshift(styleArg);
         return args;
     }
@@ -864,7 +931,7 @@ export class factory {
         if (isFunctionCall) {
             ComponentAttributeCache.getInstance().collect(node);
         }
-        const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node);
+        const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,
             [this.createStyleArgInBuilderLambdaDecl(typeNode)],

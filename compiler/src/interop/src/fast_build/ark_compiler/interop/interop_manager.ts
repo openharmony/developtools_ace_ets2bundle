@@ -101,10 +101,22 @@ export class FileManager {
     aliasPaths: Map<string, string>,
     dynamicSDKPath?: Set<string>,
     staticSDKDeclPath?: Set<string>,
-    staticSDKGlueCodePath?: Set<string>
+    staticSDKGlueCodePath?: Set<string>,
+    projectTopDir?: string
   ): void {
     if (FileManager.instance === undefined) {
       FileManager.instance = new FileManager();
+      if (FileManager.instance.interopConfig) {
+        FileManager.instance.interopConfig.projectConfig['projectTopDir'] = projectTopDir;
+      }
+      else {
+        FileManager.instance.interopConfig = {
+          interopModuleInfo: new Map<string, InteropInfo>(),
+          projectConfig: {
+            projectTopDir: projectTopDir
+          }
+        }
+      }
       FileManager.initLanguageVersionFromDependentModuleMap(dependentModuleMap);
       FileManager.initAliasConfig(aliasPaths);
       FileManager.initSDK(dynamicSDKPath, staticSDKDeclPath, staticSDKGlueCodePath, false);
@@ -268,18 +280,45 @@ export class FileManager {
     };
   }
 
+  private static matchModulePathByDeclenPath(contentPath: string): ArkTSEvolutionModule | undefined {
+    const projectConfig = FileManager.getInstance().getInteropConfig()?.projectConfig;
+    if (!projectConfig) {
+      return undefined;
+    }
+    const projectRootDir = projectConfig['projectTopDir'];
+    const sourcePath = toUnixPath(contentPath);
+    const declgenPath = toUnixPath(path.join(projectRootDir, 'build', 'declgen'));
+    if (!isSubPathOf(sourcePath, declgenPath)) {
+      return undefined;
+    }
+    const relativePath = toUnixPath(path.relative(declgenPath, sourcePath));
+    const pathSegments = relativePath.split('/');
+    if (pathSegments.length < 1) {
+      return undefined;
+    }
+    const harName = pathSegments[0];
+    for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+      if (harName === moduleInfo.packageName) {
+        return moduleInfo;
+      }
+    }
+    return undefined;
+  }
+
+  private static matchModulePathByPrefix(contentPath: string): ArkTSEvolutionModule | undefined {
+    for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+      if (isSubPathOf(contentPath, moduleInfo.modulePath)) {
+        return moduleInfo;
+      }
+    }
+    return undefined;
+  }
+
   private static matchModulePath(path: string): {
     languageVersion: string,
     pkgName: string
   } | undefined {
-    let matchedModuleInfo: ArkTSEvolutionModule;
-
-    for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
-      if (isSubPathOf(path, moduleInfo.modulePath)) {
-        matchedModuleInfo = moduleInfo;
-        break;
-      }
-    }
+    let matchedModuleInfo = this.matchModulePathByPrefix(path) || this.matchModulePathByDeclenPath(path);
 
     if (!matchedModuleInfo) {
       return undefined;
@@ -577,8 +616,7 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
     if (!firstLine.includes('use static')) {
       newEntry[newKey] = rawPath;
     } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
-      const interopInfo = getBrdigeCodeRootPath(moduleJson?.module?.name, interopConfig);
+      const interopInfo = getBrdigeCodeRootPath(rawPath, interopConfig);
       if (!interopInfo) {
         const errInfo = LogDataFactory.newInstance(
           ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
@@ -603,6 +641,7 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
  * As the entry  for mix compile,so mixCompile status will be set true
  */
 export function initConfigForInterop(interopConfig: InteropConfig): Object {
+  mixCompile = true;
   initFileManagerInRollup(interopConfig);
 
   function getEntryObj(): void {
@@ -624,7 +663,6 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
       return newEntry;
     }, {});
   }
-  mixCompile = true;
   getEntryObj();
   if (process.env.appResource) {
     readAppResource(process.env.appResource);
@@ -639,7 +677,7 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
 
 export function getBrdigeCodeRootPath(moduleName: string, interopConfig: InteropConfig): InteropInfo | undefined {
   for (const [moduleRootPath, interopInfo] of interopConfig.interopModuleInfo) {
-    if (moduleName === interopInfo.moduleName) {
+    if (moduleName === interopInfo.moduleName || isSubPathOf(moduleName, moduleRootPath)) {
       interopInfo.moduleRootPath = moduleRootPath;
       return interopInfo;
     }

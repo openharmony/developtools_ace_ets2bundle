@@ -111,6 +111,10 @@ export class PositionalIdTracker {
             ? arkts.factory.createStringLiteral(positionId)
             : arkts.factory.createNumericLiteral(parseInt(positionId, 16));
     }
+
+    static clear(): void {
+        PositionalIdTracker.callCount = 0;
+    }
 }
 
 export function isMemoAnnotation(node: arkts.AnnotationUsage, memoName: RuntimeNames | RuntimeNames[]): boolean {

@@ -27,7 +27,7 @@ import {
 import { 
   getValueChecker, 
   getFormatChecker,
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker,
   getValidDecoratorFromNode,
   extractMinApiFromDecorator,
@@ -74,9 +74,6 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
     // This function compares two versions and returns VersionValidationResult
     const valueChecker = getValueChecker(AVAILABLE_TAG_NAME);
     this.versionCompareFunction = valueChecker;
-    if (this.versionCompareFunction === defaultValueChecker) {
-      this.sdkVersion = projectConfig.compatibleSdkVersion.toString();
-    }
 
     // Load format checker (validation function) for @Available tag
     // This function validates version string format (e.g., "21", "21.1", etc.)
@@ -86,8 +83,8 @@ export class AvailableAnnotationChecker extends BaseVersionChecker {
       this.versionValidFunction = formatChecker;
     } else {
       // Fallback to default format checker
-      this.formatChecker = defaultFormatCheckerWithoutMSF;
-      this.versionValidFunction = defaultFormatCheckerWithoutMSF;
+      this.formatChecker = defaultFormatCheckerCompatibileIntegerAndMSF;
+      this.versionValidFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
     }
   }
 

@@ -18,6 +18,7 @@ import path from 'path';
 import * as ts from 'typescript';
 import * as crypto from 'crypto';
 const fse = require('fs-extra');
+import { fileInfoCache } from './file_info_cache';
 
 import {
   projectConfig,
@@ -71,7 +72,9 @@ import {
   isMac,
   tryToLowerCasePath,
   getRollupCache,
-  setRollupCache
+  setRollupCache,
+  getRollupCommonCache,
+  setRollupCommonCache
 } from './utils';
 import {
   isExtendFunction,
@@ -226,6 +229,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'tsBuildInfoFile': buildInfoPath,
     'tsImportSendableEnable': tsImportSendable,
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
+    'skipBaseUrlInKeyForCompilationSettings': shareDocumentRegistryCache,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
@@ -234,6 +238,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
     'moduleRootPath': projectConfig.moduleRootPath,
+    'strictCheckerOnly': projectConfig.strictCheckerOnly,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -381,7 +386,6 @@ let getHashByFilePath: Function | undefined = undefined;
 
 export function createLanguageService(rootFileNames: string[], resolveModulePaths: string[],
   parentEvent?: CompileEvent, rollupShareObject?: Object): ts.LanguageService {
-  const eventCreateLanguageService = createAndStartEvent(parentEvent, 'createLanguageService');
   setHashValueByFilePath = rollupShareObject?.setHashValueByFilePath;
   getHashByFilePath = rollupShareObject?.getHashByFilePath;
   setCompilerOptions(resolveModulePaths);
@@ -415,7 +419,7 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     directoryExists: ts.sys.directoryExists,
     getDirectories: ts.sys.getDirectories,
     getJsDocNodeCheckedConfig: (fileCheckedInfo: ts.FileCheckModuleInfo, sourceFileName: string) => {
-      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName, eventCreateLanguageService);
+      return getJsDocNodeCheckConfig(fileCheckedInfo.currentFileName, sourceFileName);
     },
     getFileCheckedModuleInfo: (containFilePath: string) => {
       return {
@@ -460,16 +464,15 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     return tsLanguageService;
   }
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.ETS_CHECKER_CREATE_LANGUAGE_SERVICE);
-  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, rollupShareObject);
+  const tsLanguageService = getOrCreateLanguageService(servicesHost, rootFileNames, parentEvent, rollupShareObject);
   MemoryMonitor.stopRecordStage(recordInfo);
-  stopEvent(eventCreateLanguageService);
   return tsLanguageService;
 }
 
 export let targetESVersionChanged: boolean = false;
 
 function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFileNames: string[],
-  rollupShareObject?: any): ts.LanguageService {
+  parentEvent: CompileEvent, rollupShareObject?: any): ts.LanguageService {
   let cacheKey: string = 'service';
   let cache: LanguageServiceCache | undefined = getRollupCache(rollupShareObject, projectConfig, cacheKey);
 
@@ -516,12 +519,26 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   }
 
   if (!service || shouldRebuild) {
+    const eventShouldRebuild = createAndStartEvent(parentEvent,
+      '!service: ' + !service + '\n' +
+      'the reason of shouldRebuild: ' + 'shouldRebuild: ' + shouldRebuild + ';' + '\n' +
+      'shouldRebuildForDepDiffers: ' + shouldRebuildForDepDiffers + ';' + '\n' +
+      'shouldInvalidCache: ' + shouldInvalidCache + ';' + '\n' +
+      'targetESVersionDiffers: ' + targetESVersionDiffers + ';' + 'useTsHarDiff: ' + useTsHarDiff + ';' + '\n' +
+      'onlyDeleteBuildInfoCache: ' + onlyDeleteBuildInfoCache + ';' + '\n' +
+      'tsImportSendableDiff: ' + tsImportSendableDiff + ';' + 'maxFlowDepthDiffers: ' + maxFlowDepthDiffers + ';' +
+      'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' + 'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
+    );
     rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
-    service = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+    service = ts.createLanguageService(servicesHost, shareDocumentRegistryCache ?
+      getOrCreateDocumentRegistryCache(rollupShareObject) : ts.createDocumentRegistry());
+    stopEvent(eventShouldRebuild);
   } else {
     // Found language service from cache, update root files
     const updateRootFileNames = [...rootFileNames, ...readDeaclareFiles()];
+    const eventUpdateRootFileNames = createAndStartEvent(parentEvent, 'eventUpdateRootFileNumber: ' + updateRootFileNames.length);
     service.updateRootFiles(updateRootFileNames);
+    stopEvent(eventUpdateRootFileNames);
   }
 
   const newCache: LanguageServiceCache = {
@@ -543,6 +560,30 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   };
   setRollupCache(rollupShareObject, projectConfig, cacheKey, newCache);
   return service;
+}
+
+// Share the document registry between multiple LanguageService instances in one worker.
+// Setting this to false will create a new document registry when LanguageService is created.
+const shareDocumentRegistryCache: boolean = true;
+
+/**
+ * Boost languageService's sourcefiles creation procedure & lower memory consumption by caching DocumentRegistry
+ * into Rollup CommonCache(which will make every single file has only one sourcefile being created during building) to
+ * share common sourcefiles with multi-modules compiling tasks on the same worker process.
+ * Once compiling gets done, hvigor will clear the Rollup CommonCache so that tsc's original sourcefile updation process
+ * will refresh the changed files sourcefiles to prevent the new program getting the old un-refreshed sourcefiles in
+ * inc-compilation.
+ */
+function getOrCreateDocumentRegistryCache(rollupShareObject?: any): ts.DocumentRegistry {
+  const commonCacheKey: string = 'documentRegistry';
+  let documentRegistryCache: object | undefined = getRollupCommonCache(rollupShareObject, commonCacheKey);
+  if (documentRegistryCache) {
+    return <ts.DocumentRegistry>documentRegistryCache;
+  } else {
+    documentRegistryCache = ts.createDocumentRegistry();
+    setRollupCommonCache(rollupShareObject, commonCacheKey, documentRegistryCache);
+    return <ts.DocumentRegistry>documentRegistryCache;
+  }
 }
 
 /**
@@ -825,7 +866,7 @@ function isOtherProjectResolvedModulesFilePaths(rollupShareObject: Object, fileN
 export function mergeRollUpFiles(rollupFileList: IterableIterator<string>, rollupObject: Object): void {
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.MERGE_ROLL_UP_FILES_LOCAL_PACKAGE_SET);
   for (const moduleId of rollupFileList) {
-    if (fs.existsSync(moduleId)) {
+    if (moduleId.indexOf('\x00') < 0 && fileInfoCache.fileExists(moduleId)) {
       allSourceFilePaths.add(toUnixPath(moduleId));
       allModuleIds.add(moduleId);
       addLocalPackageSet(moduleId, rollupObject);
@@ -1120,8 +1161,17 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   // Check for LINTER error codes
   if (flag === ErrorCodeModule.LINTER || (flag === ErrorCodeModule.TSC &&
     validateUseErrorCodeLogger(ErrorCodeModule.LINTER, diagnostic.code))) {
-    const linterErrorInfo: HvigorErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
-    errorCodeLogger.printError(linterErrorInfo);
+    let linterErrorInfo: HvigorErrorInfo | SdkHvigorErrorInfo | undefined;
+    if (DIAGNOSTIC_SDK_CODE_MAP.get(String(diagnostic.code))) {
+      linterErrorInfo = sdkBuildErrorInfoFromDiagnostic(positionMessage, message);
+    } else {
+      linterErrorInfo = transfromErrorCode(diagnostic.code, positionMessage, message);
+    }
+    if (!linterErrorInfo) {
+      etsCheckerLogger.error('\u001b[31m' + logMessage);
+    } else {
+      errorCodeLogger.printError(linterErrorInfo);
+    }
     return;
   }
 
@@ -1233,7 +1283,7 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
   }
 
   const value: CacheFileName = cache[file];
-  const mtimeMs: number = fs.statSync(file).mtimeMs;
+  const mtimeMs: number = fileInfoCache.getMtimeMs(file);
   if (value) {
     if (value.error || value.mtimeMs !== mtimeMs) {
       needUpdate.flag = true;
@@ -1465,7 +1515,7 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
   resolvedModules.forEach(moduleObj => {
     if (moduleObj && moduleObj.resolvedFileName && /\.(ets|ts)$/.test(moduleObj.resolvedFileName)) {
       const file: string = path.resolve(moduleObj.resolvedFileName);
-      const mtimeMs: number = fs.statSync(file).mtimeMs;
+      const mtimeMs: number = fileInfoCache.getMtimeMs(file);
       children.push(file);
       const value: CacheFileName = cache[file];
       if (value) {
@@ -1480,7 +1530,7 @@ function createOrUpdateCache(resolvedModules: ts.ResolvedModuleFull[], containin
     }
   });
   cache[path.resolve(containingFile)] = {
-    mtimeMs: fs.statSync(containingFile).mtimeMs, children,
+    mtimeMs: fileInfoCache.getMtimeMs(containingFile), children,
     parent: cache[path.resolve(containingFile)] && cache[path.resolve(containingFile)].parent ?
       cache[path.resolve(containingFile)].parent : [], error
   };

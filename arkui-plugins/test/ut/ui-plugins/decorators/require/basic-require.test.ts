@@ -189,7 +189,8 @@ function main() {}
     this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (initializers!.select2 as Array<string>), false);
     this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
     this.__backing_builder = ((((({let gensym___63603867 = initializers;
-    (((gensym___63603867) == (null)) ? undefined : gensym___63603867.builder)})) ?? (content))) ?? (undefined))
+    (((gensym___63603867) == (null)) ? undefined : gensym___63603867.builder)})) ?? (content))) ?? (((({let gensym___63603867 = initializers;
+    (((gensym___63603867) == (null)) ? undefined : gensym___63603867.builder)})) ?? (undefined))))
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
@@ -300,7 +301,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___56395834 = storage;
       (((gensym___56395834) == (null)) ? undefined : gensym___56395834())}));
@@ -342,10 +343,12 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: V2222)=> void), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: V2222)=> void) | undefined), initializers: ((()=> __Options_V2222) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<V2222, __Options_V2222>(style, ((): V2222 => {
       return new V2222();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<V2222>(),
+    });
   }
   
   @ComponentBuilder() 

@@ -115,7 +115,7 @@ function main() {}
 
 @Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: SwipeRefresher)=> void), initializers: ((()=> __Options_SwipeRefresher) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void
+  public static _invoke(style: (@Memo() ((instance: SwipeRefresher)=> void) | undefined), initializers: ((()=> __Options_SwipeRefresher) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void
   
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): SwipeRefresher

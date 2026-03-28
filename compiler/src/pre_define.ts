@@ -14,6 +14,7 @@
  */
 
 import path from 'path';
+import { EXT_WHITE_LIST } from './component_map';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
@@ -64,6 +65,9 @@ export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
 export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
 export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
+export const GET_UI_NATIVE_MODULE = 'getUINativeModule';
+export const COMMON = 'common';
+export const GET_API_TARGET_VERSION = 'getApiTargetVersion';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
@@ -636,6 +640,14 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 ]);
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
+if (EXT_WHITE_LIST.length) {
+    for (const compName of EXT_WHITE_LIST) {
+        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
+    }
+}
+if (EXT_WHITE_LIST.length >= 2) {
+    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
+}
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
@@ -700,3 +712,4 @@ export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
+export const API_VERSION_26: number = 26;

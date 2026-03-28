@@ -22,41 +22,14 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
         return {
             invalidMemberDecorate: `'@Once' can only decorate member property.`,
             invalidDecorator: `When a variable decorated with '@Once', it must also be decorated with '@Param'.`,
-            invalidNOtInStruct: `'@Once' annotation can only be used with 'struct'.`
         };
     }
 
     public parsed(node: arkts.AstNode): void {
-
-        this.validateOnlyInStruct(node);
         this.validateOnlyOnProperty(node);
 
         if (arkts.isStructDeclaration(node)) {
             this.validateDecorator(node);
-        }
-    }
-
-    private validateOnlyInStruct(node: arkts.AstNode): void {
-        if (arkts.isClassDeclaration(node)) {
-            node.definition?.body.forEach(member => {
-                if (arkts.isClassProperty(member)) {
-                    this.validateOnceDecoratorUsage(member, this.messages.invalidNOtInStruct);
-
-                }
-                if (arkts.isMethodDefinition(member)) {
-                    this.validateOnceDecoratorUsage(member.scriptFunction, this.messages.invalidNOtInStruct);
-                }
-            });
-            return;
-        }
-        // function/ variable/ interface/ type alias declaration
-        if (arkts.isFunctionDeclaration(node) ||
-            arkts.isVariableDeclaration(node) ||
-            arkts.isTSInterfaceDeclaration(node) ||
-            arkts.isTSTypeAliasDeclaration(node)
-        ) {
-            this.validateOnceDecoratorUsage(node, this.messages.invalidNOtInStruct);
-            return;
         }
     }
 

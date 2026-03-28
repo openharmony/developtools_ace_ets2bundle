@@ -122,6 +122,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.strictCheckerOnly = false;
 }
 
 function initProjectPathConfig(projectConfig) {
@@ -510,6 +511,9 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
 
 function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
+    if (abilityPath.endsWith('.so')) {
+      return;
+    }
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
@@ -1299,6 +1303,7 @@ function resetProjectConfig() {
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
+  projectConfig.strictCheckerOnly = false;
   const props = ['projectPath', 'buildPath', 'aceModuleBuild', 'manifestFilePath', 'aceProfilePath',
     'aceModuleJsonPath', 'aceSuperVisualPath', 'hashProjectPath', 'aceBuildJson', 'cachePath',
     'aceSoPath', 'localPropertiesPath', 'projectProfilePath', 'isPreview', 'compileMode', 'runtimeOS',

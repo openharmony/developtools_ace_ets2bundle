@@ -182,10 +182,12 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+    });
   }
 
   @ComponentBuilder() 
@@ -200,10 +202,7 @@ function main() {}
       instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      Child._invoke(@Memo() ((instance: Child): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), undefined, undefined, undefined, undefined);
+      Child._invoke(undefined, undefined, undefined, undefined, undefined);
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("add new user", undefined).onClick(((e) => {
           this.users.push(new User("Molly", 18));
@@ -254,10 +253,12 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Child)=> void), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
       return new Child();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Child>(),
+    });
   }
   
   @ComponentBuilder() 
@@ -295,7 +296,7 @@ function main() {}
               instance.setDividerOptions();
               instance.applyAttributesFinish();
               return;
-            }), undefined);
+            }));
           }));
         }), undefined);
         return;

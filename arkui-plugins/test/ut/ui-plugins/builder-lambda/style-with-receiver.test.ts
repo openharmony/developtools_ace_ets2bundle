@@ -87,7 +87,7 @@ function style22(this: TextAttribute): TextAttribute {
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: MM)=> void), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: MM)=> void) | undefined), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MM, __Options_MM>(style, ((): MM => {
       return new MM(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));

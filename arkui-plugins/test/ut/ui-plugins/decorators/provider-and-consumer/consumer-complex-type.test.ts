@@ -75,7 +75,7 @@ final class StateType extends BaseEnum<int> {
 
   private static <cctor>() {}
 
-  public constructor(ordinal: int, value: int) {
+  private constructor(ordinal: int, value: int) {
     super(value);
     this.#ordinal = ordinal;
   }
@@ -280,10 +280,12 @@ final class StateType extends BaseEnum<int> {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+    });
   }
   
   @ComponentBuilder() 

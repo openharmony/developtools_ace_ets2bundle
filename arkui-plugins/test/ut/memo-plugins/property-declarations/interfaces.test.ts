@@ -84,7 +84,7 @@ interface A {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'arg', '(()=> void)', [], [], false)}
     ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_arg', '((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [dumpAnnotation('Memo')], [], false)}
     ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_optional_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('Memo')])}
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '(((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)', [dumpAnnotation('Memo')], [], false)}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'memo_union_arg', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)', [dumpAnnotation('Memo')], [], true)}
     ${dumpGetterSetter(GetSetDumper.BOTH, 'arg_memo_type', '@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)', [], [], false)}
 }
 `;
