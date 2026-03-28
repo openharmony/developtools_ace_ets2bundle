@@ -35,6 +35,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     private builderVariableCollect: Map<string, string[]> = new Map();
     private variableCollect: Map<string, string[]> = new Map();
     private structNode: arkts.StructDeclaration | undefined;
+    private errorNodes: arkts.AstNode[] = [];
 
     public setup(): Record<string, string> {
         return {
@@ -192,6 +193,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         if (arkts.isAssignmentExpression(node)) {
             if (node.left) {
                 this.validateBuilderStateModification(node.left, node, variableCollect);
+                return;
             }
         } else if (arkts.isUpdateExpression(node)) {
             type UpdateExpressionNode = arkts.AstNode & { argument?: arkts.AstNode; operand?: arkts.AstNode };
@@ -199,14 +201,19 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
             const operand = updateNode.argument || updateNode.operand;
             if (operand) {
                 this.validateBuilderStateModification(operand, node, variableCollect);
+                return;
             }
         }
     }
 
     private validateBuilderStateModification(left: arkts.AstNode, errorNode: arkts.AstNode, variableCollect: Map<string, string[]>): void {
+        if (this.errorNodes.includes(errorNode)) {
+            return;
+        }
         const variableName = this.extractPropertyNames(left);
         const firstState = variableCollect.get(variableName[0])
         if (firstState && variableName[1] === 'value') {
+            this.errorNodes.push(errorNode);
             this.report({
                 node: errorNode,
                 message: this.messages.noVariablesChangeInBuild,
@@ -290,42 +297,51 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
                 return;
             }
             const left = arkts.isAssignmentExpression(node) ? node.left : node.argument;
+            const reported = { value: false };
             if (left) {
-                this.validateStateModification(left, node, variableCollect);
-                this.validateNestPath(left, node, variableCollect);
+                this.validateStateModification(left, node, variableCollect, reported);
+                this.validateNestPath(left, node, variableCollect, reported);
             }
             if (arkts.isUpdateExpression(node) && node.argument && arkts.isMemberExpression(node.argument)) {
                 const builderVariable = node.argument.object;
                 if (builderVariable && arkts.isIdentifier(builderVariable)) {
                     const builderGlobal = getIdentifierName(builderVariable);
-                    this.validateMemberExpression(node, this.builderVariableCollect, builderGlobal)
+                    this.validateMemberExpression(node, this.builderVariableCollect, builderGlobal, reported)
                 }
             }
         }
     }
 
-    private validateNestPath(left: arkts.AstNode, errorNode: arkts.AstNode, variableCollect: Map<string, string[]>): void {
-        if (arkts.isMemberExpression(left)) {
-            const propertyNames: string[] = this.extractPropertyNames(left);
-            const firstTypeName = this.firstSegmentTypeName(propertyNames[0], this.structNode);
-            const firstNode = firstTypeName ? this.checkFirstStateNode(this.structNode, propertyNames[0]) : undefined;
-            const firstState = variableCollect.get(propertyNames[0]);
-            const nestPath = propertyNames.slice(1);
-            const nestState = this.checkRemainState(nestPath, firstTypeName, firstNode);
-            if (firstState?.length && nestState) {
-                this.report({
-                    node: errorNode,
-                    message: this.messages.noVariablesChangeInBuild,
-                })
-            }
-            if (!firstState?.length || !nestState) {
-                this.report({
-                    node: errorNode,
-                    message: this.messages.noVariablesChangeInBuild,
-                    level: 'warn'
-                })
-            }
-        };
+    private validateNestPath(
+        left: arkts.AstNode,
+        errorNode: arkts.AstNode,
+        variableCollect: Map<string, string[]>,
+        reported: { value: boolean }
+    ): void {
+        if (reported.value || !arkts.isMemberExpression(left)) {
+            return;
+        }
+
+        const propertyNames: string[] = this.extractPropertyNames(left);
+        const firstTypeName = this.firstSegmentTypeName(propertyNames[0], this.structNode);
+        const firstNode = firstTypeName ? this.checkFirstStateNode(this.structNode, propertyNames[0]) : undefined;
+        const firstState = variableCollect.get(propertyNames[0]);
+        const nestPath = propertyNames.slice(1);
+        const nestState = this.checkRemainState(nestPath, firstTypeName, firstNode);
+        if (firstState?.length && nestState) {
+            reported.value = true;
+            this.report({
+                node: errorNode,
+                message: this.messages.noVariablesChangeInBuild,
+            })
+        } else {
+            reported.value = true;
+            this.report({
+                node: errorNode,
+                message: this.messages.noVariablesChangeInBuild,
+                level: 'warn'
+            })
+        }
     }
 
     private checkFirstStateNode(node: arkts.StructDeclaration | undefined, memberName: string): arkts.AstNode | undefined {
@@ -732,29 +748,45 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         return false;
     }
 
-    private validateMemberExpression(node: arkts.AstNode, variableCollect: Map<string, string[]>, variableValue: string): void {
-        if (variableCollect.get(variableValue)) {
-            this.report({
-                node: node,
-                message: this.messages.noVariablesChangeInBuild,
-            })
+    private validateMemberExpression(
+        node: arkts.AstNode,
+        variableCollect: Map<string, string[]>,
+        variableValue: string,
+        reported: { value: boolean }
+    ): void {
+        if (reported.value || !variableCollect.get(variableValue)) {
+            return;
         }
+        reported.value = true;
+        this.report({
+            node: node,
+            message: this.messages.noVariablesChangeInBuild,
+        })
     }
 
-    private validateStateModification(left: arkts.AstNode, errorNode: arkts.AstNode, variableCollect: Map<string, string[]>): void {
-        if (!arkts.isMemberExpression(left) ||
+    private validateStateModification(
+        left: arkts.AstNode,
+        errorNode: arkts.AstNode,
+        variableCollect: Map<string, string[]>,
+        reported: { value: boolean }
+    ): void {
+        if (reported.value ||
+            !arkts.isMemberExpression(left) ||
             !arkts.isThisExpression(left.object) ||
-            !arkts.isIdentifier(left.property)) {
+            !arkts.isIdentifier(left.property)
+        ) {
             return;
         }
         const propName = getIdentifierName(left.property);
         const isStateVar = variableCollect.get(propName)
         if (isStateVar && isStateVar.length > 0) {
+            reported.value = true;
             this.report({
                 node: errorNode,
                 message: this.messages.noVariablesChangeInBuild,
             })
         } else {
+            reported.value = true;
             this.report({
                 node: errorNode,
                 message: this.messages.noVariablesChangeInBuild,

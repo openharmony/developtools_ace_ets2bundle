@@ -120,15 +120,18 @@ export const packageCollection: Map<string, Array<string>> = new Map();
 // Splicing ohmurl or record name based on filePath and context information table.
 export function getNormalizedOhmUrlByFilepath(filePath: string, projectConfig: Object, logger: Object,
   pkgParams: Object, importerFile: string): string {
-  let { pkgName, pkgPath, isRecordName, omitModuleName, moduleName } = pkgParams;
-  const { projectFilePath, pkgInfo } = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
+  const { pkgName, pkgPath, isRecordName, moduleName } = pkgParams;
+  const ohmurlInfo: Object = getPkgInfo(filePath, projectConfig, logger, pkgPath, pkgName, importerFile);
+  if (!ohmurlInfo) {
+    return filePath;
+  }
+  const { projectFilePath, pkgInfo } = ohmurlInfo;
   const recordName: string = `${pkgInfo.bundleName}&${pkgName}/${projectFilePath}&${pkgInfo.version}`;
   if (isRecordName) {
     // record name style: <bunldName>&<packageName>/entry/ets/xxx/yyy&<version>
     return recordName;
   }
-  moduleName = omitModuleName ? '' : (moduleName ? moduleName : pkgInfo.moduleName);
-  return `${pkgInfo.isSO ? 'Y' : 'N'}&${moduleName}&${recordName}`;
+  return `${pkgInfo.isSO ? 'Y' : 'N'}&${moduleName || pkgInfo.moduleName}&${recordName}`;
 }
 
 export function getPkgInfo(filePath: string, projectConfig: Object, logger: Object, pkgPath: string,
@@ -159,7 +162,8 @@ export function getPkgInfo(filePath: string, projectConfig: Object, logger: Obje
        `Check if the corresponding file name "${filePath}" is correct(including case-sensitivity).`]
     );
     logger.printError(errInfo);
-    return filePath;
+    logger.returnErrorFileId(importerFile);
+    return undefined;
   }
   const projectFilePath: string = unixFilePath.replace(toUnixPath(pkgPath) + '/', '');
   return { projectFilePath, pkgInfo };
@@ -254,6 +258,7 @@ function processPackageDir(params: Object): string {
          `Check if the corresponding file name "${originalFilePath}" is correct(including case-sensitivity).`]
       );
       logger.printError(errInfo);
+      logger.returnErrorFileId(importerFile);
       return originalFilePath;
     }
 
@@ -293,6 +298,7 @@ function processPackageDir(params: Object): string {
      `Check if the corresponding file name "${originalFilePath}" is correct(including case-sensitivity).`]
   );
   logger.printError(errInfo);
+  logger.returnErrorFileId(importerFile);
   return originalFilePath;
 }
 

@@ -365,26 +365,37 @@ static KNativePointer impl_ExternalSourcePrograms(KNativePointer instance)
 }
 KOALA_INTEROP_1(ExternalSourcePrograms, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateContextGenerateAbcForExternalSourceFiles(
-    KNativePointer configPtr, KInt fileNamesCount, KStringArray fileNames)
+static KNativePointer impl_FormOutputPathForFile(KNativePointer contextPtr, KStringPtr& inputPath)
+{
+    auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
+    return new std::string(GetImpl()->FormOutputPathForFile(context, inputPath.data()));
+}
+KOALA_INTEROP_2(FormOutputPathForFile, KNativePointer, KNativePointer, KStringPtr)
+
+KNativePointer impl_CreateContextSimultaneousMode(KNativePointer configPtr, KInt fileNamesCount, KStringArray fileNames)
 {
     auto config = reinterpret_cast<es2panda_Config *>(configPtr);
     const std::size_t headerLen = 4;
-    const char **argv =
-        new const char *[static_cast<unsigned int>(fileNamesCount)];
+    const char **argv = new const char *[static_cast<unsigned int>(fileNamesCount)];
     std::size_t position = headerLen;
     std::size_t strLen;
     for (std::size_t i = 0; i < static_cast<std::size_t>(fileNamesCount); ++i) {
         strLen = unpackUInt(fileNames + position);
         position += headerLen;
-        argv[i] = strdup(std::string(reinterpret_cast<const char *>(fileNames + position),
-            strLen).c_str());
+        argv[i] = strdup(std::string(reinterpret_cast<const char *>(fileNames + position), strLen).c_str());
         position += strLen;
     }
-    auto context = GetImpl()->CreateContextGenerateAbcForExternalSourceFiles(
-        config, fileNamesCount, argv);
+    auto context = GetImpl()->CreateContextSimultaneousMode(config, fileNamesCount, argv);
     delete[] argv;
     return context;
+}
+KOALA_INTEROP_3(CreateContextSimultaneousMode, KNativePointer, KNativePointer, KInt, KStringArray)
+
+// NOTE: this API is deprecated
+KNativePointer impl_CreateContextGenerateAbcForExternalSourceFiles(KNativePointer configPtr, KInt fileNamesCount,
+                                                                   KStringArray fileNames)
+{
+    return impl_CreateContextSimultaneousMode(configPtr, fileNamesCount, fileNames);
 }
 KOALA_INTEROP_3(CreateContextGenerateAbcForExternalSourceFiles, KNativePointer, KNativePointer, KInt, KStringArray)
 
@@ -859,3 +870,9 @@ KNativePointer impl_CreateTypeNodeFromTsType(KNativePointer context, KNativePoin
     return _typeAnnotation;
 }
 KOALA_INTEROP_2(CreateTypeNodeFromTsType, KNativePointer, KNativePointer, KNativePointer);
+
+KInt impl_ExtractDeclarationsFromAbcFile(KStringPtr &abcFile, KStringPtr &cacheDir)
+{
+    return GetImpl()->ExtractDeclarationsFromAbcFile(getStringCopy(abcFile), getStringCopy(cacheDir));
+}
+KOALA_INTEROP_2(ExtractDeclarationsFromAbcFile, KInt, KStringPtr, KStringPtr)

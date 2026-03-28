@@ -120,8 +120,7 @@ export function createIfStaticComponent(
       ], true),
     ts.factory.createBlock(
       [
-        ts.factory.updateCallExpression(
-          componentNode,
+        ts.factory.createCallExpression(
           ts.factory.createElementAccessExpression(
             ts.factory.createIdentifier('static_' + name),
             ts.factory.createNumericLiteral('0')
@@ -261,7 +260,7 @@ export function createStaticComponentOptions(
   return arrowFunction;
 }
 
-function makeStaticFactory(name: string): ts.ArrowFunction {
+function makeStaticFactory(name: string, componentNode: ts.CallExpression): ts.ArrowFunction {
   return ts.factory.createArrowFunction(
     undefined,
     undefined,
@@ -270,7 +269,8 @@ function makeStaticFactory(name: string): ts.ArrowFunction {
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     ts.factory.createBlock(
       [
-        ts.factory.createReturnStatement(
+        ts.factory.updateReturnStatement(
+          componentNode as unknown as ts.ReturnStatement,
           ts.factory.createNewExpression(
             ts.factory.createIdentifier(name),
             undefined,
@@ -367,8 +367,7 @@ function getStateVar(node: ts.Expression): ts.Expression {
 export function createStaticComponent(name: string, newNode: ts.NewExpression, componentNode: ts.CallExpression): ts.Statement {
   const argument = newNode.arguments;
   const options = argument.length > 2 ? argument[1] : undefined;
-  return ts.factory.updateExpressionStatement(
-    componentNode as unknown as ts.ExpressionStatement,
+  return ts.factory.createExpressionStatement(
     ts.factory.createBinaryExpression(
       ts.factory.createIdentifier('static_' + name),
       ts.factory.createToken(ts.SyntaxKind.EqualsToken),
@@ -376,7 +375,7 @@ export function createStaticComponent(name: string, newNode: ts.NewExpression, c
         ts.factory.createIdentifier(CREATESTATICCOMPONENT),
         undefined,
         [
-          makeStaticFactory(name),
+          makeStaticFactory(name, componentNode),
           createStaticComponentOptions(options, name)
         ]
       )
@@ -467,7 +466,7 @@ export function validateInteropProperty(node: ts.CallExpression,
 
 function handleV1ParentWithV2Child(node: ts.CallExpression, parentStructName: string,
   info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
-  if (!info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV2) {
+  if (info.parentStructInfo.isComponentV1 && info.childStructInfo.isComponentV2) {
     let childName = '';
     if (ts.isIdentifier(node.expression)) {
       childName = node.expression.escapedText.toString();
@@ -485,7 +484,7 @@ function handleV1ParentWithV2Child(node: ts.CallExpression, parentStructName: st
 
 function handleV2ParentWithV1Child(node: ts.CallExpression, parentStructName: string,
   info: ChildAndParentComponentInfo, log: LogInfo[]): boolean {
-  if (info.parentStructInfo.isComponentV2 && !info.childStructInfo.isComponentV2) {
+  if (info.parentStructInfo.isComponentV2 && info.childStructInfo.isComponentV1) {
     let childName = '';
     if (ts.isIdentifier(node.expression)) {
       childName = node.expression.escapedText.toString();

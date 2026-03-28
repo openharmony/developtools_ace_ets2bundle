@@ -37,6 +37,9 @@ import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
+const ENTRY_WRAPPER_NAME = '__EntryWrapper';
+const ENTRY_WRAPPER_LAYER = 6;
+
 export type BuilderLambdaDeclInfo = {
     name: string;
     isFunctionCall: boolean; // isFunctionCall means it is from $_invoke.
@@ -483,11 +486,36 @@ export function isSafeType(type: arkts.TypeNode | undefined): boolean {
     return true;
 }
 
-export function builderLambdaMethodDeclType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
-    if (!method || !method.scriptFunction) {
+const DEBUG_LINE_MIN_VERSION = 24;
+
+export function isSdkVersionAtLeast(targetVersion: number): boolean {
+    const projectConfig = MetaDataCollector.getInstance().projectConfig;
+    const compatibleSdkVersion = projectConfig?.compatibleSdkVersion;
+    return compatibleSdkVersion !== undefined && compatibleSdkVersion >= targetVersion;
+}
+
+export function isDebugMode(): boolean {
+    const projectConfig = MetaDataCollector.getInstance().projectConfig;
+    return projectConfig?.debugLine === true;
+}
+
+export function isDebugLineEnabled(): boolean {
+    const projectConfig = MetaDataCollector.getInstance().projectConfig;
+    const isDebugMode = projectConfig?.debugLine === true;
+    return isSdkVersionAtLeast(DEBUG_LINE_MIN_VERSION) && isDebugMode;
+}
+
+export function builderLambdaMethodDeclType(
+    method: arkts.MethodDefinition,
+    isFunctionCall: boolean
+): arkts.TypeNode | undefined {
+    if (!method || !method.scriptFunction || !method.scriptFunction.returnTypeAnnotation) {
         return undefined;
     }
-    return method.scriptFunction.returnTypeAnnotation;
+    if (isFunctionCall) {
+        return method.scriptFunction.returnTypeAnnotation;
+    }
+    return arkts.factory.createUnionType([method.scriptFunction.returnTypeAnnotation, arkts.factory.createETSUndefinedType()]);
 }
 
 export function builderLambdaType(leaf: arkts.CallExpression): arkts.Identifier | undefined {
@@ -819,4 +847,22 @@ export function getIsUserCreateStack(
         return args.length > 1 || (args.length === 1 && !arkts.isArrowFunctionExpression(args[0]));
     }
     return undefined;
+}
+
+export function isInEntryWrapper(node: arkts.AstNode): boolean {
+    let currentNode: arkts.AstNode | undefined = node;
+    for (let i = 0; i < ENTRY_WRAPPER_LAYER; i++) {
+        if (!currentNode) {
+            return false;
+        }
+        currentNode = currentNode.parent;
+    }
+    if (
+        currentNode &&
+        arkts.isClassDefinition(currentNode) &&
+        currentNode.ident?.name === ENTRY_WRAPPER_NAME
+    ) {
+        return true;
+    }
+    return false;
 }

@@ -178,7 +178,13 @@ export enum DecoratorNames {
     COMPUTED = 'Computed',
     EVENT = 'Event',
     REQUIRE = 'Require',
-    ENV = 'Env'
+    ENV = 'Env',
+    COMPONENT_INIT = 'ComponentInit',
+    COMPONENT_APPEAR = 'ComponentAppear',
+    COMPONENT_BUILT = 'ComponentBuilt',
+    COMPONENT_DISAPPEAR = 'ComponentDisappear',
+    COMPONENT_REUSE = 'ComponentReuse',
+    COMPONENT_RECYCLE = 'ComponentRecycle'
 }
 
 export enum TypeNames {
@@ -253,7 +259,10 @@ export enum StateManagementTypes {
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
     SET_OWNER = 'setOwner',
     RESET_ON_REUSE = 'resetOnReuse',
-    MAKE_ENV = 'makeEnv'
+    MAKE_ENV = 'makeEnv',
+    CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
+    REUSE_OBJECT = 'ReuseObject',
+    I_MONITOR = 'IMonitor',
 }
 
 export enum AnimationNames {
@@ -338,7 +347,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.PROVIDER, [StateManagementTypes.PROVIDER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.CONSUMER, [StateManagementTypes.CONSUMER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.COMPUTED, [StateManagementTypes.COMPUTED_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY, StateManagementTypes.I_MONITOR]],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
@@ -381,6 +390,36 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY,
             StateManagementTypes.UI_UTILS
         ],
+    ],
+    [
+        DecoratorNames.COMPONENT_APPEAR, 
+        [
+            StateManagementTypes.UI_UTILS
+        ]
+    ],
+    [
+        DecoratorNames.COMPONENT_BUILT, 
+        [
+            StateManagementTypes.UI_UTILS
+        ]
+    ],
+    [
+        DecoratorNames.COMPONENT_DISAPPEAR, 
+        [
+            StateManagementTypes.UI_UTILS
+        ]
+    ],
+    [
+        DecoratorNames.COMPONENT_REUSE, 
+        [
+            StateManagementTypes.UI_UTILS
+        ]
+    ],
+    [
+        DecoratorNames.COMPONENT_RECYCLE, 
+        [
+            StateManagementTypes.UI_UTILS
+        ]
     ],
     [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
 ]);

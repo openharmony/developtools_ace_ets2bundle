@@ -67,6 +67,7 @@ export enum BuilderLambdaNames {
     CONTENT_PARAM_NAME = 'content',
     COMPONENT_PARAM_ORI = 'content_',
     APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
+    DEBUG_LINE_METHOD = 'debugLine'
 }
 
 export type EntryAnnoInfo = {
@@ -164,6 +165,7 @@ export type CustomComponentInfo = {
     isDecl: boolean;
     isCustomComponentClass: boolean;
     annotations: CustomComponentAnontations;
+    lastBuilderParam?: string;
 };
 
 export type CustomComponentAnontations = {

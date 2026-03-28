@@ -29,6 +29,7 @@ import {
     isKnownMethodDefinition,
     isStatic,
 } from '../utils';
+import { expectName } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
@@ -102,9 +103,13 @@ import { MethodTranslator } from '../property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
+import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
+import { LifecycleMethodType } from '../property-translators/cache/componentLifecycleCache';
+import type { LifecycleObserverCallInfo } from '../property-translators/cache/componentLifecycleCache';
 import { isInteropComponent } from '../interop/utils';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { BindableFactory } from '../builder-lambda-translators/bindable-factory';
+import { ResourceSourceCache } from '../insight-intent/resource-source-cache';
 
 export class factory {
     /**
@@ -167,8 +172,132 @@ export class factory {
     }
 
     /**
-     * create __initializeStruct method.
+     * generate lifecycle observer registration statements in `__initializeStruct`.
      */
+    private static readonly lifecycleObserverTypes: ReadonlyArray<{ type: LifecycleMethodType; hasParam: boolean }> = [
+        { type: LifecycleMethodType.ABOUT_TO_APPEAR, hasParam: false },
+        { type: LifecycleMethodType.ON_DID_BUILD, hasParam: false },
+        { type: LifecycleMethodType.ABOUT_TO_DISAPPEAR, hasParam: false },
+        { type: LifecycleMethodType.ABOUT_TO_REUSE, hasParam: true },
+        { type: LifecycleMethodType.ABOUT_TO_RECYCLE, hasParam: false },
+    ];
+
+    static generateLifecycleObserverCall(callInfo: LifecycleObserverCallInfo): arkts.Statement[] {
+        // Collect lifecycle observer related imports.
+        ImportCollector.getInstance().collectSource(StateManagementTypes.CUSTOM_COMPONENT_LIFECYCLE_OBSERVER, CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(StateManagementTypes.CUSTOM_COMPONENT_LIFECYCLE_OBSERVER);
+        ImportCollector.getInstance().collectImport(StateManagementTypes.UI_UTILS);
+        ImportCollector.getInstance().collectSource(StateManagementTypes.REUSE_OBJECT, CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(StateManagementTypes.REUSE_OBJECT);
+         
+        // Generate observer callbacks for all lifecycle types.
+        const lifecycleProperties: arkts.Property[] = [];
+
+        factory.lifecycleObserverTypes.forEach((lifecycleType) => {
+            const callbackBody = callInfo.callbackBodyMap.get(lifecycleType.type) ?? [];
+            lifecycleProperties.push(
+                factory.createLifecyclePropertyForGroup(callbackBody, lifecycleType.type, lifecycleType.hasParam)
+            );
+        });
+        
+        // Create observer object expression.
+        const lifecycleObject = factory.createLifecycleObject(lifecycleProperties);
+         
+        // Create `UIUtils.getLifecycle(this).addObserver(...)` call.
+        const addObserverCall = factory.createAddObserverCall(lifecycleObject);
+
+        return [...callInfo.internalVarDeclarations, arkts.factory.createExpressionStatement(addObserverCall)];
+    }
+
+    /**
+     * create lifecycle observer object with type assertion.
+     */
+    private static createLifecycleObject(lifecycleProperties: arkts.Property[]): arkts.TSAsExpression {
+        const lifecycleObject = arkts.ObjectExpression.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            lifecycleProperties,
+            false
+        );
+        
+        return arkts.factory.createTSAsExpression(
+            lifecycleObject,
+            UIFactory.createTypeReferenceFromString(StateManagementTypes.CUSTOM_COMPONENT_LIFECYCLE_OBSERVER),
+            false
+        );
+    }
+
+    /**
+     * create `addObserver(...)` call expression.
+     */
+    private static createAddObserverCall(lifecycleObject: arkts.TSAsExpression): arkts.CallExpression {
+        const getLifecycleCall = arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier(StateManagementTypes.UI_UTILS),
+                arkts.factory.createIdentifier('getLifecycle'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            undefined,
+            [arkts.factory.createThisExpression()]
+        );
+
+        return arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                getLifecycleCall,
+                arkts.factory.createIdentifier('addObserver'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            undefined,
+            [lifecycleObject]
+        );
+    }
+
+    /**
+     * create a lifecycle callback property.
+     */
+    private static createLifecyclePropertyForGroup(
+        callbackBody: arkts.Statement[],
+        lifecycleType: LifecycleMethodType,
+        hasParam: boolean
+    ): arkts.Property {
+        const params = hasParam ? [this.createReuseCallbackParamsParameter()] : [];
+        const callbackFunction = arkts.factory.createArrowFunction(
+            arkts.factory.createScriptFunction(
+                arkts.factory.createBlock(callbackBody),
+                arkts.FunctionSignature.createFunctionSignature(
+                    undefined,
+                    params,
+                    undefined,
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            )
+        );
+        
+        return arkts.Property.createProperty(
+            arkts.factory.createIdentifier(lifecycleType),
+            callbackFunction
+        );
+    }
+
+    private static createReuseCallbackParamsParameter(): arkts.ETSParameterExpression {
+        return arkts.factory.createParameterDeclaration(
+            arkts.factory.createIdentifier('params',
+                arkts.factory.createUnionType([
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('ReuseObject'))
+                    ),
+                    arkts.factory.createETSUndefinedType()
+                ])
+            ),
+            undefined
+        );
+    }
+
     static createInitializeStruct(optionsTypeName: string, scope: CustomComponentScopeInfo): arkts.MethodDefinition {
         const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_INITIALIZE_STRUCT
@@ -182,6 +311,11 @@ export class factory {
                 ...ComputedCache.getInstance().getCachedComputed(scope.name),
                 ...PropertyCache.getInstance().getInitializeBody(scope.name),
                 ...MonitorCache.getInstance().getCachedMonitors(scope.name),
+                ...ComponentLifecycleCache.getInstance().getCachedInitMethodCalls(scope.name),
+                ...ComponentLifecycleCache.getInstance().getCachedLifecycleObserverCalls(
+                    scope.name,
+                    factory.generateLifecycleObserverCall
+                ),
             ]);
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
@@ -627,9 +761,17 @@ export class factory {
         }
         const className: string = classIdent.name;
         const body: readonly arkts.AstNode[] = definition.body;
+        let lastBuilderParam: string | undefined;
         const propertyTranslators: (PropertyTranslator | MethodTranslator)[] = filterDefined(
-            body.map((member) => classifyStructMembers(member, scope))
+            body.map((member) => {
+                if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.BUILDER_PARAM)) {
+                    const paramName = expectName(member.key);
+                    lastBuilderParam = paramName;
+                }
+                return classifyStructMembers(member, scope);
+            })
         );
+        scope.lastBuilderParam = lastBuilderParam;
         scope.keyRange = classIdent.range;
         const translatedMembers: arkts.AstNode[] = [];
         if (!isDecl || isCustomComponentClass) {
@@ -698,6 +840,7 @@ export class factory {
 
     /**
      * transform `$r` and `$rawfile` function calls.
+     * 同时缓存原始的$r()表达式，供 InsightIntent 处理时能获取原始形式
      */
     static transformResource(
         resourceNode: arkts.CallExpression,
@@ -708,8 +851,14 @@ export class factory {
             return resourceNode;
         }
         const resourceKind: Dollars = resourceNode.expression.name as Dollars;
+        let originalSource: string | undefined = undefined;
+        let transformedNode: arkts.CallExpression = undefined;
         if (arkts.isStringLiteral(resourceNode.arguments[0])) {
-            return factory.processStringLiteralResourceNode(
+            const resourcePath = resourceNode.arguments[0].str;
+            originalSource = `${resourceKind}('${resourcePath}')`;
+        }
+        if (arkts.isStringLiteral(resourceNode.arguments[0])) {
+            transformedNode = factory.processStringLiteralResourceNode(
                 resourceNode,
                 resourceInfo,
                 projectConfig,
@@ -717,7 +866,7 @@ export class factory {
                 resourceNode.arguments[0]
             );
         } else if (resourceNode.arguments && resourceNode.arguments.length) {
-            return factory.generateTransformedResourceCall(
+            transformedNode = factory.generateTransformedResourceCall(
                 resourceNode,
                 getResourceParams(
                     -1,
@@ -729,8 +878,13 @@ export class factory {
                 projectConfig,
                 resourceKind
             );
+        } else {
+            transformedNode = resourceNode;
         }
-        return resourceNode;
+        if (originalSource && transformedNode !== resourceNode) {
+            ResourceSourceCache.getInstance().set(transformedNode, originalSource);
+        }
+        return transformedNode;
     }
 
     /*
@@ -1787,3 +1941,4 @@ export class factory {
         );
     }
 }
+

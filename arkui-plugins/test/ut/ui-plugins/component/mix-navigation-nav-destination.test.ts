@@ -85,7 +85,8 @@ function main() {}
     this.__backing_displayMode = STATE_MGMT_FACTORY.makeState<number>(this, "displayMode", ((({let gensym___197056380 = initializers;
     (((gensym___197056380) == (null)) ? undefined : gensym___197056380.displayMode)})) ?? (0)));
     this.__backing_navDestination = ((((({let gensym___165803261 = initializers;
-    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (content))) ?? (undefined))
+    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (content))) ?? (((({let gensym___165803261 = initializers;
+    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (undefined))))
     this.__backing_primaryWidth = STATE_MGMT_FACTORY.makeState<(number | string)>(this, "primaryWidth", ((({let gensym___158861871 = initializers;
     (((gensym___158861871) == (null)) ? undefined : gensym___158861871.primaryWidth)})) ?? ("50%")));
     this.__backing_onNavigationModeChange = ((({let gensym___114390532 = initializers;
@@ -169,7 +170,7 @@ function main() {}
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: SubNavigation)=> void), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: SubNavigation)=> void) | undefined), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<SubNavigation, __Options_SubNavigation>(style, ((): SubNavigation => {
       return new SubNavigation(false, ({let gensym___92334354 = storage;
       (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
@@ -231,7 +232,7 @@ export final class SplitPolicy extends BaseEnum<int> {
   
   private static <cctor>() {}
   
-  public constructor(ordinal: int, value: int) {
+  private constructor(ordinal: int, value: int) {
     super(value);
     this.#ordinal = ordinal;
   }

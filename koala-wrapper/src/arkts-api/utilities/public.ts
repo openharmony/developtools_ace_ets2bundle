@@ -16,7 +16,7 @@
 import { global } from '../static/global';
 import { isNumber, throwError, getEnumName } from '../../utils';
 import { KNativePointer, KInt, nullptr, withStringResult, KStringArrayPtr } from '@koalaui/interop'
-import { passNode, passString, passStringArray, unpackNodeArray, unpackNonNullableNode } from './private';
+import { passNode, passString, passStringArray, unpackNodeArray, unpackNonNullableNode, unpackString } from './private';
 import { isFunctionDeclaration, isMemberExpression, isMethodDefinition, isNumberLiteral } from '../factory/nodeTests';
 import {
     Es2pandaContextState,
@@ -310,6 +310,10 @@ export function memFinalize(): void {
     global.es2panda._MemFinalize();
 }
 
+export function ExtractDeclarationsFromAbcFile(abcFile: string, cacheDir: string): number {
+    return global.es2panda._ExtractDeclarationsFromAbcFile(abcFile, cacheDir);
+}
+
 export function createGlobalContext(
     config: KNativePointer,
     externalFileList: string[],
@@ -338,6 +342,10 @@ export function createTypeNodeFromTsType(node: AstNode): AstNode | undefined {
         return undefined;
     }
     return unpackNonNullableNode(typeAnnotation);
+}
+
+export function formOutputPathForFile(inputPath: string): string {
+    return unpackString(global.es2panda._FormOutputPathForFile(global.context, inputPath));
 }
 
 export function getJsdocStringFromDeclaration(decl: AstNode): string {

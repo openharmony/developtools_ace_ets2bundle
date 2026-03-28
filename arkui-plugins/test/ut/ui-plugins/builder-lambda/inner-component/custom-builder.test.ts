@@ -85,7 +85,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(__memo_context, ((__memo_id) + (47330804)), style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
@@ -112,7 +112,7 @@ function main() {}
         return;
       }
       __memo_parameter_instance.value.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -139,7 +139,7 @@ function main() {}
         return;
       }
       __memo_parameter_instance.value.setTextOptions("Foot", undefined).fontSize(16).backgroundColor(0xAABBCC);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -166,7 +166,7 @@ function main() {}
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -185,7 +185,7 @@ function main() {}
           return;
         }
         __memo_parameter_instance.value.setListItemGroupOptions({
-          header: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          header: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -197,7 +197,7 @@ function main() {}
               return;
             }
           }),
-          footer: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+          footer: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
             const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (213687742)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -210,22 +210,12 @@ function main() {}
             }
           }) as CustomBuilder),
         });
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;
         }
-      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (136716185)), 0);
-        if (__memo_scope.unchanged) {
-          __memo_scope.cached;
-          return;
-        }
-        {
-          __memo_scope.recache();
-          return;
-        }
-      }));
+      }), (() => {}));
       {
         __memo_scope.recache();
         return;

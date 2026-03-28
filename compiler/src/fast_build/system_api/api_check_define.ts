@@ -51,7 +51,11 @@ export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
 export const AVAILABLE_VERSION_FORMAT_ERROR_PREFIX: string = 'The runtime OS for the current project is $RUNTIMEOS. The OS version number $VERSION is invalid.';
 export const AVAILABLE_OSNAME_ERROR: string = 'The runtime OS for the current project is $RUNTIMEOS. @Available is not supported on the OS: $OSNAME.';
 export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation already indicates that the version is greater than or equal to $VERSION.';
-export const AVAILABLE_VERSION_FORMAT_ERROR: string = 'The OpenHarmony version must be an integer between 1 and 999.'
+export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version must be an integer between 1 and 999,
+ and when the OpenHarmony version is greater than or equal to 26, the version number format also supports the M.S.F format.`;
+export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
+  ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']]
+]);
 
 export const CONSTANT_STEP_0: number = 0;
 export const CONSTANT_STEP_1: number = 1;
@@ -226,7 +230,9 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
   [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation,and switch to the supported Stage model interfaces.'] }],
   [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation,and switch to the supported FA model interfaces.'] }],
-  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
+  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API is only since in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
+  [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
 ])
 
 export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
@@ -292,3 +298,17 @@ export enum DeviceDiffType {
   SYSCAP = 'syscap',
   NONE = 'none'
 }
+
+/**
+ * @since Label error level configuration constant
+ */
+export const SINCE_LEVEL_WARNING: string = 'warning';
+export const SINCE_LEVEL_ERROR: string = 'error';
+
+/**
+ * @since Mapping from error level to TypeScript diagnostic category
+ */
+export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
+  [SINCE_LEVEL_WARNING, ts.DiagnosticCategory.Warning],
+  [SINCE_LEVEL_ERROR, ts.DiagnosticCategory.Error]
+]);

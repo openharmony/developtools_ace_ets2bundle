@@ -39,6 +39,8 @@
         "onWillStartFling",
         "onDidStopFling",
         "contentStartOffset",
-        "contentEndOffset"
+        "contentEndOffset",
+        "supportEmptyBranchInLazyLoading",
+        "autoAdjustScrollBarMargin"
     ]
 }

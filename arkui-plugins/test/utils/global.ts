@@ -71,8 +71,8 @@ function createCacheContextFromFile(
     return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
 }
 
-function createContextGenerateAbcForExternalSourceFiles(filePaths: string[]): arkts.Context {
-    return arkts.Context.createContextGenerateAbcForExternalSourceFiles(filePaths);
+function createContextSimultaneousMode(filePaths: string[]): arkts.Context {
+    return arkts.Context.createContextSimultaneousMode(filePaths);
 }
 
 function resetContext(source: string): void {
@@ -125,7 +125,7 @@ export {
     createGlobalContextPtr,
     destroyGlobalContextPtr,
     createCacheContextFromFile,
-    createContextGenerateAbcForExternalSourceFiles,
+    createContextSimultaneousMode,
     resetContext,
     resetConfig,
     destroyContext,

@@ -43,7 +43,8 @@ export class MonitorTranslator extends MethodTranslator implements InitializerCo
             monitorItem: monitorItem,
             originalName: originalName,
             newName: newName,
-            isFromStruct: this.classInfo.isFromStruct
+            isFromStruct: this.classInfo.isFromStruct,
+            paramsLength: this.method.scriptFunction.params.length,
         };
         MonitorCache.getInstance().collectMonitors(this.classInfo.className, monitorPathsStr, monitorInfo);
         const resetStateVars: arkts.AstNode = this.generateResetStateVars(newName);

@@ -148,7 +148,8 @@ function main() {}
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___38813563 = initializers;
-    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (this.closerBuilder))
+    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (((({let gensym___38813563 = initializers;
+    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (this.closerBuilder))))
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
@@ -164,7 +165,7 @@ function main() {}
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: CustomContainer)=> void), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: CustomContainer)=> void) | undefined), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainer, __Options_CustomContainer>(style, ((): CustomContainer => {
       return new CustomContainer(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -192,7 +193,7 @@ function main() {}
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: CustomContainerUser)=> void), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: CustomContainerUser)=> void) | undefined), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainerUser, __Options_CustomContainerUser>(style, ((): CustomContainerUser => {
       return new CustomContainerUser(false, ({let gensym___46528967 = storage;
       (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
@@ -211,10 +212,7 @@ function main() {}
       instance.applyAttributesFinish();
       return;
     }), @Memo() (() => {
-      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), undefined, undefined, undefined, @Memo() (() => {
+      CustomContainer._invoke(undefined, undefined, undefined, undefined, @Memo() (() => {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
           instance.setColumnOptions(undefined);
           instance.applyAttributesFinish();
@@ -227,10 +225,7 @@ function main() {}
           }), undefined);
         }));
       }));
-      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), (() => {
+      CustomContainer._invoke(undefined, (() => {
         return {};
       }), undefined, undefined, @Memo() (() => {
         ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -239,14 +234,8 @@ function main() {}
           return;
         }), @Memo() (() => {}));
       }));
-      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), undefined, undefined, undefined, @Memo() (() => {}));
-      CustomContainer._invoke(@Memo() ((instance: CustomContainer): void => {
-        instance.applyAttributesFinish();
-        return;
-      }), undefined, undefined, undefined, undefined);
+      CustomContainer._invoke(undefined, undefined, undefined, undefined, @Memo() (() => {}));
+      CustomContainer._invoke(undefined, undefined, undefined, undefined, undefined);
     }));
   }
 

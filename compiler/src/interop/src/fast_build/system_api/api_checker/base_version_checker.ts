@@ -23,7 +23,7 @@ import {
   ValueCheckerFunction
 } from '../api_check_define';
 import { 
-  defaultFormatCheckerWithoutMSF,
+  defaultFormatCheckerCompatibileIntegerAndMSF,
   defaultValueChecker
 } from '../api_check_utils';
 
@@ -66,7 +66,7 @@ export interface ComparisonStrategy {
 export abstract class BaseVersionChecker implements ComparisonStrategy {
   protected readonly typeChecker?: ts.TypeChecker;
   protected minApiVersion: string = '';
-  protected versionValidFunction: FormatCheckerFunction = defaultFormatCheckerWithoutMSF;
+  protected versionValidFunction: FormatCheckerFunction = defaultFormatCheckerCompatibileIntegerAndMSF;
   protected versionCompareFunction: ValueCheckerFunction = defaultValueChecker;
   protected sdkVersion: string = projectConfig.originCompatibleSdkVersion?.toString() || 
                                  projectConfig.compatibleSdkVersion.toString();

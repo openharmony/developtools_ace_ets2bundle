@@ -103,51 +103,53 @@ function generateUnwrapCallExpression(expression: arkts.Expression): arkts.Expre
     );
 }
 
-function newComponent(context: InteropContext, className: string): arkts.Statement {
+function newComponent(context: InteropContext, className: string, node: arkts.CallExpression): arkts.Statement {
+    let componentNode = arkts.factory.createETSNewClassInstanceExpression(
+        arkts.factory.createIdentifier(className),
+        [
+            generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
+            generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
+            context.storage ?? arkts.factory.createUndefinedLiteral(),
+            generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
+            arkts.factory.createTSAsExpression(
+                arkts.factory.createArrowFunction(
+                    arkts.factory.createScriptFunction(
+                        arkts.factory.createBlock([]),
+                        arkts.factory.createFunctionSignature(
+                            undefined,
+                            [],
+                            undefined,
+                            false
+                        ),
+                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                    )
+                ),
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier('Object')
+                    )
+                ),
+                false
+            ),
+            generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.EXTRAINFO))
+        ]
+    );
+    componentNode.range = node.range;
     return createVariableLet(
         InteropInternalNames.COMPONENT,
         getWrapValue(
-            arkts.factory.createETSNewClassInstanceExpression(
-                arkts.factory.createIdentifier(className),
-                [
-                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARENT)),
-                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.PARAM)),
-                    context.storage ?? arkts.factory.createUndefinedLiteral(),
-                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
-                    arkts.factory.createTSAsExpression(
-                        arkts.factory.createArrowFunction(
-                            arkts.factory.createScriptFunction(
-                                arkts.factory.createBlock([]),
-                                arkts.factory.createFunctionSignature(
-                                    undefined,
-                                    [],
-                                    undefined,
-                                    false
-                                ),
-                                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                            )
-                        ),
-                        arkts.factory.createTypeReference(
-                            arkts.factory.createTypeReferencePart(
-                                arkts.factory.createIdentifier('Object')
-                            )
-                        ),
-                        false
-                    ),
-                    generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.EXTRAINFO))
-                ]
-            )
+            componentNode
         )
     );
 }
 
-function createComponent(context: InteropContext, className: string, isV2: boolean): arkts.Statement[] {
+function createComponent(context: InteropContext, className: string, isV2: boolean, node: arkts.CallExpression): arkts.Statement[] {
     let viewCreateMethod: string = 'viewPUCreate';
     if (isV2) {
         viewCreateMethod = 'viewV2Create';
     }
-    const component = newComponent(context, className);
+    const component = newComponent(context, className, node);
     const create = arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
@@ -198,7 +200,7 @@ function createWrapperBlock(
         ...initialArgsStatement,
         ...createExtraInfo(['page'], [path]),
         createELMTID(),
-        ...createComponent(context, className, isV2),
+        ...createComponent(context, className, isV2, node),
         createInitReturn(className),
     ]);
 }

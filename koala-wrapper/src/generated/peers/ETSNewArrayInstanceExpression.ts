@@ -37,17 +37,20 @@ export class ETSNewArrayInstanceExpression extends Expression {
         super(pointer)
         
     }
-    static createETSNewArrayInstanceExpression(typeReference?: TypeNode, dimension?: Expression): ETSNewArrayInstanceExpression {
-        return new ETSNewArrayInstanceExpression(global.generatedEs2panda._CreateETSNewArrayInstanceExpression(global.context, passNode(typeReference), passNode(dimension)))
+    static createETSNewArrayInstanceExpression(typeReference?: TypeNode, dimension?: Expression, initializer?: Expression): ETSNewArrayInstanceExpression {
+        return new ETSNewArrayInstanceExpression(global.generatedEs2panda._CreateETSNewArrayInstanceExpression(global.context, passNode(typeReference), passNode(dimension), passNode(initializer)))
     }
-    static updateETSNewArrayInstanceExpression(original?: ETSNewArrayInstanceExpression, typeReference?: TypeNode, dimension?: Expression): ETSNewArrayInstanceExpression {
-        return new ETSNewArrayInstanceExpression(global.generatedEs2panda._UpdateETSNewArrayInstanceExpression(global.context, passNode(original), passNode(typeReference), passNode(dimension)))
+    static updateETSNewArrayInstanceExpression(original?: ETSNewArrayInstanceExpression, typeReference?: TypeNode, dimension?: Expression, initializer?: Expression): ETSNewArrayInstanceExpression {
+        return new ETSNewArrayInstanceExpression(global.generatedEs2panda._UpdateETSNewArrayInstanceExpression(global.context, passNode(original), passNode(typeReference), passNode(dimension), passNode(initializer)))
     }
     get typeReference(): TypeNode | undefined {
         return unpackNode(global.generatedEs2panda._ETSNewArrayInstanceExpressionTypeReferenceConst(global.context, this.peer))
     }
     get dimension(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._ETSNewArrayInstanceExpressionDimensionConst(global.context, this.peer))
+    }
+    get initializer(): Expression | undefined {
+        return unpackNode(global.generatedEs2panda._ETSNewArrayInstanceExpressionInitializerConst(global.context, this.peer))
     }
     /** @deprecated */
     setDimension(dimension: Expression): this {

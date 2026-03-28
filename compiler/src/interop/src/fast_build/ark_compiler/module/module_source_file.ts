@@ -128,7 +128,7 @@ export class ModuleSourceFile {
     if (typeof this.source !== 'string') {
       this.isSourceNode = true;
     }
-    if (metaInfo?.language === ARKTS_1_2 || (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo))) {
+    if (metaInfo && isArkTSEvolutionFile(moduleId, metaInfo)) {
       this.isArkTSEvolution = true;
     }
   }
@@ -540,6 +540,7 @@ export class ModuleSourceFile {
           `Failed to get ModuleInfo, moduleId: ${filePath}`
         );
         ModuleSourceFile.logger.printError(errInfo);
+        ModuleSourceFile.logger.returnErrorFileId(importerFile);
         return undefined;
       }
       if (!targetModuleInfo.meta) {
@@ -549,6 +550,7 @@ export class ModuleSourceFile {
           `Failed to get ModuleInfo properties 'meta', moduleId: ${filePath}`
         );
         ModuleSourceFile.logger.printError(errInfo);
+        ModuleSourceFile.logger.returnErrorFileId(importerFile);
         return undefined;
       }
       let res: string = '';
@@ -844,6 +846,7 @@ export class ModuleSourceFile {
     ModuleSourceFile.mockConfigKeyToModuleInfo = {};
     ModuleSourceFile.needProcessMock = false;
     ModuleSourceFile.moduleIdMap = new Map();
+    ModuleSourceFile.isEnvInitialized = false;
     ModuleSourceFile.ohmurlOfMockFiles = [];
   }
 

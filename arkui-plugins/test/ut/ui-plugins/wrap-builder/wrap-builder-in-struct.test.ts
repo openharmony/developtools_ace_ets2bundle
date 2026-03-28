@@ -353,10 +353,12 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
   
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index2)=> void) | undefined), initializers: ((()=> __Options_Index2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index2, __Options_Index2>(__memo_context, ((__memo_id) + (241913892)), style, ((): Index2 => {
       return new Index2();
-    }), initializers, reuseId, content, { sClass: Class.from<Index>() });
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index2>(),
+    });
   }
   
   @ComponentBuilder() 
@@ -379,7 +381,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setRowOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -804,7 +806,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (234157464)), style, ((): Index => {
       return new Index(false, ({let gensym___153895230 = storage;
       (((gensym___153895230) == (null)) ? undefined : gensym___153895230())}));
@@ -831,7 +833,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setRowOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;

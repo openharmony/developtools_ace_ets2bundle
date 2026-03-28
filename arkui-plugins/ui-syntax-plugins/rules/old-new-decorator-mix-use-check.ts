@@ -42,11 +42,6 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         PresetDecorators.COMPUTED,
     ];
 
-    private notAllowedInClass: string[] = [
-        PresetDecorators.LOCAL,
-        PresetDecorators.PARAM,
-    ];
-
     public setup(): Record<string, string> {
         return {
             oldAndNewDecoratorsMixUse: `The '@{{decoratorName}}' annotation can only be used in a 'struct' decorated with '@{{component}}'.`,
@@ -56,8 +51,6 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
     public parsed(node: arkts.StructDeclaration | arkts.ClassDeclaration): void {
         if (arkts.isStructDeclaration(node)) {
             this.handleStructDeclaration(node);
-        } else if (arkts.isClassDeclaration(node)) {
-            this.handleClassDeclaration(node);
         }
     }
 
@@ -81,18 +74,6 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
             // Check that the old decorator is used for component v1
             if (oldDecorator && !componentDecorator && componentV2Decorator) {
                 this.reportErrorAndChangeDecorator(oldDecorator, componentV2Decorator, PresetDecorators.COMPONENT_V1);
-            }
-        });
-    }
-
-    private handleClassDeclaration(node: arkts.ClassDeclaration): void {
-        node.definition?.body.forEach((property) => {
-            if (!arkts.isClassProperty(property)) {
-                return;
-            }
-            const decorator = this.findPropertyDecorator(property, this.notAllowedInClass);
-            if (decorator) {
-                this.reportError(decorator, PresetDecorators.COMPONENT_V2);
             }
         });
     }

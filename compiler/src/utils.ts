@@ -18,6 +18,7 @@ import ts from 'typescript';
 import fs from 'fs';
 import os from 'os';
 import uglifyJS from 'uglify-js';
+import { fileInfoCache } from './file_info_cache';
 
 import {
   partialUpdateConfig,
@@ -42,7 +43,10 @@ import {
   GET_SHARED,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   USE_SHARED_STORAGE,
-  STORAGE
+  STORAGE,
+  GET_UI_NATIVE_MODULE,
+  COMMON,
+  GET_API_TARGET_VERSION
 } from './pre_define';
 import { 
   ERROR_DESCRIPTION,
@@ -270,8 +274,7 @@ export function readFile(dir: string, utFiles: string[]): void {
     const files: string[] = fs.readdirSync(dir);
     files.forEach((element) => {
       const filePath: string = path.join(dir, element);
-      const status: fs.Stats = fs.statSync(filePath);
-      if (status.isDirectory()) {
+      if (fileInfoCache.isDirectory(filePath)) {
         readFile(filePath, utFiles);
       } else {
         utFiles.push(filePath);
@@ -1313,6 +1316,32 @@ export function setRollupCache(rollupShareObject: object, projectConfig: object,
   }
 }
 
+export function getRollupCommonCache(rollupShareObject: object, key: string): object | undefined {
+  if (!rollupShareObject) {
+    return undefined;
+  }
+
+  // Preferentially get commonCache object from the rollup’s cache interface.
+  if (rollupShareObject.commonCache) {
+    // Only the commonCache object’s name as the cache key is required.
+    return rollupShareObject.commonCache.get(key);
+  }
+
+  return undefined;
+}
+
+export function setRollupCommonCache(rollupShareObject: object, key: string, value: object): void {
+  if (!rollupShareObject) {
+    return;
+  }
+
+  // Preferentially set commonCache object to the rollup’s cache interface.
+  if (rollupShareObject.commonCache) {
+    // Only the commonCache object’s name as the cache key is required.
+    rollupShareObject.commonCache.set(key, value);
+  }
+}
+
 export function removeDecorator(decorators: readonly ts.Decorator[], decoratorName: string): readonly ts.Decorator[] {
   return decorators.filter((item: ts.Node) => {
     if (ts.isDecorator(item) && ts.isIdentifier(item.expression) &&
@@ -1326,7 +1355,7 @@ export function removeDecorator(decorators: readonly ts.Decorator[], decoratorNa
 export function isFileInProject(filePath: string, projectRootPath: string): boolean {
   const relativeFilePath: string = toUnixPath(path.relative(toUnixPath(projectRootPath), toUnixPath(filePath)));
   // When processing ohmurl, hsp's filePath is consistent with moduleRequest
-  return fs.existsSync(filePath) && fs.statSync(filePath).isFile() && !relativeFilePath.startsWith('../');
+  return fileInfoCache.isFile(filePath) && !relativeFilePath.startsWith('../');
 }
 
 export function getProjectRootPath(filePath: string, projectConfig: Object, rootPathSet: Object): string {
@@ -1482,4 +1511,32 @@ export class CurrentProcessFile {
   private static isETSFile(id: string): boolean {
     return !!(path.extname(id)?.endsWith('ets'));
   }
+}
+
+/**
+ * create api version check condition.
+ * 
+ * @param { number } apiVersion
+ * @returns { ts.BinaryExpression }
+ */
+export function createApiVersionCheck(apiVersion: number): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createCallExpression(
+            ts.factory.createIdentifier(GET_UI_NATIVE_MODULE),
+            undefined,
+            []
+          ),
+          ts.factory.createIdentifier(COMMON)
+        ),
+        ts.factory.createIdentifier(GET_API_TARGET_VERSION)
+      ),
+      undefined,
+      []
+    ),
+    ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
+    ts.factory.createNumericLiteral(apiVersion)
+  );
 }

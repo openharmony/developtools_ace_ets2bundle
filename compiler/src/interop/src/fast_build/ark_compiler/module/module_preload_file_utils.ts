@@ -52,6 +52,10 @@ export class PreloadFileModules {
     this.rollupObject = rollupObject;
     this.projectConfig = Object.assign(rollupObject.share.arkProjectConfig, rollupObject.share.projectConfig);
     this.logger = CommonLogger.getInstance(rollupObject);
+    if (!this.projectConfig.isPreloadSoEnabled) {
+      this.needPreloadSo = false;
+      return;
+    }
     if (this.projectConfig.widgetCompile) {
       this.needPreloadSo = false;
       return;
@@ -62,7 +66,7 @@ export class PreloadFileModules {
     }
     this.needPreloadSo = true;
     this.preloadFilePath = this.projectConfig.preloadSoFilePath;
-    this.preloadFilePathBack = this.preloadFilePath.replace('.json', '.backup.json');
+    this.preloadFilePathBack = path.resolve(this.projectConfig.cachePath, './preload.json');
   }
 
   public static updatePreloadFileDataByItems(moduleRequest: string, ohmurl: string, moduleId: string): void {

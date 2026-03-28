@@ -31,6 +31,8 @@ import ComponentV2StateUsageValidationRule from './componentV2-state-usage-valid
 import CustomDialogMissingControllerRule from './custom-dialog-missing-controller';
 import EntryLocalStorageCheckRule from './entry-localstorage-check';
 import EntryStructNoExportRule from './entry-struct-no-export';
+import EnvDecoratorCheckRule from './env-decorator-check';
+import LifecycleDecoratorCheckRule from './lifecycle-decoretor-check';
 import MainPagesEntryCheckRule from './main-pages-entry-check';
 import MonitorDecoratorCheckRule from './monitor-decorator-check';
 import NestedRelationshipRule from './nested-relationship';
@@ -90,6 +92,8 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [CustomDialogMissingControllerRule, 'error'],
     [EntryLocalStorageCheckRule, 'warn'],
     [EntryStructNoExportRule, 'warn'],
+    [EnvDecoratorCheckRule, 'error'],
+    [LifecycleDecoratorCheckRule, 'error'],
     [MainPagesEntryCheckRule, 'error'],
     [MonitorDecoratorCheckRule, 'error'],
     [NestedRelationshipRule, 'error'],

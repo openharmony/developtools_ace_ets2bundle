@@ -177,7 +177,7 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
       return new Parent(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -299,7 +299,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       return;
     }
     __memo_parameter_instance.value.setColumnOptions(undefined);
-    instance.applyAttributesFinish();
+    __memo_parameter_instance.value.applyAttributesFinish();
     {
       __memo_scope.recache();
       return;
@@ -318,7 +318,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setTextOptions(\`wrapBuildervalue:\${param().paramA2}\`, undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -404,7 +404,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   @MemoIntrinsic() 
-  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Parent => {
       return new Parent(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -431,7 +431,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         return;
       }
       __memo_parameter_instance.value.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+      __memo_parameter_instance.value.applyAttributesFinish();
       {
         __memo_scope.recache();
         return;
@@ -457,7 +457,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         __memo_parameter_instance.value.setButtonOptions("Click me", undefined).onClick(((e: ClickEvent) => {
           this.label.paramA2 = "ArkUI";
         }));
-        instance.applyAttributesFinish();
+        __memo_parameter_instance.value.applyAttributesFinish();
         {
           __memo_scope.recache();
           return;

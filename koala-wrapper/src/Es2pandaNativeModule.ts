@@ -110,6 +110,14 @@ export class Es2pandaNativeModule {
     _CreateContextFromString(config: KPtr, source: String, filename: String): KPtr {
         throw new Error('Not implemented');
     }
+    _FormOutputPathForFile(context: KPtr, inputPath: String): KPtr {
+        throw new Error('Not implemented');
+    }
+    _CreateContextSimultaneousMode(config: KPtr, fileCount: KInt, filenames:
+        string[]): KPtr {
+        throw new Error('Not implemented');
+    }
+    // NOTE: this API is deprecated
     _CreateContextGenerateAbcForExternalSourceFiles(config: KPtr, fileCount: KInt, filenames:
         string[]): KPtr {
         throw new Error('Not implemented');
@@ -964,6 +972,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _SetLspUsage(isLspUsage: KBoolean): void {
+        throw new Error('Not implemented');
+    }
+
     _MemoryTrackerReset(context: KNativePointer): void {
         throw new Error('MemoryTrackerReset was not overloaded by native module initialization');
     }
@@ -1012,6 +1024,10 @@ export class Es2pandaNativeModule {
         suggestionInfoLength: KUInt
     ): KNativePointer {
         throw new Error('LogDiagnosticWithSuggestions was not overloaded by native module initialization');
+    }
+
+    _ExtractDeclarationsFromAbcFile(abcFile: string, cacheDir: string): KInt {
+        throw new Error('Not implemented');
     }
 }
 
