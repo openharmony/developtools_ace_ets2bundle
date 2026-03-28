@@ -25,10 +25,10 @@ ws_node_modules_dir = koala_mr.root_path + "/node_modules"
 
 # install panda sdk
 if (!koala_mr.is_rri) {
-  action("panda_sdk") {
+  action("panda_sdk_run") {
     script = "gn/command/gen_sdk.py"
 
-    outputs = [ "$target_out_dir/panda-sdk" ]
+    outputs = [ "$target_out_dir/panda-sdk/panda_sdk.tgz" ]
 
     external_deps = [ ets2abc_build_deps ]
     external_deps += [ static_linker_build_deps ]
@@ -47,7 +47,18 @@ if (!koala_mr.is_rri) {
       current_os,
       "--current-cpu",
       current_cpu,
+      "--output",
+      rebase_path("$target_out_dir/panda-sdk"),
     ]
+  }
+
+  ohos_prebuilt_etc("panda_sdk") {
+    deps = [ ":panda_sdk_run" ]
+    target_outputs = get_target_outputs(":panda_sdk_run")
+    source = target_outputs[0]
+    install_enable = false
+    subsystem_name = "developtools"
+    part_name = "ace_ets2bundle"
   }
 } else {
   npm_cmd("panda_sdk") {
