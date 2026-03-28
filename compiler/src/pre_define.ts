@@ -65,6 +65,9 @@ export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
 export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
 export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
+export const GET_UI_NATIVE_MODULE = 'getUINativeModule';
+export const COMMON = 'common';
+export const GET_API_TARGET_VERSION = 'getApiTargetVersion';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
@@ -709,6 +712,7 @@ export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
+export const API_VERSION_26: number = 26;
 
 export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
 export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';

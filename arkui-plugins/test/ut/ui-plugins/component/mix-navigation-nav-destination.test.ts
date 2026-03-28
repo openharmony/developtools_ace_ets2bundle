@@ -170,7 +170,7 @@ function main() {}
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: SubNavigation)=> void), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: SubNavigation)=> void) | undefined), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<SubNavigation, __Options_SubNavigation>(style, ((): SubNavigation => {
       return new SubNavigation(false, ({let gensym___92334354 = storage;
       (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));

@@ -85,7 +85,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: AnimatablePropertyExample)=> void), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: AnimatablePropertyExample)=> void) | undefined), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<AnimatablePropertyExample, __Options_AnimatablePropertyExample>(style, ((): AnimatablePropertyExample => {
       return new AnimatablePropertyExample(false, ({let gensym___203542966 = storage;
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
@@ -128,10 +128,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
-    AnimatablePropertyExample._invoke(@Memo() ((instance: AnimatablePropertyExample): void => {
-      instance.applyAttributesFinish();
-      return;
-    }), undefined, undefined, undefined, undefined);
+    AnimatablePropertyExample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
   
   public constructor() {}

@@ -57,10 +57,7 @@ function main() {}
 
 @Memo() 
 function builderTwo() {
-  Page2._invoke(@Memo() ((instance: Page2): void => {
-    instance.applyAttributesFinish();
-    return;
-  }), undefined, undefined, undefined, undefined);
+  Page2._invoke(undefined, undefined, undefined, undefined, undefined);
 }
 
 @Component() final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
@@ -81,7 +78,7 @@ function builderTwo() {
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Page2)=> void), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Page2)=> void) | undefined), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Page2, __Options_Page2>(style, ((): Page2 => {
       return new Page2(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));

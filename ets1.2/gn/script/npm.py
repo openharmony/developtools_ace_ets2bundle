@@ -34,6 +34,8 @@ def prepare():
     parser.add_argument("--install-path", help="path to install in")
     parser.add_argument("--run-tasks", nargs='+', help="npm run tasks")
     parser.add_argument("--panda-sdk-path", help="panda sdk path")
+    parser.add_argument("--pack", action='store_true', help="pack package on project-path")
+    parser.add_argument("--pack-destination", help="where to place packed .tgz archive")
 
     args = parser.parse_args()
 
@@ -78,6 +80,20 @@ def run(args_list, project_path, dir = None):
 def install(project_path, dir = None):
     run(["install", "--registry", NPM_REPO, "--verbose"], dir or project_path)
 
+def pack(project_path, pack_destination):
+    os.chdir(project_path)
+    pack_destination_dirname = os.path.dirname(pack_destination)
+    os.makedirs(pack_destination_dirname, exist_ok=True)
+    cmd = ["npm", "pack", "--pack-destination", pack_destination_dirname, "--verbose", "--ignore-scripts"]
+    result = subprocess.run(cmd, env=os.environ,
+        capture_output=True,
+        text=True,
+        check=True)
+    tgz_filename = result.stdout.strip()
+    if not tgz_filename:
+        raise Exception("npm pack didn't output a filename")
+    shutil.move(os.path.join(pack_destination_dirname, tgz_filename), pack_destination)
+
 def copy_target(args):
     if not os.path.exists(args.built_file_path):
         print(f"Error: Built file not found at {args.built_file_path}")
@@ -92,6 +108,8 @@ def main(args, project_path):
             run(["run", task], project_path)
     if args.target_out_path and args.built_file_path:
         copy_target(args)
+    if args.pack and args.pack_destination:
+        pack(args.project_path, args.pack_destination)
 
 if __name__ == '__main__':
     args, project_path = prepare()

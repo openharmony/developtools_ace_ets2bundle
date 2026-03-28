@@ -125,7 +125,7 @@ function main() {}
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ResourceComponent)=> void), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
       return new ResourceComponent(false, ({let gensym___17371929 = storage;
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));

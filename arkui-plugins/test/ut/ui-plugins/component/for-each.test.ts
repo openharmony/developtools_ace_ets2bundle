@@ -104,7 +104,7 @@ class AB {
   }
 
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: ImportStruct)=> void), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
       return new ImportStruct(false, ({let gensym___149025070 = storage;
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
@@ -215,7 +215,7 @@ class AB {
 `;
 
 const expectedForEachHeaderScript: string = `
-setForEachOptions<T>(arr: (()=> Array<T>), itemGenerator: ItemGeneratorFunc<T>, keyGenerator?: KeyGeneratorFunc<T>): this
+setForEachOptions<T = Any>(arr: (()=> Array<T>), itemGenerator: ItemGeneratorFunc<T>, keyGenerator?: KeyGeneratorFunc<T>): this
 `
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

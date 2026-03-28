@@ -87,7 +87,7 @@ function main() {}
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
     @MemoIntrinsic() 
-    public static _invoke(style: @Memo() ((instance: A)=> void), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
         return new A(false, ({let gensym___<some_random_number> = storage;
             (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -118,10 +118,7 @@ function main() {}
 class __EntryWrapper extends EntryPoint {
     @Memo() 
     public entry(): void {
-        A._invoke(@Memo() ((instance: A): void => {
-            instance.applyAttributesFinish();
-            return;
-        }), undefined, undefined, undefined, undefined);
+        A._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public constructor() {}
 }
@@ -138,18 +135,18 @@ import { ComponentBuilder as ComponentBuilder } from \"arkui.component.builder\"
 function main() {}
 
 @Memo() 
-export declare function FakeComponentA(style: @Memo() ((instance: FakeComponentAAttribute)=> void), str: string, @Memo() content_?: (()=> void)): void
+export declare function FakeComponentA(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), str: string, @Memo() content_?: (()=> void)): void
 @Memo() 
-export declare function FakeComponentB(style: @Memo() ((instance: FakeComponentBAttribute)=> void), options?: FakeOptions, @Memo() content_?: (()=> void)): void
+export declare function FakeComponentB(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), options?: FakeOptions, @Memo() content_?: (()=> void)): void
 @Memo() 
-export declare function FakeComponentC(style: @Memo() ((instance: FakeComponentCAttribute)=> void), @Memo() content_?: (()=> void)): void
+export declare function FakeComponentC(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), @Memo() content_?: (()=> void)): void
 
 @Memo() 
-export declare function FakeComponentAImpl(style: @Memo() ((instance: FakeComponentAAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentAImpl(style: (@Memo() ((instance: FakeComponentAAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() 
-export declare function FakeComponentBImpl(style: @Memo() ((instance: FakeComponentBAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentBImpl(style: (@Memo() ((instance: FakeComponentBAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 @Memo() 
-export declare function FakeComponentCImpl(style: @Memo() ((instance: FakeComponentCAttribute)=> void), content?: @Memo() (()=> void)): void
+export declare function FakeComponentCImpl(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
 interface FakeOptions {
     get str(): (string | undefined) {

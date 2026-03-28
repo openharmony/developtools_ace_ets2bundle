@@ -894,14 +894,16 @@ function checkAvailableDecorator(
  * @param jsDocTags - Array of JSDoc tags to analyze
  * @param config - Configuration object that will receive error messages
  * @param node - Optional TypeScript node for additional validation
+ * @param declaration - Optional TypeScript declaration for additional validation
  * @returns True if since check is required and validation fails, false otherwise
  */
 function checkSinceValue(
   jsDocTags: readonly ts.JSDocTag[],
   config: ts.JsDocNodeCheckConfigItem,
-  node?: ts.Node
+  node?: ts.Node,
+  declaration?: ts.Declaration
 ): boolean {
-  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node) {
+  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node || !declaration) {
     return false;
   }
 
@@ -926,7 +928,8 @@ function checkSinceValue(
   const suppressor = new SinceWarningSuppressor(
     checker.getSdkVersion(),
     checker.getMinApiVersion(),
-    typeChecker
+    typeChecker,
+    declaration
   );
 
   if (suppressor.isApiVersionHandled(node)) {
@@ -1005,6 +1008,12 @@ export function defaultFormatChecker(since: string): boolean {
 export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): VersionValidationResult {
   const compatibileReg = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
   if (compatibileReg.test(since)) {
+    if (!checkIntegerLessVersion(since)) {
+      return {
+        result: false,
+        message: AVAILABLE_VERSION_FORMAT_ERROR
+      }
+    }
     return {
       result: true
     }
@@ -1016,6 +1025,21 @@ export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): Ver
   }
 }
 
+/**
+ * Determine if the MSF version is less than 26, Integer does not make judgments.
+ * @param since - Version string to validate
+ * @returns When MSF (26.0.0) is less than 26, return false and do not judge integers
+ */
+function checkIntegerLessVersion(since: string): boolean {
+  const msfVersionReg = /^[1-9]\d?\.\d{1,2}\.\d{1,2}$/;
+  if (msfVersionReg.test(since)) {
+    const majorVersion = parseInt(since.split('.')[0]);
+    if (majorVersion < 26) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Checks if current runtime is OpenHarmony.

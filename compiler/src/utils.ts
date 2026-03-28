@@ -43,7 +43,10 @@ import {
   GET_SHARED,
   COMPONENT_CONSTRUCTOR_UNDEFINED,
   USE_SHARED_STORAGE,
-  STORAGE
+  STORAGE,
+  GET_UI_NATIVE_MODULE,
+  COMMON,
+  GET_API_TARGET_VERSION
 } from './pre_define';
 import { 
   ERROR_DESCRIPTION,
@@ -306,10 +309,10 @@ export function circularFile(inputPath: string, outputPath: string): void {
 function copyFile(inputFile: string, outputFile: string): void {
   try {
     const parent: string = path.join(outputFile, '..');
-    if (!(fileInfoCache.isDirectory(parent))) {
+    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
       mkDir(parent);
     }
-    if (fileInfoCache.fileExists(outputFile)) {
+    if (fs.existsSync(outputFile)) {
       return;
     }
     const readStream: fs.ReadStream = fs.createReadStream(inputFile);
@@ -352,9 +355,9 @@ export function toHashData(path: string): string {
 }
 
 export function writeFileSync(filePath: string, content: string): void {
-if (!fileInfoCache.fileExists(filePath)) {
+  if (!fs.existsSync(filePath)) {
     const parent: string = path.join(filePath, '..');
-    if (!fileInfoCache.isDirectory(parent)) {
+    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
       mkDir(parent);
     }
   }
@@ -1508,4 +1511,32 @@ export class CurrentProcessFile {
   private static isETSFile(id: string): boolean {
     return !!(path.extname(id)?.endsWith('ets'));
   }
+}
+
+/**
+ * create api version check condition.
+ * 
+ * @param { number } apiVersion
+ * @returns { ts.BinaryExpression }
+ */
+export function createApiVersionCheck(apiVersion: number): ts.BinaryExpression {
+  return ts.factory.createBinaryExpression(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createCallExpression(
+            ts.factory.createIdentifier(GET_UI_NATIVE_MODULE),
+            undefined,
+            []
+          ),
+          ts.factory.createIdentifier(COMMON)
+        ),
+        ts.factory.createIdentifier(GET_API_TARGET_VERSION)
+      ),
+      undefined,
+      []
+    ),
+    ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
+    ts.factory.createNumericLiteral(apiVersion)
+  );
 }

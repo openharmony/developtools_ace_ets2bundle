@@ -115,7 +115,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
   
   @MemoIntrinsic() 
-  public static _invoke(style: @Memo() ((instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
       return new Index(false, ({let gensym___<some_random_number> = storage;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -153,10 +153,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 class __EntryWrapper extends EntryPoint {
     @Memo() 
     public entry(): void {
-        Index._invoke(@Memo() ((instance: Index): void => {
-            instance.applyAttributesFinish();
-            return;
-        }), undefined, undefined, undefined, undefined);
+        Index._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public constructor() {}
 }
@@ -288,7 +285,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
 
     @MemoIntrinsic() 
-    public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Index => {
             return new Index(false, ({let gensym___<some_random_number> = storage;
                 (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
@@ -376,19 +373,7 @@ class __EntryWrapper extends EntryPoint {
             __memo_scope.cached;
             return;
         }
-        Index._invoke(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index): void => {
-            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
-            const __memo_parameter_instance = __memo_scope.param(0, instance);
-            if (__memo_scope.unchanged) {
-                __memo_scope.cached;
-                return;
-            }
-            __memo_parameter_instance.value.applyAttributesFinish();
-            {
-                __memo_scope.recache();
-                return;
-            }
-        }), undefined, undefined, undefined, undefined);
+        Index._invoke(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, undefined, undefined, undefined, undefined);
         {
             __memo_scope.recache();
             return;
