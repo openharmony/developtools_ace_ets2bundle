@@ -65,7 +65,8 @@ import {
   COMPONENTV2_PROVIDER_DECORATOR,
   COMPONENT_ENV_DECORATOR,
   MAX_LINK_SOURCE_DATA_NESTING_LEVEL,
-  API_VERSION_26
+  API_VERSION_26,
+  COMPONENT_BUILDER_DECORATOR
 } from './pre_define';
 import {
   stateCollection,
@@ -443,12 +444,40 @@ function checkAssignBuilderParam(isChildV2: boolean, info: ChildAndParentCompone
   const childBuilderParamSet: Set<string> = isChildV2 ? info.childStructInfo.builderParamDecoratorSet :
     builderParamObjectCollection.get(info.childStructInfo.structName);
   if (!childBuilderParamSet || !childBuilderParamSet.has(itemName) || !item.initializer ||
-    ts.isArrowFunction(item.initializer)) {
+    ts.isArrowFunction(item.initializer) || checkAssignBuilderParamInBuilder(item)) {
     return;
   }
   if (!checkBuilderParamInitializer(item.initializer)) {
     validateAssignBuilderParam(log, itemName, item);
   }
+}
+
+function checkAssignBuilderParamInBuilder(item: ts.PropertyAssignment): boolean {
+  let assignmentAncestor: ts.FunctionDeclaration | ts.MethodDeclaration =
+    ts.findAncestor(item, ts.isFunctionDeclaration);
+  if (assignmentAncestor && hasTargetDecorator(assignmentAncestor, COMPONENT_BUILDER_DECORATOR)) {
+    return true;
+  }
+  assignmentAncestor = ts.findAncestor(item, ts.isMethodDeclaration);
+  if (assignmentAncestor && hasTargetDecorator(assignmentAncestor, COMPONENT_BUILDER_DECORATOR)) {
+    return true;
+  }
+  return false;
+}
+
+function hasTargetDecorator(node: ts.MethodDeclaration | ts.FunctionDeclaration,
+  decoratorName: string): boolean {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (!decorators || !decorators.length) {
+    return false;
+  }
+  for (let i = 0; i < decorators.length; i++) {
+    const originalDecortor: string = decorators[i].getText().replace(/\(.*\)$/, '').replace(/\s*/g, '').trim();
+    if (originalDecortor === decoratorName) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function checkBuilderParamInitializer(initializer: ts.Expression): boolean {
