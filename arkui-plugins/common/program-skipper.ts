@@ -81,8 +81,8 @@ export class ProgramSkipper {
             if (!this._uiProgramSet.has(p.peer)) {
                 for (const statement of p.astNode.statements) {
                     if (arkts.isETSImportDeclaration(statement)) {
-                        const source = statement.resolvedSource || "";
-                        if (source.includes("@kit.AbilityKit") || source.includes("InsightIntentDecorator")) {
+                        const source = statement.resolvedSource || '';
+                        if (source.includes('@kit.AbilityKit') || source.includes('InsightIntentDecorator')) {
                             if (statement.dumpSrc().includes('Intent')||statement.dumpSrc().includes('LinkParamCategory')) {
                                 this._intentProgramSet.add(p.peer);
                             }
