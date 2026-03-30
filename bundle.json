@@ -54,6 +54,9 @@
             },
             {
                 "name": "//developtools/ace_ets2bundle/ets1.2:ohos_ets_libarkts_pack_prebuilt"
+            },
+            {
+                "name": "//developtools/ace_ets2bundle/ets1.2/libarkts:panda_sdk"
             }
         ]
       }
