@@ -133,7 +133,7 @@ export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id
 }
 
 export declare class IncrementalNode {
-  public constructor() {}
+  public constructor()
 }
 
 export declare interface ControlledScope {
