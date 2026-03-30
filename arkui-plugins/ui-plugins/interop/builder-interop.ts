@@ -387,9 +387,33 @@ function getWhile(): arkts.Statement {
     );
 }
 
+function staticBuilderUpdateArgs(): arkts.Statement[] {
+     const invoke = arkts.factory.createExpressionStatement(
+        arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('updateFunc'),
+                arkts.factory.createIdentifier('invoke'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            undefined,
+            [arkts.factory.createIdentifier(InteropInternalNames.INSTANCE)]
+        )
+    );
+    return [
+        createGlobal(),
+        getPropertyESValue('updateFunc', InteropInternalNames.GLOBAL, 'staticBuilderUpdate'),
+        invoke
+    ];
+}
+
 function getUpdateArgs(node: arkts.CallExpression | arkts.Property): arkts.Statement[] {
-    if (arkts.isProperty(node) || node.arguments.length !== 1) {
+    if (arkts.isProperty(node)) {
         return [];
+    }
+    if (node.arguments.length !== 1) {
+        return staticBuilderUpdateArgs();
     }
     let body: arkts.Statement[] = [];
     let argument = node.arguments[0];
@@ -430,8 +454,9 @@ function getUpdateArgs(node: arkts.CallExpression | arkts.Property): arkts.State
             invokeRunPendingJobs()
         ];
         body?.push(...functionBody);
+    } else {
+        return staticBuilderUpdateArgs();
     }
-
     return body;
 }
 
