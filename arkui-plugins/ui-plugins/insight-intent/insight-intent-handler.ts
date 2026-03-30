@@ -238,7 +238,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
  */
 export class InsightIntentHandler {
     private intentNameSet = new Set<string>();
-    private projectConfig: ProjectConfig | undefined;
+    private projectConfig: ProjectConfig;
     private collector: InsightIntentCollector;
     
     // 性能优化：路径规范化缓存
@@ -266,7 +266,7 @@ export class InsightIntentHandler {
     // 用于跟踪已添加的 intentName，确保唯一性（全局）
     private intentNames: Set<string> = new Set();
 
-    constructor(projectConfig: ProjectConfig | undefined) {
+    constructor(projectConfig: ProjectConfig) {
         this.projectConfig = projectConfig;
         this.collector = InsightIntentCollector.getInstance();
         
@@ -279,13 +279,32 @@ export class InsightIntentHandler {
      * 加载现有的 insight_intent.json 文件中的 intentName
      */
     private loadExistingIntentNames(): void {
+        const fs = require('fs');
+        const path = require('path');
+        const moduleRootPath = this.projectConfig.moduleRootPath
+        if (!fs.existsSync(moduleRootPath)) {
+            fs.mkdirSync(moduleRootPath, { recursive: true });
+        }
+
+        const pathSegments = [
+            'build',
+            'default',
+            'intermediates',
+            'res',
+            'default',
+            'resources',
+            'base',
+            'profile'
+        ];
         if (!this.projectConfig || !this.projectConfig.aceProfilePath) {
-            return;
+            if (moduleRootPath) {
+                this.projectConfig.aceProfilePath = path.join(moduleRootPath, ...pathSegments);
+            }else{
+                return;
+            }
         }
         
         try {
-            const fs = require('fs');
-            const path = require('path');
             const insightIntentPath = path.join(this.projectConfig.aceProfilePath, 'insight_intent.json');
             
             if (fs.existsSync(insightIntentPath)) {
