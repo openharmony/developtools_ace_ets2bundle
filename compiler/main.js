@@ -123,6 +123,7 @@ function initProjectConfig(projectConfig) {
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
   projectConfig.strictCheckerOnly = false;
+  projectConfig.tsImportSoCheck = false;
 }
 
 function initProjectPathConfig(projectConfig) {
