@@ -141,6 +141,7 @@ export interface LanguageServiceCache {
   autoLazyFilterInclude?: string[];
   autoLazyFilterExclude?: string[];
   useDeclarationFileSignature?: boolean;
+  tsImportSoCheck?: boolean;
 }
 
 export const SOURCE_FILES: Map<string, ts.SourceFile> = new Map();
@@ -251,6 +252,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'isCompileJsHar': isCompileJsHar(),
     'moduleRootPath': projectConfig.moduleRootPath,
     'strictCheckerOnly': projectConfig.strictCheckerOnly,
+    'tsImportSoCheck': projectConfig.tsImportSoCheck,
   });
   if (projectConfig.compileMode === ESMODULE) {
     Object.assign(compilerOptions, {
@@ -503,11 +505,13 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const currentAutoLazyFilterExclude: string[] | undefined = Array.isArray(rollupShareObject?.projectConfig?.autoLazyFilter?.exclude) ?
     rollupShareObject.projectConfig.autoLazyFilter.exclude : undefined;
   const currentUseDeclarationFileSignature: boolean | undefined = rollupShareObject?.projectConfig?.useDeclarationFileSignature;
+  const currentTsImportSoCheck: boolean | undefined = rollupShareObject?.projectConfig?.tsImportSoCheck;
   const lastHash: string | undefined = cache?.pkgJsonFileHash;
   const lastTargetESVersion: ts.ScriptTarget | undefined = cache?.targetESVersion;
   const lastTypes: string[] | undefined = cache?.types;
   const lastMaxFlowDepth: number | undefined = cache?.maxFlowDepth;
   const lastUseDeclarationFileSignature: boolean | undefined = cache?.useDeclarationFileSignature;
+  const lastTsImportSoCheck: boolean | undefined = cache?.tsImportSoCheck
   const hashDiffers: boolean | undefined = currentHash && lastHash && currentHash !== lastHash;
   const shouldRebuildForDepDiffers: boolean | undefined = reuseLanguageServiceForDepChange ?
     (hashDiffers && !rollupShareObject?.depInfo?.enableIncre) : hashDiffers;
@@ -525,9 +529,10 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const autoLazyFilterExcludeDiff: boolean = !areEqualArrays(cache?.autoLazyFilterExclude, currentAutoLazyFilterExclude);
   const autoLazyFilterDiff: boolean = autoLazyFilterIncludeDiff || autoLazyFilterExcludeDiff;
   const useDeclarationFileSignatureDiff: boolean = checkValueDiff(lastUseDeclarationFileSignature, currentUseDeclarationFileSignature);
+  const tsImportSoCheckDiff: boolean = checkValueDiff(lastTsImportSoCheck, currentTsImportSoCheck);
   const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
     enableStrictCheckOHModuleDiff || disableSendableCheckRulesDiff || mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff ||
-    useDeclarationFileSignatureDiff;
+    useDeclarationFileSignatureDiff || tsImportSoCheckDiff;
   const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
   if (reuseLanguageServiceForDepChange && hashDiffers && rollupShareObject?.depInfo?.enableIncre) {
@@ -570,6 +575,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     preDisableSendableCheckRules: disableSendableCheckRules,
     preMixCompile: mixCompile,
     useDeclarationFileSignature: currentUseDeclarationFileSignature,
+    tsImportSoCheck: currentTsImportSoCheck,
     autoLazyImport: currentAutoLazyImport,
     autoLazyFilterInclude: currentAutoLazyFilterInclude ? [...currentAutoLazyFilterInclude] : undefined,
     autoLazyFilterExclude: currentAutoLazyFilterExclude ? [...currentAutoLazyFilterExclude] : undefined
