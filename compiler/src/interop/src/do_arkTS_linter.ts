@@ -22,13 +22,9 @@ import {
   ERROR_DESCRIPTION,
   LINTER_SUBSYSTEM_CODE,
   ERROR_TYPE_CODE,
-  TSC_EXTENSION_CODE,
   LINTER_EXTENSION_CODE,
   HvigorErrorInfo,
 } from './hvigor_error_code/hvigor_error_info';
-import {
-  TSC_SYSTEM_CODE,
-} from './ets_checker';
 
 const arkTSDir: string = 'ArkTS';
 const arkTSLinterOutputFileName: string = 'ArkTSLinter_output.json';
@@ -82,6 +78,20 @@ export function doArkTSLinter(arkTSVersion: ArkTSVersion, arkTSMode: ArkTSLinter
   removeOutputFile();
   if (diagnostics.length === 0) {
     return [];
+  }
+
+  if (projectConfig.strictCheckerOnly) {
+    const strictModeDiagnostics: ts.Diagnostic[] = [];
+    const nonStrictModeDiagnostics: ts.Diagnostic[] = [];
+    diagnostics.forEach((diagnostic: ts.Diagnostic) => {
+      if (diagnostic.code > STRICT_MODE_MIN_CODE) {
+        strictModeDiagnostics.push(diagnostic);
+      } else {
+        nonStrictModeDiagnostics.push(diagnostic);
+      }
+    });
+    diagnostics = nonStrictModeDiagnostics;
+    ts.updateStrictDiagnosticsToGetSemanticDiagnostics(builderProgram, strictModeDiagnostics);
   }
 
   if (arkTSMode === ArkTSLinterMode.COMPATIBLE_MODE) {
@@ -205,12 +215,6 @@ export function transfromErrorCode(code: number, positionMessage: string, messag
 
 function formatNumber(code: number): string {
   // The minimum code in strict mode starts from 1000
-  const isStrictModeCode = code > STRICT_MODE_MIN_CODE;
-  if (isStrictModeCode) {
-    const systemCode = projectConfig.strictCheckerOnly ? TSC_SYSTEM_CODE : LINTER_SUBSYSTEM_CODE;
-    // Extended Codes Defined by Various Subsystems
-    const extensionCode = projectConfig.strictCheckerOnly ? TSC_EXTENSION_CODE : LINTER_EXTENSION_CODE;
-    return systemCode + ERROR_TYPE_CODE + extensionCode;
-  }
-  return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + code.toString().padStart(complementSize, complementCode);
+  const extendedCode = code > STRICT_MODE_MIN_CODE ? LINTER_EXTENSION_CODE : code.toString().padStart(complementSize, complementCode);
+    return LINTER_SUBSYSTEM_CODE + ERROR_TYPE_CODE + extendedCode;
 }
