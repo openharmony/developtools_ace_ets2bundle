@@ -73,8 +73,8 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             envInvalidType: `The '@Env' annotation can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoVP', 'UIEnvWindowAvoidAreaInfoPX' classes and their child classes.`,
             envMultipleAnnotationsV1: `The property '{{propName}}' cannot have multiple state management annotations.`,
             envMultipleAnnotationsV2: `The member property or method can not be decorated by multiple built-in annotations.`,
-            envOnlyInitParamInV2: `Within structs decorated with '@ComponentV2', '@Env' can only initialized variables decorated with '@Param'.`,
-            envOnlyInitRegularInV1: `Within structs decorated with '@Component', '@Env' can only initialized regular(non-decorated) variables.`,
+            envOnlyInitParamInV2: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
+            envOnlyInitRegularInV1: `Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.`,
         };
     }
 
