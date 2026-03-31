@@ -133,6 +133,7 @@ import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
 import logMessageCollection from './log_message_collection';
 import { createStaticTuple, createStaticArrowBlock, validateInteropProperty } from './process_interop_component';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
@@ -417,9 +418,11 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   propsAndObjectLinks: string[], log: LogInfo[], isArkoala: boolean = false): void {
   const childAndParentComponentInfo: ChildAndParentComponentInfo =
     new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
-  const hasInterop = validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala);
-  if (hasInterop) {
-    return;
+  if (isMixCompile()) {
+    const hasInterop = validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala);
+    if (hasInterop) {
+      return;
+    }
   }
   if (node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
