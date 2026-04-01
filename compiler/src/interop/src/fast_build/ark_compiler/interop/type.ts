@@ -43,6 +43,7 @@ export interface ProjectConfig {
   bundleName: string;
   mainModuleName: string;
   projectRootPath: string;
+  sdkAliasMap?: Map<string, string>;
 };
 
 export enum BuildType {
