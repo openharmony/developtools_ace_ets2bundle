@@ -36,10 +36,13 @@ import { SpreadElement } from "./SpreadElement"
 import { TypeNode } from "./TypeNode"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ETSParameterExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PARAMETER_EXPRESSION;
     }
     static createETSParameterExpression(identOrSpread: AnnotatedExpression | undefined, isOptional: boolean): ETSParameterExpression {
         return new ETSParameterExpression(global.generatedEs2panda._CreateETSParameterExpression(global.context, passNode(identOrSpread), isOptional))

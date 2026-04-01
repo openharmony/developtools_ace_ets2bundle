@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -85,45 +85,6 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
-  @JSONRename({newName:"region"}) public __backing_region: string = "North";
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_region: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_region");
-
-  @JSONRename({newName:"job"}) public __backing_job: string = "Teacher";
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_job");
-
-  public age: number = 25;
-
-  private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
-
-  private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
-
-  private __monitor_onChange: (IMonitorDecoratedVariable | undefined);
-
-  @Monitor({value:["name"]}) 
-  public onNameChange(monitor: IMonitor) {
-    console.info(\`name change from \${({let gensym%%_43 = monitor.value<string>();
-    (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value<string>();
-    (((gensym%%_44) == (null)) ? undefined : gensym%%_44.now)})}\`);
-  }
-
-  @Monitor({value:["age"]}) 
-  public onAgeChange(monitor: IMonitor) {
-    console.info(\`age change from \${({let gensym%%_45 = monitor.value<string>();
-    (((gensym%%_45) == (null)) ? undefined : gensym%%_45.before)})} to \${({let gensym%%_46 = monitor.value<string>();
-    (((gensym%%_46) == (null)) ? undefined : gensym%%_46.now)})}\`);
-  }
-
-  @Monitor({value:["region", "job"]}) 
-  public onChange(monitor: IMonitor) {
-    monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} change from \${({let gensym%%_47 = monitor.value<string>(path);
-      (((gensym%%_47) == (null)) ? undefined : gensym%%_47.before)})} to \${({let gensym%%_48 = monitor.value<string>(path);
-      (((gensym%%_48) == (null)) ? undefined : gensym%%_48.now)})}\`);
-    }));
-  }
-
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved(this.__backing_name);
@@ -136,6 +97,10 @@ function main() {}
       this.executeOnSubscribingWatches("name");
     }
   }
+
+  @JSONRename({newName:"region"}) public __backing_region: string = "North";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_region: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_region");
 
   public get region(): string {
     this.conditionalAddRef(this.__meta_region);
@@ -150,6 +115,10 @@ function main() {}
     }
   }
 
+  @JSONRename({newName:"job"}) public __backing_job: string = "Teacher";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_job");
+
   public get job(): string {
     this.conditionalAddRef(this.__meta_job);
     return UIUtils.makeObserved(this.__backing_job);
@@ -161,6 +130,37 @@ function main() {}
       this.__meta_job.fireChange();
       this.executeOnSubscribingWatches("job");
     }
+  }
+
+  public age: number = 25;
+
+  private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["name"]}) 
+  public onNameChange(monitor: IMonitor) {
+    console.info(\`name change from \${({let gensym%%_<some_random_number> = monitor.value<string>();
+    (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.before)})} to \${({let gensym%%_<some_random_number> = monitor.value<string>();
+    (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.now)})}\`);
+  }
+
+  private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["age"]}) 
+  public onAgeChange(monitor: IMonitor) {
+    console.info(\`age change from \${({let gensym%%_<some_random_number> = monitor.value<string>();
+    (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.before)})} to \${({let gensym%%_<some_random_number> = monitor.value<string>();
+    (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.now)})}\`);
+  }
+
+  private __monitor_onChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["region", "job"]}) 
+  public onChange(monitor: IMonitor) {
+    monitor.dirty.forEach(((path: string) => {
+      console.info(\`\${path} change from \${({let gensym%%_<some_random_number> = monitor.value<string>(path);
+      (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.before)})} to \${({let gensym%%_<some_random_number> = monitor.value<string>(path);
+      (((gensym%%_<some_random_number>) == (null)) ? undefined : gensym%%_<some_random_number>.now)})}\`);
+    }));
   }
 
   public constructor() {
@@ -194,6 +194,8 @@ function main() {}
       this.onChange(_m);
     }));
   }
+  static {
+  }
 
 }
 
@@ -205,7 +207,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Monitor decorator in @ObservedV2 class transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

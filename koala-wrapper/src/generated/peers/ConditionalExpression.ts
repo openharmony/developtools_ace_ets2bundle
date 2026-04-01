@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class ConditionalExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CONDITIONAL_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CONDITIONAL_EXPRESSION;
     }
     static createConditionalExpression(test?: Expression, consequent?: Expression, alternate?: Expression): ConditionalExpression {
         return new ConditionalExpression(global.generatedEs2panda._CreateConditionalExpression(global.context, passNode(test), passNode(consequent), passNode(alternate)))

@@ -14,10 +14,12 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PluginContext, Plugins } from '../../../common/plugin-context';
+import { initResourceInfo, initRouterInfo, loadBuildJson, PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
 import { ComponentTransformer } from '../../../ui-plugins/component-transformer';
+import { Collector } from '../../../collectors/collector';
+import { MetaDataCollector } from '../../../common/metadata-collector';
 
 /**
  * AfterParse transform struct to component.
@@ -30,9 +32,12 @@ export const structToComponent: Plugins = {
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const componentTransformer = new ComponentTransformer({
-                projectConfig: this.getProjectConfig(),
-            });
+            const projectConfig = this.getProjectConfig();
+            const aceBuildJson = loadBuildJson(projectConfig);
+            MetaDataCollector.getInstance()
+                .setProjectConfig(projectConfig)
+                .setRouterInfo(initRouterInfo(aceBuildJson));
+            const componentTransformer = new ComponentTransformer();
             const programVisitor = new ProgramVisitor({
                 pluginName: structToComponent.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED,
@@ -42,6 +47,7 @@ export const structToComponent: Plugins = {
             });
             program = programVisitor.programVisitor(program);
             script = program.astNode;
+            MetaDataCollector.getInstance().reset();
             return script;
         }
         return script;

@@ -95,7 +95,7 @@ function validateRequiredFields(data: InsightIntentDataBase, decoratorType: stri
         if (value === undefined || value === null) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `Required parameters are missing for the decorator.`,
             });
@@ -104,7 +104,7 @@ function validateRequiredFields(data: InsightIntentDataBase, decoratorType: stri
         if (typeof value === 'string' && value.trim() === '') {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `Required parameters are missing for the decorator.`,
             });
@@ -113,7 +113,7 @@ function validateRequiredFields(data: InsightIntentDataBase, decoratorType: stri
         if (Array.isArray(value) && value.length === 0) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `Required parameters are missing for the decorator.`,
             });
@@ -137,7 +137,7 @@ function validateKeywords(keywords: string[] | null | undefined, node: arkts.Ast
     if (!Array.isArray(keywords)) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110004',
             message: 'The parameter type does not match the decorator\'s requirement.'
         });
@@ -147,7 +147,7 @@ function validateKeywords(keywords: string[] | null | undefined, node: arkts.Ast
     if (!valid) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110004',
             message: 'The parameter type does not match the decorator\'s requirement.'
         });
@@ -199,7 +199,7 @@ function validateJsonSchema(schema: Record<string, unknown> | null | undefined, 
     if (typeof schema !== 'object' || Array.isArray(schema)) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110007',
             message: `The root type of the JSON Schema for Parameters must be object. ${fieldName}`
         });
@@ -227,21 +227,21 @@ function validateJsonSchema(schema: Record<string, unknown> | null | undefined, 
         if (errorMessage.includes('unknown keyword') || errorMessage.includes('strict mode')) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110005',
                 message: `Unsupported parameters found in the decorator.`
             });
         } else if (errorMessage.includes('type') || errorMessage.includes('should be')) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110004',
                 message: `The parameter type does not match the decorator\'s requirement.`
             });
         } else {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110005',
                 message: `Unsupported parameters found in the decorator.`
             });
@@ -601,7 +601,7 @@ function validateSupportedQueryProperties(
         if (typeof field === 'string' && !propertyKeys.has(field)) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `The supportedQueryProperties field '${field}' is not defined in properties.`
             });
@@ -619,7 +619,7 @@ function validateSupportedQueryProperties(
         if (supportedQueryPropertiesFieldSet.has(key) && !schemaData[key]) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `The field '${key}' in supportedQueryProperties is not a property of the class.`
             });
@@ -663,7 +663,7 @@ function validateSchemaRequiredClassProperties(
         if (requiredFieldSet.has(key) && !schemaData[key]) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110008',
                 message: 'A required field in the class property is missing.'
             });
@@ -705,7 +705,7 @@ function validateSchemaPropertiesRule(
             (schemaProperty.type === 'object' && schemaData[key]?.isEntity === false)) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110009',
                 message: 'The field type of the class property does not match the JSON Schema.'
             });
@@ -737,7 +737,7 @@ function validateSchemaAdditionalPropertiesRule(
         if (!allowedProperties[key]) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110011',
                 message: 'The class property includes parameters not defined in the JSON Schema.'
             });
@@ -790,7 +790,7 @@ function validateSchemaCombinationRules(
         if (!isValid) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110010',
                 message: 'The class property parameter violates the oneOf/anyOf validation rules in the JSON Schema.'
             });
@@ -839,7 +839,7 @@ function validateParametersSchemaRootType(
     if (schema.type !== 'object') {
         LogCollector.getInstance().collectLogInfo({
             node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110007',
             message: `The root type of the JSON Schema for ${schemaFieldName} must be object.`
         });
@@ -886,7 +886,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
     if (!Array.isArray(paramMappings)) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110004',
             message: `The parameter type does not match the decorator\'s requirement.`
         });
@@ -897,7 +897,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
         if (!mapping || typeof mapping !== 'object') {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110004',
                 message: `The parameter type does not match the decorator\'s requirement.`
             });
@@ -906,7 +906,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
         if (!mapping.paramName || typeof mapping.paramName !== 'string') {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: `Required parameters are missing for the decorator.`,
             });
@@ -915,7 +915,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
         if (mapping.paramCategory && !['link', 'want'].includes(mapping.paramCategory.toLowerCase())) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110004',
                 message: `The parameter type does not match the decorator\'s requirement.`
             });
@@ -1102,7 +1102,7 @@ export class InsightIntentHandler {
         } else {
             LogCollector.getInstance().collectLogInfo({
                 node: actualNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110005',
                 message: `Unsupported parameters found in the decorator.`
             });
@@ -1297,7 +1297,7 @@ export class InsightIntentHandler {
                         if (this.intentNames.has(intentData.intentName)) {
                             LogCollector.getInstance().collectLogInfo({
                                 node: classNode,
-                                type: LogType.ERROR,
+                                level: LogType.ERROR,
                                 code: '10110012',
                                 message: `Duplicate intentName definitions found: ${intentData.intentName}`
                             });
@@ -1310,7 +1310,7 @@ export class InsightIntentHandler {
             } catch (error) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110005',
                     message: `Unsupported parameters found in the decorator.`
                 });
@@ -1352,7 +1352,7 @@ export class InsightIntentHandler {
             if (hasTargetDecorator && !isMethod) {
                 LogCollector.getInstance().collectLogInfo({
                     node: member,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110015', 
                     message: 'Methods decorated with @InsightIntentFunctionMethod must be static methods.'
                 });
@@ -1378,7 +1378,7 @@ export class InsightIntentHandler {
                                 if (this.intentNames.has(intentData.intentName)) {
                                     LogCollector.getInstance().collectLogInfo({
                                         node: classNode,
-                                        type: LogType.ERROR,
+                                        level: LogType.ERROR,
                                         code: '10110012',
                                         message: `Duplicate intentName definitions found: ${intentData.intentName}`
                                     });
@@ -1391,7 +1391,7 @@ export class InsightIntentHandler {
                     } catch (error) {
                         LogCollector.getInstance().collectLogInfo({
                             node: classNode,
-                            type: LogType.ERROR,
+                            level: LogType.ERROR,
                             code: '10110005',
                             message: `Unsupported parameters found in the decorator. Failed to process @${decoratorName}: ${error}`
                         });
@@ -1603,7 +1603,7 @@ export class InsightIntentHandler {
         if (!bindFormInfo || !isExported || !isDefaultExport) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110022',
                 message: '@InsightIntentForm must be applied to formExtensionAbility.',
             });
@@ -1622,7 +1622,7 @@ export class InsightIntentHandler {
         if (!fs.existsSync(moduleJsonPath)) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110024',
                 message: 'The module.json5 file is missing.'
             });
@@ -1842,7 +1842,7 @@ export class InsightIntentHandler {
     private reportInvalidFormName(classNode: arkts.ClassDeclaration): void {
         LogCollector.getInstance().collectLogInfo({
             node: classNode,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110023',
             message: 'formName in @InsightIntentForm must match the widget name registered in formExtensionAbility.'
         });
@@ -1897,7 +1897,7 @@ export class InsightIntentHandler {
         if (!data.entityCategory) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: 'Required parameters are missing for the decorator.'
             });
@@ -1986,7 +1986,7 @@ export class InsightIntentHandler {
         if (!this.isEntityInheritanceValid(classNode, new Set<string>())) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110021',
                 message: 'Classes decorated with @InsightIntentEntity must implement InsightIntent.IntentEntity.'
             });
@@ -2050,7 +2050,7 @@ export class InsightIntentHandler {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
                 message: `The parameter type does not match the decorator\'s requirement.`,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110004'
             });
             return false;
@@ -2137,7 +2137,7 @@ export class InsightIntentHandler {
 
         if (!data.intentName || !data.domain || !data.intentVersion) {
             LogCollector.getInstance().collectLogInfo({
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 node: classNode,
                 message: `The parameter type does not match the decorator's requirement.`,
                 code: '10110004'
@@ -2193,7 +2193,7 @@ export class InsightIntentHandler {
             if (!value && classNode) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110005',
                     message: `Unsupported parameters found in the decorator.`
                 });
@@ -2221,7 +2221,7 @@ export class InsightIntentHandler {
         if (!arkts.isArrayExpression(node)) {
             LogCollector.getInstance().collectLogInfo({
                 node: node,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110004',
                 message: `The parameter type does not match the decorator's requirement.`
             });
@@ -2314,7 +2314,7 @@ export class InsightIntentHandler {
         if (!classNode.definition || !classNode.definition.super) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110018',
                 message: 'Classes decorated with @InsightIntentEntry must inherit from InsightIntentEntryExecutor.'
             });
@@ -2524,7 +2524,7 @@ export class InsightIntentHandler {
             const errorMessage: string = 'The class decorated with @InsightIntentEntry must be exported as default.';
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110019',
                 message: errorMessage
             });
@@ -2534,7 +2534,7 @@ export class InsightIntentHandler {
         if (parentClassName !== 'InsightIntentEntryExecutor') {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110018',
                 message: 'Classes decorated with @InsightIntentEntry must inherit from InsightIntentEntryExecutor.'
             });
@@ -2747,7 +2747,7 @@ export class InsightIntentHandler {
             if (classNode) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110005',
                     message: `Unsupported parameters found in the decorator.`
                 });
@@ -2799,7 +2799,7 @@ export class InsightIntentHandler {
         if (classNode) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110005',
                 message: `Unsupported parameters found in the decorator.`
             });
@@ -2939,7 +2939,7 @@ export class InsightIntentHandler {
             // 如果仍然找不到值，记录错误
             LogCollector.getInstance().collectLogInfo({
                 node: actualNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110005',
                 message: `Unsupported parameters found in the decorator.`
             });
@@ -3022,7 +3022,7 @@ export class InsightIntentHandler {
             const errorMessage: string = 'The class decorated with @InsightIntentFunction must be exported.';
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110014',
                 message: errorMessage
             });
@@ -3033,7 +3033,7 @@ export class InsightIntentHandler {
         if (!hasDecorator) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110013',
                 message: 'Methods decorated with @InsightIntentFunctionMethod must be in a class decorated with @InsightIntentFunction.'
             });
@@ -3047,7 +3047,7 @@ export class InsightIntentHandler {
                 const errorMessage: string = `Methods decorated with @InsightIntentFunctionMethod must be static.`;
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110015',
                     message: errorMessage
                 });
@@ -3147,7 +3147,7 @@ export class InsightIntentHandler {
         if (!data.intentName || !data.domain || !data.intentVersion) {
             LogCollector.getInstance().collectLogInfo({
                 node: classNode,
-                type: LogType.ERROR,
+                level: LogType.ERROR,
                 code: '10110003',
                 message: 'Required parameters are missing for the decorator.'
             });

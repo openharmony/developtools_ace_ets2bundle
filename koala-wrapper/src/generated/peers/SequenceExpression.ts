@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class SequenceExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SEQUENCE_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_SEQUENCE_EXPRESSION;
     }
     static createSequenceExpression(sequence_arg: readonly Expression[]): SequenceExpression {
         return new SequenceExpression(global.generatedEs2panda._CreateSequenceExpression(global.context, passNodeArray(sequence_arg), sequence_arg.length))

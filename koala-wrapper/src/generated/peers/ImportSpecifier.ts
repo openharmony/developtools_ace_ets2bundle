@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Identifier } from "./Identifier"
 export class ImportSpecifier extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_SPECIFIER)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_IMPORT_SPECIFIER;
     }
     static createImportSpecifier(imported?: Identifier, local?: Identifier): ImportSpecifier {
         return new ImportSpecifier(global.generatedEs2panda._CreateImportSpecifier(global.context, passNode(imported), passNode(local)))

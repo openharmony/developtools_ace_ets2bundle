@@ -210,7 +210,7 @@ export class ParameterTransformer extends AbstractVisitor {
         if (!shouldUpdate) {
             return node;
         }
-        const decl = arkts.getPeerDecl(memoInfo.rewritePeer);
+        const decl = arkts.getPeerIdentifierDecl(memoInfo.rewritePeer);
         if (!decl || !arkts.isEtsParameterExpression(decl)) {
             return node;
         }
@@ -244,7 +244,7 @@ export class ParameterTransformer extends AbstractVisitor {
                     return this.updateParamReDeclare(declarator, memoInfo);
                 }
                 if (!!declarator.initializer && arkts.isIdentifier(declarator.initializer)) {
-                    const decl = arkts.getPeerDecl(declarator.initializer.originalPeer);
+                    const decl = arkts.getPeerIdentifierDecl(declarator.initializer.originalPeer);
                     if (decl && this.rewriteIdentifiers?.has(decl.peer)) {
                         return arkts.factory.updateVariableDeclarator(
                             declarator,
@@ -281,7 +281,7 @@ export class ParameterTransformer extends AbstractVisitor {
             return this.updateVariableReDeclarationFromParam(beforeChildren);
         }
         if (arkts.isCallExpression(beforeChildren) && arkts.isIdentifier(beforeChildren.expression)) {
-            const decl = arkts.getPeerDecl(beforeChildren.expression.originalPeer);
+            const decl = arkts.getPeerIdentifierDecl(beforeChildren.expression.originalPeer);
             if (decl && this.rewriteCalls?.has(decl.peer)) {
                 const updateCall = this.rewriteCalls.get(decl.peer)!(
                     beforeChildren.arguments.map((it) => this.visitor(it) as arkts.Expression)
@@ -295,7 +295,7 @@ export class ParameterTransformer extends AbstractVisitor {
         }
         const node = this.visitEachChild(beforeChildren);
         if (arkts.isIdentifier(node)) {
-            const decl = arkts.getPeerDecl(node.originalPeer);
+            const decl = arkts.getPeerIdentifierDecl(node.originalPeer);
             if (decl && this.rewriteIdentifiers?.has(decl.peer)) {
                 return this.rewriteIdentifiers.get(decl.peer)!();
             }

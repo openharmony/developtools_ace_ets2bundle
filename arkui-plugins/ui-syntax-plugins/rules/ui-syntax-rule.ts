@@ -14,8 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ProjectConfig } from 'common/plugin-context';
-import { UISyntaxRuleComponents, ImportInfo } from 'ui-syntax-plugins/utils';
+import { ProjectConfig, UIComponents } from '../../common/plugin-context';
+import { ImportInfo } from 'ui-syntax-plugins/utils';
 
 export type FixSuggestion = {
     range: [start: arkts.SourcePosition, end: arkts.SourcePosition];
@@ -33,9 +33,8 @@ export type ReportOptions = {
 
 export type UISyntaxRuleContext = {
     projectConfig?: ProjectConfig;
-    componentsInfo: UISyntaxRuleComponents | undefined;
+    componentsInfo: UIComponents | undefined;
     report(options: ReportOptions): void;
-    getMainPages(): string[];
     getImportsInfo(program: arkts.Program): ImportInfo;
     clearImportsInfo(): void;
 };

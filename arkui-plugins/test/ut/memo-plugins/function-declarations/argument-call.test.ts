@@ -96,6 +96,41 @@ function args_with_default_values(__memo_context: __memo_context_type, __memo_id
         return;
     }
 }
+
+@Memo() 
+function memo_with_non_memo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, non_memo_cb: (()=> void)): void {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
+    const __memo_parameter_non_memo_cb = __memo_scope.param(0, non_memo_cb);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    {
+        __memo_scope.recache();
+        return;
+    }
+}
+
+function non_memo(cb: (()=> void)): void {}
+
+@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+    if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+    }
+    memo_with_non_memo(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
+        non_memo((() => {
+            const inner_cb = ((msg: string) => {
+                let obj = msg;
+            });
+        }));
+    }));
+    {
+        __memo_scope.recache();
+        return;
+    }
+});
 `;
 
 function testMemoTransformer(this: PluginTestContext): void {

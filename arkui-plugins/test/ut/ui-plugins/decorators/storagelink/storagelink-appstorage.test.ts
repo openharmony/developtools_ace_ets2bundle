@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -85,26 +85,6 @@ class Data {
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
-  private __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
-  
-  public get storageLink(): number {
-    return this.__backing_storageLink!.get();
-  }
-  
-  public set storageLink(value: number) {
-    this.__backing_storageLink!.set(value);
-  }
-  
-  private __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
-  
-  public get storageLinkObject(): Data {
-    return this.__backing_storageLinkObject!.get();
-  }
-  
-  public set storageLinkObject(value: Data) {
-    this.__backing_storageLinkObject!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
@@ -114,10 +94,30 @@ class Data {
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
     throw new Error("Declare interface");
+    }
+
+  private __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
+
+  public get storageLink(): number {
+    return this.__backing_storageLink!.get();
   }
-  
+
+  public set storageLink(value: number) {
+    this.__backing_storageLink!.set(value);
+  }
+
+  private __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
+
+  public get storageLinkObject(): Data {
+    return this.__backing_storageLinkObject!.get();
+  }
+
+  public set storageLinkObject(value: Data) {
+    this.__backing_storageLinkObject!.set(value);
+  }
+
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -141,9 +141,13 @@ class Data {
       }), undefined);
     }));
   }
-  
-  ${dumpConstructor()}
-  
+
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
+
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -153,15 +157,14 @@ class __EntryWrapper extends EntryPoint {
   }
   
   public constructor() {}
-  
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "PropA" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)', [dumpAnnotation('StorageLink', { value: "PropB" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLinkObject', '(IStorageLinkDecoratedVariable<Data> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLinkObject', '(boolean | undefined)')}
   
@@ -174,7 +177,7 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink with appstorage',
-    [storageLinkTransform, uiNoRecheck, recheck],
+    [storageLinkTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStorageLinkTransformer],
     },

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -38,6 +38,7 @@ const observedTrackTransform: Plugins = {
 const pluginTester = new PluginTester('test static property in observed class', buildConfig);
 
 const expectedScript: string = `
+
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
 
 import { OBSERVE as OBSERVE } from "arkui.stateManagement.decorator";
@@ -86,33 +87,9 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
-  @JSONRename({newName:"count"}) public static __backing_count: int = 1;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_count: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__meta_count");
+  public static count: int = 1;
 
   @JSONRename({newName:"value"}) public __backing_value: int = 10;
-
-  public foo(): void {
-    if (((StaticClassObserved.count) < (this.value))) {
-    }
-  }
-
-  public constructor() {}
-
-  static {
-  }
-
-  public static get count(): int {
-    StaticClassObserved.__meta_count.addRef();
-    return StaticClassObserved.__backing_count;
-  }
-
-  public static set count(newValue: int) {
-    if (((StaticClassObserved.__backing_count) !== (newValue))) {
-      StaticClassObserved.__backing_count = newValue;
-      StaticClassObserved.__meta_count.fireChange();
-    }
-  }
 
   public get value(): int {
     this.conditionalAddRef(this.__meta);
@@ -127,7 +104,16 @@ function main() {}
     }
   }
 
+  public foo(): void {
+    if (((StaticClassObserved.count) < (this.value))) {
+    }
+  }
+
+  public constructor() {}
+  static {
+  }
 }
+
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
@@ -136,7 +122,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test static property in observed class',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

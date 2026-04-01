@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -58,19 +58,19 @@ function main() {}
 
 @Observed() class B implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-  
+
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
-  
+
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
     return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
-  
+
   public executeOnSubscribingWatches(propertyName: string): void {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
@@ -82,26 +82,18 @@ function main() {}
       meta.addRef();
     }
   }
-  
+
   public propB: number = 1;
-  
+
   @JSONRename({newName:"trackB"}) public __backing_trackB: number = 2;
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackB: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackB");
-  
-  @JSONRename({newName:"newProp"}) public __backing_newProp?: boolean;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_newProp");
-
-  public constructor(newProp: boolean) {
-    this.newProp = newProp;
-  }
-  
   public get trackB(): number {
     this.conditionalAddRef(this.__meta_trackB);
     return this.__backing_trackB;
   }
-  
+
   public set trackB(newValue: number) {
     if (((this.__backing_trackB) !== (newValue))) {
       this.__backing_trackB = newValue;
@@ -109,6 +101,10 @@ function main() {}
       this.executeOnSubscribingWatches("trackB");
     }
   }
+
+  @JSONRename({newName:"newProp"}) public __backing_newProp?: boolean;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_newProp: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_newProp");
 
   public get newProp(): boolean {
     this.conditionalAddRef(this.__meta_newProp);
@@ -122,7 +118,14 @@ function main() {}
       this.executeOnSubscribingWatches("newProp");
     }
   }
-  
+
+  public constructor(newProp: boolean) {
+    this.newProp = newProp;
+  }
+
+  static {
+  }
+
 }
 `;
 
@@ -132,7 +135,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed with track transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

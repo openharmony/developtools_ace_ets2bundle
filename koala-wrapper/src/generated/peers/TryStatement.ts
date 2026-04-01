@@ -38,6 +38,9 @@ export class TryStatement extends Statement {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TRY_STATEMENT)
         super(pointer)
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TRY_STATEMENT;
+    }
     static createTryStatement(block: BlockStatement | undefined, catchClauses: readonly CatchClause[], finalizer: BlockStatement | undefined, finalizerInsertionsLabelPair: readonly LabelPair[], finalizerInsertionsStatement: readonly Statement[]): TryStatement {
         return new TryStatement(global.generatedEs2panda._CreateTryStatement(global.context, passNode(block), passNodeArray(catchClauses), catchClauses.length, passNode(finalizer), passNodeArray(finalizerInsertionsLabelPair), finalizerInsertionsLabelPair.length, passNodeArray(finalizerInsertionsStatement), finalizerInsertionsStatement.length))
     }

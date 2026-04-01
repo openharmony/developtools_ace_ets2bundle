@@ -16,7 +16,12 @@
 import { ForInStatement, Statement, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateForInStatement(
     original: ForInStatement,
@@ -32,6 +37,11 @@ export function updateForInStatement(
         return original;
     }
 
-    const updateNode = updateThenAttach(ForInStatement.updateForInStatement, attachModifiers);
+    const updateNode = updateThenAttach(
+        ForInStatement.updateForInStatement,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return updateNode(original, left, right, body);
 }

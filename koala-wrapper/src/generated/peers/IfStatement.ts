@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class IfStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IF_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_IF_STATEMENT;
     }
     static createIfStatement(test?: Expression, consequent?: Statement, alternate?: Statement): IfStatement {
         return new IfStatement(global.generatedEs2panda._CreateIfStatement(global.context, passNode(test), passNode(consequent), passNode(alternate)))
@@ -46,11 +49,26 @@ export class IfStatement extends Statement {
     get test(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._IfStatementTestConst(global.context, this.peer))
     }
+    /** @deprecated */
+    setTest(test?: Expression): this {
+        global.generatedEs2panda._IfStatementSetTest(global.context, this.peer, passNode(test))
+        return this
+    }
     get consequent(): Statement | undefined {
         return unpackNode(global.generatedEs2panda._IfStatementConsequentConst(global.context, this.peer))
     }
+    /** @deprecated */
+    setConsequent(consequent?: Statement): this {
+        global.generatedEs2panda._IfStatementSetConsequent(global.context, this.peer, passNode(consequent))
+        return this
+    }
     get alternate(): Statement | undefined {
         return unpackNode(global.generatedEs2panda._IfStatementAlternateConst(global.context, this.peer))
+    }
+    /** @deprecated */
+    setAlternate(alternate?: Statement): this {
+        global.generatedEs2panda._IfStatementSetAlternate(global.context, this.peer, passNode(alternate))
+        return this
     }
 }
 export function isIfStatement(node: AstNode): node is IfStatement {

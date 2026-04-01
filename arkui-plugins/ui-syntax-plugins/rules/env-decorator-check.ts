@@ -91,16 +91,6 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             this.checkEnvInitialization(node);
         }
     }
-
-    public checked(node: arkts.AstNode): void {
-        if (arkts.isCallExpression(node)) {
-            this.checkStructPropertyDefinition(node);
-        }
-
-        if (arkts.isClassProperty(node)) {
-            this.checkEnvVariableType(node);
-        }
-    }
     
     // Reports error when @Env decorator is used in non-component structs.
     private checkEnvUsagePositionInStruct(node: arkts.StructDeclaration, hasComponent: boolean, hasComponentV2: boolean): void {

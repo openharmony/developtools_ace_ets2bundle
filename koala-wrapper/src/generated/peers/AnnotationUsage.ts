@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 import { Identifier } from "./Identifier"
 export class AnnotationUsage extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_USAGE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ANNOTATION_USAGE;
     }
     static createAnnotationUsage(expr?: Expression): AnnotationUsage {
         return new AnnotationUsage(global.generatedEs2panda._CreateAnnotationUsageIr(global.context, passNode(expr)))

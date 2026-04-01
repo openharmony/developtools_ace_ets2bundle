@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -71,55 +71,49 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  
-  private __backing_numA?: IStorageLinkDecoratedVariable<number>;
-  
-  public get numA(): number {
-    return this.__backing_numA!.get();
-  }
-  
-  public set numA(value: number) {
-    this.__backing_numA!.set(value);
-  }
-  
-  private __backing_stringA?: IStorageLinkDecoratedVariable<string>;
-  
-  public get stringA(): string {
-    return this.__backing_stringA!.get();
-  }
-  
-  public set stringA(value: string) {
-    this.__backing_stringA!.set(value);
-  }
-  
-  private __backing_booleanA?: IStorageLinkDecoratedVariable<boolean>;
-  
-  public get booleanA(): boolean {
-    return this.__backing_booleanA!.get();
-  }
-  
-  public set booleanA(value: boolean) {
-    this.__backing_booleanA!.set(value);
-  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___203542966 = storage;
-      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_numA?: IStorageLinkDecoratedVariable<number>;
+  public get numA(): number {
+    return this.__backing_numA!.get();
+  }
+  public set numA(value: number) {
+    this.__backing_numA!.set(value);
+  }
+  private __backing_stringA?: IStorageLinkDecoratedVariable<string>;
+  public get stringA(): string {
+    return this.__backing_stringA!.get();
+  }
+  public set stringA(value: string) {
+    this.__backing_stringA!.set(value);
+  }
+  private __backing_booleanA?: IStorageLinkDecoratedVariable<boolean>;
+  public get booleanA(): boolean {
+    return this.__backing_booleanA!.get();
+  }
+  public set booleanA(value: boolean) {
+    this.__backing_booleanA!.set(value);
+  }
+
   @Memo() 
   public build() {}
-  
+
   ${dumpConstructor()}
-  
+
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -133,15 +127,15 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numA', '(IStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringA', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringA', '(string | undefined)', [dumpAnnotation('StorageLink', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringA', '(IStorageLinkDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringA', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)', [dumpAnnotation('StorageLink', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanA', '(IStorageLinkDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanA', '(boolean | undefined)')}
   
@@ -154,7 +148,7 @@ function testStorageLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test storagelink primitive type transform',
-    [storageLinkTransform, uiNoRecheck, recheck],
+    [storageLinkTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStorageLinkTransformer],
     },

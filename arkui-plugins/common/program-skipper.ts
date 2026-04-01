@@ -14,17 +14,18 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { debugLog } from './debug';
 import path from 'path';
+import { debugLog } from './debug';
+import { AstNodePointer } from './safe-types';
 
 const LIB_SUFFIX = '.d.ets';
 const ARKUI = 'arkui';
 
 export class ProgramSkipper {
     private static _absName2programs: Map<string, arkts.Program[]> = new Map();
-    private static _uiProgramSet: Set<number> = new Set();
+    private static _uiProgramSet: Set<AstNodePointer> = new Set();
     private static _intentProgramSet: Set<number> = new Set();
-    private static _edges: Map<number, arkts.Program[]> = new Map();
+    private static _edges: Map<AstNodePointer, arkts.Program[]> = new Map();
     private static _initedCanSkip: boolean = false;
 
     private static dfs(program: arkts.Program): void {
@@ -72,10 +73,11 @@ export class ProgramSkipper {
             return;
         }
         const start = performance.now();
-        programs.forEach(p => this.addProgramToMap(p));
-        programs.forEach(p => this.addEdges(p));
-        programs.forEach(p => {
-            if (p.absName.endsWith(LIB_SUFFIX) && p.absName.includes(ARKUI)) {
+        programs.forEach((p) => this.addProgramToMap(p));
+        programs.forEach((p) => this.addEdges(p));
+        programs.forEach((p) => {
+            const name = p.absName;
+            if (name.endsWith(LIB_SUFFIX) && name.includes(ARKUI)) {
                 this.dfs(p);
             }
             if (!this._uiProgramSet.has(p.peer)) {
@@ -102,15 +104,21 @@ export class ProgramSkipper {
     }
 
     public static canSkipProgram(program: arkts.Program | undefined): boolean {
-        if (!arkts.arktsGlobal.configObj ||
-            arkts.arktsGlobal.configObj.compilationMode !== arkts.Es2pandaCompilationMode.COMPILATION_MODE_SIMULTANEOUS) {
+        if (
+            !arkts.arktsGlobal.configObj ||
+            arkts.arktsGlobal.configObj.compilationMode
+                !== arkts.Es2pandaCompilationMode.COMPILATION_MODE_SIMULTANEOUS)
+        {
             return false;
         }
         if (!program) {
             return false;
         }
         if (!this._initedCanSkip) {
-            const programs = [...arkts.arktsGlobal.compilerContext?.program.externalSources.flatMap(s => s.programs)!, program];
+            const programs = [
+                ...arkts.arktsGlobal.compilerContext?.program.externalSources.flatMap(s => s.programs)!,
+                program
+            ];
             this.initCanSkip(programs);
             this._initedCanSkip = true;
             this._absName2programs.clear();

@@ -15,13 +15,13 @@
 
 import { StringLiteral } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { updateThenAttach } from '../utilities/private';
 
 export function updateStringLiteral(original: StringLiteral, str: string): StringLiteral {
     if (isSameNativeObject(str, original.str)) {
         return original;
     }
 
-    const update = updateThenAttach(StringLiteral.update1StringLiteral, attachModifiers);
+    const update = updateThenAttach(StringLiteral.update1StringLiteral);
     return update(original, str);
 }

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -101,24 +101,6 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_firstName");
 
-  @JSONRename({newName:"lastName"}) public __backing_lastName: string = "Li";
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_lastName");
-
-  public age: number = 20;
-  
-  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
-    if (((this.age) >= (20))) {
-      return new Array<number>(0, 1, 2);
-    }
-    return ((((this.firstName) + (" "))) + (this.lastName));
-  }), "fullName");
-  
-  @Computed() 
-  public get fullName() {
-    return this.__computed_fullName!.get();
-  }
-
   public get firstName(): string {
     this.conditionalAddRef(this.__meta_firstName);
     return UIUtils.makeObserved(this.__backing_firstName);
@@ -131,6 +113,10 @@ function main() {}
       this.executeOnSubscribingWatches("firstName");
     }
   }
+
+  @JSONRename({newName:"lastName"}) public __backing_lastName: string = "Li";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_lastName");
 
   public get lastName(): string {
     this.conditionalAddRef(this.__meta_lastName);
@@ -145,8 +131,23 @@ function main() {}
     }
   }
 
-  public constructor() {}
+  public age: number = 20;
 
+  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
+    if (((this.age) >= (20))) {
+      return new Array<number>(0, 1, 2);
+    }
+    return ((((this.firstName) + (" "))) + (this.lastName));
+  }), "fullName");
+
+  @Computed() 
+  public get fullName() {
+    return this.__computed_fullName!.get();
+  }
+
+  public constructor() {}
+  static {
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -168,6 +169,19 @@ function main() {}
     this.__computed_num5!.resetOnReuse();
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
 
   private __backing_firstName?: ILocalDecoratedVariable<string>;
 
@@ -198,55 +212,42 @@ function main() {}
   public set age(value: number) {
     this.__backing_age = value;
   }
-  
+
   private __computed_fullName = STATE_MGMT_FACTORY.makeComputed((() => {
     if (((this.age) >= (20))) {
       return 500;
     }
     return ((((((this.firstName) + (" "))) + (this.lastName))) + (this.age));
   }), "fullName");
-  
+
   @Computed() 
   public get fullName() {
     return this.__computed_fullName!.get();
   }
-  
+
   private __computed_num5 = STATE_MGMT_FACTORY.makeComputed((() => {
     return 5;
   }), "num5");
-  
+
   @Computed() 
   public get num5() {
     return this.__computed_num5!.get();
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
   public build() {}
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'firstName', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'firstName', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_firstName', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_firstName', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'lastName', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'lastName', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_lastName', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_lastName', '(boolean | undefined)')}
 
@@ -262,7 +263,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Computed decorator with no return type',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

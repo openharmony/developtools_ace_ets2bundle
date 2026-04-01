@@ -13,6 +13,25 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
+
+export const LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
+    'std',
+    'escompat',
+    'security',
+    'application',
+    'permissions',
+    'bundleManager',
+    'commonEvent',
+    'global',
+    'arkui',
+    /@arkts\..*/,
+    /@ohos\.*/,
+    /@system\..*/,
+    /@koalaui\./,
+    /ability\..*/,
+];
+
 export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
     'std',
     'escompat',
@@ -36,9 +55,19 @@ export const CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME: string = 'arkui.component.cus
 export const ARKUI_COMPONENT_COMMON_SOURCE_NAME: string = 'arkui.component.common';
 export const ARKUI_FOREACH_SOURCE_NAME: string = 'arkui.component.forEach';
 export const ARKUI_BUILDER_SOURCE_NAME: string = 'arkui.component.builder';
+export const ARKUI_INTEROP_SOURCE_NAME: string = 'arkui.component.interop';
 export const ARKUI_NAVIGATION_SOURCE_NAME: string = 'arkui.component.navigation';
 export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDestination';
 export const ARKUI_LOCAL_STORAGE_SOURCE_NAME: string = 'arkui.stateManagement.storage.localStorage';
+
+export const LIB_UI_COMPONENTS_PATH: string = path.resolve(__dirname, '../components');
+export const PREVIEWER_RESOURCE_PATH: string = path.resolve(
+    __dirname,
+    '../../../../../../previewer/common/resources/entry/resources.txt'
+);
+export const PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES: string[] = ['ohos_id', 'ohos_fa'];
+export const APPLICATION_MAIN_BASE_RESOURCE_PATH = 'src/main/resources/base';
+export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
 
 export enum UIClass {
     LOCAL_STORAGE = 'LocalStorage',
@@ -75,7 +104,7 @@ export enum BindableNames {
     MAKE_BINDABLE = 'makeBindable',
     BINDABLE = 'Bindable',
     VALUE = 'value',
-    ON_CHANGE = 'onChange'
+    ON_CHANGE = 'onChange',
 }
 
 export enum StructDecoratorNames {
@@ -86,6 +115,9 @@ export enum StructDecoratorNames {
     RESUABLE_V2 = 'ReusableV2',
     CUSTOM_LAYOUT = 'CustomLayout',
     CUSTOMDIALOG = 'CustomDialog',
+    PREVIEW = 'Preview',
+    REUSABLE = 'Reusable',
+    REUSABLE_V2 = 'ReusableV2'
 }
 
 export enum EntryWrapperNames {
@@ -97,7 +129,7 @@ export enum EntryWrapperNames {
     REGISTER_NAMED_ROUTER = 'RegisterNamedRouter',
     ROUTER_NAME = 'routerName',
     INSTANCE = 'instance',
-    PARAM = 'param'
+    PARAM = 'param',
 }
 
 export enum ObservedNames {
@@ -109,10 +141,14 @@ export enum ObservedNames {
     ADD_REF = 'addRef',
     SHOULD_ADD_REF = 'shouldAddRef',
     NEW_NAME = 'newName',
-    PROPERTY_PREFIX = '%%property-',
     NEW_VALUE = 'newValue',
     FIRE_CHANGE = 'fireChange',
     EXECUATE_WATCHES = 'executeOnSubscribingWatches',
+    SUBSCRIBED_WATCHES ='subscribedWatches',
+    ADD_WATCH_SUBSCRIBER = 'addWatchSubscriber',
+    REMOVE_WATCH_SUBSCRIBER = 'removeWatchSubscriber',
+    WATCH_ID = 'watchId',
+    PROPETY_NAME = 'propertyName'
 }
 
 export enum MonitorNames {
@@ -120,12 +156,14 @@ export enum MonitorNames {
     VALUE_CALL_CACK = 'valueCallback',
     I_MONITOR = 'IMonitor',
     M_PARAM = '_m',
+    OWNER = 'owner',
+    FUNCTION_NAME = 'functionName'
 }
 
 export enum EntryParamNames {
     ENTRY_STORAGE = 'storage',
     ENTRY_USE_SHARED_STORAGE = 'useSharedStorage',
-    ENTRY_ROUTE_NAME = 'routeName'
+    ENTRY_ROUTE_NAME = 'routeName',
 }
 
 export enum InnerComponentNames {
@@ -148,7 +186,6 @@ export enum DecoratorNames {
     STATE = 'State',
     STORAGE_LINK = 'StorageLink',
     LINK = 'Link',
-    PROP = 'Prop',
     PROVIDE = 'Provide',
     CONSUME = 'Consume',
     OBJECT_LINK = 'ObjectLink',
@@ -186,6 +223,14 @@ export enum DecoratorNames {
     COMPONENT_REUSE = 'ComponentReuse',
     COMPONENT_RECYCLE = 'ComponentRecycle',
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
+    STORAGE_PROP = 'StorageProp',
+    REGULAR = 'Regular',
+    VARIABLE = 'Variable',
+}
+
+export enum DeprecatedDecoratorNames {
+    PROP = 'Prop',
+    LOCAL_STORAGE_PROP = 'LocalStorageProp',
     STORAGE_PROP = 'StorageProp'
 }
 
@@ -197,10 +242,6 @@ export enum TypeNames {
     MAP = 'Map',
     STRING = 'string',
     TYPE_T = 'T',
-}
-
-export enum DecoratorIntrinsicNames {
-    LINK = '__Link_intrinsic',
 }
 
 export enum StateManagementTypes {
@@ -260,6 +301,7 @@ export enum StateManagementTypes {
     MAKE_OBSERVED = 'makeObserved',
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
     SET_OWNER = 'setOwner',
+    BACKING = '__backing',
     RESET_ON_REUSE = 'resetOnReuse',
     MAKE_ENV = 'makeEnv',
     CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
@@ -289,6 +331,11 @@ export enum NavigationNames {
     NAME = 'name',
     NAVIGATION_REGISTER_CLASS = '__NavigationBuilderRegisterClass',
     STATIC_BLOCK_TRIGGER_FIELD = 'staticBlockTriggerField',
+}
+
+export enum ConditionNames {
+    CONDITION_SCOPE = 'ConditionScope',
+    CONDITION_BRANCH = 'ConditionBranch',
 }
 
 export enum ArkTsDefaultNames {
@@ -334,22 +381,51 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [Dollars.DOLLAR_RAWFILE, [Dollars.TRANSFORM_DOLLAR_RAWFILE]],
     [Dollars.DOLLAR_DOLLAR, [BindableNames.BINDABLE, BindableNames.MAKE_BINDABLE]],
     [DecoratorNames.STATE, [StateManagementTypes.STATE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.LINK, [StateManagementTypes.LINK_DECORATED, StateManagementTypes.LINK_SOURCE_TYPE, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [
+        DecoratorNames.LINK,
+        [
+            StateManagementTypes.LINK_DECORATED,
+            StateManagementTypes.LINK_SOURCE_TYPE,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ]
+    ],
     [DecoratorNames.PROP_REF, [StateManagementTypes.PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.PROVIDE, [StateManagementTypes.PROVIDE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.CONSUME, [StateManagementTypes.CONSUME_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.STORAGE_PROP_REF, [StateManagementTypes.STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.LOCAL_STORAGE_PROP_REF, [StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.STORAGE_LINK, [StateManagementTypes.STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.OBJECT_LINK, [StateManagementTypes.OBJECT_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.LOCAL_STORAGE_LINK, [StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [
+        DecoratorNames.STORAGE_PROP_REF,
+        [StateManagementTypes.STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]
+    ],
+    [
+        DecoratorNames.LOCAL_STORAGE_PROP_REF,
+        [StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]
+    ],
+    [
+        DecoratorNames.STORAGE_LINK,
+        [StateManagementTypes.STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]
+    ],
+    [
+        DecoratorNames.OBJECT_LINK,
+        [StateManagementTypes.OBJECT_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]
+    ],
+    [
+        DecoratorNames.LOCAL_STORAGE_LINK,
+        [StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]
+    ],
     [DecoratorNames.LOCAL, [StateManagementTypes.LOCAL_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.PARAM, [StateManagementTypes.PARAM_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.ONCE, [StateManagementTypes.ONCE_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.PROVIDER, [StateManagementTypes.PROVIDER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.CONSUMER, [StateManagementTypes.CONSUMER_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [DecoratorNames.COMPUTED, [StateManagementTypes.COMPUTED_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
-    [DecoratorNames.MONITOR, [StateManagementTypes.MONITOR_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY, StateManagementTypes.I_MONITOR]],
+    [
+        DecoratorNames.MONITOR,
+        [
+            StateManagementTypes.MONITOR_DECORATED,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
+            StateManagementTypes.I_MONITOR
+        ]
+    ],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
@@ -360,7 +436,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.RENDER_ID_TYPE,
             StateManagementTypes.OBSERVE,
             StateManagementTypes.SUBSCRIBED_WATCHES,
-            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
         ],
     ],
     [
@@ -372,7 +448,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.RENDER_ID_TYPE,
             StateManagementTypes.OBSERVE,
             StateManagementTypes.SUBSCRIBED_WATCHES,
-            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
         ],
     ],
     [
@@ -386,43 +462,12 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY
         ],
     ],
-    [
-        DecoratorNames.TRACE,
-        [
-            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
-            StateManagementTypes.UI_UTILS
-        ],
-    ],
-    [
-        DecoratorNames.COMPONENT_APPEAR, 
-        [
-            StateManagementTypes.UI_UTILS
-        ]
-    ],
-    [
-        DecoratorNames.COMPONENT_BUILT, 
-        [
-            StateManagementTypes.UI_UTILS
-        ]
-    ],
-    [
-        DecoratorNames.COMPONENT_DISAPPEAR, 
-        [
-            StateManagementTypes.UI_UTILS
-        ]
-    ],
-    [
-        DecoratorNames.COMPONENT_REUSE, 
-        [
-            StateManagementTypes.UI_UTILS
-        ]
-    ],
-    [
-        DecoratorNames.COMPONENT_RECYCLE, 
-        [
-            StateManagementTypes.UI_UTILS
-        ]
-    ],
+    [DecoratorNames.TRACE, [StateManagementTypes.STATE_MANAGEMENT_FACTORY, StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_APPEAR, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_BUILT, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_DISAPPEAR, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_REUSE, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_RECYCLE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
 ]);
 
@@ -436,7 +481,7 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.UI_UTILS, 'arkui.stateManagement.utils'],
-    [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common']
+    [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common'],
 ]);
 
 export enum GetSetTypes {
@@ -444,9 +489,64 @@ export enum GetSetTypes {
     SET = 'set',
 }
 
-export enum GenSymPrefix {
-    INTRINSIC = 'gensym%%',
-    UI = 'gensym__'
+export enum BuiltInNames {
+    GENSYM_INTRINSIC_PREFIX = 'gensym%%',
+    GENSYM_UI_PREFIX = 'gensym__',
+    GLOBAL_INIT_METHOD = '_$init$_',
+    GLOBAL_MAIN_METHOD = 'main',
+    DEFAULT_STATIC_BLOCK_NAME = '<cctor>',
+}
+
+export enum CustomComponentNames {
+    COMPONENT_BUILD_ORI = 'build',
+    COMPONENT_CONSTRUCTOR_ORI = 'constructor',
+    COMPONENT_CLASS_NAME = 'CustomComponent',
+    COMPONENT_V2_CLASS_NAME = 'CustomComponentV2',
+    BASE_CUSTOM_DIALOG_NAME = 'BaseCustomDialog',
+    COMPONENT_INTERFACE_PREFIX = '__Options_',
+    COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
+    COMPONENT_UPDATE_STRUCT = '__updateStruct',
+    COMPONENT_TO_RECORD = '__toRecord',
+    COMPONENT_INITIALIZERS_NAME = 'initializers',
+    BUILDCOMPATIBLENODE = '_buildCompatibleNode',
+    OPTIONS = 'options',
+    PAGE_LIFE_CYCLE = 'PageLifeCycle',
+    LAYOUT_CALLBACKS = 'LayoutCallbacks',
+    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse'
+}
+ 	 
+export enum CustomDialogNames {
+    CUSTOM_DIALOG_ANNOTATION_NAME = 'CustomDialog',
+    CUSTOM_DIALOG_CONTROLLER = 'CustomDialogController',
+    CUSTOM_DIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
+    SET_DIALOG_CONTROLLER_METHOD = '__setDialogController__',
+    CONTROLLER = 'controller',
+    OPTIONS_BUILDER = 'builder',
+    BASE_COMPONENT = 'baseComponent',
+    EXTENDABLE_COMPONENT = 'ExtendableComponent',
+    CUSTOM_BUILDER = 'CustomBuilder',
+}
+ 	 
+export enum BuilderLambdaNames {
+    ANNOTATION_NAME = 'ComponentBuilder',
+    ORIGIN_METHOD_NAME = '$_invoke',
+    TRANSFORM_METHOD_NAME = '_invoke',
+    CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',
+    REUSE_ID_PARAM_NAME = 'reuseId',
+    REUSE_PARAM_NAME = 'reuse',
+    STORAGE_PARAM_NAME = 'storage',
+    USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
+    STYLE_PARAM_NAME = 'style',
+    STYLE_ARROW_PARAM_NAME = 'instance',
+    CONTENT_PARAM_NAME = 'content',
+    COMPONENT_PARAM_ORI = 'content_',
+    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
+    DEBUG_LINE_METHOD = 'debugLine'
+}
+ 	 
+export enum NodeCacheNames {
+    MEMO = 'memo',
+    UI = 'ui',
 }
 
 export enum LANGUAGE_VERSION {

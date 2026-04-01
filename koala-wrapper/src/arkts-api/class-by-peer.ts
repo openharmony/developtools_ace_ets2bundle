@@ -13,32 +13,11 @@
  * limitations under the License.
  */
 
-import { Es2pandaAstNodeType } from '../Es2pandaEnums';
+import { KNativePointer, nullptr } from '@koalaui/interop';
 import { throwError } from '../utils';
 import { global } from './static/global';
-import { KNativePointer, nullptr } from '@koalaui/interop';
 import { AstNode, UnsupportedNode } from './peers/AstNode';
-
-type AstNodeConstructor = new (peer: KNativePointer) => AstNode;
-export const nodeByType = new Map<Es2pandaAstNodeType, AstNodeConstructor>([]);
-
-const MAX_SIZE = 2 ** 24;
-const cache = new Map<KNativePointer, AstNode>();
-export function clearNodeCache(): void {
-    cache.clear();
-}
-
-export function getOrPut(peer: KNativePointer, create: (peer: KNativePointer) => AstNode): AstNode {
-    if (cache.has(peer)) {
-        return cache.get(peer)!;
-    }
-
-    const newNode = create(peer);
-    if (cache.size < MAX_SIZE) {
-        cache.set(peer, newNode);
-    }
-    return newNode;
-}
+import { getOrPut, nodeByType } from './node-by-type';
 
 export function classByPeer<T extends AstNode>(peer: KNativePointer): T {
     if (peer === nullptr) {

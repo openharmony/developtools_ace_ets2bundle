@@ -31,10 +31,13 @@ import {
 
 import { Statement } from "./Statement"
 export class DebuggerStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_DEBUGGER_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_DEBUGGER_STATEMENT;
     }
     static createDebuggerStatement(): DebuggerStatement {
         return new DebuggerStatement(global.generatedEs2panda._CreateDebuggerStatement(global.context))

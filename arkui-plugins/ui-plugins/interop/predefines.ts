@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 export enum InteroperAbilityNames {
     ARKTS_1_1 = '1.1',
     ARKTS_1_2 = '1.2',
@@ -39,7 +38,6 @@ export enum InteropInternalNames {
     PARAMSLAMBDA = '__Interop_Paramslambda_Internal',
     ELMTID = '__Interop_ElmtId_Internal',
 }
-
 
 export enum ESValueMethodNames {
     ESVALUE = 'ESValue',
@@ -67,7 +65,7 @@ export enum BuilderParams {
     PARAM_WRAPPED_KEY = 'param_wrapped_key',
     INSTANCEPARAM = 'instanceParam',
     PARAM_WRAPPED = 'param_wrapped',
-    PARAM_WRAPPED_IT = 'param_wrapped_it'
+    PARAM_WRAPPED_IT = 'param_wrapped_it',
 }
 
 export const GLOBAL_ANNOTATION_MODULE = 'dynamic/@ohos.arkui.GlobalAnnotation';

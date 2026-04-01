@@ -41,6 +41,14 @@ export abstract class AbstractVisitor implements VisitorOptions {
         return result;
     }
 
+    getOptions(): VisitorOptions {
+        return {
+            isExternal: this.isExternal,
+            externalSourceName: this.externalSourceName,
+            program: this.program,
+        };
+    }
+
     abstract visitor(node: arkts.AstNode): arkts.AstNode;
 
     init(): void {}
@@ -50,6 +58,6 @@ export abstract class AbstractVisitor implements VisitorOptions {
     }
 
     visitEachChild(node: arkts.AstNode): arkts.AstNode {
-        return this.withIndentation(() => arkts.visitEachChild(node, (it) => this.visitor(it)));
+        return arkts.visitEachChild(node, (it) => this.visitor(it));
     }
 }

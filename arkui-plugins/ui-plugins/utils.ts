@@ -13,67 +13,28 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
 import { matchPrefix } from '../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
     CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
+    CustomComponentNames,
+    CustomDialogNames,
     DecoratorNames,
     StructDecoratorNames,
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { hasDecorator } from './property-translators/utils';
 
-export enum CustomComponentNames {
-    COMPONENT_BUILD_ORI = 'build',
-    COMPONENT_CONSTRUCTOR_ORI = 'constructor',
-    COMPONENT_CLASS_NAME = 'CustomComponent',
-    COMPONENT_V2_CLASS_NAME = 'CustomComponentV2',
-    BASE_CUSTOM_DIALOG_NAME = 'BaseCustomDialog',
-    COMPONENT_INTERFACE_PREFIX = '__Options_',
-    COMPONENT_INITIALIZE_STRUCT = '__initializeStruct',
-    COMPONENT_UPDATE_STRUCT = '__updateStruct',
-    COMPONENT_INITIALIZERS_NAME = 'initializers',
-    BUILDCOMPATIBLENODE = '_buildCompatibleNode',
-    OPTIONS = 'options',
-    PAGE_LIFE_CYCLE = 'PageLifeCycle',
-    LAYOUT_CALLBACKS = 'LayoutCallbacks',
-    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse'
-}
-
-export enum CustomDialogNames {
-    CUSTOM_DIALOG_ANNOTATION_NAME = 'CustomDialog',
-    CUSTOM_DIALOG_CONTROLLER = 'CustomDialogController',
-    CUSTOM_DIALOG_CONTROLLER_OPTIONS = 'CustomDialogControllerOptions',
-    SET_DIALOG_CONTROLLER_METHOD = '__setDialogController__',
-    CONTROLLER = 'controller',
-    OPTIONS_BUILDER = 'builder',
-    BASE_COMPONENT = 'baseComponent',
-    EXTENDABLE_COMPONENT = 'ExtendableComponent',
-    CUSTOM_BUILDER = 'CustomBuilder',
-}
-
-export enum BuilderLambdaNames {
-    ANNOTATION_NAME = 'ComponentBuilder',
-    ORIGIN_METHOD_NAME = '$_invoke',
-    TRANSFORM_METHOD_NAME = '_invoke',
-    CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',
-    REUSE_ID_PARAM_NAME = 'reuseId',
-    REUSE_PARAM_NAME = 'reuse',
-    STORAGE_PARAM_NAME = 'storage',
-    USE_SHARED_STORAGE_PARAM_NAME = 'useSharedStorage',
-    STYLE_PARAM_NAME = 'style',
-    STYLE_ARROW_PARAM_NAME = 'instance',
-    CONTENT_PARAM_NAME = 'content',
-    COMPONENT_PARAM_ORI = 'content_',
-    APPLY_ATTRIBUTES_FINISH_METHOD = 'applyAttributesFinish',
-    DEBUG_LINE_METHOD = 'debugLine'
-}
-
 export type EntryAnnoInfo = {
     range: arkts.SourceRange;
     name: string;
 };
+
+export function getSystemResourcePath(): string {
+    return path.resolve(__dirname, './sysResource.js');
+}
 
 // IMPORT
 export function findImportSourceByName(importName: string): string {
@@ -209,11 +170,11 @@ export function isCustomComponentAnnotation(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
+        const decl = arkts.getPeerIdentifierDecl(anno.expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }
@@ -435,10 +396,13 @@ export function expectNameInTypeReference(node: arkts.TypeNode | undefined): ark
  * @param key property key name.
  */
 export function getValueInObjectAnnotation(
-    anno: arkts.AnnotationUsage,
+    anno: arkts.AnnotationUsage | undefined,
     decoratorName: string,
     key: string
 ): arkts.Expression | undefined {
+    if (!anno) {
+        return undefined;
+    }
     const isSuitableAnnotation: boolean =
         !!anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === decoratorName;
     if (!isSuitableAnnotation) {

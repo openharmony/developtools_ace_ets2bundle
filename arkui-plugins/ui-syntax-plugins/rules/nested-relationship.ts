@@ -41,9 +41,9 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
         };
     }
     public parsed(node: arkts.StructDeclaration): void {
-        this.checkValidParentComponent(node);
-        this.checkValidChildComponent(node);
-        this.checkSingleChildComponent(node);
+        // this.checkValidParentComponent(node);
+        // this.checkValidChildComponent(node);
+        // this.checkSingleChildComponent(node);
         this.checkNoChildComponent(node);
     }
 

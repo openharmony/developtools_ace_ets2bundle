@@ -31,10 +31,13 @@ import {
 
 import { Statement } from "./Statement"
 export class TSModuleBlock extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_MODULE_BLOCK)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_MODULE_BLOCK;
     }
     static createTSModuleBlock(statements: readonly Statement[]): TSModuleBlock {
         return new TSModuleBlock(global.generatedEs2panda._CreateTSModuleBlock(global.context, passNodeArray(statements), statements.length))

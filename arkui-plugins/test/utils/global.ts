@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import fs from 'fs'
 import * as arkts from '@koalaui/libarkts';
 import { CompileFileInfo } from './shared-types';
 
@@ -55,11 +54,11 @@ function destroyGlobalConfig(config: arkts.Config, isUseCache: boolean = true): 
 }
 
 function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
-    return arkts.CreateGlobalContext(config.peer, files, files.length, false);
+    return arkts.createGlobalContext(config.peer, files, files.length, false);
 }
 
 function destroyGlobalContextPtr(globalContextPtr: number): void {
-    arkts.DestroyGlobalContext(globalContextPtr);
+    arkts.destroyGlobalContext(globalContextPtr);
 }
 
 function createCacheContextFromFile(

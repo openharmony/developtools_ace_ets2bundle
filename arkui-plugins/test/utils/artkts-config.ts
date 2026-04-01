@@ -182,7 +182,7 @@ function mockProjectConfig(): ProjectConfig {
         dependentModuleList: [],
         appResource: path.resolve(getResourcePath(), MOCK_RESOURCE_TABLE_FILE_NAME),
         rawFileResource: path.resolve(getResourcePath(), MOCK_RAWFILE_DIR_PATH),
-        buildLoaderJson: path.resolve(getMockRootPath(), MOCK_LOADER_JSON_FILE_NAME),
+        buildLoaderJson: '',
         hspResourcesMap: false,
         compileHar: false,
         byteCodeHar: false,
@@ -196,7 +196,9 @@ function mockProjectConfig(): ProjectConfig {
         projectPath: '',
         projectRootPath: path.resolve(getRootPath(), MOCK_PROJECT_ROOT_PATH),
         integratedHsp: false,
-        frameworkMode: undefined
+        frameworkMode: undefined,
+        externalApiPath: '',
+        externalApiPaths: []
     };
 }
 

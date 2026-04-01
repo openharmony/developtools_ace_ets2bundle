@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class OmittedExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_OMITTED_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_OMITTED_EXPRESSION;
     }
     static createOmittedExpression(): OmittedExpression {
         return new OmittedExpression(global.generatedEs2panda._CreateOmittedExpression(global.context))

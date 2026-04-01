@@ -62,7 +62,10 @@ export class DeclarationCollector {
         if (!declName) {
             return;
         }
-        let sourceName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        let sourceName = arkts.getProgramFromAstNode(decl)?.moduleName;
+        if (!sourceName) {
+            return;
+        }
         this.fromExternalSourceNameMap.set(declName, sourceName);
         this.fromExternalSourceNodePeerMap.set(decl.peer, sourceName);
 

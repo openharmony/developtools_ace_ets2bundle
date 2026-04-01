@@ -33,10 +33,13 @@ import { ClassElement } from "./ClassElement"
 import { Expression } from "./Expression"
 import { ScriptFunction } from "./ScriptFunction"
 export class ClassStaticBlock extends ClassElement {
-     constructor(pointer: KNativePointer) {
-        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK);
-        super(pointer);
+    constructor(pointer: KNativePointer) {
+        assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK)
+        super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_STATIC_BLOCK;
     }
     static createClassStaticBlock(value?: Expression): ClassStaticBlock {
         return new ClassStaticBlock(global.generatedEs2panda._CreateClassStaticBlock(global.context, passNode(value)));

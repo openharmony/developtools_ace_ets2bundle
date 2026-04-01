@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { ScriptFunction } from "./ScriptFunction"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class FunctionDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_DECLARATION;
     }
     static createFunctionDeclaration(func: ScriptFunction | undefined, annotations: readonly AnnotationUsage[], isAnonymous: boolean): FunctionDeclaration {
         return new FunctionDeclaration(global.generatedEs2panda._CreateFunctionDeclaration(global.context, passNode(func), passNodeArray(annotations), annotations.length, isAnonymous))

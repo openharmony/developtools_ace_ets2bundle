@@ -34,10 +34,13 @@ import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 import { Es2pandaTSIndexSignatureKind } from "./../Es2pandaEnums"
 export class TSIndexSignature extends TypedAstNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INDEX_SIGNATURE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INDEX_SIGNATURE;
     }
     static createTSIndexSignature(param: Expression | undefined, typeAnnotation: TypeNode | undefined, readonly_arg: boolean): TSIndexSignature {
         return new TSIndexSignature(global.generatedEs2panda._CreateTSIndexSignature(global.context, passNode(param), passNode(typeAnnotation), readonly_arg))

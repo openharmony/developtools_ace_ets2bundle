@@ -1,0 +1,19 @@
+{
+  "byteCodeHarInfo": {},
+  "declarationEntry": [],
+  "moduleName": "entry",
+  "hspNameOhmMap": {},
+  "harNameOhmMap": {},
+  "packageManagerType": "ohpm",
+  "compileEntry": [],
+  "otherCompileFiles": [],
+  "dynamicImportLibInfo": {},
+  "routerMap": [
+    {
+      "ohmurl": "",
+      "name": "pageOne",
+      "pageSourceFile": "./demo/localtest/entry/src/main/ets/pages/some_file.ets",
+      "buildFunction": "builderOne"
+    }
+  ]
+}

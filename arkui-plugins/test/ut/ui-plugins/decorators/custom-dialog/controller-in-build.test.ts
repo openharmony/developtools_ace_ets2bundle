@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -38,7 +38,7 @@ const parsedTransform: Plugins = {
     parsed: uiTransform().parsed,
 };
 
-const expectedScript: string = `
+const expectedUIScript: string = `
 import { ButtonAttribute as ButtonAttribute } from "arkui.component.button";
 
 import { ButtonImpl as ButtonImpl } from "arkui.component.button";
@@ -81,21 +81,222 @@ function main() {}
 
 @CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___231706081 = initializers;
-    (((gensym___231706081) == (null)) ? undefined : gensym___231706081.__options_has_aaController)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
       this.__backing_aaController = initializers!.aaController
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined
       }
     }
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
-    (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));
-    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___112288773 = initializers;
-    (((gensym___112288773) == (null)) ? undefined : gensym___112288773.hh)})) ?? ("nihao")));
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.text)})) ?? ("text")));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hh)})) ?? ("nihao")));
+  }
+  public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
+  @MemoIntrinsic() 
+  public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
+      const instance = new CustomDialogExample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      if (controller) {
+        instance.__setDialogController__((controller as CustomDialogController))
+      }
+      return instance;
+    }), initializers, content);
+  }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample {
+    throw new Error("Declare interface");
+  }
+  private __backing_aaController?: (CustomDialogController | undefined);
+  public get aaController(): (CustomDialogController | undefined) {
+    return (this.__backing_aaController as (CustomDialogController | undefined));
+  }
+  public set aaController(value: (CustomDialogController | undefined)) {
+    this.__backing_aaController = value;
+  }
+  private __backing_text?: IStateDecoratedVariable<string>;
+  public get text(): string {
+    return this.__backing_text!.get();
+  }
+  public set text(value: string) {
+    this.__backing_text!.set(value);
+  }
+  private __backing_hh?: IStateDecoratedVariable<string>;
+  public get hh(): string {
+    return this.__backing_hh!.get();
+  }
+  public set hh(value: string) {
+    this.__backing_hh!.set(value);
+  }
+  @Memo() 
+  public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions("CustomDialog One", undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+    }));
+  }
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
+  public __setDialogController__(controller: CustomDialogController): void {
+    this.__backing_aaController = controller;
+  }
+  }
+  @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
+  public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
+      return new CustomDialogUser(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
+    throw new Error("Declare interface");
+  }
+  @Memo() 
+  public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
+        instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
+          let dialogController: (CustomDialogController | undefined) = ({let gensym___<some_random_number>: Any;
+          gensym___<some_random_number> = new CustomDialogController({
+            builder: @Memo() (() => {
+              CustomDialogExample._invoke((() => {
+                return {};
+              }), undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
+            }),
+            baseComponent: this,
+          })
+          (gensym___<some_random_number> as CustomDialogController)});
+        })).backgroundColor(0x317aff);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+    }));
+  }
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
+  }
+  @CustomDialog() export interface __Options_CustomDialogExample {
+  get aaController(): ((CustomDialogController | undefined) | undefined) {
+    return undefined;
+  }
+  set aaController(aaController: ((CustomDialogController | undefined) | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __options_has_aaController(): (boolean | undefined) {
+    return undefined;
+  }
+  set __options_has_aaController(__options_has_aaController: (boolean | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  @State() 
+  get text(): (string | undefined) {
+    return undefined;
+  }
+  @State() 
+  set text(text: (string | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __backing_text(): (IStateDecoratedVariable<string> | undefined) {
+    return undefined;
+  }
+  set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __options_has_text(): (boolean | undefined) {
+    return undefined;
+  }
+  set __options_has_text(__options_has_text: (boolean | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  @State() 
+  get hh(): (string | undefined) {
+    return undefined;
+  }
+  @State() 
+  set hh(hh: (string | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __backing_hh(): (IStateDecoratedVariable<string> | undefined) {
+    return undefined;
+  }
+  set __backing_hh(__backing_hh: (IStateDecoratedVariable<string> | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __options_has_hh(): (boolean | undefined) {
+    return undefined;
+  }
+  set __options_has_hh(__options_has_hh: (boolean | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  }
+  @Component() export interface __Options_CustomDialogUser {
+  }
+`;
+
+function testUICheckedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
+
+const expectedMemoScript: string = `
+function main() {}
+@CustomDialog() final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
+  public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
+      this.__backing_aaController = initializers!.aaController
+    } else {
+      if (!(this.__backing_aaController)) {
+        this.__backing_aaController = undefined
+      }
+    }
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.text)})) ?? ("text")));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hh)})) ?? ("nihao")));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(__memo_context, ((__memo_id) + (<some_random_number>)), ((): CustomDialogExample => {
+      const instance = new CustomDialogExample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      if (controller) {
+        instance.__setDialogController__((controller as CustomDialogController))
+      }
+      return instance;
+    }), initializers, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): CustomDialogExample {
+    throw new Error("Declare interface");
+  }
 
   private __backing_aaController?: (CustomDialogController | undefined);
 
@@ -126,121 +327,195 @@ function main() {}
   public set hh(value: string) {
     this.__backing_hh!.set(value);
   }
-  
-  @MemoIntrinsic() 
-  public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    BaseCustomDialog._invokeImpl<CustomDialogExample, __Options_CustomDialogExample>(((): CustomDialogExample => {
-      const instance = new CustomDialogExample(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-      if (controller) {
-        instance.__setDialogController__((controller as CustomDialogController))
-      }
-      return instance;
-    }), initializers, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample {
-    throw new Error("Declare interface");
-  }
-  
+
   @Memo() 
-  public build() {
-    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
       return;
-    }), @Memo() (() => {
-      TextImpl(@Memo() ((instance: TextAttribute): void => {
-        instance.setTextOptions("CustomDialog One", undefined);
-        instance.applyAttributesFinish();
+    }
+    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
         return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      __memo_parameter_instance.value.applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.setTextOptions("CustomDialog One", undefined);
+        __memo_parameter_instance.value.applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
       }), undefined);
+      {
+        __memo_scope.recache();
+        return;
+      }
     }));
+    {
+      __memo_scope.recache();
+      return;
+    }
   }
-  
-  ${dumpConstructor()}
-  
+
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+
+  static {
+  }
+
   public __setDialogController__(controller: CustomDialogController): void {
     this.__backing_aaController = controller;
   }
-}
+  }
 
-@Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
-  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
+  @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+  public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
   @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
-      return new CustomDialogUser(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
+  public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): CustomDialogUser => {
+      return new CustomDialogUser(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUser {
+  public static $_invoke(initializers?: __Options_CustomDialogUser, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): CustomDialogUser {
     throw new Error("Declare interface");
   }
 
   @Memo() 
-  public build() {
-    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
-      instance.setColumnOptions(undefined);
-      instance.applyAttributesFinish();
+  public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+    if (__memo_scope.unchanged) {
+      __memo_scope.cached;
       return;
-    }), @Memo() (() => {
-      ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
-        instance.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
-          let dialogController: (CustomDialogController | undefined) = ({let gensym___90667230: Any;
-          gensym___90667230 = new CustomDialogController({
-            builder: @Memo() (() => {
-              CustomDialogExample._invoke((() => {
+    }
+    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
+      const __memo_parameter_instance = __memo_scope.param(0, instance);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      __memo_parameter_instance.value.setColumnOptions(undefined);
+      __memo_parameter_instance.value.applyAttributesFinish();
+      {
+        __memo_scope.recache();
+        return;
+      }
+    }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+      if (__memo_scope.unchanged) {
+        __memo_scope.cached;
+        return;
+      }
+      ButtonImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ButtonAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
+        const __memo_parameter_instance = __memo_scope.param(0, instance);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        __memo_parameter_instance.value.setButtonOptions("click me", undefined).onClick(((e: ClickEvent) => {
+          let dialogController: (CustomDialogController | undefined) = ({let gensym___<some_random_number>: Any;
+          gensym___<some_random_number> = new CustomDialogController({
+            builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+              const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+              if (__memo_scope.unchanged) {
+                __memo_scope.cached;
+                return;
+              }
+              CustomDialogExample._invoke(__memo_context, ((__memo_id) + (<some_random_number>)), (() => {
                 return {};
-              }), undefined, (gensym___90667230 as CustomDialogController), undefined);
+              }), undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
+              {
+                __memo_scope.recache();
+                return;
+              }
             }),
             baseComponent: this,
           })
-          (gensym___90667230 as CustomDialogController)});
+          (gensym___<some_random_number> as CustomDialogController)});
         })).backgroundColor(0x317aff);
-        instance.applyAttributesFinish();
-        return;
+        __memo_parameter_instance.value.applyAttributesFinish();
+        {
+          __memo_scope.recache();
+          return;
+        }
       }), undefined);
+      {
+        __memo_scope.recache();
+        return;
+      }
     }));
+    {
+      __memo_scope.recache();
+      return;
+    }
   }
 
-  ${dumpConstructor()}
-}
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
 
-@CustomDialog() export interface __Options_CustomDialogExample {
+  static {
+  }
+  }
+
+  @CustomDialog() export interface __Options_CustomDialogExample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_hh', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)')}
-  
-}
 
-@Component() export interface __Options_CustomDialogUser {
+  }
 
-}
+  @Component() export interface __Options_CustomDialogUser {
+
+  }
 `;
 
-function testCheckedTransformer(this: PluginTestContext): void {
-    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+function testMemoCheckedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedMemoScript));
 }
-
 pluginTester.run(
     'test CustomDialogController in build',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
-        'checked:ui-no-recheck': [testCheckedTransformer],
+        'checked:ui-no-recheck': [testUICheckedTransformer],
+        'checked:memo-no-recheck': [testMemoCheckedTransformer]
     },
     {
         stopAfter: 'checked',

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { GetSetDumper, dumpGetterSetter, dumpAnnotation, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -78,36 +78,30 @@ function main() {}
 
 @Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
   public __initializeStruct(initializers: (__Options_Parant | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___194626867 = initializers;
-    (((gensym___194626867) == (null)) ? undefined : gensym___194626867.__options_has_text1)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text1)})) {
       this.__backing_text1 = STATE_MGMT_FACTORY.makeLink<string>(this, "text1", initializers!.__backing_text1!);
     };
-  }
-
+    }
   public __updateStruct(initializers: (__Options_Parant | undefined)): void {}
-
-  private __backing_text1?: ILinkDecoratedVariable<string>;
-
-  public get text1(): string {
-    return this.__backing_text1!.get();
-  }
-
-  public set text1(value: string) {
-    this.__backing_text1!.set(value);
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parant)=> void) | undefined), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parant, __Options_Parant>(style, ((): Parant => {
-      return new Parant(false, ({let gensym___149025070 = storage;
-      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
-    }), initializers, reuseId, content);
-  }
-  
+      return new Parant(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      }), initializers, reuseId, content);
+    }
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parant {
+  public static $_invoke(initializers?: __Options_Parant, storage?: LocalStorage, @Builder() content?: (()=> void)): Parant {
     throw new Error("Declare interface");
-  }
+    }
+  private __backing_text1?: ILinkDecoratedVariable<string>;
+  public get text1(): string {
+    return this.__backing_text1!.get();
+    }
+  public set text1(value: string) {
+    this.__backing_text1!.set(value);
+    }
 
   @Memo() 
   public build() {
@@ -115,14 +109,14 @@ function main() {}
       instance.setColumnOptions(undefined);
       instance.applyAttributesFinish();
       return;
-    }), @Memo() (() => {
+      }), @Memo() (() => {
       TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
         instance.setTextInputOptions({
           text: this.text1,
-        });
+          });
         instance.applyAttributesFinish();
         return;
-      }));
+        }));
       Child._invoke(undefined, (() => {
         return {
           __backing_childText: this.__backing_text1,
@@ -133,134 +127,116 @@ function main() {}
           __options_has_childText3: true,
           childText4: this.text1,
           __options_has_childText4: true,
-        };
-      }), undefined, undefined, undefined);
-    }));
+          };
+        }), undefined, undefined, undefined);
+      }));
+    }
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+    }
+  static {
+    }
   }
-  
-  ${dumpConstructor()}
-
-}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    if (({let gensym___55490166 = initializers;
-    (((gensym___55490166) == (null)) ? undefined : gensym___55490166.__options_has_childText)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
-    };
-    this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", ((({let gensym___95513066 = initializers;
-    (((gensym___95513066) == (null)) ? undefined : gensym___95513066.childText2)})) ?? ("sss")));
+      };
+    this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")));
     this.__backing_childText3 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText3", (initializers!.childText3 as string));
-    this.__backing_childText4 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText4", ((({let gensym___162028107 = initializers;
-    (((gensym___162028107) == (null)) ? undefined : gensym___162028107.childText4)})) ?? ("cc")));
-  }
-
+    this.__backing_childText4 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText4", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")));
+    }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (({let gensym___240121011 = initializers;
-    (((gensym___240121011) == (null)) ? undefined : gensym___240121011.__options_has_childText3)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText3)})) {
       this.__backing_childText3!.update((initializers!.childText3 as string));
-    }
-    if (({let gensym___107610221 = initializers;
-    (((gensym___107610221) == (null)) ? undefined : gensym___107610221.__options_has_childText4)})) {
+      }
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText4)})) {
       this.__backing_childText4!.update((initializers!.childText4 as string));
+      }
     }
-  }
-
-  private __backing_childText?: ILinkDecoratedVariable<string>;
-
-  public get childText(): string {
-    return this.__backing_childText!.get();
-  }
-
-  public set childText(value: string) {
-    this.__backing_childText!.set(value);
-  }
-
-  private __backing_childText2?: IStateDecoratedVariable<string>;
-
-  public get childText2(): string {
-    return this.__backing_childText2!.get();
-  }
-
-  public set childText2(value: string) {
-    this.__backing_childText2!.set(value);
-  }
-  
-  private __backing_childText3?: IPropRefDecoratedVariable<string>;
-  
-  public get childText3(): string {
-    return this.__backing_childText3!.get();
-  }
-
-  public set childText3(value: string) {
-    this.__backing_childText3!.set(value);
-  }
-  
-  private __backing_childText4?: IPropRefDecoratedVariable<string>;
-  
-  public get childText4(): string {
-    return this.__backing_childText4!.get();
-  }
-
-  public set childText4(value: string) {
-    this.__backing_childText4!.set(value);
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___29142858 = storage;
-      (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
-    }), initializers, reuseId, content);
-  }
-  
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      }), initializers, reuseId, content);
+    }
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
-  }
+    }
+  private __backing_childText?: ILinkDecoratedVariable<string>;
+  public get childText(): string {
+    return this.__backing_childText!.get();
+    }
+  public set childText(value: string) {
+    this.__backing_childText!.set(value);
+    }
+  private __backing_childText2?: IStateDecoratedVariable<string>;
+  public get childText2(): string {
+    return this.__backing_childText2!.get();
+    }
+  public set childText2(value: string) {
+    this.__backing_childText2!.set(value);
+    }
+  private __backing_childText3?: IPropRefDecoratedVariable<string>;
+  public get childText3(): string {
+    return this.__backing_childText3!.get();
+    }
+  public set childText3(value: string) {
+    this.__backing_childText3!.set(value);
+    }
+  private __backing_childText4?: IPropRefDecoratedVariable<string>;
+  public get childText4(): string {
+    return this.__backing_childText4!.get();
+    }
+  public set childText4(value: string) {
+    this.__backing_childText4!.set(value);
+    }
 
   @Memo() 
   public build() {
     TextInputImpl(@Memo() ((instance: TextInputAttribute): void => {
       instance.setTextInputOptions({
         text: this.childText,
-      });
+        });
       instance.applyAttributesFinish();
       return;
-    }));
+      }));
+    }
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+    }
+  static {
+    }
   }
 
-  ${dumpConstructor()}
-
-}
-
-@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
-
 @Component() export interface __Options_Parant {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
-  
-}
+  }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText2', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText2', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText2', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText3', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText3', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText3', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText4', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText4', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText4', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText4', '(boolean | undefined)')}
-  
-}
+  }
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
@@ -269,7 +245,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Link decorated variables passing to other variables',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

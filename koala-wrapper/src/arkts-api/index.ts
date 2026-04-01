@@ -77,11 +77,13 @@ export * from '../generated/peers/FunctionExpression';
 export * from '../generated/peers/AwaitExpression';
 export * from '../generated/peers/TSQualifiedName';
 export * from '../generated/peers/UnaryExpression';
+export * from '../generated/peers/IfStatement';
 export * from '../generated/peers/TSEnumDeclaration';
 export * from '../generated/peers/TSEnumMember';
 export * from '../generated/peers/UpdateExpression';
 export * from '../generated/peers/TemplateLiteral';
 
+export * from './class-by-peer';
 export * from './types';
 export * from './utilities/private';
 export * from './utilities/public';

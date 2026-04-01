@@ -18,9 +18,15 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
+import {
+  dumpGetterSetter,
+  GetSetDumper,
+  ignoreNewLines,
+  dumpConstructor,
+  dumpAnnotation
+} from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -101,55 +107,55 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 
 @Component() export interface __Options_PropParent {
   ${ignoreNewLines(`
-  conVar1?: string;
+  @Consume() conVar1?: string;
   @Consume() __backing_conVar1?: string;
   __options_has_conVar1?: boolean;
-  conVar2?: number;
+  @Consume() conVar2?: number;
   @Consume() __backing_conVar2?: number;
   __options_has_conVar2?: boolean;
-  conVar3?: boolean;
+  @Consume() conVar3?: boolean;
   @Consume() __backing_conVar3?: boolean;
   __options_has_conVar3?: boolean;
-  conVar4?: undefined;
+  @Consume() conVar4?: undefined;
   @Consume() __backing_conVar4?: undefined;
   __options_has_conVar4?: boolean;
-  conVar5?: null;
+  @Consume() conVar5?: null;
   @Consume() __backing_conVar5?: null;
   __options_has_conVar5?: boolean;
-  conVar6?: (undefined | undefined);
+  @Consume() conVar6?: (undefined | undefined);
   @Consume() __backing_conVar6?: (undefined | undefined);
   __options_has_conVar6?: boolean;
-  conVar7?: (null | undefined);
+  @Consume() conVar7?: (null | undefined);
   @Consume() __backing_conVar7?: (null | undefined);
   __options_has_conVar7?: boolean;
-  conVar8?: undefined;
+  @Consume() conVar8?: undefined;
   @Consume() __backing_conVar8?: undefined;
   __options_has_conVar8?: boolean;
-  conVar9?: null;
+  @Consume() conVar9?: null;
   @Consume() __backing_conVar9?: null;
   __options_has_conVar9?: boolean;
-  conVar10?: (null | undefined);
+  @Consume() conVar10?: (null | undefined);
   @Consume() __backing_conVar10?: (null | undefined);
   __options_has_conVar10?: boolean;
-  conVar11?: (undefined | undefined);
+  @Consume() conVar11?: (undefined | undefined);
   @Consume() __backing_conVar11?: (undefined | undefined);
   __options_has_conVar11?: boolean;
-  conVar12?: (number | undefined);
+  @Consume({value:"a"}) conVar12?: (number | undefined);
   @Consume({value:"a"}) __backing_conVar12?: (number | undefined);
   __options_has_conVar12?: boolean;
-  conVar13?: string;
+  @Consume({value:"b"}) conVar13?: string;
   @Consume({value:"b"}) __backing_conVar13?: string;
   __options_has_conVar13?: boolean;
-  conVar14?: (boolean | null | undefined);
+  @Consume({value:"c"}) conVar14?: (boolean | null | undefined);
   @Consume({value:"c"}) __backing_conVar14?: (boolean | null | undefined);
   __options_has_conVar14?: boolean;
-  conVar15?: (undefined | null);
+  @Consume({value:"d"}) conVar15?: (undefined | null);
   @Consume({value:"d"}) __backing_conVar15?: (undefined | null);
   __options_has_conVar15?: boolean;
-  conVar16?: (undefined | null);
+  @Consume({value:"e"}) conVar16?: (undefined | null);
   @Consume({value:"e"}) __backing_conVar16?: (undefined | null);
   __options_has_conVar16?: boolean;
-  conVar17?: (number | string | null);
+  @Consume({value:"f"}) conVar17?: (number | string | null);
   @Consume({value:"f"}) __backing_conVar17?: (number | string | null);
   __options_has_conVar17?: boolean;
   `)}
@@ -222,6 +228,19 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
+      return new PropParent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() content?: (()=> void)): PropParent {
+    throw new Error("Declare interface");
+  }
 
   private __backing_conVar1?: IConsumeDecoratedVariable<string>;
 
@@ -376,92 +395,81 @@ function main() {}
     this.__backing_conVar17!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
-      return new PropParent(false, ({let gensym___203542966 = storage;
-      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): PropParent {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {}
-  
+
   ${dumpConstructor()}
 
+  static {
+  }
 }
 
 @Component() export interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar2', '(IConsumeDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(boolean | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar3', '(IConsumeDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(undefined | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar4', '(IConsumeDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(null | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar5', '(IConsumeDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar6', '((undefined | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar6', '((undefined | undefined) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar6', '(IConsumeDecoratedVariable<(undefined | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar7', '((null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar7', '((null | undefined) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar7', '(IConsumeDecoratedVariable<(null | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar8', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar8', '(undefined | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar8', '(IConsumeDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar9', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar9', '(null | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar9', '(IConsumeDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar10', '((null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar10', '((null | undefined) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar10', '(IConsumeDecoratedVariable<(null | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar11', '((undefined | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar11', '((undefined | undefined) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar11', '(IConsumeDecoratedVariable<(undefined | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar12', '((number | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar12', '((number | undefined) | undefined)', [dumpAnnotation('Consume', { value: "a" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar12', '(IConsumeDecoratedVariable<(number | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar12', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '(string | undefined)', [dumpAnnotation('Consume', { value: "b" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar13', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar13', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar14', '((boolean | null | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar14', '((boolean | null | undefined) | undefined)', [dumpAnnotation('Consume', { value: "c" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar14', '(IConsumeDecoratedVariable<(boolean | null | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar14', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar15', '((undefined | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar15', '((undefined | null) | undefined)', [dumpAnnotation('Consume', { value: "d" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar15', '(IConsumeDecoratedVariable<(undefined | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar15', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar16', '((undefined | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar16', '((undefined | null) | undefined)', [dumpAnnotation('Consume', { value: "e" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar16', '(IConsumeDecoratedVariable<(undefined | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar16', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar17', '((number | string | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar17', '((number | string | null) | undefined)', [dumpAnnotation('Consume', { value: "f" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar17', '(IConsumeDecoratedVariable<(number | string | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar17', '(boolean | undefined)')}
   
@@ -479,7 +487,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Consume decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

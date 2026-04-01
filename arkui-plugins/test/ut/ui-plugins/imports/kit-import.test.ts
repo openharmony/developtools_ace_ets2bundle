@@ -18,9 +18,15 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../utils/simplify-dump';
+import {
+  dumpGetterSetter,
+  GetSetDumper,
+  ignoreNewLines,
+  dumpConstructor,
+  dumpAnnotation
+} from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -104,10 +110,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry() @Component() export interface __Options_A {
   ${ignoreNewLines(`
-  a?: string;
+  @State() a?: string;
   @State() __backing_a?: string;
   __options_has_a?: boolean;
-  b?: string;
+  @PropRef() b?: string;
   @PropRef() __backing_b?: string;
   __options_has_b?: boolean;
   `)}
@@ -186,6 +192,19 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
+      return new A(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
+    throw new Error("Declare interface");
+  }
+
   private __backing_a?: IStateDecoratedVariable<string>;
 
   public get a(): string {
@@ -195,9 +214,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public set a(value: string) {
     this.__backing_a!.set(value);
   }
-  
+
   private __backing_b?: IPropRefDecoratedVariable<string>;
-  
+
   public get b(): string {
     return this.__backing_b!.get();
   }
@@ -206,19 +225,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_b!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
-      return new A(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): A {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -238,9 +244,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       }), undefined);
     }));
   }
-  
-  ${dumpConstructor()}
 
+  ${dumpConstructor()}
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -254,11 +261,11 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_b', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_b', '(boolean | undefined)')}
   
@@ -275,7 +282,7 @@ function testImportChecked(this: PluginTestContext): void {
 
 pluginTester.run(
     'test imports from different sources',
-    [importParsed, uiNoRecheck, recheck],
+    [importParsed, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         parsed: [testImportParsed],
         'checked:ui-no-recheck': [testImportChecked],

@@ -15,7 +15,12 @@
 
 import { TemplateLiteral, TemplateElement, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTemplateLiteral(
     original: TemplateLiteral,
@@ -23,13 +28,15 @@ export function updateTemplateLiteral(
     expressions: readonly Expression[],
     multilineString: string
 ): TemplateLiteral {
-    if (
-        isSameNativeObject(quasis, original.quasis) &&
-        isSameNativeObject(expressions, original.expressions)
-    ) {
+    if (isSameNativeObject(quasis, original.quasis) && isSameNativeObject(expressions, original.expressions)) {
         return original;
     }
 
-    const update = updateThenAttach(TemplateLiteral.updateTemplateLiteral, attachModifiers);
+    const update = updateThenAttach(
+        TemplateLiteral.updateTemplateLiteral,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, quasis, expressions, multilineString);
 }

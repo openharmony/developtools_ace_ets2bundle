@@ -15,13 +15,23 @@
 
 import { ClassDeclaration, ClassDefinition } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateClassDeclaration(original: ClassDeclaration, def?: ClassDefinition): ClassDeclaration {
     if (isSameNativeObject(def, original.definition)) {
         return original;
     }
 
-    const update = updateThenAttach(ClassDeclaration.updateClassDeclaration, attachModifiers);
+    const update = updateThenAttach(
+        ClassDeclaration.updateClassDeclaration,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, def);
 }

@@ -31,10 +31,13 @@ import {
 
 import { Statement } from "./Statement"
 export class BlockStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_STATEMENT;
     }
     static createBlockStatement(statementList: readonly Statement[]): BlockStatement {
         return new BlockStatement(global.generatedEs2panda._CreateBlockStatement(global.context, passNodeArray(statementList), statementList.length))

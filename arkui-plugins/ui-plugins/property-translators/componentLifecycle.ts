@@ -16,148 +16,139 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { DecoratorNames } from '../../common/predefines';
-import { ClassInfo } from '../utils';
-import { MethodTranslator } from './base';
+import { 
+    BaseMethodTranslator, 
+    MethodCacheTranslator, 
+    MethodCacheTranslatorOptions, 
+    MethodTranslator, 
+    MethodTranslatorOptions 
+} from './base';
 import { hasDecorator } from './utils';
 import {
     ComponentLifecycleCache,
     LifecycleMethodType,
     LifecycleMethodInfo
 } from './cache/componentLifecycleCache';
+import { StructMethodInfo } from '../../collectors/ui-collectors/records';
 
-interface MethodCollectionHandler {
-    handle(method: arkts.MethodDefinition, classInfo: ClassInfo, methodName: string): void;
-}
+/**
+ * Maps lifecycle decorators to their corresponding lifecycle method types.
+ */
+const LIFECYCLE_DECORATOR_TYPE = new Map<DecoratorNames, LifecycleMethodType>([
+    [DecoratorNames.COMPONENT_INIT, LifecycleMethodType.ABOUT_TO_APPEAR],
+    [DecoratorNames.COMPONENT_APPEAR, LifecycleMethodType.ABOUT_TO_APPEAR],
+    [DecoratorNames.COMPONENT_BUILT, LifecycleMethodType.ON_DID_BUILD],
+    [DecoratorNames.COMPONENT_DISAPPEAR, LifecycleMethodType.ABOUT_TO_DISAPPEAR],
+    [DecoratorNames.COMPONENT_REUSE, LifecycleMethodType.ABOUT_TO_REUSE],
+    [DecoratorNames.COMPONENT_RECYCLE, LifecycleMethodType.ABOUT_TO_RECYCLE],
+]);
 
-class DecoratorMethodCollectionHandler implements MethodCollectionHandler {
-    private readonly decoratorName: DecoratorNames;
-    private readonly collector: (classInfo: ClassInfo, methodName: string, method: arkts.MethodDefinition) => void;
-
-    constructor(
-        decoratorName: DecoratorNames,
-        collector: (classInfo: ClassInfo, methodName: string, method: arkts.MethodDefinition) => void
-    ) {
-        this.decoratorName = decoratorName;
-        this.collector = collector;
+function collectLifecycleMethods(
+    this: BaseMethodTranslator,
+    structName: string,
+    methodName: string,
+    matchedDecorators: Map<DecoratorNames, LifecycleMethodType>
+): void {
+    if (matchedDecorators.has(DecoratorNames.COMPONENT_INIT)) {
+        ComponentLifecycleCache.getInstance().collectInitMethod(structName, methodName);
     }
 
-    handle(method: arkts.MethodDefinition, classInfo: ClassInfo, methodName: string): void {
-        if (!classInfo.isFromStruct || !hasDecorator(method, this.decoratorName)) {
-            return;
+    for (const [decorator, lifecycleType] of matchedDecorators) {
+        if (decorator !== DecoratorNames.COMPONENT_INIT && methodName !== lifecycleType) {
+            // Standard lifecycle methods (e.g., aboutToAppear) are skipped - framework handles them
+            collectLifecycleMethod.bind(this)(structName, methodName, lifecycleType);
         }
-        this.collector(classInfo, methodName, method);
     }
 }
 
-interface LifecycleMethodTypeHandler {
-    handle(method: arkts.MethodDefinition): LifecycleMethodType | undefined;
-}
+function collectLifecycleMethod(
+    this: BaseMethodTranslator,
+    structName: string,
+    methodName: string, 
+    lifecycleType: LifecycleMethodType
+): void {
+    const params = this.method.scriptFunction.params as arkts.ETSParameterExpression[];
+    const hasReuseParam =
+        lifecycleType === LifecycleMethodType.ABOUT_TO_REUSE && params.length > 0;
 
-abstract class DecoratorLifecycleMethodTypeHandlerBase implements LifecycleMethodTypeHandler {
-    protected abstract readonly decoratorName: DecoratorNames;
-    protected abstract readonly lifecycleType: LifecycleMethodType;
+    const methodInfo: LifecycleMethodInfo = {
+        methodName,
+        methodType: lifecycleType,
+        hasReuseParam,
+        reuseParams: hasReuseParam ? params : undefined,
+    };
 
-    handle(method: arkts.MethodDefinition): LifecycleMethodType | undefined {
-        return hasDecorator(method, this.decoratorName) ? this.lifecycleType : undefined;
-    }
-}
-
-class DecoratorLifecycleMethodTypeHandler extends DecoratorLifecycleMethodTypeHandlerBase {
-    protected readonly decoratorName: DecoratorNames;
-    protected readonly lifecycleType: LifecycleMethodType;
-
-    constructor(decoratorName: DecoratorNames, lifecycleType: LifecycleMethodType) {
-        super();
-        this.decoratorName = decoratorName;
-        this.lifecycleType = lifecycleType;
-    }
+    ComponentLifecycleCache.getInstance().collectLifecycleMethod(structName, methodInfo);
 }
 
 export class ComponentLifecycleTranslator extends MethodTranslator {
-    private static readonly methodCollectionHandlers: readonly MethodCollectionHandler[] = [
-        new DecoratorMethodCollectionHandler(DecoratorNames.COMPONENT_INIT, (classInfo, methodName) => {
-            ComponentLifecycleCache.getInstance().collectInitMethod(classInfo.className, methodName);
-        }),
-    ];
-
-    private static readonly lifecycleMethodTypeHandlers: readonly LifecycleMethodTypeHandler[] = [
-        new DecoratorLifecycleMethodTypeHandler(
-            DecoratorNames.COMPONENT_APPEAR,
-            LifecycleMethodType.ABOUT_TO_APPEAR
-        ),
-        new DecoratorLifecycleMethodTypeHandler(
-            DecoratorNames.COMPONENT_BUILT,
-            LifecycleMethodType.ON_DID_BUILD
-        ),
-        new DecoratorLifecycleMethodTypeHandler(
-            DecoratorNames.COMPONENT_DISAPPEAR,
-            LifecycleMethodType.ABOUT_TO_DISAPPEAR
-        ),
-        new DecoratorLifecycleMethodTypeHandler(
-            DecoratorNames.COMPONENT_REUSE,
-            LifecycleMethodType.ABOUT_TO_REUSE
-        ),
-        new DecoratorLifecycleMethodTypeHandler(
-            DecoratorNames.COMPONENT_RECYCLE,
-            LifecycleMethodType.ABOUT_TO_RECYCLE
-        ),
-    ];
-
-    constructor(method: arkts.MethodDefinition, classInfo: ClassInfo) {
-        super(method, classInfo);
+    constructor(options: MethodTranslatorOptions) {
+        super(options);
     }
 
     translateMember(): arkts.AstNode[] {
+        if (this.isDecl) {
+            return [this.method];
+        }
         const methodName: string = this.method.name.name;
-
-        this.collect(methodName);
+        if (this.classInfo.isFromStruct) {
+            const structName: string = this.classInfo.className;
+            // A method can have multiple lifecycle decorators - find all matches
+            const matchedDecorators = this.findMatchingLifecycleDecorators();
+            collectLifecycleMethods.bind(this)(structName, methodName, matchedDecorators);
+        }
         return [this.method];
     }
 
-    private collect(methodName: string): void {
-        for (const handler of ComponentLifecycleTranslator.methodCollectionHandlers) {
-            handler.handle(this.method, this.classInfo, methodName);
-        }
-
-        if (!this.classInfo.isFromStruct) {
-            return;
-        }
-
-        for (const lifecycleType of this.getLifecycleMethodTypes()) {
-            if (this.shouldSkipLifecycleCollection(methodName, lifecycleType)) {
-                continue;
-            }
-
-            const hasReuseParam =
-                lifecycleType === LifecycleMethodType.ABOUT_TO_REUSE && this.method.scriptFunction.params.length > 0;
-            const methodInfo: LifecycleMethodInfo = {
-                methodName: methodName,
-                methodType: lifecycleType,
-                hasReuseParam: hasReuseParam,
-                reuseParams: hasReuseParam
-                    ? (this.method.scriptFunction.params as arkts.ETSParameterExpression[])
-                    : undefined,
-            };
-            ComponentLifecycleCache.getInstance().collectLifecycleMethod(this.classInfo.className, methodInfo);
-        }
-    }
-
-    private shouldSkipLifecycleCollection(
-        methodName: string,
-        lifecycleType: LifecycleMethodType | undefined
-    ): boolean {
-        return !!lifecycleType && methodName === lifecycleType;
-    }
-
-    private getLifecycleMethodTypes(): LifecycleMethodType[] {
-        const lifecycleTypes: LifecycleMethodType[] = [];
-        for (const handler of ComponentLifecycleTranslator.lifecycleMethodTypeHandlers) {
-            const lifecycleType = handler.handle(this.method);
-            if (lifecycleType) {
-                lifecycleTypes.push(lifecycleType);
+    protected findMatchingLifecycleDecorators(): Map<DecoratorNames, LifecycleMethodType> {
+        const matched = new Map<DecoratorNames, LifecycleMethodType>();
+        for (const [decorator, lifecycleType] of LIFECYCLE_DECORATOR_TYPE) {
+            if (hasDecorator(this.method, decorator)) {
+                matched.set(decorator, lifecycleType);
             }
         }
-        return lifecycleTypes;
+        return matched;
+    }
+}
+
+export interface ComponentLifecycleCacheTranslatorOptions extends MethodCacheTranslatorOptions {
+    methodInfo: StructMethodInfo
+}
+
+export class ComponentLifecycleCacheTranslator extends MethodCacheTranslator {
+    protected methodInfo: StructMethodInfo = {};
+
+    constructor(options: ComponentLifecycleCacheTranslatorOptions) {
+        super(options);
+        this.methodInfo = options.methodInfo;
     }
 
+    translateMember(): arkts.AstNode[] {
+        if (this.isDecl) {
+            return [this.method];
+        }
+        const methodName: string | undefined = this.methodInfo.name;
+        if (methodName !== undefined && !!this.methodInfo.structInfo?.name) {
+            const structName: string = this.methodInfo.structInfo.name;
+            // A method can have multiple lifecycle decorators - find all matches
+            const matchedDecorators = this.findMatchingLifecycleDecorators(this.methodInfo);
+            collectLifecycleMethods.bind(this)(structName, methodName, matchedDecorators);
+        }
+        return [this.method];
+    }
+    
+    protected findMatchingLifecycleDecorators(
+        methodInfo: StructMethodInfo
+    ): Map<DecoratorNames, LifecycleMethodType> {
+        const matched = new Map<DecoratorNames, LifecycleMethodType>();
+        if (methodInfo.annotationInfo === undefined) {
+            return matched;
+        }
+        for (const [decorator, lifecycleType] of LIFECYCLE_DECORATOR_TYPE) {
+            if (methodInfo.annotationInfo[`has${decorator}`]) {
+                matched.set(decorator, lifecycleType);
+            }
+        }
+        return matched;
+    }
 }

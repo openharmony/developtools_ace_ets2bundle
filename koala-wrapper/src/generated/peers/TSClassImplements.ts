@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class TSClassImplements extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_CLASS_IMPLEMENTS)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_CLASS_IMPLEMENTS;
     }
     static createTSClassImplements(expression?: Expression, typeParameters?: TSTypeParameterInstantiation): TSClassImplements {
         return new TSClassImplements(global.generatedEs2panda._CreateTSClassImplements(global.context, passNode(expression), passNode(typeParameters)))

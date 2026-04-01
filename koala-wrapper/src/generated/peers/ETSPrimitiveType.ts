@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { Es2pandaPrimitiveType } from "./../Es2pandaEnums"
 export class ETSPrimitiveType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PRIMITIVE_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PRIMITIVE_TYPE;
     }
     static createETSPrimitiveType(type: Es2pandaPrimitiveType): ETSPrimitiveType {
         return new ETSPrimitiveType(global.generatedEs2panda._CreateETSPrimitiveType(global.context, type))

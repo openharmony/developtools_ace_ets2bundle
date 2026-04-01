@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-
-
 import * as arkts from '@koalaui/libarkts';
 import { getInteropPath } from '../../path';
 const interop = require(getInteropPath());
@@ -26,7 +24,7 @@ import { factory } from '../ui-factory';
 import { createAndInsertImportDeclaration } from '../../common/arkts-utils';
 
 interface LegacyTransformerOptions extends VisitorOptions {
-    structList?: string[]
+    structList?: string[];
 }
 
 type ScopeInfo = {
@@ -59,9 +57,7 @@ export class LegacyTransformer extends AbstractVisitor {
             arkts.factory.createIdentifier(
                 name,
                 arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(type)
-                    )
+                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(type))
                 )
             ),
             undefined
@@ -70,24 +66,27 @@ export class LegacyTransformer extends AbstractVisitor {
 
     generateMember(map: Map<string, arkts.TypeNode>): arkts.ClassProperty[] {
         const properties: arkts.ClassProperty[] = [];
-      
-        map.forEach((value, key) => {
-          const property = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(key),
-            undefined,
-            value,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | 
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL,
-            false
-          );
-          
-          properties.push(property);
-        });
-      
-        return properties;
-      }
 
-    generateComponentInterface(name: string, modifiers: number, map: Map<string, arkts.TypeNode>): arkts.TSInterfaceDeclaration {
+        map.forEach((value, key) => {
+            const property = arkts.factory.createClassProperty(
+                arkts.factory.createIdentifier(key),
+                undefined,
+                value,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL,
+                false
+            );
+
+            properties.push(property);
+        });
+
+        return properties;
+    }
+
+    generateComponentInterface(
+        name: string,
+        modifiers: number,
+        map: Map<string, arkts.TypeNode>
+    ): arkts.TSInterfaceDeclaration {
         const interfaceNode = arkts.factory.createInterfaceDeclaration(
             [],
             arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
@@ -118,10 +117,7 @@ export class LegacyTransformer extends AbstractVisitor {
         );
         paramStorage.setOptional(true);
         const paramContent: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
-            arkts.factory.createIdentifier(
-                InteroperAbilityNames.CONTENT,
-                factory.createLambdaFunctionType()
-            ),
+            arkts.factory.createIdentifier(InteroperAbilityNames.CONTENT, factory.createLambdaFunctionType()),
             undefined
         );
         paramContent.setOptional(true);
@@ -136,7 +132,7 @@ export class LegacyTransformer extends AbstractVisitor {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
         const body = isDecl ? undefined : arkts.factory.createBlock([arkts.factory.createReturnStatement()]);
-        const params = this.createParamsForInstatiate(name);      
+        const params = this.createParamsForInstatiate(name);
         const returnTypeAnnotation = factory.createTypeReferenceFromString('Object');
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
@@ -227,14 +223,7 @@ export class LegacyTransformer extends AbstractVisitor {
             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         })
-        return arkts.factory.updateMethodDefinition(
-            node,
-            node.kind,
-            node.name,
-            script,
-            node.modifiers,
-            false
-        );
+        return arkts.factory.updateMethodDefinition(node, node.kind, node.name, script, node.modifiers, false);
     }
 
     collectComponentMembers(node: arkts.StructDeclaration, className: string): Map<string, arkts.TypeNode> {
@@ -260,9 +249,12 @@ export class LegacyTransformer extends AbstractVisitor {
 
     enter(node: arkts.AstNode): void {
         if ((arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) && !!node.definition.ident) {
-            const isComponent = node.definition.annotations.some(annotation => annotation.expr instanceof arkts.Identifier &&
-                (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2'));
-            const scopeInfo: ScopeInfo = { name: node.definition.ident.name, isComponent: isComponent};
+            const isComponent = node.definition.annotations.some(
+                (annotation) =>
+                    annotation.expr instanceof arkts.Identifier &&
+                    (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2')
+            );
+            const scopeInfo: ScopeInfo = { name: node.definition.ident.name, isComponent: isComponent };
             this.scopeInfos.push(scopeInfo);
         }
     }
@@ -279,12 +271,15 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     handleWrappedBuilderNode(node: arkts.ETSTypeReference): arkts.ETSTypeReference {
-        if (node.part && arkts.isETSTypeReferencePart(node.part) && node.part.name &&
-            arkts.isIdentifier(node.part.name) && node.part.name.name === 'WrappedBuilder') {
+        if (
+            node.part &&
+            arkts.isETSTypeReferencePart(node.part) &&
+            node.part.name &&
+            arkts.isIdentifier(node.part.name) &&
+            node.part.name.name === 'WrappedBuilder'
+        ) {
             return arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier('Any')
-                )
+                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Any'))
             );
         }
         return node;
@@ -295,8 +290,11 @@ export class LegacyTransformer extends AbstractVisitor {
         if (arkts.isIdentifier(node.name) && node.name.typeAnnotation) {
             let typeAnnotation = node.name.typeAnnotation;
             // WrappedBuilder<[aa]>[] => Any[]
-            if (arkts.isTSArrayType(typeAnnotation) && typeAnnotation.elementType &&
-                arkts.isETSTypeReference(typeAnnotation.elementType)) {
+            if (
+                arkts.isTSArrayType(typeAnnotation) &&
+                typeAnnotation.elementType &&
+                arkts.isETSTypeReference(typeAnnotation.elementType)
+            ) {
                 return arkts.factory.updateVariableDeclarator(
                     node,
                     node.flag,
@@ -337,19 +335,29 @@ export class LegacyTransformer extends AbstractVisitor {
         if (arkts.isStructDeclaration(newNode) || arkts.isClassDeclaration(newNode)) {
             const definition = newNode.definition!;
             const annotations = definition.annotations;
-            if (annotations.some(annotation => annotation.expr instanceof arkts.Identifier &&
-                (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2'))) {
+            if (
+                annotations.some(
+                    (annotation) =>
+                        annotation.expr instanceof arkts.Identifier &&
+                        (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2')
+                )
+            ) {
                 const className = newNode.definition?.ident?.name!;
                 const memberMap = this.collectComponentMembers(newNode as arkts.StructDeclaration, className);
-                this.componentInterfaceCollection.push(this.generateComponentInterface(className, node.modifiers, memberMap));
+                this.componentInterfaceCollection.push(
+                    this.generateComponentInterface(className, node.modifiers, memberMap)
+                );
                 const updateNode = this.processComponent(newNode);
                 this.exit(newNode);
                 return updateNode;
             }
             return newNode;
         }
-        if (this.scopeInfos.length > 0 && this.scopeInfos[this.scopeInfos.length - 1].isComponent === true &&
-            arkts.isMethodDefinition(newNode)) {
+        if (
+            this.scopeInfos.length > 0 &&
+            this.scopeInfos[this.scopeInfos.length - 1].isComponent === true &&
+            arkts.isMethodDefinition(newNode)
+        ) {
             const kind = newNode.kind;
             if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR) {
                 const updateNode = this.processConstructor(newNode);

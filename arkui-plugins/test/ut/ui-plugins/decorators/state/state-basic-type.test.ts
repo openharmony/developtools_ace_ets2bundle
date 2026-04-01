@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -63,19 +63,30 @@ function main() {}
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<string>(this, "stateVar1", ((({let gensym___213853607 = initializers;
-    (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? ("stateVar1")));
-    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<number>(this, "stateVar2", ((({let gensym___113574154 = initializers;
-    (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (50)));
-    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<boolean>(this, "stateVar3", ((({let gensym___166994972 = initializers;
-    (((gensym___166994972) == (null)) ? undefined : gensym___166994972.stateVar3)})) ?? (true)));
-    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "stateVar4", ((({let gensym___148024261 = initializers;
-    (((gensym___148024261) == (null)) ? undefined : gensym___148024261.stateVar4)})) ?? (undefined)));
-    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<null>(this, "stateVar5", ((({let gensym___99384342 = initializers;
-    (((gensym___99384342) == (null)) ? undefined : gensym___99384342.stateVar5)})) ?? (null)));
+    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<string>(this, "stateVar1", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? ("stateVar1")));
+    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<number>(this, "stateVar2", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (50)));
+    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<boolean>(this, "stateVar3", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (true)));
+    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "stateVar4", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (undefined)));
+    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<null>(this, "stateVar5", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? (null)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   private __backing_stateVar1?: IStateDecoratedVariable<string>;
 
@@ -127,44 +138,33 @@ function main() {}
     this.__backing_stateVar5!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent(false, ({let gensym___46528967 = storage;
-      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
 
   ${dumpConstructor()}
 
+  static {
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(undefined | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IStateDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(null | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(IStateDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
   
@@ -177,7 +177,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @State decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

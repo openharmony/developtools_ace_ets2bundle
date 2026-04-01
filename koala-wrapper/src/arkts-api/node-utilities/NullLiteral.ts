@@ -14,11 +14,11 @@
  */
 
 import { NullLiteral } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { attachParent, updateThenAttach } from '../utilities/private';
 
 export function updateNullLiteral(original: NullLiteral): NullLiteral {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(NullLiteral.updateNullLiteral, attachModifiers);
+    const update = updateThenAttach(NullLiteral.updateNullLiteral, attachParent);
     return update(original);
 }

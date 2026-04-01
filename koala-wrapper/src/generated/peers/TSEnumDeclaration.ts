@@ -34,10 +34,13 @@ import { Identifier } from "./Identifier"
 import { ClassDefinition } from "./ClassDefinition"
 import { Decorator } from "./Decorator"
 export class TSEnumDeclaration extends TypedStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_DECLARATION;
     }
     static createTSEnumDeclaration(key: Identifier | undefined, members: readonly AstNode[], isConst: boolean, isStatic: boolean, isDeclare: boolean): TSEnumDeclaration {
         return new TSEnumDeclaration(global.generatedEs2panda._CreateTSEnumDeclaration(global.context, passNode(key), passNodeArray(members), members.length, isConst, isStatic, isDeclare))

@@ -35,10 +35,13 @@ import { VariableDeclarator } from "./VariableDeclarator"
 import { Decorator } from "./Decorator"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class VariableDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION;
     }
     static createVariableDeclaration(kind: Es2pandaVariableDeclarationKind, declarators: readonly VariableDeclarator[]): VariableDeclaration {
         return new VariableDeclaration(global.generatedEs2panda._CreateVariableDeclaration(global.context, kind, passNodeArray(declarators), declarators.length))

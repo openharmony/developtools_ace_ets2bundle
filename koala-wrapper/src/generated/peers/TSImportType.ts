@@ -33,10 +33,13 @@ import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class TSImportType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_IMPORT_TYPE;
     }
     static createTSImportType(param: Expression | undefined, typeParams: TSTypeParameterInstantiation | undefined, qualifier: Expression | undefined, isTypeof: boolean): TSImportType {
         return new TSImportType(global.generatedEs2panda._CreateTSImportType(global.context, passNode(param), passNode(typeParams), passNode(qualifier), isTypeof))

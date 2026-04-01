@@ -31,8 +31,7 @@ module.exports = function(api) {
   const ignore = [
     '**/test/**', 
     '**/node_modules/**',
-    'jest-test.config.ts',
-    'collectors/ui-collectors/validators/rules/**'
+    'jest-test.config.ts'
   ];
 
   return {

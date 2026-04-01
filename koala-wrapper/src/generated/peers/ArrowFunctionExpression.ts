@@ -34,10 +34,13 @@ import { ScriptFunction } from "./ScriptFunction"
 import { TypeNode } from "./TypeNode"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ArrowFunctionExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION;
     }
     static createArrowFunctionExpression(func?: ScriptFunction): ArrowFunctionExpression {
         return new ArrowFunctionExpression(global.generatedEs2panda._CreateArrowFunctionExpression(global.context, passNode(func)))

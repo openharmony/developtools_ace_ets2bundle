@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class CharLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CHAR_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CHAR_LITERAL;
     }
     static createCharLiteral(): CharLiteral {
         return new CharLiteral(global.generatedEs2panda._CreateCharLiteral(global.context))

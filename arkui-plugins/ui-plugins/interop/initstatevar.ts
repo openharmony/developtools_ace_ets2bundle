@@ -13,16 +13,13 @@
  * limitations under the License.
  */
 
-
-
 import * as arkts from '@koalaui/libarkts';
 import { BuilderMethodNames, InteroperAbilityNames, InteropInternalNames } from './predefines';
 import { annotation, backingField, isAnnotation } from '../../common/arkts-utils';
 import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from './utils';
 import { hasDecoratorInterop } from './utils';
-import { DecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
+import { DecoratorNames, DeprecatedDecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
-
 
 export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[], node: arkts.CallExpression): arkts.Statement[] {
@@ -34,9 +31,10 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         }
         const key = property.key;
         const value = property.value!;
-        if (!(key instanceof arkts.Identifier)) {
+        if (!key || !arkts.isIdentifier(key)) {
             const errorMessage = 'Error arguments in Legacy Component.';
             logDiagnostic(errorMessage, node);
+            continue;
         }
         const keyName = key.name;
         const keyProperty = varMap.get(keyName);
@@ -47,8 +45,11 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         const annotations = keyProperty.annotations;
         if (annotations.length === 0) {
             const valueProperty = arkts.getDecl(value);
-            if (valueProperty instanceof arkts.ClassProperty && (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
-                hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))) {
+            if (
+                valueProperty instanceof arkts.ClassProperty &&
+                (hasDecoratorInterop(valueProperty, DecoratorNames.PROVIDE) ||
+                    hasDecoratorInterop(valueProperty, DecoratorNames.CONSUME))
+            ) {
                 const errorMessage = 'Cannot assign @Provide or @Consume decorated data to regular property.';
                 logDiagnostic(errorMessage, node);
             }
@@ -60,12 +61,18 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
             const errorMessage = 'The @Consume property cannot be assigned.';
             logDiagnostic(errorMessage, node);
-        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.PROP) || hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK) ||
-            hasDecoratorInterop(keyProperty, DecoratorNames.PARAM)) {
+        } else if (
+            hasDecoratorInterop(keyProperty, DeprecatedDecoratorNames.PROP) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.OBJECT_LINK) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.PARAM)
+        ) {
             updateProp.push(property);
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
-        } else if (hasDecoratorInterop(keyProperty, DecoratorNames.STATE) || hasDecoratorInterop(keyProperty, DecoratorNames.PROVIDE)) {
+        } else if (
+            hasDecoratorInterop(keyProperty, DecoratorNames.STATE) ||
+            hasDecoratorInterop(keyProperty, DecoratorNames.PROVIDE)
+        ) {
             const initParam = processNormal(keyName, value);
             result.push(...initParam);
         } else if (hasDecoratorInterop(keyProperty, DecoratorNames.CONSUME)) {
@@ -91,11 +98,13 @@ export function createVariableLet(varName: string, expression: arkts.AstNode): a
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(varName),
-            expression
-        )]
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(varName),
+                expression
+            ),
+        ]
     );
 }
 
@@ -118,9 +127,7 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
         arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.GETCOMPATIBLESTATE),
             undefined,
-            [
-                stateVar()
-            ]
+            [stateVar()]
         )
     );
 }
@@ -137,7 +144,7 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * @returns Generated code statements that reconstruct the input object using ESValue APIs
  * @example
  * Input: { b: { c: { d: '1' }, cc: { d: '1' } } }
- * Output: 
+ * Output:
  * let param0 = ESValue.instantiateEmptyObject();
  * let param00 = ESValue.instantiateEmptyObject();
  * param00.setProperty("d", ESValue.wrap("1"));
@@ -147,29 +154,29 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
  * param0.setProperty("cc", param01);
  * param.setProperty("b", param0);
  */
-function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, result: arkts.Statement[], keyName: string): void {
+function processObjectLiteral(
+    target: arkts.ObjectExpression,
+    curParam: string,
+    result: arkts.Statement[],
+    keyName: string
+): void {
     if (curParam !== InteropInternalNames.PARAM) {
         const createParam = createEmptyESValue(curParam);
         result.push(createParam);
     }
-    target.properties.forEach((property: { key: arkts.Expression; value: arkts.Expression; }) => {
+    (target.properties as arkts.Property[]).forEach((property: arkts.Property) => {
         const paramName = curParam + keyName;
         const key = property.key;
         const value = property.value;
+        if (!key || !value || !arkts.isIdentifier(key)) {
+            return;
+        }
         if (arkts.isObjectExpression(value)) {
             processObjectLiteral(value, paramName, result, keyName);
-            const setProperty = setPropertyESValue(
-                curParam,
-                key.name,
-                arkts.factory.createIdentifier(paramName)
-            );
+            const setProperty = setPropertyESValue(curParam, key.name, arkts.factory.createIdentifier(paramName));
             result.push(setProperty);
         } else {
-            const setProperty = setPropertyESValue(
-                curParam,
-                key.name,
-                getWrapValue(value)
-            );
+            const setProperty = setPropertyESValue(curParam, key.name, getWrapValue(value));
             result.push(setProperty);
         }
     });
@@ -186,7 +193,12 @@ function processObjectLiteral(target: arkts.ObjectExpression, curParam: string, 
  * let __Proxy_state = getCompatibleState(this.state);
  * param.setProperty("link", __Proxy_state);
  */
-export function processLink(keyName: string, value: arkts.Expression, type: arkts.TypeNode, proxySet: Set<string>): arkts.Statement[] {
+export function processLink(
+    keyName: string,
+    value: arkts.Expression,
+    type: arkts.TypeNode,
+    proxySet: Set<string>
+): arkts.Statement[] {
     const valueDecl = arkts.getDecl(value);
     const result: arkts.Statement[] = [];
     if (valueDecl instanceof arkts.ClassProperty) {
@@ -211,7 +223,7 @@ export function processLink(keyName: string, value: arkts.Expression, type: arkt
 }
 
 /**
- * 
+ *
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
@@ -220,11 +232,7 @@ export function processNormal(keyName: string, value: arkts.AstNode): arkts.Stat
     if (arkts.isObjectExpression(value)) {
         processObjectLiteral(value, InteropInternalNames.PARAM, result, keyName);
     } else {
-        const setProperty = setPropertyESValue(
-            InteropInternalNames.PARAM,
-            keyName,
-            getWrapValue(value)
-        );
+        const setProperty = setPropertyESValue(InteropInternalNames.PARAM, keyName, getWrapValue(value));
         result.push(setProperty);
     }
     return result;
@@ -234,9 +242,9 @@ function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
     if (!decl || !arkts.isMethodDefinition(decl)) {
         return false;
     }
-    const path = arkts.getProgramFromAstNode(decl).absName;
+    const path = arkts.getProgramFromAstNode(decl)?.absName;
     const fileManager = FileManager.getInstance();
-    if (fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
+    if (!path || fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
         return false;
     }
     return true;
@@ -244,8 +252,8 @@ function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
 
 /**
  * 
- * @param keyName 
- * @param value 
+ * @param keyName
+ * @param value
  * @returns generate code to process @BuilderParam interoperability
  * @example
  * Input: {builderParam: this.builder}
@@ -261,19 +269,19 @@ export function processBuilderParam(keyName: string, value: arkts.AstNode): arkt
         undefined,
         [value]
     );
-    const setProperty = setPropertyESValue(
-        InteropInternalNames.PARAM,
-        keyName,
-        newValue
-    );
+    const setProperty = setPropertyESValue(InteropInternalNames.PARAM, keyName, newValue);
     result.push(setProperty);
     return result;
 }
 
-function getIdentifier(value: arkts.AstNode): arkts.identifier | undefined {
+function getIdentifier(value: arkts.AstNode): arkts.Identifier | undefined {
     if (arkts.isIdentifier(value)) {
         return value;
-    } else if (arkts.isMemberExpression(value) && arkts.isThisExpression(value.object) && arkts.isIdentifier(value.property)) {
+    } else if (
+        arkts.isMemberExpression(value) &&
+        arkts.isThisExpression(value.object) &&
+        arkts.isIdentifier(value.property)
+    ) {
         return value.property;
     } else {
         return undefined;
@@ -316,7 +324,7 @@ function isNonBuiltinType(type: arkts.AstNode): boolean {
         if (!decl) {
             return false;
         }
-        const moduleName = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (moduleName === 'escompat') {
             return false;
         }

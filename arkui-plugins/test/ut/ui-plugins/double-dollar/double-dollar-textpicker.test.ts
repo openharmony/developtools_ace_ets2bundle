@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -92,6 +92,18 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___192738000 = storage;
+      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
   
   private __backing_tt?: IStateDecoratedVariable<string>;
   public get tt(): string {
@@ -138,18 +150,6 @@ function main() {}
     this.__backing_fruits = value;
   }
   
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
-    throw new Error("Declare interface");
-  }
   
   @Memo() 
   public build() {
@@ -210,20 +210,21 @@ function main() {}
   }
   
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_tt', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_tt', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(int | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(int | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<int> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<int> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<int> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<int>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectArr', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'fruits', '(Array<string> | undefined)')}
@@ -237,7 +238,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test Text and TextPicker bindable capability',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

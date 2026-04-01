@@ -15,7 +15,12 @@
 
 import { AwaitExpression, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateAwaitExpression(
     original: AwaitExpression,
@@ -25,6 +30,11 @@ export function updateAwaitExpression(
         return original;
     }
 
-    const update = updateThenAttach(AwaitExpression.updateAwaitExpression, attachModifiers);
+    const update = updateThenAttach(
+        AwaitExpression.updateAwaitExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, argument);
 }

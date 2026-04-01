@@ -15,7 +15,12 @@
 
 import { AnnotationUsage, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { AstNode } from '../peers/AstNode';
 
 export function updateAnnotationUsage(original: AnnotationUsage, expr?: Expression): AnnotationUsage {
@@ -27,11 +32,20 @@ export function updateAnnotationUsage(original: AnnotationUsage, expr?: Expressi
     return update(original, expr);
 }
 
-export function update1AnnotationUsage(original: AnnotationUsage, expr: Expression | undefined, properties: readonly AstNode[]): AnnotationUsage {
+export function update1AnnotationUsage(
+    original: AnnotationUsage,
+    expr: Expression | undefined,
+    properties: readonly AstNode[]
+): AnnotationUsage {
     if (isSameNativeObject(expr, original.expr) && isSameNativeObject(properties, original.properties)) {
         return original;
     }
 
-    const update = updateThenAttach(AnnotationUsage.update1AnnotationUsage, attachModifiers);
+    const update = updateThenAttach(
+        AnnotationUsage.update1AnnotationUsage,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, expr, properties);
 }

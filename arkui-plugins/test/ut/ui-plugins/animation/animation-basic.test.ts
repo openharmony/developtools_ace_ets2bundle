@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -90,9 +90,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): AnimatablePropertyExample {
+  public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() content?: (()=> void)): AnimatablePropertyExample {
     throw new Error("Declare interface");
   }
   @Memo() 
@@ -121,9 +121,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       }), undefined);
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -153,7 +154,7 @@ function testAnimationTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic animation transform',
-    [animationTransform, uiNoRecheck, recheck],
+    [animationTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         checked: [testAnimationTransformer],
     },

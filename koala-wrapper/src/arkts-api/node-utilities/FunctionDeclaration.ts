@@ -16,7 +16,12 @@
 import { AnnotationUsage, ScriptFunction } from '../../generated';
 import { FunctionDeclaration } from '../types';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateFunctionDeclaration(
     original: FunctionDeclaration,
@@ -32,6 +37,6 @@ export function updateFunctionDeclaration(
         return original;
     }
 
-    const update = updateThenAttach(FunctionDeclaration.update, attachModifiers);
+    const update = updateThenAttach(FunctionDeclaration.update, attachModifiers, attachParent, refreshNodeCache);
     return update(original, scriptFunction, isAnon, annotations);
 }
