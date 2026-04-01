@@ -76,7 +76,8 @@ import {
   COMPONENTV2_PARAM_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
-  COMPONENTV2_ONCE_DECORATOR
+  COMPONENTV2_ONCE_DECORATOR,
+  ENABLEWILDCARD
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -1001,13 +1002,20 @@ function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceF
   if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
     return;
   }
-  parentCallExpression.arguments.forEach(monitorArgument => {
-    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log, isMonitor);
+  let monitorCheckWild: boolean = false;
+  if (isMonitor) {
+    const firstMonitorArg: ts.Expression = parentCallExpression.arguments[0];
+    monitorCheckWild = shouldMonitorCheckWild(firstMonitorArg);
+  }
+  parentCallExpression.arguments.forEach((monitorArgument, index) => {
+    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log,
+      isMonitor, index, monitorCheckWild);
     if (!ts.isStringLiteral(monitorArgument)) {
       return;
     }
     if (isMonitor) {
-      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log,
+        classNode, index, monitorCheckWild);
       return;
     }
     checkSyncMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
@@ -1015,8 +1023,20 @@ function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceF
 }
 
 function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  sourceFileNode: ts.SourceFile, log: LogInfo[],
+  classNode: ts.ClassDeclaration | ts.StructDeclaration,
+  index: number, shouldCheckWild: boolean = false): void {
   const monitorArg: argWrapper = { value: monitorArgument.text };
+  let needCheckContent: boolean = true;
+  if (shouldCheckWild) {
+    if (index === 0) {
+      return;
+    }
+    needCheckContent = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg, true);
+  }
+  if (!needCheckContent) {
+    return;
+  }
   if (monitorArg.value.startsWith('.')) {
     validateMonitorArgExist(monitorArgument, log, sourceFileNode);
     return;
@@ -1127,7 +1147,7 @@ interface MonitorStatus {
 function checkSyncMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
   sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
   const monitorArg: argWrapper = { value: monitorArgument.text };
-  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
+  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg, false);
   if (!needCheckContent) {
     return;
   }
@@ -1535,9 +1555,12 @@ function checkArrayType(
 }
 
 function checkWildCard(monitorArgument: ts.StringLiteral,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper): boolean {
+  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper,
+  isMonitor: boolean): boolean {
   const argText: string = monitorArgument.text;
-  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`;
+  const currentDecoratorName: string = isMonitor ? '@Monitor' : '@SyncMonitor';
+  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '${currentDecoratorName}',` +
+    ` the .* pattern must be placed at the end of the string.`;
   const wildCardRegex: RegExp = /\*/g;
   const matches = argText.match(wildCardRegex);
   if (!matches || !matches.length) {
@@ -1560,15 +1583,39 @@ function checkWildCard(monitorArgument: ts.StringLiteral,
 }
 
 function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean): void {
+  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean,
+  index: number, shouldCheckWild: boolean): void {
   const decoratorName: string = isMonitor ? constantDefine.MONITOR : constantDefine.SYNC_MONITOR;
   const typeMessage: string = `Only constant expressions are supported as parameters in '@${decoratorName}'. Variables are not allowed.`;
+  if (isMonitor && index === 0 && shouldCheckWild) {
+    return;
+  }
   if (!ts.isStringLiteral(monitorArgument)) {
     isMonitor ?
       addLog(LogType.WARN, typeMessage, monitorArgument.pos, log, sourceFileNode) :
       addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
     return;
   }
+}
+
+function shouldMonitorCheckWild(firstMonitorArg: ts.Expression): boolean {
+  if (!firstMonitorArg) {
+    return false;
+  }
+  if (!ts.isObjectLiteralExpression(firstMonitorArg) || !firstMonitorArg.properties ||
+    !firstMonitorArg.properties.length || firstMonitorArg.properties.length > 1) {
+    return false;
+  }
+  const assignmentOne: ts.ObjectLiteralElementLike = firstMonitorArg.properties[0];
+  if (!ts.isPropertyAssignment(assignmentOne) ||
+    !ts.isIdentifier(assignmentOne.name) ||
+    !assignmentOne.initializer?.kind) {
+    return false;
+  }
+  const assignmentName: string = assignmentOne.name.getText();
+  const initializerExpression: ts.Expression = assignmentOne.initializer;
+  return assignmentName === ENABLEWILDCARD &&
+    initializerExpression.kind === ts.SyntaxKind.TrueKeyword;
 }
 
 function getOrCreateClassTraceVariables(className: string,
