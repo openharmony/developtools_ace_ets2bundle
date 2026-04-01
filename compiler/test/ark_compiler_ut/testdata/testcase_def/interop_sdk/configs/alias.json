@@ -1,0 +1,6 @@
+{
+  "static.@ohos.util.HashSet": {
+    "originalAPIName": "@ohos.util.HashSet",
+    "isStatic": true
+  }
+}
