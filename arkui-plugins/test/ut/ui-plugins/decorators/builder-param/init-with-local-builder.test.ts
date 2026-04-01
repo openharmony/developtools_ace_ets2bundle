@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -51,71 +51,57 @@ function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_customBuilderParam = ((({let gensym___169376706 = initializers;
-    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (this.doNothingBuilder))
-    this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
-    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (((({let gensym___14041256 = initializers;
-    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (this.doNothingBuilder2))))
+    this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.doNothingBuilder))
+    this.__backing_customBuilderParam2 = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (this.doNothingBuilder2))))
   }
-
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-
-  private __backing_customBuilderParam?: @Memo() (()=> void);
-
-  public get customBuilderParam(): @Memo() (()=> void) {
-    return this.__backing_customBuilderParam!;
-  }
-
-  public set customBuilderParam(value: @Memo() (()=> void)) {
-    this.__backing_customBuilderParam = value;
-  }
-
-  private __backing_customBuilderParam2?: @Memo() ((str: string)=> void);
-
-  public get customBuilderParam2(): @Memo() ((str: string)=> void) {
-    return this.__backing_customBuilderParam2!;
-  }
-
-  public set customBuilderParam2(value: @Memo() ((str: string)=> void)) {
-    this.__backing_customBuilderParam2 = value;
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___46528967 = storage;
-      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
-  
   @Memo() 
   public doNothingBuilder() {}
-  
   @Memo() 
   public doNothingBuilder2(@MemoSkip() str: string) {}
-  
+  private __backing_customBuilderParam?: @Memo() (()=> void);
+  public get customBuilderParam(): @Memo() (()=> void) {
+    return this.__backing_customBuilderParam!;
+  }
+  public set customBuilderParam(value: @Memo() (()=> void)) {
+    this.__backing_customBuilderParam = value;
+  }
+  private __backing_customBuilderParam2?: @Memo() ((str: string)=> void);
+  public get customBuilderParam2(): @Memo() ((str: string)=> void) {
+    return this.__backing_customBuilderParam2!;
+  }
+  public set customBuilderParam2(value: @Memo() ((str: string)=> void)) {
+    this.__backing_customBuilderParam2 = value;
+  }
   @Memo() 
   public build() {
     this.customBuilderParam();
     this.customBuilderParam2("hello");
   }
-  
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((str: string)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
-  
 }
 `;
 
@@ -134,51 +120,27 @@ function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_customBuilderParam = ((({let gensym___169376706 = initializers;
-    (((gensym___169376706) == (null)) ? undefined : gensym___169376706.customBuilderParam)})) ?? (this.doNothingBuilder))
-    this.__backing_customBuilderParam2 = ((((({let gensym___14041256 = initializers;
-    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (content))) ?? (((({let gensym___14041256 = initializers;
-    (((gensym___14041256) == (null)) ? undefined : gensym___14041256.customBuilderParam2)})) ?? (this.doNothingBuilder2))))
+    this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.doNothingBuilder))
+    this.__backing_customBuilderParam2 = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (this.doNothingBuilder2))))
   }
-
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-
-  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-
-  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
-    return this.__backing_customBuilderParam!;
-  }
-
-  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
-    this.__backing_customBuilderParam = value;
-  }
-
-  private __backing_customBuilderParam2?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
-
-  public get customBuilderParam2(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
-    return this.__backing_customBuilderParam2!;
-  }
-
-  public set customBuilderParam2(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void)) {
-    this.__backing_customBuilderParam2 = value;
-  }
-
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (47330804)), style, ((): Child => {
-      return new Child(false, ({let gensym___46528967 = storage;
-      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Child => {
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
     throw new Error("Declare interface");
   }
-  
   @Memo() 
   public doNothingBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (174403279)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -188,10 +150,9 @@ function main() {}
       return;
     }
   }
-  
   @Memo() 
   public doNothingBuilder2(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() str: string) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (76253767)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -201,33 +162,44 @@ function main() {}
       return;
     }
   }
-
+  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    return this.__backing_customBuilderParam!;
+  }
+  public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    this.__backing_customBuilderParam = value;
+  }
+  private __backing_customBuilderParam2?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
+  public get customBuilderParam2(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
+    return this.__backing_customBuilderParam2!;
+  }
+  public set customBuilderParam2(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void)) {
+    this.__backing_customBuilderParam2 = value;
+  }
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (179390036)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    this.customBuilderParam(__memo_context, ((__memo_id) + (241913892)));
-    this.customBuilderParam2(__memo_context, ((__memo_id) + (137225318)), "hello");
+    this.customBuilderParam(__memo_context, ((__memo_id) + (<some_random_number>)));
+    this.customBuilderParam2(__memo_context, ((__memo_id) + (<some_random_number>)), "hello");
     {
       __memo_scope.recache();
       return;
     }
   }
-  
   ${dumpConstructor()}
-
+  static {
+  }
 }
 
 @Component() export interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
-  
 }
 `;
 
@@ -241,7 +213,7 @@ function testAfterMemoCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder param init with local builder',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
         'checked:memo-no-recheck': [testAfterMemoCheckedTransformer],

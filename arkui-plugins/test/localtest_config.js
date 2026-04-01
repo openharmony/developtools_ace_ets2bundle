@@ -85,9 +85,14 @@ try {
     jsonData.cachePath = changePathToAbsPath(jsonData.cachePath);
   }
 
-  // appModuleJsonPath
+  // aceModuleJsonPath
   if (jsonData.aceModuleJsonPath) {
     jsonData.aceModuleJsonPath = changePathToAbsPath(jsonData.aceModuleJsonPath);
+  }
+
+  // buildLoaderJson
+  if (jsonData.buildLoaderJson) {
+    jsonData.buildLoaderJson = changePathToAbsPath(jsonData.buildLoaderJson);
   }
 
   // externalApiPaths

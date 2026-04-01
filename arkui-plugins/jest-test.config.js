@@ -20,6 +20,7 @@ const sdkPath = path.resolve(rootPath, './out/sdk/ohos-sdk/linux/ets/static');
 const pandaSdkPath = path.resolve(sdkPath, './build-tools/ets2panda');
 const apiPath = path.resolve(sdkPath, './api');
 const kitPath = path.resolve(sdkPath, './kits');
+const resourcePath = path.resolve(__dirname, './test/mock/sysResource.js');
 
 module.exports = {
     preset: 'ts-jest',
@@ -62,5 +63,10 @@ module.exports = {
         PANDA_SDK_PATH: pandaSdkPath,
         API_PATH: apiPath,
         KIT_PATH: kitPath,
+        RESOURCE_PATH: resourcePath,
+        UI_CACHE_ENABLED: true,
+        UI_UPDATE_ENABLED: true,
+        MEMO_CACHE_ENABLED: true,
+        MEMO_UPDATE_ENABLED: true,
     },
 };

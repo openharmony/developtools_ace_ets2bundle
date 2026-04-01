@@ -33,10 +33,13 @@ import { TypedStatement } from "./TypedStatement"
 import { Es2pandaVariableDeclaratorFlag } from "./../Es2pandaEnums"
 import { Expression } from "./Expression"
 export class VariableDeclarator extends TypedStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATOR;
     }
     static createVariableDeclarator(flag: Es2pandaVariableDeclaratorFlag, ident?: Expression): VariableDeclarator {
         return new VariableDeclarator(global.generatedEs2panda._CreateVariableDeclarator(global.context, flag, passNode(ident)))

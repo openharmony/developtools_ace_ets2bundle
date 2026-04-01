@@ -33,10 +33,13 @@ import { TypeNode } from "./TypeNode"
 import { TSTypeParameter } from "./TSTypeParameter"
 import { Es2pandaMappedOption } from "./../Es2pandaEnums"
 export class TSMappedType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_MAPPED_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_MAPPED_TYPE;
     }
     static createTSMappedType(typeParameter: TSTypeParameter | undefined, typeAnnotation: TypeNode | undefined, readonly_arg: Es2pandaMappedOption, optional_arg: Es2pandaMappedOption): TSMappedType {
         return new TSMappedType(global.generatedEs2panda._CreateTSMappedType(global.context, passNode(typeParameter), passNode(typeAnnotation), readonly_arg, optional_arg))

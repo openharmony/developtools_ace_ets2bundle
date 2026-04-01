@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class AwaitExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_AWAIT_EXPRESSION;
     }
     static createAwaitExpression(argument?: Expression): AwaitExpression {
         return new AwaitExpression(global.generatedEs2panda._CreateAwaitExpression(global.context, passNode(argument)))

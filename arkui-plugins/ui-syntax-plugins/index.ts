@@ -22,19 +22,99 @@ import {
 import { createUISyntaxRuleProcessor, UISyntaxRuleProcessor } from './processor';
 import { UISyntaxLinterVisitor } from './transformers/ui-syntax-linter-visitor';
 import rules from './rules';
-import { matchPrefix } from '../common/arkts-utils';
+import { getConsistentResourceMap, getMainPages, getUIComponents, matchPrefix } from '../common/arkts-utils';
 import { EXCLUDE_EXTERNAL_SOURCE_PREFIXES, tracePerformance } from './utils';
+import { debugLog, getDumpFileName } from '../common/debug';
+import { UIVisitor } from '../collectors/ui-collectors/ui-visitor';
+import { MemoVisitor } from '../collectors/memo-collectors/memo-visitor';
+import { Collector } from '../collectors/collector';
+import { ProgramVisitor } from '../common/program-visitor';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
+import { ProgramSkipper } from '../common/program-skipper';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export function uiSyntaxLinterTransform(): Plugins {
-    const processor = createUISyntaxRuleProcessor(rules);
-    const parsedTransformer = new ParsedUISyntaxLinterTransformer(processor);
-    const checkedTransformer = new CheckedUISyntaxLinterTransformer(processor);
     return {
         name: 'ui-syntax-plugin',
-        parsed: createTransformer('parsed', processor, parsedTransformer),
-        checked: createTransformer('checked', processor, checkedTransformer),
+        parsed: parsedTransform,
+        checked: collectAndLint,
+        clean(): void {
+            ProgramSkipper.clear();
+            arkts.NodeCacheFactory.getInstance().clear();
+            visitedPrograms.clear();
+            visitedExternalSources.clear();
+        },
     };
 }
+
+function collectAndLint(this: PluginContext): arkts.EtsScript | undefined {
+    let script: arkts.EtsScript | undefined;
+    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED ENTER');
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+    const isCoding = this.isCoding?.() ?? false;
+    if (!!contextPtr) {
+        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
+        script = program.astNode;
+        debugLog('[BEFORE LINTER SCRIPT] script: ', script);
+        arkts.Performance.getInstance().createEvent('ui-linter');
+        program = checkedProgramVisit(program, this, isCoding);
+        script = program.astNode;
+        arkts.Performance.getInstance().stopEvent('ui-linter', true);
+        debugLog('[AFTER LINTER SCRIPT] script: ', script);
+        this.setArkTSAst(script);
+        arkts.Performance.getInstance().logDetailedEventInfos(true);
+        arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT');
+        return script;
+    }
+    arkts.Debugger.getInstance().phasesDebugLog('[UI LINTER PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    return script;
+}
+
+function checkedProgramVisit(
+    program: arkts.Program,
+    context: PluginContext,
+    isCoding: boolean = false
+): arkts.Program {
+    if (isCoding) {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(false);
+    } else {
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
+    }
+    const projectConfig = context.getProjectConfig();
+    arkts.Performance.getInstance().createDetailedEvent('[UI LINTER PLUGIN] MetadataCollector init');
+    MetaDataCollector.getInstance()
+        .setProjectConfig(projectConfig)
+        .setComponentsInfo(getUIComponents(projectConfig, isCoding))
+        .setConsistentResourceMap(getConsistentResourceMap())
+        .setMainPages(getMainPages(projectConfig));
+    arkts.Performance.getInstance().stopDetailedEvent('[UI LINTER PLUGIN] MetadataCollector init');
+    const collector = new Collector({
+        shouldCollectUI: true,
+        shouldCollectMemo: true,
+        shouldCheckUISyntax: true
+    });
+    const programVisitor = new ProgramVisitor({
+        pluginName: uiSyntaxLinterTransform.name,
+        state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
+        visitors: [collector],
+        skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
+        pluginContext: context,
+        shouldVisitExternal: !isCoding,
+    });
+    program = programVisitor.programVisitor(program);
+    MetaDataCollector.getInstance()
+        .setComponentsInfo(undefined)
+        .setConsistentResourceMap(undefined)
+        .setMainPages(undefined);
+    if (!isCoding) {
+        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.UI, true);
+        arkts.NodeCacheFactory.getInstance().perfLog(NodeCacheNames.MEMO, true);
+    }
+    return program;
+}
+
 
 function createTransformer(
     phase: string,
@@ -103,6 +183,46 @@ function transformExternalSources(
         }
         visitedExternalSources.add(externalSource.peer);
     }
+}
+
+const visitedPrograms: Set<any> = new Set();
+const visitedExternalSources: Set<any> = new Set();
+function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
+    const isCoding = this.isCoding?.() ?? false;
+    arkts.Performance.getInstance().createEvent(`ui-syntax::parsed`);
+    const processor = createUISyntaxRuleProcessor(rules);
+    const transformer = new ParsedUISyntaxLinterTransformer(processor);
+    const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
+    if (!contextPtr) {
+        return undefined;
+    }
+    const projectConfig = this.getProjectConfig();
+    if (!projectConfig) {
+        return undefined;
+    }
+    processor.setProjectConfig(projectConfig);
+    if (projectConfig.frameworkMode) {
+        return undefined;
+    }
+    const program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
+    if (visitedPrograms.has(program.peer) || isHeaderFile(program.absName)) {
+        return undefined;
+    }
+    processor.setComponentsInfo(projectConfig, isCoding);
+    if (isCoding) {
+        const codingFilePath = this.getCodingFilePath();
+        if (program.absName === codingFilePath) {
+            return transformProgram.call(this, transformer, program);
+        }
+    } else {
+        transformExternalSources.call(this, program, visitedExternalSources, visitedPrograms, transformer);
+        if (program.absName) {
+            return transformProgram.call(this, transformer, program);
+        }
+    }
+    visitedPrograms.add(program.peer);
+    arkts.Performance.getInstance().stopEvent(`ui-syntax::parsed`, true);
+    return undefined;
 }
 
 function transformProgram(

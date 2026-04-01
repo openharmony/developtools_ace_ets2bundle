@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class TSExternalModuleReference extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_EXTERNAL_MODULE_REFERENCE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_EXTERNAL_MODULE_REFERENCE;
     }
     static createTSExternalModuleReference(expr?: Expression): TSExternalModuleReference {
         return new TSExternalModuleReference(global.generatedEs2panda._CreateTSExternalModuleReference(global.context, passNode(expr)))

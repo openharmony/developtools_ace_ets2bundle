@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { beforeMemoNoRecheck, builderLambdaNoRecheck, memoNoRecheck, recheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 
 const BUILDER_LAMBDA_DIR_PATH: string = 'builder-lambda';
@@ -113,9 +113,9 @@ class MyStateSample {
 
 pluginTester.run(
     'transform simple component',
-    [builderLambdaNoRecheck, beforeMemoNoRecheck, memoNoRecheck, recheck],
+    [collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
-        'checked:builder-lambda-no-recheck': [testBuilderLambdaTransformer],
+        'checked:ui-no-recheck': [testBuilderLambdaTransformer],
         'checked:memo-no-recheck': [testMemoTransformer],
     },
     {

@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { StringLiteral } from "./StringLiteral"
 import { Identifier } from "./Identifier"
 export class ExportAllDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_ALL_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_ALL_DECLARATION;
     }
     static createExportAllDeclaration(source?: StringLiteral, exported?: Identifier): ExportAllDeclaration {
         return new ExportAllDeclaration(global.generatedEs2panda._CreateExportAllDeclaration(global.context, passNode(source), passNode(exported)))

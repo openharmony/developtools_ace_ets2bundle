@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -93,6 +93,7 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
+@Builder() 
 @Memo() 
 function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -139,8 +140,6 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
 
   @JSONRename({newName:"paramA2"}) public __backing_paramA2: string = "hello";
 
-  public constructor() {}
-
   public get paramA2(): string {
     this.conditionalAddRef(this.__meta);
     return this.__backing_paramA2;
@@ -154,6 +153,10 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
     }
   }
 
+  public constructor() {}
+
+  static {
+  }
 }
 
 @Memo() type MyBuilderFuncType = @Builder() ((param: (()=> Tmp))=> void);
@@ -166,16 +169,6 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
-  private __backing_label?: IStateDecoratedVariable<Tmp>;
-
-  public get label(): Tmp {
-    return this.__backing_label!.get();
-  }
-
-  public set label(value: Tmp) {
-    this.__backing_label!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -187,6 +180,16 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
+  }
+
+  private __backing_label?: IStateDecoratedVariable<Tmp>;
+
+  public get label(): Tmp {
+    return this.__backing_label!.get();
+  }
+
+  public set label(value: Tmp) {
+    this.__backing_label!.set(value);
   }
 
   @Memo() 
@@ -212,11 +215,12 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 
   ${dumpConstructor()}
-
+  static {
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
   
@@ -284,6 +288,7 @@ const wBuilder: WrappedBuilder<MyBuilderFuncType> = wrapBuilder(overBuilder);
 function main() {}
 
 
+@Builder() 
 @Memo() 
 function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() param: (()=> Tmp)) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (133793681)), 0);
@@ -366,8 +371,6 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
   @JSONRename({newName:"paramA2"}) public __backing_paramA2: string = "hello";
 
-  public constructor() {}
-
   public get paramA2(): string {
     this.conditionalAddRef(this.__meta);
     return this.__backing_paramA2;
@@ -379,6 +382,11 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       this.__meta.fireChange();
       this.executeOnSubscribingWatches("paramA2");
     }
+  }
+
+  public constructor() {}
+
+  static {
   }
 
 }
@@ -393,16 +401,6 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
-  private __backing_label?: IStateDecoratedVariable<Tmp>;
-
-  public get label(): Tmp {
-    return this.__backing_label!.get();
-  }
-
-  public set label(value: Tmp) {
-    this.__backing_label!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Parent => {
@@ -414,6 +412,16 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Parent {
     throw new Error("Declare interface");
+  }
+
+  private __backing_label?: IStateDecoratedVariable<Tmp>;
+
+  public get label(): Tmp {
+    return this.__backing_label!.get();
+  }
+
+  public set label(value: Tmp) {
+    this.__backing_label!.set(value);
   }
 
   @Memo() 
@@ -475,11 +483,12 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   ${dumpConstructor()}
-
+  static {
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
@@ -492,7 +501,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test wrap builder with lambda',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

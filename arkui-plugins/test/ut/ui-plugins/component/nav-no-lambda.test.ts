@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -74,16 +74,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
-  
-  private __backing_pathStack?: NavPathStack;
-  
-  public get pathStack(): NavPathStack {
-    return (this.__backing_pathStack as NavPathStack);
-  }
-  
-  public set pathStack(value: NavPathStack) {
-    this.__backing_pathStack = value;
-  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: NavDestinationStruct)=> void) | undefined), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<NavDestinationStruct, __Options_NavDestinationStruct>(style, ((): NavDestinationStruct => {
@@ -91,10 +82,19 @@ function main() {}
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): NavDestinationStruct {
+  public static $_invoke(initializers?: __Options_NavDestinationStruct, storage?: LocalStorage, @Builder() content?: (()=> void)): NavDestinationStruct {
     throw new Error("Declare interface");
+  }
+  private __backing_pathStack?: NavPathStack;
+
+  public get pathStack(): NavPathStack {
+    return (this.__backing_pathStack as NavPathStack);
+  }
+
+  public set pathStack(value: NavPathStack) {
+    this.__backing_pathStack = value;
   }
   @Memo() 
   public build() {
@@ -131,9 +131,10 @@ function main() {}
       }), undefined);
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_NavDestinationStruct {
@@ -161,7 +162,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic navigation and navDestination transformation with no trailing lambda',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

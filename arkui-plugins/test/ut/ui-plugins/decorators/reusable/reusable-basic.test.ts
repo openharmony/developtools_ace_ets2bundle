@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -67,20 +67,20 @@ function main() {}
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___203542966 = storage;
-      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
-  
+
   @Memo() 
   public build() {
     Child._invoke(undefined, (() => {
@@ -90,26 +90,28 @@ function main() {}
       };
     }), undefined, "Child", undefined);
   }
-  
+
   ${dumpConstructor()}
-  
+
+  static {
+  }
 }
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___83257243 = initializers;
-    (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (1)));
-    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___24398512 = initializers;
-    (((gensym___24398512) == (null)) ? undefined : gensym___24398512.num1)})) ?? (2)));
+    this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
+    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)));
   }
-  
+
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (({let gensym___111600432 = initializers;
-    (((gensym___111600432) == (null)) ? undefined : gensym___111600432.__options_has_num)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_num)})) {
       this.__backing_num!.update((initializers!.num as number));
     }
   }
-  
+
   public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
@@ -117,45 +119,47 @@ function main() {}
       "num1": ((paramsCasted.num1) ?? (new Object())),
     };
   }
-  
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   private __backing_num?: IPropRefDecoratedVariable<number>;
-  
+
   public get num(): number {
     return this.__backing_num!.get();
   }
-  
+
   public set num(value: number) {
     this.__backing_num!.set(value);
   }
-  
+
   private __backing_num1?: IStateDecoratedVariable<number>;
-  
+
   public get num1(): number {
     return this.__backing_num1!.get();
   }
-  
+
   public set num1(value: number) {
     this.__backing_num1!.set(value);
   }
   
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___90667230 = storage;
-      (((gensym___90667230) == (null)) ? undefined : gensym___90667230())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {}
-  
+
   ${dumpConstructor()}
-  
+
+  static {
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -163,11 +167,11 @@ function main() {}
 }
 
 @Component() @Reusable() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num1', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num1', '(boolean | undefined)')}
   
@@ -180,7 +184,7 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic reusable',
-    [reusableTransform, uiNoRecheck, recheck],
+    [reusableTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testReusableTransformer],
     },

@@ -14,7 +14,7 @@
  */
 
 import { Text, Column, Component, Entry, Button, ClickEvent } from "@ohos.arkui.component"
-import { State, Link, Prop } from "@ohos.arkui.stateManagement"
+import { State, Link, PropRef } from "@ohos.arkui.stateManagement"
 import hilog from '@ohos.hilog'
 
 @Entry
@@ -43,7 +43,7 @@ struct MyStateSample {
 @Component
 struct Child {
   @Link linkVar: string;
-  @Prop propVar: string = "Prop";
+  @PropRef propVar: string = "Prop";
 
   changeValue1() {
     this.linkVar+="!!"

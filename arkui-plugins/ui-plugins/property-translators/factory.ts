@@ -22,6 +22,8 @@ import {
     ObservedNames,
     MonitorNames,
     TypeNames,
+    NodeCacheNames,
+    CustomComponentNames,
 } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
 import {
@@ -32,9 +34,10 @@ import {
     OptionalMemberInfo,
     removeDecorator,
 } from './utils';
-import { CustomComponentNames, optionsHasField } from '../utils';
+import { optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
+import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 export class factory {
@@ -68,10 +71,10 @@ export class factory {
         return info?.isCall
             ? arkts.factory.createCallExpression(alternate, undefined, undefined)
             : info?.isNumeric
-            ? arkts.factory.createCallExpression(alternate, undefined, [
-                  arkts.factory.createNumericLiteral(Number(key)),
-              ])
-            : alternate;
+              ? arkts.factory.createCallExpression(alternate, undefined, [
+                    arkts.factory.createNumericLiteral(Number(key)),
+                ])
+              : alternate;
     }
 
     /**
@@ -219,7 +222,7 @@ export class factory {
     ): arkts.CallExpression {
         collectStateManagementTypeImport(StateManagementTypes.STATE_MANAGEMENT_FACTORY);
         if (!!typeArguments && !!memoMetadata) {
-            arkts.NodeCache.getInstance().collect(typeArguments, memoMetadata);
+            PropertyFactoryCallTypeCache.getInstance().collect({ node: typeArguments, metadata: memoMetadata });
         }
         return arkts.factory.createCallExpression(
             UIFactory.generateMemberExpression(
@@ -268,12 +271,10 @@ export class factory {
         );
     }
 
-    static judgeIfAddWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
-        if (hasDecorator(property, DecoratorNames.WATCH)) {
-            const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
-            if (watchStr) {
-                args.push(factory.createWatchCallback(watchStr));
-            }
+    static addWatchFunc(args: arkts.Expression[], property: arkts.ClassProperty): void {
+        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
+        if (watchStr) {
+            args.push(factory.createWatchCallback(watchStr));
         }
     }
 
@@ -287,9 +288,9 @@ export class factory {
     ): arkts.ClassProperty {
         const originType = property.typeAnnotation;
         const newType: arkts.TypeNode | undefined = !stageManagementType
-            ? property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY)
+            ? (property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY))
             : originType;
-        if (needMemo && findCanAddMemoFromTypeAnnotation(newType).canAddMemo) {
+        if (needMemo && !!newType && arkts.isETSFunctionType(newType) && findCanAddMemoFromTypeAnnotation(newType).canAddMemo) {
             addMemoAnnotation(newType);
         }
         const newProperty = arkts.factory.createClassProperty(
@@ -318,46 +319,58 @@ export class factory {
     /*
      * create watch related members in Observed/Track classes
      */
-    static createWatchMembers(): arkts.AstNode[] {
-        const subscribedWatches: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier('subscribedWatches'),
-            factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_SUBSCRIBED_WATCHES, undefined, [], false),
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            false
-        );
-        subscribedWatches.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
-        collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
-
+    static createWatchMembers(isDecl: boolean): arkts.AstNode[] {
+        const members: arkts.AstNode[] = [];
+        if (!isDecl) {
+            const subscribedWatches: arkts.ClassProperty = arkts.factory.createClassProperty(
+                arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
+                factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_SUBSCRIBED_WATCHES, undefined, [], false),
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
+                    )
+                ),
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+                false
+            );
+            subscribedWatches.setAnnotations([
+                annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+                annotation(DecoratorNames.JSONPARSEIGNORE),
+            ]);
+            collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
+            members.push(subscribedWatches);
+        }
         const addWatchSubscriber = factory.createWatchMethod(
-            'addWatchSubscriber',
+            ObservedNames.ADD_WATCH_SUBSCRIBER,
             arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
-            'watchId',
+            ObservedNames.WATCH_ID,
             StateManagementTypes.WATCH_ID_TYPE,
-            false
+            false,
+            isDecl
         );
+        members.push(addWatchSubscriber);
+
         const removeWatchSubscriber = factory.createWatchMethod(
-            'removeWatchSubscriber',
+            ObservedNames.REMOVE_WATCH_SUBSCRIBER,
             arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN,
-            'watchId',
+            ObservedNames.WATCH_ID,
             StateManagementTypes.WATCH_ID_TYPE,
-            true
+            true,
+            isDecl
         );
         collectStateManagementTypeImport(StateManagementTypes.WATCH_ID_TYPE);
+        members.push(removeWatchSubscriber);
 
         const executeOnSubscribingWatches = factory.createWatchMethod(
-            'executeOnSubscribingWatches',
+            ObservedNames.EXECUATE_WATCHES,
             arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID,
-            'propertyName',
+            ObservedNames.PROPETY_NAME,
             'string',
-            false
+            false,
+            isDecl
         );
-
-        return [subscribedWatches, addWatchSubscriber, removeWatchSubscriber, executeOnSubscribingWatches];
+        members.push(executeOnSubscribingWatches);
+        return members;
     }
 
     /*
@@ -368,29 +381,37 @@ export class factory {
         returnType: arkts.Es2pandaPrimitiveType,
         paramName: string,
         paramType: string,
-        isReturnStatement: boolean
+        isReturnStatement: boolean,
+        isDecl: boolean
     ): arkts.MethodDefinition {
+        let body: arkts.BlockStatement | undefined;
+        let modifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        if (!isDecl) {
+            body = arkts.factory.createBlock([
+                isReturnStatement
+                    ? arkts.factory.createReturnStatement(
+                            arkts.factory.createCallExpression(
+                                factory.thisSubscribedWatchesMember(methodName),
+                                undefined,
+                                [arkts.factory.createIdentifier(paramName)]
+                            )
+                        )
+                    : arkts.factory.createExpressionStatement(
+                            arkts.factory.createCallExpression(
+                                factory.thisSubscribedWatchesMember(methodName),
+                                undefined,
+                                [arkts.factory.createIdentifier(paramName)]
+                            )
+                        ),
+            ]);
+        } else {
+            modifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             arkts.factory.createIdentifier(methodName),
             arkts.factory.createScriptFunction(
-                arkts.factory.createBlock([
-                    isReturnStatement
-                        ? arkts.factory.createReturnStatement(
-                              arkts.factory.createCallExpression(
-                                  factory.thisSubscribedWatchesMember(methodName),
-                                  undefined,
-                                  [arkts.factory.createIdentifier(paramName)]
-                              )
-                          )
-                        : arkts.factory.createExpressionStatement(
-                              arkts.factory.createCallExpression(
-                                  factory.thisSubscribedWatchesMember(methodName),
-                                  undefined,
-                                  [arkts.factory.createIdentifier(paramName)]
-                              )
-                          ),
-                ]),
+                body,
                 arkts.factory.createFunctionSignature(
                     undefined,
                     [
@@ -408,9 +429,9 @@ export class factory {
                     false
                 ),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+                modifier
             ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            modifier,
             false
         );
     }
@@ -422,7 +443,7 @@ export class factory {
         return arkts.factory.createMemberExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier('subscribedWatches'),
+                arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 false,
                 false
@@ -437,40 +458,59 @@ export class factory {
     /*
      * create ____V1RenderId related members in Observed/Track classes
      */
-    static createV1RenderIdMembers(isObservedV2: boolean): arkts.AstNode[] {
-        const v1RenderId: arkts.ClassProperty = arkts.factory.createClassProperty(
-            arkts.factory.createIdentifier(ObservedNames.V1_RERENDER_ID),
-            arkts.factory.createNumericLiteral(0),
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
-                    arkts.factory.createIdentifier(StateManagementTypes.RENDER_ID_TYPE)
-                )
-            ),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            false
-        );
-        v1RenderId.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
+    static createV1RenderIdMembers(isObservedV2: boolean, isDecl: boolean): arkts.AstNode[] {
+        const members: arkts.AstNode[] = [];
+        if (!isObservedV2 && !isDecl) {
+            const v1RenderId: arkts.ClassProperty = arkts.factory.createClassProperty(
+                arkts.factory.createIdentifier(ObservedNames.V1_RERENDER_ID),
+                arkts.factory.createNumericLiteral(0),
+                arkts.factory.createTypeReference(
+                    arkts.factory.createTypeReferencePart(
+                        arkts.factory.createIdentifier(StateManagementTypes.RENDER_ID_TYPE)
+                    )
+                ),
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+                false
+            );
+            v1RenderId.setAnnotations([
+                annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+                annotation(DecoratorNames.JSONPARSEIGNORE),
+            ]);
+            members.push(v1RenderId);
+        }
+        const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId(isObservedV2, isDecl);
         collectStateManagementTypeImport(StateManagementTypes.RENDER_ID_TYPE);
-        const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId(isObservedV2);
-        return isObservedV2 ? [setV1RenderId] : [v1RenderId, setV1RenderId];
+        members.push(setV1RenderId);
+        return members;
     }
 
     /*
      * helper for createV1RenderIdMembers to generate setV1RenderId method
      */
-    static setV1RenderId(isObservedV2: boolean): arkts.MethodDefinition {
-        const assignRenderId: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            arkts.factory.createAssignmentExpression(
-                generateThisBacking(ObservedNames.V1_RERENDER_ID),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                arkts.factory.createIdentifier(ObservedNames.RERENDER_ID)
-            )
-        );
+    static setV1RenderId(isObservedV2: boolean, isDecl: boolean): arkts.MethodDefinition {
+        let body: arkts.BlockStatement | undefined;
+        let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        if (!isDecl) {
+            const bodyStatements: arkts.Statement[] = [];
+            if (!isObservedV2) {
+                const assignRenderId: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
+                    arkts.factory.createAssignmentExpression(
+                        generateThisBacking(ObservedNames.V1_RERENDER_ID),
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                        arkts.factory.createIdentifier(ObservedNames.RERENDER_ID)
+                    )
+                );
+                bodyStatements.push(assignRenderId);
+            }
+            body = arkts.factory.createBlock(bodyStatements);
+        } else {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(ObservedNames.SET_V1_RERENDER_ID),
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             function: {
-                body: arkts.factory.createBlock(isObservedV2 ? [] : [assignRenderId]),
+                body,
                 params: [
                     arkts.factory.createParameterDeclaration(
                         arkts.factory.createIdentifier(
@@ -484,9 +524,9 @@ export class factory {
                     arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
                 ),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+                modifiers,
             },
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            modifiers,
         });
     }
 
@@ -563,7 +603,10 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             false
         );
-        meta.setAnnotations([annotation(DecoratorNames.JSONSTRINGIFYIGNORE), annotation(DecoratorNames.JSONPARSEIGNORE)]);
+        meta.setAnnotations([
+            annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
+            annotation(DecoratorNames.JSONPARSEIGNORE),
+        ]);
         return meta;
     }
 
@@ -635,14 +678,14 @@ export class factory {
     static wrapStateManagementTypeToParam(
         param: arkts.Expression | undefined,
         decoratorName: DecoratorNames,
-        metadata?: arkts.AstNodeCacheValueMetadata,
+        metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Expression | undefined {
         let newParam: arkts.Expression | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
         if (!!param && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
             newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
             if (!!metadata) {
-                arkts.NodeCache.getInstance().collect(newParam, metadata);
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newParam, metadata);
             }
             collectStateManagementTypeImport(wrapTypeName);
         }
@@ -669,7 +712,7 @@ export class factory {
             removeDecorator(method, decorator);
             if (!!newType) {
                 if (!!metadata) {
-                    arkts.NodeCache.getInstance().collect(newType, metadata);
+                    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newType, metadata);
                 }
                 func.setReturnTypeAnnotation(newType);
             }
@@ -757,11 +800,11 @@ export class factory {
                 arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
                 [
                     arkts.factory.createProperty(
-                        arkts.factory.createIdentifier('owner'),
+                        arkts.factory.createIdentifier(MonitorNames.OWNER),
                         isFromStruct ? arkts.factory.createThisExpression() : arkts.factory.createUndefinedLiteral()
                     ),
                     arkts.factory.createProperty(
-                        arkts.factory.createIdentifier('functionName'),
+                        arkts.factory.createIdentifier(MonitorNames.FUNCTION_NAME),
                         arkts.factory.createStringLiteral(originalName)
                     ),
                 ],
@@ -876,10 +919,19 @@ export class factory {
     }
 
     static generateComputedOwnerAssignment(newName: string): arkts.ExpressionStatement {
-        const computedVariable = UIFactory.generateMemberExpression(arkts.factory.createThisExpression(), newName, false);
-        const setOwnerFunc = UIFactory.generateMemberExpression(computedVariable, StateManagementTypes.SET_OWNER, false);
+        const computedVariable = UIFactory.generateMemberExpression(
+            arkts.factory.createThisExpression(),
+            newName,
+            false
+        );
+        const setOwnerFunc = UIFactory.generateMemberExpression(
+            computedVariable,
+            StateManagementTypes.SET_OWNER,
+            false
+        );
         return arkts.factory.createExpressionStatement(
-            arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()]));
+            arkts.factory.createCallExpression(setOwnerFunc, undefined, [arkts.factory.createThisExpression()])
+        );
     }
 
     static createResetOnReuseStmt(newName: string, arg?: arkts.Expression): arkts.ExpressionStatement {

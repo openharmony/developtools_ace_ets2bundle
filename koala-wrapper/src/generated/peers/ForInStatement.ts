@@ -32,6 +32,9 @@ export class ForInStatement extends LoopStatement {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_IN_STATEMENT);
         super(pointer);
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_FOR_IN_STATEMENT;
+    }
     static createForInStatement(left?: AstNode, right?: Expression, body?: Statement): ForInStatement {
         return new ForInStatement(
             global.generatedEs2panda._CreateForInStatement(

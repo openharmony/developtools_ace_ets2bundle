@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -106,14 +106,14 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 
 @ComponentV2() export interface __Options_Child {
   ${ignoreNewLines(`
-  index?: number;
+  @Param() index?: number;
   @Param() __backing_index?: number;
   __options_has_index?: boolean;
-  changeIndex?: ((val: number)=> void);
+  @Event() changeIndex?: ((val: number)=> void);
   __options_has_changeIndex?: boolean;
-  testEvent?: ((val: number)=> number);
+  @Event() testEvent?: ((val: number)=> number);
   __options_has_testEvent?: boolean;
-  testEvent2?: ((val: number)=> number);
+  @Event() testEvent2?: ((val: number)=> number);
   __options_has_testEvent2?: boolean;
   `)}
   
@@ -121,7 +121,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 
 @ComponentV2() export interface __Options_Index {
   ${ignoreNewLines(`
-  index?: number;
+  @Local() index?: number;
   @Local() __backing_index?: number;
   __options_has_index?: boolean;
   `)}
@@ -194,6 +194,20 @@ function main() {}
     })));
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Child>(),
+    });
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
+
   private __backing_index?: IParamDecoratedVariable<number>;
 
   public get index(): number {
@@ -230,20 +244,6 @@ function main() {}
     this.__backing_testEvent2 = value;
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Child>(),
-    });
-  }
-
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -263,7 +263,8 @@ function main() {}
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -277,16 +278,6 @@ function main() {}
     this.__backing_index!.resetOnReuse(0);
   }
 
-  private __backing_index?: ILocalDecoratedVariable<number>;
-
-  public get index(): number {
-    return this.__backing_index!.get();
-  }
-
-  public set index(value: number) {
-    this.__backing_index!.set(value);
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
@@ -297,8 +288,18 @@ function main() {}
   }
 
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
     throw new Error("Declare interface");
+  }
+
+  private __backing_index?: ILocalDecoratedVariable<number>;
+
+  public get index(): number {
+    return this.__backing_index!.get();
+  }
+
+  public set index(value: number) {
+    this.__backing_index!.set(value);
   }
 
   @Memo() 
@@ -323,27 +324,28 @@ function main() {}
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IParamDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'changeIndex', '(((val: number)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'changeIndex', '(((val: number)=> void) | undefined)', [dumpAnnotation('Event')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_changeIndex', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent', '(((val: number)=> number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent', '(((val: number)=> number) | undefined)', [dumpAnnotation('Event')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent2', '(((val: number)=> number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent2', '(((val: number)=> number) | undefined)', [dumpAnnotation('Event')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent2', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
   
@@ -360,7 +362,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Event decorator transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

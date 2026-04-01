@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -95,6 +95,20 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
 
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
+      return new ResourceComponent(false, ({let gensym___17371929 = storage;
+      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): ResourceComponent {
+    throw new Error("Declare interface");
+  }
+
   private __backing_str1?: string;
 
   public get str1(): string {
@@ -114,6 +128,7 @@ function main() {}
   public set str2(value: string) {
     this.__backing_str2 = value;
   }
+
   private __backing_numbers?: Array<string>;
 
   public get numbers(): Array<string> {
@@ -124,18 +139,6 @@ function main() {}
     this.__backing_numbers = value;
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
-      return new ResourceComponent(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_ResourceComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ResourceComponent {
-    throw new Error("Declare interface");
-  }
   public async test_0(res: Resource) {
     return res;
   }
@@ -225,7 +228,8 @@ function main() {}
   }
 
   ${dumpConstructor()}
-
+  static {
+  }
 }
 
 @Component() export interface __Options_ResourceComponent {
@@ -247,7 +251,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test resource transform in build method',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

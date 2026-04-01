@@ -21,6 +21,7 @@ import { StructTransformer } from '../../../ui-plugins/struct-translators/struct
 
 /**
  * AfterCheck struct transform with no recheck AST.
+ * @deprecated
  */
 export const structNoRecheck: Plugins = {
     name: 'struct-no-recheck',
@@ -30,7 +31,7 @@ export const structNoRecheck: Plugins = {
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const structTransformer = new StructTransformer(this.getProjectConfig());
+            const structTransformer = new StructTransformer(this.getProjectConfig(), global.RESOURCE_PATH);
             const programVisitor = new ProgramVisitor({
                 pluginName: structNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,

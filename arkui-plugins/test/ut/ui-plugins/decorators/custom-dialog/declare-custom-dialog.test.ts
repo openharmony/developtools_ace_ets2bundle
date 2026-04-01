@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -64,8 +64,6 @@ import { CustomDialog as CustomDialog, CustomDialogController as CustomDialogCon
 function main() {}
 
 @CustomDialog() export declare final struct CustomDialogExample extends BaseCustomDialog<CustomDialogExample, __Options_CustomDialogExample> {
-  @MemoIntrinsic() 
-  public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample
   public aaController?: (CustomDialogController | undefined);
@@ -75,24 +73,38 @@ function main() {}
   public build(): void
   public constructor(useSharedStorage?: boolean, storage?: LocalStorage)
   public static _buildCompatibleNode(options: __Options_CustomDialogExample): void
-  public __setDialogController__(controller: CustomDialogController): void
+  @MemoIntrinsic() 
+  public static _invoke(initializers: ((()=> __Options_CustomDialogExample) | undefined), storage: ((()=> LocalStorage) | undefined), controller: (CustomDialogController | undefined), @Memo() content: ((()=> void) | undefined)): void
 
 }
 
 @Component() final struct CustomDialogUserV1 extends CustomComponent<CustomDialogUserV1, __Options_CustomDialogUserV1> {
   public __initializeStruct(initializers: (__Options_CustomDialogUserV1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___145518823 = initializers;
-    (((gensym___145518823) == (null)) ? undefined : gensym___145518823.dialogController)})) ?? (({let gensym___149025070: Any;
-    gensym___149025070 = new CustomDialogController({
+    this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
+    gensym___<some_random_number> = new CustomDialogController({
       builder: @Memo() (() => {
-        CustomDialogExample._invoke(undefined, undefined, (gensym___149025070 as CustomDialogController), undefined);
+        CustomDialogExample._invoke(undefined, undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
       }),
       baseComponent: this,
     })
-    (gensym___149025070 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)})));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUserV1 | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: CustomDialogUserV1)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUserV1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CustomDialogUserV1, __Options_CustomDialogUserV1>(style, ((): CustomDialogUserV1 => {
+      return new CustomDialogUserV1(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomDialogUserV1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUserV1 {
+    throw new Error("Declare interface");
+  }
 
   private __backing_dialogController?: (CustomDialogController | null);
 
@@ -102,55 +114,34 @@ function main() {}
 
   public set dialogController(value: (CustomDialogController | null)) {
     this.__backing_dialogController = value;
-  }
-  
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: CustomDialogUserV1)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUserV1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<CustomDialogUserV1, __Options_CustomDialogUserV1>(style, ((): CustomDialogUserV1 => {
-      return new CustomDialogUserV1(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CustomDialogUserV1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUserV1 {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
   public build() {}
 
   ${dumpConstructor()}
+  static {
+  }
 
 }
 
 @ComponentV2() final struct CustomDialogUserV2 extends CustomComponentV2<CustomDialogUserV2, __Options_CustomDialogUserV2> {
   public __initializeStruct(initializers: (__Options_CustomDialogUserV2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___95501822 = initializers;
-    (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___90667230: Any;
-    gensym___90667230 = new CustomDialogController({
+    this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
+    gensym___<some_random_number> = new CustomDialogController({
       builder: @Memo() (() => {
-        CustomDialogExample._invoke(undefined, undefined, (gensym___90667230 as CustomDialogController), undefined);
+        CustomDialogExample._invoke(undefined, undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
       }),
       baseComponent: this,
     })
-    (gensym___90667230 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)})));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUserV2 | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUserV2 | undefined)): void {}
 
-  private __backing_dialogController?: (CustomDialogController | null);
-
-  public get dialogController(): (CustomDialogController | null) {
-    return (this.__backing_dialogController as (CustomDialogController | null));
-  }
-
-  public set dialogController(value: (CustomDialogController | null)) {
-    this.__backing_dialogController = value;
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUserV2)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUserV2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<CustomDialogUserV2, __Options_CustomDialogUserV2>(style, ((): CustomDialogUserV2 => {
@@ -159,16 +150,28 @@ function main() {}
       sClass: Class.from<CustomDialogUserV2>(),
     });
   }
-  
+
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_CustomDialogUserV2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogUserV2 {
     throw new Error("Declare interface");
+  }
+
+  private __backing_dialogController?: (CustomDialogController | null);
+
+  public get dialogController(): (CustomDialogController | null) {
+    return (this.__backing_dialogController as (CustomDialogController | null));
+  }
+
+  public set dialogController(value: (CustomDialogController | null)) {
+    this.__backing_dialogController = value;
   }
 
   @Memo() 
   public build() {}
 
   public constructor() {}
+  static {
+  }
 
 }
 
@@ -176,7 +179,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)', [], [], false)}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [dumpAnnotation('State')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)', [], [], false)}
 
@@ -204,7 +207,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test declared struct @CustomDialog transformation',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

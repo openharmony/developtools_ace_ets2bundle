@@ -18,9 +18,15 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
+import {
+  dumpGetterSetter,
+  GetSetDumper,
+  ignoreNewLines,
+  dumpConstructor,
+  dumpAnnotation
+} from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -80,25 +86,25 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 
 @Component() export interface __Options_PropParent {
   ${ignoreNewLines(`
-  propVar1?: string;
+  @PropRef() propVar1?: string;
   @PropRef() __backing_propVar1?: string;
   __options_has_propVar1?: boolean;
-  propVar2?: (number | undefined);
+  @PropRef() propVar2?: (number | undefined);
   @PropRef() __backing_propVar2?: (number | undefined);
   __options_has_propVar2?: boolean;
-  propVar3?: boolean;
+  @PropRef() propVar3?: boolean;
   @PropRef() __backing_propVar3?: boolean;
   __options_has_propVar3?: boolean;
-  propVar4?: undefined;
+  @PropRef() propVar4?: undefined;
   @PropRef() __backing_propVar4?: undefined;
   __options_has_propVar4?: boolean;
-  propVar5?: null;
+  @PropRef() propVar5?: null;
   @PropRef() __backing_propVar5?: null;
   __options_has_propVar5?: boolean;
-  propVar6?: (Array<number> | null);
+  @PropRef() propVar6?: (Array<number> | null);
   @PropRef() __backing_propVar6?: (Array<number> | null);
   __options_has_propVar6?: boolean;
-  propVar7?: (Map<string, number> | undefined);
+  @PropRef() propVar7?: (Map<string, number> | undefined);
   @PropRef() __backing_propVar7?: (Map<string, number> | undefined);
   __options_has_propVar7?: boolean;
   `)}
@@ -171,6 +177,19 @@ function main() {}
     }
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
+      return new PropParent(false, ({let gensym___260303456 = storage;
+      (((gensym___260303456) == (null)) ? undefined : gensym___260303456())}));
+      }), initializers, reuseId, content);
+    }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() content?: (()=> void)): PropParent {
+    throw new Error("Declare interface");
+    }
+
   private __backing_propVar1?: IPropRefDecoratedVariable<string>;
 
   public get propVar1(): string {
@@ -241,52 +260,44 @@ function main() {}
     this.__backing_propVar7!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
-      return new PropParent(false, ({let gensym___260303456 = storage;
-      (((gensym___260303456) == (null)) ? undefined : gensym___260303456())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_PropParent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): PropParent {
-    throw new Error("Declare interface");
-  }
 
   @Memo() 
   public build() {}
 
-  ${dumpConstructor()}
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
 
 }
 
 @Component() export interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '((number | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '((number | undefined) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<(number | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(boolean | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(undefined | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(null | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '((Array<number> | null) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '((Array<number> | null) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<(Array<number> | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '((Map<string, number> | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '((Map<string, number> | undefined) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<(Map<string, number> | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
   
@@ -303,7 +314,7 @@ function testheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @PropRef decorated variables transformation without initialization',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testheckedTransformer],

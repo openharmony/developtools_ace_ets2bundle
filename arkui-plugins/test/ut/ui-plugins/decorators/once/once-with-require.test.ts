@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -109,11 +109,11 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 @ComponentV2() export interface __Options_Child {
   ${ignoreNewLines(`
-  onceParamNum?: number;
+  @Param() @Once() onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
   __options_has_onceParamNum?: boolean;
-  onceParamInfo: Info;
-  @Param() @Once() @Require() __backing_onceParamInfo?: Info;
+  @Param() @Once() @Require() onceParamInfo: Info;
+  @Param() @Once() __backing_onceParamInfo?: Info;
   __options_has_onceParamInfo?: boolean;
   `)}
   
@@ -121,10 +121,10 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 @ComponentV2() export interface __Options_Index {
   ${ignoreNewLines(`
-  localNum?: number;
+  @Local() localNum?: number;
   @Local() __backing_localNum?: number;
   __options_has_localNum?: boolean;
-  localInfo?: Info;
+  @Local() localInfo?: Info;
   @Local() __backing_localInfo?: Info;
   __options_has_localInfo?: boolean;
   `)}
@@ -220,7 +220,8 @@ function main() {}
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
@@ -238,6 +239,19 @@ function main() {}
     this.__backing_onceParamInfo!.resetOnReuse((initializers!.onceParamInfo as Info));
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Child>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
+  }
   private __backing_onceParamNum?: IParamOnceDecoratedVariable<number>;
 
   public get onceParamNum(): number {
@@ -256,20 +270,6 @@ function main() {}
 
   public set onceParamInfo(value: Info) {
     this.__backing_onceParamInfo!.set(value);
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Child>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
@@ -300,7 +300,8 @@ function main() {}
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -316,6 +317,19 @@ function main() {}
     this.__backing_localInfo!.resetOnReuse(new Info());
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
   private __backing_localNum?: ILocalDecoratedVariable<number>;
 
   public get localNum(): number {
@@ -334,20 +348,6 @@ function main() {}
 
   public set localInfo(value: Info) {
     this.__backing_localInfo!.set(value);
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
@@ -379,26 +379,27 @@ function main() {}
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', 'Info', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Once'), dumpAnnotation('Require')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamInfo', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localInfo', '(ILocalDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localInfo', '(boolean | undefined)')}
   
@@ -415,7 +416,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Once Decorator with @Require',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

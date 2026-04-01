@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -45,6 +45,79 @@ const parsedTransform: Plugins = {
     parsed: uiTransform().parsed,
 };
 
+const expectedUIScript: string = `
+function main() {}
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+  public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
+
+  public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
+
+  @Memo() 
+  public itemHead(@MemoSkip() text: string) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions(text, undefined).fontSize(20).backgroundColor(0xAABBCC);
+      instance.applyAttributesFinish();
+      return;
+    }), undefined);
+  }
+
+  @Memo() 
+  public itemFoot(@MemoSkip() num: number) {
+    TextImpl(@Memo() ((instance: TextAttribute): void => {
+      instance.setTextOptions("Foot", undefined).fontSize(16).backgroundColor(0xAABBCC);
+      instance.applyAttributesFinish();
+      return;
+    }), undefined);
+  }
+
+  @Memo() 
+  public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      ListItemGroupImpl(@Memo() ((instance: ListItemGroupAttribute): void => {
+        instance.setListItemGroupOptions({
+          header: @Memo() (() => {
+            this.itemHead("Head");
+          }),
+          footer: (@Memo() (() => {
+            this.itemFoot(100);
+          }) as CustomBuilder),
+        });
+        instance.applyAttributesFinish();
+        return;
+      }), @Memo() (() => {}));
+    }));
+  }
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
+}
+
+@Component() export interface __Options_MyStateSample {
+}
+`;
+
+function testUITransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedUIScript));
+}
 const expectedMemoScript: string = `
 import { __memo_context_type as __memo_context_type, __memo_id_type as __memo_id_type } from "arkui.incremental.runtime.state";
 
@@ -215,7 +288,17 @@ function main() {}
           __memo_scope.recache();
           return;
         }
-      }), (() => {}));
+      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+        if (__memo_scope.unchanged) {
+          __memo_scope.cached;
+          return;
+        }
+        {
+          __memo_scope.recache();
+          return;
+        }
+      }));
       {
         __memo_scope.recache();
         return;
@@ -226,9 +309,11 @@ function main() {}
       return;
     }
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() export interface __Options_MyStateSample {
@@ -242,8 +327,9 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test passing CustomBuilder to component',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
+        'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testCheckedTransformer],
     },
     {

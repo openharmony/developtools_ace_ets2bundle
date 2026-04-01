@@ -18,10 +18,11 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
+import { ignoreNewLines } from '../../../utils/simplify-dump';
 
 const COMPONENT_DIR_PATH: string = 'component';
 
@@ -121,7 +122,12 @@ export namespace NS1 {
     let s2 = "world"
   }
   @Component() export interface __Options_Child {
-    propVar?: string;@State() __backing_propVar?: string;__options_has_propVar?: boolean;
+    ${ignoreNewLines(`
+    @State() propVar?: string;
+    @State() __backing_propVar?: string;
+    __options_has_propVar?: boolean;
+
+    `)}
   }
   
 }
@@ -136,7 +142,7 @@ function testParsedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test namespace component transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform],
     {
         'parsed': [testParsedTransformer],
     },

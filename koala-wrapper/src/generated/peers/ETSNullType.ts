@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class ETSNullType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ETS_NULL_TYPE;
     }
     static createETSNullType(): ETSNullType {
         return new ETSNullType(global.generatedEs2panda._CreateETSNullTypeIr(global.context))

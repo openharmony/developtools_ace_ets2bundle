@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -60,34 +60,34 @@ function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_builderArr = ((({let gensym___170891173 = initializers;
-    (((gensym___170891173) == (null)) ? undefined : gensym___170891173.builderArr)})) ?? (new Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>()));
+    this.__backing_builderArr = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderArr)})) ?? (new Array<@Builder() ((p1: string, p2: number)=> void)>()));
   }
-  
+
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
-  private __backing_builderArr?: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>;
-  public get builderArr(): Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)> {
-    return (this.__backing_builderArr as Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>);
-  }
-  
-  public set builderArr(value: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>) {
-    this.__backing_builderArr = value;
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (47330804)), style, ((): Child => {
-      return new Child(false, ({let gensym___149025070 = storage;
-      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Child => {
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_builderArr?: Array<@Builder() ((p1: string, p2: number)=> void)>;
+  public get builderArr(): Array<@Builder() ((p1: string, p2: number)=> void)> {
+    return (this.__backing_builderArr as Array<@Builder() ((p1: string, p2: number)=> void)>);
+  }
+
+  public set builderArr(value: Array<@Builder() ((p1: string, p2: number)=> void)>) {
+    this.__backing_builderArr = value;
+  }
+
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (145095936)), 0);
@@ -100,13 +100,16 @@ function main() {}
       return;
     }
   }
-  
+
   ${dumpConstructor()}
-  
+
+  static {
+  }
+
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderArr', '(Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderArr', '(Array<@Builder() ((p1: string, p2: number)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderArr', '(boolean | undefined)')}
 }`;
 
@@ -116,7 +119,7 @@ function testMemoCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test resource transform in build method',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:memo-no-recheck': [testMemoCheckedTransformer],
     },

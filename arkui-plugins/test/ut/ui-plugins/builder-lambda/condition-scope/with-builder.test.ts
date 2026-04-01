@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, memoNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -67,6 +67,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
 
+@Builder() 
 @Memo() 
 function MyBuilder(): void {
   if (true) {
@@ -78,6 +79,7 @@ function MyBuilder(): void {
   }
 }
 
+@Builder() 
 @Memo() 
 function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): void {
   let param: (()=> void) = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : (() => {
@@ -95,22 +97,22 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 
 @Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
   public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
-  
+
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(style, ((): MyStruct => {
-      return new MyStruct(false, ({let gensym___249621102 = storage;
-      (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
+      return new MyStruct(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_MyStruct, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStruct {
     throw new Error("Declare interface");
   }
-  
+
   @Memo() 
   public myBuilderMethod() {
     if (true) {
@@ -121,7 +123,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
       }), undefined);
     }
   }
-  
+
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -155,16 +157,18 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
       }), undefined, undefined, undefined);
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_myBuilderParam = ((((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? (((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? ((() => {
+    this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (@Memo() (() => {
       if (true) {
         TextImpl(@Memo() ((instance: TextAttribute): void => {
           instance.setTextOptions("within BuilderParam property", undefined);
@@ -174,31 +178,32 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
       }
     })))))
   }
-  
+
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
-  private __backing_myBuilderParam?: @Memo() (()=> void);
-  public get myBuilderParam(): @Memo() (()=> void) {
-    return this.__backing_myBuilderParam!;
-  }
-  
-  public set myBuilderParam(value: @Memo() (()=> void)) {
-    this.__backing_myBuilderParam = value;
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___29142858 = storage;
-      (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_myBuilderParam?: @Memo() (()=> void);
+
+  public get myBuilderParam(): @Memo() (()=> void) {
+    return this.__backing_myBuilderParam!;
+  }
+
+  public set myBuilderParam(value: @Memo() (()=> void)) {
+    this.__backing_myBuilderParam = value;
+  }
+
   @Memo() 
   public build() {
     if (true) {
@@ -211,7 +216,9 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   }
 
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() export interface __Options_MyStruct {
@@ -258,16 +265,17 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 const wBuilder = wrapBuilder(ParamBuilder);
 function main() {}
 
+@Builder() 
 @Memo() 
 function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
-  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (86315751)), 0);
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
   if (true) {
-    TextImpl(__memo_context, ((__memo_id) + (136286509)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (225484108)), 1);
+    TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -287,17 +295,18 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
   }
 }
 
+@Builder() 
 @Memo() 
 function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Builder() @Memo() @MemoSkip() gensym%%_1?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
   let param: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) = (((gensym%%_1) !== (undefined)) ? gensym%%_1 : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (120719913)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
     if (true) {
-      TextImpl(__memo_context, ((__memo_id) + (163744638)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (215219604)), 1);
+      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
@@ -316,12 +325,12 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
       return;
     }
   }));
-  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (132835883)), 0);
+  const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
   if (__memo_scope.unchanged) {
     __memo_scope.cached;
     return;
   }
-  param(__memo_context, ((__memo_id) + (55686085)));
+  param(__memo_context, ((__memo_id) + (<some_random_number>)));
   {
     __memo_scope.recache();
     return;
@@ -336,9 +345,9 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(__memo_context, ((__memo_id) + (219763513)), style, ((): MyStruct => {
-      return new MyStruct(false, ({let gensym___249621102 = storage;
-      (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
+    CustomComponent._invokeImpl<MyStruct, __Options_MyStruct>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): MyStruct => {
+      return new MyStruct(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
   
@@ -349,14 +358,14 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   
   @Memo() 
   public myBuilderMethod(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (88797279)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
     if (true) {
-      TextImpl(__memo_context, ((__memo_id) + (34887364)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (226403822)), 1);
+      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
@@ -378,13 +387,13 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (141304730)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
-    ColumnImpl(__memo_context, ((__memo_id) + (121412859)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (125892063)), 1);
+    ColumnImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ColumnAttribute): void => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
       const __memo_parameter_instance = __memo_scope.param(0, instance);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
@@ -397,20 +406,20 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
         return;
       }
     }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (254080160)), 0);
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
-      wBuilder.builder(__memo_context, ((__memo_id) + (126575967)), @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (230292968)), 0);
+      wBuilder.builder(__memo_context, ((__memo_id) + (<some_random_number>)), @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
           return;
         }
         if (true) {
-          TextImpl(__memo_context, ((__memo_id) + (36476765)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (77657771)), 1);
+          TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
             const __memo_parameter_instance = __memo_scope.param(0, instance);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
@@ -429,17 +438,17 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
           return;
         }
       }));
-      Child._invoke(__memo_context, ((__memo_id) + (6301141)), undefined, (() => {
+      Child._invoke(__memo_context, ((__memo_id) + (<some_random_number>)), undefined, (() => {
         return {
           myBuilderParam: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (231953030)), 0);
+            const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
             if (__memo_scope.unchanged) {
               __memo_scope.cached;
               return;
             }
             if (true) {
-              TextImpl(__memo_context, ((__memo_id) + (125764031)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (106228909)), 1);
+              TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+                const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
                 const __memo_parameter_instance = __memo_scope.param(0, instance);
                 if (__memo_scope.unchanged) {
                   __memo_scope.cached;
@@ -453,7 +462,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
                 }
               }), undefined);
             }
-            this.myBuilderMethod(__memo_context, ((__memo_id) + (160289527)));
+            this.myBuilderMethod(__memo_context, ((__memo_id) + (<some_random_number>)));
             {
               __memo_scope.recache();
               return;
@@ -472,24 +481,26 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
       return;
     }
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_myBuilderParam = ((((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (content))) ?? (((({let gensym___76154828 = initializers;
-    (((gensym___76154828) == (null)) ? undefined : gensym___76154828.myBuilderParam)})) ?? (((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (167252533)), 0);
+    this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
+      const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
       if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
       }
       if (true) {
-        TextImpl(__memo_context, ((__memo_id) + (128234023)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (162765000)), 1);
+        TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+          const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
           const __memo_parameter_instance = __memo_scope.param(0, instance);
           if (__memo_scope.unchanged) {
             __memo_scope.cached;
@@ -509,23 +520,14 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
       }
     })))))
   }
-  
+
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
-  private __backing_myBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
-  public get myBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
-    return this.__backing_myBuilderParam!;
-  }
-  
-  public set myBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
-    this.__backing_myBuilderParam = value;
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (97753005)), style, ((): Child => {
-      return new Child(false, ({let gensym___29142858 = storage;
-      (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
+    CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Child => {
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
   
@@ -533,17 +535,25 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_myBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  public get myBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
+    return this.__backing_myBuilderParam!;
+  }
+  public set myBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+    this.__backing_myBuilderParam = value;
+  }
+
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (240349951)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
     }
     if (true) {
-      TextImpl(__memo_context, ((__memo_id) + (44384010)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (192635173)), 1);
+      TextImpl(__memo_context, ((__memo_id) + (<some_random_number>)), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: TextAttribute): void => {
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_instance = __memo_scope.param(0, instance);
         if (__memo_scope.unchanged) {
           __memo_scope.cached;
@@ -562,9 +572,11 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
       return;
     }
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() export interface __Options_MyStruct {
@@ -584,7 +596,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test conditionScope within @Builder or @BuilderParam',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

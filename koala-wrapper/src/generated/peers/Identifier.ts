@@ -34,10 +34,13 @@ import { TypeNode } from "./TypeNode"
 import { Decorator } from "./Decorator"
 import { ValidationInfo } from "./ValidationInfo"
 export class Identifier extends AnnotatedExpression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_IDENTIFIER;
     }
     static createIdentifier(): Identifier {
         return new Identifier(global.generatedEs2panda._CreateIdentifier(global.context))

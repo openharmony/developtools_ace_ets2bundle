@@ -35,10 +35,13 @@ import { Expression } from "./Expression"
 import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { ScriptFunction } from "./ScriptFunction"
 export class MethodDefinition extends ClassElement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION;
     }
     static createMethodDefinition(kind: Es2pandaMethodDefinitionKind, key: Expression | undefined, value: Expression | undefined, modifiers: Es2pandaModifierFlags, isComputed: boolean): MethodDefinition {
         return new MethodDefinition(global.generatedEs2panda._CreateMethodDefinition(global.context, kind, passNode(key), passNode(value), modifiers, isComputed))

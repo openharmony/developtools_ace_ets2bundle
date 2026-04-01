@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -149,181 +149,175 @@ final class StateType extends BaseEnum<int> {
     this.__backing_paramVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
     this.__backing_paramVar11!.resetOnReuse(0.0);
     this.__backing_paramVar12!.resetOnReuse(new Per(6));
-  }
-
+    }
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+      }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+      });
+    }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+    }
   private __backing_paramVar1?: IProviderDecoratedVariable<Per>;
-
   public get paramVar1(): Per {
     return this.__backing_paramVar1!.get();
-  }
-
+    }
   public set paramVar1(value: Per) {
     this.__backing_paramVar1!.set(value);
-  }
+    }
 
   private __backing_paramVar2?: IProviderDecoratedVariable<Array<number>>;
 
   public get paramVar2(): Array<number> {
     return this.__backing_paramVar2!.get();
-  }
+    }
 
   public set paramVar2(value: Array<number>) {
     this.__backing_paramVar2!.set(value);
-  }
+    }
 
   private __backing_paramVar3?: IProviderDecoratedVariable<StateType>;
 
   public get paramVar3(): StateType {
     return this.__backing_paramVar3!.get();
-  }
+    }
 
   public set paramVar3(value: StateType) {
     this.__backing_paramVar3!.set(value);
-  }
+    }
 
   private __backing_paramVar4?: IProviderDecoratedVariable<Set<string>>;
 
   public get paramVar4(): Set<string> {
     return this.__backing_paramVar4!.get();
-  }
+    }
 
   public set paramVar4(value: Set<string>) {
     this.__backing_paramVar4!.set(value);
-  }
+    }
 
   private __backing_paramVar5?: IProviderDecoratedVariable<Array<boolean>>;
 
   public get paramVar5(): Array<boolean> {
     return this.__backing_paramVar5!.get();
-  }
+    }
 
   public set paramVar5(value: Array<boolean>) {
     this.__backing_paramVar5!.set(value);
-  }
+    }
 
   private __backing_paramVar6?: IProviderDecoratedVariable<Array<Per>>;
 
   public get paramVar6(): Array<Per> {
     return this.__backing_paramVar6!.get();
-  }
+    }
 
   public set paramVar6(value: Array<Per>) {
     this.__backing_paramVar6!.set(value);
-  }
+    }
 
   private __backing_paramVar7?: IProviderDecoratedVariable<Array<Per>>;
 
   public get paramVar7(): Array<Per> {
     return this.__backing_paramVar7!.get();
-  }
+    }
 
   public set paramVar7(value: Array<Per>) {
     this.__backing_paramVar7!.set(value);
-  }
+    }
 
   private __backing_paramVar9?: IProviderDecoratedVariable<Date>;
 
   public get paramVar9(): Date {
     return this.__backing_paramVar9!.get();
-  }
+    }
 
   public set paramVar9(value: Date) {
     this.__backing_paramVar9!.set(value);
-  }
+    }
 
   private __backing_paramVar10?: IProviderDecoratedVariable<Map<number, Per>>;
 
   public get paramVar10(): Map<number, Per> {
     return this.__backing_paramVar10!.get();
-  }
+    }
 
   public set paramVar10(value: Map<number, Per>) {
     this.__backing_paramVar10!.set(value);
-  }
+    }
 
   private __backing_paramVar11?: IProviderDecoratedVariable<(string | number)>;
 
   public get paramVar11(): (string | number) {
     return this.__backing_paramVar11!.get();
-  }
+    }
 
   public set paramVar11(value: (string | number)) {
     this.__backing_paramVar11!.set(value);
-  }
+    }
 
   private __backing_paramVar12?: IProviderDecoratedVariable<(Set<string> | Per)>;
-
   public get paramVar12(): (Set<string> | Per) {
     return this.__backing_paramVar12!.get();
-  }
-
+    }
   public set paramVar12(value: (Set<string> | Per)) {
     this.__backing_paramVar12!.set(value);
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
+    }
 
   @Memo() 
   public build() {}
-
   public constructor() {}
+  static {
+    }
 
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IProviderDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(Array<number> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IProviderDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(StateType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(StateType | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IProviderDecoratedVariable<StateType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(Set<string> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IProviderDecoratedVariable<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IProviderDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar6', '(Array<Per> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar6', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar7', '(Array<Per> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar7', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar9', '(Date | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar9', '(IProviderDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar10', '(IProviderDecoratedVariable<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar11', '((string | number) | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar11', '(IProviderDecoratedVariable<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar12', '(IProviderDecoratedVariable<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar12', '(boolean | undefined)')}
   
@@ -336,7 +330,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Provider decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

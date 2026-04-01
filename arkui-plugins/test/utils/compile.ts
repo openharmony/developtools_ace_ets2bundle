@@ -98,8 +98,8 @@ function collectPluginTestContext(
     try {
         const program: arkts.Program = arkts.getOrUpdateGlobalContext(context.peer).program;
         // TODO: add error/warning handling after plugin
-        pluginTestContext.errors = arkts.getErrorMessage(context.peer)
-        pluginTestContext.warnings = arkts.getAllErrorMessage(context.peer)
+        pluginTestContext.errors = collectErrors(context);
+        pluginTestContext.warnings = collectWarnings(context);
         if (canCollectSource) {
             pluginTestContext = concatObject(
                 pluginTestContext,
@@ -118,6 +118,22 @@ function collectPluginTestContext(
     } finally {
         return pluginTestContext;
     }
+}
+
+function collectErrors(context: arkts.Context): string[] | undefined {
+    // const errorMessages = arkts.getErrorMessage(context.peer);
+    // if (errorMessages !== undefined) {
+    //     return [errorMessages];
+    // }
+    return undefined;
+}
+
+function collectWarnings(context: arkts.Context): string[] | undefined {
+    // const allErrorMessages = arkts.getAllErrorMessage(context.peer);
+    // if (allErrorMessages !== undefined) {
+    //     return [allErrorMessages];
+    // }
+    return undefined;
 }
 
 function buildMatchNameFunc(prefix: string, suffix: string): (name: string) => boolean {

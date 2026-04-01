@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -165,15 +165,6 @@ final class MonitorNames extends BaseEnum<String> {
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
-  @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
-
-  private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
-
-  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) 
-  public changeCCC(monitor: IMonitor) {}
-
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved(this.__backing_name);
@@ -187,6 +178,10 @@ final class MonitorNames extends BaseEnum<String> {
     }
   }
 
+  @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
+
   public get strArr(): Array<string> {
     this.conditionalAddRef(this.__meta_strArr);
     return UIUtils.makeObserved(this.__backing_strArr);
@@ -199,6 +194,11 @@ final class MonitorNames extends BaseEnum<String> {
       this.executeOnSubscribingWatches("strArr");
     }
   }
+
+  private __monitor_changeCCC: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:[MonitorNames.name1, MonitorNames.name2, MonitorNames.name3]}) 
+  public changeCCC(monitor: IMonitor) {}
 
   public constructor() {
     this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([{
@@ -223,6 +223,8 @@ final class MonitorNames extends BaseEnum<String> {
     }));
   }
 
+  static {
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -246,6 +248,20 @@ final class MonitorNames extends BaseEnum<String> {
     this.__monitor_changeEEE!.resetOnReuse();
   }
 
+@MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+  
+@ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+
   private __backing_varF?: ILocalDecoratedVariable<FFF>;
 
   public get varF(): FFF {
@@ -258,31 +274,19 @@ final class MonitorNames extends BaseEnum<String> {
 
   private __monitor_changeEEE: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
-  }
-
   @Monitor({value:[MonitorNames.name4]}) 
   public changeEEE(monitor: IMonitor) {}
 
-  @Memo() 
+@Memo() 
   public build() {}
 
   public constructor() {}
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}
   
@@ -295,7 +299,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Monitor decorator enum parameters transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

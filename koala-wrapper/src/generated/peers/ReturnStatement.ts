@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class ReturnStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_RETURN_STATEMENT;
     }
     static createReturnStatement(): ReturnStatement {
         return new ReturnStatement(global.generatedEs2panda._CreateReturnStatement(global.context))

@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class YieldExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_YIELD_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_YIELD_EXPRESSION;
     }
     static createYieldExpression(argument: Expression | undefined, isDelegate: boolean): YieldExpression {
         return new YieldExpression(global.generatedEs2panda._CreateYieldExpression(global.context, passNode(argument), isDelegate))

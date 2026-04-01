@@ -19,7 +19,7 @@ import { AbstractVisitor } from '../common/abstract-visitor';
 
 import { debugLog } from '../common/debug';
 import { hasDecorator, getAnnotationValue } from '../ui-plugins/property-translators/utils'
-import { DecoratorNames } from '../common/predefines';
+import { DecoratorNames, DeprecatedDecoratorNames } from '../common/predefines';
 
 export class EmitTransformer extends AbstractVisitor {
     constructor(private options?: interop.EmitTransformerOptions) {
@@ -56,9 +56,9 @@ export class EmitTransformer extends AbstractVisitor {
         const annotations: readonly arkts.AnnotationUsage[] = node.annotations;
         annotations.forEach((anno) => {
             const value = getAnnotationValue(anno, DecoratorNames.CONSUME);
-            if (arkts.isIdentifier(node.key)) {
+            if (!!node.key && arkts.isIdentifier(node.key)) {
                 const property = anno.properties[0];
-                if (property === undefined) {
+                if (property === undefined || !arkts.isClassProperty(property)) {
                     return;
                 }
                 anno.setProperties([
@@ -122,9 +122,9 @@ export class EmitTransformer extends AbstractVisitor {
     }
 
     private refMap = new Map<string, string>([
-        [DecoratorNames.PROP_REF, DecoratorNames.PROP],
-        [DecoratorNames.STORAGE_PROP_REF, DecoratorNames.STORAGE_PROP],
-        [DecoratorNames.LOCAL_STORAGE_PROP_REF, DecoratorNames.LOCAL_STORAGE_PROP],
+        [DecoratorNames.PROP_REF, DeprecatedDecoratorNames.PROP],
+        [DecoratorNames.STORAGE_PROP_REF, DeprecatedDecoratorNames.STORAGE_PROP],
+        [DecoratorNames.LOCAL_STORAGE_PROP_REF, DeprecatedDecoratorNames.LOCAL_STORAGE_PROP],
     ]);
 
     private processRefDecorators(node: arkts.ClassProperty): arkts.ClassProperty {

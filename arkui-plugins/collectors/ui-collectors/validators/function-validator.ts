@@ -14,21 +14,16 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { BaseValidator } from './base';
+import { FunctionInfo } from '../records';
+import {
+    checkTrackDecorator,
+    checkComponentV2StateUsage,
+} from './rules';
 
-export interface GetterSetter {
-    translateGetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition;
-    translateSetter(
-        originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        left: arkts.MemberExpression
-    ): arkts.MethodDefinition;
-}
-
-export interface InitializerConstructor {
-    cacheTranslatedInitializer(newName: string, originalName: string): void;
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[];
+export class FunctionValidator extends BaseValidator<arkts.MethodDefinition, FunctionInfo> {
+    reportIfViolated(node: arkts.MethodDefinition): void {
+        checkTrackDecorator.bind(this)(node);
+        checkComponentV2StateUsage.bind(this)(node);
+    }
 }

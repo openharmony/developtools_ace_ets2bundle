@@ -27,6 +27,6 @@ export {
     unpackObject,
     assertValidPeer
 } from "./arkts-api/utilities/private"
-export { nodeByType } from "./arkts-api/class-by-peer"
+export { nodeByType } from "./arkts-api/node-by-type"
 export { global } from "./arkts-api/static/global"
 export { Es2pandaMemberExpressionKind } from "./generated/Es2pandaEnums"

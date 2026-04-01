@@ -44,10 +44,13 @@ import { FunctionExpression } from "./FunctionExpression"
 import { AnnotationUsage } from "./AnnotationUsage"
 import { Es2pandaLanguage } from "../../Es2pandaEnums"
 export class ClassDefinition extends TypedAstNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION;
     }
     static createClassDefinition(ident: Identifier | undefined, typeParams: TSTypeParameterDeclaration | undefined, superTypeParams: TSTypeParameterInstantiation | undefined, _implements: readonly TSClassImplements[], ctor: MethodDefinition | undefined, superClass: Expression | undefined, body: readonly AstNode[], modifiers: Es2pandaClassDefinitionModifiers, flags: Es2pandaModifierFlags): ClassDefinition {
         return new ClassDefinition(global.generatedEs2panda._CreateClassDefinition(global.context, passNode(ident), passNode(typeParams), passNode(superTypeParams), passNodeArray(_implements), _implements.length, passNode(ctor), passNode(superClass), passNodeArray(body), body.length, modifiers, flags))
@@ -222,6 +225,50 @@ export class ClassDefinition extends TypedAstNode {
     }
     get lang(): Es2pandaLanguage {
         return global.es2panda._ClassDefinitionLanguageConst(global.context, this.peer);
+    }
+    /** @deprecated */
+    emplaceBody(body?: AstNode): this {
+        global.es2panda._ClassDefinitionEmplaceBody(global.context, this.peer, passNode(body))
+        return this
+    }
+    /** @deprecated */
+    clearBody(): this {
+        global.es2panda._ClassDefinitionClearBody(global.context, this.peer)
+        return this
+    }
+    /** @deprecated */
+    setValueBody(body: AstNode | undefined, index: number): this {
+        global.es2panda._ClassDefinitionSetValueBody(global.context, this.peer, passNode(body), index)
+        return this
+    }
+    /** @deprecated */
+    emplaceImplements(_implements?: TSClassImplements): this {
+        global.es2panda._ClassDefinitionEmplaceImplements(global.context, this.peer, passNode(_implements))
+        return this
+    }
+    /** @deprecated */
+    clearImplements(): this {
+        global.es2panda._ClassDefinitionClearImplements(global.context, this.peer)
+        return this
+    }
+    /** @deprecated */
+    setValueImplements(_implements: TSClassImplements | undefined, index: number): this {
+        global.es2panda._ClassDefinitionSetValueImplements(global.context, this.peer, passNode(_implements), index)
+        return this
+    }
+    /** @deprecated */
+    setImplements(implementsList: readonly TSClassImplements[]): this {
+        global.es2panda._ClassDefinitionSetImplements(global.context, this.peer, passNodeArray(implementsList), implementsList.length)
+        return this
+    }
+    setBody(body: readonly AstNode[]): this {
+        global.es2panda._ClassDefinitionSetBody(global.context, this.peer, passNodeArray(body), body.length);
+        return this
+    }
+    /** @deprecated */
+    setSuperTypeParams(superTypeParams?: TSTypeParameterInstantiation): this {
+        global.es2panda._ClassDefinitionSetSuperTypeParams(global.context, this.peer, passNode(superTypeParams))
+        return this
     }
 }
 export function isClassDefinition(node: AstNode): node is ClassDefinition {

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -82,6 +82,19 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Ancestors | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Ancestors)=> void) | undefined), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Ancestors, __Options_Ancestors>(style, ((): Ancestors => {
+      return new Ancestors(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() content?: (()=> void)): Ancestors {
+    throw new Error("Declare interface");
+    }
 
   private __backing_count?: IProvideDecoratedVariable<(string | undefined)>;
 
@@ -163,56 +176,46 @@ function main() {}
     this.__backing_count7!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Ancestors)=> void) | undefined), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Ancestors, __Options_Ancestors>(style, ((): Ancestors => {
-      return new Ancestors(false, ({let gensym___203542966 = storage;
-      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Ancestors, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Ancestors {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
 
-  ${dumpConstructor()}
-
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
 }
 
 @Component() export interface __Options_Ancestors {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov1", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count1', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count2', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count2', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov2", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count2', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count3', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count3', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov3", allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count3', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "count4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count4', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "count5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count5', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count6', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count6', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count7', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count7', '(boolean | undefined)')}
   
@@ -225,7 +228,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test different @Provide annotation usage transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

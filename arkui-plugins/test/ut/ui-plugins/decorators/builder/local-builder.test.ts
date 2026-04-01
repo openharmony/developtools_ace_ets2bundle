@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -77,7 +77,7 @@ function main() {}
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): BuilderDemo {
+  public static $_invoke(initializers?: __Options_BuilderDemo, storage?: LocalStorage, @Builder() content?: (()=> void)): BuilderDemo {
     throw new Error("Declare interface");
   }
   
@@ -112,7 +112,8 @@ function main() {}
   }
   
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_BuilderDemo {
@@ -126,7 +127,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'local builder',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

@@ -61,6 +61,7 @@ import {
     isClassStaticBlock,
     isFunctionExpression,
     FunctionExpression,
+    isIfStatement,
 } from '../generated';
 import {
     isEtsScript,
@@ -69,9 +70,7 @@ import {
     isExpressionStatement,
     isStructDeclaration,
     isMethodDefinition,
-    // isScriptFunction,
     isMemberExpression,
-    isIfStatement,
     isVariableDeclaration,
     isVariableDeclarator,
     isArrowFunctionExpression,
@@ -236,8 +235,7 @@ function visitTrivialExpression(node: AstNode, visitor: Visitor): AstNode {
         return factory.updateAwaitExpression(node, nodeVisitor(node.argument, visitor));
     }
     if (isSpreadElement(node)) {
-        const nodeType = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
-        return factory.updateSpreadElement(node, nodeType, nodeVisitor(node.argument, visitor));
+        return factory.updateSpreadElement(node, node.nodeType, nodeVisitor(node.argument, visitor));
     }
     // TODO
     return node;
@@ -487,15 +485,14 @@ function visitDefinitionBody(node: AstNode, visitor: Visitor): AstNode {
     if (
         isClassStaticBlock(node) &&
         node.value &&
-        global.generatedEs2panda._AstNodeTypeConst(global.context, node.value.peer) ===
-            Es2pandaAstNodeType.AST_NODE_TYPE_FUNCTION_EXPRESSION
+        isFunctionExpression(node.value)
     ) {
         updated = true;
         return factory.updateClassStaticBlock(
             node,
             updateFunctionExpression(
-                node.value as FunctionExpression,
-                nodeVisitor((node.value as FunctionExpression).scriptFunction, visitor)
+                node.value,
+                nodeVisitor(node.value.scriptFunction, visitor)
             )
         );
     }

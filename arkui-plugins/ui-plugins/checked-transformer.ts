@@ -14,11 +14,11 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ProjectConfig } from '../common/plugin-context';
+import { ProjectConfig, ResourceInfo } from '../common/plugin-context';
 import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
-import { AbstractVisitor } from '../common/abstract-visitor';
+import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import { isBuilderLambda, isBuilderLambdaMethodDecl } from './builder-lambda-translators/utils';
 import { isEntryWrapperClass } from './entry-translators/utils';
 import { ImportCollector } from '../common/import-collector';
@@ -27,22 +27,15 @@ import { PropertyCache } from './property-translators/cache/propertyCache';
 import { LogCollector } from '../common/log-collector';
 import {
     CustomComponentScopeInfo,
-    initResourceInfo,
-    loadBuildJson,
-    LoaderJson,
-    ResourceInfo,
     ScopeInfoCollection,
-    initRouterInfo,
 } from './struct-translators/utils';
 import {
     collectCustomComponentScopeInfo,
-    CustomComponentNames,
-    CustomDialogNames,
     isCustomComponentClass,
     isSpecificNewClass,
 } from './utils';
 import { findAndCollectMemoableNode } from '../collectors/memo-collectors/factory';
-import { generateBuilderCompatible, isFromBuilder1_1, addcompatibleComponentImport } from './interop/builder-interop';
+import { generateBuilderCompatible, isFromBuilder1_1, insertCompatibleImport } from './interop/builder-interop';
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
@@ -50,28 +43,36 @@ import { MonitorCache } from './property-translators/cache/monitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
 import { ComponentLifecycleCache } from './property-translators/cache/componentLifecycleCache';
 import { InsightIntentHandler } from './insight-intent/insight-intent-handler';
+import { NormalClassInfo, RecordInfo } from '../collectors/ui-collectors/records';
+import { CustomComponentNames, CustomDialogNames, LANGUAGE_VERSION, NodeCacheNames } from '../common/predefines';
+import { rewriteByType, RewriteFactory } from './checked-cache-factory';
+import { getPerfName } from '../common/debug';
+import { InnerComponentInfoCache } from './builder-lambda-translators/cache/innerComponentInfoCache';
+
+export interface CheckedTransformerOptions extends VisitorOptions {
+    useCache?: boolean;
+}
 
 export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
-    aceBuildJson: LoaderJson;
-    resourceInfo: ResourceInfo;
+    resourceInfo: ResourceInfo | undefined;
     private insightIntentHandler: InsightIntentHandler;
 
-    constructor(projectConfig: ProjectConfig | undefined) {
+    private readonly useCache: boolean = false;
+
+    constructor(options: CheckedTransformerOptions) {
         super();
-        this.projectConfig = projectConfig;
+        this.useCache = options.useCache ?? false;
         this.scope = { customComponents: [] };
-        this.aceBuildJson = loadBuildJson(this.projectConfig);
-        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
-        this.insightIntentHandler = new InsightIntentHandler(projectConfig);
-        MetaDataCollector.getInstance()
-            .setProjectConfig(this.projectConfig)
-            .setRouterInfo(initRouterInfo(this.aceBuildJson));
+        this.projectConfig = MetaDataCollector.getInstance().projectConfig;
+        this.resourceInfo = MetaDataCollector.getInstance().resourceInfo;
+        this.insightIntentHandler = new InsightIntentHandler(this.projectConfig!);
     }
 
     init(): void {
         MetaDataCollector.getInstance()
+            .setProjectConfig(this.projectConfig)
             .setAbsName(this.program?.absName)
             .setExternalSourceName(this.externalSourceName);
         // 初始化 InsightIntentHandler，收集当前文件的顶层变量
@@ -87,9 +88,8 @@ export class CheckedTransformer extends AbstractVisitor {
         ComputedCache.getInstance().reset();
         ComponentLifecycleCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
-        ImportCollector.getInstance().reset();
-        DeclarationCollector.getInstance().reset();
-        LogCollector.getInstance().reset();
+        InnerComponentInfoCache.getInstance().reset();
+        ImportCollector.getInstance().clearImports();
     }
 
     enter(node: arkts.AstNode): void {
@@ -118,13 +118,40 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
+    private visitorWithCache(beforeChildren: arkts.AstNode): arkts.AstNode {
+        const _uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
+        if (!_uiCache.shouldUpdate(beforeChildren)) {
+            return beforeChildren;
+        }
+        const node = this.visitEachChild(beforeChildren);
+        if (_uiCache.has(node)) {
+            const value = _uiCache.get(node)!;
+            if (rewriteByType.has(value.type)) {
+                const func = rewriteByType.get(value.type)!;
+                arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 0, 0], func.name));
+                const newNode = func(node, value.metadata as RecordInfo);
+                arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 0, 0], func.name));
+                return newNode;
+            }
+        }
+        if (arkts.isEtsScript(node) && !node.isNamespace) {
+            ImportCollector.getInstance().insertCurrentImports(this.program);
+            LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
+            LogCollector.getInstance().emitLogInfo();
+        }
+        return node;
+    }
+
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
+        if (this.useCache) {
+            return this.visitorWithCache(beforeChildren);
+        }
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren)) {
             const decl = arkts.getDecl(beforeChildren.expression);
             if (arkts.isIdentifier(beforeChildren.expression) && isFromBuilder1_1(decl)) {
                 // Builder
-                addcompatibleComponentImport();
+                insertCompatibleImport();
                 return generateBuilderCompatible(beforeChildren, beforeChildren.expression.name);
             } else if (isBuilderLambda(beforeChildren, decl)) {
                 const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
@@ -166,7 +193,12 @@ export class CheckedTransformer extends AbstractVisitor {
             this.insightIntentHandler.nodeHandleEntry(node)
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
-            return structFactory.transformCallExpression(node, this.projectConfig, this.resourceInfo, this.scope.customComponents.length === 0);
+            return structFactory.transformCallExpression(
+                node,
+                this.projectConfig,
+                this.resourceInfo,
+                this.scope.customComponents.length === 0
+            );
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return structFactory.tranformInterfaceMembers(node, this.externalSourceName);
         } else if (
@@ -175,14 +207,13 @@ export class CheckedTransformer extends AbstractVisitor {
         ) {
             return structFactory.transformCustomDialogController(node);
         }
-        if (arkts.isEtsScript(node) && !node.isNamespace ) {
-            const newScript = structFactory.insertClassInEtsScript(node);
+        if (arkts.isEtsScript(node) && !node.isNamespace) {
             if(ImportCollector.getInstance().importInfos.length > 0){
                 ImportCollector.getInstance().insertCurrentImports(this.program);
             }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
-            return newScript;
+            return node;
         }
         return node;
     }

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -124,7 +124,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface))
 @Entry() @ComponentV2() export interface __Options_Index {
-  breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;@Env({value:SystemProperties.BREAK_POINT}) __backing_breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;__options_has_breakpoint?: boolean;sizeInVP?: window.SizeInVP;@Env({value:SystemProperties.WINDOW_SIZE}) __backing_sizeInVP?: window.SizeInVP;__options_has_sizeInVP?: boolean;sizeInPX?: window.Size;@Env({value:SystemProperties.WINDOW_SIZE_PX}) __backing_sizeInPX?: window.Size;__options_has_sizeInPX?: boolean;windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;@Env({value:SystemProperties.WINDOW_AVOID_AREA}) __backing_windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;__options_has_windowAvoidAreaVP?: boolean;windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;@Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) __backing_windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;__options_has_windowAvoidAreaPX?: boolean;
+  ${ignoreNewLines(`
+  @Env({value:SystemProperties.BREAK_POINT}) breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
+  @Env({value:SystemProperties.BREAK_POINT}) __backing_breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
+  __options_has_breakpoint?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE}) sizeInVP?: window.SizeInVP;
+  @Env({value:SystemProperties.WINDOW_SIZE}) __backing_sizeInVP?: window.SizeInVP;
+  __options_has_sizeInVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) sizeInPX?: window.Size;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) __backing_sizeInPX?: window.Size;
+  __options_has_sizeInPX?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) __backing_windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;
+  __options_has_windowAvoidAreaVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) __backing_windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;
+  __options_has_windowAvoidAreaPX?: boolean;
+  `)}
+  
 }
 `;
 
@@ -187,6 +204,20 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
   
   private __backing_breakpoint?: IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo>;
   public get breakpoint(): uiObserver.WindowSizeLayoutBreakpointInfo {
@@ -211,20 +242,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   private __backing_windowAvoidAreaPX?: IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoPX>;
   public get windowAvoidAreaPX(): window.UIEnvWindowAvoidAreaInfoPX {
     return this.__backing_windowAvoidAreaPX!.get();
-  }
-  
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
   }
   
   @Memo() 
@@ -359,6 +376,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -372,106 +391,25 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() export interface __Options_Index {
-  get breakpoint(): (uiObserver.WindowSizeLayoutBreakpointInfo | undefined) {
-    return undefined;
-  }
-  set breakpoint(breakpoint: (uiObserver.WindowSizeLayoutBreakpointInfo | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Env({value:SystemProperties.BREAK_POINT}) 
-  get __backing_breakpoint(): (uiObserver.WindowSizeLayoutBreakpointInfo | undefined) {
-    return undefined;
-  }
-  @Env({value:SystemProperties.BREAK_POINT}) 
-  set __backing_breakpoint(__backing_breakpoint: (uiObserver.WindowSizeLayoutBreakpointInfo | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_breakpoint(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_breakpoint(__options_has_breakpoint: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get sizeInVP(): (window.SizeInVP | undefined) {
-    return undefined;
-  }
-  set sizeInVP(sizeInVP: (window.SizeInVP | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Env({value:SystemProperties.WINDOW_SIZE}) 
-  get __backing_sizeInVP(): (window.SizeInVP | undefined) {
-    return undefined;
-  }
-  @Env({value:SystemProperties.WINDOW_SIZE}) 
-  set __backing_sizeInVP(__backing_sizeInVP: (window.SizeInVP | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_sizeInVP(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_sizeInVP(__options_has_sizeInVP: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get sizeInPX(): (window.Size | undefined) {
-    return undefined;
-  }
-  set sizeInPX(sizeInPX: (window.Size | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Env({value:SystemProperties.WINDOW_SIZE_PX}) 
-  get __backing_sizeInPX(): (window.Size | undefined) {
-    return undefined;
-  }
-  @Env({value:SystemProperties.WINDOW_SIZE_PX}) 
-  set __backing_sizeInPX(__backing_sizeInPX: (window.Size | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_sizeInPX(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_sizeInPX(__options_has_sizeInPX: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get windowAvoidAreaVP(): (window.UIEnvWindowAvoidAreaInfoVP | undefined) {
-    return undefined;
-  }
-  set windowAvoidAreaVP(windowAvoidAreaVP: (window.UIEnvWindowAvoidAreaInfoVP | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) 
-  get __backing_windowAvoidAreaVP(): (window.UIEnvWindowAvoidAreaInfoVP | undefined) {
-    return undefined;
-  }
-  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) 
-  set __backing_windowAvoidAreaVP(__backing_windowAvoidAreaVP: (window.UIEnvWindowAvoidAreaInfoVP | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_windowAvoidAreaVP(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_windowAvoidAreaVP(__options_has_windowAvoidAreaVP: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get windowAvoidAreaPX(): (window.UIEnvWindowAvoidAreaInfoPX | undefined) {
-    return undefined;
-  }
-  set windowAvoidAreaPX(windowAvoidAreaPX: (window.UIEnvWindowAvoidAreaInfoPX | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) 
-  get __backing_windowAvoidAreaPX(): (window.UIEnvWindowAvoidAreaInfoPX | undefined) {
-    return undefined;
-  }
-  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) 
-  set __backing_windowAvoidAreaPX(__backing_windowAvoidAreaPX: (window.UIEnvWindowAvoidAreaInfoPX | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_windowAvoidAreaPX(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_windowAvoidAreaPX(__options_has_windowAvoidAreaPX: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'breakpoint', '(uiObserver.WindowSizeLayoutBreakpointInfo | undefined)', ['@Env({value:SystemProperties.BREAK_POINT})'])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_breakpoint', '(IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_breakpoint', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'sizeInVP', '(window.SizeInVP | undefined)', ['@Env({value:SystemProperties.WINDOW_SIZE})'])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_sizeInVP', '(IEnvDecoratedVariable<window.SizeInVP> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_sizeInVP', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'sizeInPX', '(window.Size | undefined)', ['@Env({value:SystemProperties.WINDOW_SIZE_PX})'])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_sizeInPX', '(IEnvDecoratedVariable<window.Size> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_sizeInPX', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'windowAvoidAreaVP', '(window.UIEnvWindowAvoidAreaInfoVP | undefined)', ['@Env({value:SystemProperties.WINDOW_AVOID_AREA})'])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_windowAvoidAreaVP', '(IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoVP> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_windowAvoidAreaVP', '(boolean | undefined)')}
+
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'windowAvoidAreaPX', '(window.UIEnvWindowAvoidAreaInfoPX | undefined)', ['@Env({value:SystemProperties.WINDOW_AVOID_AREA_PX})'])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_windowAvoidAreaPX', '(IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoPX> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_windowAvoidAreaPX', '(boolean | undefined)')}
   
 }
 `;
@@ -486,7 +424,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Env decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

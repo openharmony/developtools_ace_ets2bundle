@@ -13,16 +13,20 @@
  * limitations under the License.
  */
 
+import { Expression, IfStatement, Statement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { AstNode } from '../peers/AstNode';
-import { IfStatement } from '../types';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateIfStatement(
     original: IfStatement,
-    test: AstNode,
-    consequent: AstNode,
-    alternate?: AstNode
+    test?: Expression,
+    consequent?: Statement,
+    alternate?: Statement
 ): IfStatement {
     if (
         isSameNativeObject(test, original.test) &&
@@ -32,6 +36,6 @@ export function updateIfStatement(
         return original;
     }
 
-    const update = updateThenAttach(IfStatement.update, attachModifiers);
+    const update = updateThenAttach(IfStatement.updateIfStatement, attachModifiers, attachParent, refreshNodeCache);
     return update(original, test, consequent, alternate);
 }

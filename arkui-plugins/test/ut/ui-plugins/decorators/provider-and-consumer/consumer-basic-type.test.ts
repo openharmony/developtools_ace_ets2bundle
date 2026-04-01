@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -78,97 +78,93 @@ function main() {}
     this.__backing_consumerVar3!.resetOnReuse(true);
     this.__backing_consumerVar4!.resetOnReuse(undefined);
     this.__backing_consumerVar5!.resetOnReuse(null);
-  }
-
+    }
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+      }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+      });
+    }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+    }
   private __backing_consumerVar1?: IConsumerDecoratedVariable<string>;
-
   public get consumerVar1(): string {
     return this.__backing_consumerVar1!.get();
-  }
-
+    }
   public set consumerVar1(value: string) {
     this.__backing_consumerVar1!.set(value);
-  }
+    }
 
   private __backing_consumerVar2?: IConsumerDecoratedVariable<number>;
 
   public get consumerVar2(): number {
     return this.__backing_consumerVar2!.get();
-  }
+    }
 
   public set consumerVar2(value: number) {
     this.__backing_consumerVar2!.set(value);
-  }
+    }
 
   private __backing_consumerVar3?: IConsumerDecoratedVariable<boolean>;
 
   public get consumerVar3(): boolean {
     return this.__backing_consumerVar3!.get();
-  }
+    }
 
   public set consumerVar3(value: boolean) {
     this.__backing_consumerVar3!.set(value);
-  }
+    }
 
   private __backing_consumerVar4?: IConsumerDecoratedVariable<undefined>;
 
   public get consumerVar4(): undefined {
     return this.__backing_consumerVar4!.get();
-  }
+    }
 
   public set consumerVar4(value: undefined) {
     this.__backing_consumerVar4!.set(value);
-  }
+    }
 
   private __backing_consumerVar5?: IConsumerDecoratedVariable<null>;
 
   public get consumerVar5(): null {
     return this.__backing_consumerVar5!.get();
-  }
+    }
 
   public set consumerVar5(value: null) {
     this.__backing_consumerVar5!.set(value);
-  }
+    }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {}
-
   public constructor() {}
+  static {
+    }
 
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar2', '(IConsumerDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar3', '(IConsumerDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar4', '(IConsumerDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar5', '(IConsumerDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar5', '(boolean | undefined)')}
   
@@ -181,7 +177,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Consumer decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

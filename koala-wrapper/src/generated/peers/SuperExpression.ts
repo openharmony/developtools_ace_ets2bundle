@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class SuperExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SUPER_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_SUPER_EXPRESSION;
     }
     static createSuperExpression(): SuperExpression {
         return new SuperExpression(global.generatedEs2panda._CreateSuperExpression(global.context))

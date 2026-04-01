@@ -31,10 +31,13 @@ import {
 
 import { Statement } from "./Statement"
 export class ExportDefaultDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_DEFAULT_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_EXPORT_DEFAULT_DECLARATION;
     }
     static createExportDefaultDeclaration(decl: AstNode | undefined, exportEquals: boolean): ExportDefaultDeclaration {
         return new ExportDefaultDeclaration(global.generatedEs2panda._CreateExportDefaultDeclaration(global.context, passNode(decl), exportEquals))

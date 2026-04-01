@@ -33,10 +33,13 @@ import { Expression } from "./Expression"
 import { TemplateLiteral } from "./TemplateLiteral"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class TaggedTemplateExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TAGGED_TEMPLATE_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TAGGED_TEMPLATE_EXPRESSION;
     }
     static createTaggedTemplateExpression(tag?: Expression, quasi?: TemplateLiteral, typeParams?: TSTypeParameterInstantiation): TaggedTemplateExpression {
         return new TaggedTemplateExpression(global.generatedEs2panda._CreateTaggedTemplateExpression(global.context, passNode(tag), passNode(quasi), passNode(typeParams)))

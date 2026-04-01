@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { Statement } from "./Statement"
 export class BlockExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_BLOCK_EXPRESSION;
     }
     static createBlockExpression(statements: readonly Statement[]): BlockExpression {
         return new BlockExpression(global.generatedEs2panda._CreateBlockExpression(global.context, passNodeArray(statements), statements.length))

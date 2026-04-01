@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class UndefinedLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_UNDEFINED_LITERAL;
     }
     static createUndefinedLiteral(): UndefinedLiteral {
         return new UndefinedLiteral(global.generatedEs2panda._CreateUndefinedLiteral(global.context))

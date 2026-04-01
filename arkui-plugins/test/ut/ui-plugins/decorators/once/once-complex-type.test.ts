@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -177,6 +177,20 @@ final class StateType extends BaseEnum<int> {
     (((gensym___134562011) == (null)) ? undefined : gensym___134562011.onceVar12)})) ?? (new Per(6))));
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
+
   private __backing_onceVar1?: IParamOnceDecoratedVariable<Per>;
 
   public get onceVar1(): Per {
@@ -297,73 +311,60 @@ final class StateType extends BaseEnum<int> {
     this.__backing_onceVar12!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(Per | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<Per> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(Array<number> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar2', '(IParamOnceDecoratedVariable<Array<number>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(StateType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(StateType | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar3', '(IParamOnceDecoratedVariable<StateType> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(Set<string> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<Set<string>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar5', '(IParamOnceDecoratedVariable<Array<boolean>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar6', '(Array<Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar6', '(IParamOnceDecoratedVariable<Array<Per>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar7', '(Array<Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar7', '(IParamOnceDecoratedVariable<Array<Per>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar8', '(((sr: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar8', '(IParamOnceDecoratedVariable<((sr: string)=> void)> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar9', '(Date | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar9', '(IParamOnceDecoratedVariable<Date> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar10', '(IParamOnceDecoratedVariable<Map<number, Per>> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar11', '((string | number) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar11', '(IParamOnceDecoratedVariable<(string | number)> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar12', '(IParamOnceDecoratedVariable<(Set<string> | Per)> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar12', '(boolean | undefined)')}
   
@@ -376,7 +377,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @Once decorated variables transformation',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
