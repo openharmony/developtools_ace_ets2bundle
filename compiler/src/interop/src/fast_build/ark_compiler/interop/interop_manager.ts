@@ -392,6 +392,9 @@ export class FileManager {
     if (!FileManager.isInteropSDKEnabled) {
       return undefined;
     }
+    if (moduleName.startsWith('static@')) {
+      return this.parseStaticAlias(moduleName);
+    }
     const result = this.getLanguageVersionByFilePath(containingFile);
     if (!result) {
       return undefined;
@@ -403,6 +406,25 @@ export class FileManager {
     }
 
     return alias.get(moduleName);
+  }
+
+  private parseStaticAlias(moduleName: string): AliasConfig | undefined {
+    const STATIC_PREFIX = 'static';
+
+    if (!moduleName.startsWith(STATIC_PREFIX)) {
+      return undefined;
+    }
+
+    const originalAPIName = moduleName.substring(STATIC_PREFIX.length);
+
+    if (!originalAPIName || originalAPIName.trim() === '') {
+      return undefined;
+    }
+
+    return {
+      originalAPIName: originalAPIName,
+      isStatic: true
+    };
   }
 
   getGlueCodePathByModuleRequest(moduleRequest: string): { fullPath: string, basePath: string } | undefined {

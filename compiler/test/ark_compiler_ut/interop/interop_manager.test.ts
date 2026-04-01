@@ -489,3 +489,88 @@ mocha.describe('test transformModuleNameToRelativePath api', function () {
     delete this.rollup;
   });
 })
+
+mocha.describe('test queryOriginApiName api', function () {
+  mocha.before(function () {
+    let baseUrl;
+    this.rollup = new RollUpPluginMock();
+    this.rollup.build();
+    baseUrl = path.join(this.rollup.share.projectConfig.projectRootPath, './interop_sdk');
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    const aliasConfig: Map<string, string> = new Map();
+    aliasConfig.set('application', path.join(baseUrl, './configs/alias.json'));
+    dependentModuleMap.set('application', {
+      language: ARKTS_1_1,
+      packageName: 'application',
+      moduleName: 'application',
+      modulePath: '/MyApplication16/application',
+      declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
+      declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
+      declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
+      declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/MyApplication16/application/build/cache',
+      byteCodeHarInfo: {}
+    });
+    FileManager.cleanFileManagerObject();
+    FileManager.initForTest(
+      dependentModuleMap,
+      aliasConfig,
+      undefined,
+      undefined,
+      undefined);
+    FileManager.setMixCompile(true);
+  });
+
+  mocha.after(() => {
+    FileManager.cleanFileManagerObject();
+  });
+
+  mocha.it('1-1: should return alias config from alias.json', function () {
+    const result = FileManager.getInstance().queryOriginApiName(
+      'static.@ohos.util.HashSet', 
+      '/MyApplication16/application/src/main/ets/test.ets'
+    );
+    console.log(result);
+    expect(result).to.not.be.undefined;
+    expect(result?.originalAPIName).to.equal('@ohos.util.HashSet');
+    expect(result?.isStatic).to.be.true;
+  });
+
+  mocha.it('1-2: should parse static@ prefix directly', function () {
+    const result = FileManager.getInstance().queryOriginApiName(
+      'static@ohos.util.HashSet', 
+      '/MyApplication16/application/src/main/ets/test.ets'
+    );
+    console.log(result);
+    expect(result).to.not.be.undefined;
+    expect(result?.originalAPIName).to.equal('@ohos.util.HashSet');
+    expect(result?.isStatic).to.be.true;
+  });
+
+  mocha.it('1-3: should return undefined when mixCompile is false', function () {
+    FileManager.setMixCompile(false);
+    const result = FileManager.getInstance().queryOriginApiName(
+      'static.@ohos.util.HashSet', 
+      '/MyApplication16/application/src/main/ets/test.ets'
+    );
+    expect(result).to.be.undefined;
+  });
+
+  mocha.it('1-4: should return undefined for non-existent alias', function () {
+    const result = FileManager.getInstance().queryOriginApiName(
+      'static.@ohos.nonexistent', 
+      '/MyApplication16/application/src/main/ets/test.ets'
+    );
+    expect(result).to.be.undefined;
+  });
+
+  mocha.it('1-5: should return undefined when containing file is not in any module', function () {
+    const result = FileManager.getInstance().queryOriginApiName(
+      'static.@ohos.util.HashSet', 
+      '/unknown/path/file.ets'
+    );
+    expect(result).to.be.undefined;
+  });
+});
