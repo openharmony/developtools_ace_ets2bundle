@@ -419,8 +419,26 @@ export class InsightIntentCollector {
             if (intentsCount === 0) {
                 return false;
             }
+            // 确保moduleRootPath目录存在
+            if (!fs.existsSync(projectConfig.moduleRootPath)) {
+                fs.mkdirSync(projectConfig.moduleRootPath, { recursive: true });
+            }
+            const pathSegments = [
+                'build',
+                'default',
+                'intermediates',
+                'res',
+                'default',
+                'resources',
+                'base',
+                'profile'
+            ];
             if (!projectConfig || !projectConfig.aceProfilePath) {
-                return false;
+                if (projectConfig.moduleRootPath) {
+                    projectConfig.aceProfilePath = path.join(projectConfig.moduleRootPath, ...pathSegments);
+                }else{
+                    return false;
+                }
             }
             const aceProfilePath = projectConfig.aceProfilePath
             
