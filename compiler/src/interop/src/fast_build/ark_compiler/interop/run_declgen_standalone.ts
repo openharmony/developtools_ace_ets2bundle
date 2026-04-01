@@ -27,10 +27,11 @@ import {
     DECLGEN_CACHE_FILE,
     Params,
     ProjectConfig,
-    RunnerParms
+    RunnerParms,
+    AliasConfig
 } from './type';
 import fs from 'fs';
-import path from 'path';
+import path, { resolve } from 'path';
 import * as ts from 'typescript';
 import { EXTNAME_D_ETS, EXTNAME_JS } from '../common/ark_define';
 import { getRealModulePath } from '../../system_api/api_check_utils';
@@ -39,7 +40,7 @@ import { calculateFileHash } from '../utils';
 import { createCustomTransformer } from '../../../process_interop_ui';
 
 export function run(param: Params): boolean {
-    FileManager.init(param.dependentModuleMap);
+    FileManager.init(param.dependentModuleMap, param.projectConfig.sdkAliasMap);
     DeclfileProductor.init(param);
     param.tasks.forEach(task => {
         const moduleInfo = FileManager.arkTSModuleMap.get(task.packageName);
@@ -69,6 +70,7 @@ export class DeclfileProductor {
     static defaultSdkConfigs = [];
     static projectPath;
     private projectConfig;
+    private aliasConfig?: Map<string, Map<string, AliasConfig>>;
     private pkgDeclFilesConfig: { [pkgName: string]: DeclFilesConfig } = {};
 
     static init(param: Params): void {
@@ -111,7 +113,7 @@ export class DeclfileProductor {
             tsImportSendableEnable: false,
             skipPathsInKeyForCompilationSettings: true,
         });
-        DeclfileProductor.compilerOptions.ets.customComponent = undefined;
+        DeclfileProductor.compilerOptions.ets!.customComponent = undefined;
         DeclfileProductor.projectPath = param.projectConfig.projectRootPath;
     }
     static getInstance(param?: Params): DeclfileProductor {
@@ -151,6 +153,8 @@ export class DeclfileProductor {
             filesToProcess.push(toUnixPath(path));
         });
 
+        const moduleNamesResolver = this.getModuleNamesResolver(moduleInfo.packageName);
+
         inputList = inputList.filter(filePath => !filePath.endsWith('.js'));
         const config: RunnerParms = {
             inputDirs: [],
@@ -158,7 +162,7 @@ export class DeclfileProductor {
             outDir: moduleInfo.declgenV2OutPath,
             // use package name as folder name
             rootDir: moduleInfo.modulePath,
-            customResolveModuleNames: resolveModuleNames,
+            customResolveModuleNames: moduleNamesResolver,
             customCompilerOptions: DeclfileProductor.compilerOptions,
             includePaths: [moduleInfo.modulePath],
             uiInteropTransformer: createCustomTransformer
@@ -300,49 +304,78 @@ export class DeclfileProductor {
         ];
         DeclfileProductor.sdkConfigs = [...DeclfileProductor.defaultSdkConfigs];
     }
-}
 
-function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
-    const resolvedModules: ts.ResolvedModuleFull[] = [];
-
-    for (const moduleName of moduleNames) {
-        let resolvedModule: ts.ResolvedModuleFull | null = null;
-
-        resolvedModule = resolveWithDefault(moduleName, containingFile);
-        if (resolvedModule) {
-            resolvedModules.push(resolvedModule);
-            continue;
+    resolveSdkAliasModule(packageName: string, moduleName: string): ts.ResolvedModuleFull | null {
+        const alias = FileManager.aliasConfig.get(packageName);
+        if (!alias) {
+            return null;
         }
-
-        resolvedModule = resolveSdkModule(moduleName);
-        if (resolvedModule) {
-            resolvedModules.push(resolvedModule);
-            continue;
+        const originalModuleAlias = alias.get(moduleName);
+        if (!originalModuleAlias) {
+            return null;
         }
-
-        resolvedModule = resolveInteropSdkModule(moduleName);
-        if (resolvedModule) {
-            resolvedModules.push(resolvedModule);
-            continue;
+        if (!originalModuleAlias.isStatic) {
+            return null;
         }
-
-        resolvedModule = resolveEtsModule(moduleName, containingFile);
-        if (resolvedModule) {
-            resolvedModules.push(resolvedModule);
-            continue;
-        }
-
-        resolvedModule = resolveTsModule(moduleName, containingFile);
-        if (resolvedModule) {
-            resolvedModules.push(resolvedModule);
-            continue;
-        }
-
-        resolvedModule = resolveOtherModule(moduleName, containingFile);
-        resolvedModules.push(resolvedModule ?? null);
+        const originalModuleName = originalModuleAlias.originalAPIName;
+        return resolveInteropSdkModule(originalModuleName);
     }
 
-    return resolvedModules;
+    getModuleNamesResolver(packageName: string): (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[] {
+        const self = this;
+
+        function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
+            const resolvedModules: ts.ResolvedModuleFull[] = [];
+
+            for (const moduleName of moduleNames) {
+                let resolvedModule: ts.ResolvedModuleFull | null = null;
+
+                resolvedModule = resolveWithDefault(moduleName, containingFile);
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = resolveSdkModule(moduleName);
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = self.resolveSdkAliasModule(packageName, moduleName);
+
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = resolveStaticInteropSdkModule(moduleName);
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = resolveEtsModule(moduleName, containingFile);
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = resolveTsModule(moduleName, containingFile);
+                if (resolvedModule) {
+                    resolvedModules.push(resolvedModule);
+                    continue;
+                }
+
+                resolvedModule = resolveOtherModule(moduleName, containingFile);
+                resolvedModules.push(resolvedModule ?? null);
+            }
+
+            return resolvedModules;
+        }
+
+        return resolveModuleNames;
+    }
 }
 
 function resolveWithDefault(
@@ -372,6 +405,28 @@ function resolveEtsModule(moduleName: string, containingFile: string): ts.Resolv
 
     const modulePath = path.resolve(path.dirname(containingFile), moduleName);
     return ts.sys.fileExists(modulePath) ? getResolveModule(modulePath, '.ets') : null;
+}
+
+function resolveStaticInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
+    const prefixRegex = new RegExp(`^static@(${DeclfileProductor.sdkConfigPrefix})\\.`, 'i');
+    if (!prefixRegex.test(moduleName.trim())) {
+        return null;
+    }
+
+    const actualModuleName = moduleName.replace(/^static@/, '');
+
+    for (const sdkConfig of DeclfileProductor.interopSdkConfigs) {
+        const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, actualModuleName, ['.d.ts', '.d.ets']);
+        const modulePath: string = resolveModuleInfo.modulePath;
+        const isDETS: boolean = resolveModuleInfo.isEts;
+
+        const moduleKey = actualModuleName + (isDETS ? '.d.ets' : '.d.ts');
+        if (DeclfileProductor.systemModules.includes(moduleKey) && ts.sys.fileExists(modulePath)) {
+            return getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts');
+        }
+    }
+
+    return null;
 }
 
 function resolveInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
