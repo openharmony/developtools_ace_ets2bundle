@@ -674,3 +674,8 @@ export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
 export const CREATESTATICCOMPONENT: string = '__Interop_CreateStaticComponent_Internal';
 export const UPDATESTATICCOMPONENT: string = '__Interop_UpdateStaticComponent_Internal';
+
+export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
+export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';
+export const DEVICE_INFO_API_FILE_NAME: string = '@ohos.deviceInfo.d.ts';
+export const API_AVAILABLE_FUNCTION_NAME: string = 'apiAvailable';
