@@ -925,15 +925,17 @@ function checkAvailableDecorator(
  * @param jsDocTags - Array of JSDoc tags to analyze
  * @param config - Configuration object that will receive error messages
  * @param node - Optional TypeScript node for additional validation
+ * @param declaration - Optional TypeScript declaration for additional validation
  * @returns True if since check is required and validation fails, false otherwise
  */
 function checkSinceValue(
   jsDocTags: readonly ts.JSDocTag[],
   config: ts.JsDocNodeCheckConfigItem,
-  node?: ts.Node
+  node?: ts.Node,
+  declaration?: ts.Declaration
 ): boolean {
   const eventCheckSince = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkSince(async)', true);
-  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node) {
+  if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node || !declaration) {
     stopEvent(eventCheckSince, true);
     return false;
   }
@@ -962,7 +964,8 @@ function checkSinceValue(
   const suppressor = new SinceWarningSuppressor(
     checker.getSdkVersion(),
     checker.getMinApiVersion(),
-    typeChecker
+    typeChecker,
+    declaration
   );
 
   if (suppressor.isApiVersionHandled(node)) {
