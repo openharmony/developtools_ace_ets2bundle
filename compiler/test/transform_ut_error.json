@@ -1356,7 +1356,7 @@
         "type": "WARN"
     },
     "componentReuseCheck": { 
-         "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.", 
+         "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' should have only one input parameter of the following type: Record<string, Object | null | undefined>.", 
          "type": "ERROR", 
          "code": "10905369" 
      },
@@ -3965,12 +3965,12 @@
     "eventAssignmentError": [],
     "componentReuseParamError": [
         {
-            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>",
+            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' should have only one input parameter of the following type: Record<string, Object | null | undefined>.",
             "type": "ERROR",
             "code": "10905369"
         },
         {
-            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>",
+            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' should have only one input parameter of the following type: Record<string, Object | null | undefined>.",
             "type": "ERROR",
             "code": "10905369"
         }
