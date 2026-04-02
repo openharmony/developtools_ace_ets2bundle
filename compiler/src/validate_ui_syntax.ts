@@ -2926,7 +2926,7 @@ function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDe
   const structName: string = structNode.name.escapedText.toString();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
   if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
-    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.`;
+    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' should have only one input parameter of the following type: Record<string, Object | null | undefined>.`;
     addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
     return;
   }
