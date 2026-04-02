@@ -155,8 +155,8 @@ function main() {}
   @Monitor({value:["message", "name"]}) 
   public onStrChange1(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value(path);
-      (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value(path);
+      console.info(\`\${path} changed from \${({let gensym%%_74 = monitor.value<string>(path);
+      (((gensym%%_74) == (null)) ? undefined : gensym%%_74.before)})} to \${({let gensym%%_75 = monitor.value<string>(path);
       (((gensym%%_75) == (null)) ? undefined : gensym%%_75.now)})}\`);
     }));
   }
@@ -164,8 +164,8 @@ function main() {}
   @Monitor({value:["message", "name"]}) 
   public onStrChange2(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value(path);
-      (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value(path);
+      console.info(\`\${path} changed from \${({let gensym%%_76 = monitor.value<string>(path);
+      (((gensym%%_76) == (null)) ? undefined : gensym%%_76.before)})} to \${({let gensym%%_77 = monitor.value<string>(path);
       (((gensym%%_77) == (null)) ? undefined : gensym%%_77.now)})}\`);
     }));
   }
@@ -173,8 +173,8 @@ function main() {}
   @Monitor({value:["name"]}) 
   public onStrChange3(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value(path);
-      (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value(path);
+      console.info(\`\${path} changed from \${({let gensym%%_78 = monitor.value<string>(path);
+      (((gensym%%_78) == (null)) ? undefined : gensym%%_78.before)})} to \${({let gensym%%_79 = monitor.value<string>(path);
       (((gensym%%_79) == (null)) ? undefined : gensym%%_79.now)})}\`);
     }));
   }
