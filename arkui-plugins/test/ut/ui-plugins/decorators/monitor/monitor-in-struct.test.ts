@@ -149,8 +149,8 @@ function main() {}
   @Monitor({value:["message", "name"]}) 
   public onStrChange(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} changed from \${({let gensym%%_43 = monitor.value(path);
-      (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value(path);
+      console.info(\`\${path} changed from \${({let gensym%%_43 = monitor.value<string>(path);
+      (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value<string>(path);
       (((gensym%%_44) == (null)) ? undefined : gensym%%_44.now)})}\`);
     }));
   }

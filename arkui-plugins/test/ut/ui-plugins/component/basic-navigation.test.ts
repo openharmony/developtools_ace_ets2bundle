@@ -163,7 +163,7 @@ function main() {}
       instance.setNavigationOptions(undefined, {
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
-        isUserCreateStack: false,
+        isUserCreateStack: true,
       });
       instance.applyAttributesFinish();
       return;

@@ -27,11 +27,11 @@ export struct SubNavigation {
   @State secondaryStack: MyNavPathStack = new MyNavPathStack();
 
   @Builder
-  SubNavDestination(name: string, param?: object) {
+  SubNavDestination(name: string, param?: object): void {
     this.navDestination!(name, param as Object);
   }
 
-  build() {
+  build(): void {
     NavDestination() {
       Navigation(this.secondaryStack) {
         Navigation(this.primaryStack) {
@@ -74,14 +74,14 @@ export class MyNavPathStack extends NavPathStack {
   public type:string = 'NavPathStack';
   public policyInfoList: MultiNavPolicyInfo[] = [];
 
-  public registerStackOperateCallback(operate: NavPathStackOperate) {
+  public registerStackOperateCallback(operate: NavPathStackOperate): void {
     let index = this.operates.findIndex((item) => { return item === operate});
     if (index === -1) {
       this.operates.push(operate);
     }
   }
 
-  public unregisterStackOperateCallback(operate: NavPathStackOperate) {
+  public unregisterStackOperateCallback(operate: NavPathStackOperate): void {
     let index = this.operates.findIndex((item) => { return item === operate});
     if (index !== -1) {
       this.operates.splice(index, 1);
