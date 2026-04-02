@@ -115,7 +115,7 @@ import { collectSharedModule } from './fast_build/ark_compiler/check_shared_modu
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
-import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { FileManager, isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
 
 export class ComponentCollection {
@@ -592,7 +592,7 @@ function checkObservedProperty(node: ts.PropertyDeclaration): [boolean, boolean]
     return getHasObserved(symbol);
   } else if (node.type && ts.isUnionTypeNode(node.type)) {
     const classResult: ClassDecoratorResult = new ClassDecoratorResult();
-    validatePropertyType(node.type, classResult);
+    validatePropertyType(node.type, classResult, true);
     return [classResult.hasObserved, classResult.hasObservedV2];
   }
   return [false, false];
@@ -613,6 +613,7 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
     return;
   }
   const classResult: ClassDecoratorResult = new ClassDecoratorResult();
+  let classResultInterop: ClassDecoratorResult | undefined;
   const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
   if (!propertyNode?.initializer) {
     return;
@@ -620,12 +621,33 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (propertyNode.type && checker) {
     validatePropertyType(propertyNode.type, classResult);
+    if (isMixCompile()) {
+      classResultInterop = new ClassDecoratorResult();
+      validatePropertyType(propertyNode.type, classResultInterop, true);
+    }
   }
+  if (structContext) {
+    if (isMixCompile() && classResultInterop) {
+      if (checkInteropInitialization(propertyNode, decoratorNode, decoratorName, isV1Decorator, isV2Decorator,
+        classResultInterop, log, sourceFileNode)) {
+        return;
+      }
+    }
+    if (!isMixCompile() && isV1Decorator && classResult.hasObservedV2) {
+      const message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
+      return;
+    }
+  }
+}
+
+function checkInteropInitialization(propertyNode: ts.PropertyDeclaration, decoratorNode: ts.Identifier,
+  decoratorName: string, isV1Decorator: boolean, isV2Decorator: boolean, classResult: ClassDecoratorResult,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): boolean {
   if (ts.isNewExpression(propertyNode.initializer)) {
     if (checkDecoratorNewExpressionForObserved(propertyNode.initializer, decoratorNode, decoratorName, isV1Decorator,
       isV2Decorator, classResult, log, sourceFileNode)) {
-
-      return;
+      return true;
     }
   }
   if (ts.isArrayLiteralExpression(propertyNode.initializer) && propertyNode.initializer.elements?.length > 0) {
@@ -633,19 +655,11 @@ function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Iden
       if (ts.isNewExpression(element) &&
         checkDecoratorNewExpressionForObserved(element, decoratorNode, decoratorName, isV1Decorator,
           isV2Decorator, classResult, log, sourceFileNode)) {
-
-
-        return;
+        return true;
       }
     }
   }
-  if (structContext) {
-    if (isV1Decorator && classResult.hasObservedV2) {
-      const message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'`;
-      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
-      return;
-    }
-  }
+  return false;
 }
 
 function checkDecoratorNewExpressionForObserved(newExpression: ts.NewExpression, decoratorNode: ts.Identifier,
@@ -683,10 +697,10 @@ function getPropertyNodeByDecorator(decoratorNode: ts.Identifier): ts.PropertyDe
   return undefined;
 }
 
-function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResult): void {
+function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResult, isInterop: boolean = false): void {
   if (ts.isUnionTypeNode(node) && node.types && node.types.length) {
     node.types.forEach((item: ts.TypeNode) => {
-      validatePropertyType(item, classResult);
+      validatePropertyType(item, classResult, isInterop);
     });
   }
   if (ts.isTypeReferenceNode(node) && node.typeName) {
@@ -694,7 +708,7 @@ function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResu
     const typeNode: ts.Type = checker?.getTypeAtLocation(node.typeName);
     parsePropertyType(typeNode, classResult);
   }
-  if (ts.isArrayTypeNode(node) && ts.isTypeReferenceNode(node.elementType)&& node.elementType.typeName) {
+  if (isInterop && ts.isArrayTypeNode(node) && ts.isTypeReferenceNode(node.elementType) && node.elementType.typeName) {
     const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
     const typeNode: ts.Type = checker?.getTypeAtLocation(node.elementType.typeName);
     parsePropertyType(typeNode, classResult);
