@@ -1821,6 +1821,9 @@ function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.Express
   ];
   if (argumentsArray.length >= 3 && argumentsArray[2]) {
     parameterList.push(ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC));
+    if (argumentsArray.length >= 4 && ts.isObjectLiteralExpression(argumentsArray[3])) {
+      parameterList.push(argumentsArray[3]);
+    }
   }
   if (projectConfig.optLazyForEach) {
     parameterList.push(ts.factory.createTrue());
