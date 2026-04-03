@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -176,6 +176,5 @@ export const nodes = new Map<Es2pandaAstNodeType, { new(peer: KNativePointer): A
     [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_PRIMITIVE_TYPE, peers.ETSPrimitiveType],
     [Es2pandaAstNodeType.AST_NODE_TYPE_NEW_EXPRESSION, peers.NewExpression],
     [Es2pandaAstNodeType.AST_NODE_TYPE_TS_PARAMETER_PROPERTY, peers.TSParameterProperty],
-    [Es2pandaAstNodeType.AST_NODE_TYPE_ETS_WILDCARD_TYPE, peers.ETSWildcardType],
     [Es2pandaAstNodeType.AST_NODE_TYPE_TS_THIS_TYPE, peers.TSThisType],
 ])

@@ -11465,45 +11465,6 @@ KNativePointer impl_TSParameterPropertyParameterConst(KNativePointer context, KN
 }
 KOALA_INTEROP_2(TSParameterPropertyParameterConst, KNativePointer, KNativePointer, KNativePointer);
 
-KNativePointer impl_CreateETSWildcardType(KNativePointer context, KNativePointer typeReference, KInt flags)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _typeReference = reinterpret_cast<es2panda_AstNode*>(typeReference);
-    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
-    auto result = GetImpl()->CreateETSWildcardType(_context, _typeReference, _flags);
-    return result;
-}
-KOALA_INTEROP_3(CreateETSWildcardType, KNativePointer, KNativePointer, KNativePointer, KInt);
-
-KNativePointer impl_UpdateETSWildcardType(KNativePointer context, KNativePointer original, KNativePointer typeReference, KInt flags)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _original = reinterpret_cast<es2panda_AstNode*>(original);
-    const auto _typeReference = reinterpret_cast<es2panda_AstNode*>(typeReference);
-    const auto _flags = static_cast<Es2pandaModifierFlags>(flags);
-    auto result = GetImpl()->UpdateETSWildcardType(_context, _original, _typeReference, _flags);
-    return result;
-}
-KOALA_INTEROP_4(UpdateETSWildcardType, KNativePointer, KNativePointer, KNativePointer, KNativePointer, KInt);
-
-KNativePointer impl_ETSWildcardTypeTypeReference(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSWildcardTypeTypeReference(_context, _receiver);
-    return result;
-}
-KOALA_INTEROP_2(ETSWildcardTypeTypeReference, KNativePointer, KNativePointer, KNativePointer);
-
-KNativePointer impl_ETSWildcardTypeTypeReferenceConst(KNativePointer context, KNativePointer receiver)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
-    auto result = GetImpl()->ETSWildcardTypeTypeReferenceConst(_context, _receiver);
-    return (void*)result;
-}
-KOALA_INTEROP_2(ETSWildcardTypeTypeReferenceConst, KNativePointer, KNativePointer, KNativePointer);
-
 KNativePointer impl_CreateTSThisType(KNativePointer context)
 {
     const auto _context = reinterpret_cast<es2panda_Context*>(context);
