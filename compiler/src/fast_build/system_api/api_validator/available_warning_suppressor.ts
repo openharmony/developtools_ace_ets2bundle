@@ -37,7 +37,8 @@ export class AvailableWarningSuppressor extends BaseWarningSuppressor {
     projectCompatibleSdkVersion: string,
     minRequiredVersion: string,
     minAvailableVersion: ParsedVersion,
-    typeChecker?: ts.TypeChecker
+    typeChecker?: ts.TypeChecker,
+    declaration?: ts.Declaration
   ) {
     super(AVAILABLE_TAG_NAME);
     // Create all validators
@@ -52,7 +53,8 @@ export class AvailableWarningSuppressor extends BaseWarningSuppressor {
         projectCompatibleSdkVersion,
         minRequiredVersion,
         typeChecker,
-        minAvailableVersion
+        minAvailableVersion,
+        declaration
       )
     ]);
   }

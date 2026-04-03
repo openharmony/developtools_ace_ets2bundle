@@ -15,17 +15,23 @@
 
 import ts from 'typescript';
 import { projectConfig } from '../../../../main';
-import { 
+import {
   getValueChecker,
   defaultValueChecker,
-  comparePointVersion
+  comparePointVersion,
+  isCheckDistributionOSVersion,
+  checkMSFVersionMajor,
+  checkIntegerMoreVersion
 } from '../api_check_utils';
-import { SINCE_TAG_NAME,
+import {
+  SINCE_TAG_NAME,
   ComparisonSenario,
   ValueCheckerFunction,
   ParsedVersion,
   VersionValidationResult,
-  ComparisonResult
+  ComparisonResult,
+  DistributionOSApiAvailableVersionResult,
+  MSF_INTEGER_VERSION
 } from '../api_check_define';
 
 /**
@@ -40,7 +46,7 @@ export class SdkComparisonHelper {
   private readonly openSourceDeviceInfo: string;
   private readonly openSourceRuntime: string;
   private readonly deviceInfoChecker: Map<string, string[]>;
-  
+
   // Comparison function loaded from central system
   private valueChecker: ValueCheckerFunction = defaultValueChecker;
 
@@ -58,11 +64,11 @@ export class SdkComparisonHelper {
     this.otherSourceDeviceInfo = otherSourceDeviceInfo;
     this.openSourceDeviceInfo = openSourceDeviceInfo;
     this.openSourceRuntime = openSourceRuntime;
-    
+
     // Initialize comparison function
     this.init();
   }
-  
+
   /**
    * Initialize comparison function for SDK version validation.
    * 
@@ -110,6 +116,89 @@ export class SdkComparisonHelper {
     return apiIdentifier
       ? this.isValidSdkDeclaration(apiIdentifier, validPackagePath)
       : false;
+  }
+
+  public isApiAvailableHelper(expression: ts.Expression): boolean {
+    const expressionText = expression.getText();
+    const runtimeType = projectConfig.runtimeOS;
+    const matchedEntry = Array.from(this.deviceInfoChecker.entries())
+      .find(([api]) => expressionText.includes(api));
+    if (!matchedEntry) {
+      return false;
+    }
+
+    if (!ts.isCallExpression(expression)) {
+      return false;
+    }
+
+    if (expression.arguments && expression.arguments.length > 1) {
+      return false;
+    }
+
+    const [matchedApi, validPackagePath] = matchedEntry;
+    if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
+      return false;
+    }
+    
+    const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
+    const sinceValue: string = expression.arguments[0].getText().trim();
+    const sinceFormat: string = sinceValue.replace(/[\'|\"]/g, '');
+    const sincePointVersion: string[] = sinceFormat.split('.');
+    if (sincePointVersion.length === 1 || runtimeType === this.openSourceRuntime) {
+      const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
+      if (!compatibileReg.test(sinceFormat)) {
+        return false;
+      }
+      switch (sincePointVersion.length) {
+        case 1:
+          return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
+        case 3:
+          if (!checkMSFVersionMajor(sinceFormat)) {
+            return false;
+          } else if (comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less) {
+            return true;
+          }
+        default:
+          return false;
+      }
+    }
+    if (!checkMSFVersionMajor(sinceFormat)) {
+      let distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
+      if (!distributionOSCheck.valid) {
+        return false;
+      } else {
+        const scenario = matchedApi === this.openSourceDeviceInfo
+          ? ComparisonSenario.SuppressByOHVersion
+          : ComparisonSenario.SuppressByOtherOSVersion;
+        const distributionOSResult: VersionValidationResult = this.valueChecker(this.minRequiredVersion, sinceFormat, scenario);
+        return distributionOSResult.result;
+      }
+    }
+
+    if (!checkIntegerMoreVersion(sinceFormat)) {
+      return false;
+    }
+    return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less
+  }
+
+  private distributionVersionFormat(): DistributionOSApiAvailableVersionResult {
+    let distributeResult: DistributionOSApiAvailableVersionResult = {
+      valid: true,
+      version: '',
+      message: ''
+    };
+    const isMSFBracketsVersion: boolean = /^(?:[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/.test(this.minRequiredVersion);
+    if (isMSFBracketsVersion) {
+      const resultOS: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, this.minRequiredVersion);
+      if (resultOS.valid) {
+        distributeResult = resultOS;
+      } else {
+        distributeResult.version = this.minRequiredVersion;
+      }
+    } else {
+      distributeResult.version = this.minRequiredVersion;
+    }
+    return distributeResult;
   }
 
   /**
@@ -241,44 +330,44 @@ export class SdkComparisonHelper {
     const numValue = Number(value);
     const comparisonValue = numValue % 1 === 0 ? numValue : Math.ceil(numValue);
     const assignedSdkVersion = this.calculateAssignedSdkVersion(operator, comparisonValue, apiPosition);
-    
+
     // If we can't determine a specific SDK version (e.g., !=, !==, <, <=), don't suppress warning
     if (assignedSdkVersion === null) {
       return false;
     }
-    
+
     // OpenHarmony runtime: Simple integer comparison
     if (runtimeType === this.openSourceRuntime) {
       return comparePointVersion(String(assignedSdkVersion), this.minRequiredVersion) !== ComparisonResult.Less;
     }
-    
+
     // Other runtimes: Use external value checker with appropriate scenario
     // Determine scenario based on which API is being checked:
     // - openSourceDeviceInfo (sdkApiVersion) → SuppressWithoutMSF (1)
     // - otherSourceDeviceInfo (distributionOSApiVersion) → SuppressWithMSF (2)
-    const scenario = matchedApi === this.openSourceDeviceInfo 
-      ? ComparisonSenario.SuppressByOHVersion 
+    const scenario = matchedApi === this.openSourceDeviceInfo
+      ? ComparisonSenario.SuppressByOHVersion
       : ComparisonSenario.SuppressByOtherOSVersion;
-    
+
     // Use centralized value checker
     let validationResult: VersionValidationResult;
     if (this.minAvailableVersion) {
       validationResult = this.valueChecker(
-        this.minAvailableVersion.formatVersion, 
-        assignedSdkVersion.toString(), 
+        this.minAvailableVersion.formatVersion,
+        assignedSdkVersion.toString(),
         scenario
       );
     } else {
       validationResult = this.valueChecker(
-        this.minRequiredVersion, 
-        assignedSdkVersion.toString(), 
+        this.minRequiredVersion,
+        assignedSdkVersion.toString(),
         scenario
       );
     }
-    
+
     return validationResult.result;
   }
-  
+
   /**
    * Compares SDK version for OpenHarmony runtime.
    *
@@ -287,14 +376,14 @@ export class SdkComparisonHelper {
    */
   private sdkOpenSourceComparison(assignedSdkVersion: number): boolean {
     const minRequiredVersion = Number(this.minRequiredVersion);
-    
+
     if (!Number.isInteger(minRequiredVersion)) {
       return false;
     }
-    
+
     return assignedSdkVersion >= minRequiredVersion;
   }
-  
+
   /**
    * Calculates what value the SDK version would have based on the comparison condition.
    * For '<' and '<=' operators, returns null because SDK version could be any value from 1 to comparisonValue.
@@ -310,7 +399,7 @@ export class SdkComparisonHelper {
     apiPosition: 'left' | 'right'
   ): number | null {
     const effectiveOperator = apiPosition === 'right' ? this.flipOperator(operator) : operator;
-    
+
     switch (effectiveOperator) {
       case '>':
         return comparisonValue + 1;
@@ -331,7 +420,7 @@ export class SdkComparisonHelper {
         return null;
     }
   }
-  
+
   /**
    * Flips comparison operators for when API is on the right side of comparison.
    *
