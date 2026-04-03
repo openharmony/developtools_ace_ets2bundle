@@ -1235,19 +1235,19 @@ export class WhiteListValidator extends BaseValidator implements NodeValidator {
   }
 
   validate(node: ts.Node): boolean {
-    return this.checkWhiteList(node);
+    return this.checkWhiteList();
   }
 
-  private checkWhiteList(node: ts.Node): boolean {
-    const apiName: string = node.getText().trim();
+  private checkWhiteList(): boolean {
     const declSourceFile: ts.SourceFile = this.declaration.getSourceFile();
     if (!declSourceFile || !declSourceFile.fileName) {
       return false;
     }
-    return this.hasApiFileName(declSourceFile.fileName, apiName);
+    return this.hasApiFileName(declSourceFile.fileName);
   }
 
-  private hasApiFileName(declSourceFileName: string, apiName: string): boolean {
+  private hasApiFileName(declSourceFileName: string): boolean {
+    const apiName: string = this.declaration.name?.getText() || '';
     return projectConfig.globalModulePaths.some((globalModulePath: string) => {
       let fileName: string = path.relative(globalModulePath, declSourceFileName).replace(/\\/g, '/');
       return API_INTERFACE_WHITE_LIST.get(fileName)?.includes(apiName);
