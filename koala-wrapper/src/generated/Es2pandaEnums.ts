@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -782,7 +782,6 @@ export enum Es2pandaGlobalTypeId {
     GLOBAL_TYPE_ID_ETS_NULLISH_TYPE = 36,
     GLOBAL_TYPE_ID_ETS_NEVER = 37,
     GLOBAL_TYPE_ID_ETS_NULLISH_OBJECT = 38,
-    GLOBAL_TYPE_ID_ETS_WILDCARD = 39,
     GLOBAL_TYPE_ID_ETS_BOOLEAN_BUILTIN = 40,
     GLOBAL_TYPE_ID_ETS_BYTE_BUILTIN = 41,
     GLOBAL_TYPE_ID_ETS_CHAR_BUILTIN = 42,
