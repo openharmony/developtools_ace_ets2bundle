@@ -94,7 +94,8 @@ import {
   getRealModulePath,
   getJsDocNodeConditionCheckResult,
   isSourceRetentionDeclarationValid,
-  isSourceRetentionAnnotationContentValid
+  isSourceRetentionAnnotationContentValid,
+  isApiAvailableVersionSpecifications
 } from './fast_build/system_api/api_check_utils';
 import { sourceFileDependencies } from './fast_build/ark_compiler/common/ob_config_resolver';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
@@ -450,7 +451,10 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     },
     isSourceRetentionAnnotationContentValid: (annotation: ts.Annotation) => {
       return isSourceRetentionAnnotationContentValid(annotation);
-    },    
+    },
+    isApiAvailableVersionSpecifications: (apiAvailable: ts.CallExpression) => {
+      return isApiAvailableVersionSpecifications(apiAvailable);
+    },
     uiProps: new Set(),
     clearProps: function() {
       dollarCollection.clear();
