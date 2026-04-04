@@ -102,6 +102,7 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
+import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 
 /**
  * bundle info
@@ -1286,9 +1287,11 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  *
  * @param {ts.JSDocTag[]} jsDocTags
  * @param {ts.JsDocNodeCheckConfigItem} config
+ * @param {ts.Node} node
  * @returns {boolean}
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node): boolean {
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
@@ -1299,7 +1302,14 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
+  if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {
+    return false;
+  }
+  const suppressor = new PermissionWarningSuppressor();
+  if (suppressor.isApiVersionHandled(node)) {
+    return false;
+  }
+  return true;
 }
 
 /**
