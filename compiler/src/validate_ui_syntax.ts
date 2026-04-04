@@ -1003,13 +1003,16 @@ function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceF
     return;
   }
   let monitorCheckWild: boolean = false;
+  let shouldCheck: { needCheck: boolean } = {
+    needCheck: true
+  };
   if (isMonitor) {
     const firstMonitorArg: ts.Expression = parentCallExpression.arguments[0];
-    monitorCheckWild = shouldMonitorCheckWild(firstMonitorArg);
+    monitorCheckWild = shouldMonitorCheckWild(firstMonitorArg, shouldCheck);
   }
   parentCallExpression.arguments.forEach((monitorArgument, index) => {
     checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log,
-      isMonitor, index, monitorCheckWild);
+      isMonitor, index, monitorCheckWild, shouldCheck);
     if (!ts.isStringLiteral(monitorArgument)) {
       return;
     }
@@ -1584,10 +1587,11 @@ function checkWildCard(monitorArgument: ts.StringLiteral,
 
 function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
   sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean,
-  index: number, shouldCheckWild: boolean): void {
+  index: number, shouldCheckWild: boolean,
+  shouldCheck: { needCheck: boolean }): void {
   const decoratorName: string = isMonitor ? constantDefine.MONITOR : constantDefine.SYNC_MONITOR;
   const typeMessage: string = `Only constant expressions are supported as parameters in '@${decoratorName}'. Variables are not allowed.`;
-  if (isMonitor && index === 0 && shouldCheckWild) {
+  if (isMonitor && index === 0 && !shouldCheck.needCheck) {
     return;
   }
   if (!ts.isStringLiteral(monitorArgument)) {
@@ -1598,24 +1602,43 @@ function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
   }
 }
 
-function shouldMonitorCheckWild(firstMonitorArg: ts.Expression): boolean {
+function shouldMonitorCheckWild(firstMonitorArg: ts.Expression,
+  shouldCheck: { needCheck: boolean }): boolean {
   if (!firstMonitorArg) {
     return false;
   }
-  if (!ts.isObjectLiteralExpression(firstMonitorArg) || !firstMonitorArg.properties ||
-    !firstMonitorArg.properties.length || firstMonitorArg.properties.length > 1) {
+  if (!ts.isObjectLiteralExpression(firstMonitorArg)) {
+    return false;
+  }
+  if (!firstMonitorArg.properties || !firstMonitorArg.properties.length) {
+    return true;
+  }
+  if (firstMonitorArg.properties.length > 1) {
     return false;
   }
   const assignmentOne: ts.ObjectLiteralElementLike = firstMonitorArg.properties[0];
   if (!ts.isPropertyAssignment(assignmentOne) ||
-    !ts.isIdentifier(assignmentOne.name) ||
-    !assignmentOne.initializer?.kind) {
+    !ts.isIdentifier(assignmentOne.name)) {
     return false;
   }
   const assignmentName: string = assignmentOne.name.getText();
+  if (assignmentName !== ENABLEWILDCARD) {
+    return false;
+  }
+  shouldCheck.needCheck = false;
+  if (!assignmentOne.initializer?.kind ||
+    ![ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(assignmentOne.initializer.kind)) {
+    const typeMessage: string = `The value of 'enableWildcard' must be a Boolean keyword.`;
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905372',
+      message: typeMessage,
+      pos: firstMonitorArg.getStart()
+    });
+    return false;
+  }
   const initializerExpression: ts.Expression = assignmentOne.initializer;
-  return assignmentName === ENABLEWILDCARD &&
-    initializerExpression.kind === ts.SyntaxKind.TrueKeyword;
+  return initializerExpression.kind === ts.SyntaxKind.TrueKeyword;
 }
 
 function getOrCreateClassTraceVariables(className: string,
