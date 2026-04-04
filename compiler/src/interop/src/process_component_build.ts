@@ -208,6 +208,8 @@ import {
 } from './external_component_map';
 import { isStaticObjectLiteral, updateInteropObjectLiteralxpression } from './process_interop_builder';
 
+ import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
+
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
   let newNode: ts.MethodDeclaration;
@@ -631,7 +633,7 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
             ]
           )]
         ));
-      } else if (isStaticObjectLiteral(node.expression.arguments[0])) {
+      } else if (isMixCompile() && isStaticObjectLiteral(node.expression.arguments[0])) {
         return updateInteropObjectLiteralxpression(node.expression, newNode, name);
       }
     }
@@ -675,6 +677,9 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
 }
 
 function isStaticBuilder(node: ts.CallExpression): boolean {
+  if (!isMixCompile()) {
+    return false;
+  }
   if (ts.isIdentifier(node.expression)) {
     return STATIC_BUILDER.has(node.expression.escapedText.toString());
   } else if (node.expression && ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
@@ -683,7 +688,7 @@ function isStaticBuilder(node: ts.CallExpression): boolean {
   return false;
 }
 
-function transferCompatibleBuilder (node: ts.CallExpression): ts.CallExpression {
+function transferCompatibleBuilder(node: ts.CallExpression): ts.CallExpression {
   const block = ts.factory.createBlock([
     ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(
@@ -843,7 +848,9 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
     [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
   const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(childParam), arrowNode);
+  if (isMixCompile()) {
     INTEROP_TRAILING_LAMBDA.set(childParam, arrowNode);
+  }
   // @ts-ignore
   let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
   if (argumentsArray && !argumentsArray.length) {
@@ -2311,7 +2318,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
           isRecycleComponent, isReuseComponentInV2, isStyleFunction);
       }
-      processInteropComponent(temp.expression.getText(), node, log);
+      if (isMixCompile()) {
+        processInteropComponent(temp.expression.getText(), node, log);
+      }
       break;
     }
     if (!flag) {
@@ -3450,7 +3459,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     isLocalBuilderName = false;
   }
   if (isEtsComponent(node)) {
-    if (componentCollection.arkoalaComponents.has(name)) {
+    if (isMixCompile() && componentCollection.arkoalaComponents.has(name)) {
       return ComponentType.arkoalaComponent;
     } else if (componentCollection.customComponents.has(name)) {
       isCustomComponentAttributes(node, log);
@@ -3458,7 +3467,7 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     } else {
       return ComponentType.innerComponent;
     }
-  } else if (!isPartMethod(node) && componentCollection.arkoalaComponents.has(name)) {
+  } else if (isMixCompile() && !isPartMethod(node) && componentCollection.arkoalaComponents.has(name)) {
     return ComponentType.arkoalaComponent;
   } else if (!isPartMethod(node) && componentCollection.customComponents.has(name)) {
     isCustomComponentAttributes(node, log);
