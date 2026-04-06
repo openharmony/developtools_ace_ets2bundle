@@ -497,7 +497,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     }
     validateFunction(node, sourceFileNode, log);
   }
-  if (ts.isPropertyDeclaration(node) && node.modifiers === undefined) {
+  if (isMixCompile() && ts.isPropertyDeclaration(node) && node.modifiers === undefined) {
     const checkObserved = validateObservedProperty(node, isComponentV2, log, sourceFileNode);
     if (checkObserved) {
       return;
@@ -605,8 +605,35 @@ const v1ComponentDecorators: string[] = [
 const v2ComponentDecorators: string[] = [
   'Local', 'Param', 'Event', 'Provider', 'Consumer'
 ];
+
 function validatePropertyInStruct(structContext: boolean, decoratorNode: ts.Identifier,
   decoratorName: string, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (structContext) {
+    const isV1Decorator: boolean = v1ComponentDecorators.includes(decoratorName);
+    const isV2Decorator: boolean = v2ComponentDecorators.includes(decoratorName);
+    if (!isV1Decorator && !isV2Decorator) {
+      return;
+    }
+    const classResult: ClassDecoratorResult = new ClassDecoratorResult();
+    const propertyNode: ts.PropertyDeclaration = getPropertyNodeByDecorator(decoratorNode);
+    const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+    if (propertyNode && propertyNode.type && checker) {
+      validatePropertyType(propertyNode.type, classResult);
+    }
+    let message: string;
+    if (isV1Decorator && classResult.hasObservedV2) {
+      message = `The type of the '@${decoratorName}' property can not be a class decorated with '@ObservedV2'.`;
+      addLog(LogType.ERROR, message, decoratorNode.getStart(), log, sourceFileNode, { code: '10905348' });
+      return;
+    }
+  }
+}
+
+function validatePropertyInStructInterop(structContext: boolean, decoratorNode: ts.Identifier,
+  decoratorName: string, sourceFileNode: ts.SourceFile, log: LogInfo[]): void {
+  if (!structContext) {
+    return;
+  }
   const isV1Decorator: boolean = v1ComponentDecorators.includes(decoratorName);
   const isV2Decorator: boolean = v2ComponentDecorators.includes(decoratorName);
   if (!isV1Decorator && !isV2Decorator) {
@@ -708,7 +735,7 @@ function validatePropertyType(node: ts.TypeNode, classResult: ClassDecoratorResu
     const typeNode: ts.Type = checker?.getTypeAtLocation(node.typeName);
     parsePropertyType(typeNode, classResult);
   }
-  if (isInterop && ts.isArrayTypeNode(node) && ts.isTypeReferenceNode(node.elementType) && node.elementType.typeName) {
+  if (isMixCompile() && isInterop && ts.isArrayTypeNode(node) && ts.isTypeReferenceNode(node.elementType) && node.elementType.typeName) {
     const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
     const typeNode: ts.Type = checker?.getTypeAtLocation(node.elementType.typeName);
     parsePropertyType(typeNode, classResult);
@@ -958,7 +985,11 @@ function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
       isObservedV1Class, isSendableClass);
-    validatePropertyInStruct(structContext, node, decoratorName, sourceFileNode, log);
+    if (isMixCompile()) {
+      validatePropertyInStructInterop(structContext, node, decoratorName, sourceFileNode, log);
+    } else {
+      validatePropertyInStruct(structContext, node, decoratorName, sourceFileNode, log);
+    }
     return;
   }
   if (ts.isDecorator(node)) {

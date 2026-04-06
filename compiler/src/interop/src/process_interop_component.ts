@@ -20,6 +20,7 @@ import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWS
 import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map';
 import { toUnixPath, LogType, LogInfo } from './utils';
 import { ChildAndParentComponentInfo } from './process_custom_component';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -449,7 +450,9 @@ export function createStaticTuple(name: string): ts.VariableStatement {
 
 export function validateInteropProperty(node: ts.CallExpression,
   log: LogInfo[], info: ChildAndParentComponentInfo, isArkoala: boolean = false): boolean {
-  if (!isArkoala) { return false; }
+  if (!isArkoala) {
+    return false;
+  }
   const classOrStructNode = ts.findAncestor(node, ts.isStructDeclaration);
   let parentStructName: string = '';
   if (classOrStructNode && ts.isIdentifier(classOrStructNode.name)) {

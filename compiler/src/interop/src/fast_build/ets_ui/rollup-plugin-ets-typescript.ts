@@ -124,7 +124,7 @@ import {
   interopTransform,
   resetInteropTransformLog
 } from '../ark_compiler/interop/process_arkts_evolution';
-import { FileManager } from '../ark_compiler/interop/interop_manager';
+import { FileManager, isMixCompile } from '../ark_compiler/interop/interop_manager';
 import { ARKTS_1_2 } from '../ark_compiler/interop/pre_define';
 
 let switchTsAst: boolean = true;
@@ -705,7 +705,8 @@ function setPkgNameForFile(moduleInfo: Object): void {
 
 function validateEts(code: string, id: string, isEntry: boolean, logger: Object, sourceFile: ts.SourceFile, 
   hvigorLogger: Object | undefined = undefined): void {
-  const isArkTS1_2Declaration = FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2;
+  const isArkTS1_2Declaration = isMixCompile() &&
+    FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2;
   if (/\.ets$/.test(id) || isArkTS1_2Declaration) {
     clearCollection();
     const fileQuery: string = !isArkTS1_2Declaration && isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
