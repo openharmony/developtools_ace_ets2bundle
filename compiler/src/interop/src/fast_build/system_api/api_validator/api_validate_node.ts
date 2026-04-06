@@ -108,6 +108,7 @@ export class CompositeValidator implements NodeValidator {
 export const SDK_CONSTANTS = {
   OTHER_SOURCE_DEVICE_INFO: 'distributionOSApiVersion',
   OPEN_SOURCE_DEVICE_INFO: 'sdkApiVersion',
+  OPEN_SOURCE_APIAVAILABLE_INFO: 'apiAvailable',
   OPEN_SOURCE_RUNTIME: 'OpenHarmony',
   DEVICE_INFO_PACKAGE: '@ohos.deviceInfo.d.ts'
 } as const;
@@ -396,23 +397,15 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
     private readonly compatibleSdkVersion: string,
     private readonly minRequiredVersion: string,
     private readonly typeChecker?: ts.TypeChecker,
-    private readonly minAvailableVersion?: ParsedVersion
+    private readonly minAvailableVersion?: ParsedVersion,
+    private readonly declaration?: ts.Declaration
   ) {
     super();
     this.deviceInfoChecker = new Map([
       [SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]],
-      [SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]]
+      [SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]],
+      [SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]]
     ]);
-    this.sdkComparisonHelper = new SdkComparisonHelper(
-      compatibleSdkVersion,
-      minRequiredVersion,
-      typeChecker,
-      minAvailableVersion,
-      this.deviceInfoChecker,
-      SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
-      SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
-      SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
-    );
   }
 
   /**
@@ -465,9 +458,7 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
       return false;
     }
 
-    return (
-      this.findParentNode(node, (parent) => this.isParentIfSdkComparison(node, parent)) !== null
-    );
+    return (this.findParentNode(node, (parent) => this.checkApiAvailableVersionParts(node, parent) || this.isParentIfSdkComparison(node, parent)) !== null)
   }
 
   /**
@@ -483,12 +474,58 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
     }
 
     try {
+
+      this.sdkComparisonHelper = new SdkComparisonHelper(
+        this.compatibleSdkVersion,
+        this.minRequiredVersion,
+        this.typeChecker,
+        this.minAvailableVersion,
+        this.deviceInfoChecker,
+        SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
+        SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
+        SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
+      );
+      
       const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
       if (!isInThenBlock) {
         return false;
       }
 
       return this.sdkComparisonHelper.isSdkComparisonHelper(parent.expression);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Checks if a parent if-statement contains a valid apiAvailable comparison.
+   * @param parent  - Parent node to check
+   * @returns True if parent is valid apiAvailable if-statement
+   */
+  private checkApiAvailableVersionParts(node: ts.Node, parent: ts.Node): boolean {
+    if (!ts.isIfStatement(parent)) {
+      return false;
+    }
+
+    try {
+
+      this.sdkComparisonHelper = new SdkComparisonHelper(
+        this.compatibleSdkVersion,
+        this.minRequiredVersion,
+        this.typeChecker,
+        this.minAvailableVersion,
+        this.deviceInfoChecker,
+        SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
+        SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO,
+        SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
+      );
+
+      const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
+      if (!isInThenBlock) {
+        return false;
+      }
+
+      return this.sdkComparisonHelper.isApiAvailableHelper(parent.expression);
     } catch {
       return false;
     }
