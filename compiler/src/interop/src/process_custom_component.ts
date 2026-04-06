@@ -418,11 +418,8 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   propsAndObjectLinks: string[], log: LogInfo[], isArkoala: boolean = false): void {
   const childAndParentComponentInfo: ChildAndParentComponentInfo =
     new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
-  if (isMixCompile()) {
-    const hasInterop = validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala);
-    if (hasInterop) {
-      return;
-    }
+  if (isMixCompile() && validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala)) {
+    return;
   }
   if (node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
@@ -596,7 +593,9 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log, isArkoala), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
-    createChildElmtId(componentNode, name, log, isArkoala);
+    if (isMixCompile()) {
+      createChildElmtId(componentNode, name, log, isArkoala);
+    }
   }
   const arrowArgArr: ts.ParameterDeclaration[] = [
     ts.factory.createParameterDeclaration(undefined, undefined,
@@ -606,12 +605,13 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBlock: ts.Statement[] = isArkoala ? createStaticArrowBlock(newNode, componentParameter, name, componentNode) : 
-  [
-    projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
-    createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-      isBuilder, isRecycleComponent, componentAttrInfo, log)
-  ];
+  const arrowBlock: ts.Statement[] = isMixCompile() && isArkoala ?
+    createStaticArrowBlock(newNode, componentParameter, name, componentNode) :
+    [
+      projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
+      createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
+        isBuilder, isRecycleComponent, componentAttrInfo, log)
+    ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
       undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
@@ -643,7 +643,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
-      isArkoala ? createStaticTuple(name) : undefined,
+      isMixCompile() && isArkoala ? createStaticTuple(name) : undefined,
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),

@@ -96,6 +96,7 @@ import {
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
 import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
 import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
@@ -824,7 +825,7 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
         return;
       }
     }
-    const isArkoala = getFileVersion(originNode) === ARKTS_1_2;
+    const isArkoala = isMixCompile() && getFileVersion(originNode) === ARKTS_1_2;
     processImportNode(originNode, usedNode, false, null, pageInfo, share, isArkoala, moduleSpecifier);
   }
 }
@@ -894,12 +895,12 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(name);
     GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
-    if (isArkoala) {
+    if (isMixCompile() && isArkoala) {
       STATIC_BUILDER.add(name);
     }
   } else if (ts.isEnumDeclaration(originNode) && originNode.name) {
     enumCollection.add(name);
-  } else if (ts.isVariableDeclaration(originNode)) {
+  } else if (isMixCompile() && ts.isVariableDeclaration(originNode)) {
     processStaticBuild(isArkoala, originNode.type, name);
   } else {
     needCollection = false;
@@ -960,7 +961,7 @@ function parseComponentInImportNode(originNode: ts.StructDeclaration, name: stri
   asComponentName: string, structDecorator: structDecoratorResult, originFile: string,
   isArkoala: boolean = false, moduleSpecifier: string = ''): void {
   componentCollection.customComponents.add(name);
-  if (isArkoala) {
+  if (isMixCompile() && isArkoala) {
     const filePath = originNode.getSourceFile().fileName;
     componentCollection.arkoalaComponents.set(name, [filePath, moduleSpecifier]);
   }
