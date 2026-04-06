@@ -94,7 +94,12 @@ import {
   AVAILABLE_TAG_NAME,
   AVAILABLE_SCOPE_ERROR,
   DeviceDiffType,
-  SINCE_LEVEL_CONFIG
+  SINCE_LEVEL_CONFIG,
+  APIAVAILABLE_CHECK_ERROR,
+  APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
+  DistributionOSApiAvailableVersionResult,
+  MSF_INTEGER_VERSION,
+  ApiAvailableResult
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -873,7 +878,8 @@ function checkAvailableDecorator(
     checker.getSdkVersion(),
     minApiVersion,
     checker.getAvailableVersion(),
-    typeChecker
+    typeChecker,
+    declaration
   );
 
   if (suppressor.isApiVersionHandled(node)) {
@@ -1008,7 +1014,7 @@ export function defaultFormatChecker(since: string): boolean {
 export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): VersionValidationResult {
   const compatibileReg = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
   if (compatibileReg.test(since)) {
-    if (!checkIntegerLessVersion(since)) {
+    if (!checkMSFVersionMajor(since)) {
       return {
         result: false,
         message: AVAILABLE_VERSION_FORMAT_ERROR
@@ -1030,11 +1036,26 @@ export function defaultFormatCheckerCompatibileIntegerAndMSF(since: string): Ver
  * @param since - Version string to validate
  * @returns When MSF (26.0.0) is less than 26, return false and do not judge integers
  */
-function checkIntegerLessVersion(since: string): boolean {
-  const msfVersionReg = /^[1-9]\d?\.\d{1,2}\.\d{1,2}$/;
+export function checkMSFVersionMajor(since: string): boolean {
+  const msfVersionReg: RegExp = /^[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\)$/;
   if (msfVersionReg.test(since)) {
     const majorVersion = parseInt(since.split('.')[0]);
-    if (majorVersion < 26) {
+    if (majorVersion < MSF_INTEGER_VERSION) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Determine if the Integer version is more than 26.
+ * @param since - Version string to validate
+ * @returns When Integer is more than 26, return false
+ */
+export function checkIntegerMoreVersion(since: string): boolean {
+  const IntVersionReg: RegExp = /^(?:[1-9]\d{0,2})$/;
+  if (IntVersionReg.test(since)) {
+    if (Number(since) >= MSF_INTEGER_VERSION) {
       return false;
     }
   }
@@ -1187,6 +1208,39 @@ export function getFormatChecker(tag: string = 'available'): FormatCheckerFuncti
   const checker = comparisonFunctions.formatChecker.get(cacheKey);
 
   return checker || defaultFormatCheckerCompatibileIntegerAndMSF;
+}
+
+/**
+ * Call the closed source script to match the apiAvailable version number.
+ * @param tag - check node
+ * @param version  - check version
+ * @returns Closed source matching results
+ */
+export function isCheckDistributionOSVersion(tag: string, version: string): DistributionOSApiAvailableVersionResult {
+  const runtimeOS = projectConfig.runtimeOS;
+  let distributionOSCheck: DistributionOSApiAvailableVersionResult = {
+    valid: false,
+    version: '',
+    message: ''
+  };
+  const tagName: string = `${runtimeOS}/${tag}`;
+  const externalCheckers = externalApiCheckPlugin.get(tagName);
+  if (!externalCheckers || externalCheckers.length === 0) {
+    return distributionOSCheck;
+  }
+  for (const plugin of externalCheckers) {
+    try {
+      const externalModule = require(plugin.path);
+      const externalMethod = externalModule[plugin.functionName];
+
+      if (typeof externalMethod === 'function') {
+        distributionOSCheck = externalMethod(version);
+      }
+    } catch (error) {
+      return distributionOSCheck;
+    }
+  }
+  return distributionOSCheck;
 }
 
 /**
@@ -1516,8 +1570,18 @@ function matchWithPlaceholders(messageRegex: string): string {
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
   let description: string = '';
+  let diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined;
+  const runTimeOS: string = projectConfig.runtimeOS;
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
+  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\.$/;
+  const apiAvailableRegex: RegExp = /^Invalid .+ version\.$/;
+  if (sinceRegex.test(messageRegex)) {
+    diagnosticInfo = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
+  } else if (apiAvailableRegex.test(messageRegex)) {
+    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(runTimeOS, '$RUNTIMEOS'));
+  } else {
+    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(/\r\n/g, '\\n'));
+  }
 
   if (!diagnosticInfo || !diagnosticInfo.code) {
     return undefined;
@@ -1791,6 +1855,105 @@ export function isSourceRetentionAnnotationContentValid(annotation: ts.Annotatio
     }
   } catch (e) {
     return result;
+  }
+  return result;
+}
+
+/**
+ * Determine whether the current apiAvailable interface complies with the specifications.
+ * 
+ * runtimeOS:OpenHarmony
+ * valid sample
+ * apiAvailable('26.0.0')
+ * apiAvailable('27.0.0')
+ * 
+ * Invalid sample
+ * apiAvailable('25')
+ * apiAvailable('27')
+ * apiAvailable('25.0.0')
+ * apiAvailable('6.1.1')
+ * apiAvailable('6.1.1(24)')
+ * 
+ * runtimeOS:DistributionOS
+ * valid sample
+ * apiAvailable('6.1.1')
+ * apiAvailable('6.1.1(24)')
+ * 
+ * Invalid sample
+ * apiAvailable('25')
+ * apiAvailable('26')
+ * apiAvailable('27')
+ * apiAvailable('25.0.0')
+ * 
+ * @param node  - current node
+ * @returns Return the result of whether it meets the specifications
+ */
+export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts.ConditionCheckResult {
+  let result: ApiAvailableResult = {
+    valid: true,
+    message: APIAVAILABLE_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error
+  }
+  const apiAvailableRegex = /\bdeviceInfo.apiAvailable\b/g;
+  let nodeText: string = node.getText() || node.getFullText();
+
+  if (!apiAvailableRegex.test(nodeText)) {
+    return result;
+  }
+
+  if (!ts.isCallExpression(node)) {
+    return result;
+  }
+  
+  if (node.arguments.length > 1) {
+    result.valid = false;
+    return result;
+  }
+
+  const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
+  const sinceValue: string = node.arguments[0].getText().trim();
+  const sinceFormat: string = sinceValue.replace(/[\'|\"]/g,'');
+  const sincePoint: string[] = sinceFormat.split('.');
+  if (!compatibileReg.test(sinceFormat)) {
+    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.valid = false;
+  }
+  const isSinceVersionType: boolean = /^\'|\"(.+?)\'|\"$/g.test(sinceValue);
+  if (isSinceVersionType) {
+    result = checkCharScene(sincePoint, sinceFormat);
+  } else {
+    if (!checkIntegerMoreVersion(sinceFormat)) {
+      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.valid = false;
+    }
+  }
+
+  return result;
+}
+
+function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailableResult {
+  let result: ApiAvailableResult = {
+    valid: true,
+    message: APIAVAILABLE_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Error
+  }
+  if (isOpenHarmonyRuntime()) {
+    if (sincePoint.length === 1) {
+      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.valid = false;
+    }
+    if (!checkMSFVersionMajor(sinceFormat)) {
+      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.valid = false;
+    }
+  } else {
+    if (!checkMSFVersionMajor(sinceFormat)) {
+      const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
+      if (!distributionOSCheck.valid) {
+        result.message = distributionOSCheck.message;
+        result.valid = false;
+      }
+    }
   }
   return result;
 }
