@@ -676,23 +676,24 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
   return newNode;
 }
 
-function isStaticBuilder(node: ts.CallExpression): boolean {
+export function isStaticBuilder(node: ts.Expression | ts.CallExpression): boolean {
   if (!isMixCompile()) {
     return false;
   }
-  if (ts.isIdentifier(node.expression)) {
-    return STATIC_BUILDER.has(node.expression.escapedText.toString());
-  } else if (node.expression && ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
-    return STATIC_WRAPPED_BUILDER.has(node.expression.expression.escapedText.toString());
+  const builderExpression: ts.Expression = ts.isCallExpression(node) ? node.expression : node;
+  if (ts.isIdentifier(builderExpression)) {
+    return STATIC_BUILDER.has(builderExpression.escapedText.toString());
+  } else if (ts.isPropertyAccessExpression(builderExpression) && ts.isIdentifier(builderExpression.expression)) {
+    return STATIC_WRAPPED_BUILDER.has(builderExpression.expression.escapedText.toString());
   }
   return false;
 }
 
-function transferCompatibleBuilder(node: ts.CallExpression): ts.CallExpression {
+function createCompatibleBuilder(expression: ts.Expression, isObjectLiteral: boolean): ts.CallExpression {
   const block = ts.factory.createBlock([
     ts.factory.createExpressionStatement(
       ts.factory.createCallExpression(
-        node.expression,
+        expression,
         undefined,
         [ts.factory.createSpreadElement(ts.factory.createIdentifier('args'))]
       )
@@ -712,10 +713,6 @@ function transferCompatibleBuilder(node: ts.CallExpression): ts.CallExpression {
     ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
     block
   );
-  const isObjectLiteral =
-    node.arguments.length === 1 &&
-    (ts.isObjectLiteralExpression(node.arguments[0]) ||
-      isStaticObjectLiteral(node.arguments[0]));
   return ts.factory.createCallExpression(
     ts.factory.createIdentifier(
       isObjectLiteral
@@ -727,6 +724,16 @@ function transferCompatibleBuilder(node: ts.CallExpression): ts.CallExpression {
   );
 }
 
+export function transferCompatibleBuilder(node: ts.Expression | ts.CallExpression,
+  isObjectLiteral: boolean = false): ts.CallExpression {
+  const builderExpression: ts.Expression = ts.isCallExpression(node) ? node.expression : node;
+  const isObjectLiteralBuilder: boolean = ts.isCallExpression(node)
+    ? node.arguments.length === 1 &&
+      (ts.isObjectLiteralExpression(node.arguments[0]) ||
+        isStaticObjectLiteral(node.arguments[0]))
+    : isObjectLiteral;
+  return createCompatibleBuilder(builderExpression, isObjectLiteralBuilder);
+}
 function traverseBuilderParams(node: ts.ObjectLiteralExpression,
   isBuilder: boolean): ts.ObjectLiteralExpression {
   const properties: ts.ObjectLiteralElementLike[] = [];
@@ -3391,10 +3398,18 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
 }
 
 function isCustomAttributes(temp: ts.PropertyAccessExpression): boolean {
-  if (temp.expression && temp.expression.getText() === THIS) {
+  let exprText: string | undefined;
+  if (temp.expression) {
+    try {
+      exprText = temp.expression.getText();
+    } catch (err) {
+      exprText = undefined;
+    }
+  }
+  if (temp.expression && exprText === THIS) {
     return true;
-  } else if (temp.expression && ts.isIdentifier(temp.expression) && temp.expression.getText() === $$ &&
-    builderTypeParameter.params.includes(temp.expression.getText())) {
+  } else if (temp.expression && ts.isIdentifier(temp.expression) && exprText === $$ &&
+    builderTypeParameter.params.includes(exprText)) {
     return true;
   } else {
     return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
