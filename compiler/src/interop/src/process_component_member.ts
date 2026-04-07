@@ -114,7 +114,9 @@ import {
   parentConditionalExpression,
   createFunction,
   getRealNodePos,
-  isWrappedBuilder
+  isWrappedBuilder,
+  isStaticBuilder,
+  transferCompatibleBuilder
 } from './process_component_build';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -931,6 +933,29 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
   return addCustomComponentId(newNode, node, name, isBuilder, isGlobalBuilder, isCutomDialog);
 }
 
+function wrapInteropBuilderArg(initializer: ts.Expression): ts.Expression {
+  const compatBuilder: ts.CallExpression = transferCompatibleBuilder(initializer, true);
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(compatBuilder, ts.factory.createIdentifier('bind')),
+    undefined,
+    [ts.factory.createThis()]
+  );
+}
+
+function rewriteInteropBuilderObjectLiteral(argument: ts.Expression): ts.Expression {
+  if (!ts.isObjectLiteralExpression(argument) || !argument.properties) {
+    return argument;
+  }
+  const properties: ts.ObjectLiteralElementLike[] = argument.properties.map((property) => {
+    if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.name) &&
+      isStaticBuilder(property.initializer)) {
+      return ts.factory.updatePropertyAssignment(property, property.name,
+        wrapInteropBuilderArg(property.initializer));
+    }
+    return property;
+  });
+  return ts.factory.updateObjectLiteralExpression(argument, properties);
+}
 function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
@@ -949,6 +974,9 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
       }
     }
     if (componentName === name) {
+      if (argumentsArray && argumentsArray.length > 0) {
+        argumentsArray[0] = rewriteInteropBuilderObjectLiteral(argumentsArray[0]);
+      }
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
         if (partialUpdateConfig.partialUpdateMode) {
