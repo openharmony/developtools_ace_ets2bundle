@@ -1905,7 +1905,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     return result;
   }
   
-  if (node.arguments.length > 1) {
+  if (!node.arguments || node.arguments.length !== 1) {
     result.valid = false;
     return result;
   }
@@ -1918,7 +1918,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
   }
-  const isSinceVersionType: boolean = /^\'|\"(.+?)\'|\"$/g.test(sinceValue);
+  const isSinceVersionType: boolean = /^(['"])([^'"]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
     result = checkCharScene(sincePoint, sinceFormat);
   } else {
@@ -1931,17 +1931,41 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   return result;
 }
 
+/**
+ * Determine whether the string scenario complies with the specifications.
+ * 
+ * OpenHarmony project
+ * valid sample
+ * apiAvailable('26.0.0')
+ * 
+ * Invalid sample
+ * apiAvailable('26')
+ * apiAvailable('25.0.0')
+ * 
+ * distributionOS project
+ * valid sample
+ * apiAvailable('6.1.1')
+ * apiAvailable('6.1.1(24)')
+ * 
+ * Invalid sample
+ * apiAvailable('6.8.8')
+ * apiAvailable('25.0.0')
+ * 
+ * @param sincePoint MSF version
+ * @param sinceFormat del quotation mark version
+ * @returns standardized results
+ */
 function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailableResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
+  if (sincePoint.length === 1) {
+    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.valid = false;
+  }
   if (isOpenHarmonyRuntime()) {
-    if (sincePoint.length === 1) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
-      result.valid = false;
-    }
     if (!checkMSFVersionMajor(sinceFormat)) {
       result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
       result.valid = false;
@@ -1955,6 +1979,7 @@ function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailable
       }
     }
   }
+  
   return result;
 }
 

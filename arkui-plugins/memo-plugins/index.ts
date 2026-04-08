@@ -49,9 +49,8 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         debugLog('[BEFORE MEMO SCRIPT] script: ', script.dumpSrc());
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
-        const canSkipPhases = !isFrameworkMode && program.canSkipPhases();
         arkts.Performance.getInstance().createEvent('memo-checked');
-        program = checkedProgramVisit(program, this, canSkipPhases, isFrameworkMode);
+        program = checkedProgramVisit(program, this, false, isFrameworkMode);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
         debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());
