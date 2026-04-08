@@ -33,6 +33,9 @@ import {
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION
 } from '../api_check_define';
+import {
+  SDK_CONSTANTS
+} from './api_validate_node';
 
 /**
  * Shared helper for SDK version comparison logic.
@@ -131,7 +134,7 @@ export class SdkComparisonHelper {
       return false;
     }
 
-    if (expression.arguments && expression.arguments.length > 1) {
+    if (!expression.arguments || expression.arguments.length !== 1) {
       return false;
     }
 
@@ -139,7 +142,7 @@ export class SdkComparisonHelper {
     if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
       return false;
     }
-    
+
     const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
     const sinceValue: string = expression.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/[\'|\"]/g, '');
@@ -167,7 +170,7 @@ export class SdkComparisonHelper {
       if (!distributionOSCheck.valid) {
         return false;
       } else {
-        const scenario = matchedApi === this.openSourceDeviceInfo
+        const scenario = matchedApi === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO
           ? ComparisonSenario.SuppressByOHVersion
           : ComparisonSenario.SuppressByOtherOSVersion;
         const distributionOSResult: VersionValidationResult = this.valueChecker(this.minRequiredVersion, sinceFormat, scenario);

@@ -406,6 +406,16 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
       [SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]],
       [SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]]
     ]);
+    this.sdkComparisonHelper = new SdkComparisonHelper(
+      this.compatibleSdkVersion,
+      this.minRequiredVersion,
+      this.typeChecker,
+      this.minAvailableVersion,
+      this.deviceInfoChecker,
+      SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
+      SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
+      SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
+    );
   }
 
   /**
@@ -474,17 +484,6 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
     }
 
     try {
-
-      this.sdkComparisonHelper = new SdkComparisonHelper(
-        this.compatibleSdkVersion,
-        this.minRequiredVersion,
-        this.typeChecker,
-        this.minAvailableVersion,
-        this.deviceInfoChecker,
-        SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
-        SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
-        SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
-      );
       
       const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
       if (!isInThenBlock) {
@@ -508,17 +507,6 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
     }
 
     try {
-
-      this.sdkComparisonHelper = new SdkComparisonHelper(
-        this.compatibleSdkVersion,
-        this.minRequiredVersion,
-        this.typeChecker,
-        this.minAvailableVersion,
-        this.deviceInfoChecker,
-        SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
-        SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO,
-        SDK_CONSTANTS.OPEN_SOURCE_RUNTIME
-      );
 
       const isInThenBlock = this.isNodeInIfThenBlock(node, parent);
       if (!isInThenBlock) {

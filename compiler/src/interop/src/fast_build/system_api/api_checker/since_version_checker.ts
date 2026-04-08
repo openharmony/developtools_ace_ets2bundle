@@ -73,9 +73,6 @@ export class SinceJSDocChecker extends BaseVersionChecker {
     // This function compares two versions and returns VersionValidationResult
     const valueChecker = getValueChecker(SINCE_TAG_NAME);
     this.versionCompareFunction = valueChecker;
-    if (this.versionCompareFunction === defaultValueChecker) {
-      this.sdkVersion = projectConfig.compatibleSdkVersion.toString();
-    }
 
     // Load format checker (validation function) for @since tag
     // NOTE: Config does NOT include FormatValidation for @since
