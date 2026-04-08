@@ -387,7 +387,7 @@ function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  * @returns {void}
  */
 function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
-  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
   const availableConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
@@ -437,7 +437,7 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
  * @returns {void}
  */
 function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
-  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
   const sinceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
