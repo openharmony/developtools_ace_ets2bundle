@@ -89,11 +89,22 @@ export class SdkComparisonHelper {
    * @returns True if valid SDK comparison found
    */
   public isSdkComparisonHelper(expression: ts.Expression): boolean {
+    let isSinceMSFVersion: boolean = true;
     const expressionText = expression.getText();
     const runtimeType = projectConfig.runtimeOS;
     const matchedEntry = Array.from(this.deviceInfoChecker.entries())
       .find(([api]) => expressionText.includes(api));
     if (!matchedEntry) {
+      return false;
+    }
+
+    if (this.minAvailableVersion) {
+      isSinceMSFVersion = this.checkSinceMSFVersionMajor(this.minAvailableVersion.version);
+    } else {
+      isSinceMSFVersion = this.checkSinceMSFVersionMajor(this.minRequiredVersion);
+    }
+
+    if (!isSinceMSFVersion) {
       return false;
     }
 
@@ -201,6 +212,22 @@ export class SdkComparisonHelper {
     return distributeResult;
   }
 
+  /**
+   * Determine if the MSF version is more than 26, Integer does not make judgments.
+   * @param since - Version string to validate
+   * @returns When MSF (26.0.0) is more than 26, return false and do not judge integers
+   */
+  private checkSinceMSFVersionMajor(since: string): boolean {
+    const msfVersionReg: RegExp = /^[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\)$/;
+    if (msfVersionReg.test(since)) {
+      const majorVersion = parseInt(since.split('.')[0]);
+      if (majorVersion > MSF_INTEGER_VERSION) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
   /**
    * Extracts comparison parts from a binary expression and resolves declaration values.
    *
