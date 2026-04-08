@@ -21,7 +21,9 @@ import {
     getClassPropertyName,
     getClassPropertyAnnotationNames,
     TypeFlags,
-    addImportFixes
+    addImportFixes,
+    isFromPresetModules,
+    getIdentifierName,
 } from '../utils';
 import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
 
@@ -52,6 +54,7 @@ interface ArrayDimension {
 type PathValidationResult = {
     valid: boolean;
     isPropertyNotExists?: boolean;
+    isExternalImport?: boolean;
 };
 
 type ProcessArrayIndexReturn =
@@ -96,6 +99,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         };
     }
 
+    public beforeTransform(): void {
+        this.collectNode = new Map();
+        this.enumMemberValues = new Map();
+    }
+
     public parsed(node: arkts.AstNode): void {
         this.initList(node);
         if (!arkts.isClassDeclaration(node) && !arkts.isStructDeclaration(node)) {
@@ -125,6 +133,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             this.collectClassDeclaration(member);
             this.collectInterfaceDeclaration(member);
             this.collectEnumDeclaration(member);
+            this.collectImportDeclaration(member);
         });
     }
 
@@ -157,6 +166,33 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         enumDecl.members.forEach((enumMember: arkts.AstNode) => {
             this.collectEnumMember(enumName, enumMember);
         });
+    }
+
+    private collectImportDeclaration(member: arkts.AstNode): void {
+        if (!arkts.isImportDeclaration(member)) {
+            return;
+        }
+
+        const source = member.source;
+        if (!source || isFromPresetModules(source.str)) {
+            return;
+        }
+
+        const specifiers = member.specifiers;
+        for (const specifier of specifiers) {
+            if (
+                !arkts.isImportSpecifier(specifier) &&
+                !arkts.isImportDefaultSpecifier(specifier) &&
+                !arkts.isImportNamespaceSpecifier(specifier)
+            ) {
+                continue;
+            }
+            if (!specifier.local || !arkts.isIdentifier(specifier.local)) {
+                continue;
+            }
+            const name = getIdentifierName(specifier.local);
+            this.collectNode.set(name, member);
+        }
     }
 
     private getEnumName(enumDecl: arkts.TSEnumDeclaration): string | undefined {
@@ -528,7 +564,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
             return;
         }
-        if ((maxDim >= nestDepth) && memberSegments.length === nestDepth) {
+        if (memberSegments.length === nestDepth) {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
             return;
         }
@@ -536,12 +572,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         const newSegments = memberSegments.slice(nestDepth);
         const equalDimTypes: Set<string> = this.getEqualDimTypes(dimMap, nestDepth);
 
-        const typesWithProperty: string[] = [];
-        for (const typeName of equalDimTypes) {
-            if (this.memberSegmentsTypeName(typeName, newSegments)) {
-                typesWithProperty.push(typeName);
-            }
-        }
+        const typesWithProperty: string[] = this.collectTypesWithProperty(equalDimTypes, newSegments);
 
         if (typesWithProperty.length === 0) {
             this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid });
@@ -550,6 +581,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const validTypes: string[] = [];
         let hasPropertyExists = true;
+        let hasExternalImport = false;
         for (const typeName of typesWithProperty) {
             const result = this.checkNestedPathStateVariables(
                 typeName,
@@ -560,6 +592,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 validTypes.push(typeName);
             } else if (result.isPropertyNotExists) {
                 hasPropertyExists = false;
+            } else if (result.isExternalImport) {
+                hasExternalImport = true;
             }
         }
 
@@ -580,8 +614,12 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         if (validTypes.length < typesWithProperty.length) {
-            const level = hasPropertyExists ? 'warn' : 'error';
-            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
+            if (hasExternalImport) {
+                this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            } else {
+                const level = hasPropertyExists ? 'warn' : 'error';
+                this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
+            }
             return;
         }
     }
@@ -595,6 +633,16 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             }
         }
         return false;
+    }
+
+    private collectTypesWithProperty(equalDimTypes: Set<string>, newSegments: string[]): string[] {
+        const typesWithProperty: string[] = [];
+        for (const typeName of equalDimTypes) {
+            if (this.memberSegmentsTypeName(typeName, newSegments)) {
+                typesWithProperty.push(typeName);
+            }
+        }
+        return typesWithProperty;
     }
 
     private getEqualDimTypes(dimMap: Map<string, Set<number>>, nestDepth: number): Set<string> {
@@ -926,8 +974,16 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             firstSegmentIsStateVariable
         );
         if (!checkResult.valid) {
-            const level = checkResult.isPropertyNotExists ? 'error' : 'warn';
-            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
+            if (checkResult.isExternalImport) {
+                this.report({
+                    node: monitorDecorator,
+                    message: this.messages.monitorTargetInvalid,
+                    level: 'warn'
+                });
+            } else {
+                const level = checkResult.isPropertyNotExists ? 'error' : 'warn';
+                this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
+            }
         }
     }
 
@@ -1159,6 +1215,9 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     private checkAllMembersStateVariables(filteredMembers: string[], unionType: arkts.ETSUnionType, memberSegments: string[]): boolean {
         return filteredMembers.every(validMember => {
             const memberNode = this.collectNode.get(validMember);
+            if (memberNode && arkts.isImportDeclaration(memberNode)) {
+                return true;
+            }
             if (!memberNode || (!arkts.isClassDeclaration(memberNode) && !arkts.isStructDeclaration(memberNode))) {
                 return false;
             }
@@ -1228,12 +1287,22 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
 
+        let hasExternalImport = false;
         const allStateVariables = membersWithProperty.every(validMember => {
             const memberNode = this.collectNode.get(validMember);
+            if (memberNode && arkts.isImportDeclaration(memberNode)) {
+                hasExternalImport = true;
+                return true;
+            }
             if (!memberNode || (!arkts.isClassDeclaration(memberNode) && !arkts.isStructDeclaration(memberNode))) {
                 return false;
             }
-            return this.checkNestedPathStateVariables(validMember, memberSegments, firstSegmentIsStateVariable).valid;
+            const result = this.checkNestedPathStateVariables(validMember, memberSegments, firstSegmentIsStateVariable);
+            if (result.isExternalImport) {
+                hasExternalImport = true;
+                return true;
+            }
+            return result.valid;
         });
 
         if (!allStateVariables || !firstSegmentIsStateVariable) {
@@ -1514,6 +1583,16 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     ): ProcessArrayIndexReturn {
         if (!previousPropertyNode) {
             const typeNode = this.collectNode.get(currentType);
+            if (typeNode && arkts.isImportDeclaration(typeNode)) {
+                return {
+                    shouldReturn: true,
+                    result: {
+                        valid: false,
+                        isPropertyNotExists: false,
+                        isExternalImport: true
+                    }
+                };
+            }
             const isArray = typeNode && arkts.isTypeNode(typeNode) && this.isArrayType(typeNode);
             if (!isArray && currentType.toLowerCase() !== TypeFlags.Array) {
                 return { shouldReturn: true, result: { valid: false, isPropertyNotExists: true } };
@@ -1565,6 +1644,17 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         const typeNode = this.collectNode.get(currentType);
         if (!typeNode) {
             return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+
+        if (arkts.isImportDeclaration(typeNode)) {
+            return {
+                shouldReturn: true,
+                result: {
+                    valid: false,
+                    isPropertyNotExists: false,
+                    isExternalImport: true
+                }
+            };
         }
 
         const isClassNode = arkts.isClassDeclaration(typeNode);
@@ -2121,6 +2211,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             }
             const result = this.handleMapSetSizeWhenNodeMissing(currentFather, element, variableArray, i);
             return this.createReturnResult(true, result, false, currentFather, i);
+        }
+
+        if (arkts.isImportDeclaration(node)) {
+            return this.createReturnResult(true, true, false, currentFather, i);
         }
 
         const arrayIndexResult = this.checkArrayIndexAccess(node, element, variableArray, i);
