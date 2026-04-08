@@ -421,10 +421,10 @@ export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
 export const NAV_BAR_WIDTH: string = 'navBarWidth';
-export const CONTAINER_READER: string = "ContainerReader";
-export const SIZE: string = "size";
-export const WIDTH_BREAKPOINT: string = "widthBreakpoint";
-export const HEIGHT_BREAKPOINT: string = "heightBreakpoint";
+export const CONTAINER_READER: string = 'ContainerReader';
+export const SIZE: string = 'size';
+export const WIDTH_BREAKPOINT: string = 'widthBreakpoint';
+export const HEIGHT_BREAKPOINT: string = 'heightBreakpoint';
 
 const SCROLL: string = 'Scroll';
 const ZOOM_SCALE: string = 'zoomScale';
