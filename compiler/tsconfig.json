@@ -295,7 +295,8 @@
         "ArcSwiper",
         "ArcScrollBar",
         "UnionEffectContainer",
-        "UIPickerComponent"
+        "UIPickerComponent",
+        "ContainerReader"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -954,6 +955,11 @@
             "name": "UnionEffectContainer",
             "type": "UnionEffectContainerAttribute",
             "instance": "UnionEffectContainerInstance"
+          },
+          {
+            "name": "ContainerReader",
+            "type": "ContainerReaderAttribute",
+            "instance": "ContainerReaderInstance"
           },
         ]
       },
