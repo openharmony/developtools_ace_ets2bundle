@@ -98,7 +98,8 @@ import {
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
-  MSF_INTEGER_VERSION
+  MSF_INTEGER_VERSION,
+  ApiAvailableResult
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -106,11 +107,6 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
-import {
-  CompileEvent,
-  createAndStartEvent,
-  stopEvent
-} from '../../performance';
 
 /**
  * bundle info
@@ -148,11 +144,6 @@ interface JsDocNodeCheckConfigItemInterface {
   * @type { boolean }
   */
   tagNameShouldExisted: boolean,
-  /**
-  * build analyzer
-  * @type { CompileEvent }
-  */
-  timeAnalyzerEvent?: CompileEvent,
   /**
   * check suppress call back
   * @type {CheckJsDocSpecialValidCallbackInterface}
@@ -350,7 +341,6 @@ function getJsDocNodeCheckConfigItem(
     type: config.type,
     specifyCheckConditionFuncName: '',
     tagNameShouldExisted: config.tagNameShouldExisted,
-    timeAnalyzerEvent: config.timeAnalyzerEvent,
     checkJsDocSuppressorValidCallback: config.checkJsDocSuppressorValidCallback
   };
 }
@@ -394,17 +384,15 @@ function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  * get available check config
  *
  * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
- * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
  * @returns {void}
  */
-function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
   const availableConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
     type: diagnosticType,
     tagNameShouldExisted: true,
-    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
     checkJsDocSuppressorValidCallback: checkAvailableDecorator
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(availableConfig));
@@ -446,17 +434,15 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
  * get since check config
  *
  * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
- * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
  * @returns {void}
  */
-function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.apiCompatibilityCheck);
   const sinceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
     message: SINCE_TAG_CHECK_ERROR,
     type: diagnosticType,
     tagNameShouldExisted: false,
-    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
     checkJsDocSuppressorValidCallback: checkSinceValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(sinceConfig));
@@ -466,16 +452,14 @@ function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], ev
  * get syscap check config
  *
  * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
- * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
  * @returns {void}
  */
-function getSyscapCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+function getSyscapCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const syscapConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SYSCAP_TAG_CHECK_NAME],
     message: SYSCAP_TAG_CHECK_WARNING,
     type: ts.DiagnosticCategory.Warning,
     tagNameShouldExisted: false,
-    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
     checkJsDocSuppressorValidCallback: checkSyscapAbility
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(syscapConfig));
@@ -501,16 +485,14 @@ function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
  * get permission check config
  *
  * @param {ts.JsDocNodeCheckConfigItem[]} checkConfigArray - check config array
- * @param {CompileEvent} eventGetJsDocNodeCheckConfig - compile event
  * @returns {void}
  */
-function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], eventGetJsDocNodeCheckConfig: CompileEvent): void {
+function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const permissionConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [PERMISSION_TAG_CHECK_NAME],
     message: PERMISSION_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Warning,
     tagNameShouldExisted: false,
-    timeAnalyzerEvent: eventGetJsDocNodeCheckConfig,
     checkJsDocSuppressorValidCallback: checkPermissionValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
@@ -604,8 +586,7 @@ function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
  * @param {string} sourceFileName - resource reference path
  * @returns {ts.JsDocNodeCheckConfig}
  */
-export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string, parentEvent?: CompileEvent): ts.JsDocNodeCheckConfig {
-  const eventGetJsDocNodeCheckConfig = createAndStartEvent(parentEvent, 'getJsDocNodeCheckConfig(async)', true);
+export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string): ts.JsDocNodeCheckConfig {
   let byFileName: Map<string, ts.JsDocNodeCheckConfig> | undefined = jsDocNodeCheckConfigCache.get(fileName);
   if (byFileName === undefined) {
     byFileName = new Map<string, ts.JsDocNodeCheckConfig>();
@@ -613,7 +594,6 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   let result: ts.JsDocNodeCheckConfig | undefined = byFileName.get(sourceFileName);
   if (result !== undefined) {
-    stopEvent(eventGetJsDocNodeCheckConfig, true);
     return result;
   }
   let needCheckResult: boolean = false;
@@ -631,22 +611,21 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
   }
   if (systemModules.includes(apiName)) {
     byFileName.set(sourceFileName, result);
-    stopEvent(eventGetJsDocNodeCheckConfig, true);
     return result;
   }
   if (checkFileHasAvailableByFileName(sourceFileName)) {
     needCheckResult = true;
-    getAvailableCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
+    getAvailableCheckConfig(checkConfigArray);
   } else if (allModulesPaths.includes(path.normalize(sourceFileName)) || isArkuiDependence(sourceFileName)) {
     permissionsArray = projectConfig.requestPermissions;
     getDeprecatedCheckConfig(checkConfigArray);
     getSystemApiCheckConfig(checkConfigArray);
     if (sourceBaseName !== AVAILABLE_FILE_NAME) {
-      getSinceCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
+      getSinceCheckConfig(checkConfigArray);
     }
     // TODO: the third param is to be opened
     if (projectConfig.deviceTypes && projectConfig.deviceTypes.length > 0) {
-      getSyscapCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
+      getSyscapCheckConfig(checkConfigArray);
     }
     if (projectConfig.projectRootPath && projectConfig.modulePath) {
       const ohosTestDir = ts.sys.resolvePath(path.join(projectConfig.modulePath, 'src', 'ohosTest'));
@@ -656,7 +635,7 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
         getTestCheckConfig(checkConfigArray);
       }
     }
-    getPermissionCheckConfig(checkConfigArray, eventGetJsDocNodeCheckConfig);
+    getPermissionCheckConfig(checkConfigArray);
     if (isCardFile(fileName)) {
       needCheckResult = true;
       getFormCheckConfig(checkConfigArray);
@@ -685,7 +664,6 @@ export function getJsDocNodeCheckConfig(fileName: string, sourceFileName: string
     checkConfig: checkConfigArray
   };
   byFileName.set(sourceFileName, result);
-  stopEvent(eventGetJsDocNodeCheckConfig, true);
   return result;
 }
 
@@ -865,29 +843,24 @@ function checkAvailableDecorator(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const eventCheckAvailable = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkAvailable(async)', true);
   // If there is no node, we cannot perform any check
   if (!projectConfig.compatibleSdkVersion || !node || !declaration) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
   let key: string = getAvailableNodeKey(node);
   if (availableNodeCheckConfigCache.has(key)) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   } else {
     availableNodeCheckConfigCache.set(key, '');
   }
   const sourcefile = node.getSourceFile();
   if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
   const declSourcefile = declaration.getSourceFile();
   if (!declSourcefile || !declSourcefile.fileName || !path.normalize(declSourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   }
   const typeChecker = CurrentProcessFile.getChecker();
@@ -896,7 +869,6 @@ function checkAvailableDecorator(
   const hasIncompatibility = checker.checkTargetVersion(declaration);
 
   if (!hasIncompatibility) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
@@ -906,11 +878,11 @@ function checkAvailableDecorator(
     checker.getSdkVersion(),
     minApiVersion,
     checker.getAvailableVersion(),
-    typeChecker
+    typeChecker,
+    declaration
   );
 
   if (suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckAvailable, true);
     return false;
   }
 
@@ -918,7 +890,6 @@ function checkAvailableDecorator(
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
 
-  stopEvent(eventCheckAvailable, true);
   return true;
 }
 
@@ -938,20 +909,16 @@ function checkSinceValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const eventCheckSince = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkSince(async)', true);
   if (!jsDocTags[0]?.parent?.parent || !projectConfig.compatibleSdkVersion || !node || !declaration) {
-    stopEvent(eventCheckSince, true);
     return false;
   }
 
   const jsDocNode = jsDocTags[0].parent.parent as HasJSDocNode;
   if (!jsDocNode?.jsDoc) {
-    stopEvent(eventCheckSince, true);
     return false;
   }
   const sourcefile = node.getSourceFile();
   if (!sourcefile || !sourcefile.fileName || !path.normalize(sourcefile.fileName).startsWith(projectConfig.projectRootPath)) {
-    stopEvent(eventCheckSince, true);
     return false;
   }
   const typeChecker = CurrentProcessFile.getChecker();
@@ -960,7 +927,6 @@ function checkSinceValue(
   const hasIncompatibility = checker.checkTargetVersion(jsDocNode);
 
   if (!hasIncompatibility) {
-    stopEvent(eventCheckSince, true);
     return false;
   }
 
@@ -973,7 +939,6 @@ function checkSinceValue(
   );
 
   if (suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckSince, true);
     return false;
   }
 
@@ -981,7 +946,6 @@ function checkSinceValue(
     .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
 
-  stopEvent(eventCheckSince, true);
   return true;
 }
 
@@ -1289,7 +1253,6 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
  */
 export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
   node?: ts.Node, declaration?: ts.Declaration): boolean {
-  const eventCheckSyscap = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkSyscap(async)', true);
   let currentSyscapValue: string = '';
   for (let i = 0; i < jsDocTags.length; i++) {
     const jsDocTag: ts.JSDocTag = jsDocTags[i];
@@ -1305,28 +1268,23 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
     const suppressor = new SyscapWarningSuppressor(jsDocTags, config);
     // 执行告警消除判断
     if (suppressor && suppressor.isApiVersionHandled(node)) {
-      stopEvent(eventCheckSyscap, true);
       return false;
     }
-    stopEvent(eventCheckSyscap, true);
     return true;
   }
 
   const externalCheckers = externalApiCheckerMap.get(SYSCAP_TAG_CHECK_NAME);
   if (!externalCheckers || externalCheckers.length === 0) {
-    stopEvent(eventCheckSyscap, true);
     // 若不存在拓展校验器，直接返回结果
     return false;
   }
   for (let i = 0; i < externalCheckers.length; i++) {
     const checker = externalCheckers[i];
     if (!checker.check) {
-      stopEvent(eventCheckSyscap, true);
       return false;
     }
     const extrenalCheckResult = checker.check(node, declaration, projectConfig);
     if (!extrenalCheckResult.checkResult) {
-      stopEvent(eventCheckSyscap, true);
       return false;
     }
     config.message = extrenalCheckResult.checkMessage;
@@ -1334,10 +1292,8 @@ export function checkSyscapAbility(jsDocTags: readonly ts.JSDocTag[], config: ts
   const suppressor = new SyscapWarningSuppressor(jsDocTags, config);
   // 执行告警消除判断
   if (suppressor && suppressor.isApiVersionHandled(node)) {
-    stopEvent(eventCheckSyscap, true);
     return false;
   }
-  stopEvent(eventCheckSyscap, true);
   return true;
 }
 
@@ -1387,24 +1343,17 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  * @returns {boolean}
  */
 export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
-  const eventCheckPermission = createAndStartEvent(config.timeAnalyzerEvent as CompileEvent, 'checkPermission(async)', true);
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
   if (!jsDocTag) {
-    stopEvent(eventCheckPermission, true);
     return false;
   }
   const comment: string = typeof jsDocTag.comment === 'string' ?
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  if (comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray)) {
-    stopEvent(eventCheckPermission, true);
-    return true;
-  }
-  stopEvent(eventCheckPermission, true);
-  return false;
+  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
 }
 
 /**
@@ -1956,7 +1905,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     return result;
   }
   
-  if (node.arguments.length > 1) {
+  if (!node.arguments || node.arguments.length !== 1) {
     result.valid = false;
     return result;
   }
@@ -1969,7 +1918,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
   }
-  const isSinceVersionType: boolean = /^\'|\"(.+?)\'|\"$/g.test(sinceValue);
+  const isSinceVersionType: boolean = /^(['"])([^'"]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
     result = checkCharScene(sincePoint, sinceFormat);
   } else {
@@ -1982,17 +1931,41 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   return result;
 }
 
+/**
+ * Determine whether the string scenario complies with the specifications.
+ * 
+ * OpenHarmony project
+ * valid sample
+ * apiAvailable('26.0.0')
+ * 
+ * Invalid sample
+ * apiAvailable('26')
+ * apiAvailable('25.0.0')
+ * 
+ * distributionOS project
+ * valid sample
+ * apiAvailable('6.1.1')
+ * apiAvailable('6.1.1(24)')
+ * 
+ * Invalid sample
+ * apiAvailable('6.8.8')
+ * apiAvailable('25.0.0')
+ * 
+ * @param sincePoint MSF version
+ * @param sinceFormat del quotation mark version
+ * @returns standardized results
+ */
 function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailableResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
+  if (sincePoint.length === 1) {
+    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.valid = false;
+  }
   if (isOpenHarmonyRuntime()) {
-    if (sincePoint.length === 1) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
-      result.valid = false;
-    }
     if (!checkMSFVersionMajor(sinceFormat)) {
       result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
       result.valid = false;
@@ -2006,6 +1979,7 @@ function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailable
       }
     }
   }
+
   return result;
 }
 
