@@ -88,6 +88,8 @@ import {
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
   DECORATOR_COMPONENT_FREEZEWHENINACTIVE,
   INIT_ALLOW_COMPONENT_FREEZE,
+  DECORATOR_COMPONENT_REUSEMEMOPT,
+  SET_IS_ENABLE_MEM_OPT,
   FINALIZE_CONSTRUCTION,
   PROTOTYPE,
   REFLECT,
@@ -202,9 +204,13 @@ function checkPreview(node: ts.StructDeclaration): boolean {
 export type BuildCount = {
   count: number;
 };
-export type FreezeParamType = {
+export interface FreezeParamType {
   componentFreezeParam: ts.Expression;
 };
+export interface ReuseMemOptParamType {
+  memOptParam: ts.Expression;
+};
+export interface ComponentParamType extends FreezeParamType, ReuseMemOptParamType {};
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, decoratorNode: readonly ts.Decorator[], log: LogInfo[],
   program: ts.Program, hasPreview: boolean, ReusePool: { hasReusePool: boolean }): ts.ClassElement[] {
@@ -285,12 +291,13 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   addIntoNewMembers(newMembers, parentComponentName, updateParamsStatements,
     purgeVariableDepStatements, rerenderStatements, stateVarsStatements);
   if (partialUpdateConfig.partialUpdateMode) {
-    const creezeParam: FreezeParamType = {
-      componentFreezeParam: undefined
-    };
-    const isFreezeComponent: boolean = decoratorAssignParams(decoratorNode, context, creezeParam);
+    const componentParamType: ComponentParamType = { componentFreezeParam: undefined, memOptParam: undefined };
+    const freezeStatements = decoratorAssignParams(decoratorNode, context, componentParamType)
+      ? decoratorComponentParam(componentParamType) : []
+    const reuseStatements = decoratorAssignParamsForReusable(decoratorNode, context, componentParamType)
+      ? decoratorComponentParamForReusable(componentParamType) : []
     ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()),
-      isFreezeComponent ? decoratorComponentParam(creezeParam) : [], true);
+      [...freezeStatements, ...reuseStatements], true);
   }
   const currentLinkCollection: Set<string> = linkCollection.get(parentComponentName.getText());
   isReusableComponent(decoratorNode, false) && isCompatibleVersionOverTarget(26) &&
@@ -552,6 +559,16 @@ export function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], co
   }
 }
 
+export function decoratorAssignParamsForReusable(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
+  reuseMemOptParam: ReuseMemOptParamType): boolean {
+  if (decoratorNode && Array.isArray(decoratorNode) && decoratorNode.length) {
+    return decoratorNode.some((item: ts.Decorator) => {
+      return isReuseMemOptComponents(item, context, reuseMemOptParam);
+    });
+  }
+  return false;
+}
+
 function isFreezeComponents(decorator: ts.Decorator, context: ts.TransformationContext,
   creezeParam: FreezeParamType): boolean {
   let isComponentAssignParent: boolean = false;
@@ -561,6 +578,22 @@ function isFreezeComponents(decorator: ts.Decorator, context: ts.TransformationC
       decorator.name.text.toString() === DECORATOR_COMPONENT_FREEZEWHENINACTIVE) {
       isComponentAssignParent = true;
       creezeParam.componentFreezeParam = decorator.initializer;
+      return decorator;
+    }
+    return ts.visitEachChild(decorator, visitComponentParament, context);
+  }
+  return isComponentAssignParent;
+}
+
+function isReuseMemOptComponents(decorator: ts.Decorator, context: ts.TransformationContext,
+  reuseMemOptParam: ReuseMemOptParamType): boolean {
+  let isComponentAssignParent: boolean = false;
+  ts.visitNode(decorator, visitComponentParament);
+  function visitComponentParament(decorator: ts.Node): ts.Node {
+    if (ts.isPropertyAssignment(decorator) && decorator.name && decorator.name.text &&
+      decorator.name.text.toString() === DECORATOR_COMPONENT_REUSEMEMOPT) {
+      isComponentAssignParent = true;
+      reuseMemOptParam.memOptParam = decorator.initializer;
       return decorator;
     }
     return ts.visitEachChild(decorator, visitComponentParament, context);
@@ -630,6 +663,38 @@ function decoratorComponentParam(freezeParam: FreezeParamType): ts.IfStatement[]
         ),
         undefined,
         [freezeParam.componentFreezeParam]
+      ))],
+      true
+    ),
+    undefined
+  )];
+}
+
+export function decoratorComponentParamForReusable(reuseMemOptParam: ReuseMemOptParamType): ts.IfStatement[] {
+  return [ts.factory.createIfStatement(
+    ts.factory.createBinaryExpression(
+      ts.factory.createElementAccessExpression(
+        ts.factory.createSuper(),
+        ts.factory.createStringLiteral(SET_IS_ENABLE_MEM_OPT)
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      ts.factory.createBinaryExpression(
+        ts.factory.createTypeOfExpression(ts.factory.createElementAccessExpression(
+          ts.factory.createSuper(),
+          ts.factory.createStringLiteral(SET_IS_ENABLE_MEM_OPT)
+        )),
+        ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+        ts.factory.createStringLiteral(FUNCTION)
+      )
+    ),
+    ts.factory.createBlock(
+      [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
+        ts.factory.createElementAccessExpression(
+          ts.factory.createSuper(),
+          ts.factory.createStringLiteral(SET_IS_ENABLE_MEM_OPT)
+        ),
+        undefined,
+        [reuseMemOptParam.memOptParam]
       ))],
       true
     ),
