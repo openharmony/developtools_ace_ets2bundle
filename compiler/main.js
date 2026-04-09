@@ -82,6 +82,9 @@ let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
+// 拓展SDK校验插件
+let crossplatformDepsConfig = new Map();
+let crossplatformExternalModule = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -954,9 +957,27 @@ function collectExternalModules(sdkPaths) {
       }
     });
     sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
+    // 在跨平台SDK中收集接口依赖数据
+    if (sdkConfig.prefix === '@arkui-x') {
+      const crossplatformDepsConfigPath = path.resolve(sdkPath, 'functionConfig.json');
+      if (fs.existsSync(crossplatformDepsConfigPath)) {
+        crossplatformDepsConfig = collectCrossplatformDeps(crossplatformDepsConfigPath);
+      }
+    }
     sdkConfig.apiPath = resolveApiPathArray;
     extendSdkConfigs.push(sdkConfig);
   }
+}
+
+/**
+ * 收集跨平台接口依赖模块
+ * @param {string} configPath 
+ */
+function collectCrossplatformDeps(configPath) {
+  const depsConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  return new Map(
+    depsConfig.map(item => [`@${item.module}`, item.deps])
+  );
 }
 
 function readHspResource() {
@@ -1273,6 +1294,8 @@ function resetMain() {
   fileAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
   externalApiCheckerMap = new Map();
+  crossplatformDepsConfig = new Map();
+  crossplatformExternalModule = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1372,3 +1395,5 @@ exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
+exports.crossplatformDepsConfig = crossplatformDepsConfig;
+exports.crossplatformExternalModule = crossplatformExternalModule;
