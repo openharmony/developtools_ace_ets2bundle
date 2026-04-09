@@ -28,7 +28,9 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
-  externalApiCheckerMap
+  externalApiCheckerMap,
+  crossplatformExternalModule,
+  crossplatformDepsConfig
 } from '../../../main';
 import {
   LogType,
@@ -526,9 +528,137 @@ function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
     tagName: [CROSSPLATFORM_TAG_CHECK_NAME],
     message: CROSSPLATFORM_TAG_CHECK_ERROR,
     type: logType,
-    tagNameShouldExisted: true
+    tagNameShouldExisted: true,
+    checkJsDocSuppressorValidCallback: checkCrossplatformValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
+}
+
+interface CrossplatformConfig {
+  function: string;
+  module: string[];
+  component: string[];
+}
+
+function checkCrossplatformValue(
+  jsDocTags: readonly ts.JSDocTag[],
+  config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node,
+  declaration?: ts.Declaration
+): boolean {
+  if (!crossplatformDepsConfig) {
+    return true;
+  }
+  const fileName: string = declaration.getSourceFile().fileName;
+  if (!fileName || fileName === '') {
+    return true;
+  }
+  // crossplatformDepsConfig
+  const apiFileName: string = path.basename(fileName).replace(/\.d\.(ts|ets)$/, '');
+  if (!crossplatformDepsConfig.get(apiFileName)) {
+    return true;
+  }
+  const depsConfig: CrossplatformConfig[] = crossplatformDepsConfig.get(apiFileName);
+
+  const functionKey: string = getApiPathFromNode(declaration);
+  for (let i = 0; i < depsConfig.length; i++) {
+    const config: CrossplatformConfig = depsConfig[i];
+    if (config.function === functionKey) {
+      collectCrossplatformExternalModule(node, config);
+      return true;
+    }
+  }
+  return true;
+}
+
+function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
+  // 获取 node 所在的源文件
+  const sourceFile = node.getSourceFile();
+  if (!sourceFile) {
+    return;
+  }
+  
+  // 获取源文件的路径
+  const filePath: string = sourceFile.fileName;
+  
+  // 获取或创建该文件对应的模块信息
+  let moduleInfo = crossplatformExternalModule.get(filePath);
+  if (!moduleInfo) {
+    moduleInfo = {
+      module: [],
+      component: []
+    };
+    crossplatformExternalModule.set(filePath, moduleInfo);
+  }
+  
+  // 添加 module 内容，过滤重复
+  for (const moduleItem of config.module) {
+    if (!moduleInfo.module.includes(moduleItem)) {
+      moduleInfo.module.push(moduleItem);
+    }
+  }
+  
+  // 添加 component 内容，过滤重复
+  for (const componentItem of config.component) {
+    if (!moduleInfo.component.includes(componentItem)) {
+      moduleInfo.component.push(componentItem);
+    }
+  }
+}
+
+function getApiPathFromNode(declaration: ts.Node): string {
+  const pathParts: string[] = [];
+  let currentNode: ts.Node | undefined = declaration;
+  
+  // 向上遍历到 SourceFile 为止
+  while (currentNode && !ts.isSourceFile(currentNode)) {
+    // 获取节点名称
+    const name = getApiNodeName(currentNode);
+    if (name) {
+      pathParts.unshift(name); // 插入到数组开头，保持从根到叶的顺序
+    }
+    currentNode = currentNode.parent;
+  }
+  
+  // 使用 # 拼接
+  return pathParts.join('#');
+}
+
+/**
+ * Get api node name.
+ * @param node
+ * @returns 
+ */
+function getApiNodeName(node: ts.Node): string {
+  let apiName: string = 'unnamed';
+  // 区分场景获取节点名称
+  switch (node.kind) {
+    case ts.SyntaxKind.MethodDeclaration:
+    case ts.SyntaxKind.MethodSignature:
+    case ts.SyntaxKind.FunctionDeclaration:
+    case ts.SyntaxKind.PropertyDeclaration:
+    case ts.SyntaxKind.PropertySignature:
+    case ts.SyntaxKind.EnumMember:
+    case ts.SyntaxKind.EnumDeclaration:
+    case ts.SyntaxKind.TypeAliasDeclaration:
+    case ts.SyntaxKind.ClassDeclaration:
+    case ts.SyntaxKind.InterfaceDeclaration:
+    case ts.SyntaxKind.ModuleDeclaration:
+    case ts.SyntaxKind.StructDeclaration:
+    case ts.SyntaxKind.GetAccessor:
+    case ts.SyntaxKind.SetAccessor:
+      apiName = node.name.getText();
+      break;
+    case ts.SyntaxKind.Constructor | ts.SyntaxKind.ConstructSignature:
+      // TODO: 待确认规格
+      apiName = 'Constructor'
+      break;
+    case ts.SyntaxKind.IndexSignature:
+      // TODO: 待确认规格
+      apiName = 'Index'
+      break;
+  }
+  return apiName;
 }
 
 /**

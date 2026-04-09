@@ -27,7 +27,8 @@ import {
   projectConfig,
   sdkConfigs,
   sdkConfigPrefix,
-  extendSdkConfigs
+  extendSdkConfigs,
+  crossplatformExternalModule
 } from '../../../main';
 
 import {
@@ -38,6 +39,7 @@ import {
 import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
+import { MergeCrossplatformModuleType } from './api_check_define';
 
 const filterCrossplatform: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -106,6 +108,9 @@ export function apiTransform() {
           widgetPath = path.resolve(projectConfig.aceModuleBuild, 'widget');
         }
         this.share.allComponents = getAllComponentsOrModules(allFiles, 'component_collection.json');
+        if (projectConfig.isCrossplatform) {
+          mergeModuleOrComponentCollection(MergeCrossplatformModuleType.COMPONENT);
+        }
         writeCollectionFile(projectConfig.cachePath, appComponentCollection,
           this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
       }
@@ -118,6 +123,9 @@ export function apiTransform() {
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode && needModuleCollection) {
         replaceKitModules();
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
+        if (projectConfig.isCrossplatform) {
+          mergeModuleOrComponentCollection(MergeCrossplatformModuleType.MODULE);
+        }
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }
     },
@@ -278,4 +286,78 @@ function replaceKitModules(): void {
       }
     });
   });
+}
+
+// 通用的路径匹配函数，判断在忽略路径格式后，两个路径是否一致
+function isSamePath(targetPath: string, currentPath: string): boolean {
+  // 统一转换为标准化格式（使用正斜杠，并转为小写以忽略大小写差异）
+  const normalize = (p: string) => path.normalize(p).replace(/\\/g, '/');
+  return normalize(targetPath) === normalize(currentPath);
+}
+
+function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): void {
+  // 遍历 crossplatformExternalModule 中的每一项
+  for (const [crossPath, crossData] of crossplatformExternalModule.entries()) {
+
+
+    // 合并component
+    if (type === MergeCrossplatformModuleType.COMPONENT) {
+      collectComponentCollection(crossPath, crossData);
+    }
+
+    if (type === MergeCrossplatformModuleType.MODULE) {
+      collectModuleCollection(crossPath, crossData);
+    }
+  }
+
+  function collectModuleCollection(mapKey: string, mapData: any): void {
+    // 查找是否有相同路径的条目
+    let matchedKey: string | undefined;
+    for (const [appPath] of appImportModuleCollection.entries()) {
+      if (isSamePath(appPath, mapKey)) {
+        matchedKey = appPath;
+        break;
+      }
+    }
+
+    // 如果找到匹配的路径，合并 module
+    if (matchedKey) {
+      const targetSet = appImportModuleCollection.get(matchedKey);
+      if (targetSet) {
+        for (const moduleItem of mapData.module) {
+          targetSet.add(moduleItem);
+        }
+      }
+    } else {
+      // 如果匹配不到，在参数A中新增一个键值对
+      // 使用 crossPath 的原始格式作为 key，或者可以统一格式
+      const newSet = new Set<string>(mapData.module);
+      appImportModuleCollection.set(mapKey, newSet);
+    }
+  }
+  function collectComponentCollection(mapKey: string, mapData: any): void {
+    // 查找是否有相同路径的条目
+    let matchedKey: string | undefined;
+    for (const [appPath] of appComponentCollection.entries()) {
+      if (isSamePath(appPath, mapKey)) {
+        matchedKey = appPath;
+        break;
+      }
+    }
+
+    // 如果找到匹配的路径
+    if (matchedKey) {
+      const targetSet = appComponentCollection.get(matchedKey);
+      if (targetSet) {
+        for (const componentItem of mapData.component) {
+          targetSet.add(componentItem);
+        }
+      }
+    } else {
+      // 如果匹配不到，在参数A中新增一个键值对
+      // 使用 crossPath 的原始格式作为 key，或者可以统一格式
+      const newSet = new Set<string>(mapData.component);
+      appComponentCollection.set(mapKey, newSet);
+    }
+  }
 }
