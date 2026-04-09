@@ -42,11 +42,13 @@ export const ATOMICSERVICE_BUNDLE_TYPE: string = 'atomicService';
 export const ATOMICSERVICE_TAG_CHECK_NAME: string = 'atomicservice';
 export const ATOMICSERVICE_TAG_CHECK_ERROR: string = "'{0}' can't support atomicservice application.";
 export const SINCE_TAG_NAME: string = 'since';
-export const SINCE_TAG_CHECK_ERROR: string = "The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const SINCE_TAG_CHECK_ERROR: string = `The '{0}' API is supported since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.
+ It is recommended to use apiAvailable to safeguard API compatibility.`;
 export const ATOMICSERVICE_TAG_CHECK_VERSION: number = 11;
 export const FIND_MODULE_WARNING: string = "Cannot find name '{0}'.";
 export const AVAILABLE_TAG_NAME: string = 'available';
-export const AVAILABLE_DECORATOR_WARNING: string = "The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.";
+export const AVAILABLE_DECORATOR_WARNING: string = `The '{0}' API is available since SDK version $SINCE1. However, the current compatible SDK version is $SINCE2.
+ It is recommended to use apiAvailable to safeguard API compatibility.`;
 export const AVAILABLE_FILE_NAME: string = '@ohos.annotation.d.ets';
 export const AVAILABLE_VERSION_FORMAT_ERROR_PREFIX: string = 'The runtime OS for the current project is $RUNTIMEOS. The OS version number $VERSION is invalid.';
 export const AVAILABLE_OSNAME_ERROR: string = 'The runtime OS for the current project is $RUNTIMEOS. @Available is not supported on the OS: $OSNAME.';
