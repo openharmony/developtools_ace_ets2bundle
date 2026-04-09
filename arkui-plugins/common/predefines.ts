@@ -184,7 +184,9 @@ export enum DecoratorNames {
     COMPONENT_BUILT = 'ComponentBuilt',
     COMPONENT_DISAPPEAR = 'ComponentDisappear',
     COMPONENT_REUSE = 'ComponentReuse',
-    COMPONENT_RECYCLE = 'ComponentRecycle'
+    COMPONENT_RECYCLE = 'ComponentRecycle',
+    LOCAL_STORAGE_PROP = 'LocalStorageProp',
+    STORAGE_PROP = 'StorageProp'
 }
 
 export enum TypeNames {
