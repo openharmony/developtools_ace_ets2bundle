@@ -65,6 +65,7 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'MenuItemGroup',
   'MovingPhotoView',
   'NavDestination',
+  'NavPathStack',
   'NavRouter',
   'Navigation',
   'Navigator',
