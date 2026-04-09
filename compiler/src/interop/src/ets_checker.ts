@@ -960,7 +960,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
             if (sourcefile) {
-              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true);
+              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true, true);
             }
             if (emit) {
               generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, projectConfig.modulePathMap);
@@ -981,7 +981,7 @@ function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void
     if (toUnixPath(sourceFile.fileName).includes('/oh_modules/')) {
       return;
     }
-    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile).forEach((diagnostic: ts.Diagnostic) => {
+    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile, undefined, true).forEach((diagnostic: ts.Diagnostic) => {
       printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
     });
   });
