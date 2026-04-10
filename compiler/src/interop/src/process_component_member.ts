@@ -78,7 +78,8 @@ import {
   TRUE,
   FALSE,
   MIN_OBSERVED,
-  COMPONENT_OBSERVEDV2_DECORATOR
+  COMPONENT_OBSERVEDV2_DECORATOR,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -115,6 +116,7 @@ import {
   createFunction,
   getRealNodePos,
   isWrappedBuilder,
+  isMutableBuilder,
   isStaticBuilder,
   transferCompatibleBuilder
 } from './process_component_build';
@@ -149,7 +151,7 @@ export const requireCanReleaseMandatoryDecorators: Set<string> =
     ...observedPropertyDecorators]);
 
 export const forbiddenSpecifyDefaultValueDecorators: Set<string> =
-  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR]);
+  new Set([COMPONENT_LINK_DECORATOR, COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_ENV_DECORATOR]);
 
 export const mandatoryToInitViaParamDecorators: Set<string> =
   new Set([...propAndLinkDecorators, COMPONENT_OBJECT_LINK_DECORATOR]);
@@ -162,7 +164,7 @@ export const setUpdateParamsDecorators: Set<string> =
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR]);
+  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -174,7 +176,7 @@ export const stateObjectCollection: Set<string> = new Set();
 export class UpdateResult {
   private itemUpdate: boolean = false;
   private ctorUpdate: boolean = false;
-  private properity: ts.PropertyDeclaration;
+  private properity: ts.PropertyDeclaration | undefined;
   private ctor: ts.ConstructorDeclaration;
   private variableGet: ts.GetAccessorDeclaration;
   private variableSet: ts.SetAccessorDeclaration;
@@ -185,7 +187,7 @@ export class UpdateResult {
   private decoratorName: string;
   private stateVarsParams: ts.Statement;
 
-  public setProperity(updateItem: ts.PropertyDeclaration): void {
+  public setProperity(updateItem: ts.PropertyDeclaration | undefined): void {
     this.itemUpdate = true;
     this.properity = updateItem;
   }
@@ -239,7 +241,7 @@ export class UpdateResult {
     return this.ctorUpdate;
   }
 
-  public getProperity(): ts.PropertyDeclaration {
+  public getProperity(): ts.PropertyDeclaration | undefined {
     return this.properity;
   }
 
@@ -515,7 +517,7 @@ function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   }
   addAddProvidedVar(node, name, decorator, updateState);
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
-  if (decorator !== COMPONENT_BUILDERPARAM_DECORATOR) {
+  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR].includes(decorator)) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
   }
@@ -912,8 +914,9 @@ export function judgeBuilderParamAssignedByBuilder(node: ts.PropertyDeclaration)
     ts.isPropertyAccessExpression(node.initializer) && node.initializer.name &&
     ts.isIdentifier(node.initializer.name) &&
     (CUSTOM_BUILDER_METHOD.has(node.initializer.name.escapedText.toString()) ||
-    INNER_CUSTOM_LOCALBUILDER_METHOD.has(node.initializer.name.escapedText.toString())) ||
-    isWrappedBuilder(node.initializer as ts.PropertyAccessExpression)));
+      INNER_CUSTOM_LOCALBUILDER_METHOD.has(node.initializer.name.escapedText.toString())) ||
+    isWrappedBuilder(node.initializer as ts.PropertyAccessExpression) ||
+    isMutableBuilder(node.initializer as ts.PropertyAccessExpression)));
 }
 
 export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.CallExpression {
@@ -1289,16 +1292,16 @@ function validateNonObservedClassType(propertyName: ts.Identifier, decorator: st
   if (isEsmoduleAndUpdateMode) {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `'@ObjectLink' cannot be used with this type.` +
-        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
+      message: `'${decorator}' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '${COMPONENT_OBSERVEDV2_DECORATOR}' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });
   } else {
     log.push({
       type: projectConfig.optLazyForEach ? LogType.WARN : LogType.ERROR,
-      message: `'@ObjectLink' cannot be used with this type.` +
-        ` Apply it only to classes decorated by '@Observed' or initialized using the return value of 'makeV1Observed'.`,
+      message: `'${decorator}' cannot be used with this type.` +
+        ` Apply it only to classes decorated by '${COMPONENT_OBSERVED_DECORATOR}' or initialized using the return value of 'makeV1Observed'.`,
       pos: propertyName.getStart(),
       code: '10905307'
     });

@@ -15,6 +15,7 @@
 
 import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 
 import {
   INNER_COMPONENT_DECORATORS,
@@ -66,7 +67,15 @@ import {
   SENDABLE,
   TYPE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
-  COMPONENT_DECORATOR_REUSABLE_V2
+  COMPONENT_DECORATOR_REUSABLE_V2,
+  MAIN_COMPONENT_DECORATORS,
+  COMPONENT_ENV_DECORATOR,
+  NON_FUNCTION_TYPE_WITH_V1_DECORATORS,
+  COMPONENTV2_LOCAL_DECORATOR,
+  COMPONENTV2_PARAM_DECORATOR,
+  COMPONENTV2_PROVIDER_DECORATOR,
+  COMPONENTV2_CONSUMER_DECORATOR,
+  COMPONENTV2_ONCE_DECORATOR
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -97,7 +106,8 @@ import {
   hasDecorator,
   storedFileInfo,
   ExtendResult,
-  CurrentProcessFile
+  CurrentProcessFile,
+  getOriginPropertyType
 } from './utils';
 import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
@@ -113,7 +123,7 @@ import {
 import { stateObjectCollection } from './process_component_member';
 import { collectSharedModule } from './fast_build/ark_compiler/check_shared_module';
 import constantDefine from './constant_define';
-import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import processStructComponentV2, { StructInfo, getDecoratorName } from './process_struct_componentV2';
 import logMessageCollection from './log_message_collection';
 import { FileManager, isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
@@ -152,6 +162,7 @@ export class IComponentSet {
   provideInit: Set<string> = new Set();
   privateCollection: Set<string> = new Set();
   regularStaticCollection: Set<string> = new Set();
+  envs: Set<string> = new Set();
 }
 
 export let componentCollection: ComponentCollection = new ComponentCollection();
@@ -181,6 +192,7 @@ export const stateInitialization: Map<string, Set<string>> = new Map();
 export const provideInitialization: Map<string, Set<string>> = new Map();
 export const privateCollection: Map<string, Set<string>> = new Map();
 export const regularStaticCollection: Map<string, Set<string>> = new Map();
+export const envCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -188,12 +200,40 @@ export const useOSFiles: Set<string> = new Set();
 export const sourcemapNamesCollection: Map<string, Map<string, string>> = new Map();
 export const originalImportNamesMap: Map<string, string> = new Map();
 
+const classTraceVariables: Map<string, string[]> = new Map();
+const classVariables: Map<string, string[]> = new Map();
+const classGetters: Map<string, string[]> = new Map();
+const classComputedGetters: Map<string, string[]> = new Map();
+
+const envSupportClass: string = 'WindowSizeLayoutBreakpointInfo';
+const sizeInVPClass: string = 'SizeInVP';
+const sizeClass: string = 'Size';
+const uiEnvWindowAvoidAreaInfoPXClass: string = 'UIEnvWindowAvoidAreaInfoPX';
+const uiEnvWindowAvoidAreaInfoVPClass: string = 'UIEnvWindowAvoidAreaInfoVP';
+
+export let stmgmtWhiteList: Set<string> = new Set();
+
+const envSupportArg: string = 'SystemProperties.BREAK_POINT';
+const envWindowAvoidArea: string = 'SystemProperties.WINDOW_AVOID_AREA';
+const envWindowAvoidAreaPx: string = 'SystemProperties.WINDOW_AVOID_AREA_PX';
+const envWindowSize: string = 'SystemProperties.WINDOW_SIZE';
+const envWindowSizePx: string = 'SystemProperties.WINDOW_SIZE_PX';
+
+const envAllowTypesAndArgs: Map<string, string> = new Map([
+  [envSupportClass, envSupportArg],
+  [uiEnvWindowAvoidAreaInfoVPClass, envWindowAvoidArea],
+  [uiEnvWindowAvoidAreaInfoPXClass, envWindowAvoidAreaPx],
+  [sizeInVPClass, envWindowSize],
+  [sizeClass, envWindowSizePx]
+]);
+
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
   let log: LogInfo[] = [];
   if (process.env.compileMode === 'moduleJson' ||
     path.resolve(filePath) !== path.resolve(projectConfig.projectPath || '', 'app.ets')) {
     componentCollection = new ComponentCollection();
+    readStmgmtWhiteList();
     const res: LogInfo[] = checkComponentDecorator(source, filePath, fileQuery, sourceFile);
     if (res) {
       log = log.concat(res);
@@ -339,10 +379,14 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
   const componentName: string = component.getText();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(componentName);
   let hasInnerComponentDecorator: boolean = false;
+  let hasComponentDecorator: boolean = false;
   decorators.forEach((element) => {
     let name: string = element.getText().replace(/\([^\(\)]*\)/, '').trim();
     if (element.expression && element.expression.expression && ts.isIdentifier(element.expression.expression)) {
       name = '@' + element.expression.expression.getText();
+    }
+    if (MAIN_COMPONENT_DECORATORS.has(name)) {
+      hasComponentDecorator = true;
     }
     if (INNER_COMPONENT_DECORATORS.has(name)) {
       hasInnerComponentDecorator = true;
@@ -382,6 +426,7 @@ function checkDecorators(decorators: readonly ts.Decorator[], result: DecoratorR
     }
   });
   validateStruct(hasInnerComponentDecorator, componentName, component, log, sourceFile, structInfo);
+  validateComponentDecorator(hasComponentDecorator, componentName, component, log, sourceFile);
 }
 
 function validateInvalidStructDecorator(element: ts.Decorator, componentName: string, log: LogInfo[],
@@ -389,6 +434,14 @@ function validateInvalidStructDecorator(element: ts.Decorator, componentName: st
   const pos: number = element.expression ? element.expression.pos : element.pos;
   const message: string = `The struct '${componentName}' use invalid decorator.`;
   addLog(LogType.WARN, message, pos, log, sourceFile);
+}
+
+function validateComponentDecorator(hasComponentDecorator: boolean, componentName: string, component: ts.Identifier,
+  log: LogInfo[], sourceFile: ts.SourceFile): void {
+  if (!hasComponentDecorator) {
+    const message: string = `Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${componentName}'.`;
+    addLog(LogType.WARN, message, component.pos, log, sourceFile);
+  }
 }
 
 function validateStruct(hasInnerComponentDecorator: boolean, componentName: string, component: ts.Identifier,
@@ -468,15 +521,18 @@ function checkUISyntax(filePath: string, allComponentNames: Set<string>, content
   if (!sourceFile) {
     sourceFile = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.ETS);
   }
-  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false);
+  visitAllNode(sourceFile, sourceFile, allComponentNames, log, false, false, false, false, fileQuery, false, false,
+    undefined, undefined);
 }
 
 function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponentNames: Set<string>,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean): void {
+  isComponentV2: boolean, fileQuery: string, isObservedV1Class: boolean, isSendableClass: boolean,
+  classNode: ts.ClassDeclaration | undefined, structNode: ts.StructDeclaration | undefined): void {
   if (ts.isStructDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     structContext = true;
     const structName: string = node.name.escapedText.toString();
+    structNode = node;
     const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
     if (structInfo.isComponentV2) {
       processStructComponentV2.parseComponentProperty(node, structInfo, log, sourceFileNode);
@@ -487,6 +543,7 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   if (ts.isClassDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
     classContext = true;
+    classNode = node;
     [isObservedV1Class, isObservedClass, isSendableClass] = parseClassDecorator(node, sourceFileNode, log);
   }
   if (ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) {
@@ -494,6 +551,9 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
     if (hasDecorator(node, COMPONENT_CONCURRENT_DECORATOR)) {
       // ark compiler's feature
       checkConcurrentDecorator(node, log, sourceFileNode);
+    }
+    if (ts.isMethodDeclaration(node) && structNode) {
+      checkComponentReuseSyntax(node, structNode, log, sourceFileNode);
     }
     validateFunction(node, sourceFileNode, log);
   }
@@ -505,14 +565,17 @@ function visitAllNode(node: ts.Node, sourceFileNode: ts.SourceFile, allComponent
   }
   checkDecoratorCount(node, sourceFileNode, log);
   checkDecorator(sourceFileNode, node, log, structContext, classContext, isObservedClass, isComponentV2,
-    isObservedV1Class, isSendableClass);
+    isObservedV1Class, isSendableClass, classNode, structNode);
   ts.forEachChild(node, (child: ts.Node) => visitAllNode(child, sourceFileNode, allComponentNames, log,
-    structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass));
+    structContext, classContext, isObservedClass, isComponentV2, fileQuery, isObservedV1Class, isSendableClass,
+    classNode, structNode));
   structContext = false;
   classContext = false;
   isObservedClass = false;
   isObservedV1Class = false;
   isSendableClass = false;
+  classNode = undefined;
+  structNode = undefined;
 }
 
 function validateObservedProperty(node: ts.PropertyDeclaration, isComponentV2: boolean, log: LogInfo[],
@@ -596,6 +659,23 @@ function checkObservedProperty(node: ts.PropertyDeclaration): [boolean, boolean]
     return [classResult.hasObserved, classResult.hasObservedV2];
   }
   return [false, false];
+}
+
+function checkComponentReuseSyntax(
+  node: ts.MethodDeclaration,
+  structNode: ts.StructDeclaration,
+  log: LogInfo[],
+  sourceFileNode: ts.SourceFile
+): void {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  const decoratorNames: string[] = decorators.map(decoratorItem => {
+    return getDecoratorName(decoratorItem);
+  });
+  for (let i = 0; i < decoratorNames.length; i++) {
+    if (constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR.includes(decoratorNames[i])) {
+      handleLifecycleDecorator(decoratorNames[i], structNode, node, log, sourceFileNode);
+    }
+  }
 }
 
 const v1ComponentDecorators: string[] = [
@@ -774,7 +854,8 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
     decorators.forEach((item: ts.Decorator) => {
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
       if (!excludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
-        decoratorName === '@BuilderParam')) {
+        decoratorName === constantDefine.DECORATOR_BUILDER_PARAM ||
+        decoratorName === constantDefine.DECORATOR_ENV)) {
         const count: number = v2DecoratorMap.get(decoratorName) || 0;
         v2DecoratorMap.set(decoratorName, count + 1);
         return;
@@ -976,15 +1057,16 @@ function collectAttrsNames(node: ts.CallExpression, attrsNames: Set<string>): vo
 
 function checkDecorator(sourceFileNode: ts.SourceFile, node: ts.Node,
   log: LogInfo[], structContext: boolean, classContext: boolean, isObservedClass: boolean,
-  isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean): void {
+  isComponentV2: boolean, isObservedV1Class: boolean, isSendableClass: boolean,
+  classNode: ts.ClassDeclaration | undefined, structNode: ts.StructDeclaration | undefined): void {
   if (ts.isIdentifier(node) && (ts.isDecorator(node.parent) ||
     (ts.isCallExpression(node.parent) && ts.isDecorator(node.parent.parent)))) {
     const decoratorName: string = node.escapedText.toString();
     setLocalBuilderInFile(decoratorName);
-    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2);
+    validateStructDecorator(sourceFileNode, node, log, structContext, decoratorName, isComponentV2, structNode);
     validateMethodDecorator(sourceFileNode, node, log, structContext, decoratorName);
     validateClassDecorator(sourceFileNode, node, log, classContext, decoratorName, isObservedClass,
-      isObservedV1Class, isSendableClass);
+      isObservedV1Class, isSendableClass, classNode);
     if (isMixCompile()) {
       validatePropertyInStructInterop(structContext, node, decoratorName, sourceFileNode, log);
     } else {
@@ -1011,7 +1093,8 @@ function validateSingleDecorator(node: ts.Decorator, sourceFileNode: ts.SourceFi
     addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905116' });
     return;
   }
-  const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR];
+  const partialDecoratorCollection: string[] = [constantDefine.MONITOR_DECORATOR, COMPONENT_LOCAL_BUILDER_DECORATOR,
+    constantDefine.SYNC_MONITOR_DECORATOR];
   if (partialDecoratorCollection.includes(decoratorName) && node.parent &&
     !ts.isMethodDeclaration(node.parent)) {
     const message: string = `'${decoratorName}' can only decorate method.`;
@@ -1033,7 +1116,8 @@ function isMemberForComponentV2(decoratorName: string, isComponentV2: boolean): 
 
 const classDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, MIN_OBSERVED];
 const classMemberDecorators: string[] = [CLASS_TRACK_DECORATOR, CLASS_MIN_TRACK_DECORATOR, TYPE,
-  constantDefine.MONITOR, constantDefine.COMPUTED];
+  constantDefine.MONITOR, constantDefine.COMPUTED, constantDefine.SYNC_MONITOR];
+const monitorDecorators: string[] = [constantDefine.SYNC_MONITOR, constantDefine.MONITOR];
 
 function validTypeCallback(node: ts.Identifier): boolean {
   let isSdkPath: boolean = true;
@@ -1055,18 +1139,20 @@ function isTypeFromSdkCallback(classContext: boolean, decoratorName: string, isT
 
 function validateClassDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
   classContext: boolean, decoratorName: string, isObservedClass: boolean, isObservedV1Class: boolean,
-  isSendableClass: boolean): void {
+  isSendableClass: boolean, classNode: ts.ClassDeclaration | undefined): void {
   const isTypeFromSdk: boolean = validTypeCallback(node);
   if (!classContext && (classDecorators.includes(decoratorName) || isTypeFromSdkCallback(classContext, decoratorName, isTypeFromSdk))) {
     const message: string = `The '@${decoratorName}' decorator can decorate only member variables of a class.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905345' });
   } else if (classContext && classMemberDecorators.includes(decoratorName)) {
-    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass, isTypeFromSdk);
+    validateMemberInClass(isObservedClass, decoratorName, node, log, sourceFileNode, isObservedV1Class, isSendableClass,
+      isTypeFromSdk, classNode);
   }
 }
 
 function validateMemberInClass(isObservedClass: boolean, decoratorName: string, node: ts.Identifier,
-  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean, isTypeFromSdk: boolean): void {
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isObservedV1Class: boolean, isSendableClass: boolean,
+  isTypeFromSdk: boolean, classNode: ts.ClassDeclaration | undefined): void {
   if (decoratorName === CLASS_TRACK_DECORATOR) {
     if (isObservedClass) {
       const message: string = `'@${decoratorName}' cannot be used with classes decorated by '@ObservedV2.'` +
@@ -1081,12 +1167,630 @@ function validateMemberInClass(isObservedClass: boolean, decoratorName: string, 
     }
     return;
   }
+  if (monitorDecorators.includes(decoratorName) && isObservedClass && classNode &&
+  ts.isCallExpression(node.parent)) {
+    const parentCallExpression: ts.CallExpression = node.parent;
+    const isMonitor: boolean = decoratorName === constantDefine.MONITOR;
+    checkMonitorDecorators(parentCallExpression, sourceFileNode, log, classNode, isMonitor);
+  }
   if (!isObservedClass || !isPropertyForTrace(node, decoratorName)) {
     const info: string = decoratorName === CLASS_MIN_TRACK_DECORATOR ? 'variables' : 'method';
     const message: string = `The '@${decoratorName}' can decorate only member '${info}' within a 'class' decorated with '@ObservedV2'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905343' });
     return;
   }
+}
+
+function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceFileNode: ts.SourceFile,
+  log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration, isMonitor: boolean): void {
+  if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
+    return;
+  }
+  parentCallExpression.arguments.forEach(monitorArgument => {
+    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log, isMonitor);
+    if (!ts.isStringLiteral(monitorArgument)) {
+      return;
+    }
+    if (isMonitor) {
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+      return;
+    }
+    checkSyncMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+  });
+}
+
+function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  const monitorArg: argWrapper = { value: monitorArgument.text };
+  if (monitorArg.value.startsWith('.')) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const monitorArgs: string[] = monitorArg.value.trim().split('.');
+  if (!monitorArgs.length) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  if (ts.isClassDeclaration(classNode)) {
+    checkMonitorDecoratorArgInClass(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  } else {
+    checkMonitorDecoratorArgInStruct(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  }
+  return;
+}
+
+function checkMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: checker.getTypeAtLocation(classNode)
+  };
+  for (let i = 0; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, true)) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, true);
+  }
+  statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function checkMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: undefined
+  };
+  const isFound: boolean = findPropertyInStruct(
+    checker, firstArg, status, structNode
+  );
+  if (!isFound) {
+    validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+    return;
+  }
+  for (let i = 1; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, true)) {
+      statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, true);
+  }
+  statusDecideMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+interface argWrapper {
+  value: string
+}
+
+export enum MonitorArgsStatus {
+  PASS = 0,
+  ERROR = 1,
+  WARN = 2
+};
+
+interface MonitorStatus {
+  currentStatus: MonitorArgsStatus;
+  needCheck: boolean;
+  currentPropertyType: ts.Type | undefined;
+  currentClassNode?: ts.ClassDeclaration | ts.StructDeclaration | undefined;
+  visitedTypes?: Set<ts.Type>
+  currentPropertyTypeNode?: ts.TypeNode | undefined;
+}
+
+function checkSyncMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  const monitorArg: argWrapper = { value: monitorArgument.text };
+  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
+  if (!needCheckContent) {
+    return;
+  }
+  if (monitorArg.value.startsWith('.')) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const monitorArgs: string[] = monitorArg.value.trim().split('.');
+  if (!monitorArgs.length) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  if (ts.isClassDeclaration(classNode)) {
+    checkSyncMonitorDecoratorArgInClass(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  } else {
+    checkSyncMonitorDecoratorArgInStruct(monitorArgs, classNode,
+      monitorArgument, log, sourceFileNode);
+  }
+  return;
+}
+
+function checkSyncMonitorDecoratorArgInClass(monitorArgs: string[], classNode: ts.ClassDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: checker.getTypeAtLocation(classNode)
+  };
+  for (let i = 0; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, false)) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, false);
+  }
+  statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function checkSyncMonitorDecoratorArgInStruct(monitorArgs: string[], structNode: ts.StructDeclaration,
+  monitorArgument: ts.StringLiteral, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const argsLen: number = monitorArgs.length;
+  const firstArg: string = monitorArgs[0];
+  if (firstArg === '') {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker) {
+    return;
+  }
+  const status: MonitorStatus = {
+    currentStatus: MonitorArgsStatus.PASS,
+    needCheck: true,
+    currentPropertyType: undefined
+  };
+  let propertyName: string = '';
+  const isFound: boolean = findPropertyInStruct(
+    checker, firstArg, status, structNode
+  );
+  if (!isFound) {
+    validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, true);
+    return;
+  }
+  for (let i = 1; i < argsLen; i++) {
+    if (!status.needCheck) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    if (!preCheckSingleMonitorArgContent(status, checker, false)) {
+      statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+      return;
+    }
+    checkSingleMonitorArgContent(monitorArgs[i], status, checker, false);
+  }
+  statusDecideSyncMonitorArgExist(status.currentStatus, monitorArgument, log, sourceFileNode);
+}
+
+function preCheckSingleMonitorArgContent(status: MonitorStatus, checker: ts.TypeChecker, isMonitor: boolean): boolean {
+  if (status.visitedTypes) {
+    status.visitedTypes.clear();
+  }
+  const currentPropertyType: ts.Type | undefined = status.currentPropertyType;
+  if (!currentPropertyType) {
+    return false;
+  }
+  const originType: ts.Type | undefined = getOriginPropertyType(currentPropertyType, checker);
+  if (!originType) {
+    return false;
+  }
+  if (checkBasicType(originType)) {
+    status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
+    return false;
+  }
+  status.currentPropertyType = originType;
+  return true;
+}
+
+const MonitorBasicType = {
+  string: ts.TypeFlags.String,
+  number: ts.TypeFlags.Number,
+  boolean: ts.TypeFlags.Boolean,
+  bigint: ts.TypeFlags.BigInt,
+  null: ts.TypeFlags.Null,
+  undefined: ts.TypeFlags.Undefined,
+  void: ts.TypeFlags.Void,
+  enum: ts.TypeFlags.Enum
+};
+
+function checkBasicType(
+  originType: ts.Type
+): boolean {
+  const typeFlags: ts.TypeFlags = originType.getFlags();
+  const allBasicFlags = Object.values(MonitorBasicType).reduce((sum, flag) => sum | flag, 0);
+  return (typeFlags & allBasicFlags) !== 0;
+}
+
+function checkSingleMonitorArgContent(singleArg: string, status: MonitorStatus,
+  checker: ts.TypeChecker, isMonitor: boolean): boolean {
+  if (singleArg === '') {
+    status.needCheck = false;
+    status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
+    return false;
+  }
+  const currentPropertyType: ts.Type = status.currentPropertyType;
+  if (!status.visitedTypes) {
+    status.visitedTypes = new Set<ts.Type>();
+  }
+  if (status.visitedTypes.has(currentPropertyType)) {
+    status.needCheck = false;
+    return false;
+  }
+  status.visitedTypes.add(currentPropertyType);
+  status.currentPropertyType = undefined;
+  if (hasNumberPattern(singleArg)) {
+    processNumberPattern(status, isMonitor, singleArg, checker);
+    return false;
+  }
+  const symbol = currentPropertyType?.getSymbol();
+  const isTypeValid: boolean = checkTypeValid(symbol, currentPropertyType, status);
+  if (!isTypeValid) {
+    return false;
+  }
+  const classNode = getClassNodeFromSymbol(symbol);
+  if (!classNode) {
+    status.needCheck = false;
+    return false;
+  }
+  let isFound: boolean = findPropertyInClass(checker, singleArg, status, classNode);
+  if (isFound) {
+    return true;
+  }
+  isFound = findPropertyInBaseTypes(checker, currentPropertyType as ts.InterfaceType,
+    status, singleArg, isMonitor);
+  if (isFound) {
+    return true;
+  }
+  status.currentStatus = isMonitor ? MonitorArgsStatus.WARN : MonitorArgsStatus.ERROR;
+  status.needCheck = false;
+  return false;
+}
+
+function findPropertyInStruct(
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  structNode: ts.StructDeclaration
+): boolean {
+  let isFound: boolean = false;
+  structNode.members.some(propertyMember => {
+    if (ts.isPropertyDeclaration(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      const findInPropertyDecl: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [COMPONENTV2_LOCAL_DECORATOR,
+        COMPONENTV2_PARAM_DECORATOR, COMPONENTV2_PROVIDER_DECORATOR,
+        COMPONENTV2_CONSUMER_DECORATOR, COMPONENTV2_ONCE_DECORATOR]
+      );
+      if (findInPropertyDecl) {
+        isFound = true;
+        return true;
+      }
+    } else if (ts.isGetAccessor(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      const findInGetAccessor: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
+      );
+      if (findInGetAccessor) {
+        isFound = true;
+        return true;
+      }
+    }
+    return false;
+  });
+  return isFound;
+}
+
+function findPropertyInClass(
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  classNode: ts.ClassDeclaration | ts.InterfaceDeclaration
+): boolean {
+  let isFound: boolean = false;
+  classNode.members.some(propertyMember => {
+    if (ts.isPropertyDeclaration(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      const findInPropertyDecl: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.TRACE_DECORATOR]
+      );
+      if (findInPropertyDecl) {
+        isFound = true;
+        return true;
+      }
+    } else if (ts.isGetAccessor(propertyMember) &&
+      ts.isIdentifier(propertyMember.name)) {
+      const findInGetAccessor: boolean = findPropertyInDecl(
+        propertyMember, checker, singleArg, status, [constantDefine.COMPUTED_DECORATOR]
+      );
+      if (findInGetAccessor) {
+        isFound = true;
+        return true;
+      }
+    }
+    return false;
+  });
+  return isFound;
+}
+
+function findPropertyInDecl(
+  propertyMember: ts.PropertyDeclaration | ts.GetAccessorDeclaration,
+  checker: ts.TypeChecker,
+  singleArg: string,
+  status: MonitorStatus,
+  targetDecorators: string[]
+): boolean {
+  const propertyName: string = (propertyMember.name as ts.Identifier).escapedText.toString();
+  if (propertyName === singleArg) {
+    const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+    const hasTarget: boolean = decorators.some(decorator => {
+      return targetDecorators.includes(getDecoratorName(decorator));
+    });
+    const propertyType: ts.Type | undefined = checker?.getTypeAtLocation(propertyMember);
+    status.currentPropertyType = propertyType;
+    status.currentPropertyTypeNode = propertyMember?.type;
+    if (!hasTarget) {
+      status.currentStatus = MonitorArgsStatus.WARN;
+    }
+    return true;
+  }
+  return false;
+}
+
+function findPropertyInBaseTypes(
+  checker: ts.TypeChecker,
+  currentPropertyType: ts.InterfaceType,
+  status: MonitorStatus,
+  singleArg: string,
+  isMonitor: boolean
+): boolean {
+  const baseTypes = checker.getBaseTypes(currentPropertyType) || [];
+  for (const baseType of baseTypes) {
+    status.currentPropertyType = baseType;
+    const foundInBaseTypes: boolean = checkSingleMonitorArgContent(singleArg, status,
+      checker, isMonitor);
+    if (foundInBaseTypes) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkTypeValid(
+  symbol: ts.Symbol | undefined,
+  currentPropertyType: ts.Type,
+  status: MonitorStatus
+): boolean {
+  if (!symbol || !symbol.declarations || !symbol.declarations.length ||
+    !currentPropertyType.isClassOrInterface()) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+    return false;
+  }
+  return true;
+}
+
+function getClassNodeFromSymbol(
+  symbol: ts.Symbol
+): ts.ClassDeclaration | ts.InterfaceDeclaration | undefined {
+  let classNode: ts.ClassDeclaration | ts.InterfaceDeclaration | undefined;
+  const classDeclarations = [];
+  const interfaceDeclarations = [];
+  symbol.declarations.forEach(declaration => {
+    if (ts.isClassDeclaration(declaration)) {
+      classDeclarations.push(declaration);
+      return;
+    }
+    if (ts.isInterfaceDeclaration(declaration)) {
+      interfaceDeclarations.push(declaration);
+    }
+  });
+  if (classDeclarations.length && classDeclarations.length > 0 && ts.isClassDeclaration(classDeclarations[0])) {
+    classNode = classDeclarations[0];
+  } else if (interfaceDeclarations.length && interfaceDeclarations.length > 0 &&
+    ts.isInterfaceDeclaration(interfaceDeclarations[0])) {
+    classNode = interfaceDeclarations[0];
+  }
+  return classNode;
+}
+
+function statusDecideSyncMonitorArgExist(status: MonitorArgsStatus, monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  if (status === MonitorArgsStatus.PASS) {
+    return;
+  }
+  const isError: boolean = status === MonitorArgsStatus.ERROR;
+  validateSyncMonitorArgExist(monitorArgument, log, sourceFileNode, isError);
+}
+
+function statusDecideMonitorArgExist(status: MonitorArgsStatus, monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  if(status === MonitorArgsStatus.PASS) {
+    return;
+  }
+  validateMonitorArgExist(monitorArgument, log, sourceFileNode);
+}
+
+function validateSyncMonitorArgExist(monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile, isError: boolean): void {
+  const variableExistMessage: string = `'@SyncMonitor' cannot observe non-existent variables or non-state variables, ` +
+    `except in wildcard-based monitoring scenarios.`;
+  isError ? addLog(LogType.ERROR, variableExistMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905366' }) :
+    addLog(LogType.WARN, variableExistMessage, monitorArgument.pos, log, sourceFileNode);
+}
+
+function validateMonitorArgExist(monitorArgument: ts.StringLiteral,
+  log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const variableExistMessage: string = `The '@Monitor' decorator needs to monitor the state variables that exist.`;
+  addLog(LogType.WARN, variableExistMessage, monitorArgument.pos, log, sourceFileNode);
+}
+
+function hasNumberPattern(singleArg: string): boolean {
+  const regx: RegExp = /^\d+$/g;
+  return regx.test(singleArg);
+}
+
+function processNumberPattern(
+  status: MonitorStatus,
+  isMonitor: boolean,
+  singleArg: string,
+  checker: ts.TypeChecker
+): void {
+  if (!isMonitor) {
+    status.needCheck = false;
+    return;
+  }
+  if (!status.currentPropertyTypeNode || !checkArrayType(status, checker)) {
+    status.needCheck = false;
+    return;
+  }
+  const currentIndex: number = Number(singleArg);
+  if (isNaN(currentIndex)) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+    return;
+  }
+}
+
+function checkArrayType(
+  status: MonitorStatus,
+  checker: ts.TypeChecker
+): boolean {
+  const currentTypeNode: ts.TypeNode | undefined = status.currentPropertyTypeNode;
+  if (!currentTypeNode) {
+    status.currentStatus = MonitorArgsStatus.WARN;
+    status.needCheck = false;
+  }
+  if (ts.isArrayTypeNode(currentTypeNode)) {
+    status.currentPropertyTypeNode = currentTypeNode.elementType;
+    status.currentPropertyType = checker.getTypeFromTypeNode(status.currentPropertyTypeNode);
+    return true;
+  }
+  if (ts.isTypeReferenceNode(currentTypeNode) && ts.isIdentifier(currentTypeNode.typeName) &&
+    currentTypeNode.typeName.escapedText.toString() === 'Array' && currentTypeNode.typeArguments) {
+    status.currentPropertyTypeNode = currentTypeNode.typeArguments[0];
+    status.currentPropertyType = checker.getTypeFromTypeNode(status.currentPropertyTypeNode);
+    return true;
+  }
+  status.currentStatus = MonitorArgsStatus.WARN;
+  status.needCheck = false;
+  return false;
+}
+
+function checkWildCard(monitorArgument: ts.StringLiteral,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper): boolean {
+  const argText: string = monitorArgument.text;
+  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`;
+  const wildCardRegex: RegExp = /\*/g;
+  const matches = argText.match(wildCardRegex);
+  if (!matches || !matches.length) {
+    return true;
+  }
+  const wildCardCount: number = matches.length;
+  const isAtEnd: boolean = argText.endsWith('.*');
+  const isInvalidStr: boolean = argText === '*' || argText === '.*';
+  if (wildCardCount !== 1 || !isAtEnd || isInvalidStr) {
+    addLog(LogType.ERROR, wildCardMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905367' });
+    return false;
+  }
+  const prefix: string = argText.slice(0, -2);
+  if (prefix.length > 0 && prefix.endsWith('.')) {
+    addLog(LogType.ERROR, wildCardMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905367' });
+    return false;
+  }
+  monitorArg.value = argText.slice(0, -2);
+  return true;
+}
+
+function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
+  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean): void {
+  const decoratorName: string = isMonitor ? constantDefine.MONITOR : constantDefine.SYNC_MONITOR;
+  const typeMessage: string = `Only constant expressions are supported as parameters in '@${decoratorName}'. Variables are not allowed.`;
+  if (!ts.isStringLiteral(monitorArgument)) {
+    isMonitor ?
+      addLog(LogType.WARN, typeMessage, monitorArgument.pos, log, sourceFileNode) :
+      addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
+    return;
+  }
+}
+
+function getOrCreateClassTraceVariables(className: string,
+  classNode: ts.ClassDeclaration): string[] {
+  if (!classTraceVariables.has(className)) {
+    const traceVariables: string[] = [];
+    const variables: string[] = [];
+    const computedGetters: string[] = [];
+    const getters: string[] = [];
+    let propertyName: string = '';
+    classNode.members.forEach(propertyMember => {
+      if (ts.isPropertyDeclaration(propertyMember) &&
+        ts.isIdentifier(propertyMember.name)) {
+        propertyName = propertyMember.name.escapedText.toString();
+        variables.push(propertyName);
+        const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+        const hasTrace: boolean = decorators.some(decorator => {
+          return getDecoratorName(decorator) === constantDefine.TRACE_DECORATOR;
+        });
+        hasTrace && traceVariables.push(propertyName);
+      } else if (ts.isGetAccessor(propertyMember) &&
+        ts.isIdentifier(propertyMember.name)) {
+        propertyName = propertyMember.name.escapedText.toString();
+        getters.push(propertyName);
+        const decorators: readonly ts.Decorator[] = ts.getAllDecorators(propertyMember);
+        const hasComputed: boolean = decorators.some(decorator => {
+          return getDecoratorName(decorator) === constantDefine.COMPUTED_DECORATOR;
+        });
+        hasComputed && computedGetters.push(propertyName);
+      }
+    });
+    classVariables.set(className, variables);
+    classTraceVariables.set(className, traceVariables);
+    classGetters.set(className, getters);
+    classComputedGetters.set(className, computedGetters);
+  }
+  return classTraceVariables.get(className);
 }
 
 function validType(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[], decoratorName: string,
@@ -1224,7 +1928,7 @@ function validateInheritClassDecorator(parentNode: ts.ClassDeclaration, childCla
 }
 
 function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identifier, log: LogInfo[],
-  structContext: boolean, decoratorName: string, isComponentV2: boolean): void {
+  structContext: boolean, decoratorName: string, isComponentV2: boolean, structNode: ts.StructDeclaration | undefined): void {
   const name: string = `@${decoratorName}`;
   if (structContext) {
     if (isComponentV2) {
@@ -1232,11 +1936,18 @@ function validateStructDecorator(sourceFileNode: ts.SourceFile, node: ts.Identif
         const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@Component'.`;
         addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905339' });
       }
+      if (monitorDecorators.includes(decoratorName) && node.parent && structNode &&
+        ts.isCallExpression(node.parent)) {
+        const parentCallExpression: ts.CallExpression = node.parent;
+        const isMonitor: boolean = decoratorName === constantDefine.MONITOR;
+        checkMonitorDecorators(parentCallExpression, sourceFileNode, log, structNode, isMonitor);
+      }
     } else if (constantDefine.DECORATOR_V2.includes(name)) {
       const message: string = `The '@${decoratorName}' decorator can only be used in a 'struct' decorated with '@ComponentV2'.`;
       addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905338' });
     }
-  } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name)) {
+  } else if (STRUCT_DECORATORS.has(name) || constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(name) ||
+    constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR.includes(name)) {
     const message: string = `The '@${decoratorName}' decorator can only be used with 'struct'.`;
     addLog(LogType.ERROR, message, node.pos, log, sourceFileNode, { code: '10905337' });
   }
@@ -1618,6 +2329,7 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
   propertyCollection.set(componentName, componentSet.properties);
   stateCollection.set(componentName, componentSet.states);
   linkCollection.set(componentName, componentSet.links);
+  envCollection.set(componentName, componentSet.envs);
   storedFileInfo.overallLinkCollection.set(componentName, componentSet.links);
   propCollection.set(componentName, componentSet.props);
   regularCollection.set(componentName, componentSet.regulars);
@@ -1657,6 +2369,8 @@ class RecordRequire {
   hasRegular: boolean = false;
   hasState: boolean = false;
   hasProvide: boolean = false;
+  hasEnv: boolean = false;
+  envDecorator: ts.Decorator | undefined = undefined;
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComponentSet,
@@ -1665,6 +2379,9 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
   if (node.members) {
     const currentMethodCollection: Set<string> = new Set();
     node.members.forEach(item => {
+      if (uiCheck && item && item.name && ts.isIdentifier(item.name)) {
+        validateStmgmtKeywords(item.name.getText(), item.name);
+      }
       if (ts.isPropertyDeclaration(item) && ts.isIdentifier(item.name)) {
         const propertyName: string = item.name.getText();
         componentSet.properties.add(propertyName);
@@ -1687,9 +2404,11 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
               setPrivateCollection(componentSet, accessQualifierResult, propertyName, decoratorName);
               validateAccessQualifier(item, propertyName, decoratorName, accessQualifierResult,
                 recordRequire, uiCheck, hasValidatePrivate);
+              uiCheck && validateNonFunctionTypeWithDecorator(item, propertyName, decoratorName);
               hasValidatePrivate = true;
             }
           }
+          checkEnvDecorator(node, recordRequire, item);
           regularAndRequire(decorators, componentSet, recordRequire, propertyName, accessQualifierResult);
           checkRequire(propertyName, componentSet, recordRequire);
         }
@@ -1698,10 +2417,50 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
         validateStateVariable(item);
         currentMethodCollection.add(item.name.getText());
       }
+      if (ts.isClassStaticBlockDeclaration(item)) {
+        validateStaticBlock(item);
+      }
     });
     collectCurrentClassMethod(node, currentMethodCollection);
   }
   isStaticViewCollection.set(node.name.getText(), isStatic);
+}
+
+function validateNonFunctionTypeWithDecorator(
+  node: ts.PropertyDeclaration,
+  propertyName: string,
+  decoratorName: string
+): void {
+  if (NON_FUNCTION_TYPE_WITH_V1_DECORATORS.has(decoratorName) && node.type) {
+    const isFunctionType = getFunctionTypeFlag(node.type);
+    if (isFunctionType) {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        code: '10905363',
+        message: `The V1 decorator '${decoratorName}' cannot be applied to a Function-type variable '${propertyName}'.`,
+        pos: node.getStart(),
+      });
+    }
+  }
+}
+
+function getFunctionTypeFlag(typeNode: ts.TypeNode): boolean {
+  if (ts.isParenthesizedTypeNode(typeNode)) {
+    return getFunctionTypeFlag(typeNode.type);
+  }
+  if (ts.isTypeReferenceNode(typeNode)) {
+    let escapedText = '';
+    if (typeNode.typeName && ts.isIdentifier(typeNode.typeName)) {
+      escapedText = typeNode.typeName.escapedText?.toString();
+    }
+    if (escapedText === 'Function') {
+      return true;
+    }
+  }
+  if (ts.isFunctionTypeNode(typeNode)) {
+    return true;
+  }
+  return false;
 }
 
 function collectCurrentClassMethod(node: ts.StructDeclaration, currentMethodCollection: Set<string>): void {
@@ -1831,6 +2590,129 @@ function setInitValue(requirekey: string, initKey: string, name: string, compone
   }
 }
 
+function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequire,
+  item: ts.PropertyDeclaration): void {
+  if (!recordRequire.hasEnv) {
+    return;
+  }
+  const structName: string = node.name.escapedText.toString();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+  if (!structInfo.isComponentV1) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905250',
+      message: `The '@Env' decorator can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
+      pos: item.getStart()
+    });
+  }
+  const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(item);
+  if (!propertyType) {
+    return;
+  }
+  const envTypeName: EnvTypeName = { currentTypeName: '' };
+  if (!checkEnvType(propertyType, envTypeName)) {
+    validateEnvType(item);
+  } else if (recordRequire.envDecorator) {
+    checkEnvDecoratorExp(recordRequire.envDecorator, envTypeName.currentTypeName);
+  }
+}
+
+export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string): void {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker || !node.expression || !ts.isCallExpression(node.expression) ||
+    !node.expression.arguments || !node.expression.arguments.length) {
+    return;
+  }
+  const envExp: ts.Expression = node.expression.arguments[0];
+  if (!ts.isPropertyAccessExpression(envExp) ||
+    !ts.isIdentifier(envExp.expression) ||
+    !isIdentifierHasEnumDecl(envExp.expression, checker) ||
+    !ts.isIdentifier(envExp.name)) {
+    validateEnvDecoratorExp(envExp, currentTypeName);
+    return;
+  }
+  const argText: string = envExp.getText();
+  if (!envAllowTypesAndArgs.has(currentTypeName)) {
+    return;
+  }
+  if (argText !== envAllowTypesAndArgs.get(currentTypeName)) {
+    validateEnvDecoratorExp(envExp, currentTypeName);
+  }
+}
+
+export function validateEnvDecoratorExp(node: ts.Expression, currentTypeName: string): void {
+  const trueArg: string = envAllowTypesAndArgs.get(currentTypeName);
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905368',
+    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${trueArg}.`,
+    pos: node.getStart()
+  });
+}
+
+function isIdentifierHasEnumDecl(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  const hasEnumDeclaration: boolean = declarations.some(decl => ts.isEnumDeclaration(decl));
+  return hasEnumDeclaration;
+}
+
+export interface EnvTypeName {
+  currentTypeName: string;
+}
+
+export function checkEnvType(propertyType: ts.Type, envTypeName: EnvTypeName): boolean {
+  if (!propertyType) {
+    return false;
+  }
+  const symbol = propertyType.getSymbol();
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!symbol || !checker) {
+    return false;
+  }
+  if (['string', 'number', 'boolean'].includes(checker.typeToString(propertyType))) {
+    return false;
+  }
+  if (symbol.declarations && symbol.declarations.some(declaration => ts.isTypeAliasDeclaration(declaration))) {
+    const typeAliasDeclaration = symbol.declarations.find(ts.isTypeAliasDeclaration);
+    if (typeAliasDeclaration) {
+      const aliasType = checker.getTypeAtLocation(typeAliasDeclaration);
+      return checkEnvType(aliasType, envTypeName);
+    }
+  }
+  if (propertyType.isClassOrInterface()) {
+    const typeName = checker.typeToString(propertyType);
+    if (envAllowTypesAndArgs.has(typeName)) {
+      envTypeName.currentTypeName = typeName;
+      return true;
+    }
+    const baseTypes = checker.getBaseTypes(propertyType);
+    for (const baseType of baseTypes) {
+      const checkBaseType = checkEnvType(baseType, envTypeName);
+      if (checkBaseType) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function validateEnvType(item: ts.PropertyDeclaration): void {
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905251',
+    message: `The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', ` +
+      `'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.`,
+    pos: item.getStart()
+  });
+}
+
 function collectionStates(node: ts.Decorator, decorator: string, name: string,
   componentSet: IComponentSet, recordRequire: RecordRequire): void {
   switch (decorator) {
@@ -1873,6 +2755,11 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       break;
     case COMPONENT_REQUIRE_DECORATOR:
       recordRequire.hasRequire = true;
+      break;
+    case COMPONENT_ENV_DECORATOR:
+      recordRequire.hasEnv = true;
+      recordRequire.envDecorator = node;
+      componentSet.envs.add(name);
       break;
   }
 }
@@ -2074,6 +2961,10 @@ export function resetComponentCollection(): void {
   provideInitialization.clear();
   privateCollection.clear();
   regularStaticCollection.clear();
+  classTraceVariables.clear();
+  classVariables.clear();
+  classComputedGetters.clear();
+  classGetters.clear();
 }
 
 function checkEntryComponent(node: ts.StructDeclaration, log: LogInfo[], sourceFile: ts.SourceFile): void {
@@ -2111,6 +3002,14 @@ function validateStateVariable(node: ts.MethodDeclaration): void {
   }
 }
 
+function validateStaticBlock(node: ts.ClassStaticBlockDeclaration): void {
+  transformLog.errors.push({
+    type: LogType.WARN,
+    message: `Static code blocks not supported in structs.`,
+    pos: node.getStart(),
+  });
+}
+
 export function getObservedPropertyCollection(className: string): Set<string> {
   const observedProperthCollection: Set<string> = new Set([
     ...stateCollection.get(className),
@@ -2139,6 +3038,93 @@ export function getLocalStorageCollection(componentName: string, collection: Set
   }
 }
 
+function readStmgmtWhiteList(): void {
+  const relPath: string = '../stmgmtWhiteList.json';
+  const absolutePath: string = path.join(__dirname, relPath);
+  if (!fs.existsSync(absolutePath)) {
+    return;
+  }
+  const stats: any = fs.statSync(absolutePath);
+  if (!stats.isFile()) {
+    return;
+  }
+  const fileContent: any = require(absolutePath);
+  if (fileContent) {
+    stmgmtWhiteList = new Set(fileContent.attrs ?? []);
+  }
+}
+
+export function validateStmgmtKeywords(itemName: string, memberNode: ts.Identifier): void {
+  const message: string = `Methods, properties and accessors in structures decorated by '@Component'` +
+    ` and '@ComponentV2' cannot have name as '${itemName}'.`;
+  if (stmgmtWhiteList.size && stmgmtWhiteList.has(itemName)) {
+    transformLog.errors.push({
+      message: message,
+      pos: memberNode.getStart(),
+      type: LogType.WARN
+    });
+  }
+}
+
+function checkMethodArgsNum(methodNode: ts.MethodDeclaration): boolean {
+  if (methodNode.parameters && methodNode.parameters.length) {
+    return true;
+  }
+  return false;
+}
+
+function checkComponentV1Reuse(methodNode: ts.MethodDeclaration): boolean {
+  if (!methodNode.parameters || !methodNode.parameters.length) {
+    return false;
+  }
+  if (methodNode.parameters.length > 1) {
+    return true;
+  }
+  if (methodNode.parameters.length === 1) {
+    return !checkParamsMethod(methodNode);
+  }
+  return false;
+}
+
+function checkParamsMethod(
+  node: ts.MethodDeclaration
+): boolean {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!node.parameters || !node.parameters.length || node.parameters.length > 1 || !checker) {
+    return false;
+  }
+  const paramsTypeNode: ts.TypeNode | undefined = node.parameters[0]?.type;
+  if (!paramsTypeNode || !ts.isTypeReferenceNode(paramsTypeNode)) {
+    return false;
+  }
+  const paramsName: string = paramsTypeNode.typeName.getText();
+  return ['Record', 'Object', 'ESObject', 'object'].includes(paramsName);
+}
+
+function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDeclaration,
+  node: ts.MethodDeclaration, log: LogInfo[], sourceFileNode: ts.SourceFile): void {
+  const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
+  if (!structNode.name || !ts.isIdentifier(structNode.name) || !decorators || !decorators.length) {
+    return;
+  }
+  if (decoratorName !== '@ComponentReuse') {
+    const message: string = `Methods decorated with '${decoratorName}' cannot have input parameters.`;
+    checkMethodArgsNum(node) && addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905371' });
+    return;
+  }
+  const structName: string = structNode.name.escapedText.toString();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+  if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
+    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>`;
+    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
+    return;
+  }
+  if (structInfo.isComponentV2 && checkMethodArgsNum(node)) {
+    const message: string = `Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.`;
+    addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905370' });
+  }
+};
+
 export function resetValidateUiSyntax(): void {
   observedClassCollection.clear();
   enumCollection.clear();
@@ -2150,6 +3136,7 @@ export function resetValidateUiSyntax(): void {
   storageLinkCollection.clear();
   provideCollection.clear();
   consumeCollection.clear();
+  envCollection.clear();
   builderParamObjectCollection.clear();
   localStorageLinkCollection.clear();
   localStoragePropCollection.clear();
@@ -2157,4 +3144,5 @@ export function resetValidateUiSyntax(): void {
   useOSFiles.clear();
   sourcemapNamesCollection.clear();
   originalImportNamesMap.clear();
+  stmgmtWhiteList.clear();
 }
