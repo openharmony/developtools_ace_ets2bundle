@@ -298,66 +298,39 @@ function isSamePath(targetPath: string, currentPath: string): boolean {
 function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): void {
   // 遍历 crossplatformExternalModule 中的每一项
   for (const [crossPath, crossData] of crossplatformExternalModule.entries()) {
-
-
     // 合并component
     if (type === MergeCrossplatformModuleType.COMPONENT) {
-      collectComponentCollection(crossPath, crossData);
+      collectExternalModuleCollection(crossPath, crossData, appComponentCollection, type);
     }
-
+    // 合并module
     if (type === MergeCrossplatformModuleType.MODULE) {
-      collectModuleCollection(crossPath, crossData);
+      collectExternalModuleCollection(crossPath, crossData, appImportModuleCollection, type);
     }
   }
-
-  function collectModuleCollection(mapKey: string, mapData: any): void {
+  function collectExternalModuleCollection(mapKey: string, mapData: any, targetMap: Map<string, Set<string>>,
+    type: MergeCrossplatformModuleType): void {
     // 查找是否有相同路径的条目
     let matchedKey: string | undefined;
-    for (const [appPath] of appImportModuleCollection.entries()) {
+    for (const [appPath] of targetMap.entries()) {
       if (isSamePath(appPath, mapKey)) {
         matchedKey = appPath;
         break;
       }
     }
 
-    // 如果找到匹配的路径，合并 module
+    // 如果找到匹配的路径，合并 module 和 component
     if (matchedKey) {
-      const targetSet = appImportModuleCollection.get(matchedKey);
+      const targetSet = targetMap.get(matchedKey);
       if (targetSet) {
-        for (const moduleItem of mapData.module) {
+        for (const moduleItem of mapData[type]) {
           targetSet.add(moduleItem);
         }
       }
     } else {
       // 如果匹配不到，在参数A中新增一个键值对
       // 使用 crossPath 的原始格式作为 key，或者可以统一格式
-      const newSet = new Set<string>(mapData.module);
-      appImportModuleCollection.set(mapKey, newSet);
-    }
-  }
-  function collectComponentCollection(mapKey: string, mapData: any): void {
-    // 查找是否有相同路径的条目
-    let matchedKey: string | undefined;
-    for (const [appPath] of appComponentCollection.entries()) {
-      if (isSamePath(appPath, mapKey)) {
-        matchedKey = appPath;
-        break;
-      }
-    }
-
-    // 如果找到匹配的路径
-    if (matchedKey) {
-      const targetSet = appComponentCollection.get(matchedKey);
-      if (targetSet) {
-        for (const componentItem of mapData.component) {
-          targetSet.add(componentItem);
-        }
-      }
-    } else {
-      // 如果匹配不到，在参数A中新增一个键值对
-      // 使用 crossPath 的原始格式作为 key，或者可以统一格式
-      const newSet = new Set<string>(mapData.component);
-      appComponentCollection.set(mapKey, newSet);
+      const newSet = new Set<string>(mapData[type]);
+      targetMap.set(mapKey, newSet);
     }
   }
 }

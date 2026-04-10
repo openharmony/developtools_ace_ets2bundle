@@ -611,7 +611,7 @@ function getApiPathFromNode(declaration: ts.Node): string {
   let currentNode: ts.Node | undefined = declaration;
   
   // 向上遍历到 SourceFile 为止
-  while (currentNode && !ts.isSourceFile(currentNode)) {
+  while (currentNode && !ts.isSourceFile(currentNode) && API_NODE_KIND.has(currentNode.kind)) {
     // 获取节点名称
     const name = getApiNodeName(currentNode);
     if (name) {
@@ -649,17 +649,33 @@ function getApiNodeName(node: ts.Node): string {
     case ts.SyntaxKind.SetAccessor:
       apiName = node.name.getText();
       break;
-    case ts.SyntaxKind.Constructor | ts.SyntaxKind.ConstructSignature:
-      // TODO: 待确认规格
-      apiName = 'Constructor'
-      break;
-    case ts.SyntaxKind.IndexSignature:
-      // TODO: 待确认规格
-      apiName = 'Index'
-      break;
   }
   return apiName;
 }
+
+// API节点类型
+const API_NODE_KIND: Set<ts.SyntaxKind> = new Set([
+  ts.SyntaxKind.VariableStatement,
+  ts.SyntaxKind.MethodDeclaration,
+  ts.SyntaxKind.MethodSignature,
+  ts.SyntaxKind.FunctionDeclaration,
+  ts.SyntaxKind.Constructor,
+  ts.SyntaxKind.ConstructSignature,
+  ts.SyntaxKind.CallSignature,
+  ts.SyntaxKind.PropertyDeclaration,
+  ts.SyntaxKind.PropertySignature,
+  ts.SyntaxKind.EnumMember,
+  ts.SyntaxKind.EnumDeclaration,
+  ts.SyntaxKind.TypeAliasDeclaration,
+  ts.SyntaxKind.ClassDeclaration,
+  ts.SyntaxKind.InterfaceDeclaration,
+  ts.SyntaxKind.ModuleDeclaration,
+  ts.SyntaxKind.StructDeclaration,
+  ts.SyntaxKind.GetAccessor,
+  ts.SyntaxKind.SetAccessor,
+  ts.SyntaxKind.IndexSignature,
+  ts.SyntaxKind.OverloadDeclaration
+]);
 
 /**
  * get FA module check config
