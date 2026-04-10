@@ -146,7 +146,8 @@ import {
   GLOBAL_THIS,
   APIVERSION,
   HDSNAVIGATION,
-  HDSNAVDESTINATION
+  HDSNAVDESTINATION,
+  _CONTAINER_READER
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -875,8 +876,10 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   }
   const immutableStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
-  newStatements.push(res.newNode);
-  processDebug(node, nameResult, newStatements);
+  if (nameResult.name !== _CONTAINER_READER) {
+    newStatements.push(res.newNode);
+    processDebug(node, nameResult, newStatements);
+  }
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   const componentName: string = res.identifierNode.getText();
   let judgeIdStart: number;
@@ -884,27 +887,24 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     judgeIdStart = innerCompStatements.length;
   }
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
-    if (res.isButton) {
-      checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
-      if (projectConfig.isPreview || projectConfig.enableDebugLine) {
-        newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
-      } else {
-        newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
-      }
-    }
-    if (etsComponentResult.hasAttr) {
-      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
-    }
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
-    storedFileInfo.lazyForEachInfo.isDependItem = false;
-    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isBuilder, parent, undefined,
-      isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+    processNormalComponentBlock(
+      node, res, etsComponentResult, log, newStatements, componentName,
+      immutableStatements, innerCompStatements, isGlobalBuilder, isTransition,
+      builderParamsResult, isBuilder, parent, isInRepeatTemplate, nameResult
+    );
   } else {
-    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+    if (componentName !== _CONTAINER_READER) {
+      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+      processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
       isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    } else {
+      const containerReaderRes: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+      newStatements.push(containerReaderRes.newNode);
+      processDebug(node, nameResult, newStatements);
+      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+      processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    }
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -913,6 +913,59 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     innerCompStatements.splice(judgeIdStart, innerCompStatements.length - judgeIdStart,
       ifRetakeId(innerCompStatements.slice(judgeIdStart), idName));
   }
+}
+
+function processNormalComponentBlock(
+  node: ts.ExpressionStatement,
+  res: CreateResult,
+  etsComponentResult: EtsComponentResult,
+  log: LogInfo[],
+  newStatements: ts.Statement[],
+  componentName: string,
+  immutableStatements: ts.Statement[],
+  innerCompStatements: ts.Statement[],
+  isGlobalBuilder: boolean,
+  isTransition: boolean,
+  builderParamsResult: BuilderParamsResult,
+  isBuilder: boolean,
+  parent: string,
+  isInRepeatTemplate: boolean,
+  nameResult: NameResult
+): void {
+  if (res.isButton) {
+    checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
+    if (projectConfig.isPreview || projectConfig.enableDebugLine) {
+      newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
+    } else {
+      newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
+    }
+  }
+  if (etsComponentResult.hasAttr && componentName !== _CONTAINER_READER) {
+    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+  }
+  if (componentName !== _CONTAINER_READER) {
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    storedFileInfo.lazyForEachInfo.isDependItem = false;
+    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
+      { isAcceleratePreview: false, line: 0, column: 0, fileName: '' }, isBuilder, parent, undefined,
+      isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+    return;
+  }
+  const containerReaderStatements: ts.Statement[] = [];
+  processComponentChild(etsComponentResult.etsComponentNode.body, containerReaderStatements, log,
+    { isAcceleratePreview: false, line: 0, column: 0, fileName: '' }, isBuilder, parent, undefined,
+    isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+  const containerReaderRes: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION,
+    containerReaderStatements);
+  newStatements.push(containerReaderRes.newNode);
+  processDebug(node, nameResult, newStatements);
+  if (etsComponentResult.hasAttr) {
+    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+  }
+  processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+    isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+  storedFileInfo.lazyForEachInfo.isDependItem = false;
 }
 
 export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression): ts.IfStatement {
@@ -2083,7 +2136,8 @@ interface CreateResult {
   needPop: boolean;
 }
 
-function createComponent(node: ts.ExpressionStatement, type: string): CreateResult {
+function createComponent(node: ts.ExpressionStatement, type: string,
+  TrailingStatements?: ts.Statement[]): CreateResult {
   const res: CreateResult = {
     newNode: node,
     identifierNode: null,
@@ -2112,6 +2166,9 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     }
     res.newNode = type === COMPONENT_POP_FUNCTION ?
       ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null)) :
+      (temp.getText() === _CONTAINER_READER) ?
+      ts.factory.createExpressionStatement(createTrailingFunction(temp, identifierNode,
+        checkArguments(temp, type), TrailingStatements)) :
       ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
@@ -3630,11 +3687,59 @@ function processExclamationEtsComponent(argumentsArr: ts.NodeArray<ts.Expression
   return arr;
 }
 
+function createTrailingFunction(
+  node: ts.Identifier,
+  attrNode: ts.Identifier,
+  argumentsArr: ts.NodeArray<ts.Expression>,
+  arrowFunctionStatements?: ts.Statement[]
+): ts.CallExpression {
+  const compName: string = node.escapedText.toString();
+  const type: string = attrNode.escapedText.toString();
+  if (argumentsArr && argumentsArr.length) {
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
+      // @ts-ignore
+      argumentsArr = processDollarEtsComponent(argumentsArr, compName);
+    }
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(compName)) {
+      argumentsArr = processExclamationEtsComponent(argumentsArr, compName) as unknown as ts.NodeArray<ts.Expression>;
+    }
+    if (checkCreateArgumentBuilder(node, attrNode)) {
+      argumentsArr = transformBuilder(argumentsArr);
+    }
+  } else {
+    // @ts-ignore
+    argumentsArr = navigationCreateParam(compName, type);
+  }
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      node,
+      attrNode
+    ),
+    undefined,
+    [
+      ...argumentsArr,
+      arrowFunctionStatements ?
+        ts.factory.createArrowFunction(
+          undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            arrowFunctionStatements,
+            true
+          )
+        ) :
+        ts.factory.createIdentifier('undefined')
+    ]
+  );
+}
+
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
-    const compName: string = node.escapedText.toString();
-    const type: string = attrNode.escapedText.toString();
-    const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
+  const compName: string = node.escapedText.toString();
+  const type: string = attrNode.escapedText.toString();
+  const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
   if (argumentsArr && argumentsArr.length) {
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
