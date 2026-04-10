@@ -99,7 +99,8 @@ import {
   PUSH,
   PUV2_VIEW_BASE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
-  DECORATOR_REUSEABLE
+  DECORATOR_REUSEABLE,
+  COMPONENT_ENV_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -153,7 +154,8 @@ import {
 import {
   builderTypeParameter,
   initializeMYIDS,
-  globalBuilderParamAssignment
+  globalBuilderParamAssignment,
+  parseStylesNode
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
@@ -215,7 +217,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     }
   });
   members.forEach((item: ts.ClassElement) => {
-    let updateItem: ts.ClassElement;
+    let updateItem: ts.ClassElement | undefined;
     if (ts.isPropertyDeclaration(item)) {
       if (isStaticProperty(item)) {
         newMembers.push(item);
@@ -480,6 +482,12 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
       ) {
         isLocalStorage = true;
       }
+      if (decoratorName === COMPONENT_ENV_DECORATOR) {
+        updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
+          ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
+          propertyItem.name, propertyItem.questionToken, propertyItem.type, undefined);
+        continue;
+      }
       const newUpdatePropertyItem = createPropertyDeclaration(
         propertyItem, newType, false, isLocalStorage, parentComponentName);
       if (!updatePropertyItem) {
@@ -626,6 +634,7 @@ export function processComponentMethod(node: ts.MethodDeclaration, context: ts.T
       storedFileInfo.processBuilder = false;
       storedFileInfo.processLocalBuilder = false;
     } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+      parseStylesNode(node, log);
       if (node.parameters && node.parameters.length === 0) {
         if (ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
           INNER_STYLE_FUNCTION.set(name, node.body);

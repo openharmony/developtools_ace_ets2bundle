@@ -22,7 +22,8 @@ const {
   readFile,
   writeFileSync,
   resourcesRawfile,
-  getStoredFileInfo
+  getStoredFileInfo,
+  hspRawfileResources
 } = require('./lib/utils');
 
 const {
@@ -31,7 +32,8 @@ const {
   FAIL,
   TEST_RUNNER_DIR_SET,
   TS2ABC,
-  WORKERS_DIR
+  WORKERS_DIR,
+  APIVERSION
 } = require('./lib/pre_define');
 
 const {
@@ -56,7 +58,7 @@ const {
 
 configure({
   appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
-  categories: {'default': {appenders: ['ETS'], level: 'info'}}
+  categories: {'default': {appenders: ['ETS'], level: 'info'}}  
 });
 const logger = getLogger('ETS');
 
@@ -73,6 +75,7 @@ const resources = {
   app: {},
   sys: {}
 };
+const rawfileResources = new Map();
 const systemModules = [];
 const abilityPagesFullPath = new Set();
 let globalModulePaths = [];
@@ -138,18 +141,17 @@ function initProjectConfig(projectConfig) {
 
 function initProjectPathConfig(projectConfig) {
   projectConfig.projectPath = projectConfig.projectPath || process.env.aceModuleRoot ||
-  path.join(process.cwd(), 'sample');
+    path.join(process.cwd(), 'sample');
   projectConfig.buildPath = projectConfig.buildPath || process.env.aceModuleBuild ||
-  path.resolve(projectConfig.projectPath, 'build');
+    path.resolve(projectConfig.projectPath, 'build');
   projectConfig.aceModuleBuild = projectConfig.buildPath; // To be compatible with both webpack and rollup
   projectConfig.manifestFilePath = projectConfig.manifestFilePath || process.env.aceManifestPath ||
-  path.join(projectConfig.projectPath, 'manifest.json');
+    path.join(projectConfig.projectPath, 'manifest.json');
   projectConfig.aceProfilePath = projectConfig.aceProfilePath || process.env.aceProfilePath;
   projectConfig.aceModuleJsonPath = projectConfig.aceModuleJsonPath || process.env.aceModuleJsonPath;
-  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath ||
-  process.env.aceSuperVisualPath;
+  projectConfig.aceSuperVisualPath = projectConfig.aceSuperVisualPath || process.env.aceSuperVisualPath;
   projectConfig.hashProjectPath = projectConfig.hashProjectPath ||
-  hashProjectPath(projectConfig.projectPath);
+    hashProjectPath(projectConfig.projectPath);
   projectConfig.cachePath = projectConfig.cachePath || process.env.cachePath ||
     path.resolve(__dirname, 'node_modules/.cache');
   projectConfig.aceSoPath = projectConfig.aceSoPath || process.env.aceSoPath;
@@ -172,16 +174,19 @@ function loadEntryObj(projectConfig) {
   initProjectConfig(projectConfig);
   loadMemoryTrackingConfig(projectConfig);
   loadBuildJson();
+
   if (process.env.aceManifestPath && aceCompileMode === 'page') {
     setEntryFile(projectConfig);
     setFaTestRunnerFile(projectConfig);
   }
   if (process.env.aceModuleJsonPath) {
+    setStartupPagesForObf(projectConfig);
     setIntentEntryPages(projectConfig);
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
   }
+
   if (staticPreviewPage) {
     projectConfig.entryObj['./' + staticPreviewPage] = projectConfig.projectPath + path.sep +
       staticPreviewPage + '.ets?entry';
@@ -213,7 +218,8 @@ function loadEntryObj(projectConfig) {
             // Collect the file paths in main_pages.json
             setEntryArrayForObf(sourcePath);
           } else {
-            throw Error(`\u001b[31m ERROR: page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
+            throw Error('\u001b[31m10906403 ArkTS Compiler Error' + '\n' +
+              'Error Message: ' + `Page '${fileName.replace(/\\/g, '/')}' does not exist. \u001b[39m`)
               .message;
           }
         });
@@ -229,16 +235,47 @@ function loadEntryObj(projectConfig) {
   }
 }
 
+function readJsonFile(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath).toString());
+    }
+  } catch (e) {
+    throw Error('\x1B[31m' + `BUIDERROR: the ${filePath} file format is invalid.` +
+      '\x1B[39m').message;
+  }
+  return null;
+}
+
+function setStartupPagesForObf(projectConfig) {
+  const moduleJson = readJsonFile(projectConfig.aceModuleJsonPath);
+  if (moduleJson && moduleJson.module && moduleJson.module.appStartup) {
+    const startupFileName = `${moduleJson.module.appStartup.replace(/\$profile\:/, '')}.json`;
+    const startupFilePath = path.resolve(projectConfig.aceProfilePath, startupFileName);
+    const startupConfig = readJsonFile(startupFilePath);
+    if (!startupConfig) {
+      return;
+    }
+    setEntryArrayForObf(startupConfig.configEntry);
+    startupConfig.startupTasks?.forEach(task => {
+      if (task.srcEntry) {
+        setEntryArrayForObf(task.srcEntry);
+      }
+    });
+  }
+}
+
 function loadNavigationConfig(aceBuildJson) {
   if (aceBuildJson && aceBuildJson.routerMap && Array.isArray(aceBuildJson.routerMap)) {
     aceBuildJson.routerMap.forEach((item) => {
       if (item.pageSourceFile && (item.name || item.name === '') && item.buildFunction) {
         const filePath = path.resolve(item.pageSourceFile);
+        setEntryArrayForObf(filePath);
         const storedFileInfo = getStoredFileInfo();
         if (storedFileInfo.routerInfo.has(filePath)) {
-          storedFileInfo.routerInfo.get(filePath).push({name: item.name, buildFunction: item.buildFunction});
+          storedFileInfo.routerInfo.get(filePath).push({ name: item.name, buildFunction: item.buildFunction });
         } else {
-          storedFileInfo.routerInfo.set(filePath, [{name: item.name, buildFunction: item.buildFunction}]);
+          storedFileInfo.routerInfo.set(filePath, [{ name: item.name, buildFunction: item.buildFunction }]);
         }
       }
     });
@@ -289,7 +326,7 @@ function buildManifest(manifest, aceConfigPath) {
 }
 
 function getPackageJsonEntryPath() {
-  const rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
+  let rootPackageJsonPath = path.resolve(projectConfig.projectPath, '../../../' + projectConfig.packageJson);
   if (fs.existsSync(rootPackageJsonPath)) {
     let rootPackageJsonContent;
     try {
@@ -521,7 +558,6 @@ function readAbilityEntrance(moduleJson) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
     const isStatic = moduleJson.module?.arkTSMode === ARKTS_MODE.STATIC;
-
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
@@ -740,7 +776,7 @@ function filterWorker(workerPath) {
   return /\.(ts|js|ets)$/.test(workerPath);
 }
 
-;(function initSystemResource() {
+; (function initSystemResource() {
   const sysResourcePath = path.resolve(__dirname, './sysResource.js');
   if (fs.existsSync(sysResourcePath)) {
     resources.sys = require(sysResourcePath).sys;
@@ -762,7 +798,7 @@ function filterWorker(workerPath) {
   }
 })();
 
-;(function readSystemModules() {
+; (function readSystemModules() {
   const apiDirPath = path.resolve(__dirname, '../../api');
   const arktsDirPath = path.resolve(__dirname, '../../arkts');
   const kitsDirPath = path.resolve(__dirname, '../../kits');
@@ -940,6 +976,12 @@ function readHspResource() {
           hspResourceCollect[key] = value;
         }
       }
+      const hspRawFileSource = path.join(aceBuildJson.hspResourcesMap[hspName], '../resources/rawfile');
+      if (fs.existsSync(hspRawFileSource) && fs.statSync(hspRawFileSource).isDirectory()) {
+        const tempHspRawfileResource = [];
+        hspRawfileResources(hspRawFileSource, tempHspRawfileResource, '');
+        rawfileResources.set(hspName, tempHspRawfileResource);
+      }
     }
   }
 }
@@ -1115,7 +1157,7 @@ function isPartialUpdate(metadata, moduleType) {
         partialUpdateConfig.partialUpdateMode = false;
         if (projectConfig.aceModuleJsonPath) {
           logger.warn('\u001b[33m ArkTS:WARN File: ' + projectConfig.aceModuleJsonPath + '.' + '\n' +
-          " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
+            " The 'ArkTSPartialUpdate' field will no longer be supported in the future. \u001b[39m");
         }
       }
       if (item.name === 'ArkTSBuilderCheck' && item.value === 'false') {
@@ -1126,6 +1168,9 @@ function isPartialUpdate(metadata, moduleType) {
       }
       if (item.name === 'Api11ArkTSCheckMode' && item.value === 'DoArkTSCheckInCompatibleModeInApi11') {
         partialUpdateConfig.standardArkTSLinter = false;
+      }
+      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
+        projectConfig.useArkoala = true;
       }
       if (item.name === 'ArkTSVersion') {
         partialUpdateConfig.arkTSVersion = item.value;
@@ -1138,9 +1183,6 @@ function isPartialUpdate(metadata, moduleType) {
       }
       if (item.name === 'SkipArkTSStaticBlocksCheck' && item.value === 'true') {
         partialUpdateConfig.skipArkTSStaticBlocksCheck = true;
-      }
-      if (item.name === 'ArkoalaPlugin' && item.value === 'true') {
-        projectConfig.useArkoala = true;
       }
       if (item.name === 'UseTsHar' && item.value === 'true' && moduleType === 'har') {
         projectConfig.useTsHar = true;
@@ -1160,7 +1202,7 @@ function applicationConfig() {
   const localProperties = path.resolve(aceBuildJson.projectRootPath, 'local.properties');
   if (fs.existsSync(localProperties)) {
     try {
-      const localPropertiesFile = fs.readFileSync(localProperties, {encoding: 'utf-8'}).split(/\r?\n/);
+      const localPropertiesFile = fs.readFileSync(localProperties, { encoding: 'utf-8' }).split(/\r?\n/);
       localPropertiesFile.some((item) => {
         const builderCheckValue = item.replace(/\s+|;/g, '');
         if (builderCheckValue === 'ArkTSConfig.ArkTSBuilderCheck=false') {
@@ -1175,10 +1217,10 @@ function applicationConfig() {
 
 function partialUpdateController(minAPIVersion, metadata = null, moduleType = '') {
   projectConfig.minAPIVersion = minAPIVersion;
-  if (minAPIVersion >= 9) {
+  if (minAPIVersion >= APIVERSION.apiVersionNine) {
     partialUpdateConfig.partialUpdateMode = true;
   }
-  const MIN_VERSION_OPTIMIZE_COMPONENT = 10;
+  const MIN_VERSION_OPTIMIZE_COMPONENT = APIVERSION.apiVersionTen;
   if (minAPIVersion < MIN_VERSION_OPTIMIZE_COMPONENT) {
     partialUpdateConfig.optimizeComponent = false;
   }
@@ -1216,6 +1258,7 @@ function resetMain() {
   resetAbilityConfig();
   resetProjectConfig();
   resources.app = {};
+  rawfileResources.clear();
   abilityPagesFullPath.clear();
   aceBuildJson = {};
   partialUpdateConfig.builderCheck = true;
@@ -1298,6 +1341,7 @@ exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
 exports.readAppResource = readAppResource;
 exports.resources = resources;
+exports.rawfileResources = rawfileResources;
 exports.loadWorker = loadWorker;
 exports.abilityConfig = abilityConfig;
 exports.readWorkerFile = readWorkerFile;
@@ -1322,6 +1366,9 @@ exports.allModulesPaths = allModulesPaths;
 exports.resetProjectConfig = resetProjectConfig;
 exports.resetGlobalProgram = resetGlobalProgram;
 exports.setEntryArrayForObf = setEntryArrayForObf;
+exports.getPackageJsonEntryPath = getPackageJsonEntryPath;
+exports.setIntentEntryPages = setIntentEntryPages;
+exports.setStartupPagesForObf = setStartupPagesForObf;
 exports.externalApiCheckPlugin = externalApiCheckPlugin;
 exports.externalApiMethodPlugin = externalApiMethodPlugin;
 exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;

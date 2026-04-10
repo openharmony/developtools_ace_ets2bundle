@@ -1039,12 +1039,14 @@ export interface ExtendResult {
   componentName: string;
 }
 
-export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>, resourceName: string = ''): void {
+export function resourcesRawfile(rawfilePath: string, resourcesArr: Set<string>,
+  resourceName: string = ''): void {
   if (fs.existsSync(process.env.rawFileResource) && fs.statSync(rawfilePath).isDirectory()) {
     const files: string[] = fs.readdirSync(rawfilePath);
     files.forEach((file: string) => {
       if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
-        resourcesRawfile(path.join(rawfilePath, file), resourcesArr, resourceName ? resourceName + '/' + file : file);
+        resourcesRawfile(path.join(rawfilePath, file), resourcesArr,
+          resourceName ? resourceName + '/' + file : file);
       } else {
         if (resourceName) {
           resourcesArr.add(resourceName + '/' + file);
@@ -1100,6 +1102,22 @@ function clearRollupCacheStore(cacheStoreManager: object, currentKey: string): v
       cacheStoreManager.unmount(key);
     }
   }
+}
+
+export function hspRawfileResources(rawfilePath: string, hspResourcesArr: string[],
+  tempResourceName: string = ''): void {
+  const files: string[] = fs.readdirSync(rawfilePath);
+  if (!files.length) {
+    return;
+  }
+  files.forEach((file: string) => {
+    if (fs.statSync(path.join(rawfilePath, file)).isDirectory()) {
+      hspRawfileResources(path.join(rawfilePath, file), hspResourcesArr,
+        tempResourceName ? tempResourceName + '/' + file : file);
+    } else {
+      hspResourcesArr.push(tempResourceName ? `${tempResourceName}/${file}` : file);
+    }
+  });
 }
 
 export function startTimeStatisticsLocation(startTimeEvent: CompileEvent): void {
@@ -1383,6 +1401,81 @@ export function findNonNullType(type: ts.Type): ts.Type | ts.Type[] {
   }
   return filteredTypes;
 }
+
+export function isIdentifierConst(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker,
+  log: LogInfo[]
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  for (const decl of declarations) {
+    if (ts.isVariableDeclaration(decl) && decl.parent) {
+      const hasConstModifier: boolean = decl.parent.getText().includes('const');
+      return hasConstModifier;
+    }
+  }
+  return false;
+}
+
+export function isIdentifierEnum(
+  identifier: ts.Identifier,
+  checker: ts.TypeChecker
+): boolean {
+  const symbol = checker.getSymbolAtLocation(identifier);
+  if (!symbol) {
+    return false;
+  }
+  const declarations = symbol.getDeclarations() || [];
+  const hasEnumDeclaration: boolean = declarations.some(decl => ts.isEnumDeclaration(decl));
+  return hasEnumDeclaration;
+}
+
+export function isTypeAliasBySymbol(
+  typeSymbol: ts.Symbol | undefined,
+  checker: ts.TypeChecker,
+  type: ts.Type
+): boolean {
+  if (!typeSymbol || !typeSymbol.declarations || typeSymbol.declarations.length === 0) {
+    return false;
+  }
+  const hasTypeAliasDeclaration = typeSymbol.declarations.some(
+    declaration => ts.isTypeAliasDeclaration(declaration)
+  );
+  if (hasTypeAliasDeclaration) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get Origin Property Type
+ */
+export function getOriginPropertyType(propertyType: ts.Type, checker: ts.TypeChecker,
+  visitedTypes: Set<ts.Type> = new Set()): ts.Type | undefined {
+  if (!propertyType) {
+    return undefined;
+  }
+  if (visitedTypes.has(propertyType)) {
+    return undefined;
+  }
+  visitedTypes.add(propertyType);
+  const symbol = propertyType.getSymbol();
+  const isAliasType = isTypeAliasBySymbol(symbol, checker, propertyType);
+  if (!isAliasType) {
+    return propertyType;
+  }
+  const typeAliasDeclaration = symbol.declarations.find(declaration => ts.isTypeAliasDeclaration(declaration));
+  if (!typeAliasDeclaration) {
+    return propertyType;
+  }
+  const aliastType = checker?.getTypeAtLocation(typeAliasDeclaration);
+  return getOriginPropertyType(aliastType, checker, visitedTypes);
+}
+
 
 /**
  * Manage File type and checker
