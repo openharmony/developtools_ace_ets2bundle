@@ -111,6 +111,9 @@ import {
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
+import { ATOMICSERVICE_BUNDLE_TYPE } from './fast_build/system_api/api_check_define';
+import { sdkBuildErrorInfoFromDiagnostic } from './fast_build/system_api/api_check_utils';
+import { DIAGNOSTIC_SDK_CODE_MAP, SdkHvigorErrorInfo } from './fast_build/system_api/api_check_define';
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 import {
   getArkTSEvoDeclFilePath,
@@ -218,7 +221,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   checkArkTSVersion();
   Object.assign(compilerOptions, {
     'allowJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? true : false,
-    'checkJs': getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined,
+    'checkJs': (projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE) ? true :
+      (getArkTSLinterMode() !== ArkTSLinterMode.NOT_USE ? false : undefined),
     'emitNodeModulesFiles': true,
     'importsNotUsedAsValues': ts.ImportsNotUsedAsValues.Preserve,
     'module': ts.ModuleKind.CommonJS,
@@ -994,6 +998,11 @@ function containFormError(message: string): boolean {
   return false;
 }
 
+function matchJSGrammarErrorMessage(message: string): boolean {
+  const regex = /^'.*?' can't support atomicservice application\.$/;
+  return regex.test(message);
+}
+
 let fileToIgnoreDiagnostics: Set<string> | undefined = undefined;
 
 function collectFileToThrowDiagnostics(file: string, fileToThrowDiagnostics: Set<string>): void {
@@ -1059,6 +1068,17 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   fileToThrowDiagnostics.forEach(file => {
     fileToIgnoreDiagnostics.delete(file);
   });
+
+    // Remove the atomicservice's JavaScript file from the list of ignored errors.
+  const atomicJsFiles = new Set<string>();
+  for (const file of fileToIgnoreDiagnostics) {
+    if (isAtomicJsFile(file)) {
+      atomicJsFiles.add(file);
+    }
+  }
+
+  atomicJsFiles.forEach(file => fileToIgnoreDiagnostics.delete(file));
+
   MemoryMonitor.stopRecordStage(ignoreDiagnosticsRecordInfo);
 }
 
@@ -1075,6 +1095,12 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
 
   if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
     fileToIgnoreDiagnostics.has(toUnixPath(diagnostic.file.fileName))) {
+    return;
+  }
+
+  // Eliminate syntax errors in the JS files, retaining only API validation errors related to the atomService
+  if (fileToIgnoreDiagnostics && diagnostic.file && diagnostic.file.fileName &&
+    isAtomicJsFile(diagnostic.file.fileName) && !matchJSGrammarErrorMessage(diagnostic.messageText)) {
     return;
   }
 
@@ -1123,6 +1149,28 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
   }
 }
 
+function isAtomicJsFile(fileName: string): boolean {
+  const isJsOrModuleFile: boolean = /\.(c|m)?js$/.test(fileName);
+  if (!isJsOrModuleFile) {
+    return false;
+  }
+  const isAtomicServiceBundle: boolean = projectConfig.bundleType === ATOMICSERVICE_BUNDLE_TYPE;
+  if (!isAtomicServiceBundle) {
+    return false;
+  }
+  const isNonSdkFile: boolean = !isInSDK(fileName);
+  if (!isNonSdkFile) {
+    return false;
+  }
+  const normalizedFileName: string = fileName.replace(/\\/g, '/');
+  const normalizedProjectPath: string = projectConfig.projectPath.replace(/\\/g, '/');
+  const isInProjectPath: boolean = normalizedFileName.startsWith(normalizedProjectPath);
+  if (!isInProjectPath) {
+    return false;
+  }
+  return true;
+}
+
 function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   msgCollection: MessageCollection, errorCodeLogger: Object, flag: ErrorCodeModule | undefined): void {
   const { positionMessage, message, logMessage } = msgCollection;
@@ -1151,8 +1199,12 @@ function printErrorCode(diagnostic: ts.Diagnostic, etsCheckerLogger: Object,
   // Check for ArkUI error codes
   if (flag === ErrorCodeModule.UI || (flag === ErrorCodeModule.TSC && 
     validateUseErrorCodeLogger(ErrorCodeModule.UI, diagnostic.code))) {
-    const uiErrorInfo: HvigorErrorInfo | undefined = buildErrorInfoFromDiagnostic(
-      diagnostic.code, positionMessage, message);
+    let uiErrorInfo: HvigorErrorInfo | SdkHvigorErrorInfo | undefined;
+    if (DIAGNOSTIC_SDK_CODE_MAP.get(String(diagnostic.code))) {
+      uiErrorInfo = sdkBuildErrorInfoFromDiagnostic(positionMessage, message);
+    } else {
+      uiErrorInfo = buildErrorInfoFromDiagnostic(diagnostic.code, positionMessage, message);
+    }
     if (!uiErrorInfo) {
       etsCheckerLogger.error('\u001b[31m' + logMessage);
     } else {
