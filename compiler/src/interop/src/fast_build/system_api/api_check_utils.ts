@@ -1912,13 +1912,14 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
 
   const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
   const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/[\'|\"]/g,'');
+  const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g,'');
   const sincePoint: string[] = sinceFormat.split('.');
   if (!compatibileReg.test(sinceFormat)) {
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
+    return result;
   }
-  const isSinceVersionType: boolean = /^(['"])([^'"]*)\1$/.test(sinceValue);
+  const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
     result = checkCharScene(sincePoint, sinceFormat);
   } else {
