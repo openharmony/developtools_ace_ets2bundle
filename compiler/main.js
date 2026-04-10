@@ -46,8 +46,8 @@ const {
 } = require('log4js');
 
 configure({
-  appenders: { 'ETS': {type: 'stderr', layout: {type: 'messagePassThrough'}}},
-  categories: {'default': {appenders: ['ETS'], level: 'info'}}  
+  appenders: { 'ETS': { type: 'stderr', layout: { type: 'messagePassThrough' } } },
+  categories: { 'default': { appenders: ['ETS'], level: 'info' } }
 });
 const logger = getLogger('ETS');
 
@@ -82,8 +82,9 @@ let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
-// 拓展SDK校验插件
+// 跨平台拓展依赖配置
 let crossplatformDepsConfig = new Map();
+// 跨平台拓展依赖数据
 let crossplatformExternalModule = new Map();
 
 function initProjectConfig(projectConfig) {
@@ -861,7 +862,7 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
 
     for (const config of pluginGroup) {
       let pluginKey = '';
-      
+
       if (config.type) {
         // New format: has type field
         // Key: {osName}/{tag}/{type}
@@ -974,10 +975,16 @@ function collectExternalModules(sdkPaths) {
  * @param {string} configPath 
  */
 function collectCrossplatformDeps(configPath) {
-  const depsConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  return new Map(
-    depsConfig.map(item => [`@${item.module}`, item.deps])
-  );
+  let depsConfigMap = new Map();
+  try {
+    const depsConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    depsConfigMap = new Map(
+      depsConfig.map(item => [`@${item.module}`, item.deps])
+    );
+  } catch (error) {
+    console.error(error);
+  }
+  return depsConfigMap;
 }
 
 function readHspResource() {
