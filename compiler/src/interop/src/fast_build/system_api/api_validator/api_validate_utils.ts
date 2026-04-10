@@ -156,7 +156,7 @@ export class SdkComparisonHelper {
 
     const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
     const sinceValue: string = expression.arguments[0].getText().trim();
-    const sinceFormat: string = sinceValue.replace(/[\'|\"]/g, '');
+    const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g, '');
     const sincePointVersion: string[] = sinceFormat.split('.');
     if (sincePointVersion.length === 1 || runtimeType === this.openSourceRuntime) {
       const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
