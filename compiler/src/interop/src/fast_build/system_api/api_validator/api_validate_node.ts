@@ -1032,10 +1032,12 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
     const hasSuppressWarnings = (comment: string): boolean => /\/\/\s*@SuppressWarnings\s/g.test(comment);
     const hasCompatibility = (comment: string): boolean => /(^|[\s,])compatibility($|[\s,])/.test(comment);
     const hasSyscap = (comment: string): boolean => /(^|[\s,])syscap($|[\s,])/.test(comment);
+    const hasPermission = (comment: string): boolean => /(^|[\s,])permission($|[\s,])/.test(comment);
     return comments.some(comment => hasSuppressWarnings(comment) &&
       (
         (hasCompatibility(comment) && (this.warning_TypeName === 'since' || this.warning_TypeName === 'available')) ||
-        (hasSyscap(comment) && this.warning_TypeName === 'syscap')
+        (hasSyscap(comment) && this.warning_TypeName === 'syscap') ||
+ 	      (hasPermission(comment) && this.warning_TypeName === 'permission')
       )
     );
   }
