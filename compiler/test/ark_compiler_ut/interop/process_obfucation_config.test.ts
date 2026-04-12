@@ -20,7 +20,8 @@ import path from 'path';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import {
   utProcessObfConfig,
-  mergeNameCache
+  mergeNameCache,
+  mergeObfuscationRules
 } from '../../../lib/fast_build/ark_compiler/interop/process_obfuscation_config';
 
 mocha.describe('test process_obfuscation_config file api', function () {
@@ -498,6 +499,128 @@ MainPage
       const mergedContent = JSON.parse(fs.readFileSync(dynamicConfig.obfuscationRules.printNameCache, 'utf8'));
       expect(mergedContent.key1).to.equal('value1');
       expect(mergedContent.key2).to.equal('value2');
+    });
+  });
+
+  mocha.describe('3: test mergeObfuscationRules related apis', function () {
+    const OBFUSCATION_TXT = 'obfuscation.txt';
+
+    mocha.beforeEach(function () {
+      this.tempDir = path.join(__dirname, 'temp_merge_obfuscation_rules_dir');
+      if (!fs.existsSync(this.tempDir)) {
+        fs.mkdirSync(this.tempDir, { recursive: true });
+      }
+      this.dynamicDir = path.join(this.tempDir, 'dynamic');
+      this.staticDir = path.join(this.tempDir, 'static');
+      this.outputDir = path.join(this.tempDir, 'output');
+      fs.mkdirSync(this.dynamicDir, { recursive: true });
+      fs.mkdirSync(this.staticDir, { recursive: true });
+    });
+
+    mocha.afterEach(function () {
+      if (fs.existsSync(this.tempDir)) {
+        fs.rmSync(this.tempDir, { recursive: true, force: true });
+      }
+    });
+
+    mocha.it('3-1: test mergeObfuscationRules merges dynamic first then unique static lines', async function () {
+      const dynamicTxt = path.join(this.dynamicDir, OBFUSCATION_TXT);
+      const staticTxt = path.join(this.staticDir, OBFUSCATION_TXT);
+      fs.writeFileSync(dynamicTxt, '-enable-export-obfuscation\n-keep-dynamic-only\n');
+      fs.writeFileSync(staticTxt, '-enable-export-obfuscation\n-keep-static-extra\n');
+
+      fs.mkdirSync(this.outputDir, { recursive: true });
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, this.outputDir);
+
+      const outPath = path.join(this.outputDir, OBFUSCATION_TXT);
+      expect(fs.existsSync(outPath)).to.be.true;
+      const merged = fs.readFileSync(outPath, 'utf-8');
+      expect(merged.endsWith('\n')).to.be.true;
+      const lines = merged.trimEnd().split(/\r?\n/);
+      expect(lines[0]).to.equal('-enable-export-obfuscation');
+      expect(lines[1]).to.equal('-keep-dynamic-only');
+      expect(lines[2]).to.equal('-keep-static-extra');
+    });
+
+    mocha.it('3-2: test mergeObfuscationRules copies only dynamic when static file missing', async function () {
+      const dynamicTxt = path.join(this.dynamicDir, OBFUSCATION_TXT);
+      fs.writeFileSync(dynamicTxt, '-only-dynamic\n');
+
+      fs.mkdirSync(this.outputDir, { recursive: true });
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, this.outputDir);
+
+      const outPath = path.join(this.outputDir, OBFUSCATION_TXT);
+      expect(fs.readFileSync(outPath, 'utf-8')).to.equal('-only-dynamic\n');
+    });
+
+    mocha.it('3-3: test mergeObfuscationRules copies only static when dynamic file missing', async function () {
+      const staticTxt = path.join(this.staticDir, OBFUSCATION_TXT);
+      fs.writeFileSync(staticTxt, '-only-static\n');
+
+      fs.mkdirSync(this.outputDir, { recursive: true });
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, this.outputDir);
+
+      const outPath = path.join(this.outputDir, OBFUSCATION_TXT);
+      expect(fs.readFileSync(outPath, 'utf-8')).to.equal('-only-static\n');
+    });
+
+    mocha.it('3-4: test mergeObfuscationRules no-op when both inputs missing', async function () {
+      fs.mkdirSync(this.outputDir, { recursive: true });
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, this.outputDir);
+
+      expect(fs.existsSync(path.join(this.outputDir, OBFUSCATION_TXT))).to.be.false;
+    });
+
+    mocha.it('3-5: test mergeObfuscationRules returns early when any directory arg is empty', async function () {
+      await mergeObfuscationRules('', this.staticDir, this.outputDir);
+      await mergeObfuscationRules(this.dynamicDir, '', this.outputDir);
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, '');
+      await mergeObfuscationRules('', '', '');
+    });
+
+    mocha.it('3-6: test mergeObfuscationRules creates output directory when absent', async function () {
+      const dynamicTxt = path.join(this.dynamicDir, OBFUSCATION_TXT);
+      fs.writeFileSync(dynamicTxt, '-rule-a\n');
+      const nestedOut = path.join(this.tempDir, 'nested', 'out');
+      expect(fs.existsSync(nestedOut)).to.be.false;
+
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, nestedOut);
+
+      expect(fs.existsSync(path.join(nestedOut, OBFUSCATION_TXT))).to.be.true;
+    });
+
+    mocha.it('3-8: test mergeObfuscationRules when args are obfuscation.txt file paths (hvigor)', async function () {
+      const dynamicFile = path.join(this.dynamicDir, OBFUSCATION_TXT);
+      const staticFile = path.join(this.staticDir, OBFUSCATION_TXT);
+      const outputFile = path.join(this.outputDir, OBFUSCATION_TXT);
+      fs.writeFileSync(dynamicFile, '-line-dyn\n');
+      fs.writeFileSync(staticFile, '-line-stat\n');
+      fs.mkdirSync(this.outputDir, { recursive: true });
+
+      await mergeObfuscationRules(dynamicFile, staticFile, outputFile);
+
+      const lines = fs.readFileSync(outputFile, 'utf-8').trimEnd().split(/\r?\n/);
+      expect(lines).to.deep.equal(['-line-dyn', '-line-stat']);
+    });
+
+    mocha.it('3-7: test mergeObfuscationRules error handling invokes printObfLogger', async function () {
+      const dynamicTxt = path.join(this.dynamicDir, OBFUSCATION_TXT);
+      fs.writeFileSync(dynamicTxt, '-ok\n');
+      const blockerPath = path.join(this.tempDir, 'not_a_dir');
+      fs.writeFileSync(blockerPath, 'file');
+
+      let logCalled = false;
+      const originalPrintObfLogger = require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger;
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger =
+        (errorInfo: string, errorCodeInfo: any, level: string) => {
+          logCalled = true;
+        };
+
+      await mergeObfuscationRules(this.dynamicDir, this.staticDir, blockerPath);
+
+      require('../../../lib/fast_build/ark_compiler/common/ob_config_resolver').printObfLogger = originalPrintObfLogger;
+
+      expect(logCalled).to.be.true;
     });
   });
 });
