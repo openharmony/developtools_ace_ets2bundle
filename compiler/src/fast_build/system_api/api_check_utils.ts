@@ -481,8 +481,6 @@ function checkMergingComments(tagName: string) {
                   const minSDKVersion = projectConfig.compatibleSdkVersion;
                   const maxSDKVersion = projectConfig.compileSdkVersion;
                   isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
-                  console.log('minSDKVersion', minSDKVersion, 'maxSDKVersion', maxSDKVersion);
-                  console.log('isflag',isflag)
               }
           }
       })
