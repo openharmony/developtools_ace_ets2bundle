@@ -1471,7 +1471,7 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  * @param {ts.JsDocNodeCheckConfigItem} config
  * @returns {boolean}
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,node?: ts.Node,declaration?: ts.Declaration): boolean {
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
