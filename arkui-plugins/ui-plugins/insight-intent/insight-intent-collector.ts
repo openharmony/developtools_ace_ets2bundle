@@ -94,7 +94,9 @@ export interface InsightIntentEntityData {
     decoratorType: string;
     entityCategory: string;
     entityId?: string;
+    parentClassName?: string;
     parameters?: Record<string, unknown> | null | undefined;
+    supportedQueryProperties?: string[];
 }
 
 /**
@@ -115,7 +117,13 @@ export interface InsightIntentConfig {
     insightIntents: InsightIntentData[];  // 主要的 intent 列表（Link, Entry, Page, Function, Form）
     insightIntentsSrcEntry: Map<string, object[]>;        // 源文件入口信息
     extractInsightIntents: InsightIntentData[];  // 提取的 intent 数据（旧版兼容字段）
-    insightEntities?: InsightIntentEntityData[];  // Entity 类型单独存储
+}
+
+interface InsightIntentCacheConfig {
+    extractInsightIntents: InsightIntentDataBase[];
+    entityIntents: InsightIntentEntityData[];
+    entityOwnerMapByFile: Record<string, Record<string, string[]>>;
+    entityExtendsMapByFile: Record<string, Record<string, string>>;
 }
 
 /**
@@ -125,9 +133,12 @@ export interface InsightIntentConfig {
 export class InsightIntentCollector {
     private static instance: InsightIntentCollector;
     private intents: Map<string, InsightIntentData> = new Map();
-    // 记录每个 intent 对应的 entity 类名
-    private entityOwnerMap: Map<string, Set<string>> = new Map();
-
+    private fileIntentKeys: Map<string, Set<string>> = new Map();
+    private touchedFiles: Set<string> = new Set();
+    // 按源文件记录每个 intent 对应的 entity 类名，便于增量编译时精准替换
+    private entityOwnerMapByFile: Map<string, Map<string, Set<string>>> = new Map();
+    // 按源文件记录 entity 的直接继承关系：子类 -> 父类
+    private entityExtendsMapByFile: Map<string, Map<string, string>> = new Map();
     private constructor() {}
 
     public static getInstance(): InsightIntentCollector {
@@ -141,11 +152,31 @@ export class InsightIntentCollector {
      * 添加一个 InsightIntent 数据项
      */
     public addIntent(intent: InsightIntentData): void {
-        // 使用 decoratorFile + (decoratorClass 或 className) 作为唯一标识
+        // 支持同一个类上存在多个 InsightIntent 装饰器，避免后写入的数据覆盖先写入的数据
         const identifier = 'decoratorClass' in intent ? intent.decoratorClass : 
                           'className' in intent ? intent.className : 'Unknown';
-        const key = `${intent.decoratorFile}#${identifier}`;
+        const decoratorType = 'decoratorType' in intent ? intent.decoratorType : 'UnknownDecorator';
+        const intentIdentity = 'intentName' in intent && intent.intentName ? intent.intentName :
+            'functionName' in intent && intent.functionName ? intent.functionName :
+            'entityCategory' in intent && intent.entityCategory ? intent.entityCategory :
+            'formName' in intent && intent.formName ? intent.formName :
+            'default';
+        const key = `${intent.decoratorFile}#${identifier}#${decoratorType}#${intentIdentity}`;
         this.intents.set(key, intent);
+        if (intent.decoratorFile) {
+            if (!this.fileIntentKeys.has(intent.decoratorFile)) {
+                this.fileIntentKeys.set(intent.decoratorFile, new Set());
+            }
+            this.fileIntentKeys.get(intent.decoratorFile)!.add(key);
+        }
+    }
+
+    public markSourceFileTouched(decoratorFile: string | undefined): void {
+        if (!decoratorFile) {
+            return;
+        }
+        this.touchedFiles.add(decoratorFile);
+        this.removeFileData(decoratorFile);
     }
     
     /**
@@ -153,15 +184,29 @@ export class InsightIntentCollector {
      * @param intentName intent 的名称
      * @param entityClassName entity 类名
      */
-    public addEntityOwner(intentName: string, entityClassName: string): void {
-        if (!intentName || !entityClassName) {
+    public addEntityOwner(intentName: string, entityClassName: string, decoratorFile?: string): void {
+        if (!intentName || !entityClassName || !decoratorFile) {
             return;
         }
-        
-        if (!this.entityOwnerMap.has(intentName)) {
-            this.entityOwnerMap.set(intentName, new Set());
+
+        if (!this.entityOwnerMapByFile.has(decoratorFile)) {
+            this.entityOwnerMapByFile.set(decoratorFile, new Map());
         }
-        this.entityOwnerMap.get(intentName)!.add(entityClassName);
+        const fileEntityOwners = this.entityOwnerMapByFile.get(decoratorFile)!;
+        if (!fileEntityOwners.has(intentName)) {
+            fileEntityOwners.set(intentName, new Set());
+        }
+        fileEntityOwners.get(intentName)!.add(entityClassName);
+    }
+
+    public addEntityInheritance(entityClassName: string, parentClassName: string, decoratorFile?: string): void {
+        if (!entityClassName || !parentClassName || !decoratorFile) {
+            return;
+        }
+        if (!this.entityExtendsMapByFile.has(decoratorFile)) {
+            this.entityExtendsMapByFile.set(decoratorFile, new Map());
+        }
+        this.entityExtendsMapByFile.get(decoratorFile)!.set(entityClassName, parentClassName);
     }
 
     /**
@@ -176,18 +221,95 @@ export class InsightIntentCollector {
      */
     public clear(): void {
         this.intents.clear();
-        this.entityOwnerMap.clear();
+        this.fileIntentKeys.clear();
+        this.touchedFiles.clear();
+        this.entityOwnerMapByFile.clear();
+        this.entityExtendsMapByFile.clear();
     }
 
+    private removeFileData(decoratorFile: string): void {
+        const existingKeys = this.fileIntentKeys.get(decoratorFile);
+        if (existingKeys) {
+            for (const key of existingKeys) {
+                this.intents.delete(key);
+            }
+            this.fileIntentKeys.delete(decoratorFile);
+        }
+        this.entityOwnerMapByFile.delete(decoratorFile);
+        this.entityExtendsMapByFile.delete(decoratorFile);
+    }
+
+    private getTouchedFiles(): string[] {
+        return Array.from(this.touchedFiles.values());
+    }
+
+    private buildEntityOwnerMap(
+        entityOwnerMapByFile: Map<string, Map<string, Set<string>>> = this.entityOwnerMapByFile
+    ): Map<string, Set<string>> {
+        const entityOwnerMap: Map<string, Set<string>> = new Map();
+        for (const fileEntityOwners of entityOwnerMapByFile.values()) {
+            for (const [intentName, entityClassNames] of fileEntityOwners.entries()) {
+                if (!entityOwnerMap.has(intentName)) {
+                    entityOwnerMap.set(intentName, new Set());
+                }
+                const targetEntityNames = entityOwnerMap.get(intentName)!;
+                for (const entityClassName of entityClassNames) {
+                    targetEntityNames.add(entityClassName);
+                }
+            }
+        }
+        return entityOwnerMap;
+    }
+
+    private buildEntityExtendsMap(
+        entityExtendsMapByFile: Map<string, Map<string, string>> = this.entityExtendsMapByFile
+    ): Map<string, string> {
+        const entityExtendsMap: Map<string, string> = new Map();
+        for (const fileEntityExtends of entityExtendsMapByFile.values()) {
+            for (const [entityClassName, parentClassName] of fileEntityExtends.entries()) {
+                entityExtendsMap.set(entityClassName, parentClassName);
+            }
+        }
+        return entityExtendsMap;
+    }
+
+    private expandEntityOwnersWithInheritance(entityOwnerMap: Map<string, Set<string>>, entityExtendsMap: Map<string, string>): void {
+        for (const [intentName, entityClassNames] of entityOwnerMap.entries()) {
+            const expandedClassNames = new Set<string>(entityClassNames);
+            for (const className of entityClassNames) {
+                this.visitEntityInheritance(className, expandedClassNames, entityExtendsMap);
+            }
+            entityOwnerMap.set(intentName, expandedClassNames);
+        }
+    }
+
+    private visitEntityInheritance(
+        entityClassName: string,
+        expandedClassNames: Set<string>,
+        entityExtendsMap: Map<string, string>
+    ): void {
+        const parentClassName = entityExtendsMap.get(entityClassName);
+        if (!parentClassName || expandedClassNames.has(parentClassName)) {
+            return;
+        }
+        expandedClassNames.add(parentClassName);
+        this.visitEntityInheritance(parentClassName, expandedClassNames, entityExtendsMap);
+    }
     /**
      * 将 entities 关联到对应的 intents
      * 根据 entityOwnerMap 中的映射关系，将 entity 数据添加到对应的 intent 中
      */
-    private matchEntities(regularIntents: InsightIntentDataBase[], entities: InsightIntentEntityData[]): void {
-        if (entities.length === 0 || this.entityOwnerMap.size === 0) {
+    private matchEntities(
+        regularIntents: InsightIntentDataBase[],
+        entities: InsightIntentEntityData[],
+        entityOwnerMapByFile: Map<string, Map<string, Set<string>>> = this.entityOwnerMapByFile,
+        entityExtendsMapByFile: Map<string, Map<string, string>> = this.entityExtendsMapByFile
+    ): void {
+        const entityOwnerMap = this.buildEntityOwnerMap(entityOwnerMapByFile);
+        if (entities.length === 0 || entityOwnerMap.size === 0) {
             return;
         }
-        
+        this.expandEntityOwnersWithInheritance(entityOwnerMap, this.buildEntityExtendsMap(entityExtendsMapByFile));
         // 创建 entity 类名到 entity 数据的映射
         const entityMap: Map<string, InsightIntentEntityData> = new Map();
         for (const entity of entities) {
@@ -203,7 +325,7 @@ export class InsightIntentCollector {
         }
         
         // 遍历 entityOwnerMap，将 entities 添加到对应的 intent
-        for (const [intentName, entityClassNames] of this.entityOwnerMap.entries()) {
+        for (const [intentName, entityClassNames] of entityOwnerMap.entries()) {
             const targetIntent = intentNameMap.get(intentName);
             if (!targetIntent) {
                 continue;
@@ -236,8 +358,9 @@ export class InsightIntentCollector {
         // 构建 $id -> parameters 映射
         const entitySchemaMap: Map<string, Record<string, unknown>> = new Map();
         for (const entity of entities) {
-            if (entity.parameters && entity.parameters.$id) {
-                entitySchemaMap.set(entity.parameters.$id, entity.parameters);
+            const entityId = entity.parameters?.$id;
+            if (typeof entityId === 'string' && entity.parameters) {
+                entitySchemaMap.set(entityId, entity.parameters);
             }
         }
 
@@ -274,15 +397,18 @@ export class InsightIntentCollector {
         }
 
         // 检查每个属性
-        for (const key of Object.keys(obj)) {
-            const value = obj[key];
+        const objectRecord = obj as Record<string, unknown>;
+        for (const key of Object.keys(objectRecord)) {
+            const value = objectRecord[key];
             if (value && typeof value === 'object' && !Array.isArray(value)) {
+                const valueRecord = value as Record<string, unknown>;
+                const refValue = valueRecord.$ref;
                 // 检查是否包含 $ref 且能匹配到 entity 的 $id
-                if (value.$ref && entitySchemaMap.has(value.$ref)) {
-                    const entityParams = entitySchemaMap.get(value.$ref);
+                if (typeof refValue === 'string' && entitySchemaMap.has(refValue)) {
+                    const entityParams = entitySchemaMap.get(refValue);
                     // 深拷贝 entity 的 parameters 内容，避免修改原始数据
                     const resolvedContent = JSON.parse(JSON.stringify(entityParams));
-                    obj[key] = resolvedContent;
+                    objectRecord[key] = resolvedContent;
                 } else {
                     // 没有 $ref 或未匹配到，递归处理子对象
                     this.resolveRefsInObject(value, entitySchemaMap);
@@ -291,44 +417,195 @@ export class InsightIntentCollector {
         }
     }
 
-    private collectSchemaInfo(intent: InsightIntentLinkData): void {
-        // 1. 校验 Intent 对象是否包含 schema 字段
-        if (intent.schema) {
-            // 2. 拼接 JSON Schema 文件的完整路径
-            const schemaPath: string = path.join(
-                __dirname, '../../insight_intents/schema', // 基准路径：当前文件目录向上两级 → insight_intents/schema 目录
-                `${intent.schema}_${intent.intentVersion}.json` // 文件名：schema值 + _ + 版本号 + .json
-            );
-            // 3. 检查 Schema 文件是否存在
-            if (fs.existsSync(schemaPath)) {
-                // 4. 读取 Schema 文件的文本内容（编码为 utf-8）
-                const schemaContent: string = fs.readFileSync(schemaPath, 'utf-8');
-                // 5. 将 JSON 文本解析为 JavaScript 对象
-                const schemaObj: InsightIntentLinkData = JSON.parse(schemaContent);
-                // 6. 将 Schema 文件中的核心字段赋值到 Intent 对象
-                intent.parameters = schemaObj.parameters ?? intent.parameters;
-                intent.llmDescription = schemaObj.llmDescription ?? intent.llmDescription;
-                intent.keywords = schemaObj.keywords ?? intent.keywords;
-                intent.intentName = schemaObj.intentName ?? intent.intentName;
-                intent.result = schemaObj.result ?? intent.result;
-                intent.domain = schemaObj.domain ?? intent.domain;
+    private cloneData<T>(value: T): T {
+        return JSON.parse(JSON.stringify(value)) as T;
+    }
+
+    private stripEntitiesFromRegularIntents(intents: InsightIntentDataBase[]): InsightIntentDataBase[] {
+        return intents.map((intent: InsightIntentDataBase) => {
+            const clonedIntent = this.cloneData(intent);
+            delete clonedIntent.entities;
+            return clonedIntent;
+        });
+    }
+
+    private serializeEntityOwnerMapByFile(
+        entityOwnerMapByFile: Map<string, Map<string, Set<string>>>
+    ): Record<string, Record<string, string[]>> {
+        const result: Record<string, Record<string, string[]>> = {};
+        for (const [decoratorFile, intentMap] of entityOwnerMapByFile.entries()) {
+            result[decoratorFile] = {};
+            for (const [intentName, entityClassNames] of intentMap.entries()) {
+                result[decoratorFile][intentName] = Array.from(entityClassNames.values());
             }
         }
+        return result;
     }
+
+    private deserializeEntityOwnerMapByFile(
+        rawData: unknown
+    ): Map<string, Map<string, Set<string>>> {
+        const result: Map<string, Map<string, Set<string>>> = new Map();
+        if (!rawData || typeof rawData !== 'object') {
+            return result;
+        }
+        for (const [decoratorFile, intentMap] of Object.entries(rawData as Record<string, unknown>)) {
+            if (!intentMap || typeof intentMap !== 'object') {
+                continue;
+            }
+            const deserializedIntentMap: Map<string, Set<string>> = new Map();
+            for (const [intentName, entityClassNames] of Object.entries(intentMap as Record<string, unknown>)) {
+                if (!Array.isArray(entityClassNames)) {
+                    continue;
+                }
+                deserializedIntentMap.set(intentName, new Set(entityClassNames.filter((item): item is string => typeof item === 'string')));
+            }
+            result.set(decoratorFile, deserializedIntentMap);
+        }
+        return result;
+    }
+
+    private serializeEntityExtendsMapByFile(
+        entityExtendsMapByFile: Map<string, Map<string, string>>
+    ): Record<string, Record<string, string>> {
+        const result: Record<string, Record<string, string>> = {};
+        for (const [decoratorFile, extendsMap] of entityExtendsMapByFile.entries()) {
+            result[decoratorFile] = Object.fromEntries(extendsMap.entries());
+        }
+        return result;
+    }
+
+    private deserializeEntityExtendsMapByFile(
+        rawData: unknown
+    ): Map<string, Map<string, string>> {
+        const result: Map<string, Map<string, string>> = new Map();
+        if (!rawData || typeof rawData !== 'object') {
+            return result;
+        }
+        for (const [decoratorFile, extendsMap] of Object.entries(rawData as Record<string, unknown>)) {
+            if (!extendsMap || typeof extendsMap !== 'object') {
+                continue;
+            }
+            const deserializedExtendsMap: Map<string, string> = new Map();
+            for (const [entityClassName, parentClassName] of Object.entries(extendsMap as Record<string, unknown>)) {
+                if (typeof parentClassName === 'string') {
+                    deserializedExtendsMap.set(entityClassName, parentClassName);
+                }
+            }
+            result.set(decoratorFile, deserializedExtendsMap);
+        }
+        return result;
+    }
+
+    private readCacheFile(cacheFilePath: string | undefined): InsightIntentCacheConfig {
+        const emptyCache: InsightIntentCacheConfig = {
+            extractInsightIntents: [],
+            entityIntents: [],
+            entityOwnerMapByFile: {},
+            entityExtendsMapByFile: {},
+        };
+        if (!cacheFilePath || !fs.existsSync(cacheFilePath)) {
+            return emptyCache;
+        }
+        try {
+            const rawContent = fs.readFileSync(cacheFilePath, 'utf-8');
+            const parsedContent = JSON.parse(rawContent) as Partial<InsightIntentCacheConfig>;
+            return {
+                extractInsightIntents: Array.isArray(parsedContent.extractInsightIntents) ? parsedContent.extractInsightIntents : [],
+                entityIntents: Array.isArray(parsedContent.entityIntents) ? parsedContent.entityIntents : [],
+                entityOwnerMapByFile: parsedContent.entityOwnerMapByFile ?? {},
+                entityExtendsMapByFile: parsedContent.entityExtendsMapByFile ?? {},
+            };
+        } catch (error) {
+            console.warn('[InsightIntent] Failed to parse cache file:', error);
+            return emptyCache;
+        }
+    }
+
+    private buildCacheFileContent(
+        regularIntents: InsightIntentDataBase[],
+        entityIntents: InsightIntentEntityData[],
+        entityOwnerMapByFile: Map<string, Map<string, Set<string>>>,
+        entityExtendsMapByFile: Map<string, Map<string, string>>
+    ): InsightIntentCacheConfig {
+        return {
+            extractInsightIntents: this.stripEntitiesFromRegularIntents(regularIntents),
+            entityIntents: this.cloneData(entityIntents),
+            entityOwnerMapByFile: this.serializeEntityOwnerMapByFile(entityOwnerMapByFile),
+            entityExtendsMapByFile: this.serializeEntityExtendsMapByFile(entityExtendsMapByFile),
+        };
+    }
+
+    private mergeFileScopedSetMaps(
+        cachedMap: Map<string, Map<string, Set<string>>>,
+        currentMap: Map<string, Map<string, Set<string>>>,
+        touchedFileSet: Set<string>
+    ): Map<string, Map<string, Set<string>>> {
+        const mergedMap: Map<string, Map<string, Set<string>>> = new Map();
+        for (const [decoratorFile, intentMap] of cachedMap.entries()) {
+            if (touchedFileSet.has(decoratorFile)) {
+                continue;
+            }
+            const clonedIntentMap: Map<string, Set<string>> = new Map();
+            for (const [intentName, entityClassNames] of intentMap.entries()) {
+                clonedIntentMap.set(intentName, new Set(entityClassNames));
+            }
+            mergedMap.set(decoratorFile, clonedIntentMap);
+        }
+        for (const [decoratorFile, intentMap] of currentMap.entries()) {
+            const clonedIntentMap: Map<string, Set<string>> = new Map();
+            for (const [intentName, entityClassNames] of intentMap.entries()) {
+                clonedIntentMap.set(intentName, new Set(entityClassNames));
+            }
+            mergedMap.set(decoratorFile, clonedIntentMap);
+        }
+        return mergedMap;
+    }
+
+    private mergeFileScopedStringMaps(
+        cachedMap: Map<string, Map<string, string>>,
+        currentMap: Map<string, Map<string, string>>,
+        touchedFileSet: Set<string>
+    ): Map<string, Map<string, string>> {
+        const mergedMap: Map<string, Map<string, string>> = new Map();
+        for (const [decoratorFile, extendsMap] of cachedMap.entries()) {
+            if (touchedFileSet.has(decoratorFile)) {
+                continue;
+            }
+            mergedMap.set(decoratorFile, new Map(extendsMap));
+        }
+        for (const [decoratorFile, extendsMap] of currentMap.entries()) {
+            mergedMap.set(decoratorFile, new Map(extendsMap));
+        }
+        return mergedMap;
+    }
+
     /**
      * 写入 JSON 配置文件到指定目录
-     * 只更新 extractInsightIntents 和 insightEntities，保留 insightIntents 和 insightIntentsSrcEntry
+     * 只更新 extractInsightIntents，保留 insightIntents 和 insightIntentsSrcEntry
+     * Entity 按 1.1 旧链路格式挂载到对应 intent 的 entities 字段中，不单独落顶层字段
      */
-    public writeToFile(aceProfilePath: string, bundleName: string): boolean {
+    public writeToFile(aceProfilePath: string, bundleName: string, cachePath?: string): boolean {
         try {
+            const touchedFiles = this.getTouchedFiles();
+            const touchedFileSet = new Set(touchedFiles);
             const intents = this.getAllIntents();
-            if (intents.length === 0) {
+            const cacheFilePath = cachePath ? path.join(cachePath, 'insight_compile_cache.json') : undefined;
+            const cacheConfig = this.readCacheFile(cacheFilePath);
+            const cachedEntityOwnerMapByFile = this.deserializeEntityOwnerMapByFile(cacheConfig.entityOwnerMapByFile);
+            const cachedEntityExtendsMapByFile = this.deserializeEntityExtendsMapByFile(cacheConfig.entityExtendsMapByFile);
+            // 如果既没有新数据，也没有缓存，不进行写入处理
+            if (intents.length === 0 && 
+                cacheConfig.extractInsightIntents.length === 0 && 
+                cacheConfig.entityIntents.length === 0) {
                 return false;
             }
-
             // 确保目录存在
             if (!fs.existsSync(aceProfilePath)) {
                 fs.mkdirSync(aceProfilePath, { recursive: true });
+            }
+            if (cachePath && !fs.existsSync(cachePath)) {
+                fs.mkdirSync(cachePath, { recursive: true });
             }
 
             const outputPath = path.join(aceProfilePath, 'insight_intent.json');
@@ -342,7 +619,7 @@ export class InsightIntentCollector {
                     existingConfig = {
                         ...(parsed.insightIntents !== undefined && { insightIntents: parsed.insightIntents }),
                         ...(parsed.insightIntentsSrcEntry !== undefined && { insightIntentsSrcEntry: parsed.insightIntentsSrcEntry }),
-                        };
+                    };
                 } catch (error) {
                     console.warn('[InsightIntent] Failed to parse existing config:', error);
                 }
@@ -351,13 +628,8 @@ export class InsightIntentCollector {
             // 性能优化：合并分类、变量替换为单次遍历
             const regularIntents: InsightIntentDataBase[] = [];
             const entities: InsightIntentEntityData[] = [];
-
             // 单次遍历：分类 + 更新bundleName
             for (const intent of intents) {
-
-                // 收集意图对象的 Schema 信息（从指定路径读取 Schema 配置并填充到 intent）
-                this.collectSchemaInfo(intent);
-                
                 // 更新 bundleName
                 if ('bundleName' in intent) {
                     intent.bundleName = bundleName || intent.bundleName;
@@ -367,29 +639,60 @@ export class InsightIntentCollector {
                 if (intent.decoratorType === '@InsightIntentEntity') {
                     entities.push(intent as InsightIntentEntityData);
                 } else {
-                    regularIntents.push(intent);
+                    regularIntents.push(intent as InsightIntentDataBase);
                 }
             }
-            
+
+            const preservedIntents = cacheConfig.extractInsightIntents.filter((intent: InsightIntentDataBase) => {
+                return !intent.decoratorFile || !touchedFileSet.has(intent.decoratorFile);
+            });
+            const preservedEntities = cacheConfig.entityIntents.filter((entityIntent: InsightIntentEntityData) => {
+                return !entityIntent.decoratorFile || !touchedFileSet.has(entityIntent.decoratorFile);
+            });
+            const mergedRegularIntents = this.stripEntitiesFromRegularIntents([
+                ...preservedIntents,
+                ...regularIntents,
+            ]);
+            const mergedEntities = this.cloneData([
+                ...preservedEntities,
+                ...entities,
+            ]);
+            const mergedEntityOwnerMapByFile = this.mergeFileScopedSetMaps(
+                cachedEntityOwnerMapByFile,
+                this.entityOwnerMapByFile,
+                touchedFileSet
+            );
+            const mergedEntityExtendsMapByFile = this.mergeFileScopedStringMaps(
+                cachedEntityExtendsMapByFile,
+                this.entityExtendsMapByFile,
+                touchedFileSet
+            );
             // 将 entities 关联到对应的 intents
-            this.matchEntities(regularIntents, entities);
-            
+            this.matchEntities(mergedRegularIntents, mergedEntities, mergedEntityOwnerMapByFile, mergedEntityExtendsMapByFile);
+
             // 解析 $ref 引用：将实体 parameters 内容内联到 intent parameters 中的 $ref 引用位置
-            this.resolveEntityRefs(regularIntents, entities);
+            this.resolveEntityRefs(mergedRegularIntents, mergedEntities);
+            mergedRegularIntents.sort((leftIntent, rightIntent) => {
+                return (leftIntent.decoratorFile || '').localeCompare(rightIntent.decoratorFile || '');
+            });
             
             // 构建输出数据结构，保留现有的 insightIntents 和 insightIntentsSrcEntry
-            const config = {
-                ...existingConfig, 
-                extractInsightIntents: regularIntents
+            const config: Partial<InsightIntentConfig> = {
+                ...existingConfig
             };
-
-            // 如果有 Entity 数据，添加到配置中
-            if (entities.length > 0) {
-                config.insightEntities = entities;
-            }
+            config.extractInsightIntents = mergedRegularIntents;
 
             // 写入文件
-            fs.writeFileSync(outputPath, JSON.stringify(config, null, 2), 'utf-8');          
+            fs.writeFileSync(outputPath, JSON.stringify(config, null, 2), 'utf-8');
+            if (cacheFilePath) {
+                const cacheFileContent = this.buildCacheFileContent(
+                    mergedRegularIntents,
+                    mergedEntities,
+                    mergedEntityOwnerMapByFile,
+                    mergedEntityExtendsMapByFile
+                );
+                fs.writeFileSync(cacheFilePath, JSON.stringify(cacheFileContent, null, 2), 'utf-8');
+            }
             
             return true;
         } catch (error) {
@@ -410,13 +713,6 @@ export class InsightIntentCollector {
             const projectConfig = context.getProjectConfig?.();
             
             if (!projectConfig) {
-                return false;
-            }
-
-            const intentsCount = this.getAllIntents().length;
-            
-            // 只有当有收集到数据时才写入
-            if (intentsCount === 0) {
                 return false;
             }
             // 确保moduleRootPath目录存在
@@ -441,11 +737,13 @@ export class InsightIntentCollector {
                 }
             }
             const aceProfilePath = projectConfig.aceProfilePath
-            
+            if (!aceProfilePath) {
+                return false;
+            }
             const bundleName = projectConfig.bundleName || '';
             
             // 写入 JSON 文件
-            return this.writeToFile(aceProfilePath, bundleName);
+            return this.writeToFile(aceProfilePath, bundleName, projectConfig.cachePath);
         } catch (error) {
             console.error('[InsightIntent] Failed to generate config:', error);
             return false;
