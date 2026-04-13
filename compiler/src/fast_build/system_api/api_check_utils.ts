@@ -438,9 +438,12 @@ function isVersionRangeIntersect(start1, end1, start2, end2) {
 * @returns {Object|undefined} 如果成功提取到版本范围，返回一个包含 `start` 和 `end` 的对象；否则返回 `undefined`。
 */
 function extractVersionRange(comment) {
-  const pattern =  /\[.*?\]/;;
+  const pattern =  /\[.*?\]/;
+  if (comment.match(pattern).length<1){
+      return undefined;
+  }
   comment = comment.match(pattern)[0].replace("since", '').replace("[", '').replace("]", '').trim();
-  if (comment !== undefined && comment.split('-').length === 2) {
+  if (comment.split('-').length === 2) {
       const startVersion = comment.split('-')[0].trim();
       const endVersion = comment.split('-')[1].trim();
       return {
@@ -472,7 +475,6 @@ function checkMergingComments(tagName: string) {
       declaration?: ts.Declaration
 ):boolean => {
       let isflag = true;
-      console.log('test========================>',jsDocTags)
       jsDocTags.forEach(tagN => {
           if (tagName === tagN.tagName.escapedText && tagName === tagN.tagName.escapedText && tagN.comment !== undefined) {
               const versionRange = extractVersionRange(tagN.comment)//[since 16 - 18 ]
