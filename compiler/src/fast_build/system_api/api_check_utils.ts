@@ -1482,7 +1482,8 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray) && checkMergingComments(PERMISSION_TAG_CHECK_NAME) ;
+  let fun = checkMergingComments(PERMISSION_TAG_CHECK_NAME)
+  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray) && fun(jsDocTags, config, node, declaration);
 }
 
 /**
