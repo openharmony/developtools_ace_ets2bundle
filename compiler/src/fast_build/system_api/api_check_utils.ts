@@ -440,7 +440,7 @@ function isVersionRangeIntersect(start1, end1, start2, end2) {
 function extractVersionRange(comment) {
   const pattern =  /\[.*?\]/;;
   comment = comment.match(pattern)[0].replace("since", '').replace("[", '').replace("]", '').trim();
-  if (comment.split('-').length === 2) {
+  if (comment !== undefined && comment.split('-').length === 2) {
       const startVersion = comment.split('-')[0].trim();
       const endVersion = comment.split('-')[1].trim();
       return {
@@ -473,8 +473,8 @@ function checkMergingComments(tagName: string) {
 ):boolean => {
       let isflag = true;
       jsDocTags.forEach(tagN => {
-          if (tagName === tagN.tagName.escapedText && tagN.tagName.parent?.comment !== undefined) {
-              const versionRange = extractVersionRange(tagN.tagName.parent.comment)//[since 16 - 18 ]
+          if (tagName === tagN.tagName.escapedText && tagName === tagN.tagName.escapedText && tagN.comment !== undefined) {
+              const versionRange = extractVersionRange(tagN.comment)//[since 16 - 18 ]
               if (versionRange !== undefined) {
                   const startVersion = versionRange.start;
                   const endVersion = versionRange.end;
