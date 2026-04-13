@@ -1488,7 +1488,15 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
   let fun = checkMergingComments(PERMISSION_TAG_CHECK_NAME)
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray) && fun(jsDocTags, config, node, declaration);
+  if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {	 
+    return false;	 
+  } 
+  const suppressor = new PermissionWarningSuppressor(); 
+  if (suppressor.isApiVersionHandled(node)) { 
+    return false; 
+  } 
+  return fun(jsDocTags, config, node, declaration);
+
 }
 
 /**
