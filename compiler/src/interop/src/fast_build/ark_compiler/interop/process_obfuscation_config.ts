@@ -14,7 +14,7 @@
  */
 import path from 'path';
 import fs from 'fs';
-import { printObfLogger } from '../common/ob_config_resolver';
+import { LoggerLevel, printObfLogger } from '../common/ob_config_resolver';
 
 const CLASS_DECLARATION_KEYWORDS = [
   /\bpackage\b/,
@@ -127,7 +127,7 @@ function filterStaticConfigByPath(configPath: string, obfuscationCacheDir: strin
       position: configPath,
       solutions: [`Please check whether ${configPath} exists.`],
     };
-    printObfLogger(errorInfo, errorCodeInfo, 'error');
+    printObfLogger(errorInfo, errorCodeInfo, LoggerLevel.ERROR);
   }
   return newPath;
 }
@@ -499,7 +499,132 @@ function handleMergeError(error: Error): void {
     position: '',
     solutions: ['Please check if config files and cache files exist.']
   };
-  printObfLogger(errorInfo, errorCodeInfo, 'error');
+  printObfLogger(errorInfo, errorCodeInfo, LoggerLevel.ERROR);
+}
+
+const OBFUSCATION_RULES_FILENAME = 'obfuscation.txt';
+
+function isObfuscationTxtFilePath(p: string): boolean {
+  return path.basename(path.normalize(p)) === OBFUSCATION_RULES_FILENAME;
+}
+
+/** 入参可为所在目录，或已指向 obfuscation.txt 的完整文件路径（hvigor 可能传后者）。 */
+function resolveInputRulesPath(dirOrFile: string): string {
+  const normalized = path.normalize(dirOrFile);
+  if (isObfuscationTxtFilePath(normalized)) {
+    return normalized;
+  }
+  return path.join(normalized, OBFUSCATION_RULES_FILENAME);
+}
+
+/** 出参可为输出目录，或目标 obfuscation.txt 的完整路径。 */
+function resolveOutputRulesPath(dirOrFile: string): { filePath: string; parentDir: string } {
+  const normalized = path.normalize(dirOrFile);
+  if (isObfuscationTxtFilePath(normalized)) {
+    return { filePath: normalized, parentDir: path.dirname(normalized) };
+  }
+  const filePath = path.join(normalized, OBFUSCATION_RULES_FILENAME);
+  return { filePath, parentDir: normalized };
+}
+
+async function mergeObfuscationFileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function mergeObfuscationRulesLines(dynamicContent: string, staticContent: string): string {
+  const dynamicLines = dynamicContent.split(/\r?\n/);
+  const staticLines = staticContent.split(/\r?\n/);
+  const existingLines = new Set(dynamicLines.map(l => l.trim()).filter(l => l !== ''));
+  const result = [...dynamicLines];
+
+  for (const line of staticLines) {
+    const trimmed = line.trim();
+    if (trimmed === '' || existingLines.has(trimmed)) {
+      continue;
+    }
+    existingLines.add(trimmed);
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+async function doMergeObfuscationRules(
+  dynamicPathOrDir: string,
+  staticPathOrDir: string,
+  outputPathOrDir: string
+): Promise<void> {
+  const dynamicPath = resolveInputRulesPath(dynamicPathOrDir);
+  const staticPath = resolveInputRulesPath(staticPathOrDir);
+  const { filePath: outputPath, parentDir: outputParentDir } = resolveOutputRulesPath(outputPathOrDir);
+
+  const [dynamicExists, staticExists] = await Promise.all([
+    mergeObfuscationFileExists(dynamicPath),
+    mergeObfuscationFileExists(staticPath)
+  ]);
+
+  if (!dynamicExists && !staticExists) {
+    return;
+  }
+
+  if (!fs.existsSync(outputParentDir)) {
+    fs.mkdirSync(outputParentDir, { recursive: true });
+  }
+
+  if (dynamicExists && staticExists) {
+    const [dynamicContent, staticContent] = await Promise.all([
+      fs.promises.readFile(dynamicPath, 'utf-8'),
+      fs.promises.readFile(staticPath, 'utf-8')
+    ]);
+    const merged = mergeObfuscationRulesLines(dynamicContent.trim(), staticContent.trim());
+    await fs.promises.writeFile(outputPath, merged + '\n', 'utf-8');
+  } else if (dynamicExists) {
+    await fs.promises.copyFile(dynamicPath, outputPath);
+  } else {
+    await fs.promises.copyFile(staticPath, outputPath);
+  }
+}
+
+function handleObfuscationRulesMergeError(error: Error, position: string): void {
+  const errorInfo = `Failed to merge obfuscation rules. Error message: ${error.message}`;
+  const errorCodeInfo = {
+    code: '10804001',
+    description: 'ArkTS compiler Error',
+    cause: error.message,
+    position,
+    solutions: [
+      'Please check that dynamic/static inputs exist (as directory or obfuscation.txt path), ' +
+        'and that the output directory or obfuscation.txt target path is writable.'
+    ]
+  };
+  printObfLogger(errorInfo, errorCodeInfo, LoggerLevel.ERROR);
+}
+
+/**
+ * 合并动态侧与静态侧的混淆规则，写入合并结果。
+ * 三个参数均可为「所在目录」或「obfuscation.txt 的完整文件路径」（与 hvigor 传参一致）：
+ * - 若路径的 basename 为 obfuscation.txt，则视为文件路径，不再拼接子路径；
+ * - 否则视为目录，读写 {参数}/obfuscation.txt。
+ */
+export async function mergeObfuscationRules(
+  dynamicDir: string,
+  staticDir: string,
+  outputDir: string
+): Promise<void> {
+  if (!dynamicDir || !staticDir || !outputDir) {
+    return;
+  }
+
+  try {
+    await doMergeObfuscationRules(dynamicDir, staticDir, outputDir);
+  } catch (error) {
+    handleObfuscationRulesMergeError(error as Error, outputDir);
+  }
 }
 
 export const utProcessObfConfig = {
