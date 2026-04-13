@@ -621,16 +621,7 @@ function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
       message: PERMISSION_TAG_CHECK_ERROR,
       type: ts.DiagnosticCategory.Warning,
       tagNameShouldExisted: false,
-      checkJsDocSuppressorValidCallback: (jsDocTags, config, node, declaration) => {
-          // 执行 checkPermissionValue 检查
-          const permissionCheck = checkPermissionValue(jsDocTags, config, node, declaration);
-          if (!permissionCheck) {
-              return false; // 如果权限检查不通过，直接返回 false
-          }
-          // 执行 checkMergingComments 检查
-          const mergingCheck = checkMergingComments(PERMISSION_TAG_CHECK_NAME)(jsDocTags, config, node, declaration);
-          return mergingCheck; // 返回合并检查的结果
-      }
+      checkJsDocSuppressorValidCallback: checkPermissionValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
 }
@@ -1493,7 +1484,7 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
+  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray) && checkMergingComments(PERMISSION_TAG_CHECK_NAME) ;
 }
 
 /**
