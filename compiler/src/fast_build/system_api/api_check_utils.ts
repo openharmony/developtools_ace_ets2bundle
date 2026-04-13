@@ -473,7 +473,7 @@ function checkMergingComments(tagName: string) {
 ):boolean => {
       let isflag = true;
       jsDocTags.forEach(tagN => {
-          if (tagName === tagN.tagName.escapedText && tagN.tagName.parent.comment !== undefined) {
+          if (tagName === tagN.tagName.escapedText && tagN.tagName.parent?.comment !== undefined) {
               const versionRange = extractVersionRange(tagN.tagName.parent.comment)//[since 16 - 18 ]
               if (versionRange !== undefined) {
                   const startVersion = versionRange.start;
