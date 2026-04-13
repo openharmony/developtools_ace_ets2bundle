@@ -472,6 +472,7 @@ function checkMergingComments(tagName: string) {
       declaration?: ts.Declaration
 ):boolean => {
       let isflag = true;
+      console.log('test========================>',jsDocTags)
       jsDocTags.forEach(tagN => {
           if (tagName === tagN.tagName.escapedText && tagName === tagN.tagName.escapedText && tagN.comment !== undefined) {
               const versionRange = extractVersionRange(tagN.comment)//[since 16 - 18 ]
