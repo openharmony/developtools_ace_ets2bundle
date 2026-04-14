@@ -38,7 +38,7 @@ export function processAvailableStatement(node: ts.CallExpression): ts.CallExpre
     const arg = args[0];
     if (ts.isNumericLiteral(arg)) {
       return transformAvailableStatement(node, arg, TransfromType.NUMBER);
-    } else if (ts.isStringLiteral(arg)) {
+    } else if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
       return transformAvailableStatement(node, arg, TransfromType.STRING);
     }
   }
@@ -76,15 +76,20 @@ function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression
           ts.factory.createIdentifier(DISTRIBUTE_API_VERSION_FUNCTION_NAME)
         ),
         ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-        ts.factory.createNumericLiteral(convertToDistributeVersion(arg.getText()))
+        ts.factory.createNumericLiteral(convertToDistributeVersion(arg.text.toString()))
       );
       break;
   }
   return expression;
 }
 
-function convertToDistributeVersion(version: string) {
-  return version.replace(/\'/g, '').replace(/^(\d+)\.(\d+)\.(\d+)$/, (match, x, y, z) => {
+/**
+ * 将点分版本转换为数值版本
+ * @param version 点分版本字符串
+ * @returns 数值版本字符串
+ */
+function convertToDistributeVersion(version: string): string {
+  return version.replace(/\'/g, '').replace(/^(\d+)\.(\d+)\.(\d+)(\(\d+\))?$/, (match, x, y, z) => {
     return x + y.padStart(2, '0') + z.padStart(2, '0');
   });
 }
@@ -119,6 +124,6 @@ export function isApiAvailableStatement(node: ts.CallExpression): boolean {
  */
 export function isPointVersion(version: string): boolean {
   // MSF M位大于等于26
-  const REG_MSF = /^\'?(?:2[6-9]|[3-9][0-9]|[1-9][0-9]{2})\.(?:[0-9]|[1-9][0-9]?)\.(?:[0-9]|[1-9][0-9]?)\'?$/;
+  const REG_MSF = /^\'?(?:2[6-9]|[3-9][0-9]|[1-9][0-9]{2})\.(?:[0-9]|[1-9][0-9]?)\.(?:[0-9]|[1-9][0-9]?)(\(\d+\))?\'?$/;
   return REG_MSF.test(version);
 }

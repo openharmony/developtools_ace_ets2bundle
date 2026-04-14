@@ -109,6 +109,7 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
+import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 
 /**
  * bundle info
@@ -366,6 +367,133 @@ const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig
 const availableNodeCheckConfigCache: Map<string, string> = new Map<string, string>();
 let permissionsArray: string[] = [];
 
+
+/**
+ * 解析版本号字符串并返回一个整数表示的版本值。
+ *
+ * @param {string} s - 版本号字符串，支持格式包括：x.y.z(w)、单个数字、x.y.z。
+ * @returns {number} 返回一个整数值表示版本，解析失败返回0。
+ */
+
+function parseVersion(s) {
+  // 定义正则表达式
+  const pattern1 = /^(\d+)\.(\d+)\.(\d+)\((\d+)\)$/; // 匹配 x.y.z(w) 格式
+  const pattern2 = /^\d{1,2}$/;                     // 匹配 1到2位的数字
+  const pattern3 = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // 匹配 x.y.z 格式
+
+  // 检查是否匹配 pattern1
+  if (pattern1.test(s)) {
+      const match = s.match(pattern1);
+      const buildNumber = parseInt(match[4], 10); // 提取括号内的数字
+      return buildNumber * 10000;
+  }
+
+  // 检查是否匹配 pattern2
+  if (pattern2.test(s)) {
+      const number = parseInt(s, 10);
+      return number * 10000;
+  }
+
+  // 检查是否匹配 pattern3
+  if (pattern3.test(s)) {
+      const parts = s.split('.');
+      const major = parseInt(parts[0], 10);
+      const minor = parseInt(parts[1], 10);
+      const patch = parseInt(parts[2], 10);
+      return major * 10000 + minor * 100 + patch;
+  }
+
+  // 如果都不匹配，返回0
+  return 0;
+}
+
+/**
+* 判断两个版本号范围是否有交集。
+*
+* @param {string} start1 - 第一个版本范围的起始版本号。
+* @param {string} end1 - 第一个版本范围的结束版本号。
+* @param {string} start2 - 第二个版本范围的起始版本号。
+* @param {string} end2 - 第二个版本范围的结束版本号。
+* @returns {boolean} 如果两个版本范围有交集，返回 `true`，否则返回 `false`。
+*/
+function isVersionRangeIntersect(start1, end1, start2, end2) {
+  // 将版本号转换为数值
+  const numStart1 = parseVersion(start1);
+  const numEnd1 = parseVersion(end1);
+  const numStart2 = parseVersion(start2);
+  const numEnd2 = parseVersion(end2);
+
+  console.log(numStart1,numEnd1,numStart2,numEnd2)
+
+  // 确保start <= end
+  const aStart = Math.min(numStart1, numEnd1);
+  const aEnd = Math.max(numStart1, numEnd1);
+  const bStart = Math.min(numStart2, numEnd2);
+  const bEnd = Math.max(numStart2, numEnd2);
+
+  // 判断是否有交集
+  return !(aEnd < bStart || bEnd < aStart);
+}
+/**
+* 从注释中提取版本范围。
+*
+* @param {string} comment - 包含版本范围的注释字符串。
+* @returns {Object|undefined} 如果成功提取到版本范围，返回一个包含 `start` 和 `end` 的对象；否则返回 `undefined`。
+*/
+function extractVersionRange(comment) {
+  const pattern =  /\[since (.*?)\]/;
+  if (!comment.match(pattern)){
+      return undefined;
+  }
+  comment = comment.match(pattern)[0].replace("since", '').replace("[", '').replace("]", '').trim();
+  if (comment.split('-').length === 2) {
+      const startVersion = comment.split('-')[0].trim();
+      const endVersion = comment.split('-')[1].trim();
+      return {
+          start: startVersion,
+          end: endVersion
+      };
+  }
+  // 如果没有匹配到，返回 undefined
+  return undefined;
+}
+
+/**
+* 检查 JSDoc 标签中的版本范围是否与项目配置的 SDK 版本范围有交集。
+*
+* @param {string} tagName - 要检查的 JSDoc 标签名称。
+* @returns {(
+*   jsDocTags: readonly ts.JSDocTag[],
+*   config: ts.JsDocNodeCheckConfigItem,
+*   node?: ts.Node,
+*   declaration?: ts.Declaration
+* ) => boolean} 返回一个函数，用于检查 JSDoc 标签中的版本范围。
+*/
+
+function checkMergingComments(tagName: string) {
+  return (
+      jsDocTags: readonly ts.JSDocTag[],
+      config: ts.JsDocNodeCheckConfigItem,
+      node?: ts.Node,
+      declaration?: ts.Declaration
+):boolean => {
+      let isflag = true;
+      jsDocTags.forEach(tagN => {
+          if (tagName === tagN.tagName.escapedText && tagName === tagN.tagName.escapedText && tagN.comment !== undefined) {
+              const versionRange = extractVersionRange(tagN.comment)//[since 16 - 18 ]
+              if (versionRange !== undefined) {
+                  const startVersion = versionRange.start;
+                  const endVersion = versionRange.end;
+                  const minSDKVersion = projectConfig.compatibleSdkVersion;
+                  const maxSDKVersion = projectConfig.compileSdkVersion;
+                  isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
+              }
+          }
+      })
+      return isflag;
+  }
+}
+
 /**
  * get find find module check config
  *
@@ -427,7 +555,8 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
     tagName: [SYSTEM_API_TAG_CHECK_NAME],
     message: SYSTEM_API_TAG_CHECK_WARNING,
     type: ts.DiagnosticCategory.Warning,
-    tagNameShouldExisted: false
+    tagNameShouldExisted: false,
+    checkJsDocSuppressorValidCallback: checkMergingComments(SYSTEM_API_TAG_CHECK_NAME)
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(systemApiConfig));
 }
@@ -478,7 +607,8 @@ function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
     tagName: [TEST_TAG_CHECK_NAME],
     message: TEST_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Warning,
-    tagNameShouldExisted: false
+    tagNameShouldExisted: false,
+    checkJsDocSuppressorValidCallback: checkMergingComments(TEST_TAG_CHECK_NAME)
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(testConfig));
 }
@@ -491,11 +621,11 @@ function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
  */
 function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const permissionConfig: JsDocNodeCheckConfigItemInterface = {
-    tagName: [PERMISSION_TAG_CHECK_NAME],
-    message: PERMISSION_TAG_CHECK_ERROR,
-    type: ts.DiagnosticCategory.Warning,
-    tagNameShouldExisted: false,
-    checkJsDocSuppressorValidCallback: checkPermissionValue
+      tagName: [PERMISSION_TAG_CHECK_NAME],
+      message: PERMISSION_TAG_CHECK_ERROR,
+      type: ts.DiagnosticCategory.Warning,
+      tagNameShouldExisted: false,
+      checkJsDocSuppressorValidCallback: checkPermissionValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
 }
@@ -511,7 +641,8 @@ function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
     tagName: [FORM_TAG_CHECK_NAME],
     message: FORM_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
-    tagNameShouldExisted: true
+    tagNameShouldExisted: true,
+    checkJsDocSuppressorValidCallback: checkMergingComments(FORM_TAG_CHECK_NAME)
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(formConfig));
 }
@@ -546,17 +677,18 @@ function checkCrossplatformValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
+  const mergingCommentHandle = checkMergingComments(CROSSPLATFORM_TAG_CHECK_NAME);
   if (!crossplatformDepsConfig) {
-    return true;
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
   }
   const fileName: string = declaration.getSourceFile().fileName;
   if (!fileName || fileName === '') {
-    return true;
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
   }
   // crossplatformDepsConfig
   const apiFileName: string = path.basename(fileName).replace(/\.d\.(ts|ets)$/, '');
   if (!crossplatformDepsConfig.get(apiFileName)) {
-    return true;
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
   }
   const depsConfig: CrossplatformConfig[] = crossplatformDepsConfig.get(apiFileName);
 
@@ -565,10 +697,10 @@ function checkCrossplatformValue(
     const config: CrossplatformConfig = depsConfig[i];
     if (config.function === functionKey) {
       collectCrossplatformExternalModule(node, config);
-      return true;
+      return mergingCommentHandle(jsDocTags, config, node, declaration);
     }
   }
-  return true;
+  return mergingCommentHandle(jsDocTags, config, node, declaration);
 }
 
 function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
@@ -729,7 +861,8 @@ function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
     tagName: [ATOMICSERVICE_TAG_CHECK_NAME],
     message: ATOMICSERVICE_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
-    tagNameShouldExisted: true
+    tagNameShouldExisted: true,
+    checkJsDocSuppressorValidCallback: checkMergingComments(ATOMICSERVICE_TAG_CHECK_NAME)
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(atomicserviceConfig));
 }
@@ -1495,9 +1628,10 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  *
  * @param {ts.JSDocTag[]} jsDocTags
  * @param {ts.JsDocNodeCheckConfigItem} config
+ * @param {ts.Node} node
  * @returns {boolean}
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,node?: ts.Node,declaration?: ts.Declaration): boolean {
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
@@ -1508,7 +1642,16 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
+  let fun = checkMergingComments(PERMISSION_TAG_CHECK_NAME)
+  if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {	 
+    return false;	 
+  } 
+  const suppressor = new PermissionWarningSuppressor(); 
+  if (suppressor.isApiVersionHandled(node)) { 
+    return false; 
+  } 
+  return fun(jsDocTags, config, node, declaration);
+
 }
 
 /**
@@ -2067,13 +2210,14 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
 
   const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
   const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/[\'|\"]/g,'');
+  const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g,'');
   const sincePoint: string[] = sinceFormat.split('.');
   if (!compatibileReg.test(sinceFormat)) {
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
+    return result;
   }
-  const isSinceVersionType: boolean = /^(['"])([^'"]*)\1$/.test(sinceValue);
+  const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
     result = checkCharScene(sincePoint, sinceFormat);
   } else {

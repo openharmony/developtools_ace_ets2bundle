@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import ts, { TypeChecker } from 'typescript';
+import ts from 'typescript';
 import path from 'path';
 import fs from 'fs';
 import { fileInfoCache } from './file_info_cache';
@@ -81,7 +81,13 @@ import {
   PAGE_FULL_PATH,
   LENGTH,
   PUV2_VIEW_BASE,
-  CONTEXT_STACK
+  CONTEXT_STACK,
+  CHECK_COMPONENT_EXTEND_DECORATOR,
+  MUTABLEBUILDER_FUNCTION,
+  ATTRIBUTE_ID,
+  __GETRESOURCEID__,
+  __RESOURCEIDHAR__,
+  APIVERSION
 } from './pre_define';
 import {
   componentInfo,
@@ -132,12 +138,14 @@ import {
   GLOBAL_STYLE_FUNCTION,
   INTERFACE_NODE_SET,
   ID_ATTRS,
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_COMPONENT_NAMES
 } from './component_map';
 import {
   resources,
   projectConfig,
-  partialUpdateConfig
+  partialUpdateConfig,
+  rawfileResources
 } from '../main';
 import {
   createCustomComponentNewExpression,
@@ -172,16 +180,15 @@ import {
   createAndStartEvent,
   stopEvent
 } from './performance';
+import parseIntent from './userIntents_parser/parseUserIntents';
+import { insertGetOptionsAtTop } from './process_interop_component';
+import { isApiAvailableStatement, isPointVersion, processAvailableStatement } from './process_available_statement';
 import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
 export let resourceFileName: string = '';
 export const builderTypeParameter: { params: string[] } = { params: [] };
-import parseIntent from './userIntents_parser/parseUserIntents';
-import { insertGetOptionsAtTop } from './process_interop_component';
-import { isApiAvailableStatement, isPointVersion, processAvailableStatement } from './process_available_statement';
-
 
 export function processUISyntax(program: ts.Program, ut = false,
   parentEvent?: CompileEvent, filePath: string = '', share: object = null, metaInfo: Object = {}): Function {
@@ -365,6 +372,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           storedFileInfo.processBuilder = false;
           storedFileInfo.processGlobalBuilder = false;
         } else if (hasDecorator(node, COMPONENT_STYLES_DECORATOR)) {
+          parseStylesNode(node, transformLog.errors);
           if (node.parameters.length === 0) {
             node = undefined;
           } else {
@@ -410,13 +418,13 @@ export function processUISyntax(program: ts.Program, ut = false,
       } else if (ts.isDecorator(node)) {
         // This processing is for mock instead of ui transformation
         node = processDecorator(node);
-      } else if (isWrapBuilderFunction(node)) {
+      } else if (isWrapBuilderFunction(node) || isMutableBuilderFunction(node)) {
         if (node.arguments && node.arguments[0] && (!ts.isIdentifier(node.arguments[0]) ||
           ts.isIdentifier(node.arguments[0]) &&
           !CUSTOM_BUILDER_METHOD.has(node.arguments[0].escapedText.toString()))) {
           transformLog.errors.push({
             type: LogType.ERROR,
-            message: `The wrapBuilder's parameter should be '@Builder' function.`,
+            message: `The ${node.expression.escapedText.toString()}'s parameter should be '@Builder' function.`,
             pos: node.getStart(),
             code: '10905109'
           });
@@ -465,6 +473,14 @@ export function processUISyntax(program: ts.Program, ut = false,
     function isWrapBuilderFunction(node: ts.Node): boolean {
       if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
         node.expression.escapedText.toString() === WRAPBUILDER_FUNCTION) {
+        return true;
+      }
+      return false;
+    }
+
+    function isMutableBuilderFunction(node: ts.Node): boolean {
+      if (ts.isCallExpression(node) && node.expression && ts.isIdentifier(node.expression) &&
+        node.expression.escapedText.toString() === MUTABLEBUILDER_FUNCTION) {
         return true;
       }
       return false;
@@ -748,10 +764,13 @@ export function isAnimateToOrImmediately(node: ts.Node): boolean {
   return ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
     ATTRIBUTE_ANIMATETO_SET.has(node.expression.escapedText.toString());
 }
-
+interface isCorrectResourcesType {
+  booleanValue: boolean;
+}
 export function processResourceData(node: ts.CallExpression, filePath: string,
   previewLog: {isAcceleratePreview: boolean, log: LogInfo[]} = {isAcceleratePreview: false, log: []}): ts.Node {
   let isTemplateString: boolean = false;
+  const isCorrectResources: isCorrectResourcesType = { booleanValue: false };
   if (ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
       isTemplateString = true;
   }
@@ -759,21 +778,30 @@ export function processResourceData(node: ts.CallExpression, filePath: string,
     const resourceData: string[] = (node.arguments[0] as ts.StringLiteral).text.trim().split('.');
     const isResourceModule: boolean = resourceData.length && /^\[.*\]$/g.test(resourceData[0]);
     if (node.expression.getText() === RESOURCE_RAWFILE) {
-      isResourcefile(node, previewLog, isResourceModule, isTemplateString, filePath);
+      isResourcefile(node, previewLog, isResourceModule, isTemplateString, isCorrectResources, filePath);
+      if (isCorrectResources.booleanValue) {
+        resourcePreviewMessage(previewLog);
+        return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, true, false);
+      }
       if (resourceData && resourceData[0] && isResourceModule) {
         return createResourceParam(-1, RESOURCE_TYPE.rawfile, [node.arguments[0]], resourceData[0], true);
       } else { 
         return createResourceParam(0, RESOURCE_TYPE.rawfile, [node.arguments[0]], '', false);
       }
     } else {
-      return getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath, isTemplateString);
+      const resourceDataNode: ts.Node = getResourceDataNode(node, previewLog, resourceData, isResourceModule, filePath, isTemplateString, isCorrectResources);
+      if (isCorrectResources.booleanValue) {
+        resourcePreviewMessage(previewLog);
+        return createResourceParamWithVariable(node, -1, -1, true, false);
+      }
+      return resourceDataNode;
     }
   } else if (node.expression.getText() === RESOURCE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
-    return createResourceParamWithVariable(node, -1, -1);
+    return createResourceParamWithVariable(node, -1, -1, false, true);
   } else if (node.expression.getText() === RESOURCE_RAWFILE && node.arguments && node.arguments.length) {
     resourcePreviewMessage(previewLog);
-    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile);
+    return createResourceParamWithVariable(node, -1, RESOURCE_TYPE.rawfile, false, false);
   }
   return node;
 }
@@ -789,11 +817,13 @@ function resourcePreviewMessage(previewLog: {isAcceleratePreview: boolean, log: 
 }
 
 function getResourceDataNode(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
-  resourceData: string[], isResourceModule: boolean, filePath: string, isTemplateString: boolean): ts.Node {
+  resourceData: string[], isResourceModule: boolean, filePath: string, isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): ts.Node {
   let resourceValue: number;
-  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule, filePath, isTemplateString)) {
+  if (preCheckResourceData(resourceData, resources, node.arguments[0].getStart(), previewLog, isResourceModule,
+    filePath, isTemplateString, isCorrectResources)) {
     let resourceType: number = RESOURCE_TYPE[resourceData[1]];
     if (resourceType === undefined && !previewLog.isAcceleratePreview) {
+      isTemplateString && (isCorrectResources.booleanValue = true);
       transformLog.errors.push({
         type: isTemplateString ? LogType.WARN : LogType.ERROR,
         message: `The resource type '${resourceData[1]}' is not supported.`,
@@ -810,40 +840,88 @@ function getResourceDataNode(node: ts.CallExpression, previewLog: {isAccelerateP
     }
     return createResourceParam(resourceValue, resourceType,
       projectConfig.compileHar || isResourceModule ? Array.from(node.arguments) : Array.from(node.arguments).slice(1),
-      resourceData.length && resourceData[0], isResourceModule);
+      resourceData.length && resourceData[0], isResourceModule, resourceData[0]);
   }
   return node;
 }
 
 function isResourcefile(node: ts.CallExpression, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean,
-  isTemplateString: boolean, filePath: string): void {
-  if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(node.arguments[0].text) &&
+  isTemplateString: boolean, isCorrectResources: isCorrectResourcesType, filePath: string): void {
+  if (!ts.isStringLiteral(node.arguments[0]) && !ts.isNoSubstitutionTemplateLiteral(node.arguments[0])) {
+    return;
+  }
+  const resourceText: string = node.arguments[0].text;
+  if (!isResourceModule && process.env.rawFileResource && !storedFileInfo.resourcesArr.has(resourceText) &&
     !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
+    isTemplateString && (isCorrectResources.booleanValue = true);
     transformLog.errors.push({
       type: isTemplateString ? LogType.WARN : LogType.ERROR,
-      message: `No such '${node.arguments[0].text}' resource in current module.`,
+      message: `No such '${resourceText}' resource in current module.`,
       pos: node.getStart(),
       code: '10904333'
     });
   } else if (!isResourceModule && process.env.rawFileResource) {
     if (!storedFileInfo.resourcesForFiles.has(filePath)) {
- 	    storedFileInfo.resourcesForFiles.set(filePath, []);
- 	  }
- 	  storedFileInfo.resourcesForFiles.get(filePath).push(node.arguments[0].text);
+      storedFileInfo.resourcesForFiles.set(filePath, []);
+    }
+    storedFileInfo.resourcesForFiles.get(filePath).push(resourceText);
+  }
+  if (isResourceModule && projectConfig.hspResourcesMap && rawfileResources.keys() &&
+    !previewLog.isAcceleratePreview && process.env.compileMode === 'moduleJson') {
+    const resourceData: string[] = resourceText.trim().split('.');
+    const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
+    const needCheckResource: boolean = checkHspRawfileSource(resourceDataFirst, node);
+    const resourceParam: string = getAfterFirstDotRegex(resourceText);
+    needCheckResource && checkHspRawfileParam(resourceDataFirst, resourceParam, node);
   }
 }
 
-function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment>, resourceModuleName: string, isResourceModule: boolean): void {
+function checkHspRawfileParam(resourceDataFirst: string, resourceParam: string, node: ts.CallExpression): void {
+  if (!rawfileResources.has(resourceDataFirst)) {
+    return;
+  }
+  const hspRawfiles: string[] | undefined = rawfileResources.get(resourceDataFirst);
+  if (hspRawfiles && Array.isArray(hspRawfiles) &&
+    !hspRawfiles.includes(resourceParam)) {
+    transformLog.errors.push({
+      message: `No such '[${resourceDataFirst}].${resourceParam}' resource.`,
+      type: LogType.WARN,
+      pos: node.getStart()
+    });
+  }
+}
+
+function checkHspRawfileSource(resourceDataFirst: string, node: ts.CallExpression): boolean {
+  const collectedHspNames: string[] = Array.from(rawfileResources.keys());
+  if (!collectedHspNames.length || !collectedHspNames.includes(resourceDataFirst)) {
+    transformLog.errors.push({
+      message: `Unknown resource source '[${resourceDataFirst}]'.`,
+      type: LogType.WARN,
+      pos: node.getStart()
+    });
+    return false;
+  }
+  return true;
+}
+
+function getAfterFirstDotRegex(str: string): string {
+  const regex = /^[^.]*\./;
+  return str.replace(regex, '');
+}
+
+function addBundleAndModuleParam(propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration>,
+  resourceModuleName: string, isResourceModule: boolean): void {
   if (projectConfig.compileHar) {
     projectConfig.bundleName = '__harDefaultBundleName__';
     projectConfig.moduleName = '__harDefaultModuleName__';
   }
   const isDynamicBundleOrModule: boolean = isDynamic();
+  const isResetAndNoReplace: boolean = projectConfig.resetBundleName && !getGetCurrentBundleName();
   const moduleNameNode: ts.Expression = createResourceModuleNode(resourceModuleName, isResourceModule, isDynamicBundleOrModule);
   if (projectConfig.bundleName || projectConfig.bundleName === '') {
     propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_BUNDLE),
-      (projectConfig.resetBundleName || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
+      (isResetAndNoReplace || projectConfig.allowEmptyBundleName) ? ts.factory.createStringLiteral('') :
         createBundleOrModuleNode(isDynamicBundleOrModule, 'bundleName')
     ));
   }
@@ -878,12 +956,14 @@ function createBundleOrModuleNode(isDynamicBundleOrModule: boolean, type: string
     projectConfig.moduleName);
 }
 
-function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number): ts.ObjectLiteralExpression {
-  const propertyArray: Array<ts.PropertyAssignment> = [
+function createResourceParamWithVariable(node: ts.CallExpression, resourceValue: number, resourceType: number,
+  isTemplateStringOrString: boolean, isVariableParamR: boolean): ts.ObjectLiteralExpression {
+  const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [
+    (isTemplateStringOrString || !isVariableParamR || projectConfig.minAPIVersion%1000 < APIVERSION.apiVersionTwentyTwo) ?
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_ID),
       ts.factory.createNumericLiteral(resourceValue)
-    ),
+    ) : resourceIdName(__GETRESOURCEID__),
     ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
       ts.factory.createNumericLiteral(resourceType)
@@ -901,27 +981,61 @@ function createResourceParamWithVariable(node: ts.CallExpression, resourceValue:
   return resourceParams;
 }
 
-function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
-  resourceModuleName: string, isResourceModule: boolean):
-  ts.ObjectLiteralExpression {
-  if (projectConfig.compileHar) {
-    resourceValue = -1;
-  }
-
-  const propertyArray: Array<ts.PropertyAssignment> = [
-    ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(RESOURCE_NAME_ID),
-      ts.factory.createNumericLiteral(resourceValue)
+function resourceIdName(funcName: string): ts.GetAccessorDeclaration {
+  return ts.factory.createGetAccessorDeclaration(
+    undefined, ts.factory.createIdentifier(ATTRIBUTE_ID), [], undefined,
+    ts.factory.createBlock([ts.factory.createReturnStatement(ts.factory.createConditionalExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createTypeOfExpression(ts.factory.createIdentifier(funcName)),
+      ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      ts.factory.createStringLiteral(FUNCTION)
     ),
-    ts.factory.createPropertyAssignment(
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createCallExpression(
+      ts.factory.createIdentifier(funcName),
+      undefined,
+      [ts.factory.createThis()]
+    ),
+    ts.factory.createToken(ts.SyntaxKind.ColonToken),
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.MinusToken,
+      ts.factory.createNumericLiteral('1')
+    )
+  ))
+], true));
+}
+
+function createResourceParam(resourceValue: number, resourceType: number, argsArr: ts.Expression[],
+  resourceModuleName: string, isResourceModule: boolean, resourceSource: string = ''): ts.ObjectLiteralExpression {
+  if (projectConfig.compileHar) {
+    if (projectConfig.minAPIVersion%1000 < APIVERSION.apiVersiontwentyThree) {
+      resourceValue = -1;
+    } else if (projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersiontwentyThree && resourceSource !== 'sys') {
+      resourceValue = -1; 
+    }
+  }
+  const propertyArray: Array<ts.PropertyAssignment | ts.GetAccessorDeclaration> = [];
+  const resourceIdKeyValue: ts.PropertyAssignment = ts.factory.createPropertyAssignment(	
+      ts.factory.createStringLiteral(RESOURCE_NAME_ID),	
+      ts.factory.createNumericLiteral(resourceValue)	
+    );
+  if (resourceType === RESOURCE_TYPE.rawfile) {
+    propertyArray.push(resourceIdKeyValue);
+  } else if (isResourceModule && projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersionTwentyTwo) {
+    propertyArray.push(resourceIdName(__GETRESOURCEID__));
+  } else if (isCompileHar(isResourceModule, resourceSource)) {
+    propertyArray.push(resourceIdName(__RESOURCEIDHAR__));
+  } else {
+    propertyArray.push(resourceIdKeyValue);
+  }
+  propertyArray.push(ts.factory.createPropertyAssignment(
       ts.factory.createStringLiteral(RESOURCE_NAME_TYPE),
       ts.factory.createNumericLiteral(resourceType)
     ),
     ts.factory.createPropertyAssignment(
       ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
       ts.factory.createArrayLiteralExpression(argsArr, false)
-    )
-  ];
+    ));
 
   addBundleAndModuleParam(propertyArray, resourceModuleName, isResourceModule);
 
@@ -930,18 +1044,24 @@ function createResourceParam(resourceValue: number, resourceType: number, argsAr
   return resourceParams;
 }
 
-function preCheckResourceData(resourceData: string[], resources: object, pos: number,
-  previewLog: {isAcceleratePreview: boolean, log: LogInfo[]}, isResourceModule: boolean, filePath: string, isTemplateString: boolean): boolean {
+function isCompileHar(isResourceModule: boolean, resourceSource: string): boolean {
+  return projectConfig.compileHar && !isResourceModule && resourceSource !== 'sys' &&
+  projectConfig.minAPIVersion%1000 >= APIVERSION.apiVersiontwentyThree;
+}
+
+function preCheckResourceData(resourceData: string[], resources: object, pos: number, previewLog: {isAcceleratePreview: boolean, log: LogInfo[]},
+  isResourceModule: boolean, filePath: string, isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): boolean {
   if (previewLog.isAcceleratePreview) {
-    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath, isTemplateString);
+    return validateResourceData(resourceData, resources, pos, previewLog.log, true, isResourceModule, filePath, isTemplateString, isCorrectResources);
   } else {
-    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath, isTemplateString);
+    return validateResourceData(resourceData, resources, pos, transformLog.errors, false, isResourceModule, filePath, isTemplateString, isCorrectResources);
   }
 }
 
 function validateResourceData(resourceData: string[], resources: object, pos: number, log: LogInfo[], isAcceleratePreview: boolean,
-  isResourceModule: boolean, filePath: string, isTemplateString: boolean): boolean {
+  isResourceModule: boolean, filePath: string, isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): boolean {
   if (resourceData.length !== 3) {
+    isTemplateString && (isCorrectResources.booleanValue = true);
     log.push({
       type: isTemplateString ? LogType.WARN : LogType.ERROR,
       message: `Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.`,
@@ -955,21 +1075,22 @@ function validateResourceData(resourceData: string[], resources: object, pos: nu
     if (isResourceModule) {
       if (/^\[.*\]$/.test(resourceData[0]) && projectConfig.hspResourcesMap) {
         const resourceDataFirst: string = resourceData[0].replace(/^\[/, '').replace(/\]$/, '').trim();
-        return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst, false, isTemplateString);
+        return resourceCheck(resourceData, resources, pos, log, true, resourceDataFirst, false, isTemplateString, isCorrectResources);
       } else {
-        return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], true, isTemplateString);
+        return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], true, isTemplateString, isCorrectResources);
       }
     } else {
-      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], false, isTemplateString);
+      return resourceCheck(resourceData, resources, pos, log, false, resourceData[0], false, isTemplateString, isCorrectResources);
     }
   }
   return false;
 }
 
 function resourceCheck(resourceData: string[], resources: object, pos: number, log: LogInfo[], isHspResourceModule: boolean,
-  resourceDataFirst: string, faOrNoHspResourcesMap: boolean, isTemplateString: boolean): boolean {
+  resourceDataFirst: string, faOrNoHspResourcesMap: boolean, isTemplateString: boolean, isCorrectResources: isCorrectResourcesType): boolean {
   const logType: LogType = isHspResourceModule || isTemplateString ? LogType.WARN : LogType.ERROR;
   if (!faOrNoHspResourcesMap && !resources[resourceDataFirst]) {
+    isTemplateString && (isCorrectResources.booleanValue = true);
     log.push({
       type: logType,
       message: `Unknown resource source '${resourceDataFirst}'.`,
@@ -977,6 +1098,7 @@ function resourceCheck(resourceData: string[], resources: object, pos: number, l
       code: '10903331'
     });
   } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]]) {
+    isTemplateString && (isCorrectResources.booleanValue = true);
     log.push({
       type: logType,
       message: `Unknown resource type '${resourceData[1]}'.`,
@@ -984,6 +1106,7 @@ function resourceCheck(resourceData: string[], resources: object, pos: number, l
       code: '10903330'
     });
   } else if (!faOrNoHspResourcesMap && !resources[resourceDataFirst][resourceData[1]][resourceData[2]]) {
+    isTemplateString && (isCorrectResources.booleanValue = true);
     log.push({
       type: logType,
       message: `Unknown resource name '${resourceData[2]}'.`,
@@ -1025,6 +1148,7 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
+  checkExtendNode(node, componentName, log);
   if (componentName && node.body && !node.body.statements.length && decoratorName === COMPONENT_EXTEND_DECORATOR) {
     const statementArray: ts.Statement[] = [];
     const bodynode: ts.Block = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
@@ -1278,9 +1402,83 @@ function parseExtendNode(node: ts.CallExpression, extendResult: ExtendResult, ch
         code: '10905108'
       });
     }
+    if (checkArguments && CHECK_EXTEND_DECORATORS.includes(extendResult.decoratorName) &&
+      node.arguments && node.arguments.length === 1 && ts.isIdentifier(node.arguments[0]) &&
+      !INNER_COMPONENT_NAMES.has(node.arguments[0].getText())) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `'${node.arguments[0].getText()}' parameter cannot be` +
+          ` passed in the '@${extendResult.decoratorName}' decorator.`,
+        pos: node.getStart()
+      });
+    }
   }
   if (node.arguments.length && ts.isIdentifier(node.arguments[0])) {
     extendResult.componentName = node.arguments[0].escapedText.toString();
+  }
+}
+
+function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
+  log: LogInfo[]): void {
+  const componentInstance: string = `${componentName}Instance`;
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length > 1) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
+    !validateComponentInstance(node.body.statements[0], componentInstance) &&
+      validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+  if (node.body && ts.isBlock(node.body) && node.body.statements &&
+    node.body.statements.length === 1 && !ts.isExpressionStatement(node.body.statements[0])) {
+    validateUIFunctionFormat(log, node.body.statements[0]);
+    return;
+  }
+}
+
+function validateComponentInstance(node: ts.ExpressionStatement, targetInstanceName: string): boolean {
+  if (!ts.isCallExpression(node.expression)) {
+    return false;
+  }
+  const instanceName: string = findInstanceIdentifier(node.expression);
+  return instanceName === targetInstanceName;
+}
+
+function findInstanceIdentifier(node: ts.CallExpression): string {
+  let instanceName: string = '';
+  if (!ts.isPropertyAccessExpression(node.expression)) {
+    return instanceName;
+  }
+  const newNode: ts.PropertyAccessExpression = node.expression;
+  if (ts.isIdentifier(newNode.expression)) {
+    instanceName = newNode.expression.escapedText.toString();
+    return instanceName;
+  } else if (ts.isCallExpression(newNode.expression)) {
+    instanceName = findInstanceIdentifier(newNode.expression);
+  }
+  return instanceName;
+}
+
+function validateUIFunctionFormat(log: LogInfo[], block: ts.Statement): void {
+  log.push({
+    message: `Only UI component syntax can be written here.`,
+    type: LogType.WARN,
+    pos: block.getStart()
+  });
+}
+
+export function parseStylesNode(node: ts.FunctionDeclaration | ts.MethodDeclaration, log: LogInfo[]): void {
+  const commonInstance: string = 'CommonInstance';
+  if (node.body && ts.isBlock(node.body) && node.body.statements && node.body.statements.length) {
+    if (node.body.statements.length === 1 && ts.isExpressionStatement(node.body.statements[0])) {
+      !validateComponentInstance(node.body.statements[0], commonInstance) &&
+        validateUIFunctionFormat(log, node.body.statements[0]);
+      return;
+    }
+    validateUIFunctionFormat(log, node.body.statements[0]);
   }
 }
 
@@ -1364,7 +1562,7 @@ function createLoadPageConditionalJudgMent(context: ts.TransformationContext, na
   const entryOptionValue: EntryOptionValue = new EntryOptionValue();
   if (!entryOptionNode) {
     let originArray: ts.ExpressionStatement[];
-    if (projectConfig.minAPIVersion > 10) {
+    if (projectConfig.minAPIVersion > APIVERSION.apiVersionTen) {
       if (componentCollection.entryComponent === name && componentCollection.localSharedStorage) {
         return [judgeRouteNameAndStorageForIdentifier(context, name,
           cardRelativePath, isObject, componentCollection.localSharedStorage, undefined, undefined, argsArr)];
@@ -1626,7 +1824,7 @@ function loadDocumentWithRoute(context: ts.TransformationContext, name: string, 
       createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName),
       shouldCreateAccsessRecording ? createStopGetAccessRecording(context) : undefined];
   } else {
-    if (projectConfig.minAPIVersion > 10) {
+    if (projectConfig.minAPIVersion > APIVERSION.apiVersionTen) {
       return [createRegisterNamedRoute(context, newExpressionParams, isObject, entryOptionNode, hasRouteName)];
     } else {
       return [shouldCreateAccsessRecording ? createStartGetAccessRecording(context) : undefined,
@@ -2062,7 +2260,15 @@ function insertImportModuleNode(statements: ts.Statement[], hasUseResource: bool
 
 // Do you want to start dynamic bundleName or moduleName.
 export function isDynamic(): boolean {
+  const isIntegratedHspUseReplaceBundleName: boolean = projectConfig.integratedHsp && getGetCurrentBundleName();
   const isByteCodeHar: boolean = projectConfig.compileHar && projectConfig.byteCodeHar;
   const uiTransformOptimization: boolean = !!projectConfig.uiTransformOptimization;
-  return uiTransformOptimization ? uiTransformOptimization : isByteCodeHar;
+  return uiTransformOptimization || (isByteCodeHar || isIntegratedHspUseReplaceBundleName);
+}
+
+export function getGetCurrentBundleName(): boolean {
+ 	if (projectConfig.useGetCurrentBundleName) {
+ 	  return projectConfig.useGetCurrentBundleName;
+ 	}
+ 	return false;
 }

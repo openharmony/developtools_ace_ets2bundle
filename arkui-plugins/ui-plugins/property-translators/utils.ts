@@ -415,11 +415,6 @@ export function isCustomDialogController(type: arkts.TypeNode): boolean {
     );
 }
 
-export function removeImplementProperty(originalName: string): string {
-    const prefix = ObservedNames.PROPERTY_PREFIX;
-    return originalName.substring(prefix.length);
-}
-
 export function getValueInMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
     const monitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
         return (

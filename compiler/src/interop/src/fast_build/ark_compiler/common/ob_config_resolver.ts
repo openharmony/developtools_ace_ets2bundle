@@ -126,7 +126,7 @@ export const OBF_ERR_CODE = '108';
  */
 export let obfLogger: Object = undefined;
 
-enum LoggerLevel {
+export enum LoggerLevel {
   WARN = 'warn',
   ERROR = 'error'
 }

@@ -286,7 +286,8 @@
         "ArcSwiper",
         "ArcScrollBar",
         "UnionEffectContainer",
-        "UIPickerComponent"
+        "UIPickerComponent",
+        "DistortionComponent"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -905,6 +906,11 @@
             "name": "UnionEffectContainer",
             "type": "UnionEffectContainerAttribute",
             "instance": "UnionEffectContainerInstance"
+          },
+          {
+            "name": "DistortionComponent",
+            "type": "DistortionComponentAttribute",
+            "instance": "DistortionComponentInstance"
           },
         ]
       },

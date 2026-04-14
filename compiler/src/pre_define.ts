@@ -712,6 +712,8 @@ export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
 
+export const _CONTAINER_READER: string = 'ContainerReader';
+
 export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
 export const API_VERSION_26: number = 26;
 

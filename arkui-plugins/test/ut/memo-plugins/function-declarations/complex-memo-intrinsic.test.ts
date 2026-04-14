@@ -89,18 +89,18 @@ class A<T>  implements IA<T> {
 
   public ddd: Map<string, number> = new Map<string, number>();
 
+  public ccc: boolean = false;
+
   public aaa(value: number): void {}
 
   public constructor() {}
-
-  private _$property$_ccc: boolean = false;
   
   public get ccc(): boolean {
-    return this._$property$_ccc;
+    return this.ccc;
   }
 
-  public set ccc(_$property$_ccc: boolean) {
-    this._$property$_ccc = _$property$_ccc;
+  public set ccc(ccc: boolean) {
+    this.ccc = ccc;
     return;
   }
   

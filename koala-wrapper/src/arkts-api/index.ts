@@ -39,6 +39,8 @@ export * from '../generated/peers/ReturnStatement';
 export * from '../generated/peers/Expression';
 export * from '../generated/peers/Statement';
 export * from '../generated/peers/ImportSpecifier';
+export * from '../generated/peers/ImportDefaultSpecifier';
+export * from '../generated/peers/ImportNamespaceSpecifier';
 export * from '../generated/peers/TSAsExpression';
 export * from '../generated/peers/ThisExpression';
 export * from '../generated/peers/TSThisType';
