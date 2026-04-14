@@ -93,6 +93,10 @@ let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
+ // collect crossplatform external config
+ let crossplatformDepsConfig = new Map();
+ // collect crossplatform external data
+ let crossplatformExternalModule = new Map();
 
 function initProjectConfig(projectConfig) {
   initProjectPathConfig(projectConfig);
@@ -957,9 +961,33 @@ function collectExternalModules(sdkPaths) {
       }
     });
     sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
+    // collect crossplatform external config
+    if (sdkConfig.prefix === '@arkui-x' && sdkConfig.depsModuleConfig) {
+      const crossplatformDepsConfigPath = path.resolve(sdkPath, sdkConfig.depsModuleConfig);
+      if (fs.existsSync(crossplatformDepsConfigPath)) {
+        crossplatformDepsConfig = collectCrossplatformDeps(crossplatformDepsConfigPath);
+      }
+    }
     sdkConfig.apiPath = resolveApiPathArray;
     extendSdkConfigs.push(sdkConfig);
   }
+}
+
+/**
+ * collect crossplatform external module
+ * @param {string} configPath 
+ */
+function collectCrossplatformDeps(configPath) {
+  let depsConfigMap = new Map();
+  try {
+    const depsConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    depsConfigMap = new Map(
+      depsConfig.map(item => [`@${item.module}`, item.deps])
+    );
+  } catch (error) {
+    console.error(error);
+  }
+  return depsConfigMap;
 }
 
 function readHspResource() {
@@ -1276,6 +1304,8 @@ function resetMain() {
   fileAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
   externalApiCheckerMap = new Map();
+  crossplatformDepsConfig = new Map();
+ 	crossplatformExternalModule = new Map();
 }
 
 function resetAbilityConfig() {
@@ -1375,3 +1405,5 @@ exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
+exports.crossplatformDepsConfig = crossplatformDepsConfig;
+exports.crossplatformExternalModule = crossplatformExternalModule;
