@@ -82,9 +82,9 @@ let fileAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
-// 跨平台拓展依赖配置
+// collect crossplatform external config
 let crossplatformDepsConfig = new Map();
-// 跨平台拓展依赖数据
+// collect crossplatform external data
 let crossplatformExternalModule = new Map();
 
 function initProjectConfig(projectConfig) {
@@ -958,7 +958,7 @@ function collectExternalModules(sdkPaths) {
       }
     });
     sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
-    // 在跨平台SDK中收集接口依赖数据
+    // collect crossplatform external config
     if (sdkConfig.prefix === '@arkui-x' && sdkConfig.depsModuleConfig) {
       const crossplatformDepsConfigPath = path.resolve(sdkPath, sdkConfig.depsModuleConfig);
       if (fs.existsSync(crossplatformDepsConfigPath)) {
@@ -971,7 +971,7 @@ function collectExternalModules(sdkPaths) {
 }
 
 /**
- * 收集跨平台接口依赖模块
+ * collect crossplatform external module
  * @param {string} configPath 
  */
 function collectCrossplatformDeps(configPath) {
