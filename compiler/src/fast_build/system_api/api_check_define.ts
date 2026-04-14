@@ -337,3 +337,11 @@ export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
   [SINCE_LEVEL_WARNING, ts.DiagnosticCategory.Warning],
   [SINCE_LEVEL_ERROR, ts.DiagnosticCategory.Error]
 ]);
+
+/**
+ * Type of merge crossplatform config
+ */
+export enum MergeCrossplatformModuleType {
+  MODULE = 'module',
+  COMPONENT = 'component'
+}
