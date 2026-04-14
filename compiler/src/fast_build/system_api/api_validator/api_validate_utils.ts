@@ -21,7 +21,8 @@ import {
   comparePointVersion,
   isCheckDistributionOSVersion,
   checkMSFVersionMajor,
-  checkIntegerMoreVersion
+  checkIntegerMoreVersion,
+  isApiAvailableStatement
 } from '../api_check_utils';
 import {
   SINCE_TAG_NAME,
@@ -151,6 +152,10 @@ export class SdkComparisonHelper {
 
     const [matchedApi, validPackagePath] = matchedEntry;
     if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
+      return false;
+    }
+
+    if (!isApiAvailableStatement(expression)) {
       return false;
     }
 
