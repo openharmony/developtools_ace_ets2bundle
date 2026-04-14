@@ -337,7 +337,7 @@ export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
 ]);
 
 /**
- * 跨平台配置合并类型
+ * Type of merge crossplatform config
  */
 export enum MergeCrossplatformModuleType {
   MODULE = 'module',
