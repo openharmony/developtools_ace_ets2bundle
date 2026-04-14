@@ -64,6 +64,7 @@ export interface IntentPageInfo extends IntentInfo {
 export interface IntentEntityDecoratorInfo {
   entityCategory: string;
   parameters?: object;
+  supportedQueryProperties?: string[];
 }
 
 export interface FormIntentDecoratorInfo extends IntentInfo {
@@ -294,11 +295,16 @@ IntentPageInfoChecker.paramValidators = {
 
 export const IntentEntityInfoChecker: ParamChecker<IntentEntityDecoratorInfo> = new ParamChecker<IntentEntityDecoratorInfo>();
 IntentEntityInfoChecker.requiredFields = ['entityCategory'];
-IntentEntityInfoChecker.allowFields = new Set<keyof IntentEntityDecoratorInfo>(['entityCategory', 'parameters']);
+IntentEntityInfoChecker.allowFields = new Set<keyof IntentEntityDecoratorInfo>([
+  'entityCategory',
+  'parameters',
+  'supportedQueryProperties'
+]);
 
 IntentEntityInfoChecker.paramValidators = {
   entityCategory: validateOptionalString,
-  parameters: validateParameters
+  parameters: validateParameters,
+  supportedQueryProperties: validateKeywords
 };
 
 export const intentFormInfoChecker = new ParamChecker<FormIntentDecoratorInfo>();
