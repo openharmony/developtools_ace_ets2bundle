@@ -288,28 +288,34 @@ function replaceKitModules(): void {
   });
 }
 
-// 通用的路径匹配函数，判断在忽略路径格式后，两个路径是否一致
+/**
+ * A generic path matching function that determines
+ * whether two paths are identical after ignoring their format
+ * @param targetPath 
+ * @param currentPath 
+ * @returns 
+ */
 function isSamePath(targetPath: string, currentPath: string): boolean {
-  // 统一转换为标准化格式（使用正斜杠，并转为小写以忽略大小写差异）
+  // Convert to a standardized format uniformly
   const normalize = (p: string) => path.normalize(p).replace(/\\/g, '/');
   return normalize(targetPath) === normalize(currentPath);
 }
 
 function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): void {
-  // 遍历 crossplatformExternalModule 中的每一项
+  // Iterate through each item in the crossplatformExternalModule
   for (const [crossPath, crossData] of crossplatformExternalModule.entries()) {
-    // 合并component
+    // merge component
     if (type === MergeCrossplatformModuleType.COMPONENT) {
       collectExternalModuleCollection(crossPath, crossData, appComponentCollection, type);
     }
-    // 合并module
+    // merge module
     if (type === MergeCrossplatformModuleType.MODULE) {
       collectExternalModuleCollection(crossPath, crossData, appImportModuleCollection, type);
     }
   }
   function collectExternalModuleCollection(mapKey: string, mapData: any, targetMap: Map<string, Set<string>>,
     type: MergeCrossplatformModuleType): void {
-    // 查找是否有相同路径的条目
+    // Check if there are entries with the same path
     let matchedKey: string | undefined;
     for (const [appPath] of targetMap.entries()) {
       if (isSamePath(appPath, mapKey)) {
@@ -318,7 +324,7 @@ function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): v
       }
     }
 
-    // 如果找到匹配的路径，合并 module 和 component
+    // If a matching path is found, merge module and component
     if (matchedKey) {
       const targetSet = targetMap.get(matchedKey);
       if (targetSet) {
@@ -327,8 +333,8 @@ function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): v
         }
       }
     } else {
-      // 如果匹配不到，在参数A中新增一个键值对
-      // 使用 crossPath 的原始格式作为 key，或者可以统一格式
+      // If no match is found, add a key value pair in targetMap
+      // Use the original format of crossPath as the key, or you can standardize the format
       const newSet = new Set<string>(mapData[type]);
       targetMap.set(mapKey, newSet);
     }
