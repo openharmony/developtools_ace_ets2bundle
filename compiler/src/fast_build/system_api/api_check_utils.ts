@@ -35,6 +35,7 @@ import {
   LogInfo,
   IFileLog,
   CurrentProcessFile,
+  findNonNullType
 } from '../../utils';
 import { type ResolveModuleInfo } from '../../ets_checker';
 import {
@@ -108,6 +109,7 @@ import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
 import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
+import { SDK_CONSTANTS } from './api_validator/api_validate_node';
 
 /**
  * bundle info
@@ -2037,7 +2039,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
-  const apiAvailableRegex = /\bdeviceInfo.apiAvailable\b/g;
+  const apiAvailableRegex = /^\bdeviceInfo\.apiAvailable\b/g;
   let nodeText: string = node.getText() || node.getFullText();
 
   if (!apiAvailableRegex.test(nodeText)) {
@@ -2108,6 +2110,7 @@ function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailable
   if (sincePoint.length === 1) {
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
+    return result;
   }
   if (isOpenHarmonyRuntime()) {
     if (!checkMSFVersionMajor(sinceFormat)) {
@@ -2286,4 +2289,28 @@ function getSinceDiagnosticType(sinceErrorLevel?: string): ts.DiagnosticCategory
   }
 
   return SINCE_LEVEL_CONFIG.get(sinceErrorLevel) || ts.DiagnosticCategory.Warning;
+}
+
+/**
+ * Check if the call expression is an apiAvailable statement
+ * @param node Call expression node
+ * @returns true if it's an apiAvailable statement, false otherwise
+ */
+export function isApiAvailableStatement(node: ts.CallExpression): boolean {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (checker) {
+    const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(node.expression));
+    if (Array.isArray(type)) {
+      return false;
+    }
+    if (type.symbol && type.symbol.valueDeclaration) {
+      const symbolFileName: string = type.symbol.valueDeclaration.getSourceFile().fileName;
+      // @ts-ignore
+      const symbolName: string = type.symbol.valueDeclaration.name.escapedText.toString();
+      if (symbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) && symbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
