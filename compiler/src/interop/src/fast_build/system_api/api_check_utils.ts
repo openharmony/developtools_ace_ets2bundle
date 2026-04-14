@@ -107,6 +107,7 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
+import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 
 /**
  * bundle info
@@ -1340,9 +1341,11 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
  *
  * @param {ts.JSDocTag[]} jsDocTags
  * @param {ts.JsDocNodeCheckConfigItem} config
+ * @param {ts.Node} node
  * @returns {boolean}
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem): boolean {
+export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node): boolean {
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
   });
@@ -1353,7 +1356,14 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  return comment !== '' && !JsDocCheckService.validPermission(comment, permissionsArray);
+  if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {
+ 	  return false;
+ 	}
+ 	const suppressor = new PermissionWarningSuppressor();
+ 	if (suppressor.isApiVersionHandled(node)) {
+ 	  return false;
+ 	}
+ 	return true;
 }
 
 /**
@@ -1912,13 +1922,14 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
 
   const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
   const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/[\'|\"]/g,'');
+  const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g,'');
   const sincePoint: string[] = sinceFormat.split('.');
   if (!compatibileReg.test(sinceFormat)) {
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
+    return result;
   }
-  const isSinceVersionType: boolean = /^(['"])([^'"]*)\1$/.test(sinceValue);
+  const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
     result = checkCharScene(sincePoint, sinceFormat);
   } else {

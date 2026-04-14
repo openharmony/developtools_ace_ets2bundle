@@ -18,6 +18,7 @@ import path from 'path';
 import * as ts from 'typescript';
 import * as crypto from 'crypto';
 const fse = require('fs-extra');
+const JSON5 = require('json5');
 import { fileInfoCache } from './file_info_cache';
 
 import {
@@ -785,6 +786,16 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
+  if (projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+    if (projectConfig.byteCodeHar && projectConfig.declaredFilesPath) {
+      performDeclarationMerging(projectConfig.declaredFilesPath, true);
+    } else if (projectConfig.cachePath && projectConfig.moduleName) {
+      performDeclarationMerging(path.join(projectConfig.cachePath, projectConfig.moduleName), false);
+    } else {
+      logger.warn('Missing required paths, skip declaration merging');
+    }
+  }
+
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
   // Release the typeChecker early and perform GC in the following scenarios:
   // In memory-priority mode or default mode, when the preview mode is disabled in a full compilation scenario, 
@@ -944,7 +955,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
             emit = undefined;
             let sourcefile = globalProgram.program.getSourceFile(moduleFile);
             if (sourcefile) {
-              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true);
+              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true, true);
             }
             if (emit) {
               generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, projectConfig.modulePathMap);
@@ -965,7 +976,7 @@ function printDeclarationDiagnostics(errorCodeLogger?: Object | undefined): void
     if (toUnixPath(sourceFile.fileName).includes('/oh_modules/')) {
       return;
     }
-    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile).forEach((diagnostic: ts.Diagnostic) => {
+    globalProgram.builderProgram.getDeclarationDiagnostics(sourceFile, undefined, true).forEach((diagnostic: ts.Diagnostic) => {
       printDiagnostic(diagnostic, ErrorCodeModule.TSC, errorCodeLogger);
     });
   });
@@ -2151,4 +2162,60 @@ export function resetEtsCheck(): void {
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
   maxMemoryInServiceChecker = 0;
+}
+
+function performDeclarationMerging(inputDir: string, isByteCodeHar: boolean): void {
+  const entryDeclarationFiles: string[] = [];
+
+  if (projectConfig.ohExports && projectConfig.ohExports.length > 0) {
+    projectConfig.ohExports.forEach(element => {
+      const declareFile = element.replace(projectConfig.moduleRootPath, inputDir).replace(/\.(ets|ts)$/, '.d.$1');
+      entryDeclarationFiles.push(declareFile);
+    });
+  } else {
+    const pkgJsonPath = path.join(projectConfig.moduleRootPath, 'oh-package.json5');
+    if (!fs.existsSync(pkgJsonPath)) {
+      logger.warn('oh-package.json5 not found, skip declaration merging');
+      return;
+    }
+    try {
+      const pkgContent = JSON5.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
+      const mainField = pkgContent.main;
+      if (!mainField) {
+        logger.warn('main field not found in oh-package.json5, skip declaration merging');
+        return;
+      }
+      const entryFileName = mainField.replace(/\.(ets|ts)$/, '.d.$1');
+      const entryFilePath = path.join(inputDir, entryFileName);
+      entryDeclarationFiles.push(entryFilePath);
+    } catch (error) {
+      logger.warn(`Failed to parse oh-package.json5: ${error.message}`);
+      return;
+    }
+  }
+
+  if (entryDeclarationFiles.length === 0) {
+    logger.debug('No entry declaration files found for merging');
+    return;
+  }
+
+  // Perform merging for each entry declaration file
+  entryDeclarationFiles.forEach(entryFile => {
+    const projectPath = projectConfig.byteCodeHar ? path.join(projectConfig.declaredFilesPath, '..') : projectConfig.cachePath;
+    try {
+      const { DeclarationMerger } = require('./declaration_merger');
+      const mergerOptions = {
+        entryFile: entryFile,
+        projectPath: projectPath,
+        isByteCodeHar: isByteCodeHar,
+        moduleRootPath: projectConfig.moduleRootPath,
+        packageDir: projectConfig.packageDir,
+        systemModules: systemModules
+      };
+
+      DeclarationMerger.mergeDeclarationFiles(mergerOptions);
+    } catch (error) {
+      logger.error(`Failed to merge declaration file ${entryFile}: ${error.message}`);
+    }
+  });
 }

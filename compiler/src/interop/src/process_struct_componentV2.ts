@@ -16,11 +16,11 @@
 import ts from 'typescript';
 
 import {
+  CurrentProcessFile,
   LogInfo,
   LogType,
   addLog,
   removeDecorator,
-  CurrentProcessFile
 } from './utils';
 import {
   COMPONENT_CONSTRUCTOR_PARENT,
@@ -37,6 +37,8 @@ import {
   PROTOTYPE,
   IS_REUSABLE_,
   GET_ATTRIBUTE,
+  COMPONENT_ENV_DECORATOR,
+  COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -54,7 +56,12 @@ import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
 import {
   componentCollection,
-  builderParamObjectCollection
+  builderParamObjectCollection,
+  validateStmgmtKeywords,
+  checkEnvType,
+  validateEnvType,
+  checkEnvDecoratorExp,
+  EnvTypeName
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
 import { globalProgram } from '../main';
@@ -85,6 +92,8 @@ export class StructInfo {
   staticPropertySet: Set<string> = new Set();
   computedDecoratorSet: Set<string> = new Set();
   monitorDecoratorSet: Set<string> = new Set();
+  envDecoratorSet: Set<string> = new Set();
+  syncMonitorDecoratorSet: Set<string> = new Set();
 }
 
 const structMapInEts: Map<string, StructInfo> = new Map();
@@ -241,13 +250,14 @@ function traverseStructInfo(structInfo: StructInfo,
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
     ...structInfo.eventDecoratorMap.keys()];
   for (const property of structInfo.propertiesMap) {
-    if (!structInfo.staticPropertySet.has(property[0])) {
+    if (!structInfo.staticPropertySet.has(property[0]) && !structInfo.envDecoratorSet.has(property[0])) {
       setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
         needInitFromParams, addStatementsInResetOnReuse);
     }
   }
   for (const param of structInfo.paramDecoratorMap) {
-    if (!structInfo.staticPropertySet.has(param[0])) {
+    if (!structInfo.staticPropertySet.has(param[0]) &&
+      !structInfo.builderParamDecoratorSet.has(param[0])) {
       paramStatementsInStateVarsMethod.push(updateParamNode(param[0]));
     }
   }
@@ -336,6 +346,17 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   if (structInfo.staticPropertySet.has(propName)) {
     initializer = member.initializer;
   }
+  if (structInfo.envDecoratorSet.has(propName)) {
+    checkEnvInitializerV2(member, log);
+    const envDecorator: ts.Decorator | undefined = decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_ENV_DECORATOR);
+    const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
+    const envTypeName: EnvTypeName = { currentTypeName: '' };
+    if (propertyType && !checkEnvType(propertyType, envTypeName)) {
+      validateEnvType(member);
+    } else if (propertyType && envDecorator) {
+      checkEnvDecoratorExp(envDecorator, envTypeName.currentTypeName);
+    }
+  }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
     return processRequireBuilderParamProperty(member, decorators, initializer);
   }
@@ -357,6 +378,17 @@ function checkV2ComponentMemberType(node: ts.Node, propName: string, log: LogInf
     pos: node.getStart(),
     code: '10905328'
   });
+}
+
+function checkEnvInitializerV2(member: ts.PropertyDeclaration, log: LogInfo[]): void {
+  if (member.initializer) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The '@Env' property cannot be specified a default value.`,
+      pos: member.getStart(),
+      code: '10905362'
+    })
+  }
 }
 
 function processParamProperty(member: ts.PropertyDeclaration,
@@ -422,6 +454,9 @@ function createInitNode(propName: string, defaultValue: ts.Expression): ts.Expre
 function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructInfo, log: LogInfo[],
   sourceFileNode: ts.SourceFile): void {
   node.members.forEach((member: ts.ClassElement) => {
+    if (sourceFileNode && member && member.name && ts.isIdentifier(member.name)) {
+      validateStmgmtKeywords(member.name.getText(), member.name);
+    }
     if (ts.isPropertyDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
       const modifiers: readonly ts.Modifier[] = ts.getModifiers(member);
@@ -433,7 +468,7 @@ function parseComponentProperty(node: ts.StructDeclaration, structInfo: StructIn
       parseGetAccessor(member, decorators, structInfo);
     } else if (ts.isMethodDeclaration(member)) {
       const decorators: readonly ts.Decorator[] = ts.getAllDecorators(member);
-      parseMethodDeclaration(member, decorators, structInfo);
+      parseMethodDeclaration(member, decorators, structInfo, sourceFileNode, log);
     }
   });
 }
@@ -447,13 +482,34 @@ function parseGetAccessor(member: ts.GetAccessorDeclaration, decorators: readonl
 }
 
 function parseMethodDeclaration(member: ts.MethodDeclaration, decorators: readonly ts.Decorator[],
-  structInfo: StructInfo): void {
-  if (decorators.length && decorators.some((value: ts.Decorator) => getDecoratorName(value) === constantDefine.MONITOR_DECORATOR)) {
-    structInfo.monitorDecoratorSet.add(member.name.getText());
+  structInfo: StructInfo, sourceFileNode: ts.sourceFile, log: LogInfo[]): void {
+  if (!decorators.length) {
+    return;
   }
+  let hasRequire: boolean = false;
+  let hasSyncMonitor: boolean = false;
+  decorators.forEach(decorator => {
+    const decoratorName: string = getDecoratorName(decorator);
+    if(decoratorName === constantDefine.MONITOR_DECORATOR) {
+      structInfo.monitorDecoratorSet.add(member.name.getText());
+    } else if (decoratorName === COMPONENT_REQUIRE_DECORATOR) {
+      hasRequire = true;
+    } else if (decoratorName === constantDefine.SYNC_MONITOR_DECORATOR) {
+      structInfo.syncMonitorDecoratorSet.add(member.name.getText());
+      hasSyncMonitor = true;
+    }
+  });
+  hasRequire && hasSyncMonitor && checkRequireDecoratorV2(member, log, sourceFileNode);
 }
 
-function getDecoratorName(decorator: ts.Decorator): string {
+function checkRequireDecoratorV2(member: ts.MethodDeclaration | ts.PropertyDeclaration, log: LogInfo[],
+  sourceFileNode: ts.sourceFile): void {
+  const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'' +
+    ' and \'@BuilderParam\'.';
+  addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
+}
+
+export function getDecoratorName(decorator: ts.Decorator): string {
   return decorator.getText().replace(/\([^\(\)]*\)/, '').trim();
 }
 
@@ -474,6 +530,7 @@ class PropertyDecorator {
   hasRequire: boolean = false;
   hasOnce: boolean = false;
   hasEvent: boolean = false;
+  hasEnv: boolean = false;
 }
 
 const decoratorsFunc: Record<string, Function> = {
@@ -484,7 +541,8 @@ const decoratorsFunc: Record<string, Function> = {
   'Local': parseLocalDecorator,
   'BuilderParam': parseBuilderParamDecorator,
   'Provider': parseProviderDecorator,
-  'Consumer': parseConsumerDecorator
+  'Consumer': parseConsumerDecorator,
+  'Env': parseEnvDecorator,
 };
 
 function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: readonly ts.Decorator[],
@@ -498,7 +556,8 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
       decoratorsFunc[name](propertyDecorator, member, structInfo);
     }
     if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName) ||
-      originalName === constantDefine.DECORATOR_BUILDER_PARAM) {
+      originalName === constantDefine.DECORATOR_BUILDER_PARAM ||
+      originalName === constantDefine.DECORATOR_ENV) {
       isRegular = false;
     }
   }
@@ -544,10 +603,14 @@ function parseRequireDecorator(propertyDecorator: PropertyDecorator, member: ts.
   structInfo.paramDecoratorMap.set(member.name.getText(), paramDecoratorInfo);
 }
 
-function parseOnceDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+function parseEnvDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
   structInfo: StructInfo): void {
+  propertyDecorator.hasEnv = true;
+  structInfo.envDecoratorSet.add(member.name.getText());
+}
+
+function parseOnceDecorator(propertyDecorator: PropertyDecorator): void {
   propertyDecorator.hasOnce = true;
-  structInfo.onceDecoratorSet.add(member.name.getText());
 }
 
 function parseLocalDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
@@ -598,8 +661,7 @@ function checkParamDecorator(propertyDecorator: PropertyDecorator, member: ts.Pr
   }
   if (propertyDecorator.hasRequire && !propertyDecorator.hasParam && !checkHasBuilderParamDecorator(propertyDecorator,
     member, sourceFileNode, structInfo)) {
-    const message: string = 'In a struct decorated with \'@ComponentV2\', \'@Require\' can only be used with \'@Param\'.';
-    addLog(LogType.ERROR, message, member.getStart(), log, sourceFileNode, { code: '10905325' });
+    checkRequireDecoratorV2(member, log, sourceFileNode);
   }
 }
 
