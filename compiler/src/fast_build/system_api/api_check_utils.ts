@@ -572,16 +572,16 @@ function checkCrossplatformValue(
 }
 
 function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
-  // 获取 node 所在的源文件
+  // get sourcefile of node
   const sourceFile = node.getSourceFile();
   if (!sourceFile) {
     return;
   }
   
-  // 获取源文件的路径
+  // get sourcefile path of sourcefile
   const filePath: string = sourceFile.fileName;
   
-  // 获取或创建该文件对应的模块信息
+  // create config object
   let moduleInfo = crossplatformExternalModule.get(filePath);
   if (!moduleInfo) {
     moduleInfo = {
@@ -591,14 +591,14 @@ function collectCrossplatformExternalModule(node: ts.Node, config: Crossplatform
     crossplatformExternalModule.set(filePath, moduleInfo);
   }
   
-  // 添加 module 内容，过滤重复
+  // insert module data
   for (const moduleItem of config.module) {
     if (!moduleInfo.module.includes(moduleItem)) {
       moduleInfo.module.push(moduleItem);
     }
   }
   
-  // 添加 component 内容，过滤重复
+  // insert component data
   for (const componentItem of config.component) {
     if (!moduleInfo.component.includes(componentItem)) {
       moduleInfo.component.push(componentItem);
@@ -610,17 +610,15 @@ function getApiPathFromNode(declaration: ts.Node): string {
   const pathParts: string[] = [];
   let currentNode: ts.Node | undefined = declaration;
   
-  // 向上遍历到 SourceFile 为止
   while (currentNode && !ts.isSourceFile(currentNode) && API_NODE_KIND.has(currentNode.kind)) {
-    // 获取节点名称
+    // get api node
     const name = getApiNodeName(currentNode);
     if (name) {
-      pathParts.unshift(name); // 插入到数组开头，保持从根到叶的顺序
+      pathParts.unshift(name);
     }
     currentNode = currentNode.parent;
   }
-  
-  // 使用 # 拼接
+
   return pathParts.join('#');
 }
 
@@ -631,7 +629,6 @@ function getApiPathFromNode(declaration: ts.Node): string {
  */
 function getApiNodeName(node: ts.Node): string {
   let apiName: string = 'unnamed';
-  // 区分场景获取节点名称
   switch (node.kind) {
     case ts.SyntaxKind.MethodDeclaration:
     case ts.SyntaxKind.MethodSignature:
@@ -665,7 +662,7 @@ function getApiNodeName(node: ts.Node): string {
   return apiName;
 }
 
-// API节点类型
+// API kind
 const API_NODE_KIND: Set<ts.SyntaxKind> = new Set([
   ts.SyntaxKind.VariableStatement,
   ts.SyntaxKind.MethodDeclaration,
