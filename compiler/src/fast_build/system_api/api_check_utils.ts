@@ -649,6 +649,18 @@ function getApiNodeName(node: ts.Node): string {
     case ts.SyntaxKind.SetAccessor:
       apiName = node.name.getText();
       break;
+    case ts.SyntaxKind.Constructor:
+    case ts.SyntaxKind.ConstructSignature:
+    case ts.SyntaxKind.CallSignature:
+      apiName = 'constructor';
+      break;
+    case ts.SyntaxKind.VariableStatement:
+      const variableDeclList = node.declarationList.declarations;
+      if (variableDeclList && variableDeclList.length === 1) {
+        const variableDecl = variableDeclList[0];
+        apiName = variableDecl.name.getText();
+      }
+      break;
   }
   return apiName;
 }
