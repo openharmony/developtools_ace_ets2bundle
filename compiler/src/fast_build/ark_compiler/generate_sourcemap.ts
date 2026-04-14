@@ -305,7 +305,8 @@ export class SourceMapGenerator {
     const eventUpdateCachedSourceMaps = createAndStartEvent(parentEvent, 'update cached source maps');
     // If hap/hsp depends on bytecode har under debug mode, the source map of bytecode har need to be merged with
     // source map of hap/hsp.
-    if (isDebug(this.projectConfig) && !this.projectConfig.byteCodeHar && !!this.projectConfig.byteCodeHarInfo) {
+    if (isDebug(this.projectConfig) && (!this.projectConfig.byteCodeHar ||
+      this.projectConfig.projectArkOption?.bundle?.bundledAllDependencies) && !!this.projectConfig.byteCodeHarInfo) {
       Object.keys(this.projectConfig.byteCodeHarInfo).forEach((packageName) => {
         const sourceMapsPath = this.projectConfig.byteCodeHarInfo[packageName].sourceMapsPath;
         if (!sourceMapsPath && !!this.logger && !!this.logger.warn) {

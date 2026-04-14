@@ -48,10 +48,9 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     if (!!contextPtr) {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
-        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
         arkts.Performance.getInstance().createEvent('ui-parsed');
-        program = parsedProgramVisit(program, this, canSkipPhases);
+        program = parsedProgramVisit(program, this);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
@@ -103,10 +102,9 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
         script = program.astNode;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
-        const canSkipPhases = program.canSkipPhases();
         debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
         arkts.Performance.getInstance().createEvent('ui-checked');
-        program = checkedProgramVisit(program, this, canSkipPhases);
+        program = checkedProgramVisit(program, this);
         script = program.astNode;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());

@@ -63,7 +63,8 @@ import {
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
-  VIEWSTACKPROCESSOR,
+  COMPONENT_ENV_DECORATOR,
+  MAX_LINK_SOURCE_DATA_NESTING_LEVEL
 } from './pre_define';
 import {
   stateCollection,
@@ -87,7 +88,8 @@ import {
   regularStaticCollection,
   componentCollection,
   localStorageLinkCollection,
-  localStoragePropCollection
+  localStoragePropCollection,
+  envCollection
 } from './validate_ui_syntax';
 import {
   PropMapManager,
@@ -122,7 +124,9 @@ import {
   globalProgram
 } from '../main';
 import {
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_BUILDER_METHOD,
+  INNER_CUSTOM_LOCALBUILDER_METHOD
 } from './component_map';
 import {
   createReference,
@@ -414,8 +418,9 @@ function getUpdatePropsForV1Parent(): string[] {
   return updatePropsForParent;
 }
 
-function parseChildProperties(childName: string, node: ts.CallExpression, childParam: ts.PropertyAssignment[],
-  propsAndObjectLinks: string[], log: LogInfo[], isArkoala: boolean = false): void {
+function parseChildProperties(childName: string, node: ts.CallExpression,
+  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[],
+  isArkoala: boolean = false): void {
   const childAndParentComponentInfo: ChildAndParentComponentInfo =
     new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
   if (isMixCompile() && validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala)) {
@@ -431,6 +436,40 @@ function parseChildProperties(childName: string, node: ts.CallExpression, childP
   }
 }
 
+function validateAssignBuilderParam(log: LogInfo[], itemName: string, item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.WARN,
+    message: `'@BuilderParam' attribute '${itemName}' can only be initialized by '@Builder' function or '@LocalBuilder' method in struct.`,
+    pos: item.getStart()
+  });
+}
+
+function checkAssignBuilderParam(isChildV2: boolean, info: ChildAndParentComponentInfo,
+  item: ts.PropertyAssignment, itemName: string, log: LogInfo[]): void {
+  const childBuilderParamSet: Set<string> = isChildV2 ? info.childStructInfo.builderParamDecoratorSet :
+    builderParamObjectCollection.get(info.childStructInfo.structName);
+  if (!childBuilderParamSet || !childBuilderParamSet.has(itemName) || !item.initializer ||
+    ts.isArrowFunction(item.initializer)) {
+    return;
+  }
+  if (!checkBuilderParamInitializer(item.initializer)) {
+    validateAssignBuilderParam(log, itemName, item);
+  }
+}
+
+function checkBuilderParamInitializer(initializer: ts.Expression): boolean {
+  if (ts.isIdentifier(initializer) &&
+    GLOBAL_CUSTOM_BUILDER_METHOD.has(initializer.escapedText.toString())) {
+    return true;
+  } else if (ts.isPropertyAccessExpression(initializer) && initializer.expression &&
+    initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(initializer.name) &&
+    [...INNER_CUSTOM_BUILDER_METHOD, ...INNER_CUSTOM_LOCALBUILDER_METHOD].includes(initializer.name.escapedText.toString())) {
+    return true;
+  }
+  return false;
+}
+
 function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentComponentInfo): string {
   let typeName: string = COMPONENT_NON_DECORATOR;
   if (info.childStructInfo.localDecoratorSet.has(itemName)) {
@@ -443,9 +482,67 @@ function getForbbidenInitPropsV2Type(itemName: string, info: ChildAndParentCompo
   return typeName;
 }
 
+interface AssignEnvOptions {
+  isParentV2: boolean;
+  isChildV2: boolean;
+  info: ChildAndParentComponentInfo;
+  item: ts.PropertyAssignment;
+  itemName: string;
+}
+
+function checkAssignEnv(assignEnvOption: AssignEnvOptions, log: LogInfo[]): void {
+  const info: ChildAndParentComponentInfo = assignEnvOption.info;
+  const parentEnvSet: Set<string> = assignEnvOption.isParentV2 ? info.parentStructInfo.envDecoratorSet :
+    envCollection.get(info.parentStructInfo.structName);
+  const initializerName: string = getInitializerName(assignEnvOption.item);
+  if (!initializerName.length || !parentEnvSet || !parentEnvSet.has(initializerName)) {
+    return;
+  }
+  if (assignEnvOption.isChildV2) {
+    if (!(info.childStructInfo.paramDecoratorMap && info.childStructInfo.paramDecoratorMap.has(assignEnvOption.itemName) &&
+      !(info.childStructInfo.builderParamDecoratorSet &&
+        info.childStructInfo.builderParamDecoratorSet.has(assignEnvOption.itemName)))) {
+      validateAssignEnvV2(log, assignEnvOption.item);
+    }
+  } else {
+    if (!getCollectionSet(info.childName, regularCollection).has(assignEnvOption.itemName)) {
+      validateAssignEnvV1(log, assignEnvOption.item);
+    }
+  }
+}
+
+function validateAssignEnvV2(log: LogInfo[], item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
+    pos: item.getStart(),
+    code: '10905252'
+  });
+}
+
+function validateAssignEnvV1(log: LogInfo[], item: ts.PropertyAssignment): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.`,
+    pos: item.getStart(),
+    code: '10905253'
+  });
+}
+
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
+  const isParentV2: boolean = info.parentStructInfo.isComponentV2;
   if (info.childStructInfo.isComponentV2) {
+    if (isInitFromParent(item)) {
+      const newAssignEnvOption: AssignEnvOptions = {
+        isParentV2: isParentV2,
+        isChildV2: true,
+        info: info,
+        item: item,
+        itemName: itemName
+      };
+      checkAssignEnv(newAssignEnvOption, log);
+    }
     if (info.forbiddenInitPropsV2.includes(itemName)) {
       const propType: string = getForbbidenInitPropsV2Type(itemName, info);
       log.push({
@@ -457,6 +554,7 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       });
       return;
     }
+    checkAssignBuilderParam(true, info, item, itemName, log);
     if (info.paramDecoratorMap.has(itemName)) {
       childParam.push(item);
     }
@@ -469,9 +567,20 @@ function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
       });
     }
   } else {
+    if (info.childStructInfo.isComponentV1 && isInitFromParent(item)) {
+      const newAssignEnvOption: AssignEnvOptions = {
+        isParentV2: isParentV2,
+        isChildV2: false,
+        info: info,
+        item: item,
+        itemName: itemName
+      };
+      checkAssignEnv(newAssignEnvOption, log);
+    }
     if (info.propsAndObjectLinks.includes(itemName)) {
       childParam.push(item);
     }
+    checkAssignBuilderParam(false, info, item, itemName, log);
   }
   logMessageCollection.checkIfAssignToStaticProps(item, itemName, info.childStructInfo.staticPropertySet, log);
 }
@@ -805,7 +914,6 @@ function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boole
   return [keyArray, valueArray];
 }
 
-
 function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.CallExpression,
   componentParameter: ts.ObjectLiteralExpression, name: string, isGlobalBuilder: boolean, isBuilder: boolean,
   isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo, log: LogInfo[]): ts.IfStatement {
@@ -880,7 +988,7 @@ function getNewArgsForCustomComponent(childParam: ts.Expression[],
 
 function updatePropertyAssignment(newProperties: ts.PropertyAssignment[],
   itemName: string, item: ts.PropertyAssignment, childStructInfo: StructInfo, log: LogInfo[]): void {
-  if (isDoubleNonNullExpression(item.initializer)) {
+  if (isDoubleNonNullExpression(item.initializer) && !moreThanDoubleNonNull(item.initializer)) {
     if (isLeftHandExpression(item.initializer.expression.expression)) {
       const result: Record<string, boolean> = { hasQuestionToken: false };
       traverseExpressionNode(item.initializer.expression.expression, result);
@@ -946,6 +1054,10 @@ function createUpdateTwoWayNode(itemName: string, leftHandExpression: ts.Express
 
 function isDoubleNonNullExpression(node: ts.Expression): boolean {
   return node && ts.isNonNullExpression(node) && ts.isNonNullExpression(node.expression);
+}
+
+function moreThanDoubleNonNull(node: ts.Expression): boolean {
+  return node && ts.isNonNullExpression(node) && ts.isNonNullExpression(node.expression) && ts.isNonNullExpression(node.expression.expression);
 }
 
 function isLeftHandExpression(node: ts.Expression): boolean {
@@ -1264,7 +1376,7 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
           log.push({
             type: LogType.WARN,
             message: `Unrecognized property '${parentPropertyName}', make sure it can be assigned to ` +
-              `${curPropertyKind} property '${propertyName}' by yourself.`,
+              `'${curPropertyKind}' property '${propertyName}' by yourself.`,
             // @ts-ignore
             pos: node.initializer ? node.initializer.getStart() : node.getStart()
           });
@@ -1274,7 +1386,35 @@ function checkFromParentToChild(node: ts.ObjectLiteralElementLike, customCompone
         }
       }
     }
+    if (!isBuilder && ts.isPropertyAssignment(node) && curPropertyKind === COMPONENT_LINK_DECORATOR) {
+      validateLinkVariableSourceData(node, log);
+    }
   }
+}
+
+function validateLinkVariableSourceData(node: ts.PropertyAssignment, log: LogInfo[]): void {
+  if (isInitFromMismatchSourceData(node)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `The type of the parent component's state variable initializing the '@Link' variable ` +
+      `'${node.name.getText()}' must match the '@Link' variable's declared type.`,
+      pos: node.getStart(),
+      code: '10905364'
+    });
+  }
+}
+
+function isInitFromMismatchSourceData(node: ts.PropertyAssignment): boolean {
+  let curNode = node.initializer;
+  let nestingLevel = 0;
+  while (ts.isPropertyAccessExpression(curNode) || ts.isElementAccessExpression(curNode) ||
+    ts.isNonNullExpression(curNode)) {
+    if (!ts.isNonNullExpression(curNode)) {
+      nestingLevel++;
+    }
+    curNode = curNode.expression;
+  }
+  return nestingLevel >= MAX_LINK_SOURCE_DATA_NESTING_LEVEL && curNode.kind === ts.SyntaxKind.ThisKeyword;
 }
 
 function judgeStructAssignedDollar(node: ts.ObjectLiteralElementLike): boolean {
@@ -1296,6 +1436,18 @@ function isInitFromParent(node: ts.ObjectLiteralElementLike): boolean {
     }
   }
   return false;
+}
+
+function getInitializerName(node: ts.PropertyAssignment): string {
+  if (ts.isPropertyAccessExpression(node.initializer) && node.initializer.expression &&
+    node.initializer.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(node.initializer.name)) {
+    return node.initializer.name.escapedText.toString();
+  } else if (ts.isIdentifier(node.initializer) &&
+    matchStartWithDollar(node.initializer.getText())) {
+    return node.initializer.getText().slice(1);
+  }
+  return '';
 }
 
 function isInitFromLocal(node: ts.ObjectLiteralElementLike): boolean {
@@ -1344,7 +1496,7 @@ function isCorrectInitFormParent(parent: string, child: string): boolean {
       return true;
     case COMPONENT_NON_DECORATOR:
       if ([COMPONENT_NON_DECORATOR, COMPONENT_STATE_DECORATOR, COMPONENT_LINK_DECORATOR, COMPONENT_PROP_DECORATOR,
-        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR].includes(parent)) {
+        COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_STORAGE_LINK_DECORATOR, COMPONENT_ENV_DECORATOR].includes(parent)) {
         return true;
       }
       break;
@@ -1443,7 +1595,7 @@ function getForbbiddenToInitViaParamType(customComponentName: string,
   const propName: string = node.escapedText.toString();
   if (getCollectionSet(customComponentName, storageLinkCollection).has(propName)) {
     propType = COMPONENT_STORAGE_LINK_DECORATOR;
-  } else if (getCollectionSet(customComponentName, storagePropCollection)) {
+  } else if (getCollectionSet(customComponentName, storagePropCollection).has(propName)) {
     propType = COMPONENT_STORAGE_PROP_DECORATOR;
   } else if (ifLocalStorageLink(customComponentName, propName)) {
     propType = COMPONENT_LOCAL_STORAGE_LINK_DECORATOR;

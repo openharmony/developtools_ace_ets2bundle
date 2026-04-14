@@ -139,7 +139,14 @@ import {
   CREATE_ROUTER_COMPONENT_COLLECT,
   NAV_PATH_STACK,
   IS_USER_CREATE_STACK,
-  REUSE_ATTRIBUTE
+  REUSE_ATTRIBUTE,
+  MUTABLEBUILDER_BUILDERPROP,
+  MUTABLEBUILDER_CLASS,
+  MUTABLEBUILDER_DISPATCHBUILDER,
+  GLOBAL_THIS,
+  APIVERSION,
+  HDSNAVIGATION,
+  HDSNAVDESTINATION
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -556,6 +563,12 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
               newStatements.push(addInnerBuilderParameter(item, isGlobalBuilder));
             }
             break;
+          case ComponentType.mutableBuilderMethod:
+            parent = undefined;
+            if (partialUpdateConfig.partialUpdateMode) {
+              newStatements.push(transferMutableBuilderCall(item, name));
+            }
+            break;
           case ComponentType.builderParamMethod:
             parent = undefined;
             if (partialUpdateConfig.partialUpdateMode) {
@@ -655,7 +668,7 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
     node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
     newNode = ts.factory.createCallChain(
       ts.factory.createPropertyAccessChain(
-         isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
+        isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
         node.questionDotToken,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
@@ -838,7 +851,7 @@ function processExpressionStatementChange(node: ts.ExpressionStatement, nextNode
     log.push({
       type: LogType.ERROR,
       message: `In the trailing lambda case, '${name}' must have one and only one property decorated with ` +
-        `'@BuilderParam', and its '@BuilderParam' expects no parameter.`,
+        `'@BuilderParam'.`,
       pos: node.getStart(),
       code: '10905102'
     });
@@ -1123,7 +1136,7 @@ function processDebug(node: ts.Statement, nameResult: NameResult, newStatements:
     }
     let debugInfo: string;
     if (projectConfig.isPreview) {
-      if (projectConfig.minAPIVersion >= 11) {
+      if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven) {
         debugInfo = `${path.relative(projectConfig.projectRootPath, curFileName).replace(/\\+/g, '/')}` +
           `(${posOfNode.line + line}:${posOfNode.character + col})`;
       } else {
@@ -2426,25 +2439,26 @@ function isBuilderChangeNode(argument: ts.Node, identifierNode: ts.Identifier, p
     storedFileInfo.builderLikeCollection.has(argument.expression.name.getText()) || ts.isIdentifier(argument) &&
     argument.escapedText && storedFileInfo.builderLikeCollection.has(argument.escapedText.toString()) ||
     ts.isObjectLiteralExpression(argument) && (BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()) &&
-    BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
-    BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
+      BIND_OBJECT_PROPERTY.get(identifierNode.escapedText.toString()).has(propertyName) ||
+      BIND_OBJECT_PROPERTY.get(ALL_COMPONENTS).has(propertyName)) ||
     ts.isCallExpression(argument) && argument.expression && ts.isIdentifier(argument.expression) &&
     storedFileInfo.builderLikeCollection.has(argument.expression.escapedText.toString()) ||
-    isWrappedBuilder(argument as ts.PropertyAccessExpression) || isWrappedBuilderCallExpression(argument as ts.CallExpression);
+    (isWrappedBuilder(argument as ts.PropertyAccessExpression) || isMutableBuilder(argument as ts.PropertyAccessExpression)) ||
+    (isWrappedBuilderCallExpression(argument as ts.CallExpression) || isMutableBuilderCallExpression(argument as ts.CallExpression));
 }
 
 export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
   if (!(
-    projectConfig.minAPIVersion >= 11 && 
+    projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven &&
     ts.isPropertyAccessExpression(node) &&
-    node.name && ts.isIdentifier(node.name) && 
+    node.name && ts.isIdentifier(node.name) &&
     node.name.escapedText.toString() === WRAPBUILDER_BUILDERPROP
   )) {
     return false;
   }
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (checker) {
-    const type: ts.Type | ts.Type[] = 
+    const type: ts.Type | ts.Type[] =
       findNonNullType(checker.getTypeAtLocation(node.expression));
     if (Array.isArray(type)) {
       return false;
@@ -2455,7 +2469,8 @@ export function isWrappedBuilder(node: ts.PropertyAccessExpression): boolean {
 }
 
 function isWrappedBuilderCallExpression(node: ts.CallExpression): boolean {
-  if (projectConfig.minAPIVersion >= 11 && ts.isCallExpression(node) && node.expression &&
+  if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven &&
+    ts.isCallExpression(node) && node.expression &&
     isWrappedBuilder(node.expression as ts.PropertyAccessExpression)) {
     return true;
   }
@@ -2464,7 +2479,9 @@ function isWrappedBuilderCallExpression(node: ts.CallExpression): boolean {
 
 function parseBuilderNode(node: ts.Node, propertyName: string):
   ts.ObjectLiteralExpression | ts.CallExpression | ts.ArrowFunction | ts.PropertyAccessExpression {
-  if (isWrappedBuilder(node as ts.PropertyAccessExpression) || isPropertyAccessExpressionNode(node)) {
+  if (isWrappedBuilder(node as ts.PropertyAccessExpression) ||
+    isMutableBuilder(node as ts.PropertyAccessExpression) ||
+    isPropertyAccessExpressionNode(node)) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return processPropertyBuilderWithoutKey(node as ts.PropertyAccessExpression);
     } else {
@@ -2476,7 +2493,9 @@ function parseBuilderNode(node: ts.Node, propertyName: string):
     } else {
       return processIdentifierBuilder(node);
     }
-  } else if (isWrappedBuilderCallExpression(node as ts.CallExpression) || ts.isCallExpression(node)) {
+  } else if (isWrappedBuilderCallExpression(node as ts.CallExpression) ||
+    isMutableBuilderCallExpression(node as ts.CallExpression) ||
+    ts.isCallExpression(node)) {
     if (CUSTOM_BUILDER_PROPERTIES_WITHOUTKEY.has(propertyName)) {
       return getParsedBuilderAttrArgumentWithParamsWithoutKey(node);
     } else {
@@ -3438,7 +3457,8 @@ enum ComponentType {
   function,
   builderTypeFunction,
   repeatComponent,
-  arkoalaComponent
+  arkoalaComponent,
+  mutableBuilderMethod
 }
 
 function isEtsComponent(node: ts.ExpressionStatement): boolean {
@@ -3494,6 +3514,8 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
   } else if (isLocalBuilderOrBuilderMethod(CUSTOM_BUILDER_METHOD, isBuilderName, name) || isWrappedBuilderExpression(node) ||
     isLocalBuilderOrBuilderMethod(INNER_CUSTOM_LOCALBUILDER_METHOD, isLocalBuilderName, name)) {
     return ComponentType.customBuilderMethod;
+  } else if (isMutableBuilderExpression(node)) {
+    return ComponentType.mutableBuilderMethod;
   } else if (builderParamObjectCollection.get(componentCollection.currentClassName) &&
     builderParamObjectCollection.get(componentCollection.currentClassName).has(name)) {
     return ComponentType.builderParamMethod;
@@ -3542,7 +3564,7 @@ function isPartMethod(node: ts.ExpressionStatement): boolean {
 }
 
 function isWrappedBuilderExpression(node: ts.ExpressionStatement): boolean {
-  if (projectConfig.minAPIVersion >= 11 && node.expression &&
+  if (projectConfig.minAPIVersion >= APIVERSION.apiVersionEleven && node.expression &&
     isWrappedBuilderCallExpression(node.expression as ts.CallExpression)) {
     return true;
   }
@@ -3705,6 +3727,7 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
     const compName: string = node.escapedText.toString();
     const type: string = attrNode.escapedText.toString();
+    const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
   if (argumentsArr && argumentsArr.length) {
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
@@ -3738,7 +3761,8 @@ export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
       [ts.factory.createThis()]
     ) : 
       ts.factory.createPropertyAccessExpression(
-        node,
+        globalThisArr.includes(compName) ? ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier(GLOBAL_THIS), node) : node,
         attrNode
       ),
     undefined,
@@ -3847,9 +3871,108 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
+}
+
+export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
+  if (node.expression && ts.isCallExpression(node.expression)) {
+    let newNode: ts.Expression = mutableBuilderCallNode(node.expression);
+    if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0]) &&
+      ts.isPropertyAccessExpression(node.expression.expression)) {
+      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+        node.expression,
+        newNode,
+        undefined,
+        [ts.factory.createArrowFunction(undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          node.expression.expression.expression),
+        ts.factory.createCallExpression(
+          ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+          undefined,
+          [
+            ts.factory.createStringLiteral(name),
+            traverseBuilderParams(node.expression.arguments[0], true)
+          ]
+        )]
+      ));
+    } else if (ts.isPropertyAccessExpression(node.expression.expression)) {
+      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+        node.expression,
+        newNode,
+        undefined,
+        !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
+          storedFileInfo.lazyForEachInfo.forEachParameters || true)) ?
+          [ts.factory.createArrowFunction(undefined,
+            undefined,
+            [],
+            undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            node.expression.expression.expression),
+          ...node.expression.arguments] :
+          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
+      ));
+    }
+  }
+  return undefined;
+}
+
+function mutableBuilderCallNode(node: ts.CallExpression): ts.Expression {
+  let newNode: ts.Expression;
+  if (node.expression && ts.isPropertyAccessExpression(node.expression)) {
+    newNode = ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          node.expression.expression,
+          ts.factory.createIdentifier(MUTABLEBUILDER_DISPATCHBUILDER)
+        ),
+        ts.factory.createIdentifier(BUILDER_ATTR_BIND)
+      ),
+      undefined,
+      [ts.factory.createThis()]
+    );
+  }
+  return newNode;
+}
+
+export function isMutableBuilder(node: ts.PropertyAccessExpression): boolean {
+  if (!(
+    ts.isPropertyAccessExpression(node) &&
+    node.name && ts.isIdentifier(node.name) &&
+    node.name.escapedText.toString() === MUTABLEBUILDER_BUILDERPROP
+  )) {
+    return false;
+  }
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (checker) {
+    const type: ts.Type | ts.Type[] =
+      findNonNullType(checker.getTypeAtLocation(node.expression));
+    if (Array.isArray(type)) {
+      return false;
+    }
+    return type.symbol && type.symbol.escapedName === MUTABLEBUILDER_CLASS;
+  }
+  return false;
+}
+
+function isMutableBuilderCallExpression(node: ts.CallExpression): boolean {
+  if (ts.isCallExpression(node) && node.expression &&
+    isMutableBuilder(node.expression as ts.PropertyAccessExpression)) {
+    return true;
+  }
+  return false;
+}
+
+function isMutableBuilderExpression(node: ts.ExpressionStatement): boolean {
+  if (node.expression &&
+    isMutableBuilderCallExpression(node.expression as ts.CallExpression)) {
+    return true;
+  }
+  return false;
 }

@@ -23,7 +23,6 @@ import {
     hasDecorator,
     hasDecoratorName,
     removeDecorator,
-    removeImplementProperty,
     findPropertyAccessModifierFlags
 } from './utils';
 import { ClassScopeInfo } from '../struct-translators/utils';
@@ -38,7 +37,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
 
     constructor(property: arkts.ClassProperty, classScopeInfo: ClassScopeInfo) {
         super(property, classScopeInfo);
-        this.hasImplement = expectName(this.property.key).startsWith(ObservedNames.PROPERTY_PREFIX);
+        this.hasImplement = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER);
         this.isTraced = hasDecorator(this.property, DecoratorNames.TRACE);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
     }
@@ -47,9 +46,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator {
         if (!this.isTraced) {
             return [this.property];
         }
-        const originalName: string = this.hasImplement
-            ? removeImplementProperty(expectName(this.property.key))
-            : expectName(this.property.key);
+        const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
         const field = this.createField(originalName, newName);
         this.transformGetterSetter(originalName, newName);

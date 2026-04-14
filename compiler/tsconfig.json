@@ -296,6 +296,7 @@
         "ArcScrollBar",
         "UnionEffectContainer",
         "UIPickerComponent",
+        "DistortionComponent",
         "ContainerReader"
       ],
       "extend": {
@@ -955,6 +956,11 @@
             "name": "UnionEffectContainer",
             "type": "UnionEffectContainerAttribute",
             "instance": "UnionEffectContainerInstance"
+          },
+          {
+            "name": "DistortionComponent",
+            "type": "DistortionComponentAttribute",
+            "instance": "DistortionComponentInstance"
           },
           {
             "name": "ContainerReader",
