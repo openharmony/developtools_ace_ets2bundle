@@ -959,8 +959,8 @@ function collectExternalModules(sdkPaths) {
     });
     sdkConfigPrefix += `|${sdkConfig.prefix.replace(/^@/, '')}`;
     // 在跨平台SDK中收集接口依赖数据
-    if (sdkConfig.prefix === '@arkui-x') {
-      const crossplatformDepsConfigPath = path.resolve(sdkPath, 'functionConfig.json');
+    if (sdkConfig.prefix === '@arkui-x' && sdkConfig.depsModuleConfig) {
+      const crossplatformDepsConfigPath = path.resolve(sdkPath, sdkConfig.depsModuleConfig);
       if (fs.existsSync(crossplatformDepsConfigPath)) {
         crossplatformDepsConfig = collectCrossplatformDeps(crossplatformDepsConfigPath);
       }
