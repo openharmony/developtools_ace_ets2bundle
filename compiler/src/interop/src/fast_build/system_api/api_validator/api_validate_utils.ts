@@ -33,6 +33,9 @@ import {
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION
 } from '../api_check_define';
+import {
+  SDK_CONSTANTS
+} from './api_validate_node';
 
 /**
  * Shared helper for SDK version comparison logic.
@@ -89,11 +92,22 @@ export class SdkComparisonHelper {
    * @returns True if valid SDK comparison found
    */
   public isSdkComparisonHelper(expression: ts.Expression): boolean {
+    let isSinceMSFVersion: boolean = true;
     const expressionText = expression.getText();
     const runtimeType = projectConfig.runtimeOS;
     const matchedEntry = Array.from(this.deviceInfoChecker.entries())
       .find(([api]) => expressionText.includes(api));
     if (!matchedEntry) {
+      return false;
+    }
+
+    if (this.minAvailableVersion) {
+      isSinceMSFVersion = this.checkSinceMSFVersionMajor(this.minAvailableVersion.version);
+    } else {
+      isSinceMSFVersion = this.checkSinceMSFVersionMajor(this.minRequiredVersion);
+    }
+
+    if (!isSinceMSFVersion) {
       return false;
     }
 
@@ -131,7 +145,7 @@ export class SdkComparisonHelper {
       return false;
     }
 
-    if (expression.arguments && expression.arguments.length > 1) {
+    if (!expression.arguments || expression.arguments.length !== 1) {
       return false;
     }
 
@@ -139,10 +153,10 @@ export class SdkComparisonHelper {
     if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
       return false;
     }
-    
+
     const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
     const sinceValue: string = expression.arguments[0].getText().trim();
-    const sinceFormat: string = sinceValue.replace(/[\'|\"]/g, '');
+    const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g, '');
     const sincePointVersion: string[] = sinceFormat.split('.');
     if (sincePointVersion.length === 1 || runtimeType === this.openSourceRuntime) {
       const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
@@ -167,7 +181,7 @@ export class SdkComparisonHelper {
       if (!distributionOSCheck.valid) {
         return false;
       } else {
-        const scenario = matchedApi === this.openSourceDeviceInfo
+        const scenario = matchedApi === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO
           ? ComparisonSenario.SuppressByOHVersion
           : ComparisonSenario.SuppressByOtherOSVersion;
         const distributionOSResult: VersionValidationResult = this.valueChecker(this.minRequiredVersion, sinceFormat, scenario);
@@ -199,6 +213,22 @@ export class SdkComparisonHelper {
       distributeResult.version = this.minRequiredVersion;
     }
     return distributeResult;
+  }
+  
+  /**
+   * Determine if the MSF version is more than 26, Integer does not make judgments.
+   * @param since - Version string to validate
+   * @returns When MSF (26.0.0) is more than 26, return false and do not judge integers
+   */
+  private checkSinceMSFVersionMajor(since: string): boolean {
+    const msfVersionReg: RegExp = /^[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\)$/;
+    if (msfVersionReg.test(since)) {
+      const majorVersion = parseInt(since.split('.')[0]);
+      if (majorVersion > MSF_INTEGER_VERSION) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
