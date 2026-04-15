@@ -148,9 +148,7 @@ function main() {}
     for (let item of this.numbers) {
       arr.push(_r(16777216, 10003, "com.example.mock", "entry"));
     }
-    waitForCompletion((async (): Promise<void> => {
-      const a2 = await this.test_0(_r(16777216, 10003, "com.example.mock", "entry"));
-    }));
+    this.test_0(_r(16777216, 10003, "com.example.mock", "entry")).awaitSync();
   }
   
   @Memo() 
