@@ -17,7 +17,7 @@ import * as ts from 'typescript';
 import fs from 'fs';
 import path from 'path';
 import { logger } from './compile_info';
-import { harFilesRecord } from './utils';
+import { harFilesRecord, GeneratedFileInHar, toUnixPath } from './utils';
 import { compilerOptions, resolveModuleNames as resolveModuleNamesOrig } from './ets_checker';
 
 const SOURCE_TO_DECLARATION: Record<string, string> = {
@@ -60,7 +60,8 @@ function createDeclarationModuleResolver(
 }
 
 export interface DeclarationMergeOptions {
-  entryFile: string;
+  entryFile?: string;
+  entryFiles?: string[];
   projectPath: string;
   isByteCodeHar: boolean;
   moduleRootPath?: string;
@@ -80,40 +81,36 @@ export class DeclarationMerger {
   private mergedDeclarations: Set<string> = new Set();
   private entrySourceFile: ts.SourceFile | undefined;
 
-  constructor(options: DeclarationMergeOptions) {
+  private constructor(options: DeclarationMergeOptions, rootFiles: string[]) {
     this.options = options;
     this.printer = ts.createPrinter({
       newLine: ts.NewLineKind.LineFeed,
       removeComments: true,
     });
-    this.program = this.createDeclarationProgram();
+    this.program = this.createDeclarationProgram(rootFiles);
     this.checker = this.program.getTypeChecker();
   }
 
-  public merge(): void {
-    if (!fs.existsSync(this.options.entryFile)) {
-      logger.warn(`Declaration entry file not found: ${this.options.entryFile}`);
-      return;
-    }
-
-    this.entrySourceFile = this.program.getSourceFile(this.options.entryFile);
+  private mergeEntry(entryFile: string): void {
+    this.mergedDeclarations = new Set();
+    this.entrySourceFile = this.program.getSourceFile(entryFile);
     if (!this.entrySourceFile) {
-      logger.warn(`Declaration entry file not found in program: ${this.options.entryFile}`);
+      logger.warn(`Declaration entry file not found in program: ${entryFile}`);
       return;
     }
 
     const mergedContent: string = this.generateMergedContent();
-    harFilesRecord.forEach((value) => {
-      if (value.originalDeclarationCachePath === this.options.entryFile) {
+    harFilesRecord.forEach((value: GeneratedFileInHar): void => {
+      if (value.originalDeclarationCachePath === entryFile) {
         value.originalDeclarationContent = mergedContent;
       }
     });
     if (!this.options.isByteCodeHar) {
-      fs.writeFileSync(this.options.entryFile, mergedContent);
+      fs.writeFileSync(entryFile, mergedContent);
     }
   }
 
-  private createDeclarationProgram(): ts.Program {
+  private createDeclarationProgram(rootFiles: string[]): ts.Program {
     const declOptions: ts.CompilerOptions = {
       ...compilerOptions,
       noEmit: true,
@@ -134,7 +131,7 @@ export class DeclarationMerger {
       return ts.getDefaultLibFilePath(options);
     };
 
-    return ts.createProgram([this.options.entryFile], declOptions, host);
+    return ts.createProgram(rootFiles, declOptions, host);
   }
 
   private generateMergedContent(): string {
@@ -368,6 +365,7 @@ export class DeclarationMerger {
       return;
     }
     const skipNames: Set<string> = this.getExportNamesOfFile(this.entrySourceFile);
+    this.addLocalExportNames(this.entrySourceFile, skipNames);
     this.processFileImports(this.entrySourceFile, skipNames, lines, new Set<string>());
   }
 
@@ -375,6 +373,25 @@ export class DeclarationMerger {
     const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(sourceFile);
     const exports: ts.Symbol[] = symbol ? this.checker.getExportsOfModule(symbol) : [];
     return new Set(exports.map((e: ts.Symbol): string => e.name));
+  }
+
+  private addLocalExportNames(sourceFile: ts.SourceFile, names: Set<string>): void {
+    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(sourceFile);
+    if (!symbol) {
+      return;
+    }
+    for (const exp of this.checker.getExportsOfModule(symbol)) {
+      const renameInfo = this.resolveExportRename(exp);
+      names.add(renameInfo.originalName);
+      if (exp.name === 'default') {
+        const decl: ts.Declaration | undefined = exp.declarations?.[0];
+        if (decl && ts.isExportAssignment(decl) && !decl.isExportEquals) {
+          if (ts.isIdentifier(decl.expression)) {
+            names.add(decl.expression.text);
+          }
+        }
+      }
+    }
   }
 
   private processFileImports(
@@ -656,7 +673,32 @@ export class DeclarationMerger {
   }
 
   public static mergeDeclarationFiles(options: DeclarationMergeOptions): void {
-    const merger = new DeclarationMerger(options);
-    merger.merge();
+    const rootFiles: string[] = options.entryFiles ?? (options.entryFile ? [options.entryFile] : []);
+    if (rootFiles.length === 0) {
+      return;
+    }
+    const merger = new DeclarationMerger(options, rootFiles);
+    for (const entryFile of rootFiles) {
+      merger.mergeEntry(entryFile);
+    }
+    merger.cleanup(rootFiles);
+  }
+
+  private cleanup(entryFiles: string[]): void {
+    const entrySet: Set<string> = new Set(entryFiles.map(toUnixPath));
+
+    for (const [key, value] of harFilesRecord) {
+      if (!value.originalDeclarationCachePath) {
+        continue;
+      }
+      const cachePath: string = toUnixPath(value.originalDeclarationCachePath);
+      if (entrySet.has(cachePath)) {
+        continue;
+      }
+      if (fs.existsSync(cachePath)) {
+        fs.unlinkSync(cachePath);
+      }
+      harFilesRecord.delete(key);
+    }
   }
 }
