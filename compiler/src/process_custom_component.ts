@@ -66,7 +66,12 @@ import {
   COMPONENT_ENV_DECORATOR,
   MAX_LINK_SOURCE_DATA_NESTING_LEVEL,
   API_VERSION_26,
-  COMPONENT_BUILDER_DECORATOR
+  COMPONENT_BUILDER_DECORATOR,
+  RECYCLEFLAG,
+  ISPRERENDER,
+  PUSH_RECYCLE_ELMTID_TO_RENDERSTACK,
+  ABOUT_TO_BE_DELETE_FUNCTION_ID__,
+  POP_RECYCLE_ELMTID_TO_RENDERSTACK
 } from './pre_define';
 import {
   stateCollection,
@@ -744,6 +749,12 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
       undefined, undefined, ts.factory.createNull()
     ));
+    // reuse_4
+    isCompatibleVersionOverTarget(26) &&
+      arrowArgArr.push(ts.factory.createParameterDeclaration(
+        undefined, undefined, ts.factory.createIdentifier(ISPRERENDER),
+        undefined, undefined, ts.factory.createFalse()
+      ));
   } else if (partialUpdateConfig.optimizeComponent && isGlobalBuilder &&
     builderParamsResult && builderParamsResult.firstParam) {
     const paramName: ts.Identifier = builderParamsResult.firstParam.name as ts.Identifier;
@@ -763,6 +774,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
+    isCompatibleVersionOverTarget(26) && observeArgArr.push(ts.factory.createIdentifier(name));
   } else if (partialUpdateConfig.optimizeComponent) {
     observeArgArr.push(componentPop(name));
   }
@@ -770,6 +782,17 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
+      // reuse_2
+      (isCompatibleVersionOverTarget(26) && isRecycleComponent) ?
+        ts.factory.createExpressionStatement(
+          ts.factory.createCallExpression(
+            ts.factory.createIdentifier('Reusable'),
+            undefined,
+            [
+              ts.factory.createIdentifier(name)
+            ]
+          )
+        ) : undefined,
       ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
@@ -877,7 +900,10 @@ function componentPop(name: string): ts.ObjectLiteralExpression {
 }
 
 export function assignComponentParams(componentNode: ts.CallExpression,
-  isBuilder: boolean = false): ts.VariableStatement {
+  isBuilder: boolean = false,
+  needDoubleUnderline: boolean = false,
+  parentName?: string,
+  currentName?: string): ts.VariableStatement {
   const isParamsLambda: boolean = true;
   const [keyArray, valueArray]: [ts.Node[], ts.Node[]] = splitComponentParams(componentNode, isBuilder, isParamsLambda);
   let integrateParams: boolean = false;
@@ -899,7 +925,7 @@ export function assignComponentParams(componentNode: ts.CallExpression,
         ts.factory.createBlock(
           [ts.factory.createReturnStatement(
             integrateParams ? paramsLambdaCallBack(componentNode) : ts.factory.createObjectLiteralExpression(
-              reWriteComponentParams(keyArray, valueArray),
+              reWriteComponentParams(keyArray, valueArray, needDoubleUnderline, parentName, currentName),
               true
             )
           )],
@@ -920,8 +946,11 @@ function paramsLambdaCallBack(componentNode: ts.CallExpression): ts.Expression {
   }
 }
 
-function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): (ts.PropertyAssignment |
-  ts.ShorthandPropertyAssignment)[] {
+function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[],
+  needDoubleUnderline: boolean = false,
+  parentName?: string,
+  currentName?: string): (ts.PropertyAssignment |
+    ts.ShorthandPropertyAssignment)[] {
   const returnProperties: (ts.PropertyAssignment | ts.ShorthandPropertyAssignment)[] = [];
   keyArray.forEach((item: ts.Identifier, index: number) => {
     if (!valueArray[index]) {
@@ -930,6 +959,9 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): (ts
         undefined
       ));
     } else {
+      if (needDoubleUnderline) {
+        parseValueArrayIndex(keyArray, valueArray, index, currentName);
+      }
       returnProperties.push(ts.factory.createPropertyAssignment(
         item,
         valueArray[index] as ts.Identifier
@@ -937,6 +969,49 @@ function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[]): (ts
     }
   });
   return returnProperties;
+}
+
+function parseValueArrayIndex(keyArray: ts.Node[],
+  valueArray: ts.Node[], index: number, currentName?: string): void {
+  const LINK_REG: RegExp = /^\$/g;
+  let initText: string;
+  let newInitializer: ts.PropertyAccessExpression;
+  if (!currentName) {
+    return;
+  }
+  if (!ts.isIdentifier(keyArray[index])) {
+    return;
+  }
+  const keyName: string = keyArray[index].getText();
+  const currentLinkCollection: Set<string> | undefined = linkCollection.get(currentName);
+  if (!currentLinkCollection || !currentLinkCollection.has(keyName)) {
+    return;
+  }
+  const currentValue: ts.Node = valueArray[index];
+  if (ts.isIdentifier(currentValue) &&
+    currentValue.toString().match(LINK_REG)) {
+    initText = currentValue.escapedText.toString().replace(LINK_REG, '');
+    newInitializer = addInitializerDoubleUnderLine(initText);
+  }
+  if (ts.isPropertyAccessExpression(currentValue) &&
+    currentValue.expression &&
+    currentValue.expression.kind === ts.SyntaxKind.ThisKeyword &&
+    ts.isIdentifier(currentValue.name)) {
+    initText = currentValue.name.escapedText.toString().replace(LINK_REG, '');
+    newInitializer = addInitializerDoubleUnderLine(initText);
+  }
+  if (newInitializer) {
+    valueArray[index] = newInitializer;
+  }
+}
+
+function addInitializerDoubleUnderLine(
+  initText: string
+): ts.PropertyAccessExpression {
+  return ts.factory.createPropertyAccessExpression(
+    ts.factory.createThis(),
+    ts.factory.createIdentifier(`__${initText}`)
+  );
 }
 
 function splitComponentParams(componentNode: ts.CallExpression, isBuilder: boolean, isParamsLambda: boolean): [ts.Node[], ts.Node[]] {
@@ -960,20 +1035,48 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
   return ts.factory.createIfStatement(
     ts.factory.createIdentifier(ISINITIALRENDER),
     ts.factory.createBlock(
-      [componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
-        isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
-          createNewComponent(COMPONENT_CALL, name, componentNode),
-        assignComponentParams(componentNode, isBuilder),
-        assignmentFunction(COMPONENT_CALL)
-      ], true),
+      parseIfCustomComponentBlock(
+        isRecycleComponent, newNode, name, log,
+        componentNode, isBuilder, componentAttrInfo
+      ), true),
     ts.factory.createBlock(
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-        ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
+          ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
         ), undefined,
         [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
   );
+}
+
+function parseIfCustomComponentBlock(
+  isRecycleComponent: boolean,
+  newNode: ts.NewExpression,
+  name: string,
+  log: LogInfo[],
+  componentNode: ts.CallExpression,
+  isBuilder: boolean,
+  componentAttrInfo: ComponentAttrInfo
+): ts.Statement[] {
+  const structDecl: ts.StructDeclaration = ts.findAncestor(componentNode, ts.isStructDeclaration);
+  const parentName: string | undefined = structDecl?.name?.getText?.();
+  if (isRecycleComponent && isCompatibleVersionOverTarget(26)) {
+    return [
+      componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
+      assignComponentParams(componentNode, isBuilder, true, parentName, name),
+      assignmentFunction(COMPONENT_CALL),
+      createRecycleFlagConditionalExpression(),
+      isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
+        createNewComponent(COMPONENT_CALL, name, componentNode),
+    ]
+  }
+  return [
+    componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
+    isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
+      createNewComponent(COMPONENT_CALL, name, componentNode),
+    assignComponentParams(componentNode, isBuilder),
+    assignmentFunction(COMPONENT_CALL)
+  ]
 }
 
 export function assignmentFunction(componeParamName: string): ts.ExpressionStatement {
@@ -1136,6 +1239,37 @@ function componentParamDetachment(newNode: ts.NewExpression, isRecycleComponent:
     ));
 }
 
+function createRecycleFlagConditionalExpression(): ts.Statement {
+  return ts.factory.createVariableStatement(
+    undefined,
+    ts.factory.createVariableDeclarationList(
+      [
+        ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(RECYCLEFLAG),
+          undefined,
+          undefined,
+          ts.factory.createConditionalExpression(
+            ts.factory.createIdentifier(ISPRERENDER),
+            ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+            ts.factory.createBinaryExpression(
+              ts.factory.createIdentifier(RECYCLE_NODE),
+              ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+              ts.factory.createNull()
+            ),
+            ts.factory.createToken(ts.SyntaxKind.ColonToken),
+            ts.factory.createBinaryExpression(
+              ts.factory.createIdentifier(RECYCLE_NODE),
+              ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+              ts.factory.createNull()
+            )
+          ),
+        )
+      ],
+      ts.NodeFlags.Let
+    )
+  );
+}
+
 function createNewComponent(componeParamName: string, name: string,
   componentNode: ts.CallExpression): ts.Statement {
   const childStructInfo: StructInfo = processStructComponentV2.getAliasStructInfo(componentNode) ||
@@ -1174,16 +1308,66 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
       ), undefined,
       [
         ts.factory.createIdentifier(COMPONENT_CALL),
-        ts.factory.createBinaryExpression(
-          ts.factory.createIdentifier(RECYCLE_NODE),
-          ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
-          ts.factory.createNull()
-        ),
+        // reuse_5
+        isCompatibleVersionOverTarget(26) ?
+          ts.factory.createIdentifier(RECYCLEFLAG) :
+          ts.factory.createBinaryExpression(
+            ts.factory.createIdentifier(RECYCLE_NODE),
+            ts.factory.createToken(ts.SyntaxKind.ExclamationEqualsEqualsToken),
+            ts.factory.createNull()
+          ),
         componentAttrInfo.reuseId ? componentAttrInfo.reuseId as ts.Expression :
           ts.factory.createStringLiteral(name),
         ts.factory.createArrowFunction(undefined, undefined, [], undefined,
           ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
           ts.factory.createBlock([
+            isCompatibleVersionOverTarget(26) ?
+              ts.factory.createIfStatement(
+                ts.factory.createBinaryExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createThis(),
+                    ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+                  ),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                  ts.factory.createBinaryExpression(
+                    ts.factory.createTypeOfExpression(
+                      ts.factory.createPropertyAccessExpression(
+                        ts.factory.createThis(),
+                        ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+                      )
+                    ),
+                    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                    ts.factory.createStringLiteral(FUNCTION)
+                  )
+                ),
+                ts.factory.createBlock(
+                  [
+                    ts.factory.createExpressionStatement(
+                      ts.factory.createCallExpression(
+                        ts.factory.createPropertyAccessExpression(
+                          ts.factory.createThis(),
+                          ts.factory.createIdentifier(PUSH_RECYCLE_ELMTID_TO_RENDERSTACK)
+                        ),
+                        undefined,
+                        [
+                          ts.factory.createCallChain(
+                            ts.factory.createPropertyAccessChain(
+                              ts.factory.createIdentifier(RECYCLE_NODE),
+                              ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                              ts.factory.createIdentifier(ABOUT_TO_BE_DELETE_FUNCTION_ID__)
+                            ),
+                            undefined,
+                            undefined,
+                            []
+                          )
+                        ]
+                      )
+                    )
+                  ],
+                  true
+                ),
+                undefined
+              ) : undefined,
             ts.factory.createIfStatement(
               ts.factory.createBinaryExpression(
                 ts.factory.createIdentifier(RECYCLE_NODE),
@@ -1217,7 +1401,44 @@ function createNewRecycleComponent(newNode: ts.NewExpression, componentNode: ts.
                 ],
                 true
               )
-            )], true))
+            ),
+            isCompatibleVersionOverTarget(20) ?
+              ts.factory.createIfStatement(
+                ts.factory.createBinaryExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createThis(),
+                    ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+                  ),
+                  ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                  ts.factory.createBinaryExpression(
+                    ts.factory.createTypeOfExpression(
+                      ts.factory.createPropertyAccessExpression(
+                        ts.factory.createThis(),
+                        ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+                      )
+                    ),
+                    ts.factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                    ts.factory.createStringLiteral(FUNCTION)
+                  )
+                ),
+                ts.factory.createBlock(
+                  [
+                    ts.factory.createExpressionStatement(
+                      ts.factory.createCallExpression(
+                        ts.factory.createPropertyAccessExpression(
+                          ts.factory.createThis(),
+                          ts.factory.createIdentifier(POP_RECYCLE_ELMTID_TO_RENDERSTACK)
+                        ),
+                        undefined,
+                        []
+                      )
+                    )
+                  ],
+                  true
+                ),
+                undefined
+              ) : undefined,
+          ], true))
       ]));
 }
 
@@ -1788,4 +2009,15 @@ function validateNonLinkWithDollar(node: ts.PropertyAssignment, log: LogInfo[]):
     pos: node.initializer.getStart(),
     code: '10905314'
   });
+}
+
+export function isCompatibleVersionOverTarget(apiNum: number): boolean {
+  const COMPATIBLE_SDK_VERSION = apiNum;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION
+  ) {
+    return true;
+  }
+  return false;
 }

@@ -100,7 +100,14 @@ import {
   PUV2_VIEW_BASE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   DECORATOR_REUSEABLE,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  COMPONENT_DECORATOR_COMPONENT_V2,
+  COMPONENT_DECORATOR_COMPONENT,
+  REUSEPOOL,
+  POOLACCEPTS,
+  OWNER,
+  SHARED,
+  PERINSTANCE
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -132,13 +139,14 @@ import {
   decoratorParamSet,
   isSimpleType,
   isSingleKey,
-  findDecoratorIndex
+  findDecoratorIndex,
+  createResetStateVarsOnReuseForV1
 } from './process_component_member';
 import {
   processComponentBuild,
   processComponentBlock
 } from './process_component_build';
-import { isRecycle } from './process_custom_component';
+import { isCompatibleVersionOverTarget, isRecycle, isReuseInV2 } from './process_custom_component';
 import {
   LogType,
   LogInfo,
@@ -155,16 +163,18 @@ import {
   builderTypeParameter,
   initializeMYIDS,
   globalBuilderParamAssignment,
-  parseStylesNode
+  parseStylesNode,
+  transformLog
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
-import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import processStructComponentV2, { getDecoratorName, StructInfo } from './process_struct_componentV2';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
-  log: LogInfo[], program: ts.Program): ts.ClassDeclaration {
+  log: LogInfo[], program: ts.Program, ReusePool: { hasReusePool: boolean }): ts.ClassDeclaration {
   const decoratorNode: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const memberNode: ts.ClassElement[] =
-    processMembers(node.members, node.name, context, decoratorNode, log, program, checkPreview(node));
+    processMembers(node.members, node.name, context, decoratorNode, log,
+      program, checkPreview(node), ReusePool);
   return ts.factory.createClassDeclaration(
     ts.getModifiers(node), 
     node.name,
@@ -197,7 +207,7 @@ export type FreezeParamType = {
 };
 function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentName: ts.Identifier,
   context: ts.TransformationContext, decoratorNode: readonly ts.Decorator[], log: LogInfo[],
-  program: ts.Program, hasPreview: boolean): ts.ClassElement[] {
+  program: ts.Program, hasPreview: boolean, ReusePool: { hasReusePool: boolean }): ts.ClassElement[] {
   const buildCount: BuildCount = { count: 0 };
   let ctorNode: any = getInitConstructor(members, parentComponentName);
   const newMembers: ts.ClassElement[] = [];
@@ -207,6 +217,7 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   const purgeVariableDepStatements: ts.Statement[] = [];
   const rerenderStatements: ts.Statement[] = [];
   const deleteParamsStatements: ts.PropertyDeclaration[] = [];
+  const addStatementsInResetOnReuseV1: ts.Statement[] | undefined = [];
   const checkController: ControllerType = { hasController: !componentCollection.customDialogs.has(parentComponentName.getText()), 
     unassignedControllerSet: new Set() };
   const interfaceNode = ts.factory.createInterfaceDeclaration(undefined,
@@ -225,7 +236,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
       } else {
         addPropertyMember(item, newMembers, program, parentComponentName.getText(), log);
         const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-          ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode);
+          ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode,
+          addStatementsInResetOnReuseV1);
         if (result.isItemUpdate()) {
           updateItem = result.getProperity();
         } else {
@@ -280,7 +292,13 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
     ctorNode = updateConstructor(ctorNode, [], assignParams(parentComponentName.getText()),
       isFreezeComponent ? decoratorComponentParam(creezeParam) : [], true);
   }
+  const currentLinkCollection: Set<string> = linkCollection.get(parentComponentName.getText());
+  isReusableComponent(decoratorNode, false) && isCompatibleVersionOverTarget(26) &&
+    createResetStateVarsOnReuseForV1(newMembers, addStatementsInResetOnReuseV1, currentLinkCollection);
   newMembers.unshift(addConstructor(ctorNode, watchMap, parentComponentName));
+  if (decoratorNode && Array.isArray(decoratorNode) && decoratorNode.length) {
+    processComponentReusePool(newMembers, decoratorNode, false, ReusePool, parentComponentName.getText());
+  }
   if (componentCollection.entryComponent === parentComponentName.escapedText.toString() &&
     partialUpdateConfig.partialUpdateMode && projectConfig.minAPIVersion > 10) {
     newMembers.push(getEntryNameFunction(componentCollection.entryComponent));
@@ -288,6 +306,195 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
   log.push(...Array.from(PropMapManager.logInfoMap.values()).flat());
   PropMapManager.reset();
   return newMembers;
+}
+
+export function isReusableComponent(
+  decoratorNode: readonly ts.Decorator[],
+  isComponentV2: boolean
+): boolean {
+  const targetDecorator: string = isComponentV2 ? COMPONENT_DECORATOR_COMPONENT_V2 :
+    COMPONENT_DECORATOR_COMPONENT;
+  const result: boolean = decoratorNode.some(decorator => {
+    return getDecoratorName(decorator) === targetDecorator;
+  })
+  return result;
+}
+
+export function processComponentReusePool(
+  newMembers: ts.ClassElement[],
+  decoratorNode: readonly ts.Decorator[],
+  isComponentV2: boolean,
+  ReusePool: { hasReusePool: boolean },
+  parentName: string
+): void {
+  const targetDecorator: string = isComponentV2 ? COMPONENT_DECORATOR_COMPONENT_V2 :
+    COMPONENT_DECORATOR_COMPONENT;
+  const componentDecorator = decoratorNode.find(decorator => {
+    return getDecoratorName(decorator) === targetDecorator;
+  });
+
+  if (!componentDecorator || !componentDecorator.expression ||
+    !ts.isCallExpression(componentDecorator.expression) ||
+    !componentDecorator.expression.arguments ||
+    !componentDecorator.expression.arguments.length
+  ) {
+    return;
+  }
+
+  const reuseObject: ts.Expression = componentDecorator.expression.arguments[0];
+  if (!ts.isObjectLiteralExpression(reuseObject) ||
+    !reuseObject.properties || !reuseObject.properties.length ||
+    reuseObject.properties.length !== 3) {
+    return;
+  }
+
+  let shouldContinue: boolean = true;
+  let reusePoolProperty: ts.PropertyAssignment;
+  let poolAcceptsProperty: ts.PropertyAssignment;
+  reuseObject.properties.forEach((property) => {
+    if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) {
+      shouldContinue = false;
+      return;
+    }
+    const currentName: string = property.name.getText();
+    if (currentName === REUSEPOOL) {
+      reusePoolProperty = property;
+      return;
+    }
+    if (currentName === POOLACCEPTS) {
+      poolAcceptsProperty = property;
+      return;
+    }
+  });
+
+  if (!reusePoolProperty || !poolAcceptsProperty) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905375',
+      message: `'${parentName}' must provide both reusePool and poolAccepts. Neither can be omitted when using the global reuse pool.`,
+      pos: reuseObject.pos
+    });
+  }
+  if (!shouldContinue) {
+    return;
+  }
+  if (!ts.isStringLiteral(reusePoolProperty.initializer) ||
+    !ts.isArrayLiteralExpression(poolAcceptsProperty.initializer)) {
+    return;
+  }
+  checkReusePoolArg(reusePoolProperty.initializer);
+  checkPoolAcceptsArg(poolAcceptsProperty.initializer, parentName);
+  newMembers.unshift(createReusePoolPropertyDecl(reusePoolProperty.initializer,
+    poolAcceptsProperty.initializer));
+  ReusePool.hasReusePool = true;
+}
+
+function checkReusePoolArg(
+  arg: ts.StringLiteral
+): void {
+  if (!arg) {
+    return;
+  }
+  if (![SHARED, PERINSTANCE].includes(arg.text)) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905377',
+      message: `ReusePool must be either 'shared' or 'perInstance'. The value '${arg.text}' is not valid.`,
+      pos: arg.getStart()
+    });
+    return;
+  }
+}
+
+function checkPoolAcceptsArg(
+  initializer: ts.ArrayLiteralExpression,
+  parentName: string
+): void {
+  if (!initializer || !initializer.elements) {
+    return;
+  }
+
+  if (!initializer.elements.length) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905376',
+      message: `PoolAccepts cannot be an empty array. Provide at least one '@Reusable' or '@ReusableV2' component.`,
+      pos: initializer.elements.pos
+    });
+    return;
+  }
+
+  initializer.elements.forEach(element => {
+    if (!ts.isIdentifier(element)) {
+      return;
+    }
+    const compName: string = element.getText();
+    if (compName === parentName) {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        code: '10905374',
+        message: `'${compName}' cannot list itself in poolAccepts. The pool is not yet ready when '${compName}' is being constructed.`,
+        pos: element.getStart()
+      });
+      return;
+    }
+
+    if (!isRecycle(compName) && !isReuseInV2(compName)) {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        code: '10905373',
+        message: `'${compName}' is not a '@Reusable' or '@ReusableV2' component and cannot be added to poolAccepts.`,
+        pos: element.getStart()
+      });
+      return;
+    }
+  });
+}
+
+function createReusePoolPropertyDecl(
+  reusePoolInitializer: ts.StringLiteral,
+  poolAccepts: ts.ArrayLiteralExpression
+): ts.PropertyDeclaration {
+  const modifiers = ts.factory.createModifiersFromModifierFlags(
+    ts.ModifierFlags.Protected | ts.ModifierFlags.Readonly
+  );
+  const name = ts.factory.createIdentifier('___reusePool');
+
+  const optionsLiteral = ts.factory.createObjectLiteralExpression(
+    [
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(REUSEPOOL),
+        reusePoolInitializer
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(POOLACCEPTS),
+        poolAccepts
+      ),
+      ts.factory.createPropertyAssignment(
+        ts.factory.createIdentifier(OWNER),
+        ts.factory.createThis()
+      )
+    ]
+  );
+
+  const callExpr = ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier('__ReusePool'),
+      ts.factory.createIdentifier('create')
+    ),
+    undefined,
+    [optionsLiteral]
+  );
+
+  const result = ts.factory.createPropertyDeclaration(
+    modifiers,
+    name,
+    undefined,
+    undefined,
+    callExpr
+  );
+
+  return result;
 }
 
 export function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
