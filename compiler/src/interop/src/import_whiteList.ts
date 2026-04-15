@@ -1255,7 +1255,6 @@ export const whiteList: Set<string> = new Set([
   'SelectionMenuOptions',
   'SelectionMenuOptionsExt',
   'SelectionOptions',
-  'Sendable',
   'Serializer',
   'ShadowOptions',
   'ShadowStyle',
