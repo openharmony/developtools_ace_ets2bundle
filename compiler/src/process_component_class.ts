@@ -344,7 +344,7 @@ export function processComponentReusePool(
   const reuseObject: ts.Expression = componentDecorator.expression.arguments[0];
   if (!ts.isObjectLiteralExpression(reuseObject) ||
     !reuseObject.properties || !reuseObject.properties.length ||
-    reuseObject.properties.length !== 3) {
+    reuseObject.properties.length < 2) {
     return;
   }
 
@@ -374,6 +374,7 @@ export function processComponentReusePool(
       message: `'${parentName}' must provide both reusePool and poolAccepts. Neither can be omitted when using the global reuse pool.`,
       pos: reuseObject.pos
     });
+    return;
   }
   if (!shouldContinue) {
     return;
