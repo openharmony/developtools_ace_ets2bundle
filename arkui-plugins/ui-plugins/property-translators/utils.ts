@@ -426,6 +426,21 @@ export function getValueInMonitorAnnotation(annotations: readonly arkts.Annotati
     return getArrayFromAnnoProperty(monitorAnno.properties.at(0)!);
 }
 
+export function getValueInSyncMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
+    const syncMonitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
+        return (
+            anno.expr &&
+            arkts.isIdentifier(anno.expr) &&
+            anno.expr.name === DecoratorNames.SYNC_MONITOR &&
+            anno.properties.length === 1
+        );
+    });
+    if (!syncMonitorAnno) {
+        return undefined;
+    }
+    return getArrayFromAnnoProperty(syncMonitorAnno.properties.at(0)!);
+}
+
 export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | undefined {
     if (!arkts.isClassProperty(property) || !property.value || !arkts.isArrayExpression(property.value)) {
         return undefined;

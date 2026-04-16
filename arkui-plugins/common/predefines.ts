@@ -148,7 +148,8 @@ export enum ObservedNames {
     ADD_WATCH_SUBSCRIBER = 'addWatchSubscriber',
     REMOVE_WATCH_SUBSCRIBER = 'removeWatchSubscriber',
     WATCH_ID = 'watchId',
-    PROPETY_NAME = 'propertyName'
+    PROPETY_NAME = 'propertyName',
+    ADD_REF_ANY_PROP = 'addRefAnyProp',
 }
 
 export enum MonitorNames {
@@ -212,6 +213,7 @@ export enum DecoratorNames {
     PROVIDER = 'Provider',
     CONSUMER = 'Consumer',
     MONITOR = 'Monitor',
+    SYNC_MONITOR = 'SyncMonitor',
     COMPUTED = 'Computed',
     EVENT = 'Event',
     REQUIRE = 'Require',
@@ -273,6 +275,7 @@ export enum StateManagementTypes {
     OBSERVE = 'OBSERVE',
     META = '__meta',
     SUBSCRIBED_WATCHES = 'ISubscribedWatches',
+    OBSERVED_ANY_PROP = 'IObservedAnyProp',
     STORAGE_LINK_STATE = 'StorageLinkState',
     OBSERVABLE_PROXY = 'observableProxy',
     PROP_STATE = 'propState',
@@ -297,6 +300,7 @@ export enum StateManagementTypes {
     MAKE_CONSUMER = 'makeConsumer',
     MAKE_COMPUTED = 'makeComputed',
     MAKE_MONITOR = 'makeMonitor',
+    MAKE_SYNC_MONITOR = 'makeSyncMonitor',
     UI_UTILS = 'UIUtils',
     MAKE_OBSERVED = 'makeObserved',
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
@@ -426,6 +430,14 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.I_MONITOR
         ]
     ],
+    [
+        DecoratorNames.SYNC_MONITOR,
+        [
+            StateManagementTypes.MONITOR_DECORATED,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY,
+            StateManagementTypes.I_MONITOR
+        ]
+    ],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
@@ -459,6 +471,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
             StateManagementTypes.WATCH_ID_TYPE,
             StateManagementTypes.RENDER_ID_TYPE,
             StateManagementTypes.SUBSCRIBED_WATCHES,
+            StateManagementTypes.OBSERVED_ANY_PROP,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY
         ],
     ],

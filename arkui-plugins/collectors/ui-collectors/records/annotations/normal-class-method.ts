@@ -21,11 +21,13 @@ import { RecordOptions } from '../base';
 export interface NormalClassMethodAnnotationInfo extends AnnotationInfo {
     hasComputed?: boolean;
     hasMonitor?: boolean;
+    hasSyncMonitor?: boolean;
 }
 
 export interface NormalClassMethodAnnotations extends Annotations {
     [DecoratorNames.COMPUTED]?: arkts.AnnotationUsage;
     [DecoratorNames.MONITOR]?: arkts.AnnotationUsage;
+    [DecoratorNames.SYNC_MONITOR]?: arkts.AnnotationUsage;
 }
 
 export class NormalClassMethodAnnotationRecord extends BaseAnnotationRecord<
@@ -36,7 +38,7 @@ export class NormalClassMethodAnnotationRecord extends BaseAnnotationRecord<
 
     constructor(options: RecordOptions) {
         super(options);
-        this.annotationNames = [DecoratorNames.COMPUTED, DecoratorNames.MONITOR];
+        this.annotationNames = [DecoratorNames.COMPUTED, DecoratorNames.MONITOR, DecoratorNames.SYNC_MONITOR];
     }
 
     updateAnnotationInfoByName(
@@ -49,6 +51,9 @@ export class NormalClassMethodAnnotationRecord extends BaseAnnotationRecord<
                 break;
             case DecoratorNames.MONITOR:
                 info.hasMonitor = true;
+                break;
+            case DecoratorNames.SYNC_MONITOR:
+                info.hasSyncMonitor = true;
                 break;
             default:
                 return info;
