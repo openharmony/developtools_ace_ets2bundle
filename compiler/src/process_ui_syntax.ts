@@ -159,7 +159,8 @@ import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 import { hasArkDecorator } from './fast_build/ark_compiler/utils';
 import {
   checkTypeReference,
-  validateModuleSpecifier
+  validateModuleSpecifier,
+  isApiAvailableStatement
 } from './fast_build/system_api/api_check_utils';
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
@@ -181,7 +182,7 @@ import {
   stopEvent
 } from './performance';
 import parseIntent from './userIntents_parser/parseUserIntents';
-import { isApiAvailableStatement, isPointVersion, processAvailableStatement } from './process_available_statement';
+import { isPointVersion, processAvailableStatement } from './process_available_statement';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
