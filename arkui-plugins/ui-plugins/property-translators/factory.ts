@@ -40,6 +40,8 @@ import { annotation, isNumeric } from '../../common/arkts-utils';
 import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
+const MONITOR_WILDCARD_SUFFIX = '.*';
+
 export class factory {
     /**
      * generate an substitution for optional expression ?., e.g. `{let _tmp = xxx; _tmp == null ? undefined : xxx}`.
@@ -945,6 +947,97 @@ export class factory {
 
         return arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(callee, undefined, arg ? [arg] : [])
+        );
+    }
+
+    static generateSyncMonitorAssignment(
+        monitorItem: string[] | undefined,
+        originalName: string,
+        newName: string,
+        isFromStruct: boolean,
+        paramsLength: number
+    ): arkts.ExpressionStatement {
+        if (paramsLength === 0) {
+            collectStateManagementTypeImport(StateManagementTypes.I_MONITOR);
+        }
+        const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        const args: arkts.AstNode[] = [this.generateSyncMonitorPathArg(monitorItem), this.generateLambdaArg(originalName, paramsLength)];
+        const makeSyncMonitorOptions = arkts.factory.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            [
+                arkts.factory.createProperty(
+                    arkts.factory.createIdentifier('owner'),
+                    isFromStruct ? arkts.factory.createThisExpression() : arkts.factory.createUndefinedLiteral()
+                ),
+                arkts.factory.createProperty(
+                    arkts.factory.createIdentifier('functionName'),
+                    arkts.factory.createStringLiteral(originalName)
+                ),
+            ],
+            false
+        );
+        args.push(makeSyncMonitorOptions);
+        const right: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
+            StateManagementTypes.MAKE_SYNC_MONITOR,
+            undefined,
+            args,
+            false
+        );
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                thisValue,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                right
+            )
+        );
+    }
+
+    static generateSyncMonitorPathArg(monitorItem: string[] | undefined): arkts.ArrayExpression {
+        if (!monitorItem || monitorItem.length <= 0) {
+            return arkts.factory.createArrayExpression([]);
+        }
+        const params = monitorItem.map((itemName: string) => {
+            return factory.createSyncMonitorPathsInfoParameter(itemName);
+        });
+        return arkts.factory.createArrayExpression(params);
+    }
+
+    static createSyncMonitorPathsInfoParameter(monitorItem: string): arkts.ObjectExpression {
+        const hasWildcard: boolean = monitorItem.endsWith(MONITOR_WILDCARD_SUFFIX);
+        const valueCallbackPath: string = hasWildcard
+            ? monitorItem.substring(0, monitorItem.length - MONITOR_WILDCARD_SUFFIX.length)
+            : monitorItem;
+        const itemNameSplit: string[] = valueCallbackPath.split('.');
+        let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
+        if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
+            monitorVariable = this.generateMonitorVariable(itemNameSplit);
+        }
+        const properties: arkts.Property[] = [
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(MonitorNames.PATH),
+                arkts.factory.create1StringLiteral(monitorItem)
+            ),
+        ];
+        if (hasWildcard) {
+            properties.push(arkts.factory.createProperty(
+                arkts.factory.createIdentifier('isWildcard'),
+                arkts.factory.createBooleanLiteral(true)
+            ));
+        }
+        properties.push(arkts.factory.createProperty(
+            arkts.factory.createIdentifier(MonitorNames.VALUE_CALL_CACK),
+            arkts.factory.createArrowFunction(
+                UIFactory.createScriptFunction({
+                    flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                    body: arkts.factory.createBlock([arkts.factory.createReturnStatement(monitorVariable)]),
+                    returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                })
+            )
+        ));
+        return arkts.factory.createObjectExpression(
+            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+            properties,
+            false
         );
     }
 }

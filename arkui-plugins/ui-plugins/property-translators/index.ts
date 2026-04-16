@@ -142,6 +142,7 @@ import {
 import { RequireCachedTranslator } from './require';
 import { EnvTranslator, EnvInterfaceTranslator, EnvCachedTranslator, EnvCachedInterfaceTranslator } from './env';
 import { ComponentLifecycleTranslator } from './componentLifecycle';
+import { SyncMonitorTranslator } from './syncMonitor';
 
 export { BaseObservedPropertyTranslator, PropertyTranslator, PropertyCachedTranslator, InterfacePropertyTranslator };
 export type { ClassScopeInfo };
@@ -355,6 +356,9 @@ export function classifyMethod(method: arkts.AstNode, classInfo: ClassInfo): Met
     }
     if (hasDecorator(method, DecoratorNames.MONITOR)) {
         return new MonitorTranslator({ method, classInfo });
+    }
+    if (hasDecorator(method, DecoratorNames.SYNC_MONITOR)) {
+        return new SyncMonitorTranslator({method, classInfo});
     }
     if (hasDecorator(method, DecoratorNames.COMPONENT_INIT) ||
         hasDecorator(method, DecoratorNames.COMPONENT_APPEAR) ||

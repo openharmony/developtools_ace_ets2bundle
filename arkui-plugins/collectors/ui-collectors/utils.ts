@@ -378,6 +378,10 @@ export function checkIsMonitorMethodFromInfo(metadata: StructMethodInfo | Normal
     return !!metadata.annotationInfo?.hasMonitor;
 }
 
+export function checkIsSyncMonitorMethodFromInfo(metadata: StructMethodInfo | NormalClassMethodInfo): boolean {
+    return !!metadata.annotationInfo?.hasSyncMonitor;
+}
+
 export function checkIsComputedMethodFromInfo(metadata: StructMethodInfo | NormalClassMethodInfo): boolean {
     return !!metadata.annotationInfo?.hasComputed;
 }

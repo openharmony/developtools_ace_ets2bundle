@@ -60,6 +60,7 @@ import {
     checkIsGlobalFunctionFromInfo,
     checkIsInteropComponentCallFromInfo,
     checkIsMonitorMethodFromInfo,
+    checkIsSyncMonitorMethodFromInfo,
     checkIsNormalClassHasTrackProperty,
     checkIsNormalClassMethodFromInfo,
     checkIsNormalClassPropertyFromInfo,
@@ -252,6 +253,9 @@ export class RewriteFactory {
         if (checkIsMonitorMethodFromInfo(metadata)) {
             return PropertyCacheFactory.rewriteMonitorMethodFromInfo(node, metadata);
         }
+        if (checkIsSyncMonitorMethodFromInfo(metadata)) {
+            return PropertyCacheFactory.rewriteSyncMonitorMethodFromInfo(node, metadata);
+        }
         if (checkHasLifecycleMethodFromInfo(metadata)) {
             return PropertyCacheFactory.rewriteLiveCycleMethodFromInfo(node, metadata);
         }
@@ -304,6 +308,9 @@ export class RewriteFactory {
         }
         if (checkIsMonitorMethodFromInfo(metadata)) {
             return PropertyCacheFactory.rewriteMonitorMethodFromInfo(node, metadata);
+        }
+        if (checkIsSyncMonitorMethodFromInfo(metadata)) {
+            return PropertyCacheFactory.rewriteSyncMonitorMethodFromInfo(node, metadata);
         }
         if (checkIsObservedImplementsMethod(metadata)) {
             const getSetTypes = getGetterSetterTypeFromInfo(metadata);

@@ -348,6 +348,10 @@ export function monitorField(name: string): string {
     return `__monitor_${name}`;
 }
 
+export function syncMonitorField(name: string): string {
+    return `__SyncMonitor_${name}`;
+}
+
 export function optionsHasField(name: string): string {
     return `__options_has_${name}`;
 }
