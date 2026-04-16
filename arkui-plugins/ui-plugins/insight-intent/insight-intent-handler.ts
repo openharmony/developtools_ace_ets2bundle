@@ -152,6 +152,26 @@ function validateKeywords(keywords: string[] | null | undefined, node: arkts.Ast
     return valid;
 }
 
+function validateSupportedQuery(
+    paramterSchema: Record<string, unknown> | null | undefined,
+    schema: string[],
+    classNode: arkts.ClassDeclaration,
+    consistencyValidator?: (
+        schema: Record<string, unknown> | null | undefined,
+        classNode: arkts.ClassDeclaration,
+        isSupport: string[],
+    ) => boolean
+): boolean {
+    if (!schema || !Array.isArray(schema) || schema.length === 0) {
+        return true;
+    }
+
+    if (consistencyValidator) {
+        return consistencyValidator(paramterSchema, classNode, schema);
+    }
+    return true;
+}
+
 /**
  * 验证 JSON Schema 的有效性（使用 Ajv）
  * 
@@ -512,7 +532,8 @@ function collectEntrySchemaData(classNode: arkts.ClassDeclaration): Record<strin
 function validateSchemaConsistency(
     schema: Record<string, unknown> | null | undefined,
     classNode: arkts.ClassDeclaration,
-    collectSchemaData: (classNode: arkts.ClassDeclaration) => Record<string, SchemaVerifyType>
+    collectSchemaData: (classNode: arkts.ClassDeclaration) => Record<string, SchemaVerifyType>,
+    supportedQueryProperties?:string[]
 ): boolean {
     if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
         return true;
@@ -526,10 +547,65 @@ function validateSchemaConsistency(
     if (!validateSchemaPropertiesRule(schemaData, schema, classNode)) {
         return false;
     }
+    if(supportedQueryProperties && supportedQueryProperties?.length !== 0){ 
+        if (!validateSupportedQueryProperties(schemaData, schema, supportedQueryProperties, classNode)) {
+            return false;
+        }
+    }
     if (!validateSchemaRequiredClassProperties(schemaData, schema, classNode)) {
         return false;
     }
     return validateSchemaCombinationRules(schemaData, schema, classNode);
+}
+/**
+ * 校验 entity意图的 SupportedQueryProperties
+*/
+function validateSupportedQueryProperties(
+    schemaData: Record<string, SchemaVerifyType>,
+    schema: Record<string, unknown> | null | undefined,
+    supportedValue: string[],
+    node: arkts.AstNode
+): boolean {
+    if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+        return true;
+    }
+    const properties = schema.properties;
+    if (!Array.isArray(supportedValue) || !properties || typeof properties !== 'object' || Array.isArray(properties)) {
+        return true;
+    }
+    // 验证 supportedValue 中的字段是否都在 properties 中定义
+    const propertyKeys = new Set(Object.keys(properties));
+    for (const field of supportedValue) {
+        if (typeof field === 'string' && !propertyKeys.has(field)) {
+            LogCollector.getInstance().collectLogInfo({
+                node: node,
+                type: LogType.ERROR,
+                code: '10110003',
+                message: `The supportedQueryProperties field '${field}' is not defined in properties.`
+            });
+            return false;
+        }
+    }
+    const supportedQueryPropertiesFieldSet = new Set(
+        supportedValue.filter((field): field is string => typeof field === 'string')
+    );
+    if (supportedQueryPropertiesFieldSet.size === 0) {
+        return true;
+    }
+
+    for (const key of Object.keys(properties)) {
+        if (supportedQueryPropertiesFieldSet.has(key) && !schemaData[key]) {
+            LogCollector.getInstance().collectLogInfo({
+                node: node,
+                type: LogType.ERROR,
+                code: '10110003',
+                message: `The field '${key}' in supportedQueryProperties is not a property of the class.`
+            });
+            return false;
+        }
+    }
+
+    return true;
 }
 /**
  * 验证 JSON Schema 的必填属性一致性
@@ -718,9 +794,10 @@ function validateFormSchemaConsistency(
 
 function validateEntitySchemaConsistency(
     schema: Record<string, unknown> | null | undefined,
-    classNode: arkts.ClassDeclaration
+    classNode: arkts.ClassDeclaration,
+    supportedQueryProperties?:string[]
 ): boolean {
-    return validateSchemaConsistency(schema, classNode, collectEntitySchemaData);
+    return validateSchemaConsistency(schema, classNode, collectEntitySchemaData, supportedQueryProperties);
 }
 
 function validateEntrySchemaConsistency(
@@ -1744,11 +1821,12 @@ export class InsightIntentHandler {
             });
             return null;
         }
-
         if (!data.className || !data.decoratorFile ||
             (data.parameters && !this.isValidOptionalValue(data.parameters, classNode, '@InsightIntentEntity')) ||
             (data.parameters && !validateParametersSchema(data.parameters, classNode, validateEntitySchemaConsistency)) ||
             (data.supportedQueryProperties && !validateKeywords(data.supportedQueryProperties, classNode)) ||
+            (data.supportedQueryProperties && !validateSupportedQuery(data.parameters, data.supportedQueryProperties, classNode, validateEntitySchemaConsistency)) ||
+
             !this.validateEntityBaseClass(classNode, data)
         ) {
             return null;
@@ -2991,7 +3069,7 @@ export class InsightIntentHandler {
                 node: classNode,
                 type: LogType.ERROR,
                 code: '10110003',
-                message: 'Required parameters are missing for the decorator in @InsightIntentFunctionMethod'
+                message: 'Required parameters are missing for the decorator.'
             });
             return null;
         }
