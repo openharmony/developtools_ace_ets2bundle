@@ -55,6 +55,7 @@ import {
     isForEach,
     findReuseId,
     getStructCalleeInfoFromCallee,
+    StructCalleeInfo,
     isInEntryWrapper,
     isDebugLineEnabled,
 } from './utils';
@@ -220,8 +221,8 @@ export class factory {
      * create initialized lambda body
      */
     static createInitLambdaBody(
-        leaf: arkts.CallExpression,
-        declInfo: BuilderLambdaDeclInfo
+        declInfo: BuilderLambdaDeclInfo,
+        structInfo: StructCalleeInfo | undefined
     ): BuilderLambdaStyleBodyInfo {
         const { name, isFunctionCall, hasReceiver } = declInfo;
         const lambdaBodyInfo: BuilderLambdaStyleBodyInfo = {
@@ -231,7 +232,6 @@ export class factory {
             defaultReuseId: undefined,
             structEntryStroage: undefined,
         };
-        const structInfo = !isFunctionCall ? getStructCalleeInfoFromCallee(leaf.expression) : {};
         if (!!structInfo?.isFromCustomDialog) {
             return lambdaBodyInfo;
         }
@@ -1014,14 +1014,22 @@ export class factory {
         if (!replace || !declInfo) {
             return node;
         }
-        const lambdaBodyInfo = factory.createInitLambdaBody(leaf, declInfo);
+        const structInfo = !declInfo.isFunctionCall ? getStructCalleeInfoFromCallee(leaf.expression) : {};
+        const lambdaBodyInfo = factory.createInitLambdaBody(declInfo, structInfo);
         let reuseId: arkts.AstNode | undefined;
+        const isReuse = !!structInfo?.isFromReuse || !!structInfo?.isFromReuseV2;
         let lambdaBody: arkts.Identifier | arkts.CallExpression | undefined = lambdaBodyInfo.lambdaBody;
         if (instanceCalls.length > 0 && !!lambdaBodyInfo.lambdaBody) {
             instanceCalls = instanceCalls.reverse();
             this.updateAnimation(instanceCalls);
             instanceCalls.forEach((callInfo) => {
-                reuseId = findReuseId(callInfo.call);
+                if (isReuse) {
+                    reuseId = findReuseId(callInfo.call);
+                }
+                const isReuseIdCall = findReuseId(callInfo.call) !== undefined;
+                if (isReuseIdCall && !isReuse) {
+                    return;
+                }
                 lambdaBody = this.createStyleLambdaBody(lambdaBody!, callInfo);
             });
         }
