@@ -682,16 +682,16 @@ function checkCrossplatformValue(
 ): boolean {
   const mergingCommentHandle = checkMergingComments(CROSSPLATFORM_TAG_CHECK_NAME);
   if (!crossplatformDepsConfig) {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   const fileName: string = declaration.getSourceFile().fileName;
   if (!fileName || fileName === '') {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   // crossplatformDepsConfig
   const apiFileName: string = path.basename(fileName).replace(/\.d\.(ts|ets)$/, '');
   if (!crossplatformDepsConfig.get(apiFileName)) {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   const depsConfig: CrossplatformConfig[] = crossplatformDepsConfig.get(apiFileName);
 
@@ -700,10 +700,10 @@ function checkCrossplatformValue(
     const config: CrossplatformConfig = depsConfig[i];
     if (config.function === functionKey) {
       collectCrossplatformExternalModule(node, config);
-      return mergingCommentHandle(jsDocTags, config, node, declaration);
+      return mergingCommentHandle;
     }
   }
-  return mergingCommentHandle(jsDocTags, config, node, declaration);
+  return mergingCommentHandle;
 }
 
 function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
@@ -1647,7 +1647,6 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
     jsDocTag.comment :
     ts.getTextOfJSDocComment(jsDocTag.comment);
   config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  let fun = checkMergingComments(PERMISSION_TAG_CHECK_NAME)
   if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {	 
     return false;	 
   } 
@@ -1655,7 +1654,7 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
   if (suppressor.isApiVersionHandled(node)) { 
     return false; 
   } 
-  return fun(jsDocTags, config, node, declaration);
+  return true;
 
 }
 
