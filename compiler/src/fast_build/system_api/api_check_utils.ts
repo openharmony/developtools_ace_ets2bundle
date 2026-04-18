@@ -680,7 +680,7 @@ function checkCrossplatformValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const mergingCommentHandle = checkMergingComments(CROSSPLATFORM_TAG_CHECK_NAME);
+  const mergingCommentHandle = checkCrossPlatformMergeValue;
   if (!crossplatformDepsConfig) {
     return mergingCommentHandle;
   }
