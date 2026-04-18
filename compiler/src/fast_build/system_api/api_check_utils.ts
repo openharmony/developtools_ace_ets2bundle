@@ -371,129 +371,130 @@ let permissionsArray: string[] = [];
 
 
 /**
- * 解析版本号字符串并返回一个整数表示的版本值。
- *
- * @param {string} s - 版本号字符串，支持格式包括：x.y.z(w)、单个数字、x.y.z。
- * @returns {number} 返回一个整数值表示版本，解析失败返回0。
- */
+* Parse the version number string and return an integer representing the version value.
+*
+* @param {string} s - The version number string, supporting formats including: x.y.z(w), a single number, x.y.z.
+* @returns {number} Returns an integer value representing the version; returns 0 if parsing fails.
+*/
 
-function parseVersion(s) {
-  // 定义正则表达式
-  const pattern1 = /^(\d+)\.(\d+)\.(\d+)\((\d+)\)$/; // 匹配 x.y.z(w) 格式
-  const pattern2 = /^\d{1,2}$/;                     // 匹配 1到2位的数字
-  const pattern3 = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // 匹配 x.y.z 格式
+function parseVersion(versionStr) {
+  // Regular expressions for different version formats
+const buildVersionPattern = /^(\d+)\.(\d+)\.(\d+)\((\d+)\)$/; // Matches x.y.z(w) format
+const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
+const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
 
-  // 检查是否匹配 pattern1
-  if (pattern1.test(s)) {
-      const match = s.match(pattern1);
-      const buildNumber = parseInt(match[4], 10); // 提取括号内的数字
-      return buildNumber * 10000;
-  }
+// Check for build version format (x.y.z(w))
+if (buildVersionPattern.test(versionStr)) {
+    const matchResult = versionStr.match(buildVersionPattern);
+    const buildNumber = parseInt(matchResult[4], 10); // Extract number in parentheses
+    return buildNumber * 10000;
+}
 
-  // 检查是否匹配 pattern2
-  if (pattern2.test(s)) {
-      const number = parseInt(s, 10);
-      return number * 10000;
-  }
+// Check for simple number format
+if (simpleNumberPattern.test(versionStr)) {
+    const numberValue = parseInt(versionStr, 10);
+    return numberValue * 10000;
+}
 
-  // 检查是否匹配 pattern3
-  if (pattern3.test(s)) {
-      const parts = s.split('.');
-      const major = parseInt(parts[0], 10);
-      const minor = parseInt(parts[1], 10);
-      const patch = parseInt(parts[2], 10);
-      return major * 10000 + minor * 100 + patch;
-  }
+// Check for semantic version format (x.y.z)
+if (semanticVersionPattern.test(versionStr)) {
+    const versionParts = versionStr.split('.');
+    const majorVersion = parseInt(versionParts[0], 10);
+    const minorVersion = parseInt(versionParts[1], 10);
+    const patchVersion = parseInt(versionParts[2], 10);
+    return majorVersion * 10000 + minorVersion * 100 + patchVersion;
+}
 
-  // 如果都不匹配，返回0
-  return 0;
+// Return 0 for unrecognized format
+return 0;
 }
 
 /**
-* 判断两个版本号范围是否有交集。
-*
-* @param {string} start1 - 第一个版本范围的起始版本号。
-* @param {string} end1 - 第一个版本范围的结束版本号。
-* @param {string} start2 - 第二个版本范围的起始版本号。
-* @param {string} end2 - 第二个版本范围的结束版本号。
-* @returns {boolean} 如果两个版本范围有交集，返回 `true`，否则返回 `false`。
+* Determines if two version ranges have any overlap
+* 
+* @param {string} rangeStart1 - Start of first version range
+* @param {string} rangeEnd1 - End of first version range 
+* @param {string} rangeStart2 - Start of second version range
+* @param {string} rangeEnd2 - End of second version range
+* @returns {boolean} True if ranges intersect, false otherwise
 */
-function isVersionRangeIntersect(start1, end1, start2, end2) {
-  // 将版本号转换为数值
-  const numStart1 = parseVersion(start1);
-  const numEnd1 = parseVersion(end1);
-  const numStart2 = parseVersion(start2);
-  const numEnd2 = parseVersion(end2);
+function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2) {
+// Convert version strings to numeric representations
+const range1StartNum = parseVersion(rangeStart1);
+const range1EndNum = parseVersion(rangeEnd1);
+const range2StartNum = parseVersion(rangeStart2);
+const range2EndNum = parseVersion(rangeEnd2);
 
-  console.log(numStart1,numEnd1,numStart2,numEnd2)
+// Normalize ranges to ensure start <= end
+const normalizedRange1Start = Math.min(range1StartNum, range1EndNum);
+const normalizedRange1End = Math.max(range1StartNum, range1EndNum); 
+const normalizedRange2Start = Math.min(range2StartNum, range2EndNum);
+const normalizedRange2End = Math.max(range2StartNum, range2EndNum);
 
-  // 确保start <= end
-  const aStart = Math.min(numStart1, numEnd1);
-  const aEnd = Math.max(numStart1, numEnd1);
-  const bStart = Math.min(numStart2, numEnd2);
-  const bEnd = Math.max(numStart2, numEnd2);
+// Check for range intersection
+// [22,22] [22,26]
+const rangesIntersect = (normalizedRange1End < normalizedRange2Start || normalizedRange2End < normalizedRange1Start);
 
-  // 判断是否有交集
-  return !(aEnd < bStart || bEnd < aStart);
+return rangesIntersect;
 }
+
 /**
-* 从注释中提取版本范围。
-*
-* @param {string} comment - 包含版本范围的注释字符串。
-* @returns {Object|undefined} 如果成功提取到版本范围，返回一个包含 `start` 和 `end` 的对象；否则返回 `undefined`。
+* Extracts version range from a comment string
+* 
+* @param {string} commentText - Comment string containing version range
+* @returns {{start: string, end: string}|undefined} Object with start/end versions if extracted, undefined otherwise
 */
-function extractVersionRange(comment) {
-  const pattern =  /\[since (.*?)\]/;
-  if (!comment.match(pattern)){
-      return undefined;
-  }
-  comment = comment.match(pattern)[0].replace("since", '').replace("[", '').replace("]", '').trim();
-  if (comment.split('-').length === 2) {
-      const startVersion = comment.split('-')[0].trim();
-      const endVersion = comment.split('-')[1].trim();
-      return {
-          start: startVersion,
-          end: endVersion
-      };
-  }
-  // 如果没有匹配到，返回 undefined
+function extractVersionRange(commentText) {
+
+
+if (typeof commentText !== 'string' || !commentText) {
   return undefined;
 }
 
-/**
-* 检查 JSDoc 标签中的版本范围是否与项目配置的 SDK 版本范围有交集。
-*
-* @param {string} tagName - 要检查的 JSDoc 标签名称。
-* @returns {(
-*   jsDocTags: readonly ts.JSDocTag[],
-*   config: ts.JsDocNodeCheckConfigItem,
-*   node?: ts.Node,
-*   declaration?: ts.Declaration
-* ) => boolean} 返回一个函数，用于检查 JSDoc 标签中的版本范围。
-*/
+// Regular expression to match [since x.y.z - a.b.c] pattern
+const VERSION_RANGE_PATTERN =  /\[since (.*?)\]/;
 
-function checkMergingComments(tagName: string) {
-  return (
-      jsDocTags: readonly ts.JSDocTag[],
-      config: ts.JsDocNodeCheckConfigItem,
-      node?: ts.Node,
-      declaration?: ts.Declaration
-):boolean => {
-      let isflag = true;
-      jsDocTags.forEach(tagN => {
-          if (tagName === tagN.tagName.escapedText && tagName === tagN.tagName.escapedText && tagN.comment !== undefined) {
-              const versionRange = extractVersionRange(tagN.comment)//[since 16 - 18 ]
-              if (versionRange !== undefined) {
-                  const startVersion = versionRange.start;
-                  const endVersion = versionRange.end;
-                  const minSDKVersion = projectConfig.compatibleSdkVersion;
-                  const maxSDKVersion = projectConfig.compileSdkVersion;
-                  isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
-              }
-          }
-      })
-      return isflag;
-  }
+// Check if pattern exists in comment
+
+if (!commentText.match(VERSION_RANGE_PATTERN)) {
+    return undefined;  
+}
+// Extract and clean the version range part
+const rawVersionRange = commentText.match(VERSION_RANGE_PATTERN)[0]
+    .replace('since', '')
+    .replace('[', '')
+    .replace(']', '')
+    .trim();
+
+// Split into start and end versions
+const versionParts = rawVersionRange.split('-');
+if (versionParts.length !== 2) {
+    return undefined;
+}
+
+// Return structured version range object
+return {
+    start: versionParts[0].trim(),
+    end: versionParts[1].trim()
+  };
+}
+
+/**
+* 检查给定的版本范围是否与项目的 SDK 版本范围存在交集。
+* 
+* @param {Object} versionRange - 要检查的版本范围对象。
+* @param {string} versionRange.start - 版本范围的起始版本号。
+* @param {string} versionRange.end - 版本范围的结束版本号。
+* @returns {boolean} - 如果版本范围与项目的 SDK 版本范围存在交集，则返回 true；否则返回 false;
+*/
+function checkVersionRangeIntersection(versionRange): boolean {
+let isflag = false;
+const startVersion = versionRange.start;
+const endVersion = versionRange.end;
+const minSDKVersion = projectConfig.compatibleSdkVersion;
+const maxSDKVersion = projectConfig.compileSdkVersion;
+isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
+return !isflag;
 }
 
 /**
@@ -558,7 +559,7 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
     message: SYSTEM_API_TAG_CHECK_WARNING,
     type: ts.DiagnosticCategory.Warning,
     tagNameShouldExisted: false,
-    checkJsDocSuppressorValidCallback: checkMergingComments(SYSTEM_API_TAG_CHECK_NAME)
+    checkJsDocSuppressorValidCallback: checkSystemApiValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(systemApiConfig));
 }
@@ -610,7 +611,7 @@ function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
     message: TEST_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Warning,
     tagNameShouldExisted: false,
-    checkJsDocSuppressorValidCallback: checkMergingComments(TEST_TAG_CHECK_NAME)
+    checkJsDocSuppressorValidCallback: checkTestValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(testConfig));
 }
@@ -644,7 +645,7 @@ function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
     message: FORM_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
-    checkJsDocSuppressorValidCallback: checkMergingComments(FORM_TAG_CHECK_NAME)
+    checkJsDocSuppressorValidCallback: checkFormValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(formConfig));
 }
@@ -662,7 +663,7 @@ function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
     message: CROSSPLATFORM_TAG_CHECK_ERROR,
     type: logType,
     tagNameShouldExisted: true,
-    checkJsDocSuppressorValidCallback: checkCrossplatformValue
+    checkJsDocSuppressorValidCallback: checkCrossPlatformMergeValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
 }
@@ -831,7 +832,8 @@ function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[])
     tagName: [FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
     message: FA_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
-    tagNameShouldExisted: false
+    tagNameShouldExisted: false,
+    checkJsDocSuppressorValidCallback: checkFaModelOnlyValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(faModelOnlyConfig));
 }
@@ -847,7 +849,8 @@ function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem
     tagName: [STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
     message: STAGE_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
-    tagNameShouldExisted: false
+    tagNameShouldExisted: false,
+    checkJsDocSuppressorValidCallback: checkStageModuleValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(stageModelOnlyConfig));
 }
@@ -864,7 +867,7 @@ function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
     message: ATOMICSERVICE_TAG_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
-    checkJsDocSuppressorValidCallback: checkMergingComments(ATOMICSERVICE_TAG_CHECK_NAME)
+    checkJsDocSuppressorValidCallback: checkAtomicserviceValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(atomicserviceConfig));
 }
@@ -1654,6 +1657,220 @@ export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: 
   } 
   return fun(jsDocTags, config, node, declaration);
 
+}
+
+/**
+ * Checks the system API value based on JSDoc tags and configuration.
+ * 
+ * @param jsDocTags - An array of JSDoc tags to be examine.
+ * @param config - Configuration object for JSDoc node checking.
+ * @param node - Optional node related to the declaration.
+ * @param declaration - Optional declaration to which the JSDoc tags belong.
+ * @returns A boolean indicating whether the system API value is valid according to the checks.
+ */
+export function checkSystemApiValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the specific JSDoc tag with the system API check name
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === SYSTEM_API_TAG_CHECK_NAME;
+  });
+  // If the specific JSDoc tag is not found, return false
+  if (!jsDocTag) {
+    return false;
+  }
+  // Extract the version range from the JSDoc tag comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+
+  // If a version range is found, check merging comments; otherwise, return true
+  if (versionRange !== undefined) {
+    return checkVersionRangeIntersection(versionRange);
+  } else {
+    return true;
+  }
+}
+
+
+/**
+ * Checks the AtomicService value based on JSDoc tags and configuration.
+ * 
+ * @param jsDocTags - An array of JSDoc tags to be examined.
+ * @param config - Configuration object for JSDoc node checking. It updates the `tagNameShouldExisted` flag.
+ * @param node - Optional node related to the declaration.
+ * @param declaration - Optional declaration to which the JSDoc tags belong.
+ * @returns A boolean indicating whether the AtomicService value is valid according to the checks.
+ */
+export function checkAtomicserviceValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the specific JSDoc tag with the AtomicService check name
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === ATOMICSERVICE_TAG_CHECK_NAME;
+  });
+
+  // Update the configuration flag based on whether the tag exists
+  config.tagNameShouldExisted = !jsDocTag;
+
+  // If the specific JSDoc tag is not found, return true
+  if (!jsDocTag) {
+    return true;
+  }
+  const versionRange = extractVersionRange(jsDocTag.comment);
+  if (versionRange !== undefined) {
+    return !checkVersionRangeIntersection(versionRange);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Checks whether the FA (Feature Ability) model value is valid.
+ * 
+ * @param {readonly ts.JSDocTag[]} jsDocTags - Array of JSDoc tags.
+ * @param {ts.JsDocNodeCheckConfigItem} config - Configuration item for JSDoc node checking.
+ * @param {ts.Node} [node] - Optional node related to the declaration.
+ * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
+ * @returns {boolean} - Returns true if the FA model value is valid; otherwise, returns false.
+ */
+export function checkFaModelOnlyValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the JSDoc tag with FA_TAG_HUMP_CHECK_NAME or FA_TAG_CHECK_NAME
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return (item.tagName.getText() === FA_TAG_HUMP_CHECK_NAME || item.tagName.getText() === FA_TAG_CHECK_NAME);
+  });
+
+  // If the tag is not found, return false
+  if (!jsDocTag) {
+    return false;
+  }
+
+  // Extract the version range from the tag's comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+
+  // If a version range exists, check if it intersects with the project's SDK version range
+  if (versionRange !== undefined) {
+    return checkVersionRangeIntersection(versionRange);
+  } else {
+    return true;
+  }
+}
+
+/**
+ * Checks whether the Stage module value is valid based on JSDoc tags and configuration.
+ * 
+ * @param {readonly ts.JSDocTag[]} jsDocTags - Array of JSDoc tags to be checked.
+ * @param {ts.JsDocNodeCheckConfigItem} config - Configuration item for JSDoc node checking.
+ * @param {ts.Node} [node] - Optional node related to the declaration.
+ * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
+ * @returns {boolean} - Returns true if the Stage module value is valid; otherwise, returns false.
+ */
+export function checkStageModuleValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the JSDoc tag with STAGE_TAG_CHECK_NAME or STAGE_TAG_HUMP_CHECK_NAME
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return (item.tagName.getText() === STAGE_TAG_CHECK_NAME || item.tagName.getText() === STAGE_TAG_HUMP_CHECK_NAME);
+  });
+
+  // If the tag is not found, return false
+  if (!jsDocTag) {
+    return false;
+  }
+
+  // Extract the version range from the tag's comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+
+  // If a version range exists, check if it intersects with the project's SDK version range
+  if (versionRange !== undefined) {
+    return checkVersionRangeIntersection(versionRange);
+  } else {
+    return true;
+  }
+}
+
+/**
+ * Checks whether the Cross-Platform value is valid based on JSDoc tags and configuration.
+ * 
+ * @param {readonly ts.JSDocTag[]} jsDocTags - Array of JSDoc tags to be checked.
+ * @param {ts.JsDocNodeCheckConfigItem} config - Configuration item for JSDoc node checking. It updates the `tagNameShouldExisted` flag.
+ * @param {ts.Node} [node] - Optional node related to the declaration.
+ * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
+ * @returns {boolean} - Returns true if the Cross-Platform value is valid; otherwise, returns false.
+ */
+export function checkCrossPlatformMergeValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the JSDoc tag with CROSSPLATFORM_TAG_CHECK_NAME
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === CROSSPLATFORM_TAG_CHECK_NAME;
+  });
+
+  // Update the configuration flag based on whether the tag exists
+  config.tagNameShouldExisted = !jsDocTag;
+  // If the tag is not found, return true
+  if (!jsDocTag) {
+    return true;
+  }
+  // Extract the version range from the tag's comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+  // If a version range exists, check if it intersects with the project's SDK version range and return the negated result
+  if (versionRange !== undefined) {
+    return !checkVersionRangeIntersection(versionRange);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Checks whether the Form value is valid based on JSDoc tags and configuration.
+ * 
+ * @param {readonly ts.JSDocTag[]} jsDocTags - Array of JSDoc tags to be checked.
+ * @param {ts.JsDocNodeCheckConfigItem} config - Configuration item for JSDoc node checking. It updates the `tagNameShouldExisted` flag.
+ * @param {ts.Node} [node] - Optional node related to the declaration.
+ * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
+ * @returns {boolean} - Returns true if the Form value is valid; otherwise, returns false.
+ */
+export function checkFormValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the JSDoc tag with FORM_TAG_CHECK_NAME
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === FORM_TAG_CHECK_NAME;
+  });
+
+  // Update the configuration flag based on whether the tag exists
+  config.tagNameShouldExisted = !jsDocTag;
+  // If the tag is not found, return true
+  if (!jsDocTag) {
+    return true;
+  }
+  // Extract the version range from the tag's comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+
+  // If a version range exists, check if it intersects with the project's SDK version range and return the negated result
+  if (versionRange !== undefined) {
+    return !checkVersionRangeIntersection(versionRange);
+  } else {
+    return false;
+  }
+}
+
+
+/**
+ * Checks whether the Test value is valid based on JSDoc tags and configuration.
+ * 
+ * @param {readonly ts.JSDocTag[]} jsDocTags - Array of JSDoc tags to be checked.
+ * @param {ts.JsDocNodeCheckConfigItem} config - Configuration item for JSDoc node checking.
+ * @param {ts.Node} [node] - Optional node related to the declaration.
+ * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
+ * @returns {boolean} - Returns true if the Test value is valid; otherwise, returns false.
+ */
+export function checkTestValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+  // Find the JSDoc tag with TEST_TAG_CHECK_NAME
+  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
+    return item.tagName.getText() === TEST_TAG_CHECK_NAME;
+  });
+  // If the tag is not found, return true
+  if (!jsDocTag) {
+    return false;
+  }
+  // Extract the version range from the tag's comment
+  const versionRange = extractVersionRange(jsDocTag.comment);
+  // If a version range exists, check if it intersects with the project's SDK version range and return the negated result
+  if (versionRange !== undefined) {
+    return checkVersionRangeIntersection(versionRange);
+  } else {
+    return true;
+  }
 }
 
 /**
