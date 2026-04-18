@@ -663,7 +663,7 @@ function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
     message: CROSSPLATFORM_TAG_CHECK_ERROR,
     type: logType,
     tagNameShouldExisted: true,
-    checkJsDocSuppressorValidCallback: checkCrossPlatformMergeValue
+    checkJsDocSuppressorValidCallback: checkCrossplatformValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
 }
