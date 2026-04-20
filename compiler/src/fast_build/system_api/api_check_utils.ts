@@ -102,7 +102,9 @@ import {
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
-  ApiAvailableResult
+  ApiAvailableResult,
+  MSFVersionCheckResult,
+  MSF_SANDF_VERSION
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -1338,6 +1340,48 @@ export function checkMSFVersionMajor(since: string): boolean {
 }
 
 /**
+ * Check whether the MSF version number format is correct. The Integer field was not checked.
+ * @param since - Version string to validate
+ * @returns When the MSF does not conform to the standard format, false is returned, and the integer is not evaluated.
+ */
+export function checkMSFVersionMajorError(since: string): MSFVersionCheckResult {
+  const noParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)$/;
+  const withParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)\(\d+\)$/;
+  
+  const hasParentheses: boolean = withParenthesesReg.test(since);
+  const noParentheses: boolean = noParenthesesReg.test(since);
+  
+  if (!hasParentheses && !noParentheses) {
+    return { valid: false, needDistCheck: false };
+  }
+  
+  const parts: string[] = since.split('.');
+  const mValue: number = parseInt(parts[0]);
+  const sValue: number = parseInt(parts[1]);
+  const fValue: number = hasParentheses ? parseInt(parts[2].split('(')[0]) : parseInt(parts[2]);
+  
+  if (sValue > MSF_SANDF_VERSION || fValue > MSF_SANDF_VERSION) {
+    return { valid: false, needDistCheck: false };
+  }
+  
+  if (isOpenHarmonyRuntime()) {
+    if (hasParentheses || mValue < MSF_INTEGER_VERSION) {
+      return { valid: false, needDistCheck: false };
+    }
+    return { valid: true, needDistCheck: false };
+  }
+  
+  if (mValue >= MSF_INTEGER_VERSION) {
+    if (hasParentheses) {
+      return { valid: false, needDistCheck: false };
+    }
+    return { valid: true, needDistCheck: false };
+  }
+  
+  return { valid: false, needDistCheck: true };
+}
+
+/**
  * Determine if the Integer version is more than 26.
  * @param since - Version string to validate
  * @returns When Integer is more than 26, return false
@@ -2194,7 +2238,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
-  const apiAvailableRegex = /^\bdeviceInfo\.apiAvailable\b/g;
+  const apiAvailableRegex = /\b\.apiAvailable\b/g;
   let nodeText: string = node.getText() || node.getFullText();
 
   if (!apiAvailableRegex.test(nodeText)) {
@@ -2202,6 +2246,10 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   }
 
   if (!ts.isCallExpression(node)) {
+    return result;
+  }
+
+  if (!node.expression || (ts.isPropertyAccessExpression(node.expression) && node.expression.name?.getText() !== SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO)) {
     return result;
   }
   
@@ -2268,20 +2316,32 @@ function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailable
     return result;
   }
   if (isOpenHarmonyRuntime()) {
-    if (!checkMSFVersionMajor(sinceFormat)) {
+    const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
+    if (!msfResult.valid) {
       result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
       result.valid = false;
     }
   } else {
-    if (!checkMSFVersionMajor(sinceFormat)) {
-      const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
+    result = checkCharDistributionOSScene(sinceFormat, result);
+  }
+  
+  return result;
+}
+
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
+  const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
+  if (!msfResult.valid) {
+    if (msfResult.needDistCheck) {
+      const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
       if (!distributionOSCheck.valid) {
         result.message = distributionOSCheck.message;
         result.valid = false;
       }
+    } else {
+      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.valid = false;
     }
   }
-  
   return result;
 }
 
