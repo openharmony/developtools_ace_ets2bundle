@@ -626,6 +626,21 @@ export class ModuleMode extends CommonMode {
   }
 
   generateEs2AbcCmd() {
+    this.appendBaseCmdArgs();
+    this.appendApiVersionArgs();
+    this.appendBranchEliminationArgIfNeeded();
+    this.appendTransformLibArgsIfNeeded();
+    this.appendCompileContextInfoArgsIfNeeded();
+    this.appendAbcInputArgsIfNeeded();
+    this.appendOptTryCatchArgIfNeeded();
+    this.appendAnnotationArgIfNeeded();
+    this.appendReleaseColumnArgIfNeeded();
+    this.appendCallableNameArgIfNeeded();
+    this.appendPerfFileArgIfNeeded();
+    this.appendMixCompileArgIfNeeded();
+  }
+
+  private appendBaseCmdArgs(): void {
     const fileThreads = getEs2abcFileThreadNumber();
     this.cmdArgs.push(`"@${this.filesInfoPath}"`);
     if (!this.byteCodeHar) {
@@ -637,48 +652,79 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
+  }
+
+  private appendApiVersionArgs(): void {
     this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
     if (this.projectConfig.compatibleSdkVersionStage) {
       this.cmdArgs.push(`"--target-api-sub-version=${this.projectConfig.compatibleSdkVersionStage}"`);
     }
-    // when enable branch elimination and bytecode obfuscation will crash
+  }
+
+  private appendBranchEliminationArgIfNeeded(): void {
     if (this.arkConfig.isBranchElimination && !BytecodeObfuscator.enable) {
       this.cmdArgs.push('--branch-elimination');
     }
+  }
+
+  private appendTransformLibArgsIfNeeded(): void {
     if (this.projectConfig.transformLib) {
       this.cmdArgs.push(`--transform-lib`);
       this.cmdArgs.push(`"${this.projectConfig.transformLib}"`);
     }
+  }
+
+  private appendCompileContextInfoArgsIfNeeded(): void {
     if (this.compileContextInfoPath !== undefined) {
       this.cmdArgs.push(`--compile-context-info`);
       this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
     }
-    if (this.abcPaths.length > 0 && !this.byteCodeHar) {
+  }
+
+  private appendAbcInputArgsIfNeeded(): void {
+    if (this.abcPaths.length > 0 && (!this.byteCodeHar ||
+      this.projectConfig.projectArkOption?.bundle?.bundledAllDependencies)) {
       this.cmdArgs.push('--enable-abc-input');
       this.cmdArgs.push('--remove-redundant-file');
     }
     if (this.customizedHar) {
       this.cmdArgs.push('--enable-abc-input');
     }
+  }
+
+  private appendOptTryCatchArgIfNeeded(): void {
     if (!this.arkConfig.optTryCatchFunc) {
       this.cmdArgs.push('--opt-try-catch-func=false');
     }
+  }
+
+  private appendAnnotationArgIfNeeded(): void {
     if (this.projectConfig.allowEtsAnnotations) {
       this.cmdArgs.push('--enable-annotations');
     }
-    // Add column numbers for bytecode instructions in release mode
+  }
+
+  private appendReleaseColumnArgIfNeeded(): void {
     if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableColumnNum') ||
       this.projectConfig.enableColumnNum) {
       this.cmdArgs.push('--enable-release-column');
     }
-    // Include the function name in call instructions, only available for API24 and above
+  }
+
+  private appendCallableNameArgIfNeeded(): void {
     if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableCallableName') ||
       this.projectConfig.enableCallableName) {
       this.cmdArgs.push('--enable-callable-name');
     }
+  }
+
+  private appendPerfFileArgIfNeeded(): void {
     if (isNeedPerformanceDotting(this.projectConfig)) {
       this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
     }
+  }
+
+  private appendMixCompileArgIfNeeded(): void {
     if (this.projectConfig.mixCompile) {
       this.cmdArgs.push('--enable-ets-implements');
     }
