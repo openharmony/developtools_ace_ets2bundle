@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as arkts from '@koalaui/libarkts';
+import { BaseValidator } from '../base';
+import { StructPropertyInfo } from '../../records';
+import { DecoratorNames, LogType } from '../../../../common/predefines';
+import { isPrivateClassProperty } from '../utils';
+import { getPerfName, performanceLog } from '../../../../common/debug';
+
+export const checkRequireDecoratorRegular = performanceLog(
+    _checkRequireDecoratorRegular,
+    getPerfName([0, 0, 0, 0, 0], 'checkRequireDecoratorRegular')
+);
+
+/**
+ * 校验规则：用于验证`@Require` 装饰器时需要遵循的具体约束和条件
+ * 1.属性不能同时被 `private` 和 `@Require` 装饰器修饰。
+ *
+ * 校验等级：error
+ */
+function _checkRequireDecoratorRegular(
+    this: BaseValidator<arkts.ClassProperty, StructPropertyInfo>,
+    node: arkts.ClassProperty
+): void {
+    const metadata = this.context ?? {};
+    const requireDecorator = metadata.annotations?.[DecoratorNames.REQUIRE];
+    // 属性不能同时被 `private` 和 `@Require` 装饰器修饰。
+    if (!requireDecorator || !isPrivateClassProperty(node)) {
+        return;
+    }
+    const propertyName = metadata.name;
+    if (!propertyName) {
+        return;
+    }
+    this.report({
+        node: requireDecorator,
+        level: LogType.WARN,
+        message: `Property '${propertyName}' can not be decorated with both 'Require' and private.`,
+    });
+}
