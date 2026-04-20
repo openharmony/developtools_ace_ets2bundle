@@ -14,20 +14,12 @@
  */
 
 import ts from 'typescript';
-import { CurrentProcessFile, findNonNullType } from './utils';
-import { API_AVAILABLE_FUNCTION_NAME, DEVICE_INFO_API_FILE_NAME, DISTRIBUTE_API_VERSION_FUNCTION_NAME, SDK_API_VERSION_FUNCTION_NAME } from './pre_define';
-
-enum TransfromType {
-  // 字符串格式
-  STRING = 0,
-  // 数值格式
-  NUMBER = 1
-}
+import { DISTRIBUTE_API_VERSION_FUNCTION_NAME, SDK_API_VERSION_FUNCTION_NAME } from './pre_define';
 
 /**
- * 点分版本保护接口转换入口
- * @param node 
- * @returns 
+ * Process API Available calls and convert them into version comparison expressions
+ * @param node Call Expression Node to process
+ * @returns Transformed expression if it's an API Available statement, otherwise returns the original node
  */
 export function processAvailableStatement(node: ts.CallExpression): ts.CallExpression | ts.BinaryExpression {
   if (ts.isCallExpression(node)) {
@@ -35,58 +27,117 @@ export function processAvailableStatement(node: ts.CallExpression): ts.CallExpre
     if (!args || args.length !== 1) {
       return node;
     }
-    const arg = args[0];
-    if (ts.isNumericLiteral(arg)) {
-      return transformAvailableStatement(node, arg, TransfromType.NUMBER);
-    } else if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
-      return transformAvailableStatement(node, arg, TransfromType.STRING);
+    const arg: ts.Expression = args[0];
+    if (ts.isNumericLiteral(arg) || ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
+      return transformAvailableStatement(node, arg);
     }
   }
   return node;
 }
 
 /**
- * 转换接口定义
- * @param node 
- * @param arg 
- * @param type 
- * @returns 
+ * Extract and validate the base expression from a call expression
+ * Handles nested parenthesized expressions recursively
+ * @param expression The expression to extract from
+ * @return Extracted base expression or null if invalid
  */
-function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression, type: TransfromType):
+function extractBaseExpression(expression: ts.Expression): ts.Identifier | null {
+  let currentExpr: ts.Expression = expression;
+
+  if (ts.isParenthesizedExpression(currentExpr) ||
+    ts.isElementAccessExpression(currentExpr) ||
+    ts.isNonNullExpression(currentExpr)) {
+    currentExpr = extractBaseExpression(currentExpr.expression);
+  } else if (ts.isPropertyAccessExpression(currentExpr)) {
+    currentExpr = currentExpr.expression;
+  }
+  if (ts.isIdentifier(currentExpr)) {
+    return currentExpr;
+  }
+
+  return null;
+}
+
+/**
+ * Validate numeric version value
+ * @param text Numeric text to validate
+ * @return true if valid, false otherwise
+ */
+function isValidNumericVersion(text: string): boolean {
+  if (!/^(?:[1-9]\d?)$/.test(text)) {
+    return false;
+  }
+  const numValue: number = parseInt(text, 10);
+  return !isNaN(numValue) && numValue > 0 && numValue < 26;
+}
+
+/**
+ * Process and validate string version argument
+ * @param arg String or template literal argument
+ * @return Numeric literal or null if invalid
+ */
+function processStringVersionArg(arg: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral): ts.NumericLiteral | null {
+  const versionText: string = arg.text;
+  if (!versionText || versionText.trim() === '') {
+    return null;
+  }
+  if (!isPointVersion(versionText)) {
+    return null;
+  }
+  return ts.factory.createNumericLiteral(convertToDistributeVersion(versionText));
+}
+
+/**
+ * Transform API Available call into a version comparison expression
+ * @param node Call Expression Node
+ * @param arg Version argument
+ * @return Transformed expression
+ */
+function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression):
   ts.CallExpression | ts.BinaryExpression {
   if (!ts.isCallExpression(node)) {
     return node;
   }
-  let expression: ts.CallExpression | ts.BinaryExpression = node;
-  switch (type) {
-    case TransfromType.NUMBER:
-      expression = ts.factory.createBinaryExpression(
-        ts.factory.createPropertyAccessExpression(
-          node.expression.expression,
-          ts.factory.createIdentifier(SDK_API_VERSION_FUNCTION_NAME)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-        arg
-      );
-      break;
-    case TransfromType.STRING:
-      expression = ts.factory.createBinaryExpression(
-        ts.factory.createPropertyAccessExpression(
-          node.expression.expression,
-          ts.factory.createIdentifier(DISTRIBUTE_API_VERSION_FUNCTION_NAME)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-        ts.factory.createNumericLiteral(convertToDistributeVersion(arg.text.toString()))
-      );
-      break;
+
+  let apiVersionFunctionName: string = '';
+  let processedArg: ts.Expression;
+
+  if (ts.isNumericLiteral(arg)) {
+    apiVersionFunctionName = SDK_API_VERSION_FUNCTION_NAME;
+    if (!isValidNumericVersion(arg.getText())) {
+      return node;
+    }
+    processedArg = arg;
+  } else if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
+    apiVersionFunctionName = DISTRIBUTE_API_VERSION_FUNCTION_NAME;
+    const numericLiteral: ts.NumericLiteral | null = processStringVersionArg(arg);
+    if (!numericLiteral) {
+      return node;
+    }
+    processedArg = numericLiteral;
+  } else {
+    return node;
   }
-  return expression;
+
+  const baseExpr: ts.Identifier | null = extractBaseExpression(node.expression);
+  if (!baseExpr) {
+    return node;
+  }
+
+  return ts.factory.createBinaryExpression(
+    ts.factory.createPropertyAccessExpression(
+      baseExpr,
+      ts.factory.createIdentifier(apiVersionFunctionName)
+    ),
+    ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
+    processedArg
+  );
 }
 
 /**
- * 将点分版本转换为数值版本
- * @param version 点分版本字符串
- * @returns 数值版本字符串
+ * Convert point based versions to numerical versions
+ * @param version Pointwise Version String
+ * @returns numerical version string
  */
 function convertToDistributeVersion(version: string): string {
   return version.replace(/\'/g, '').replace(/^(\d+)\.(\d+)\.(\d+)(\(\d+\))?$/, (match, x, y, z) => {
@@ -95,35 +146,12 @@ function convertToDistributeVersion(version: string): string {
 }
 
 /**
- * 判断是否调用了apiAvailable判断接口
- * @param node 
- * @returns 
- */
-export function isApiAvailableStatement(node: ts.CallExpression): boolean {
-  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (checker) {
-    const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(node.expression));
-    if (Array.isArray(type)) {
-      return false;
-    }
-    if (type.symbol && type.symbol.valueDeclaration) {
-      const symbolFileName: string = type.symbol.valueDeclaration.getSourceFile().fileName;
-      // @ts-ignore
-      const symbolName: string = type.symbol.valueDeclaration.name.escapedText.toString();
-      if (symbolFileName.endsWith(DEVICE_INFO_API_FILE_NAME) && symbolName === API_AVAILABLE_FUNCTION_NAME) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * 判断版本号是否为点分格式
- * @param version 版本号字符串
+ * Check if the version string is a point-based version (e.g., '26.0.0')
+ * The first version number is greater than 26
+ * @param version Version string to check
+ * @return true if it's a point-based version, false otherwise
  */
 export function isPointVersion(version: string): boolean {
-  // MSF M位大于等于26
   const REG_MSF = /^\'?(?:2[6-9]|[3-9][0-9]|[1-9][0-9]{2})\.(?:[0-9]|[1-9][0-9]?)\.(?:[0-9]|[1-9][0-9]?)(\(\d+\))?\'?$/;
   return REG_MSF.test(version);
 }
