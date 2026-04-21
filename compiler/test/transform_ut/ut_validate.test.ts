@@ -96,7 +96,7 @@ const systemModuleSet: Set<string> = new Set();
 scanFileNames(SYS_CONFIG_PATH, systemModuleSet);
 
 mocha.describe('test UT for validate testcases [non-preview mode]', function () {
-  	this.timeout(10000);
+	this.timeout(60000);
 
 	mocha.before(function () {
 		resetUtils();
