@@ -811,7 +811,7 @@ function validateParametersSchemaRootType(
     node: arkts.AstNode,
     schemaFieldName: string = 'Parameters'
 ): boolean {
-    if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+    if (!schema || typeof schema !== 'object' || Array.isArray(schema) || Object.keys(schema).length === 0) {
         return true;
     }
     if (schema.type !== 'object') {
