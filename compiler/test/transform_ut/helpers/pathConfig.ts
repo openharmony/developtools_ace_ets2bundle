@@ -377,6 +377,10 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/syntax_validation/syntax_validation_workflow_validation',
   'Decorators/supplementary_validation/v1v2_compatibility_validation/v1v2_compatibility_validation_workflow_validation',
   'Decorators/supplementary_validation/comprehensive_validation/comprehensive_validation_workflow_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/map_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/set_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/date_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/array_state_validation',
   // Supplementary validation test cases for uncovered error codes
   'Decorators/supplementary_validation/observedInheritanceConflicts',
   'Decorators/supplementary_validation/structValidationErrors',
