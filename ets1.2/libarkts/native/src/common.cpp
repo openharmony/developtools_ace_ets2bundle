@@ -618,6 +618,55 @@ KNativePointer impl_FilterNodes3(KNativePointer context, KNativePointer node, KI
 }
 KOALA_INTEROP_4(FilterNodes3, KNativePointer, KNativePointer, KNativePointer, KInt*, KInt)
 
+KNativePointer impl_GetAnnotationDeclarationProperties(KNativePointer contextPtr, KNativePointer annotationUsagePtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _annotationUsage = reinterpret_cast<es2panda_AstNode*>(annotationUsagePtr);
+    if (!GetImpl()->IsAnnotationUsage(_annotationUsage)) {
+        return nullptr;
+    }
+    size_t usagePropsLen = 0;
+    auto **usageProps = GetImpl()->AnnotationUsageIrPropertiesConst(_context, _annotationUsage, &usagePropsLen);
+    auto *expr = GetImpl()->AnnotationUsageIrExpr(_context, _annotationUsage);
+    if (expr == nullptr || !GetImpl()->IsIdentifier(expr)) {
+        return nullptr;
+    }
+    auto *variable = GetImpl()->AstNodeVariableConst(_context, expr);
+    if (variable == nullptr) {
+        return nullptr;
+    }
+    auto *decl = GetImpl()->VariableDeclaration(_context, variable);
+    if (decl == nullptr) {
+        return nullptr;
+    }
+    auto *declNode = GetImpl()->DeclNode(_context, decl);
+    if (declNode == nullptr) {
+        return nullptr;
+    }
+    size_t declPropsLen = 0;
+    auto **declProps = GetImpl()->AnnotationDeclarationPropertiesConst(_context, declNode, &declPropsLen);
+    if (declProps == nullptr) {
+        return nullptr;
+    }
+    auto mergedProperties = new std::vector<void*>();
+    for (size_t i = 0; i < declPropsLen; i++) {
+        auto *declPropKey = GetImpl()->ClassElementKey(_context, declProps[i]);
+        const char *declPropName = GetImpl()->IdentifierName(_context, declPropKey);
+        void *selectedProp = declProps[i];
+        for (size_t j = 0; j < usagePropsLen; j++) {
+            auto *usagePropKey = GetImpl()->ClassElementKey(_context, usageProps[j]);
+            const char *usagePropName = GetImpl()->IdentifierName(_context, usagePropKey);
+            if (strcmp(declPropName, usagePropName) == 0) {
+                selectedProp = usageProps[j];
+                break;
+            }
+        }
+        mergedProperties->push_back(selectedProp);
+    }
+    return mergedProperties;
+}
+KOALA_INTEROP_2(GetAnnotationDeclarationProperties, KNativePointer, KNativePointer, KNativePointer);
+
 /*
 ------------------------------------------------------------------------------------------------------------------------
 */

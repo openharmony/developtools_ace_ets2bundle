@@ -48,7 +48,9 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isClassDeclaration(node)) {
+            this.checkInvalidStaticMethodDecorations(node);
+        } else if (arkts.isETSStructDeclaration(node)) {
             const hasComponentV1 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
             const hasComponentV2 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V2);
             this.checkInvalidStaticPropertyDecorations(node, hasComponentV1, hasComponentV2);
@@ -56,14 +58,11 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
                 this.checkInvalidStaticMethodDecorations(node);
             }
         }
-        if (arkts.isClassDeclaration(node)) {
-            this.checkInvalidStaticMethodDecorations(node);
-        }
     }
 
     private hasPropertyDecorator(
         member: arkts.ClassProperty,
-        decorators: String[]
+        decorators: string[]
     ): boolean {
         const annotationName = getClassPropertyAnnotationNames(member);
         return decorators.some(decorator =>
@@ -72,7 +71,7 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
     }
 
     private checkInvalidStaticPropertyDecorations(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         hasComponentV1: boolean,
         hasComponentV2: boolean
     ): void {
@@ -92,13 +91,13 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
         });
     }
 
-    private checkInvalidStaticMethodDecorations(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+    private checkInvalidStaticMethodDecorations(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): void {
         node.definition?.body.forEach((member) => {
             // Errors are reported when the node type is static Method,
-            if (!arkts.isMethodDefinition(member) || !member.name || !member.isStatic) {
+            if (!arkts.isMethodDefinition(member) || !member.id || !member.isStatic) {
                 return;
             }
-            const hasMonitor = member.funcExpr.scriptFunction?.annotations.some(annotation => {
+            const hasMonitor = member.function?.annotations.some(annotation => {
                 if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
                     return false;
                 }
@@ -107,7 +106,7 @@ class StructPropertyDecoratorRule extends AbstractUISyntaxRule {
             if (!hasMonitor) {
                 return;
             }
-            const propertyNameNode = member.name;
+            const propertyNameNode = member.id;
             this.report({
                 node: propertyNameNode,
                 message: this.messages.invalidStaticUsage

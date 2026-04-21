@@ -25,7 +25,7 @@ class NoSameAsBuiltInAttributeRule extends AbstractUISyntaxRule {
   }
 
   public parsed(node: arkts.AstNode): void {
-    if (!arkts.isStructDeclaration(node)) {
+    if (!arkts.isETSStructDeclaration(node)) {
       return;
     }
     if (!node.definition) {

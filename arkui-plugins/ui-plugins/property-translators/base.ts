@@ -49,6 +49,7 @@ import { annotation, backingField, expectName, flatVisitMethodWithOverloads } fr
 import { factory as UIFactory } from '../ui-factory';
 import { CustomDialogControllerPropertyCache } from './cache/customDialogControllerPropertyCache';
 import { PropertyFactoryCallTypeCache, PropertyValueCache, PropertyValueInfo } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 export interface BasePropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -74,8 +75,8 @@ export abstract class BasePropertyTranslator {
     constructor(options: BasePropertyTranslatorOptions) {
         this.property = options.property;
         this.propertyType = options.property.typeAnnotation?.clone();
-        this.isMemoCached = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(options.property);
-        this.isMemoShouldUpdate = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(options.property.peer);
+        this.isMemoCached = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(options.property);
+        this.isMemoShouldUpdate = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(options.property.peer);
     }
 
     abstract translateMember(): arkts.AstNode[];
@@ -83,13 +84,13 @@ export abstract class BasePropertyTranslator {
     protected cacheTranslatedInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): void {}
 
     protected translateWithoutInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.AstNode[] {
         const nodes: arkts.AstNode[] = [];
         if (this.hasField) {
@@ -104,21 +105,22 @@ export abstract class BasePropertyTranslator {
         return nodes;
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         const field: arkts.ClassProperty = factory.createOptionalClassProperty(
             newName,
             this.property,
             this.stateManagementType,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
         );
-        field.range = this.property.range;
+        field.startPosition = this.property.startPosition;
+        field.endPosition = this.property.endPosition;
         if (this.isMemoCached) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field, metadata);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field, metadata);
         }
         return field;
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         const getter: arkts.MethodDefinition = createGetter(
@@ -129,22 +131,24 @@ export abstract class BasePropertyTranslator {
             false,
             metadata
         );
-        thisGet.range = this.property.range;
+        thisGet.startPosition = this.property.startPosition;
+        thisGet.endPosition = this.property.endPosition;
         if (this.isMemoCached) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter, metadata);
         }
         return getter;
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
         const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
             generateGetOrSetCall(thisValue, GetSetTypes.SET)
         );
         const setter: arkts.MethodDefinition = createSetter2(originalName, this.propertyType, thisSet);
-        thisSet.range = this.property.range;
+        thisSet.startPosition = this.property.startPosition;
+        thisSet.endPosition = this.property.endPosition;
         if (this.isMemoCached) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter, metadata);
         }
         return setter;
     }
@@ -152,7 +156,7 @@ export abstract class BasePropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         if (!this.stateManagementType || !this.makeType) {
             return undefined;
@@ -160,7 +164,7 @@ export abstract class BasePropertyTranslator {
         const initializePropertyValue = this.property.value;
         const initializePropertyType = this.propertyType?.clone();
         const args: arkts.Expression[] = [
-            arkts.factory.create1StringLiteral(originalName),
+            arkts.factory.createStringLiteral(originalName),
             factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
         ];
         if (this.hasWatch) {
@@ -170,8 +174,8 @@ export abstract class BasePropertyTranslator {
         const stateManagementCallType = this.propertyType?.clone();
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         );
         if (this.isMemoShouldUpdate) {
             if (!!initializePropertyValue) {
@@ -190,7 +194,7 @@ export abstract class BasePropertyTranslator {
     updateStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         if (!this.propertyType) {
             return undefined;
@@ -224,7 +228,8 @@ export abstract class BasePropertyTranslator {
     }
 
     toRecord(originalName: string): arkts.Property {
-        return arkts.Property.createProperty(
+        return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
             arkts.factory.createStringLiteral(originalName),
             arkts.factory.createBinaryExpression(
                 arkts.factory.createMemberExpression(
@@ -235,13 +240,15 @@ export abstract class BasePropertyTranslator {
                     false
                 ),
                 arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
-                    arkts.factory.createTypeReference(
-                        arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Object'))
+                    arkts.factory.createETSTypeReference(
+                        arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Object'))
                     ),
                     []
                 ),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-            )
+            ),
+            false,
+            false
         );
     }
     
@@ -289,13 +296,14 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
     protected cacheTranslatedInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): void {
         const structName: string = this.structInfo.name;
         if (this.hasInitializeStruct) {
             const initializeStruct = this.initializeStruct(newName, originalName, metadata);
             if (initializeStruct) {
-                initializeStruct.range = this.property.range;
+                initializeStruct.startPosition = this.property.startPosition;
+                initializeStruct.endPosition = this.property.endPosition;
                 PropertyCache.getInstance().collectInitializeStruct(structName, [initializeStruct]);
                 PropertyCache.getInstance().setShouldMemoUpdateInitializeStruct(structName, !!this.isMemoShouldUpdate);
             }
@@ -311,7 +319,7 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
             PropertyCache.getInstance().collectToRecord(structName, [toRecord]);
         }
         if (this.hasResetOnReuse) {
-            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName, metadata);
+            const resetStateVars: arkts.Statement = this.resetOnReuse(newName, originalName, metadata);
             PropertyCache.getInstance().collectResetStateVars(this.structInfo.name, [resetStateVars]);
             PropertyCache.getInstance().setShouldMemoUpdateResetOnReuse(structName, !!this.isMemoShouldUpdate);
         }
@@ -365,7 +373,7 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
     protected cacheTranslatedInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): void {
         if (!this.propertyInfo?.structInfo?.name) {
             return;
@@ -390,7 +398,7 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
             PropertyCache.getInstance().collectToRecord(structName, [toRecord]);
         }
         if (this.hasResetOnReuse) {
-            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName, metadata);
+            const resetStateVars: arkts.Statement = this.resetOnReuse(newName, originalName, metadata);
             PropertyCache.getInstance().collectResetStateVars(structName, [resetStateVars]);
             PropertyCache.getInstance().setShouldMemoUpdateResetOnReuse(structName, !!this.isMemoShouldUpdate);
         }
@@ -408,7 +416,7 @@ export abstract class BaseMethodTranslator {
 
     constructor(options: BaseMethodTranslatorOptions) {
         this.method = options.method;
-        this.returnType = this.method.scriptFunction.returnTypeAnnotation?.clone();
+        this.returnType = this.method.function.returnTypeAnnotation?.clone();
     }
 
     abstract translateMember(): arkts.AstNode[];
@@ -509,7 +517,8 @@ export abstract class BaseObservedPropertyTranslator implements IBaseObservedPro
         if (!this.isTracked && !this.isStatic) {
             return backingField;
         }
-        backingField.range = this.property.range;
+        backingField.startPosition = this.property.startPosition;
+        backingField.endPosition = this.property.endPosition;
         return backingField;
     }
 
@@ -578,25 +587,31 @@ export abstract class ObservedPropertyTranslator extends BaseObservedPropertyTra
         if (this.hasImplement) {
             {
                 const idx: number = this.classScopeInfo.getters.findIndex(
-                    (getter) => getter.name.name === originalName
+                    (getter) => getter.id!.name === originalName
                 );
                 const originGetter: arkts.MethodDefinition = this.classScopeInfo.getters[idx];
                 const originSetter: arkts.MethodDefinition = originGetter.overloads[0];
                 const updateGetter: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
                     originGetter,
                     originGetter.kind,
-                    newGetter.name,
-                    newGetter.scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
+                    newGetter.key,
+                    arkts.factory.createFunctionExpression(
+                        originGetter.id?.clone(),
+                        newGetter.function.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
+                    ),
                     originGetter.modifiers,
                     false
                 );
                 arkts.factory.updateMethodDefinition(
                     originSetter,
                     originSetter.kind,
-                    newSetter.name,
-                    newSetter.scriptFunction
-                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
-                        .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
+                    newSetter.key,
+                    arkts.factory.createFunctionExpression(
+                        originSetter.id?.clone(),
+                        newSetter.function
+                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
+                            .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
+                    ),
                     originSetter.modifiers,
                     false
                 );

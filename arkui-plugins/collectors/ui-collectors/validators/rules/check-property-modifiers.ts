@@ -47,7 +47,7 @@ function _checkPropertyModifiers(
     node: arkts.ClassProperty
 ): void {
     const metadata = this.context ?? {};
-    if (!metadata.structInfo || arkts.isDefaultAccessModifierClassProperty(node)) {
+    if (!metadata.structInfo || node.isDefaultAccessModifier) {
         return;
     }
     const propertyName = metadata.name;

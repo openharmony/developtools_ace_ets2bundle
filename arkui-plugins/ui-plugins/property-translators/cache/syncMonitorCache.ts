@@ -43,7 +43,7 @@ export class SyncMonitorCache {
         this._cache.clear();
     }
 
-    getCachedSyncMonitors(className: string): arkts.AstNode[] {
+    getCachedSyncMonitors(className: string): arkts.Statement[] {
         if (!this._cache.has(className)) {
             return [];
         }

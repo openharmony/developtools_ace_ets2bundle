@@ -15,8 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 
-import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     BasePropertyTranslator,
     InterfacePropertyCachedTranslator,
@@ -28,27 +27,23 @@ import {
     PropertyTranslatorOptions,
 } from './base';
 import {
-    generateToRecord,
-    createGetter,
-    createSetter2,
     generateThisBacking,
-    generateGetOrSetCall,
     collectStateManagementTypeImport,
     hasDecorator,
     getValueInAnnotation,
-    findCachedMemoMetadata,
     checkIsNameStartWithBackingField,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithStorageLinkProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -60,7 +55,7 @@ function initializeStructWithStorageLinkProperty(
     const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(storageLinkValueStr),
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
     if (this.hasWatch) {
@@ -76,10 +71,12 @@ function initializeStructWithStorageLinkProperty(
             PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
         }
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
@@ -102,7 +99,7 @@ export class StorageLinkTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -127,7 +124,7 @@ export class StorageLinkCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -140,7 +137,7 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.STORAGE_LINK);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.STORAGE_LINK);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.STORAGE_LINK);
         }

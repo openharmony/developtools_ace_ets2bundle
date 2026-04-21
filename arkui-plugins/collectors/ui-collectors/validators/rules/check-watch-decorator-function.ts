@@ -61,8 +61,8 @@ function _checkWatchDecoratorFunction(
 function getMethodNames(definition: arkts.ClassDefinition): string[] {
     const methodNames: string[] = [];
     definition.body.forEach((member) => {
-        if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.name)) {
-            const methodName = member.name.name;
+        if (arkts.isMethodDefinition(member) && arkts.isIdentifier(member.id)) {
+            const methodName = member.id.name;
             if (methodName !== '') {
                 methodNames.push(methodName);
             }

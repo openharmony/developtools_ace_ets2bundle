@@ -66,10 +66,10 @@ function main() {}
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))));
   }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
@@ -200,10 +200,10 @@ function main() {}
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))));
   }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}

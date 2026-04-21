@@ -75,7 +75,7 @@ function collectLifecycleMethod(
     methodName: string, 
     lifecycleType: LifecycleMethodType
 ): void {
-    const params = this.method.scriptFunction.params as arkts.ETSParameterExpression[];
+    const params = this.method.function.params as arkts.ETSParameterExpression[];
     const hasReuseParam =
         lifecycleType === LifecycleMethodType.ABOUT_TO_REUSE && params.length > 0;
 
@@ -98,7 +98,7 @@ export class ComponentLifecycleTranslator extends MethodTranslator {
         if (this.isDecl) {
             return [this.method];
         }
-        const methodName: string = this.method.name.name;
+        const methodName: string = this.method.id!.name;
         if (this.classInfo.isFromStruct) {
             const structName: string = this.classInfo.className;
             // A method can have multiple lifecycle decorators - find all matches

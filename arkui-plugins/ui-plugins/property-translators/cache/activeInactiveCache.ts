@@ -98,8 +98,10 @@ export class ActiveInactiveCache {
                 false,
                 false
             ),
+            [arkts.factory.createThisExpression()],
             undefined,
-            [arkts.factory.createThisExpression()]
+            false,
+            false
         );
 
         const callExpr = arkts.factory.createCallExpression(
@@ -110,8 +112,10 @@ export class ActiveInactiveCache {
                 false,
                 false
             ),
+            [activeArg, inactiveArg],
             undefined,
-            [activeArg, inactiveArg]
+            false,
+            false
         );
         statements.push(arkts.factory.createExpressionStatement(callExpr));
 
@@ -121,7 +125,6 @@ export class ActiveInactiveCache {
     private static createInternalVarDeclaration(methodName: string): arkts.VariableDeclaration {
         const internalVarName = `__${methodName}__Internal`;
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
             [
                 arkts.factory.createVariableDeclarator(
@@ -151,18 +154,22 @@ export class ActiveInactiveCache {
                         false,
                         false
                     ),
+                    [],
                     undefined,
-                    []
+                    false,
+                    false
                 )
             );
         });
 
-        return arkts.factory.createArrowFunction(
+        return arkts.factory.createArrowFunctionExpression(
             arkts.factory.createScriptFunction(
-                arkts.factory.createBlock(bodyStatements),
-                arkts.FunctionSignature.createFunctionSignature(undefined, [], undefined, false),
+                arkts.factory.createBlockStatement(bodyStatements),
+                undefined, [], undefined, false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                undefined,
+                undefined
             )
         );
     }

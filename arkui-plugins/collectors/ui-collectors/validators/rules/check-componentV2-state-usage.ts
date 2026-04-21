@@ -83,7 +83,7 @@ function checkComponentV2StateUsageInClassProperty<T extends arkts.AstNode = ark
     if (checkIsRequireNotPariedWithParamOrBuilderParam(metadata)) {
         const requiredDecorator = metadata.annotations?.[DecoratorNames.REQUIRE]!;
         let startPosition = requiredDecorator.startPosition;
-        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
         let endPosition = requiredDecorator.endPosition;
         this.report({
             node: requiredDecorator,
@@ -143,7 +143,7 @@ function reportForbiddenExternalInit<T extends arkts.AstNode = arkts.CallExpress
         const propertyInfo = propInfo[1];
         const reportDecoratorName = getReportDecoratorName(propertyInfo);
         if (!!reportDecoratorName && !!propertyInfo?.name) {
-            const prop = arkts.classByPeer<arkts.Property>(propPtr);
+            const prop = arkts.unpackNonNullableNode<arkts.Property>(propPtr);
             this.report({
                 node: prop,
                 message: getLocalNeedNoInitReportMessage(reportDecoratorName, propertyInfo?.name, structName),
@@ -176,7 +176,7 @@ function checkComponentV2StateUsageInMethodDefinition<T extends arkts.AstNode = 
     }
     for (const decorator of decorators) {
         let startPosition = decorator.annotation.startPosition;
-        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
         let endPosition = decorator.annotation.endPosition;
         this.report({
             node: decorator.annotation,
@@ -198,7 +198,7 @@ function checkComponentV2StateUsageInClass<T extends arkts.AstNode = arkts.Class
     }
     for (const decorator of decorators) {
         let startPosition = decorator.annotation.startPosition;
-        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
         let endPosition = decorator.annotation.endPosition;
         this.report({
             node: decorator.annotation,

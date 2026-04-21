@@ -29,7 +29,8 @@ import { DeclarationCollector } from '../common/declaration-collector';
 import { hasDecorator } from './property-translators/utils';
 
 export type EntryAnnoInfo = {
-    range: arkts.SourceRange;
+    startPosition: arkts.SourcePosition;
+    endPosition: arkts.SourcePosition;
     name: string;
 };
 
@@ -207,13 +208,13 @@ export function isBaseComponentClass(name: string): boolean {
 }
 
 export function collectCustomComponentScopeInfo(
-    node: arkts.ClassDeclaration | arkts.StructDeclaration
+    node: arkts.ClassDeclaration | arkts.ETSStructDeclaration
 ): CustomComponentInfo | undefined {
     const definition: arkts.ClassDefinition | undefined = node.definition;
     if (!definition || !definition?.ident?.name) {
         return undefined;
     }
-    const isStruct = arkts.classDefinitionIsFromStructConst(definition) || arkts.isStructDeclaration(node);
+    const isStruct = definition.isFromStruct || arkts.isETSStructDeclaration(node);
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClass = !isStruct && isDecl && isBaseComponentClass(definition.ident.name);
     const shouldIgnoreDecl = isStruct || isDecl;
@@ -271,8 +272,8 @@ function checkReusePoolAndPoolAcceptsBothSet(
         return;
     }
     const message = `'reusePool' and 'poolAccepts' must be both set. Neither can be omitted when using the global reuse pool.`;
-    const diagnosticKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
-    const diagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind, arkts.getStartPosition(componentAnno));
+    const diagnosticKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    const diagnosticInfo = arkts.createDiagnosticInfo(diagnosticKind, componentAnno.startPosition);
     if (!hasReusePool && hasPoolAccepts) {
         const poolAcceptsProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
         if (!poolAcceptsProp || !poolAcceptsProp.value) {
@@ -280,13 +281,13 @@ function checkReusePoolAndPoolAcceptsBothSet(
         }
         const annoName = (componentAnno.expr as arkts.Identifier).name;
         const fixCode = `@${annoName}({ reusePool: ReusePoolOwnership.SHARED, poolAccepts: ${poolAcceptsProp.value.dumpSrc()} })`;
-        const startPos = arkts.SourcePosition.create(componentAnno.startPosition.index() - 1, componentAnno.startPosition.line());
-        const annoRange = arkts.SourceRange.create(startPos, componentAnno.endPosition);
-        const suggestionKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
-        const suggestionInfo = arkts.SuggestionInfo.create(suggestionKind, fixCode, `Add 'reusePool' property`, annoRange);
-        arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
+        const startPos = arkts.createSourcePosition(componentAnno.startPosition.getIndex() - 1, componentAnno.startPosition.getLine());
+        const annoRange = arkts.createSourceRange(startPos, componentAnno.endPosition);
+        const suggestionKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
+        const suggestionInfo = arkts.createSuggestionInfo(suggestionKind, fixCode, `Add 'reusePool' property`, annoRange);
+        arkts.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
     } else {
-        arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(componentAnno));
+        arkts.logDiagnostic(diagnosticKind, componentAnno.startPosition);
     }
 }
 
@@ -322,8 +323,8 @@ function checkPoolAcceptsNotEmpty(
         return;
     }
     const message = `'poolAccepts' cannot be an empty array. Provide at least one '@Reusable' or '@ReusableV2' component.`;
-    const diagnosticKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
-    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(componentAnno));
+    const diagnosticKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.logDiagnostic(diagnosticKind, componentAnno.startPosition);
 }
 
 export function getAnnotationInfoForStruct(
@@ -340,8 +341,8 @@ export function getAnnotationInfoForStruct(
     return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog };
 }
 
-export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
-    return scopeInfo.name === node.definition.ident?.name;
+export function isComponentStruct(node: arkts.ETSStructDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    return scopeInfo.name === node.definition!.ident?.name;
 }
 
 /**
@@ -385,19 +386,19 @@ export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: st
     }
 
     // For now, we only considered matched method name.
-    const isNameMatched: boolean = method.name?.name === name;
+    const isNameMatched: boolean = method.id?.name === name;
     return isNameMatched;
 }
 
 export function isSpecificNewClass(node: arkts.ETSNewClassInstanceExpression, className: string): boolean {
     if (
-        node.getTypeRef &&
-        arkts.isETSTypeReference(node.getTypeRef) &&
-        node.getTypeRef.part &&
-        arkts.isETSTypeReferencePart(node.getTypeRef.part) &&
-        node.getTypeRef.part.name &&
-        arkts.isIdentifier(node.getTypeRef.part.name) &&
-        node.getTypeRef.part.name.name === className
+        node.typeRef &&
+        arkts.isETSTypeReference(node.typeRef) &&
+        node.typeRef.part &&
+        arkts.isETSTypeReferencePart(node.typeRef.part) &&
+        node.typeRef.part.name &&
+        arkts.isIdentifier(node.typeRef.part.name) &&
+        node.typeRef.part.name.name === className
     ) {
         return true;
     }

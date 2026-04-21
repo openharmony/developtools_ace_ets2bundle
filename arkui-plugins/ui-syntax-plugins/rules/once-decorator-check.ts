@@ -28,7 +28,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     public parsed(node: arkts.AstNode): void {
         this.validateOnlyOnProperty(node);
 
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             this.validateDecorator(node);
         }
     }
@@ -48,7 +48,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
             message: message,
             fix: (decorator) => {
                 let startPosition = decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = decorator.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -68,7 +68,7 @@ class OnceDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateDecorator(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration
     ): void {
         node.definition?.body.forEach(body => {
             // Check if @Once is used on a property and if @Param is used with

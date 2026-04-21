@@ -23,18 +23,19 @@ import { MetaDataCollector } from '../../../common/metadata-collector';
 import { ImportCollector } from '../../../common/import-collector';
 import { DeclarationCollector } from '../../../common/declaration-collector';
 import { LogCollector } from '../../../common/log-collector';
+import { NodeCacheFactory } from '../../../common/node-cache';
 
 /**
  * AfterCheck uiTransform with no recheck AST.
  */
 export const uiNoRecheck: Plugins = {
     name: 'ui-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             const projectConfig = this.getProjectConfig();
             const aceBuildJson = loadBuildJson(projectConfig);
             const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, global.RESOURCE_PATH);
@@ -44,7 +45,7 @@ export const uiNoRecheck: Plugins = {
                 .setResourceInfo(resourceInfo)
                 .setShouldHandleInsightIntent(false);
             const checkedTransformer = new CheckedTransformer({
-                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+                useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
             });
             const programVisitor = new ProgramVisitor({
                 pluginName: uiNoRecheck.name,
@@ -53,15 +54,15 @@ export const uiNoRecheck: Plugins = {
                 skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
                 pluginContext: this,
             });
-            arkts.NodeCacheFactory.currentCacheKey = NodeCacheNames.MEMO;
+            NodeCacheFactory.currentCacheKey = NodeCacheNames.MEMO;
             program = programVisitor.programVisitor(program);
-            arkts.NodeCacheFactory.currentCacheKey = undefined;
-            script = program.astNode;
+            NodeCacheFactory.currentCacheKey = undefined;
+            script = program.ast as arkts.ETSModule;
             MetaDataCollector.getInstance().reset();
             ImportCollector.getInstance().reset();
             DeclarationCollector.getInstance().reset();
             LogCollector.getInstance().reset();
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
             return script;
         }
         return script;

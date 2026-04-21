@@ -61,23 +61,23 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private rememberStructName(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
-            node.definition.annotations.forEach((anno) => {
+        if (arkts.isETSStructDeclaration(node)) {
+            node.definition?.annotations.forEach((anno) => {
                 if (!anno.expr) {
                     return;
                 }
                 const annoName = getIdentifierName(anno.expr);
                 // Second, it must be decorated with a @component v2 decorator
                 if (annoName === PresetDecorators.COMPONENT_V2) {
-                    const structName = node.definition.ident?.name ?? '';
+                    const structName = node.definition?.ident?.name ?? '';
                     this.processStructMembers(node, structName);
                 }
             });
         }
     }
 
-    private processStructMembers(node: arkts.StructDeclaration, structName: string): void {
-        node.definition.body.forEach((member) => {
+    private processStructMembers(node: arkts.ETSStructDeclaration, structName: string): void {
+        node.definition?.body.forEach((member) => {
             // When a member variable is @consumer modified, it is stored to mark fields that cannot be initialized
             if (arkts.isClassProperty(member)) {
                 const consumerDecorator = member.annotations.some(annotation =>
@@ -110,8 +110,8 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
             this.validateDecorator(node, this.messages.providerAndConsumerOnlyOnProperty, PresetDecorators.PROVIDER);
         }
 
-        if (arkts.isStructDeclaration(node)) {
-            node.definition.body.forEach(member => {
+        if (arkts.isETSStructDeclaration(node)) {
+            node.definition?.body.forEach(member => {
                 if (arkts.isClassProperty(member)) {
                     this.validateMemberDecorators(member);
                 }
@@ -143,7 +143,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
             },
             fix: () => {
                 let startPosition = otherDecorators.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = otherDecorators.endPosition;
                 return {
                     title: 'Remove other annotations',
@@ -191,7 +191,7 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
             },
             fix: (decorator) => {
                 let startPosition = decorator.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = decorator.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -203,10 +203,10 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateConsumerInitialization(node: arkts.CallExpression): void {
-        if (!arkts.isIdentifier(node.expression)) {
+        if (!arkts.isIdentifier(node.callee)) {
             return;
         }
-        const callExpName: string = node.expression.name;
+        const callExpName: string = node.callee.name;
         if (this.componentV2WithConsumer.has(callExpName)) {
             node.arguments.forEach(argument => {
                 if (!arkts.isObjectExpression(argument)) {
@@ -218,10 +218,10 @@ class ConsumerProviderDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private validateProviderInitialization(node: arkts.CallExpression): void {
-        if (!arkts.isIdentifier(node.expression)) {
+        if (!arkts.isIdentifier(node.callee)) {
             return;
         }
-        const callExpName: string = node.expression.name;
+        const callExpName: string = node.callee.name;
         if (this.componentV2WithProvider.has(callExpName)) {
             node.arguments.forEach(argument => {
                 if (!arkts.isObjectExpression(argument)) {

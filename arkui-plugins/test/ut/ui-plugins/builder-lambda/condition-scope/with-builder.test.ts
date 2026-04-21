@@ -177,7 +177,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
           return;
         }), undefined);
       }
-    })))))
+    })))));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
@@ -516,12 +516,12 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
             return;
           }
         }), undefined);
-  }
-  {
-    __memo_scope.recache();
-    return;
-  }
-  })))))
+      }
+      {
+        __memo_scope.recache();
+        return;
+      }
+    })))));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}

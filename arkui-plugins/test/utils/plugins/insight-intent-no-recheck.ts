@@ -24,18 +24,19 @@ import { MetaDataCollector } from '../../../common/metadata-collector';
 import { ImportCollector } from '../../../common/import-collector';
 import { DeclarationCollector } from '../../../common/declaration-collector';
 import { LogCollector } from '../../../common/log-collector';
+import { NodeCacheFactory } from '../../../common/node-cache';
 
 /**
  * AfterCheck uiTransform (with insight-intent handler) with no recheck AST.
  */
 export const insightIntentNoRecheck: Plugins = {
     name: 'insight-intent-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
+            script = program.ast;
             const projectConfig = this.getProjectConfig();
             const aceBuildJson = loadBuildJson(projectConfig);
             const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, global.RESOURCE_PATH);
@@ -45,7 +46,7 @@ export const insightIntentNoRecheck: Plugins = {
                 .setResourceInfo(resourceInfo)
                 .setShouldHandleInsightIntent(true);
             const checkedTransformer = new CheckedTransformer({
-                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+                useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
             });
             const programVisitor = new ProgramVisitor({
                 pluginName: insightIntentNoRecheck.name,
@@ -55,7 +56,7 @@ export const insightIntentNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast;
             ResourceSourceCache.getInstance().clear();
             MetaDataCollector.getInstance().reset();
             ImportCollector.getInstance().reset();
@@ -63,7 +64,7 @@ export const insightIntentNoRecheck: Plugins = {
             LogCollector.getInstance().reset();
             InsightIntentCollector.getInstance().tryWriteFromContext(this);
             InsightIntentCollector.getInstance().clear();
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
             return script;
         }
         return script;

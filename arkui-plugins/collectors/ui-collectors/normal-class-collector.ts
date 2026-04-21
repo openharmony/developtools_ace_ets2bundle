@@ -26,6 +26,7 @@ import { BaseRecord } from './records/base';
 import { BuiltInNames, EntryWrapperNames, NodeCacheNames } from '../../common/predefines';
 import { getArkUIAnnotationNames } from './utils';
 import { NormalClassMethodValidator, NormalClassPropertyValidator, ValidatorBuilder } from './validators';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface NormalClassCollectorOptions extends VisitorOptions {
     classRecord: NormalClassRecord;
@@ -108,7 +109,7 @@ export class NormalClassCollector extends AbstractVisitor {
             return;
         }
         this._classRecord.setHasTrackProperty(true);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(classDecl, this._classRecord.toJSON());
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(classDecl, this._classRecord.toJSON());
     }
 
     private collectProperty(
@@ -126,7 +127,7 @@ export class NormalClassCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectPropertyFromInfo(propertyInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
             this._rememberedProperties.push({ info: propertyInfo, node, record: propertyRecord });
         } else if (this.canRememberPropertyFromInfo(propertyInfo)) {
             this._rememberedProperties.push({ info: propertyInfo, node, record: propertyRecord });
@@ -154,8 +155,8 @@ export class NormalClassCollector extends AbstractVisitor {
             return;
         }
         const { node, record } = collection;
-        if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).has(node)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
+        if (!NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).has(node)) {
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
         }
         withCollectCallback?.(collection);
     }
@@ -189,7 +190,7 @@ export class NormalClassCollector extends AbstractVisitor {
         }
 
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         } else if (this.canRememberMethodFromInfo(methodInfo)) {
             this._rememberedMethods.push({ info: methodInfo, node, record: methodRecord });
         }
@@ -207,7 +208,7 @@ export class NormalClassCollector extends AbstractVisitor {
         }
         const propertyRecord = inheritPropertyRecords.get(name)!;
         const methodInfo = record.withInheritPropertyRecord(propertyRecord).toJSON();
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodInfo);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodInfo);
     }
 
     reset(): void {

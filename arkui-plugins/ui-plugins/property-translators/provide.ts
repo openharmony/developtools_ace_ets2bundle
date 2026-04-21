@@ -43,23 +43,24 @@ import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithProvideProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
-    const alias = options?.alias ?? arkts.factory.create1StringLiteral(originalName);
+    const alias = options?.alias ?? arkts.factory.createStringLiteral(originalName);
     const allowOverride = options?.allowOverride ?? arkts.factory.createBooleanLiteral(false);
     const initializePropertyValue = this.property.value;
     const initializePropertyType = this.propertyType?.clone();
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         alias,
         factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
         allowOverride,
@@ -70,8 +71,8 @@ function initializeStructWithProvideProperty(
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!initializePropertyValue) {
@@ -106,7 +107,7 @@ export class ProvideTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
@@ -132,7 +133,7 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
@@ -146,7 +147,7 @@ export class ProvideInterfaceTranslator<T extends InterfacePropertyTypes> extend
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROVIDE);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROVIDE);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROVIDE);
         }

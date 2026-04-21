@@ -81,12 +81,12 @@ function main() {}
     if (({let gensym___214357609 = initializers;
     (((gensym___214357609) == (null)) ? undefined : gensym___214357609.__options_has_isPortrait)})) {
       this.__backing_isPortrait = STATE_MGMT_FACTORY.makeLink<boolean>(this, "isPortrait", initializers!.__backing_isPortrait!);
-    };
+    }
     this.__backing_displayMode = STATE_MGMT_FACTORY.makeState<number>(this, "displayMode", ((({let gensym___197056380 = initializers;
     (((gensym___197056380) == (null)) ? undefined : gensym___197056380.displayMode)})) ?? (0)));
     this.__backing_navDestination = ((((({let gensym___165803261 = initializers;
     (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (content))) ?? (((({let gensym___165803261 = initializers;
-    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (undefined))))
+    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (undefined))));
     this.__backing_primaryWidth = STATE_MGMT_FACTORY.makeState<(number | string)>(this, "primaryWidth", ((({let gensym___158861871 = initializers;
     (((gensym___158861871) == (null)) ? undefined : gensym___158861871.primaryWidth)})) ?? ("50%")));
     this.__backing_onNavigationModeChange = ((({let gensym___114390532 = initializers;

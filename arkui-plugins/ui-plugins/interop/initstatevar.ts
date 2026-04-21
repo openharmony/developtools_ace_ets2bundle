@@ -90,13 +90,12 @@ export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, ar
 }
 
 export function logDiagnostic(errorMessage: string, node: arkts.AstNode): void {
-    const diagnosticKind = arkts.DiagnosticKind.create(errorMessage, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
-    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(node));
+    const diagnosticKind = arkts.createDiagnosticKind(errorMessage, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.logDiagnostic(diagnosticKind, node.startPosition);
 }
 
-export function createVariableLet(varName: string, expression: arkts.AstNode): arkts.VariableDeclaration {
+export function createVariableLet(varName: string, expression: arkts.Expression): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -126,8 +125,10 @@ function getStateProxy(proxyName: string, stateVar: () => arkts.Expression): ark
         proxyName,
         arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.GETCOMPATIBLESTATE),
+            [stateVar()],
             undefined,
-            [stateVar()]
+            false,
+            false
         )
     );
 }
@@ -227,7 +228,7 @@ export function processLink(
  * @param keyName - The name of the state variable (e.g., state)
  * @returns generate code to process regular data interoperability
  */
-export function processNormal(keyName: string, value: arkts.AstNode): arkts.Statement[] {
+export function processNormal(keyName: string, value: arkts.Expression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     if (arkts.isObjectExpression(value)) {
         processObjectLiteral(value, InteropInternalNames.PARAM, result, keyName);
@@ -242,7 +243,7 @@ function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
     if (!decl || !arkts.isMethodDefinition(decl)) {
         return false;
     }
-    const path = arkts.getProgramFromAstNode(decl)?.absName;
+    const path = arkts.getProgramFromAstNode(decl)?.absoluteName;
     const fileManager = FileManager.getInstance();
     if (!path || fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
         return false;
@@ -259,15 +260,17 @@ function isDynamicBuilder(decl: arkts.AstNode | undefined): boolean {
  * Input: {builderParam: this.builder}
  * Output: param.setProperty("builderParam", transferCompatibleBuilder(this.builder));
  */
-export function processBuilderParam(keyName: string, value: arkts.AstNode): arkts.Statement[] {
+export function processBuilderParam(keyName: string, value: arkts.Expression): arkts.Statement[] {
     const result: arkts.Statement[] = [];
     const decl = arkts.getDecl(value);
     const isDynamic = isDynamicBuilder(decl);
     const newValue = isDynamic ? value : arkts.factory.createCallExpression(
         checkUpdatable(value) ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
             arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+        [value],
         undefined,
-        [value]
+        false,
+        false
     );
     const setProperty = setPropertyESValue(InteropInternalNames.PARAM, keyName, newValue);
     result.push(setProperty);
@@ -294,10 +297,10 @@ function checkUpdatable(value: arkts.AstNode): boolean {
         return false;
     }
     const decl = arkts.getDecl(ident) as arkts.MethodDefinition;
-    const script = decl.scriptFunction;
+    const script = decl.function;
     const params = script.params;
-    if (params.length === 1 && arkts.isEtsParameterExpression(params[0])) {
-        const type = params[0].type;
+    if (params.length === 1 && arkts.isETSParameterExpression(params[0])) {
+        const type = params[0].typeAnnotation;
         if (type === undefined) {
             return false;
         }

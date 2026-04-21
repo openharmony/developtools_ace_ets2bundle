@@ -34,7 +34,7 @@ import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collec
 import { CacheFactory as BuilderLambdaCacheFactory } from '../builder-lambda-translators/cache-factory';
 import { BuilderParamClassPropertyValueCache } from '../memo-collect-cache';
 import { CustomComponentInfo } from '../utils';
-import { MemoAstNode } from 'memo-plugins/utils';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 function initializeStructWithBuilderLambdaProperty(
     this: BasePropertyTranslator,
@@ -61,17 +61,19 @@ function initializeStructWithBuilderLambdaProperty(
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
         const explicitParam = initializersAccess.clone();
-        return arkts.factory.createAssignmentExpression(
-            mutableThis,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createBinaryExpression(
-                trailingClosure,
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                mutableThis,
                 arkts.factory.createBinaryExpression(
-                    explicitParam,
-                    initialValue,
+                    trailingClosure,
+                    arkts.factory.createBinaryExpression(
+                        explicitParam,
+                        initialValue,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                    ),
                     arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
                 ),
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
             )
         );
     } else {
@@ -79,13 +81,15 @@ function initializeStructWithBuilderLambdaProperty(
             arkts.factory.createIdentifier('initializers'),
             originalName
         );
-        return arkts.factory.createAssignmentExpression(
-            mutableThis,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createBinaryExpression(
-                initializersAccess,
-                initialValue,
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                mutableThis,
+                arkts.factory.createBinaryExpression(
+                    initializersAccess,
+                    initialValue,
+                    arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+                ),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
             )
         );
     }
@@ -103,7 +107,7 @@ function fieldWithBuilderLambdaProperty(
         addMemoAnnotation(this.propertyType);
     }
     const field = fieldFn(newName);
-    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field);
+    NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(field);
     return field;
 }
 
@@ -120,7 +124,7 @@ function getterWithBuilderLambdaProperty(
             : generateThisBacking(newName, false, true),
         true
     );
-    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter);
+    NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(getter);
     return getter;
 }
 
@@ -132,7 +136,7 @@ function setterWithBuilderLambdaProperty(
     const thisSetValue: arkts.Expression = generateThisBacking(newName, false, false);
     const right: arkts.Identifier = arkts.factory.createIdentifier('value');
     const setter: arkts.MethodDefinition = createSetter(originalName, this.propertyType, thisSetValue, right, true);
-    arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter);
+    NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(setter);
     return setter;
 }
 
@@ -144,20 +148,20 @@ function updateStateMethodInInterface<T extends InterfacePropertyTypes>(
         throw new Error('interface property does not have any decorator.');
     }
     if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
-        const type: arkts.TypeNode | undefined = method.scriptFunction.returnTypeAnnotation;
+        const type: arkts.TypeNode | undefined = method.function.returnTypeAnnotation;
         if (!!type && (arkts.isETSFunctionType(type) || arkts.isETSUnionType(type))) {
             addMemoAnnotation(type);
         }
         removeDecorator(method, this.decorator);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method, { isGetter: true });
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method, { isGetter: true });
     } else if (method.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
-        const param = method.scriptFunction.params.at(0)! as arkts.ETSParameterExpression;
-        const type = param.type;
+        const param = method.function.params[0] as arkts.ETSParameterExpression;
+        const type = param.typeAnnotation;
         if (!!type && (arkts.isETSFunctionType(type) || arkts.isETSUnionType(type))) {
             addMemoAnnotation(type);
         }
         removeDecorator(method, this.decorator);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method, { isSetter: true });
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method, { isSetter: true });
     }
     return method;
 }
@@ -188,21 +192,21 @@ export class BuilderParamTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         const isLastBuilderParam: boolean = this.structInfo.lastBuilderParam === originalName;
         return initializeStructWithBuilderLambdaProperty.bind(this)(newName, originalName, isLastBuilderParam);
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         return fieldWithBuilderLambdaProperty.bind(this)(super.field.bind(this), newName);
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return getterWithBuilderLambdaProperty.bind(this)(newName, originalName);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return setterWithBuilderLambdaProperty.bind(this)(newName, originalName);
     }
 }
@@ -218,7 +222,7 @@ export class BuilderParamCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         const rewriteFn = <T extends arkts.AstNode>(node: T): T => {
             const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
@@ -228,15 +232,15 @@ export class BuilderParamCachedTranslator extends PropertyCachedTranslator {
         return initializeStructWithBuilderLambdaProperty.bind(this)(newName, originalName, isLastBuilderParam, rewriteFn);
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         return fieldWithBuilderLambdaProperty.bind(this)(super.field.bind(this), newName);
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return getterWithBuilderLambdaProperty.bind(this)(newName, originalName);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return setterWithBuilderLambdaProperty.bind(this)(newName, originalName);
     }
 }

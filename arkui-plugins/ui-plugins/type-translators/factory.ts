@@ -64,23 +64,23 @@ export class factory {
         const typeName = record?.typeName;
         switch (typeName) {
             case 'boolean':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN);
             case 'byte':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BYTE);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BYTE);
             case 'char':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_CHAR);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_CHAR);
             case 'double':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_DOUBLE);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_DOUBLE);
             case 'float':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_FLOAT);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_FLOAT);
             case 'int':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_INT);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_INT);
             case 'long':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_LONG);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_LONG);
             case 'short':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_SHORT);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_SHORT);
             case 'void':
-                return arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+                return arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
             default:
                 throw new Error(`Cannot create primitive type because of name: ${typeName}`);
         }
@@ -94,11 +94,12 @@ export class factory {
         const annotations = record.annotations.map((a) => a.clone());
         const isOptional = record.isOptional;
         const typeAnnotation = factory.createTypeNodeFromRecord(record.typeRecord);
-        const parameter = arkts.factory.createParameterDeclaration(
+        const parameter = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(name, typeAnnotation),
-            undefined
+            false,
+            undefined,
+            annotations
         );
-        parameter.annotations = annotations;
         if (isOptional) {
             parameter.setOptional(true);
         }
@@ -113,7 +114,7 @@ export class factory {
         const typeName = record.typeName ? arkts.factory.createIdentifier(record.typeName) : undefined;
         const defaultType = record.defaultType ? factory.createTypeNodeFromRecord(record.defaultType) : undefined;
         const constraint = record.constraint ? factory.createTypeNodeFromRecord(record.constraint) : undefined;
-        const typeParameter = arkts.factory.createTypeParameter(typeName, constraint, defaultType);
+        const typeParameter = arkts.factory.createTypeParameter(typeName, constraint, defaultType, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE);
         typeParameter.setAnnotations(annotations);
         return typeParameter;
     }
@@ -155,13 +156,11 @@ export class factory {
         const returnType = factory.createTypeNodeFromRecord(record.returnType);
         const params = record.params.map((p) => factory.createParameterFromRecord(p));
         const typeParams = record.typeParams?.map((p) => factory.createTypeParameterFromRecord(p));
-        const funcType = arkts.factory.createFunctionType(
-            arkts.factory.createFunctionSignature(
-                typeParams ? arkts.factory.createTypeParameterDeclaration(typeParams, typeParams.length) : undefined,
-                params,
-                returnType,
-                false
-            ),
+        const funcType = arkts.factory.createETSFunctionType(
+            typeParams ? arkts.factory.createTSTypeParameterDeclaration(typeParams, typeParams.length) : undefined,
+            params,
+            returnType,
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
         funcType.setAnnotations(annotations);
@@ -173,7 +172,7 @@ export class factory {
      */
     static createUnionTypeFromRecord(record: UnionTypeRecord): arkts.ETSUnionType {
         const types = record.types.map((t) => factory.createTypeNodeFromRecord(t));
-        return arkts.factory.createUnionType(types);
+        return arkts.factory.createETSUnionType(types);
     }
 
     /**
@@ -204,8 +203,8 @@ export class factory {
         const name = record.typeName;
         const annotations = record.annotations;
         const typeParams = record.typeParams?.map((p) => factory.createTypeNodeFromRecord(p));
-        const typeRef = arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        const typeRef = arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 factory.createTypeNameForTypeReferencePart(name),
                 typeParams ? arkts.factory.createTSTypeParameterInstantiation(typeParams) : undefined
             )

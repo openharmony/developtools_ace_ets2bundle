@@ -66,7 +66,7 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromProperty(node);
-        if (canAddMemo) {
+        if (canAddMemo && arkts.isProperty(node)) {
             const value = node.value!;
             if (isArrowFunctionAsValue(value)) {
                 addMemoAnnotation(value.expr! as arkts.ArrowFunctionExpression);
@@ -92,7 +92,7 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromClassProperty(node);
-        if (canAddMemo) {
+        if (canAddMemo && arkts.isClassProperty(node)) {
             addMemoAnnotation(node);
         }
         if ((canAddMemo || hasBuilder) && !!rewriteFn) {
@@ -113,7 +113,7 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromTypeAlias(node);
-        if (canAddMemo) {
+        if (canAddMemo && arkts.isTSTypeAliasDeclaration(node)) {
             addMemoAnnotation(node);
         }
         if ((canAddMemo || hasBuilder) && !!rewriteFn) {
@@ -134,7 +134,7 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromParameter(node);
-        if (canAddMemo) {
+        if (canAddMemo && arkts.isETSParameterExpression(node)) {
             addMemoAnnotation(node);
         }
         if ((canAddMemo || hasBuilder) && !!rewriteFn) {
@@ -155,8 +155,8 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromMethod(node);
-        if (canAddMemo) {
-            addMemoAnnotation(node.scriptFunction);
+        if (canAddMemo && arkts.isMethodDefinition(node)) {
+            addMemoAnnotation(node.function);
         }
         if ((canAddMemo || hasBuilder) && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION);
@@ -176,8 +176,8 @@ export class factory {
         rewriteFn?: RewriteAfterFoundFn<T>
     ): T {
         const {canAddMemo, hasBuilder} = findCanAddMemoFromArrowFunction(node);
-        if (canAddMemo) {
-            addMemoAnnotation(node.scriptFunction);
+        if (canAddMemo && arkts.isArrowFunctionExpression(node)) {
+            addMemoAnnotation(node.function);
         }
         if ((canAddMemo || hasBuilder) && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_ARROW_FUNCTION_EXPRESSION);

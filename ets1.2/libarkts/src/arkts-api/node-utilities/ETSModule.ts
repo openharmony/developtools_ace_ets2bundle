@@ -19,22 +19,11 @@ import { updateNodeByNode } from '../utilities/private';
 import { Es2pandaLanguage, Es2pandaModuleFlag } from '../../../generated/Es2pandaEnums';
 
 export function updateETSModule(
-    original: ETSModule,
-    statementList: readonly Statement[],
-    ident: Identifier | undefined,
-    flag: Es2pandaModuleFlag,
-    program?: Program
+    node: ETSModule,
+    statementList: readonly Statement[]
 ) {
-    if (
-        isSameNativeObject(statementList, original.statements) &&
-        isSameNativeObject(ident, original.ident) &&
-        isSameNativeObject(flag, original.getNamespaceFlag()) &&
-        isSameNativeObject(program, original.program)
-    ) {
-        return original;
+    if (!isSameNativeObject(statementList, node.statements)) {
+        node.setStatements(statementList);
     }
-    return updateNodeByNode(
-        ETSModule.create1ETSModule(statementList, ident, flag, Es2pandaLanguage.LANGUAGE_ETS, program),
-        original
-    );
+    return node;
 }

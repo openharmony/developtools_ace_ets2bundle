@@ -161,7 +161,7 @@ export enum ObservedNames {
 
 export enum MonitorNames {
     PATH = 'path',
-    VALUE_CALL_CACK = 'valueCallback',
+    VALUE_CALLBACK = 'valueCallback',
     I_MONITOR = 'IMonitor',
     M_PARAM = '_m',
     OWNER = 'owner',

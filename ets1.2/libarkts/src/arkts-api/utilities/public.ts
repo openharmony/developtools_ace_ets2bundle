@@ -386,8 +386,12 @@ export function setAllParents(ast: AstNode): void {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);
 }
 
-export function getProgramFromAstNode(node: AstNode): Program {
-    return new Program(global.es2panda._AstNodeProgram(global.context, node.peer));
+export function getProgramFromAstNode(node: AstNode): Program | undefined {
+    const programPeer = global.es2panda._AstNodeProgram(global.context, node.peer);
+    if (programPeer === nullptr) {
+        return undefined;
+    }
+    return new Program(programPeer);
 }
 
 export function importDeclarationInsert(node: ETSImportDeclaration, program: Program): void {
@@ -488,4 +492,8 @@ export function jumpFromETSTypeReferenceToTSTypeAliasDeclarationTypeAnnotation(n
     return unpackNode(
         global.es2panda._JumpFromETSTypeReferenceToTSTypeAliasDeclarationTypeAnnotation(global.context, passNode(node))
     );
+}
+
+export function getAnnotationDeclarationProperties(node: AnnotationUsage): ClassProperty[] {
+    return unpackNodeArray(global.es2panda._GetAnnotationDeclarationProperties(global.context, passNode(node)));
 }

@@ -167,7 +167,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_customDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___249436970 = initializers;
     (((gensym___249436970) == (null)) ? undefined : gensym___249436970.__options_has_controller)})) {
-      this.__backing_controller = initializers!.controller
+      this.__backing_controller = initializers!.controller;
     } else {
       if (!(this.__backing_controller)) {
         this.__backing_controller = ({let gensym___17371929: Any;
@@ -450,7 +450,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_customDialogExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     if (({let gensym___249436970 = initializers;
     (((gensym___249436970) == (null)) ? undefined : gensym___249436970.__options_has_controller)})) {
-      this.__backing_controller = initializers!.controller
+      this.__backing_controller = initializers!.controller;
     } else {
       if (!(this.__backing_controller)) {
         this.__backing_controller = ({let gensym___17371929: Any;

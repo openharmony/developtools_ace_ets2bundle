@@ -39,7 +39,7 @@ function _checkCustomEnvDecorator(
     node: arkts.MethodDefinition
 ): void {
     if (
-        node.name.name !== RESOLVE_METHOD_NAME ||
+        node.id?.name !== RESOLVE_METHOD_NAME ||
         !arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC)
     ) {
         return;
@@ -65,7 +65,7 @@ function _checkCustomEnvDecorator(
 function collectCustomEnvVarEntries(
     method: arkts.MethodDefinition
 ): CustomEnvKeyInfo[] {
-    const func = method.scriptFunction;
+    const func = method.function;
     if (!func || !func.body || !arkts.isBlockStatement(func.body)) {
         return [];
     }
@@ -89,11 +89,11 @@ function extractCustomEnvKeyInfo(varDecl: arkts.VariableDeclaration): CustomEnvK
             continue;
         }
         if (
-            declarator.name &&
-            arkts.isIdentifier(declarator.name) &&
-            declarator.name.name.startsWith(CUSTOM_ENV_VAR_PREFIX)
+            declarator.id &&
+            arkts.isIdentifier(declarator.id) &&
+            declarator.id.name.startsWith(CUSTOM_ENV_VAR_PREFIX)
         ) {
-            const init = declarator.initializer;
+            const init = declarator.init;
             if (init && arkts.isIdentifier(init)) {
                 return { keyIdent: init, varDecl };
             }
@@ -120,7 +120,7 @@ function validateCustomEnvKeyDecl(decl: arkts.AstNode): boolean {
 }
 
 function isCustomEnvKeyCreateCall(expr: arkts.CallExpression): boolean {
-    const callee = expr.expression;
+    const callee = expr.callee;
     if (!callee || !arkts.isMemberExpression(callee)) {
         return false;
     }

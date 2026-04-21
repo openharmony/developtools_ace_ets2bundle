@@ -18,6 +18,7 @@ import { BaseValidator } from '../base';
 import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../records';
 import { LogType } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
+import type { AstNodePointer } from '../../../../common/safe-types';
 
 export const checkStaticParamRequire = performanceLog(
     _checkStaticParamRequire,
@@ -70,14 +71,14 @@ function collectStaticProperties(
 
 function reportStaticPropertyInit(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    propertyInfos: [arkts.AstNode, CustomComponentInterfacePropertyInfo | undefined][],
+    propertyInfos: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][],
     staticClassProperty: string[]
 ): void {
     propertyInfos.forEach(([propertyPtr, propertyInfo]) => {
         if (!propertyPtr || !propertyInfo || !propertyInfo.name || !staticClassProperty.includes(propertyInfo.name)) {
             return;
         }
-        const property = arkts.classByPeer<arkts.Property>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.Property>(propertyPtr);
         this.report({
             node: property,
             level: LogType.WARN,

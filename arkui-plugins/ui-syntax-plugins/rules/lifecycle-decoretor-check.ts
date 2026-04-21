@@ -73,7 +73,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.checkLifecycleDecoratorDecorateMethod(node);
@@ -81,7 +81,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         this.checkActiveInactiveConstraints(node);
     }
 
-    private checkLifecycleDecoratorDecorateMethod(structNode: arkts.StructDeclaration): void {
+    private checkLifecycleDecoratorDecorateMethod(structNode: arkts.ETSStructDeclaration): void {
         if (!structNode.definition) {
             return;
         }
@@ -131,7 +131,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private checkLifecycleMethodParameters(structNode: arkts.StructDeclaration): void {
+    private checkLifecycleMethodParameters(structNode: arkts.ETSStructDeclaration): void {
         if (!structNode.definition || !structNode.definition.body) {
             return;
         }
@@ -146,13 +146,13 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
                 continue;
             }
 
-            const annotations = member.scriptFunction.annotations;
+            const annotations = member.function.annotations;
             if (!annotations || annotations.length === 0) {
                 continue;
             }
 
             // Check method decorators
-            const methodHasParams = member.scriptFunction.params.length > 0;
+            const methodHasParams = member.function.params.length > 0;
             for (const annotation of annotations) {
                 const decoratorName = getAnnotationName(annotation);
                 if (!decoratorName) {
@@ -215,10 +215,10 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private getMethodName(method: arkts.MethodDefinition): string | undefined {
-        if (!method.name || !arkts.isIdentifier(method.name)) {
+        if (!method.id || !arkts.isIdentifier(method.id)) {
             return undefined;
         }
-        return method.name.name;
+        return method.id.name;
     }
 
     private checkComponentReuseInComponentStructs(
@@ -227,7 +227,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         isComponentV1Struct: boolean,
         isComponentV2Struct: boolean,
     ): void {
-        const params = method.scriptFunction.params;
+        const params = method.function.params;
         if (isComponentV2Struct) {
             // @ComponentReuse in @ComponentV2 can not have parameters
             if (params.length > 0) {
@@ -258,10 +258,10 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private isReuseObjectParameter(param: arkts.Expression): boolean {
-        if (!arkts.isEtsParameterExpression(param)) {
+        if (!arkts.isETSParameterExpression(param)) {
             return false;
         }
-        const typeName = this.getTypeName(param.type);
+        const typeName = this.getTypeName(param.typeAnnotation);
         return typeName === REUSE_OBJECT_TYPE_NAME;
     }
 
@@ -296,7 +296,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         return annotations.find((annotation) => getAnnotationName(annotation) === decoratorName);
     }
 
-    private checkActiveInactiveConstraints(structNode: arkts.StructDeclaration): void {
+    private checkActiveInactiveConstraints(structNode: arkts.ETSStructDeclaration): void {
         if (!structNode.definition || !structNode.definition.body) {
             return;
         }
@@ -306,7 +306,7 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
                 continue;
             }
 
-            const annotations = member.scriptFunction.annotations;
+            const annotations = member.function.annotations;
             if (!annotations || annotations.length === 0) {
                 continue;
             }

@@ -25,14 +25,14 @@ class RequireDecoratorRegularRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.checkRequireDecorator(node);
     }
 
-    private checkRequireDecorator(node: arkts.StructDeclaration): void {
-        node.definition.body.forEach(member => {
+    private checkRequireDecorator(node: arkts.ETSStructDeclaration): void {
+        node.definition?.body.forEach(member => {
             if (!arkts.isClassProperty(member)) {
                 return;
             }

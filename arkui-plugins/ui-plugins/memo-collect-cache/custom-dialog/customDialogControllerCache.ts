@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { NodeCacheNames } from '../../../common/predefines';
+import { NodeCache, NodeCacheFactory } from '../../../common/node-cache';
 
 export interface CustomDialogControllerInfo {
     controller: arkts.ETSNewClassInstanceExpression;
@@ -35,16 +36,16 @@ export class CustomDialogControllerCache {
         if (arkts.isTSAsExpression(currParent)) {
             return true;
         }
-        return !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer);
+        return !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer);
     }
 
     private _updateController(controller: arkts.ETSNewClassInstanceExpression): void {
-        if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(controller.peer)) {
+        if (!NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(controller.peer)) {
             return;
         }
         let currParent: arkts.AstNode | undefined = controller.parent;
         while (!!currParent) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
             currParent = currParent.parent;
         }
     }

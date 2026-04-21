@@ -81,8 +81,10 @@ export class ComponentLifecycleCache {
                         false,
                         false
                     ),
+                    [],
                     undefined,
-                    []
+                    false,
+                    false
                 )
             );
         });
@@ -168,7 +170,6 @@ export class ComponentLifecycleCache {
 
     private static createInternalVarDeclaration(internalVarName: string, methodName: string): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
             [
                 arkts.factory.createVariableDeclarator(
@@ -197,8 +198,10 @@ export class ComponentLifecycleCache {
                     false,
                     false
                 ),
+                args,
                 undefined,
-                args
+                false,
+                false
             )
         );
     }

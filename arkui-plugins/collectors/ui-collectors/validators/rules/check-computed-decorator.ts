@@ -182,7 +182,7 @@ function findComputedArgInBindablePropertyValue(args: readonly arkts.Expression[
         if (!arkts.isMemberExpression(arg) || !arkts.isThisExpression(arg.object)) {
             return false;
         }
-        const decl = arkts.getPeerIdentifierDecl(arg.property.peer);
+        const decl = arkts.getPeerIdentifierDecl(arg.property!.peer);
         if (!decl || !arkts.isMethodDefinition(decl)) {
             return false;
         }
@@ -242,15 +242,15 @@ function findGetterFromSetterMethod(
     if (!!getterInOverload) {
         return getterInOverload;
     }
-    const name = setter.name.name;
+    const name = setter.id!.name;
     return classDecl.body.find(
-        (st) => arkts.isMethodDefinition(st) && checkIsGetterMethod(st) && st.name.name === name
+        (st) => arkts.isMethodDefinition(st) && checkIsGetterMethod(st) && st.id!.name === name
     ) as arkts.MethodDefinition | undefined;
 }
 
 function checkIsMethodHasComputed(node: arkts.MethodDefinition): boolean {
     const annotationRecord = new NormalClassMethodAnnotationRecord({ shouldIgnoreDecl: false });
-    for (const annotation of node.scriptFunction.annotations) {
+    for (const annotation of node.function.annotations) {
         annotationRecord.collect(annotation);
     }
     const annotationInfo = annotationRecord.toRecord();

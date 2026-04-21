@@ -35,13 +35,13 @@ export function interopTransform():Plugins {
   };
 }
 
-function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
+function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    let script: arkts.ETSModule | undefined;
     debugLog('interopTransform:parsed');
     const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
     if (!!contextPtr) {
       let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-      script = program.astNode;
+      script = program.ast as arkts.ETSModule;
 
       if (script) {
         const declTransformer = new DeclTransformer({
@@ -57,8 +57,8 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
         });
 
         program = programVisitor.programVisitor(program);
-        script = program.astNode;
-        this.setArkTSAst(script);
+        script = program.ast as arkts.ETSModule;
+        this.setArkTSAst(script as arkts.ETSModule);
         debugLog('interopTransform:parsed exit');
         return script;
       }
@@ -67,13 +67,12 @@ function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
     return script;
 }
 
-function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
+function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
     debugLog('interopTransform:checked');
     const contextPtr = arkts.arktsGlobal.compilerContext?.peer ?? this.getContextPtr();
     if (!!contextPtr) {
-      let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-      script = program.astNode;
+      let program: arkts.Program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+      let script = program.ast;
       if (script) {
         const emitTransformer = new EmitTransformer({
           arkui: '@koalaui.arkts-arkui.EmitBase' as interop.TransfromerName
@@ -88,13 +87,13 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
         });
 
         program = programVisitor.programVisitor(program);
-        script = program.astNode;
+        script = program.ast;
         arkts.recheckSubtree(script);
-        this.setArkTSAst(script); 
+        this.setArkTSAst(script as arkts.ETSModule);
         debugLog('interopTransform:checked exit');
-        return script;
+        return script as arkts.ETSModule;
       }
     }
     debugLog('interopTransform:checked exit with no transform');
-    return script;
+    return undefined;
 }

@@ -67,10 +67,10 @@ function showTextBuilder() {
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (showTextBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (showTextBuilder))));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
@@ -243,10 +243,10 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (showTextBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (showTextBuilder))));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}

@@ -136,7 +136,7 @@ function reportCannotInitProperties(
         if (!cannotInitAnnotation) {
             return;
         }
-        const property = arkts.classByPeer<arkts.ClassProperty>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.ClassProperty>(propertyPtr);
         this.report({
             node: property,
             level: LogType.ERROR,
@@ -199,9 +199,9 @@ function reportComponentV1V2MixUse(
     const isParentV2 = !!parentAnnotation.hasComponentV2;
     const parentName = metadata.fromStructInfo?.name ?? '';
     let childStructDecl: arkts.AstNode | undefined;
-    if (node.expression && arkts.isMemberExpression(node.expression) &&
-        node.expression.object && arkts.isIdentifier(node.expression.object)) {
-        childStructDecl = arkts.getPeerIdentifierDecl(node.expression.object.peer);
+    if (node.callee && arkts.isMemberExpression(node.callee) &&
+        node.callee.object && arkts.isIdentifier(node.callee.object)) {
+        childStructDecl = arkts.getPeerIdentifierDecl(node.callee.object.peer);
     }
     if (!childStructDecl || !arkts.isClassDefinition(childStructDecl)) {
         return;
@@ -210,8 +210,8 @@ function reportComponentV1V2MixUse(
         (anno: arkts.AnnotationUsage) => anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === StructDecoratorNames.COMPONENT_V2
     );
     let childName: string | undefined;
-    if (arkts.isMemberExpression(node.expression) && arkts.isIdentifier(node.expression.object)) {
-        childName = node.expression.object.name;
+    if (arkts.isMemberExpression(node.callee) && arkts.isIdentifier(node.callee.object)) {
+        childName = node.callee.object.name;
     }
     const parentDecorator = isParentV2 ? StructDecoratorNames.COMPONENT_V2 : StructDecoratorNames.COMPONENT;
     const childDecorator = isChildV2 ? StructDecoratorNames.COMPONENT_V2 : StructDecoratorNames.COMPONENT;

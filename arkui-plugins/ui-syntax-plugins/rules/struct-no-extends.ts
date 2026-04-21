@@ -22,8 +22,8 @@ class StructNoExtendsRule extends AbstractUISyntaxRule {
             structNoExtends: `Structs are not allowed to inherit from classes or implement interfaces.`,
         };
     }
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isStructDeclaration(node) || !node.definition.ident) {
+    public parsed(node: arkts.ETSStructDeclaration): void {
+        if (!arkts.isETSStructDeclaration(node) || !node.definition?.ident) {
             return;
         }
         const hasSuperClass: boolean = node.definition.super !== undefined;

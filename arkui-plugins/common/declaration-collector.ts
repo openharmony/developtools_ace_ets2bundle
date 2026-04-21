@@ -51,13 +51,13 @@ export class DeclarationCollector {
         if (arkts.isAnnotationDeclaration(decl) && !!decl.expr && arkts.isIdentifier(decl.expr)) {
             declName = decl.expr.name;
         } else if (arkts.isMethodDefinition(decl)) {
-            declName = decl.name.name;
+            declName = decl.id!.name;
         } else if (arkts.isIdentifier(decl)) {
             declName = decl.name;
         } else if (arkts.isClassProperty(decl) && !!decl.key && arkts.isIdentifier(decl.key)) {
             declName = decl.key.name;
-        } else if (arkts.isEtsParameterExpression(decl)) {
-            declName = decl.identifier.name;
+        } else if (arkts.isETSParameterExpression(decl)) {
+            declName = decl.ident!.name;
         }
         if (!declName) {
             return;

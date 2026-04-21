@@ -51,12 +51,12 @@ export class StructMethodRecord extends BaseRecord<arkts.MethodDefinition, Struc
     }
 
     collectFromNode(node: arkts.MethodDefinition): void {
-        this.name = node.name.name;
+        this.name = node.id?.name;
         this.modifiers = node.modifiers;
         this.kind = node.kind;
         this.isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         this.isCtor = this.name === CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI;
-        for (const anno of node.scriptFunction.annotations) {
+        for (const anno of node.function.annotations) {
             this._annotationRecord.collect(anno);
         }
         RecordCache.getInstance().set(node.peer, this);

@@ -47,7 +47,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             // Rule 5: Local, Param, Event decorators must be used with Property
             this.checkuseStateDecoratorsWithProperty(node);
         }
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         this.validateClassPropertyDecorators(node);
@@ -59,14 +59,14 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
 
     private checkPropertyInit(node: arkts.AstNode): void {
         if (!arkts.isCallExpression(node) ||
-            !arkts.isMemberExpression(node.expression) ||
-            !arkts.isIdentifier(node.expression.object)) {
+            !arkts.isMemberExpression(node.callee) ||
+            !arkts.isIdentifier(node.callee.object)) {
             return;
         }
         if (node.arguments.length === 0 || !arkts.isObjectExpression(node.arguments[0])) {
             return;
         }
-        const structDecl = arkts.getDecl(node.expression.object);
+        const structDecl = arkts.getDecl(node.callee.object);
         if (!structDecl || !arkts.isClassDefinition(structDecl)) {
             return;
         }
@@ -94,7 +94,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 data: {
                     decoratorName: decoratorName,
                     key: propertyName,
-                    componentName: node.expression.object.name,
+                    componentName: node.callee.object.name,
                 },
                 fix: (property) => {
                     return {
@@ -126,7 +126,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         return forbidExternalInitProps;
     }
 
-    private hasComponentV2Annotation = (node: arkts.StructDeclaration): boolean => !!getAnnotationUsage(node,
+    private hasComponentV2Annotation = (node: arkts.ETSStructDeclaration): boolean => !!getAnnotationUsage(node,
         PresetDecorators.COMPONENT_V2);
 
     private checkMultipleBuiltInDecorators(member: arkts.ClassProperty,
@@ -203,7 +203,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
                 message: this.messages.requireOnlyWithParam,
                 fix: (requireDecorator) => {
                     let startPosition = requireDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     let endPosition = requireDecorator.endPosition;
                     return {
                         title: 'Remove the @Require annotation',
@@ -239,7 +239,7 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
             data: { annotationName },
             fix: (annotation) => {
                 let startPosition = annotation.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 let endPosition = annotation.endPosition;
                 return {
                     title: 'Remove the annotation',
@@ -250,10 +250,10 @@ class ComponentV2StateUsageValidationRule extends AbstractUISyntaxRule {
         });
     }
 
-    private validateClassPropertyDecorators(node: arkts.StructDeclaration): void {
+    private validateClassPropertyDecorators(node: arkts.ETSStructDeclaration): void {
         this.checkuseStateDecoratorsWithProperty(node.definition);
         const isComponentV2 = this.hasComponentV2Annotation(node);
-        node.definition.body.forEach(member => {
+        node.definition?.body.forEach(member => {
             if (!arkts.isClassProperty(member)) {
                 return;
             }

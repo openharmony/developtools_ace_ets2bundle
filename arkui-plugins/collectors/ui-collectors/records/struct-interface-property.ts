@@ -52,10 +52,10 @@ export class CustomComponentInterfacePropertyRecord extends BaseRecord<
     }
 
     collectFromNode(node: arkts.MethodDefinition): void {
-        this.name = node.name.name;
+        this.name = node.id?.name;
         this.modifiers = node.modifiers;
         this.kind = node.kind;
-        for (const anno of node.scriptFunction.annotations) {
+        for (const anno of node.function.annotations) {
             this._annotationRecord.collect(anno);
         }
         RecordCache.getInstance().set(node.peer, this);
