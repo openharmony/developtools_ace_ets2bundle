@@ -63,70 +63,52 @@ class Person {
 
 final class Status extends BaseEnum<int> {
   private readonly #ordinal: int;
-  
+
   private static <cctor>() {}
-  
-  private constructor(ordinal: int, value: int) {
-    super(value);
+
+  private constructor(ordinal: int, value: int, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
-  
-  public static readonly Success: Status = new Status(0, 200);
-  
-  public static readonly NotFound: Status = new Status(1, 404);
-  
-  public static readonly ServerError: Status = new Status(2, 500);
-  
-  private static readonly #NamesArray: String[] = ["Success", "NotFound", "ServerError"];
-  
-  private static readonly #ValuesArray: int[] = [200, 404, 500];
-  
-  private static readonly #StringValuesArray: String[] = ["200", "404", "500"];
-  
+
+  public static readonly Success: Status = new Status(0, 200, "Success");
+
+  public static readonly NotFound: Status = new Status(1, 404, "NotFound");
+
+  public static readonly ServerError: Status = new Status(2, 500, "ServerError");
+
   private static readonly #ItemsArray: Status[] = [Status.Success, Status.NotFound, Status.ServerError];
-  
-  public getName(): String {
-    return Status.#NamesArray[this.#ordinal];
-  }
-  
+
   public static getValueOf(name: String): Status {
-    for (let i = ((Status.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (Status.#NamesArray[i]))) {
+    for (let i = ((Status.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (Status.#ItemsArray[i].getName()))) {
         return Status.#ItemsArray[i];
       }
     }
     throw new Error((("No enum constant Status.") + (name)));
   }
-  
+
   public static fromValue(value: int): Status {
-    for (let i = ((Status.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (Status.#ValuesArray[i]))) {
+    for (let i = ((Status.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((Status.#ItemsArray[i].valueOf()) == (value))) {
         return Status.#ItemsArray[i];
       }
     }
     throw new Error((("No enum Status with value ") + (value)));
   }
-  
-  public valueOf(): int {
-    return Status.#ValuesArray[this.#ordinal];
-  }
-  
-  public toString(): String {
-    return Status.#StringValuesArray[this.#ordinal];
-  }
-  
+
   public static values(): Status[] {
     return Status.#ItemsArray;
   }
-  
+
   public getOrdinal(): int {
     return this.#ordinal;
   }
-  
+
   public static $_get(e: Status): String {
     return e.getName();
   }
-  
+
 }
 
 @Observed() class mixed1 implements IObservedObject, ISubscribedWatches {

@@ -24,18 +24,18 @@ class Info {
 
   @Monitor(["name"])
   onNameChange(monitor: IMonitor) {
-    console.info(`name change from ${monitor.value()?.before} to ${monitor.value()?.now}`);
+    console.info(`name change from ${monitor.value<string>()?.before} to ${monitor.value<string>()?.now}`);
   }
 
   @Monitor(["age"])
   onAgeChange(monitor: IMonitor) {
-    console.info(`age change from ${monitor.value()?.before} to ${monitor.value()?.now}`);
+    console.info(`age change from ${monitor.value<string>()?.before} to ${monitor.value<string>()?.now}`);
   }
 
   @Monitor(["region", "job"])
   onChange(monitor: IMonitor) {
     monitor.dirty.forEach((path: string) => {
-      console.info(`${path} change from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
+      console.info(`${path} change from ${monitor.value<string>(path)?.before} to ${monitor.value<string>(path)?.now}`);
     })
   }
 }

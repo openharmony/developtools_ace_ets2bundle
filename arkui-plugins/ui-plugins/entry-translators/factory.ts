@@ -129,9 +129,9 @@ export class factory {
                 block,
                 arkts.FunctionSignature.createFunctionSignature(undefined, [], undefined, false),
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR |
-                    arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_IMPLICIT_SUPER_CALL_NEEDED,
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_IMPLICIT_SUPER_CALL_NEEDED,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
             )
             .setIdent(key);
         const def = arkts.factory.createMethodDefinition(
@@ -205,8 +205,8 @@ export class factory {
                 ),
                 [factory.generateEntryFunction(entryAnnoInfo.name), ctor],
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
-                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
-                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
             )
             .setCtor(ctor as any);
@@ -470,6 +470,9 @@ export class factory {
             function: {
                 body: arkts.factory.createBlock([]),
                 params: params,
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                ),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             },
@@ -535,6 +538,9 @@ export class factory {
                     0
                 ),
                 params: params,
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                ),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
             },

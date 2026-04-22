@@ -183,12 +183,12 @@ function main() {}
   }
   
   @Memo() 
-  public SubNavDestination(@MemoSkip() name: string, @MemoSkip() param?: object) {
+  public SubNavDestination(@MemoSkip() name: string, @MemoSkip() param?: object): void {
     this.navDestination!(name, (param as Object));
   }
   
   @Memo() 
-  public build() {
+  public build(): void {
     NavDestinationImpl(@Memo() ((instance: NavDestinationAttribute): void => {
       instance.setNavDestinationOptions({
         moduleName: "entry",
@@ -229,72 +229,54 @@ function main() {}
 
 export final class SplitPolicy extends BaseEnum<int> {
   private readonly #ordinal: int;
-  
+
   private static <cctor>() {}
-  
-  private constructor(ordinal: int, value: int) {
-    super(value);
+
+  private constructor(ordinal: int, value: int, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
-  
-  public static readonly HOME_PAGE: SplitPolicy = new SplitPolicy(0, 0);
-  
-  public static readonly DETAIL_PAGE: SplitPolicy = new SplitPolicy(1, 1);
-  
-  public static readonly FULL_PAGE: SplitPolicy = new SplitPolicy(2, 2);
-  
-  public static readonly PlACE_HOLDER_PAGE: SplitPolicy = new SplitPolicy(3, 3);
-  
-  private static readonly #NamesArray: String[] = ["HOME_PAGE", "DETAIL_PAGE", "FULL_PAGE", "PlACE_HOLDER_PAGE"];
-  
-  private static readonly #ValuesArray: int[] = [0, 1, 2, 3];
-  
-  private static readonly #StringValuesArray: String[] = ["0", "1", "2", "3"];
-  
+
+  public static readonly HOME_PAGE: SplitPolicy = new SplitPolicy(0, 0, "HOME_PAGE");
+
+  public static readonly DETAIL_PAGE: SplitPolicy = new SplitPolicy(1, 1, "DETAIL_PAGE");
+
+  public static readonly FULL_PAGE: SplitPolicy = new SplitPolicy(2, 2, "FULL_PAGE");
+
+  public static readonly PlACE_HOLDER_PAGE: SplitPolicy = new SplitPolicy(3, 3, "PlACE_HOLDER_PAGE");
+
   private static readonly #ItemsArray: SplitPolicy[] = [SplitPolicy.HOME_PAGE, SplitPolicy.DETAIL_PAGE, SplitPolicy.FULL_PAGE, SplitPolicy.PlACE_HOLDER_PAGE];
-  
-  public getName(): String {
-    return SplitPolicy.#NamesArray[this.#ordinal];
-  }
-  
+
   public static getValueOf(name: String): SplitPolicy {
-    for (let i = ((SplitPolicy.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (SplitPolicy.#NamesArray[i]))) {
+    for (let i = ((SplitPolicy.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (SplitPolicy.#ItemsArray[i].getName()))) {
         return SplitPolicy.#ItemsArray[i];
       }
     }
     throw new Error((("No enum constant SplitPolicy.") + (name)));
   }
-  
+
   public static fromValue(value: int): SplitPolicy {
-    for (let i = ((SplitPolicy.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (SplitPolicy.#ValuesArray[i]))) {
+    for (let i = ((SplitPolicy.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((SplitPolicy.#ItemsArray[i].valueOf()) == (value))) {
         return SplitPolicy.#ItemsArray[i];
       }
     }
     throw new Error((("No enum SplitPolicy with value ") + (value)));
   }
-  
-  public valueOf(): int {
-    return SplitPolicy.#ValuesArray[this.#ordinal];
-  }
-  
-  public toString(): String {
-    return SplitPolicy.#StringValuesArray[this.#ordinal];
-  }
-  
+
   public static values(): SplitPolicy[] {
     return SplitPolicy.#ItemsArray;
   }
-  
+
   public getOrdinal(): int {
     return this.#ordinal;
   }
-  
+
   public static $_get(e: SplitPolicy): String {
     return e.getName();
   }
-  
+
 }
 
 class MultiNavPolicyInfo {
@@ -318,7 +300,7 @@ export class MyNavPathStack extends NavPathStack {
   
   public policyInfoList: Array<MultiNavPolicyInfo> = [];
   
-  public registerStackOperateCallback(operate: NavPathStackOperate) {
+  public registerStackOperateCallback(operate: NavPathStackOperate): void {
     let index = this.operates.findIndex(((item) => {
       return ((item) === (operate));
     }));
@@ -327,7 +309,7 @@ export class MyNavPathStack extends NavPathStack {
     }
   }
   
-  public unregisterStackOperateCallback(operate: NavPathStackOperate) {
+  public unregisterStackOperateCallback(operate: NavPathStackOperate): void {
     let index = this.operates.findIndex(((item) => {
       return ((item) === (operate));
     }));

@@ -103,23 +103,23 @@ function main() {}
 
   @Monitor({value:["name"]}) 
   public onNameChange(monitor: IMonitor) {
-    console.info(\`name change from \${({let gensym%%_43 = monitor.value();
-    (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value();
+    console.info(\`name change from \${({let gensym%%_43 = monitor.value<string>();
+    (((gensym%%_43) == (null)) ? undefined : gensym%%_43.before)})} to \${({let gensym%%_44 = monitor.value<string>();
     (((gensym%%_44) == (null)) ? undefined : gensym%%_44.now)})}\`);
   }
 
   @Monitor({value:["age"]}) 
   public onAgeChange(monitor: IMonitor) {
-    console.info(\`age change from \${({let gensym%%_45 = monitor.value();
-    (((gensym%%_45) == (null)) ? undefined : gensym%%_45.before)})} to \${({let gensym%%_46 = monitor.value();
+    console.info(\`age change from \${({let gensym%%_45 = monitor.value<string>();
+    (((gensym%%_45) == (null)) ? undefined : gensym%%_45.before)})} to \${({let gensym%%_46 = monitor.value<string>();
     (((gensym%%_46) == (null)) ? undefined : gensym%%_46.now)})}\`);
   }
 
   @Monitor({value:["region", "job"]}) 
   public onChange(monitor: IMonitor) {
     monitor.dirty.forEach(((path: string) => {
-      console.info(\`\${path} change from \${({let gensym%%_47 = monitor.value(path);
-      (((gensym%%_47) == (null)) ? undefined : gensym%%_47.before)})} to \${({let gensym%%_48 = monitor.value(path);
+      console.info(\`\${path} change from \${({let gensym%%_47 = monitor.value<string>(path);
+      (((gensym%%_47) == (null)) ? undefined : gensym%%_47.before)})} to \${({let gensym%%_48 = monitor.value<string>(path);
       (((gensym%%_48) == (null)) ? undefined : gensym%%_48.now)})}\`);
     }));
   }

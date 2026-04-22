@@ -75,32 +75,22 @@ final class StateType extends BaseEnum<int> {
 
   private static <cctor>() {}
 
-  private constructor(ordinal: int, value: int) {
-    super(value);
+  private constructor(ordinal: int, value: int, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
 
-  public static readonly TYPE1: StateType = new StateType(0, 0);
+  public static readonly TYPE1: StateType = new StateType(0, 0, "TYPE1");
 
-  public static readonly TYPE2: StateType = new StateType(1, 1);
+  public static readonly TYPE2: StateType = new StateType(1, 1, "TYPE2");
 
-  public static readonly TYPE3: StateType = new StateType(2, 3);
-
-  private static readonly #NamesArray: String[] = ["TYPE1", "TYPE2", "TYPE3"];
-
-  private static readonly #ValuesArray: int[] = [0, 1, 3];
-
-  private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
+  public static readonly TYPE3: StateType = new StateType(2, 3, "TYPE3");
 
   private static readonly #ItemsArray: StateType[] = [StateType.TYPE1, StateType.TYPE2, StateType.TYPE3];
 
-  public getName(): String {
-    return StateType.#NamesArray[this.#ordinal];
-  }
-
   public static getValueOf(name: String): StateType {
-    for (let i = ((StateType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (StateType.#NamesArray[i]))) {
+    for (let i = ((StateType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (StateType.#ItemsArray[i].getName()))) {
         return StateType.#ItemsArray[i];
       }
     }
@@ -108,20 +98,12 @@ final class StateType extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): StateType {
-    for (let i = ((StateType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (StateType.#ValuesArray[i]))) {
+    for (let i = ((StateType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((StateType.#ItemsArray[i].valueOf()) == (value))) {
         return StateType.#ItemsArray[i];
       }
     }
     throw new Error((("No enum StateType with value ") + (value)));
-  }
-
-  public valueOf(): int {
-    return StateType.#ValuesArray[this.#ordinal];
-  }
-
-  public toString(): String {
-    return StateType.#StringValuesArray[this.#ordinal];
   }
 
   public static values(): StateType[] {
