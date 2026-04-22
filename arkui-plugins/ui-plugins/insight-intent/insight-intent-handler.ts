@@ -24,7 +24,8 @@ import {
     InsightIntentFormData,
     InsightIntentDataBase,
     InsightIntentEntryData,
-    InsightIntentEntityData
+    InsightIntentEntityData,
+    InsightIntentPageData
 } from './insight-intent-collector';
 import { LogCollector } from '../../common/log-collector';
 import { LogType, ObservedNames } from '../../common/predefines';
@@ -47,6 +48,7 @@ const INSIGHT_INTENT_FUNCTION_METHOD_DECORATOR = 'InsightIntentFunctionMethod';
 const INSIGHT_INTENT_FUNCTION_DECORATOR = 'InsightIntentFunction';
 const INSIGHT_INTENT_ENTITY_DECORATOR = 'InsightIntentEntity';
 const INSIGHT_INTENT_ENTRY_DECORATOR = 'InsightIntentEntry';
+const INSIGHT_INTENT_PAGE_DECORATOR = 'InsightIntentPage';
 
 interface DecoratorData {
     [key: string]: unknown;
@@ -82,6 +84,7 @@ const DECORATOR_REQUIRED_FIELDS: Record<string, string[]> = {
     'Function': BASE_REQUIRED_FIELDS,
     'FunctionMethod': BASE_REQUIRED_FIELDS,
     'Entry': [...BASE_REQUIRED_FIELDS, 'abilityName', 'executeMode'],
+    'Page': [...BASE_REQUIRED_FIELDS, 'pagePath'],
 };
 
 function validateRequiredFields(data: InsightIntentDataBase, decoratorType: string, node: arkts.AstNode): boolean {
@@ -245,6 +248,25 @@ function validateJsonSchema(schema: Record<string, unknown> | null | undefined, 
         }
         return false;
     }
+}
+
+/**
+ * 校验page是否修饰在struct类型的页面上
+ */
+function validatePageStruct(data: InsightIntentDataBase, node: arkts.AstNode): boolean {
+    const definition: arkts.ClassDefinition | undefined = node.definition;
+    const isStruct = arkts.classDefinitionIsFromStructConst(definition) || arkts.isStructDeclaration(node);
+    if (!isStruct && arkts.isClassDeclaration(node)) {
+        LogCollector.getInstance().collectLogInfo({
+            node: node,
+            type: LogType.ERROR,
+            code: '10110016',
+            message: '@InsightIntentPage must be applied to a struct page.'
+        });
+        return false;
+    }
+    
+    return true;
 }
 /**
  * 推断 JSON Schema 的类型验证类型
@@ -956,6 +978,7 @@ export class InsightIntentHandler {
             [INSIGHT_INTENT_FORM_DECORATOR, this.extractFormIntentData.bind(this)],
             [INSIGHT_INTENT_ENTITY_DECORATOR, this.extractEntityIntentData.bind(this)],
             [INSIGHT_INTENT_ENTRY_DECORATOR, this.extractEntryIntentData.bind(this)],
+            [INSIGHT_INTENT_PAGE_DECORATOR, this.extractPageIntentData.bind(this)],
         ]);
     }
         /**
@@ -1024,7 +1047,7 @@ export class InsightIntentHandler {
 
     private prepareCurrentFile(program: arkts.Program): void {
         this.intentNames.clear();
-        this.currentDecoratorFile = this.normalizeFilePath(program.absName || '');
+        this.currentDecoratorFile = this.makeFilePath(program.absName || '');
         if (this.currentDecoratorFile) {
             this.collector.markSourceFileTouched(this.currentDecoratorFile);
         }
@@ -1685,6 +1708,49 @@ export class InsightIntentHandler {
         );
         return data;
     }
+    private extractPageIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
+        const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentPage');
+        if (!baseData) return null;
+
+        const data: InsightIntentPageData = { ...baseData, pagePath: '' };
+        const properties = annotation.properties;
+        
+        for (const prop of properties) {
+            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
+            const propName = prop.key.name;
+            const propValue = prop.value;
+            if (!propValue) continue;
+            switch (propName) {
+                case 'pagePath':
+                    const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode);
+                    if (validatedPath === null) {
+                        return null; 
+                    }
+                    data[propName] = validatedPath;
+                    break;
+                case 'uiAbility':
+                case 'navigationId':
+                case 'navDestinationName': {
+                    // 非必填字段，空字符串不写入
+                    const value = this.extractStringValue(propValue, classNode);
+                    if (this.isValidOptionalValue(value, classNode, '@InsightIntentPage')) {
+                        data[propName] = value;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (!validateRequiredFields(data, 'Page', classNode) ||
+            !validatePageStruct (data, classNode) ||
+            (data.keywords && !validateKeywords(data.keywords, classNode)) ||
+            (data.parameters && !validateJsonSchema(data.parameters, 'parameters', classNode)) ||
+            (data.result && !validateJsonSchema(data.result, 'result', classNode))) {
+            return null;
+        }
+
+        return data;
+    }
     private validateFormName(
         formName: string,
         bindFormInfo: FormExtensionAbilityInfo,
@@ -1730,7 +1796,23 @@ export class InsightIntentHandler {
 
         return true;
     }
-
+    private validatePagePath(filePath: string, classNode: arkts.ClassDeclaration): unknown {
+        const moduleName = this.projectConfig?.moduleName;
+        if (moduleName) {
+            const normalPagePath: string = path.join(moduleName, 'src/main', filePath + '.ets');
+            if (!fs.existsSync(normalPagePath)) {
+                LogCollector.getInstance().collectLogInfo({
+                    node: classNode,
+                    type: LogType.ERROR,
+                    code: '10110017',
+                    message: 'PagePath in @InsightIntentPage does not match the actual page path.'
+                });
+                return null;
+            } else {
+                return this.makeFilePath(normalPagePath)
+            }
+        }
+    }
     private resolveAceProfilePath(): string | undefined {
         const projectConfig = this.projectConfig;
         if (projectConfig.aceProfilePath) {
@@ -1774,7 +1856,7 @@ export class InsightIntentHandler {
         const program = arkts.getProgramFromAstNode(classNode);
         const data: InsightIntentEntityData & { supportedQueryProperties?: string[] } = {
             className: classNode.definition?.ident?.name || 'UnknownClass',
-            decoratorFile: this.normalizeFilePath(program?.absName || ''),
+            decoratorFile: this.makeFilePath(program?.absName || ''),
             decoratorType: '@InsightIntentEntity',
             entityCategory: '',
         };
@@ -2000,7 +2082,7 @@ export class InsightIntentHandler {
         const filePath = program?.absName || '';
 
         data.decoratorClass = className;
-        data.decoratorFile = this.normalizeFilePath(filePath);
+        data.decoratorFile = this.makeFilePath(filePath);
         data.decoratorType = decoratorType;
         data.moduleName = this.projectConfig?.moduleName;
         data.bundleName = this.projectConfig?.bundleName;
@@ -2864,9 +2946,7 @@ export class InsightIntentHandler {
         }
         return undefined;
     }
-
-
-    private normalizeFilePath(filePath: string): string {
+    private makeFilePath(filePath: string): string {
         if (!filePath) {
             return '';
         }
@@ -3008,7 +3088,7 @@ export class InsightIntentHandler {
                 })
                 .filter((name: string | undefined) => name !== undefined);
         }
-        data.decoratorFile = this.normalizeFilePath(filePath);
+        data.decoratorFile = this.makeFilePath(filePath);
         data.decoratorType = '@InsightIntentFunctionMethod';
         data.moduleName = this.projectConfig?.moduleName || 'entry';
         data.bundleName = this.projectConfig?.bundleName || '';
