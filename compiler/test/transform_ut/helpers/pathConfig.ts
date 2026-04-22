@@ -364,6 +364,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithDecorator',
   'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithV1Decorator',
   // Category directory workflow validations
+  'Decorators/supplementary_validation/builder_reference_validation/binding_reference_validation',
+  'Decorators/supplementary_validation/builder_reference_validation/mutable_binding_reference_validation',
   'Decorators/supplementary_validation/builder_validation/builder_validation_workflow_validation',
   'Decorators/supplementary_validation/component_validation/component_validation_workflow_validation',
   'Decorators/supplementary_validation/state_validation/state_validation_workflow_validation',
