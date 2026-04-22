@@ -24,7 +24,7 @@ struct Index {
   @Monitor(["message", "name"])
   onStrChange(monitor: IMonitor) {
     monitor.dirty.forEach((path: string) => {
-      console.info(`${path} changed from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
+      console.info(`${path} changed from ${monitor.value<string>(path)?.before} to ${monitor.value<string>(path)?.now}`);
     });
   }
 

@@ -224,32 +224,22 @@ final class PropType extends BaseEnum<int> {
 
   private static <cctor>() {}
 
-  private constructor(ordinal: int, value: int) {
-    super(value);
+  private constructor(ordinal: int, value: int, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
 
-  public static readonly TYPE1: PropType = new PropType(0, 0);
+  public static readonly TYPE1: PropType = new PropType(0, 0, "TYPE1");
 
-  public static readonly TYPE2: PropType = new PropType(1, 1);
+  public static readonly TYPE2: PropType = new PropType(1, 1, "TYPE2");
 
-  public static readonly TYPE3: PropType = new PropType(2, 3);
-
-  private static readonly #NamesArray: String[] = ["TYPE1", "TYPE2", "TYPE3"];
-
-  private static readonly #ValuesArray: int[] = [0, 1, 3];
-
-  private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
+  public static readonly TYPE3: PropType = new PropType(2, 3, "TYPE3");
 
   private static readonly #ItemsArray: PropType[] = [PropType.TYPE1, PropType.TYPE2, PropType.TYPE3];
 
-  public getName(): String {
-    return PropType.#NamesArray[this.#ordinal];
-  }
-
   public static getValueOf(name: String): PropType {
-    for (let i = ((PropType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (PropType.#NamesArray[i]))) {
+    for (let i = ((PropType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (PropType.#ItemsArray[i].getName()))) {
         return PropType.#ItemsArray[i];
       }
     }
@@ -257,20 +247,12 @@ final class PropType extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): PropType {
-    for (let i = ((PropType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (PropType.#ValuesArray[i]))) {
+    for (let i = ((PropType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((PropType.#ItemsArray[i].valueOf()) == (value))) {
         return PropType.#ItemsArray[i];
       }
     }
     throw new Error((("No enum PropType with value ") + (value)));
-  }
-
-  public valueOf(): int {
-    return PropType.#ValuesArray[this.#ordinal];
-  }
-
-  public toString(): String {
-    return PropType.#StringValuesArray[this.#ordinal];
   }
 
   public static values(): PropType[] {

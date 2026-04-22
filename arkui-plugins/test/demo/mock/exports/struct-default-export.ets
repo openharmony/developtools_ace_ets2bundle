@@ -18,5 +18,5 @@ import { Component, Entry } from "@ohos.arkui.component";
 @Entry
 @Component
 export default struct A {
-  build() {}
+  build(): void {}
 }

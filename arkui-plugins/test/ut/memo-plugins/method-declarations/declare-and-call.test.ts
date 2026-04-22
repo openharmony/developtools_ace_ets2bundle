@@ -52,7 +52,7 @@ declare abstract class A {
     @Memo() 
     public x(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void
     public test_signature(@Memo() arg1: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void), @Memo() arg2: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined), @Memo() arg3: ((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) | undefined)), @Memo() x: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, y: ((z: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void))=> void))=> void)): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)
-    public constructor() {}
+    public constructor()
 }
 class AA extends A {
     @Memo() 
