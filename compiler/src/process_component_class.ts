@@ -379,8 +379,16 @@ export function processComponentReusePool(
   if (!shouldContinue) {
     return;
   }
-  if (!ts.isStringLiteral(reusePoolProperty.initializer) ||
-    !ts.isArrayLiteralExpression(poolAcceptsProperty.initializer)) {
+  if (!ts.isArrayLiteralExpression(poolAcceptsProperty.initializer)) {
+    return;
+  }
+  if (!ts.isStringLiteral(reusePoolProperty.initializer)) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905378',
+      message: 'Elements of poolAccepts and reusePool can only accept string literal.',
+      pos: reusePoolProperty.initializer.pos
+    });
     return;
   }
   checkReusePoolArg(reusePoolProperty.initializer);
@@ -426,10 +434,16 @@ function checkPoolAcceptsArg(
   }
 
   initializer.elements.forEach(element => {
-    if (!ts.isIdentifier(element)) {
+    if (!ts.isStringLiteral(element)) {
+      transformLog.errors.push({
+        type: LogType.ERROR,
+        code: '10905378',
+        message: 'Elements of poolAccepts and reusePool can only accept string literal.',
+        pos: element.pos
+      });
       return;
     }
-    const compName: string = element.getText();
+    const compName: string = element.text;
     if (compName === parentName) {
       transformLog.errors.push({
         type: LogType.ERROR,
@@ -469,7 +483,7 @@ function createReusePoolPropertyDecl(
       ),
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier(POOLACCEPTS),
-        poolAccepts
+        createPoolAcceptsArrayLiteral(poolAccepts)
       ),
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier(OWNER),
@@ -496,6 +510,31 @@ function createReusePoolPropertyDecl(
   );
 
   return result;
+}
+
+function createPoolAcceptsArrayLiteral(
+  poolAccepts: ts.ArrayLiteralExpression
+): ts.ArrayLiteralExpression {
+  if (!poolAccepts || !poolAccepts.elements || !poolAccepts.elements.length) {
+    return ts.factory.createArrayLiteralExpression(
+      [],
+      false
+    );
+  }
+  const tempArray: ts.Identifier[] = [];
+  poolAccepts.elements.forEach(element => {
+    if (!ts.isStringLiteral(element)) {
+      return;
+    }
+    const currentName: string = element.text;
+    tempArray.push(
+      ts.factory.createIdentifier(currentName)
+    );
+  });
+  return ts.factory.createArrayLiteralExpression(
+    tempArray,
+    false
+  );
 }
 
 export function decoratorAssignParams(decoratorNode: readonly ts.Decorator[], context: ts.TransformationContext,
