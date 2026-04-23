@@ -56,6 +56,7 @@ import StructVariableInitializationRule from './struct-variable-initialization';
 import UiConsistentCheckRule from './ui-consistent-check';
 import ValidateDecoratorTargetRule from './validate-decorator-target';
 import WatchDecoratorFunctionRule from './watch-decorator-function';
+import StructV1DecoratorFunctionRule from './struct-v1-decorator-function';
 import WatchDecoratorRegularRule from './watch-decorator-regular';
 import ObservedHeritageCompatibleCheckRule from './observed-heritage-compatible-check';
 import ObservedObservedV2Rule from './observed-observedV2-check';
@@ -103,7 +104,8 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [ValidateBuildInStructRule, 'error'],
     [ValidateDecoratorTargetRule, 'error'],
     [WatchDecoratorFunctionRule, 'error'],
-    [SyncMonitorDecoratorCheckRule, 'error']
+    [StructV1DecoratorFunctionRule, 'error'],
+    [SyncMonitorDecoratorCheckRule, 'error'],
 ];
 
 export default rules;
