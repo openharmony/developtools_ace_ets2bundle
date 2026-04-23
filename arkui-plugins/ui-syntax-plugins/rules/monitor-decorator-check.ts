@@ -22,7 +22,6 @@ import {
     getClassPropertyAnnotationNames,
     TypeFlags,
     addImportFixes,
-    isFromPresetModules,
     getIdentifierName,
 } from '../utils';
 import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
@@ -174,7 +173,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         const source = member.source;
-        if (!source || isFromPresetModules(source.str)) {
+        if (!source) {
             return;
         }
 
