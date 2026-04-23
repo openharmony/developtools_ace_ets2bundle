@@ -1273,10 +1273,19 @@ export class WhiteListValidator extends BaseValidator implements NodeValidator {
     return this.hasApiFileName(declSourceFile.fileName);
   }
 
+  /**
+   * Checks if the declaration's source file and API name are included in the API_INTERFACE_WHITE_LIST.
+   *
+   * @param declSourceFileName - The file name of the declaration's source file
+   * @returns True if the API is whitelisted, false otherwise
+   */
   private hasApiFileName(declSourceFileName: string): boolean {
+    if (!this.declaration || !this.declaration.name) {
+      return false;
+    }
     const apiName: string = this.declaration.name?.getText() || '';
     return projectConfig.globalModulePaths.some((globalModulePath: string) => {
-      let fileName: string = path.relative(globalModulePath, declSourceFileName).replace(/\\/g, '/');
+      const fileName: string = path.relative(globalModulePath, declSourceFileName).replace(/\\/g, '/');
       return API_INTERFACE_WHITE_LIST.get(fileName)?.includes(apiName);
     });
   }
