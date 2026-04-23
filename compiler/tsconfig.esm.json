@@ -287,7 +287,8 @@
         "ArcScrollBar",
         "UnionEffectContainer",
         "UIPickerComponent",
-        "DistortionComponent"
+        "DistortionComponent",
+        "DepthComponent"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -911,6 +912,11 @@
             "name": "DistortionComponent",
             "type": "DistortionComponentAttribute",
             "instance": "DistortionComponentInstance"
+          },
+          {
+            "name": "DepthComponent",
+            "type": "DepthComponentAttribute",
+            "instance": "DepthComponentInstance"
           },
         ]
       },

@@ -1,0 +1,12 @@
+ {
+    "name": "DepthComponent",
+    "attrs": [
+        "depthMap",
+        "camera",
+        "light",
+        "backgroundOffset",
+        "backgroundOffset"
+
+    ],
+    "systemApi": false
+}
