@@ -973,11 +973,11 @@
             "type": "DepthComponentAttribute",
             "instance": "DepthComponentInstance"
           },
+         ]
+       },
+       "styles": {
         ]
       },
-      "styles": {
-       ]
-     },
       "styles": {
         "decorator": "Styles",
         "component": {
