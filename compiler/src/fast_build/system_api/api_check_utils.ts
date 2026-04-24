@@ -379,9 +379,9 @@ let permissionsArray: string[] = [];
 
 function parseVersion(versionStr) {
   // Regular expressions for different version formats
-const buildVersionPattern = /^(\d+)\.(\d+)\.(\d+)\((\d+)\)$/; // Matches x.y.z(w) format
-const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
-const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
+ const buildVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME,'getBuildVersionRegex'); // Matches x.y.z(w) format
+ const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
+ const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
 
 // Check for build version format (x.y.z(w))
 if (buildVersionPattern.test(versionStr)) {
@@ -1536,6 +1536,29 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
   return distributionOSCheck;
 }
 
+
+/**
+ * Gets the build version regex.
+ * @param tag - The tag name.
+ * @param retype - The retry type name.
+ * @returns Returns the regex from external plugins.
+ */
+function getBuildVersionRegex(tag, functionType) {
+  const runtimeOS = projectConfig.runtimeOS;
+  const tagName = `${runtimeOS}/${tag}/${functionType}`;
+  const externalCheckers = externalApiCheckPlugin.get(tagName);
+
+  for (const plugin of externalCheckers) {
+    const externalModule = require(plugin.path);
+    const externalMethod = externalModule[plugin.functionName];
+    if (typeof externalMethod === 'function') {
+      const getBuildVersionRegexFunction = externalMethod();
+      return getBuildVersionRegexFunction;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Determine the necessity of syscap check.
  * @param jsDocTags 
@@ -1629,33 +1652,60 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
 }
 
 /**
- *  Determine the necessity of permission check
- *
- * @param {ts.JSDocTag[]} jsDocTags
- * @param {ts.JsDocNodeCheckConfigItem} config
- * @param {ts.Node} node
- * @returns {boolean}
+ * Checks the permission values in JSDoc tags and updates the config message.
+ * @param jsDocTags - The JSDoc tags to check.
+ * @param config - The configuration item to update with the result.
+ * @param node - The optional TypeScript node for context.
+ * @param declaration - The optional TypeScript declaration for context.
+ * @returns A boolean indicating if any invalid permissions were found.
  */
-export function checkPermissionValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem,node?: ts.Node,declaration?: ts.Declaration): boolean {
-  const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
-    return item.tagName.getText() === PERMISSION_TAG_CHECK_NAME;
-  });
-  if (!jsDocTag) {
+export function checkPermissionValue(
+  jsDocTags: readonly ts.JSDocTag[],
+  config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node,
+  declaration?: ts.Declaration
+): boolean {
+  // Filter out permission tags with the specified tag name
+  const permissionTags = jsDocTags.filter((tag) => tag.tagName.getText() === PERMISSION_TAG_CHECK_NAME);
+  // If no permission tags are found, return false
+  if (permissionTags.length === 0) {
     return false;
   }
-  const comment: string = typeof jsDocTag.comment === 'string' ?
-    jsDocTag.comment :
-    ts.getTextOfJSDocComment(jsDocTag.comment);
-  config.message = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment);
-  if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {	 
-    return false;	 
-  } 
-  const suppressor = new PermissionWarningSuppressor(); 
-  if (suppressor.isApiVersionHandled(node)) { 
-    return false; 
-  } 
-  return true;
 
+  let comment_all = ''; 
+  // Iterate over each permission tag
+  for (const permissionTag of permissionTags) {
+    // Get the comment from the permission tag
+    const comment = typeof permissionTag.comment === 'string'
+      ? permissionTag.comment
+      : ts.getTextOfJSDocComment(permissionTag.comment);
+
+    // Extract the version range from the comment
+    const versionRange = extractVersionRange(permissionTag.comment);
+
+    // If the comment is empty or the permission is valid, skip this tag
+    if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {
+      continue;
+    }
+    // If the node is handled by the suppressor, skip this tag
+    const suppressor = new PermissionWarningSuppressor();
+    if (suppressor.isApiVersionHandled(node)) {
+      continue;
+    }
+    // If the version range is valid or not present, add the permission to the comment
+    if (versionRange && checkVersionRangeIntersection(versionRange)) {
+      comment_all += comment.replace(/$$since (.*?)$$/g, '').trim() + ' and ';
+      continue;
+    }
+    if (!versionRange) {
+      comment_all += comment.replace(/$$since (.*?)$$/g, '').trim() + ' and ';
+      continue;
+    }
+  }
+  comment_all = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment_all);
+  config.message = comment_all.replace(/\s*and\s*$/, '').trim();
+
+  return comment_all !== '';
 }
 
 /**
