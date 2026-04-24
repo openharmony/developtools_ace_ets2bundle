@@ -327,7 +327,9 @@ export class factory {
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
         );
-        return addMemoAnnotation(arkts.factory.createArrowFunction(func));
+        const newNode = arkts.factory.createArrowFunction(func);
+        newNode.setNoDebugLineFlag();
+        return addMemoAnnotation(newNode);
     }
 
     /**
@@ -598,6 +600,7 @@ export class factory {
             if (canAddMemo) {
                 addMemoAnnotation(newNode);
             }
+            newNode.setNoDebugLineFlag();
             return newNode;
         }
         // this is too optimistic to check if this is an options argument...
@@ -620,7 +623,9 @@ export class factory {
         });
         const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
         collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
-        return arkts.factory.createArrowFunction(newFunc);
+        const newNode = arkts.factory.createArrowFunction(newFunc);
+        newNode.setNoDebugLineFlag();
+        return newNode;
     }
 
     /**
