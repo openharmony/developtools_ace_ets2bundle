@@ -131,6 +131,7 @@ export const PresetDecorators = {
     TRACE: 'Trace',
     ONCE: 'Once',
     MONITOR: 'Monitor',
+    SYNC_MONITOR: 'SyncMonitor',
     LOCAL_BUILDER: 'LocalBuilder',
     REGULAR: 'regular',
     VARIABLE: 'variable',

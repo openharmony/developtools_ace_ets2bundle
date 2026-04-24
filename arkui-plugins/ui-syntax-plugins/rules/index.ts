@@ -74,6 +74,7 @@ import SpecificComponentChildrenRule from './specific-component-children';
 import EntryComponentV2InvalidParamsRule from './entry-componentv2-invalid-params';
 import StructAttributeNoTypeRule from './struct-attribute-no-type';
 import CheckObjectLinkUseLiteralRule from './check-objectlink-use-literal';
+import SyncMonitorDecoratorCheckRule from './sync-monitor-decorator-check';
 
 const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [AttributeNoInvokeRule, 'error'],
@@ -134,6 +135,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [EntryComponentV2InvalidParamsRule, 'error'],
     [StructAttributeNoTypeRule, 'error'],
     [CheckObjectLinkUseLiteralRule, 'error'],
+    [SyncMonitorDecoratorCheckRule, 'error'],
 ];
 
 export default rules;
