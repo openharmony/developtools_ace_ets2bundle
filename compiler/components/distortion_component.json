@@ -1,6 +1,6 @@
 {
     "name": "DistortionComponent",
-    "atomic": true,
+    "single": true,
     "attrs": [],
     "systemApi": true
 }

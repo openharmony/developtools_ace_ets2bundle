@@ -184,6 +184,7 @@
         "ColorPickerDialog",
         "Column",
         "ColumnSplit",
+        "ContainerReader",
         "ContentSlot",
         "Counter",
         "DataPanel",
@@ -297,7 +298,7 @@
         "UnionEffectContainer",
         "UIPickerComponent",
         "DistortionComponent",
-        "ContainerReader"
+        "DepthComponent"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -406,6 +407,11 @@
             "name": "ColumnSplit",
             "type": "ColumnSplitAttribute",
             "instance": "ColumnSplitInstance"
+          },
+          {
+            "name": "ContainerReader",
+            "type": "ContainerReaderAttribute",
+            "instance": "ContainerReaderInstance"
           },
           {
             "name": "Counter",
@@ -963,11 +969,12 @@
             "instance": "DistortionComponentInstance"
           },
           {
-            "name": "ContainerReader",
-            "type": "ContainerReaderAttribute",
-            "instance": "ContainerReaderInstance"
+            "name": "DepthComponent",
+            "type": "DepthComponentAttribute",
+            "instance": "DepthComponentInstance"
           }
-        ]
+         ]
+        },
       },
       "styles": {
         "decorator": "Styles",

@@ -18,7 +18,6 @@
 using std::string, std::cout, std::endl, std::vector;
 
 static es2panda_Impl *impl = nullptr;
-static bool g_isLspUsage = false;
 
 #ifdef KOALA_WINDOWS
     #include <windows.h>
@@ -43,7 +42,6 @@ static bool g_isLspUsage = false;
 #endif
 
 const char* LIB_ES2PANDA_PUBLIC = LIB_PREFIX "es2panda_public" LIB_SUFFIX;
-const char* LIB_ES2PANDA_PUBLIC_LSP = LIB_PREFIX "es2panda_public_lsp" LIB_SUFFIX;
 constexpr const char* IS_UI_FLAG = "IS_UI_FLAG";
 constexpr const char* NOT_UI_FLAG = "NOT_UI_FLAG";
 const string MODULE_SUFFIX = ".d.ets";
@@ -77,23 +75,15 @@ void impl_SetUpSoPath(KStringPtr &soPath)
 }
 KOALA_INTEROP_V1(SetUpSoPath, KStringPtr);
 
-void impl_SetLspUsage(KBoolean isLspUsage)
-{
-    g_isLspUsage = isLspUsage;
-    return;
-}
-KOALA_INTEROP_V1(SetLspUsage, KBoolean);
-
 void* FindLibrary() {
     std::vector<std::string> pathArray;
     char* envValue = getenv("PANDA_SDK_PATH");
-    const char* libName = g_isLspUsage ? LIB_ES2PANDA_PUBLIC_LSP : LIB_ES2PANDA_PUBLIC;
     if (envValue) {
-        pathArray = {envValue, PLUGIN_DIR, LIB_DIR, libName};
+        pathArray = {envValue, PLUGIN_DIR, LIB_DIR, LIB_ES2PANDA_PUBLIC};
     } else if (!ES2PANDA_LIB_PATH.empty()) {
-        pathArray = {ES2PANDA_LIB_PATH, LIB_DIR, libName};
+        pathArray = {ES2PANDA_LIB_PATH, LIB_DIR, LIB_ES2PANDA_PUBLIC};
     } else {
-        pathArray = {libName};
+        pathArray = {LIB_ES2PANDA_PUBLIC};
     }
     return loadLibrary(joinPath(pathArray));
 }
@@ -104,8 +94,7 @@ es2panda_Impl *GetImpl() {
     }
     auto library = FindLibrary();
     if (!library) {
-        const char* libName = g_isLspUsage ? LIB_ES2PANDA_PUBLIC_LSP : LIB_ES2PANDA_PUBLIC;
-        std::cout << "Cannot find " << libName << endl;
+        std::cout << "Cannot find " << LIB_ES2PANDA_PUBLIC << endl;
     }
     auto symbol = findSymbol(library, "es2panda_GetImpl");
     if (!symbol) {

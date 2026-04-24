@@ -21,7 +21,8 @@ import {
   comparePointVersion,
   isCheckDistributionOSVersion,
   checkMSFVersionMajor,
-  checkIntegerMoreVersion
+  checkIntegerMoreVersion,
+  isApiAvailableStatement
 } from '../api_check_utils';
 import {
   SINCE_TAG_NAME,
@@ -154,27 +155,16 @@ export class SdkComparisonHelper {
       return false;
     }
 
+    if (!isApiAvailableStatement(expression)) {
+      return false;
+    }
+
     const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
     const sinceValue: string = expression.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g, '');
     const sincePointVersion: string[] = sinceFormat.split('.');
     if (sincePointVersion.length === 1 || runtimeType === this.openSourceRuntime) {
-      const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
-      if (!compatibileReg.test(sinceFormat)) {
-        return false;
-      }
-      switch (sincePointVersion.length) {
-        case 1:
-          return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
-        case 3:
-          if (!checkMSFVersionMajor(sinceFormat)) {
-            return false;
-          } else if (comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less) {
-            return true;
-          }
-        default:
-          return false;
-      }
+      return this.checkMajorNumberVersion(sinceFormat, sincePointVersion, distributeResult);
     }
     if (!checkMSFVersionMajor(sinceFormat)) {
       let distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
@@ -193,6 +183,25 @@ export class SdkComparisonHelper {
       return false;
     }
     return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less
+  }
+
+  private checkMajorNumberVersion(sinceFormat: string, sincePointVersion: string[], distributeResult: DistributionOSApiAvailableVersionResult): boolean {
+      const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
+      if (!compatibileReg.test(sinceFormat)) {
+        return false;
+      }
+      switch (sincePointVersion.length) {
+        case 1:
+          return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
+        case 3:
+          if (!checkMSFVersionMajor(sinceFormat)) {
+            return false;
+          } else if (comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less) {
+            return true;
+          }
+        default:
+          return false;
+      }
   }
 
   private distributionVersionFormat(): DistributionOSApiAvailableVersionResult {

@@ -51,7 +51,7 @@ import { Component as Component, Entry as Entry } from \"@ohos.arkui.component\"
     public static $_invoke(initializers?: __Options_A, storage?: LocalStorage, @Builder() content?: (()=> void)): A {
         throw new Error("Declare interface");
     }
-    public build() {}
+    public build(): void {}
     protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
         super(useSharedStorage, storage);
     }

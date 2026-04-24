@@ -1,0 +1,10 @@
+{
+  "name": "interop_ui_test",
+  "version": "0.0.1",
+  "description": "Interop UI for test",
+  "private": true,
+  "scripts": {
+    "build:test": "npm run interopBuild --prefix ../../../compiler && node ./test.js",
+    "test": "npm run build:test --prefix ./"
+  }
+}

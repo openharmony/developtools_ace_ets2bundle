@@ -274,6 +274,10 @@ class ParseIntent {
         'entityId': entityId
       });
       this.schemaValidateSync(properties, intentObj.parameters);
+      // 对supportedQueryProperties进行校验
+      if (intentObj.supportedQueryProperties && intentObj.supportedQueryProperties.length !==0) {
+        this.validateSupportedQuery(properties, intentObj.parameters, intentObj.supportedQueryProperties)
+      }
       this.analyzeBaseClass(node, pkgParams, intentObj, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
@@ -677,6 +681,26 @@ class ParseIntent {
     return methodsArr;
   }
 
+  private isInheritFromIntentEntity(symbol: ts.Symbol, pkgParams: object, visitedSymbols: Set<ts.Symbol> = new Set()): boolean {
+    if (!symbol) {
+      return false;
+    }
+
+    // 防止循环引用
+    if (visitedSymbols.has(symbol)) {
+      return false;
+    }
+    visitedSymbols.add(symbol);
+
+    const symbolName: string = symbol.getName();
+
+    // 检查是否是 IntentEntity 或其直接派生类型 AppIntentEntity
+    if (symbolName === 'IntentEntity' || symbolName === 'AppIntentEntity') {
+      return true;
+    }
+    return false;
+  }
+
   private analyzeClassHeritage(
     parentNode: ts.ExpressionWithTypeArguments, node: ts.ClassDeclaration, pkgParams: object, intentObj: object
   ): void {
@@ -699,7 +723,7 @@ class ParseIntent {
     const parentRecordName: string =
       getNormalizedOhmUrlByFilepath(parentFilePath, projectConfig, logger, pkgParams, null);
     if (isGlobalPathFlag) {
-      if (parentClassName !== 'IntentEntity') {
+      if (!this.isInheritFromIntentEntity(parentSymbol, pkgParams)) {
         const errorMessage: string =
           `decorated with @InsightIntentEntity must be ultimately inherited to insightIntent.IntentEntity`;
         this.transformLog.push({
@@ -1490,6 +1514,47 @@ class ParseIntent {
     this.schemaValidateRules(schemaData, schemaObj);
   }
 
+  private validateSupportedQuery(schemaData: Record<string, schemaVerifyType>, schemaObj: object, supportedValue: string[],): void {
+    // 验证 supportedValue 中的字段是否都在 properties 中定义
+    const properties = schemaObj.properties;
+    const propertyKeys = new Set(Object.keys(properties));
+    for (const field of supportedValue) {
+      if (typeof field === 'string' && !propertyKeys.has(field)) {
+        const errorMessage: string = `The supportedQueryProperties field '${field}' is not defined in properties.`;
+        this.transformLog.push({
+          type: LogType.ERROR,
+          message: errorMessage,
+          pos: this.currentNode.getStart(),
+          code: '10110003',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the required parameters as specified in the error message']
+        });
+        return;
+      }
+    }
+    const supportedQueryPropertiesFieldSet = new Set(
+      supportedValue.filter((field): field is string => typeof field === 'string')
+    );
+    if (supportedQueryPropertiesFieldSet.size === 0) {
+        return;
+    }
+    // 验证 supportedValue 中的字段是否都在 修饰的类中声明
+    for (const key of Object.keys(properties)) {
+      if (supportedQueryPropertiesFieldSet.has(key) && !schemaData[key]) {
+        const errorMessage: string = `The field '${key}' in supportedQueryProperties is not a property of the class.`;
+        this.transformLog.push({
+          type: LogType.ERROR,
+          message: errorMessage,
+          pos: this.currentNode.getStart(),
+          code: '10110003',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the required parameters as specified in the error message']
+        });
+        return;
+      }
+    }
+  }
+
   private schemaAdditionalPropertiesValidation(schemaData, schemaProps): void {
     for (const key of Object.keys(schemaData)) {
       if (!schemaProps[key]) {
@@ -1712,6 +1777,7 @@ class ParseIntent {
     this.currentFilePath = '';
     this.heritageClassSet = new Set<string>();
     this.heritageClassSet.add('IntentEntity_sdk');
+    this.heritageClassSet.add('insightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.isInitCache = false;
     this.isUpdateCompile = true;

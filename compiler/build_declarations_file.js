@@ -32,7 +32,7 @@ const addTSAttributeSet = ['AlphabetIndexer', 'Animator', 'Badge', 'Blank', 'But
   'Toggle', 'Video', 'Web', 'XComponent', 'RichText', 'RemoteWindow', 'WaterFlow', 'FlowItem', 'ImageSpan',
   'RootScene', 'Screen', 'WindowScene', 'EffectComponent', 'RichEditor', 'ArcAlphabetIndexer', 'ArcList',
   'ArcListItem', 'ArcSwiper', 'ArcScrollBar', 'UnionEffectContainer', 'UIPickerComponent',
-  'DistortionComponent'];
+  'DistortionComponent', 'DepthComponent'];
 
 generateTargetFile(process.argv[2], process.argv[3]);
 function generateTargetFile(filePath, output) {
