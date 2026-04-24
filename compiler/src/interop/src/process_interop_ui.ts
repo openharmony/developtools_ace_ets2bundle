@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 import ts from 'typescript';
 
+import { EXTNAME_D_ETS } from './pre_define';
+
 import {
   whiteList,
   decoratorsWhiteList,
@@ -22,11 +24,15 @@ import {
   stateManagementWhiteList,
 } from './import_whiteList';
 
+const fs = require('fs');
+const path = require('path');
+
 const OHOS_ARKUI_GLOBAL_ANNOTATION: string = 'dynamic/@ohos.arkui.GlobalAnnotation';
 const OHOS_ARKUI_STATEMANAGEMENT: string = '@ohos.arkui.stateManagement';
 const OHOS_ARKUI_COMPONENT: string = '@ohos.arkui.component';
 const ARKUI_EXTEND: string = 'Extend';
 const ARKUI_STYLES: string = 'Styles';
+const ARKUI_BUILDER: string = 'Builder';
 
 export function isStructDeclaration(node: ts.Node): boolean {
   return ts.isStructDeclaration(node);
@@ -35,6 +41,9 @@ export function isStructDeclaration(node: ts.Node): boolean {
 class HandleUIImports {
   private context: ts.TransformationContext;
   private typeChecker: ts.TypeChecker;
+  private readonly output: string | undefined;
+
+  private printer: ts.Printer = ts.createPrinter();
 
   private importedInterfaces: Set<string> = new Set<string>();
   private interfacesNeedToImport: Set<string> = new Set<string>();
@@ -42,9 +51,10 @@ class HandleUIImports {
 
   private readonly trueSymbolAtLocationCache = new Map<ts.Node, ts.Symbol | null>();
 
-  constructor(program: ts.Program, context: ts.TransformationContext) {
+  constructor(program: ts.Program, context: ts.TransformationContext, output?: string | undefined) {
     this.context = context;
     this.typeChecker = program.getTypeChecker();
+    this.output = output;
   }
 
   public createCustomTransformer(sourceFile: ts.SourceFile) {
@@ -108,10 +118,19 @@ class HandleUIImports {
   }
 
   private handleImportBuilder(node: ts.Node): void {
-    ts.getAllDecorators(node)?.forEach(element => {
-      if (element?.getText() === '@Builder') {
-        this.interfacesNeedToImport.add('Builder');
+    const decorators: readonly ts.Decorator[] | undefined = ts.getAllDecorators(node);
+    if (!decorators?.length) {
+      return;
+    }
+
+    decorators.forEach((decorator: ts.Decorator) => {
+      const expression = decorator.expression;
+      if (!ts.isIdentifier(expression)) {
         return;
+      }
+      const decoratorName: string = expression.getText();
+      if (decoratorName === ARKUI_BUILDER) {
+        this.interfacesNeedToImport.add(ARKUI_BUILDER);
       }
     });
   }
@@ -195,6 +214,12 @@ class HandleUIImports {
         node.hasNoDefaultLib,
         node.libReferenceDirectives
       );
+
+      if (this.output) {
+        const resultText = this.printer.printFile(updatedSourceFile);
+        fs.writeFileSync(this.output, resultText);
+      }
+
       return updatedSourceFile;
     }
     return node;
@@ -289,6 +314,11 @@ class HandleUIImports {
   }
 }
 
+/*
+ * process interop ui
+ *
+ * @param program - the ts.Program instance of the current compilation
+ */
 export function createCustomTransformer(
   program: ts.Program,
 ): (ctx: ts.TransformationContext) => (sourceFile: ts.SourceFile) => ts.SourceFile {
@@ -298,4 +328,61 @@ export function createCustomTransformer(
       return handleUIImports.createCustomTransformer(sourceFile);
     }
   }
+}
+
+function getDeclgenFiles(dir: string, filePaths: string[] = []) {
+  const files = fs.readdirSync(dir);
+
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory()) {
+      getDeclgenFiles(filePath, filePaths);
+    } else if (stat.isFile() && file.endsWith(EXTNAME_D_ETS)) {
+      filePaths.push(filePath);
+    }
+  });
+  return filePaths;
+}
+
+function defaultCompilerOptions(): ts.CompilerOptions {
+  return {
+    target: ts.ScriptTarget.Latest,
+    module: ts.ModuleKind.CommonJS,
+    allowJs: true,
+    checkJs: true,
+    declaration: true,
+    emitDeclarationOnly: true,
+    noEmit: false
+  };
+}
+
+function getSourceFiles(program: ts.Program, filePaths: string[]): ts.SourceFile[] {
+  const sourceFiles: ts.SourceFile[] = [];
+
+  filePaths.forEach(filePath => {
+    sourceFiles.push(program.getSourceFile(filePath));
+  });
+  return sourceFiles;
+}
+
+/*
+ * process interop ui for test
+ *
+ * @param path - declgenV2OutPath
+ * @param outPath - the path to output the transformed declaration files
+ */
+export function processInteropUI(path: string, outPath = ''): void {
+  const filePaths = getDeclgenFiles(path);
+  const program = ts.createProgram(filePaths, defaultCompilerOptions());
+  const sourceFiles = getSourceFiles(program, filePaths);
+
+  const createTransformer = (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
+    return (sourceFile: ts.SourceFile) => {
+      const handleUIImports = new HandleUIImports(program, ctx, outPath);
+      return handleUIImports.createCustomTransformer(sourceFile);
+    }
+  }
+  ts.transform(sourceFiles, [createTransformer]);
 }

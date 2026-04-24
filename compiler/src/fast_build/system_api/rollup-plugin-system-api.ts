@@ -27,7 +27,8 @@ import {
   projectConfig,
   sdkConfigs,
   sdkConfigPrefix,
-  extendSdkConfigs
+  extendSdkConfigs,
+  crossplatformExternalModule
 } from '../../../main';
 
 import {
@@ -38,6 +39,7 @@ import {
 import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
+import { MergeCrossplatformModuleType } from './api_check_define';
 
 const filterCrossplatform: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -106,6 +108,9 @@ export function apiTransform() {
           widgetPath = path.resolve(projectConfig.aceModuleBuild, 'widget');
         }
         this.share.allComponents = getAllComponentsOrModules(allFiles, 'component_collection.json');
+        if (projectConfig.isCrossplatform) {
+          mergeModuleOrComponentCollection(MergeCrossplatformModuleType.COMPONENT);
+        }
         writeCollectionFile(projectConfig.cachePath, appComponentCollection,
           this.share.allComponents, 'component_collection.json', this.share.allFiles, widgetPath);
       }
@@ -118,6 +123,9 @@ export function apiTransform() {
       if (process.env.watchMode !== 'true' && !projectConfig.xtsMode && needModuleCollection) {
         replaceKitModules();
         const allModules: Map<string, Array<string>> = getAllComponentsOrModules(allFiles, 'module_collection.json');
+        if (projectConfig.isCrossplatform) {
+          mergeModuleOrComponentCollection(MergeCrossplatformModuleType.MODULE);
+        }
         writeCollectionFile(projectConfig.cachePath, appImportModuleCollection, allModules, 'module_collection.json');
       }
     },
@@ -278,4 +286,57 @@ function replaceKitModules(): void {
       }
     });
   });
+}
+
+/**
+ * A generic path matching function that determines
+ * whether two paths are identical after ignoring their format
+ * @param targetPath 
+ * @param currentPath 
+ * @returns 
+ */
+function isSamePath(targetPath: string, currentPath: string): boolean {
+  // Convert to a standardized format uniformly
+  const normalize = (p: string) => path.normalize(p).replace(/\\/g, '/');
+  return normalize(targetPath) === normalize(currentPath);
+}
+
+function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): void {
+  // Iterate through each item in the crossplatformExternalModule
+  for (const [crossPath, crossData] of crossplatformExternalModule.entries()) {
+    // merge component
+    if (type === MergeCrossplatformModuleType.COMPONENT) {
+      collectExternalModuleCollection(crossPath, crossData, appComponentCollection, type);
+    }
+    // merge module
+    if (type === MergeCrossplatformModuleType.MODULE) {
+      collectExternalModuleCollection(crossPath, crossData, appImportModuleCollection, type);
+    }
+  }
+  function collectExternalModuleCollection(mapKey: string, mapData: any, targetMap: Map<string, Set<string>>,
+    type: MergeCrossplatformModuleType): void {
+    // Check if there are entries with the same path
+    let matchedKey: string | undefined;
+    for (const [appPath] of targetMap.entries()) {
+      if (isSamePath(appPath, mapKey)) {
+        matchedKey = appPath;
+        break;
+      }
+    }
+
+    // If a matching path is found, merge module and component
+    if (matchedKey) {
+      const targetSet = targetMap.get(matchedKey);
+      if (targetSet) {
+        for (const moduleItem of mapData[type]) {
+          targetSet.add(moduleItem);
+        }
+      }
+    } else {
+      // If no match is found, add a key value pair in targetMap
+      // Use the original format of crossPath as the key, or you can standardize the format
+      const newSet = new Set<string>(mapData[type]);
+      targetMap.set(mapKey, newSet);
+    }
+  }
 }

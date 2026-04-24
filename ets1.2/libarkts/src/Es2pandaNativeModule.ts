@@ -190,9 +190,6 @@ export class Es2pandaNativeModule {
     _SetUpSoPath(soPath: string): void {
         throw new Error('Not implemented');
     }
-    _SetLspUsage(isLspUsage: KBoolean): void {
-        throw new Error('Not implemented');
-    }
     _ProgramCanSkipPhases(context: KNativePointer, program: KNativePointer): KBoolean {
         throw new Error('Not implemented');
     }

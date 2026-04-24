@@ -159,7 +159,8 @@ import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 import { hasArkDecorator } from './fast_build/ark_compiler/utils';
 import {
   checkTypeReference,
-  validateModuleSpecifier
+  validateModuleSpecifier,
+  isApiAvailableStatement
 } from './fast_build/system_api/api_check_utils';
 import constantDefine from './constant_define';
 import processStructComponentV2 from './process_struct_componentV2';
@@ -181,7 +182,7 @@ import {
   stopEvent
 } from './performance';
 import parseIntent from './userIntents_parser/parseUserIntents';
-import { isApiAvailableStatement, isPointVersion, processAvailableStatement } from './process_available_statement';
+import { isPointVersion, processAvailableStatement } from './process_available_statement';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -199,6 +200,7 @@ export function processUISyntax(program: ts.Program, ut = false,
     let hasUseResource: boolean = false;
     let hasStruct: boolean = false;
     let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
+    let ReusePool: { hasReusePool: boolean } = { hasReusePool: false };
     let needProcessAvailable: boolean = false;
     return (node: ts.SourceFile) => {
       eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
@@ -319,8 +321,8 @@ export function processUISyntax(program: ts.Program, ut = false,
         componentCollection.entryComponent === componentCollection.currentClassName && entryKeyNode(node);
         const eventProcessComponentClass = createAndStartEvent(eventProcessUISyntax, 'processComponentClass');
         node = processStructComponentV2.getOrCreateStructInfo(componentCollection.currentClassName).isComponentV2 ?
-          processStructComponentV2.processStructComponentV2(node, transformLog.errors, context, StateManagementV2) :
-          processComponentClass(node, context, transformLog.errors, program);
+          processStructComponentV2.processStructComponentV2(node, transformLog.errors, context, StateManagementV2, ReusePool) :
+          processComponentClass(node, context, transformLog.errors, program, ReusePool);
         stopEvent(eventProcessComponentClass);
         componentCollection.currentClassName = null;
         INNER_STYLE_FUNCTION.forEach((block, styleName) => {

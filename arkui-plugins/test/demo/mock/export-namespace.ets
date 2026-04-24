@@ -14,7 +14,7 @@
  */
 
 namespace n2 {
-    export const ns_num = 1;
+    export const ns_num: int = 1;
 }
 
 export { n2 as ns };

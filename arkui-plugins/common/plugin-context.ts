@@ -133,6 +133,7 @@ export interface ProjectConfig {
     externalApiPath: string;
     compatibleSdkVersion?: number;
     debugLine?: boolean;
+    aceProfilePath?: string;// 获取意图7.0 缓存文件存放路径
 }
 
 export type PluginHandlerFunction = () => void;

@@ -19,5 +19,5 @@ import { Component } from "@ohos.arkui.component"
 export struct SimpleStruct {
     message: string = "str";
 
-    build() {}
+    build(): void {}
 }

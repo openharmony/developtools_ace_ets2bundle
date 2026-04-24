@@ -16,7 +16,7 @@
 import ts from 'typescript';
 import { arkTSEvolutionModuleMap, arkTSHybridModuleMap } from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import { componentCollection, linkCollection, builderParamObjectCollection } from './validate_ui_syntax';
-import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER, BUILDER_ATTR_BIND } from './pre_define';
+import { CREATESTATICCOMPONENT, COMPONENT_POP_FUNCTION, GLOBAL_THIS, PUSH, VIEWSTACKPROCESSOR, UPDATESTATICCOMPONENT, ISINITIALRENDER, BUILDER_ATTR_BIND, COMPONENT_CONSTRUCTOR_UNDEFINED } from './pre_define';
 import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map';
 import { toUnixPath, LogType, LogInfo } from './utils';
 import { ChildAndParentComponentInfo } from './process_custom_component';
@@ -275,7 +275,10 @@ function makeStaticFactory(name: string, componentNode: ts.CallExpression): ts.A
           ts.factory.createNewExpression(
             ts.factory.createIdentifier(name),
             undefined,
-            []
+            [
+              ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED),
+              ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_UNDEFINED)
+            ]
           )
         )
       ],

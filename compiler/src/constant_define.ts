@@ -30,7 +30,7 @@ const COMPUTED_DECORATOR: string = '@Computed';
 const EVENT_DECORATOR: string = '@Event';
 
 const COMPONENT_LIFECYCLE_MEMBER_DECORATOR: string[] = [
-  '@ComponentInit', '@ComponentAppear', '@ComponentBuilt', '@ComponentAttach', '@ComponentDetach', '@ComponentReuse', '@ComponentRecycle', '@ComponentDisappear'
+  '@ComponentInit', '@ComponentAppear', '@ComponentBuilt', '@ComponentAttach', '@ComponentDetach', '@ComponentReuse', '@ComponentRecycle', '@ComponentDisappear', '@ComponentActive', '@ComponentInactive'
 ];
 
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [

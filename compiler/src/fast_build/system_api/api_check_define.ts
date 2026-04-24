@@ -79,6 +79,7 @@ export enum ComparisonResult {
 }
 
 export const MSF_INTEGER_VERSION: number = 26;
+export const MSF_SANDF_VERSION: number = 99;
 
 export interface DistributionOSApiAvailableVersionResult {
   valid: boolean,
@@ -90,6 +91,11 @@ export interface ApiAvailableResult {
   valid: boolean,
   message: string,
   type: ts.DiagnosticCategory.Error
+}
+
+export interface MSFVersionCheckResult {
+  valid: boolean;
+  needDistCheck: boolean;
 }
 
 export const SDK_SUBSYSTEM_CODE = '117';
@@ -337,3 +343,11 @@ export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
   [SINCE_LEVEL_WARNING, ts.DiagnosticCategory.Warning],
   [SINCE_LEVEL_ERROR, ts.DiagnosticCategory.Error]
 ]);
+
+/**
+ * Type of merge crossplatform config
+ */
+export enum MergeCrossplatformModuleType {
+  MODULE = 'module',
+  COMPONENT = 'component'
+}

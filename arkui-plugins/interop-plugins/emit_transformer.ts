@@ -121,19 +121,25 @@ export class EmitTransformer extends AbstractVisitor {
         return node;
     }
 
-    processPropRef(node: arkts.ClassProperty): arkts.ClassProperty {
-        const updatedAnnos: arkts.AnnotationUsage[] = [];
-        node.annotations.forEach((anno) => {
-            if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.PROP_REF) {
-                updatedAnnos.push(
-                    arkts.AnnotationUsage.updateAnnotationUsage(
-                        anno,
-                        arkts.factory.updateIdentifier(anno.expr, DecoratorNames.PROP)
-                    )
-                );
-            } else {
-                updatedAnnos.push(anno);
+    private refMap = new Map<string, string>([
+        [DecoratorNames.PROP_REF, DecoratorNames.PROP],
+        [DecoratorNames.STORAGE_PROP_REF, DecoratorNames.STORAGE_PROP],
+        [DecoratorNames.LOCAL_STORAGE_PROP_REF, DecoratorNames.LOCAL_STORAGE_PROP],
+    ]);
+
+    private processRefDecorators(node: arkts.ClassProperty): arkts.ClassProperty {
+        const updatedAnnos = node.annotations.map((anno) => {
+            if (anno.expr && arkts.isIdentifier(anno.expr)) {
+                const target = this.refMap.get(anno.expr.name);
+                if (target) {
+                    return arkts.AnnotationUsage.update1AnnotationUsage(
+                    anno,
+                    arkts.factory.updateIdentifier(anno.expr, target),
+                    anno.properties
+                    );
+                }
             }
+            return anno;
         });
         node.setAnnotations(updatedAnnos);
         return node;
@@ -144,9 +150,13 @@ export class EmitTransformer extends AbstractVisitor {
             return this.processProvide(node);
         } else if (hasDecorator(node, DecoratorNames.CONSUME) || hasDecorator(node, DecoratorNames.CONSUMER)) {
             return this.processConsume(node);
-        } else if (hasDecorator(node, DecoratorNames.PROP_REF)) {
-            return this.processPropRef(node);
-        }
+        } else if (
+            hasDecorator(node, DecoratorNames.PROP_REF) ||
+            hasDecorator(node, DecoratorNames.STORAGE_PROP_REF) ||
+            hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP_REF)
+            ) {
+                return this.processRefDecorators(node);
+            }
         return node;
     }
 

@@ -21,19 +21,19 @@ struct Index {
   @Monitor(["message", "name"])
   onStrChange1(monitor: IMonitor) {
     monitor.dirty.forEach((path: string) => {
-      console.info(`${path} changed from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
+      console.info(`${path} changed from ${monitor.value<string>(path)?.before} to ${monitor.value<string>(path)?.now}`);
     });
   }
   @Monitor(["message", "name"])
   onStrChange2(monitor: IMonitor) {
     monitor.dirty.forEach((path: string) => {
-      console.info(`${path} changed from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
+      console.info(`${path} changed from ${monitor.value<string>(path)?.before} to ${monitor.value<string>(path)?.now}`);
     });
   }
   @Monitor(["name"])
   onStrChange3(monitor: IMonitor) {
     monitor.dirty.forEach((path: string) => {
-      console.info(`${path} changed from ${monitor.value(path)?.before} to ${monitor.value(path)?.now}`);
+      console.info(`${path} changed from ${monitor.value<string>(path)?.before} to ${monitor.value<string>(path)?.now}`);
     });
   }
   @Local message: string = "Hello World";
