@@ -9,6 +9,6 @@
     "fadingEdge", "clipContent", "onReachStart", "onReachEnd", "backToTop", "onWillStopDragging",
     "maxZoomScale", "minZoomScale", "zoomScale", "enableBouncesZoom", "onDidZoom", "onZoomStart",
     "onZoomStop", "onWillStartDragging", "onDidStopDragging", "onWillStartFling", "onDidStopFling",
-    "contentStartOffset", "contentEndOffset", "autoAdjustScrollBarMargin"
+    "contentStartOffset", "contentEndOffset", "autoAdjustScrollBarMargin", "enableScrollWithMouse"
   ]
 }
