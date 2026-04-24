@@ -176,6 +176,5 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'Extend',
   'AnimatableExtend',
   'UnionEffectContainer',
-  'DistortionComponent',
-  'DepthComponent'
+  'DistortionComponent'
 ]);
