@@ -139,6 +139,7 @@ export interface LanguageServiceCache {
   preTsImportSendable?: boolean;
   preSkipOhModulesLint?: boolean;
   preEnableStrictCheckOHModule?: boolean;
+  preDisableStrictCheckPaths?: string[];
   preDisableSendableCheckRules?: string[];
   preMixCompile?: boolean;
   autoLazyImport?: boolean;
@@ -252,6 +253,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
     'enableStrictCheckOHModule': enableStrictCheckOHModule,
+    'disableStrictCheckPaths': disableStrictCheckPaths,
     'disableSendableCheckRules': disableSendableCheckRules,
     'mixCompile': mixCompile,
     'isCompileJsHar': isCompileJsHar(),
@@ -530,6 +532,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const tsImportSendableDiff: boolean = checkValueDiff(cache?.preTsImportSendable, tsImportSendable);
   const skipOhModulesLintDiff: boolean = checkValueDiff(cache?.preSkipOhModulesLint, skipOhModulesLint);
   const enableStrictCheckOHModuleDiff: boolean = checkValueDiff(cache?.preEnableStrictCheckOHModule, enableStrictCheckOHModule);
+  const disableStrictCheckPathsDiff: boolean = !areEqualArrays(cache?.preDisableStrictCheckPaths, disableStrictCheckPaths);
   const disableSendableCheckRulesDiff: boolean = checkRulesDiff(cache?.preDisableSendableCheckRules, disableSendableCheckRules);
   const mixCompileDiff: boolean = checkValueDiff(cache?.preMixCompile, mixCompile);
   const autoLazyImportDiff: boolean = checkValueDiff(cache?.autoLazyImport, currentAutoLazyImport);
@@ -539,7 +542,8 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const useDeclarationFileSignatureDiff: boolean = checkValueDiff(lastUseDeclarationFileSignature, currentUseDeclarationFileSignature);
   const tsImportSoCheckDiff: boolean = checkValueDiff(lastTsImportSoCheck, currentTsImportSoCheck);
   const onlyDeleteBuildInfoCache: boolean | undefined = tsImportSendableDiff || maxFlowDepthDiffers || skipOhModulesLintDiff ||
-    enableStrictCheckOHModuleDiff || disableSendableCheckRulesDiff || mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff ||
+    enableStrictCheckOHModuleDiff || disableStrictCheckPathsDiff || disableSendableCheckRulesDiff ||
+    mixCompileDiff || typesDiff || autoLazyImportDiff || autoLazyFilterDiff ||
     useDeclarationFileSignatureDiff || tsImportSoCheckDiff;
   const shouldInvalidCache: boolean | undefined = targetESVersionDiffers || useTsHarDiff;
   const shouldRebuild: boolean | undefined = shouldRebuildForDepDiffers || shouldInvalidCache || onlyDeleteBuildInfoCache;
@@ -556,7 +560,10 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
       'targetESVersionDiffers: ' + targetESVersionDiffers + ';' + 'useTsHarDiff: ' + useTsHarDiff + ';' + '\n' +
       'onlyDeleteBuildInfoCache: ' + onlyDeleteBuildInfoCache + ';' + '\n' +
       'tsImportSendableDiff: ' + tsImportSendableDiff + ';' + 'maxFlowDepthDiffers: ' + maxFlowDepthDiffers + ';' +
-      'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' + 'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
+      'skipOhModulesLintDiff: ' + skipOhModulesLintDiff + ';' +
+      'enableStrictCheckOHModuleDiff: ' + enableStrictCheckOHModuleDiff + ';' +
+      'disableStrictCheckPathsDiff: ' + disableStrictCheckPathsDiff + ';' +
+      'mixCompileDiff: ' + mixCompileDiff + ';' + 'typesDiff: ' + typesDiff + ';'
     );
     rebuildProgram(shouldInvalidCache, onlyDeleteBuildInfoCache);
     service = ts.createLanguageService(servicesHost, shareDocumentRegistryCache ?
@@ -580,6 +587,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
     preTsImportSendable: tsImportSendable,
     preSkipOhModulesLint: skipOhModulesLint,
     preEnableStrictCheckOHModule: enableStrictCheckOHModule,
+    preDisableStrictCheckPaths: disableStrictCheckPaths ? [...disableStrictCheckPaths] : undefined,
     preDisableSendableCheckRules: disableSendableCheckRules,
     preMixCompile: mixCompile,
     useDeclarationFileSignature: currentUseDeclarationFileSignature,
@@ -646,6 +654,23 @@ export function areEqualArrays(lastArray: string[] | undefined, currentArray: st
   return true;
 }
 
+function normalizeDisableStrictCheckPaths(disableStrictCheckPathsToHandle: unknown): string[] | undefined {
+  if (!Array.isArray(disableStrictCheckPathsToHandle)) {
+    return undefined;
+  }
+
+  const normalizedDisableStrictCheckPaths: string[] = [];
+  for (const disableStrictCheckPath of disableStrictCheckPathsToHandle) {
+    if (typeof disableStrictCheckPath !== 'string' || !disableStrictCheckPath) {
+      continue;
+    }
+    if (!normalizedDisableStrictCheckPaths.includes(disableStrictCheckPath)) {
+      normalizedDisableStrictCheckPaths.push(disableStrictCheckPath);
+    }
+  }
+  return normalizedDisableStrictCheckPaths;
+}
+
 /**
  * compare cache value and current value, check if they are different
  * @param lastRules cache rules
@@ -676,8 +701,8 @@ function rebuildProgram(shouldInvalidCache: boolean | undefined, onlyDeleteBuild
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
     targetESVersionChanged = true;
   } else if (onlyDeleteBuildInfoCache) {
-    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule or disableSendableCheckRules
-    //  or mixCompile is changed, delete cahce files
+    // When tsImportSendable or types or maxFlowDepth or skipOhModuleslint or enableStrictCheckOHModule
+    //  or disableStrictCheckPaths or disableSendableCheckRules or mixCompile is changed, delete cahce files
     deleteBuildInfoCache(compilerOptions.tsBuildInfoFile);
   }
 }
@@ -738,6 +763,7 @@ export let languageService: ts.LanguageService = null;
 let tsImportSendable: boolean = false;
 let skipOhModulesLint: boolean = false;
 let enableStrictCheckOHModule: boolean = false;
+let disableStrictCheckPaths: string[] | undefined;
 let disableSendableCheckRules: string[] = [];
 let mixCompile: boolean = false;
 export let maxMemoryInServiceChecker: number = 0;
@@ -748,6 +774,7 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
   tsImportSendable = rollupShareObject?.projectConfig.tsImportSendable;
   skipOhModulesLint = rollupShareObject?.projectConfig.skipOhModulesLint;
   enableStrictCheckOHModule = rollupShareObject?.projectConfig.enableStrictCheckOHModule;
+  disableStrictCheckPaths = normalizeDisableStrictCheckPaths(rollupShareObject?.projectConfig?.strictMode?.disableStrictCheckPaths);
   disableSendableCheckRules = rollupShareObject?.projectConfig.disableSendableCheckRules || [];
   mixCompile = rollupShareObject?.projectConfig.mixCompile;
   if (projectConfig.xtsMode || process.env.watchMode === 'true') {
