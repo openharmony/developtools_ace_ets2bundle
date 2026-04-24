@@ -98,6 +98,21 @@ function generateUnwrapCallExpression(expression: arkts.Expression): arkts.Expre
 }
 
 function newComponent(context: InteropContext, className: string, node: arkts.CallExpression): arkts.Statement {
+    const newNode = arkts.factory.createArrowFunction(
+        arkts.factory.createScriptFunction(
+            arkts.factory.createBlock([]),
+            arkts.factory.createFunctionSignature(
+                undefined,
+                [],
+                undefined,
+                false
+            ),
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+        )
+    );
+    newNode.setNoDebugLineFlag();
+
     let componentNode = arkts.factory.createETSNewClassInstanceExpression(
         arkts.factory.createIdentifier(className),
         [
@@ -106,19 +121,7 @@ function newComponent(context: InteropContext, className: string, node: arkts.Ca
             context.storage ?? arkts.factory.createUndefinedLiteral(),
             generateUnwrapCallExpression(arkts.factory.createIdentifier(InteropInternalNames.ELMTID)),
             arkts.factory.createTSAsExpression(
-                arkts.factory.createArrowFunction(
-                    arkts.factory.createScriptFunction(
-                        arkts.factory.createBlock([]),
-                        arkts.factory.createFunctionSignature(
-                            undefined,
-                            [],
-                            undefined,
-                            false
-                        ),
-                        arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
-                    )
-                ),
+                newNode,
                 arkts.factory.createTypeReference(
                     arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Object'))
                 ),
@@ -199,7 +202,7 @@ function createInitializer(
     isV2: boolean
 ): arkts.ArrowFunctionExpression {
     const block = createWrapperBlock(context, varMap, updateProp, node, isV2);
-    return arkts.factory.createArrowFunction(
+    const newNode = arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
             arkts.factory.createFunctionSignature(
@@ -223,6 +226,8 @@ function createInitializer(
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
     );
+    newNode.setNoDebugLineFlag();
+    return newNode;
 }
 
 function createUpdateProp(updateProp: arkts.Property[]): arkts.Statement[] {
@@ -264,7 +269,7 @@ function updateStateVars(updateProp: arkts.Property[]): arkts.Statement[] {
  */
 function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpression {
     const updateState = updateProp.length !== 0 ? updateStateVars(updateProp) : [];
-    return arkts.factory.createArrowFunction(
+    const newNode = arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             arkts.factory.createBlock(
                 [...updateState]
@@ -291,6 +296,8 @@ function createUpdater(updateProp: arkts.Property[]): arkts.ArrowFunctionExpress
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
     );
+    newNode.setNoDebugLineFlag();
+    return newNode;
 }
 
 function updateArguments(context: InteropContext, name: string): arkts.ObjectExpression {

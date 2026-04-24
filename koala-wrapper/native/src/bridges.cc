@@ -1158,3 +1158,11 @@ void impl_PropertySetValue(KNativePointer context, KNativePointer receiver, KNat
     return ;
 }
 KOALA_INTEROP_V3(PropertySetValue, KNativePointer, KNativePointer, KNativePointer);
+
+void impl_AstNodeSetNoDebugLineFlag(KNativePointer context, KNativePointer node)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    GetImpl()->AstNodeSetNoDebugLineFlag(_context, _node);
+}
+KOALA_INTEROP_V2(AstNodeSetNoDebugLineFlag, KNativePointer, KNativePointer);

@@ -35,6 +35,10 @@ export abstract class AstNode extends ArktsObject {
         this.updateChildren();
     }
 
+    public setNoDebugLineFlag(): void {
+        global.es2panda._AstNodeSetNoDebugLineFlag(global.context, this.peer);
+    }
+
     public get originalPeer(): KNativePointer {
         const result = global.generatedEs2panda._AstNodeOriginalNodeConst(global.context, this.peer);
         if (result === nullptr) {

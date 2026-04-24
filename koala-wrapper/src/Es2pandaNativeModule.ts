@@ -1174,6 +1174,10 @@ export class Es2pandaNativeModule {
     _PropertySetValue(context: KNativePointer, receiver: KNativePointer, value: KNativePointer): void {
         throw new Error("PropertySetValue was not overloaded by native module initialization");
     }
+
+    _AstNodeSetNoDebugLineFlag(context: KNativePointer, node: KNativePointer): void {
+        throw new Error('AstNodeSetNoDebugLineFlag was not overloaded by native module initialization');
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
