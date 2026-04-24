@@ -972,9 +972,11 @@
             "name": "DepthComponent",
             "type": "DepthComponentAttribute",
             "instance": "DepthComponentInstance"
-          }
-         ]
-        },
+          },	 
+        ]	 
+      },	 
+      "styles": { 
+       ]
       },
       "styles": {
         "decorator": "Styles",
