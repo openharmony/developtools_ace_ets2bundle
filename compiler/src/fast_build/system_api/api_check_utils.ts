@@ -481,13 +481,13 @@ function extractVersionRange(commentText): {start: string, end: string} | undefi
 }
 
 /**
-* 检查给定的版本范围是否与项目的 SDK 版本范围存在交集。
-* 
-* @param {Object} versionRange - 要检查的版本范围对象。
-* @param {string} versionRange.start - 版本范围的起始版本号。
-* @param {string} versionRange.end - 版本范围的结束版本号。
-* @returns {boolean} - 如果版本范围与项目的 SDK 版本范围存在交集，则返回 true；否则返回 false;
-*/
+ * Checks if the given version range intersects with the SDK version range of the project.
+ * 
+ * @param {Object} versionRange - The version range object to check.
+ * @param {string} versionRange.start - The starting version number of the version range.
+ * @param {string} versionRange.end - The ending version number of the version range.
+ * @returns {boolean} - Returns true if the version range intersects with the SDK version range of the project; otherwise, returns false.
+ */
 function checkVersionRangeIntersection(versionRange): boolean {
   let isflag = false;
   const startVersion = versionRange.start;
