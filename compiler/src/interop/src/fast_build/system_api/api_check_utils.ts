@@ -380,7 +380,6 @@ let permissionsArray: string[] = [];
 
 function parseVersion(versionStr): number {
 
-  const runtimeOS = projectConfig.runtimeOS;
   // Regular expressions for different version formats
   const distributionOSVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME, 'getBuildVersionRegex'); // Matches x.y.z(w) format
   const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
