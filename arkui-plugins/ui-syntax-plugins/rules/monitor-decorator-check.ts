@@ -95,7 +95,9 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             monitorDecorateMethod:
                 `@Monitor can only decorate method.`,
             monitorTargetInvalid:
-                `The Monitor decorator needs to monitor the state variables that exist.`
+                `The Monitor decorator needs to monitor the state variables that exist.`,
+            monitorWildcardInvalid:
+                `In wildcard-based monitoring scenarios with '@Monitor', the .* pattern must be placed at the end of the string.`
         };
     }
 
@@ -112,11 +114,13 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const monitorDecorator = this.checkMonitorUsage(node);
         if (monitorDecorator && arkts.isClassDeclaration(node)) {
+            this.validateWildcardPaths(node);
             this.checkMonitorInClass(node, monitorDecorator);
             this.checkMonitorInObservedV2Trace(node);
         }
 
         if (monitorDecorator && arkts.isStructDeclaration(node)) {
+            this.validateWildcardPaths(node);
             this.checkMonitorInStruct(node, monitorDecorator);
             this.checkMonitorInComponentV2(node);
         }
@@ -369,11 +373,65 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         })
     }
 
+    private validateWildcardPaths(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+        for (const member of node.definition?.body ?? []) {
+            if (!arkts.isMethodDefinition(member)) {
+                continue;
+            }
+            const annotation = this.getLocalMonitorUsed(member);
+            if (!annotation) {
+                continue;
+            }
+            const paths = this.getValueInMonitorAnnotation(annotation);
+            if (!paths) {
+                continue;
+            }
+            for (const path of paths) {
+                if (!path.includes('*')) {
+                    continue;
+                }
+                if (this.isWildcardPathInvalid(path)) {
+                    this.report({
+                        node: annotation,
+                        message: this.messages.monitorWildcardInvalid,
+                    });
+                }
+            }
+        }
+    }
+
+    private isWildcardPathInvalid(path: string): boolean {
+        const segments = path.split('.');
+        const wildcardCount = segments.filter((s) => s === '*').length;
+        if (wildcardCount !== 1) {
+            return true;
+        }
+        const lastSegment = segments[segments.length - 1];
+        if (lastSegment !== '*') {
+            return true;
+        }
+        if (segments.length < 2) {
+            return true;
+        }
+        return false;
+    }
+
     private validateMonitorPath(
         monitorDecorator: arkts.AnnotationUsage,
         path: string,
         context: MonitorPathValidationContext
     ): void {
+        if (path.includes('*')) {
+            const segments = path.split('.').filter(s => s.trim());
+            const wildcardIndex = segments.indexOf('*');
+            const trimmedSegments = segments.slice(0, wildcardIndex);
+            if (trimmedSegments.length === 0) {
+                return;
+            }
+            this.validateMonitorPath(monitorDecorator, trimmedSegments.join('.'), context);
+            return;
+        }
+
         const segments = path.split('.').filter(s => s.trim());
         if (segments.length === 0) {
             return;

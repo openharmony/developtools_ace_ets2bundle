@@ -143,6 +143,8 @@ export const PresetDecorators = {
     COMPONENTRECYCLE: 'ComponentRecycle',
     COMPONENTREUSE: 'ComponentReuse',
     COMPONENTDISAPPEAR: 'ComponentDisappear',
+    COMPONENTACTIVE: 'ComponentActive',
+    COMPONENTINACTIVE: 'ComponentInactive',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
