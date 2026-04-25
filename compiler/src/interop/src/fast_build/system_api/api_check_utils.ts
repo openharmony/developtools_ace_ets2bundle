@@ -446,7 +446,7 @@ function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2)
  * @param {string} commentText - Comment string containing version range
  * @returns {{start: string, end: string}|undefined} Object with start/end versions if extracted, undefined otherwise
  */
-function extractVersionRange(commentText) {
+function extractVersionRange(commentText): {start: string, end: string} | undefined{
 
 
   if (typeof commentText !== 'string' || !commentText) {
