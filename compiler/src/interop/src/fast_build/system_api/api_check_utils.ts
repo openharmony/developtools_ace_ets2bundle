@@ -705,6 +705,8 @@ function checkCrossplatformValue(
     }
   }
   return mergingCommentHandle;
+}
+
 
 function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
   // get sourcefile of node
