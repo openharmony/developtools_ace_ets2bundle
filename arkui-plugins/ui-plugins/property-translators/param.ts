@@ -47,11 +47,14 @@ function resetOnReuseWithParamProperty(
     newName: string, 
     originalName: string
 ): arkts.ExpressionStatement {
-    const propertyValue = this.property;
+    const property = this.property;
     const propertyType = this.propertyType?.clone();
-    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+    const arg = factory.generateInitializeValue(property, propertyType, originalName);
     if (this.isMemoShouldUpdate) {
-        PropertyValueCache.getInstance().collect({ value: propertyValue });
+        const propertyValue = property.value;
+        if (!!propertyValue) {
+            PropertyValueCache.getInstance().collect({ value: propertyValue });
+        }
         if (!!propertyType) {
             PropertyValueCache.getInstance().collect({ value: propertyType });
         }

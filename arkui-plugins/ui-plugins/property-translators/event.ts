@@ -51,7 +51,7 @@ function resetOnReuseWithEventTranslator(
     newName: string, 
     originalName: string
 ): arkts.ExpressionStatement {
-    const propertyValue = this.property;
+    const property = this.property;
     const propertyType = this.propertyType?.clone();
     const resetStateVars = arkts.factory.createAssignmentExpression(
         arkts.factory.createMemberExpression(
@@ -62,10 +62,13 @@ function resetOnReuseWithEventTranslator(
             false
         ),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateInitializeValue(propertyValue, propertyType, originalName)
+        factory.generateInitializeValue(property, propertyType, originalName)
     );
     if (this.isMemoShouldUpdate) {
-        PropertyValueCache.getInstance().collect({ value: propertyValue });
+        const propertyValue = property.value;
+        if (!!propertyValue) {
+            PropertyValueCache.getInstance().collect({ value: propertyValue });
+        }
         if (!!propertyType) {
             PropertyValueCache.getInstance().collect({ value: propertyType });
         }

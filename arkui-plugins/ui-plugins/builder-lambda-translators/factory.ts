@@ -707,11 +707,18 @@ export class factory {
                     const fallback = arkts.factory.createUndefinedLiteral();
                     modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
                 }
+                const shouldUpdateMemo = !!arg && arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(arg);
                 const shouldInsertToArgs = index === params.length - 1 && hasLastTrailingLambda;
                 if (shouldInsertToArgs) {
+                    if (shouldUpdateMemo) {
+                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                    }
                     args.push(modifiedArg);
                 } else {
                     modifiedArg = factory.processModifiedArg(modifiedArg, index, moduleName, type?.name);
+                    if (shouldUpdateMemo && !!modifiedArg) {
+                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                    }
                     modifiedArgs.push(modifiedArg);
                 }
             },
@@ -863,6 +870,9 @@ export class factory {
         if (!initCallPtr || arkts.isIdentifier(lambdaBody)) {
             return lambdaBody;
         }
+        console.log(`[DEBUG] addOptionsArgsToLambdaBodyInStyleArg: lambdaBody: ${lambdaBody.dumpSrc()}, memo cache: ${
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(lambdaBody)
+        }`);
         const styleInternalsVisitor = new StyleInternalsVisitor();
         const newLambdaBody = styleInternalsVisitor
             .registerInitCall(initCallPtr)
