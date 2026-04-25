@@ -77,53 +77,35 @@ final class LinkType extends BaseEnum<int> {
 
   private static <cctor>() {}
 
-  private constructor(ordinal: int, value: int) {
-    super(value);
+  private constructor(ordinal: int, value: int, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
 
-  public static readonly TYPE1: LinkType = new LinkType(0, 0);
+  public static readonly TYPE1: LinkType = new LinkType(0, 0, "TYPE1");
 
-  public static readonly TYPE2: LinkType = new LinkType(1, 1);
+  public static readonly TYPE2: LinkType = new LinkType(1, 1, "TYPE2");
 
-  public static readonly TYPE3: LinkType = new LinkType(2, 3);
-
-  private static readonly #NamesArray: String[] = ["TYPE1", "TYPE2", "TYPE3"];
-
-  private static readonly #ValuesArray: int[] = [0, 1, 3];
-
-  private static readonly #StringValuesArray: String[] = ["0", "1", "3"];
+  public static readonly TYPE3: LinkType = new LinkType(2, 3, "TYPE3");
 
   private static readonly #ItemsArray: LinkType[] = [LinkType.TYPE1, LinkType.TYPE2, LinkType.TYPE3];
 
-  public getName(): String {
-    return LinkType.#NamesArray[this.#ordinal];
-  }
-
   public static getValueOf(name: String): LinkType {
-    for (let i = ((LinkType.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (LinkType.#NamesArray[i]))) {
+    for (let i = ((LinkType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (LinkType.#ItemsArray[i].getName()))) {
         return LinkType.#ItemsArray[i];
       }
     }
     throw new Error((("No enum constant LinkType.") + (name)));
   }
-  
+
   public static fromValue(value: int): LinkType {
-    for (let i = ((LinkType.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (LinkType.#ValuesArray[i]))) {
+    for (let i = ((LinkType.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((LinkType.#ItemsArray[i].valueOf()) == (value))) {
         return LinkType.#ItemsArray[i];
       }
     }
     throw new Error((("No enum LinkType with value ") + (value)));
-  }
-
-  public valueOf(): int {
-    return LinkType.#ValuesArray[this.#ordinal];
-  }
-
-  public toString(): String {
-    return LinkType.#StringValuesArray[this.#ordinal];
   }
 
   public static values(): LinkType[] {

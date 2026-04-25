@@ -189,10 +189,6 @@ function createWrapperBlock(
     const className: string = context.className;
     const path: string = context.path;
     const args: arkts.ObjectExpression | undefined = context.arguments;
-    const index: number = path.indexOf('/');
-    if (index === -1) {
-        throw new Error('Error path of Legacy Component.');
-    }
     const initial = [createGlobal(), createEmptyESValue(InteropInternalNames.PARAM)];
     const initialArgsStatement = args ? initialArgs(args, varMap, updateProp, node) : [];
     return arkts.factory.createBlock([

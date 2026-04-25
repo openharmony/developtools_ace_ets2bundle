@@ -364,6 +364,8 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithDecorator',
   'Decorators/vaildate_ui_syntax/validateNonFunctionTypeWithV1Decorator',
   // Category directory workflow validations
+  'Decorators/supplementary_validation/builder_reference_validation/binding_reference_validation',
+  'Decorators/supplementary_validation/builder_reference_validation/mutable_binding_reference_validation',
   'Decorators/supplementary_validation/builder_validation/builder_validation_workflow_validation',
   'Decorators/supplementary_validation/component_validation/component_validation_workflow_validation',
   'Decorators/supplementary_validation/state_validation/state_validation_workflow_validation',
@@ -377,6 +379,10 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/syntax_validation/syntax_validation_workflow_validation',
   'Decorators/supplementary_validation/v1v2_compatibility_validation/v1v2_compatibility_validation_workflow_validation',
   'Decorators/supplementary_validation/comprehensive_validation/comprehensive_validation_workflow_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/map_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/set_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/date_state_validation',
+  'Decorators/supplementary_validation/map_set_date_array_validation/array_state_validation',
   // Supplementary validation test cases for uncovered error codes
   'Decorators/supplementary_validation/observedInheritanceConflicts',
   'Decorators/supplementary_validation/structValidationErrors',

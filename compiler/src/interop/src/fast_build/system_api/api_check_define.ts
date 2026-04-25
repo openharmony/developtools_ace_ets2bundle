@@ -79,6 +79,7 @@ export enum ComparisonResult {
 }
 
 export const MSF_INTEGER_VERSION: number = 26;
+export const MSF_SANDF_VERSION: number = 99;
 
 export interface DistributionOSApiAvailableVersionResult {
   valid: boolean,
@@ -90,6 +91,11 @@ export interface ApiAvailableResult {
   valid: boolean,
   message: string,
   type: ts.DiagnosticCategory.Error
+}
+
+export interface MSFVersionCheckResult {
+  valid: boolean;
+  needDistCheck: boolean;
 }
 
 export const SDK_SUBSYSTEM_CODE = '117';
@@ -107,7 +113,7 @@ export const ANNOTATION_RULE_INFO: Map<string, string> = new Map([
   [SINCE_TAG_NAME, 'SuppressWarningsType.COMPATIBILITY'],
   [AVAILABLE_TAG_NAME, 'SuppressWarningsType.COMPATIBILITY'],
   [SYSCAP_TAG_CHECK_NAME, 'SuppressWarningsType.SYSCAP'],
- 	[PERMISSION_TAG_CHECK_NAME, 'SuppressWarningsType.PERMISSION']
+  [PERMISSION_TAG_CHECK_NAME, 'SuppressWarningsType.PERMISSION']
 ]);
 
 interface ChainedModel {
@@ -327,7 +333,7 @@ export enum DeviceDiffType {
 /**
  * @since Label error level configuration constant
  */
-export const SINCE_LEVEL_WARNING: string = 'warning';
+export const SINCE_LEVEL_WARNING: string = 'warn';
 export const SINCE_LEVEL_ERROR: string = 'error';
 
 /**
@@ -337,3 +343,11 @@ export const SINCE_LEVEL_CONFIG: Map<string, ts.DiagnosticCategory> = new Map([
   [SINCE_LEVEL_WARNING, ts.DiagnosticCategory.Warning],
   [SINCE_LEVEL_ERROR, ts.DiagnosticCategory.Error]
 ]);
+
+/**
+ * Type of merge crossplatform config
+ */
+export enum MergeCrossplatformModuleType {
+  MODULE = 'module',
+  COMPONENT = 'component'
+}

@@ -407,10 +407,10 @@ export class SdkComparisonValidator extends BaseValidator implements NodeValidat
       [SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO, [SDK_CONSTANTS.DEVICE_INFO_PACKAGE]]
     ]);
     this.sdkComparisonHelper = new SdkComparisonHelper(
-      this.compatibleSdkVersion,
-      this.minRequiredVersion,
-      this.typeChecker,
-      this.minAvailableVersion,
+      compatibleSdkVersion,
+      minRequiredVersion,
+      typeChecker,
+      minAvailableVersion,
       this.deviceInfoChecker,
       SDK_CONSTANTS.OTHER_SOURCE_DEVICE_INFO,
       SDK_CONSTANTS.OPEN_SOURCE_DEVICE_INFO,
@@ -1037,7 +1037,7 @@ export class CommentSuppressWarningsValidator extends BaseValidator implements N
       (
         (hasCompatibility(comment) && (this.warning_TypeName === 'since' || this.warning_TypeName === 'available')) ||
         (hasSyscap(comment) && this.warning_TypeName === 'syscap') ||
- 	      (hasPermission(comment) && this.warning_TypeName === 'permission')
+        (hasPermission(comment) && this.warning_TypeName === 'permission')
       )
     );
   }

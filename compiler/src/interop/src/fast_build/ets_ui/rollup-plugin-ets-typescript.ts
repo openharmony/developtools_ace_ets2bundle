@@ -562,7 +562,7 @@ async function transform(code: string, id: string) {
             expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventEmit),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
             collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
-              shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))
+              shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo), eventEmit)
           ]
         }
       );
@@ -584,7 +584,7 @@ async function transform(code: string, id: string) {
         expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventTransformNodes),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
-          shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo))], false);
+          shouldETSOrTSFileTransformToJSWithoutRemove(id, projectConfig, metaInfo), eventTransformNodes)], false);
       stopEvent(eventTransformNodes);
       MemoryMonitor.stopRecordStage(uiKitrecordInfo);
     }

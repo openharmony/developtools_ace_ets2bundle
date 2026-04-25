@@ -71,7 +71,7 @@ export class MemoCallbackContext {
   return (__context() as StateManager).valueBy<Value>(name);
 }
 
-@memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @Memo() content: (()=> void)) {
+@memo_intrinsic() export function contextLocalScope<Value>(name: string, value: Value, @Memo() content: (()=> void)): void {
   const scope = __context().scope<undefined>(__id(), 1);
   if (scope.unchanged) {
     scope.cached;
@@ -104,7 +104,7 @@ export class MemoCallbackContext {
   return (__context() as StateManager).controlledScope(__id(), invalidate);
 }
 
-@Memo() export function Repeat(count: int, @Memo() action: ((index: int)=> void)) {
+@Memo() export function Repeat(count: int, @Memo() action: ((index: int)=> void)): void {
   for (let i = 0;((i) < (count));(i++)) {
     memoEntry1<int, void>(__context(), i, action, i);
   }
