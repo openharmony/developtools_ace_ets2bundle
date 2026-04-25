@@ -378,35 +378,37 @@ let permissionsArray: string[] = [];
 */
 
 function parseVersion(versionStr) {
-  // Regular expressions for different version formats
- const buildVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME,'getBuildVersionRegex'); // Matches x.y.z(w) format
- const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
- const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
 
-// Check for build version format (x.y.z(w))
-if (buildVersionPattern.test(versionStr)) {
-    const matchResult = versionStr.match(buildVersionPattern);
-    const buildNumber = parseInt(matchResult[4], 10); // Extract number in parentheses
-    return buildNumber * 10000;
-}
+  const runtimeOS = projectConfig.runtimeOS;
+    // Regular expressions for different version formats
+  const distributionOSVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME,'getBuildVersionRegex'); // Matches x.y.z(w) format
+  const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
+  const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
 
-// Check for simple number format
-if (simpleNumberPattern.test(versionStr)) {
-    const numberValue = parseInt(versionStr, 10);
-    return numberValue * 10000;
-}
+  // Check for build version format (x.y.z(w))
+  if (distributionOSVersionPattern !== undefined && distributionOSVersionPattern.test(versionStr)) {
+      const matchResult = versionStr.match(distributionOSVersionPattern);
+      const buildNumber = parseInt(matchResult[4], 10); // Extract number in parentheses
+      return buildNumber * 10000;
+  }
 
-// Check for semantic version format (x.y.z)
-if (semanticVersionPattern.test(versionStr)) {
-    const versionParts = versionStr.split('.');
-    const majorVersion = parseInt(versionParts[0], 10);
-    const minorVersion = parseInt(versionParts[1], 10);
-    const patchVersion = parseInt(versionParts[2], 10);
-    return majorVersion * 10000 + minorVersion * 100 + patchVersion;
-}
+  // Check for simple number format
+  if (simpleNumberPattern.test(versionStr)) {
+      const numberValue = parseInt(versionStr, 10);
+      return numberValue * 10000;
+  }
 
-// Return 0 for unrecognized format
-return 0;
+  // Check for semantic version format (x.y.z)
+  if (semanticVersionPattern.test(versionStr)) {
+      const versionParts = versionStr.split('.');
+      const majorVersion = parseInt(versionParts[0], 10);
+      const minorVersion = parseInt(versionParts[1], 10);
+      const patchVersion = parseInt(versionParts[2], 10);
+      return majorVersion * 10000 + minorVersion * 100 + patchVersion;
+  }
+
+  // Return 0 for unrecognized format
+  return 0;
 }
 
 /**
@@ -1544,16 +1546,19 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
  * @returns Returns the regex from external plugins.
  */
 function getBuildVersionRegex(tag, functionType) {
-  const runtimeOS = projectConfig.runtimeOS;
-  const tagName = `${runtimeOS}/${tag}/${functionType}`;
+  const tagName = `${projectConfig.runtimeOS}/${tag}/${functionType}`;
   const externalCheckers = externalApiCheckPlugin.get(tagName);
 
   for (const plugin of externalCheckers) {
-    const externalModule = require(plugin.path);
-    const externalMethod = externalModule[plugin.functionName];
-    if (typeof externalMethod === 'function') {
-      const getBuildVersionRegexFunction = externalMethod();
-      return getBuildVersionRegexFunction;
+    try {
+      const externalModule = require(plugin.path);
+      const externalMethod = externalModule[plugin.functionName];
+
+      if (typeof externalMethod === 'function') {
+        return externalMethod();
+      }
+    } catch (error) {
+      return undefined;
     }
   }
   return undefined;
@@ -1665,48 +1670,51 @@ export function checkPermissionValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  // Filter out permission tags with the specified tag name
   const permissionTags = jsDocTags.filter((tag) => tag.tagName.getText() === PERMISSION_TAG_CHECK_NAME);
-  // If no permission tags are found, return false
+
   if (permissionTags.length === 0) {
     return false;
   }
 
-  let comment_all = ''; 
-  // Iterate over each permission tag
+  let commentAll = '';
+
   for (const permissionTag of permissionTags) {
-    // Get the comment from the permission tag
     const comment = typeof permissionTag.comment === 'string'
       ? permissionTag.comment
       : ts.getTextOfJSDocComment(permissionTag.comment);
 
-    // Extract the version range from the comment
-    const versionRange = extractVersionRange(permissionTag.comment);
-
-    // If the comment is empty or the permission is valid, skip this tag
-    if (comment === '' || JsDocCheckService.validPermission(comment, permissionsArray)) {
+    if (comment === '') {
       continue;
     }
-    // If the node is handled by the suppressor, skip this tag
+
+    const versionRange = extractVersionRange(permissionTag.comment);
+
+    if (versionRange && checkVersionRangeIntersection(versionRange)) {
+      comment = comment.replace(/\s*and\s*$/, '').trim();
+    } else {
+      continue;
+    }
+
+    if (JsDocCheckService.validPermission(comment, permissionsArray)) {
+      continue;
+    }
     const suppressor = new PermissionWarningSuppressor();
     if (suppressor.isApiVersionHandled(node)) {
       continue;
     }
-    // If the version range is valid or not present, add the permission to the comment
-    if (versionRange && checkVersionRangeIntersection(versionRange)) {
-      comment_all += comment.replace(/$$since (.*?)$$/g, '').trim() + ' and ';
-      continue;
-    }
-    if (!versionRange) {
-      comment_all += comment.replace(/$$since (.*?)$$/g, '').trim() + ' and ';
-      continue;
-    }
-  }
-  comment_all = PERMISSION_TAG_CHECK_ERROR.replace('$DT', comment_all);
-  config.message = comment_all.replace(/\s*and\s*$/, '').trim();
 
-  return comment_all !== '';
+    commentAll += `${comment} and `;
+  }
+
+  if (commentAll !== '') {
+    commentAll = PERMISSION_TAG_CHECK_ERROR.replace('$DT', commentAll);
+    config.message = commentAll.replace(/\s*and\s*$/, '').trim();
+    return true;
+  }
+
+  return false;
 }
+
 
 /**
  * Checks the system API value based on JSDoc tags and configuration.
