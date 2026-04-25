@@ -736,5 +736,3 @@ export const API_VERSION_26: number = 26;
 
 export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
 export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';
-export const DEVICE_INFO_API_FILE_NAME: string = '@ohos.deviceInfo.d.ts';
-export const API_AVAILABLE_FUNCTION_NAME: string = 'apiAvailable';

@@ -716,5 +716,3 @@ export const MAX_LINK_SOURCE_DATA_NESTING_LEVEL: number = 2;
 
 export const SDK_API_VERSION_FUNCTION_NAME: string = 'sdkApiVersion';
 export const DISTRIBUTE_API_VERSION_FUNCTION_NAME: string = 'distributionOSApiVersion';
-export const DEVICE_INFO_API_FILE_NAME: string = '@ohos.deviceInfo.d.ts';
-export const API_AVAILABLE_FUNCTION_NAME: string = 'apiAvailable';

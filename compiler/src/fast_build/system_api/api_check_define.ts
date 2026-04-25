@@ -79,6 +79,7 @@ export enum ComparisonResult {
 }
 
 export const MSF_INTEGER_VERSION: number = 26;
+export const MSF_SANDF_VERSION: number = 99;
 
 export interface DistributionOSApiAvailableVersionResult {
   valid: boolean,
@@ -90,6 +91,11 @@ export interface ApiAvailableResult {
   valid: boolean,
   message: string,
   type: ts.DiagnosticCategory.Error
+}
+
+export interface MSFVersionCheckResult {
+  valid: boolean;
+  needDistCheck: boolean;
 }
 
 export const SDK_SUBSYSTEM_CODE = '117';
@@ -327,7 +333,7 @@ export enum DeviceDiffType {
 /**
  * @since Label error level configuration constant
  */
-export const SINCE_LEVEL_WARNING: string = 'warning';
+export const SINCE_LEVEL_WARNING: string = 'warn';
 export const SINCE_LEVEL_ERROR: string = 'error';
 
 /**

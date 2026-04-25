@@ -28,7 +28,9 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
-  externalApiCheckerMap
+  externalApiCheckerMap,
+  crossplatformExternalModule,
+  crossplatformDepsConfig
 } from '../../../main';
 import {
   LogType,
@@ -100,7 +102,9 @@ import {
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
-  ApiAvailableResult
+  ApiAvailableResult,
+  MSFVersionCheckResult,
+  MSF_SANDF_VERSION
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -666,6 +670,159 @@ function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigIt
   checkConfigArray.push(getJsDocNodeCheckConfigItem(crossplatformConfig));
 }
 
+interface CrossplatformConfig {
+  function: string;
+  module: string[];
+  component: string[];
+}
+
+function checkCrossplatformValue(
+  jsDocTags: readonly ts.JSDocTag[],
+  config: ts.JsDocNodeCheckConfigItem,
+  node?: ts.Node,
+  declaration?: ts.Declaration
+): boolean {
+  const mergingCommentHandle = checkMergingComments(CROSSPLATFORM_TAG_CHECK_NAME);
+  if (!crossplatformDepsConfig) {
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
+  }
+  const fileName: string = declaration.getSourceFile().fileName;
+  if (!fileName || fileName === '') {
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
+  }
+  // crossplatformDepsConfig
+  const apiFileName: string = path.basename(fileName).replace(/\.d\.(ts|ets)$/, '');
+  if (!crossplatformDepsConfig.get(apiFileName)) {
+    return mergingCommentHandle(jsDocTags, config, node, declaration);
+  }
+  const depsConfig: CrossplatformConfig[] = crossplatformDepsConfig.get(apiFileName);
+
+  const functionKey: string = getApiPathFromNode(declaration);
+  for (let i = 0; i < depsConfig.length; i++) {
+    const config: CrossplatformConfig = depsConfig[i];
+    if (config.function === functionKey) {
+      collectCrossplatformExternalModule(node, config);
+      return mergingCommentHandle(jsDocTags, config, node, declaration);
+    }
+  }
+  return mergingCommentHandle(jsDocTags, config, node, declaration);
+}
+
+function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
+  // get sourcefile of node
+  const sourceFile = node.getSourceFile();
+  if (!sourceFile) {
+    return;
+  }
+  
+  // get sourcefile path of sourcefile
+  const filePath: string = sourceFile.fileName;
+  
+  // create config object
+  let moduleInfo = crossplatformExternalModule.get(filePath);
+  if (!moduleInfo) {
+    moduleInfo = {
+      module: [],
+      component: []
+    };
+    crossplatformExternalModule.set(filePath, moduleInfo);
+  }
+  
+  // insert module data
+  for (const moduleItem of config.module) {
+    if (!moduleInfo.module.includes(moduleItem)) {
+      moduleInfo.module.push(moduleItem);
+    }
+  }
+  
+  // insert component data
+  for (const componentItem of config.component) {
+    if (!moduleInfo.component.includes(componentItem)) {
+      moduleInfo.component.push(componentItem);
+    }
+  }
+}
+
+function getApiPathFromNode(declaration: ts.Node): string {
+  const pathParts: string[] = [];
+  let currentNode: ts.Node | undefined = declaration;
+  
+  while (currentNode && !ts.isSourceFile(currentNode) && API_NODE_KIND.has(currentNode.kind)) {
+    // get api node
+    const name = getApiNodeName(currentNode);
+    if (name) {
+      pathParts.unshift(name);
+    }
+    currentNode = currentNode.parent;
+  }
+
+  return pathParts.join('#');
+}
+
+/**
+ * Get api node name.
+ * @param node
+ * @returns 
+ */
+function getApiNodeName(node: ts.Node): string {
+  let apiName: string = 'unnamed';
+  switch (node.kind) {
+    case ts.SyntaxKind.MethodDeclaration:
+    case ts.SyntaxKind.MethodSignature:
+    case ts.SyntaxKind.FunctionDeclaration:
+    case ts.SyntaxKind.PropertyDeclaration:
+    case ts.SyntaxKind.PropertySignature:
+    case ts.SyntaxKind.EnumMember:
+    case ts.SyntaxKind.EnumDeclaration:
+    case ts.SyntaxKind.TypeAliasDeclaration:
+    case ts.SyntaxKind.ClassDeclaration:
+    case ts.SyntaxKind.InterfaceDeclaration:
+    case ts.SyntaxKind.ModuleDeclaration:
+    case ts.SyntaxKind.StructDeclaration:
+    case ts.SyntaxKind.GetAccessor:
+    case ts.SyntaxKind.SetAccessor:
+      apiName = node.name.getText();
+      break;
+    case ts.SyntaxKind.Constructor:
+    case ts.SyntaxKind.ConstructSignature:
+    case ts.SyntaxKind.CallSignature:
+      apiName = 'constructor';
+      break;
+    case ts.SyntaxKind.VariableStatement:
+      const variableDeclList = node.declarationList.declarations;
+      if (variableDeclList && variableDeclList.length === 1) {
+        const variableDecl = variableDeclList[0];
+        apiName = variableDecl.name.getText();
+      }
+      break;
+  }
+  return apiName;
+}
+
+// API kind
+const API_NODE_KIND: Set<ts.SyntaxKind> = new Set([
+  ts.SyntaxKind.VariableStatement,
+  ts.SyntaxKind.MethodDeclaration,
+  ts.SyntaxKind.MethodSignature,
+  ts.SyntaxKind.FunctionDeclaration,
+  ts.SyntaxKind.Constructor,
+  ts.SyntaxKind.ConstructSignature,
+  ts.SyntaxKind.CallSignature,
+  ts.SyntaxKind.PropertyDeclaration,
+  ts.SyntaxKind.PropertySignature,
+  ts.SyntaxKind.EnumMember,
+  ts.SyntaxKind.EnumDeclaration,
+  ts.SyntaxKind.TypeAliasDeclaration,
+  ts.SyntaxKind.ClassDeclaration,
+  ts.SyntaxKind.InterfaceDeclaration,
+  ts.SyntaxKind.ModuleDeclaration,
+  ts.SyntaxKind.StructDeclaration,
+  ts.SyntaxKind.GetAccessor,
+  ts.SyntaxKind.SetAccessor,
+  ts.SyntaxKind.IndexSignature,
+  ts.SyntaxKind.OverloadDeclaration
+]);
+
 /**
  * get FA module check config
  *
@@ -1183,6 +1340,48 @@ export function checkMSFVersionMajor(since: string): boolean {
     }
   }
   return true;
+}
+
+/**
+ * Check whether the MSF version number format is correct. The Integer field was not checked.
+ * @param since - Version string to validate
+ * @returns When the MSF does not conform to the standard format, false is returned, and the integer is not evaluated.
+ */
+export function checkMSFVersionMajorError(since: string): MSFVersionCheckResult {
+  const noParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)$/;
+  const withParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)\(\d+\)$/;
+
+  const hasParentheses: boolean = withParenthesesReg.test(since);
+  const noParentheses: boolean = noParenthesesReg.test(since);
+
+  if (!hasParentheses && !noParentheses) {
+    return { valid: false, needDistCheck: false };
+  }
+
+  const parts: string[] = since.split('.');
+  const mValue: number = parseInt(parts[0]);
+  const sValue: number = parseInt(parts[1]);
+  const fValue: number = hasParentheses ? parseInt(parts[2].split('(')[0]) : parseInt(parts[2]);
+
+  if (sValue > MSF_SANDF_VERSION || fValue > MSF_SANDF_VERSION) {
+    return { valid: false, needDistCheck: false };
+  }
+
+  if (isOpenHarmonyRuntime()) {
+    if (hasParentheses || mValue < MSF_INTEGER_VERSION) {
+      return { valid: false, needDistCheck: false };
+    }
+    return { valid: true, needDistCheck: false };
+  }
+
+  if (mValue >= MSF_INTEGER_VERSION) {
+    if (hasParentheses) {
+      return { valid: false, needDistCheck: false };
+    }
+    return { valid: true, needDistCheck: false };
+  }
+
+  return { valid: false, needDistCheck: true };
 }
 
 /**
@@ -1996,7 +2195,7 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
   let diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined;
   const runTimeOS: string = projectConfig.runtimeOS;
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\.$/;
+  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\./;
   const apiAvailableRegex: RegExp = /^Invalid .+ version\.$/;
   if (sinceRegex.test(messageRegex)) {
     diagnosticInfo = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
@@ -2264,22 +2463,29 @@ export function isSourceRetentionAnnotationContentValid(annotation: ts.Annotatio
       }
       // Verify the nearest parent node of the current child node that utilises the `@available` annotation.
       // Check whether the parent node's version number is lower than that of the child node. If higher, trigger an alert.
-
-      let higherVersion = hasLargerVersionInParentNode(annotation.parent, parseVersion);
-      if (higherVersion) {
-        let msg = AVAILABLE_SCOPE_ERROR
-          .replace('$VERSION', higherVersion.version);
-        return {
-          valid: false,
-          message: msg,
-          type: ts.DiagnosticCategory.Warning
-        }
-      }
+      return checkParentVersionHierarchy(annotation.parent, parseVersion, result);
     }
   } catch (e) {
     return result;
   }
   return result;
+}
+
+function checkParentVersionHierarchy(
+  parentNode: ts.Node,
+  currentVersion: ParsedVersion,
+  result: ts.ConditionCheckResult
+): ts.ConditionCheckResult | null {
+  const higherVersion = hasLargerVersionInParentNode(parentNode, currentVersion);
+  if (!higherVersion) {
+    return result;
+  }
+  const message = AVAILABLE_SCOPE_ERROR.replace('$VERSION', higherVersion.version);
+  return {
+    valid: false,
+    message: message,
+    type: ts.DiagnosticCategory.Warning
+  };
 }
 
 /**
@@ -2317,7 +2523,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
-  const apiAvailableRegex = /^\bdeviceInfo\.apiAvailable\b/g;
+  const apiAvailableRegex = /\b\.apiAvailable\b/g;
   let nodeText: string = node.getText() || node.getFullText();
 
   if (!apiAvailableRegex.test(nodeText)) {
@@ -2325,6 +2531,10 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   }
 
   if (!ts.isCallExpression(node)) {
+    return result;
+  }
+
+  if (!node.expression || (ts.isPropertyAccessExpression(node.expression) && node.expression.name?.getText() !== SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO)) {
     return result;
   }
   
@@ -2391,20 +2601,32 @@ function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailable
     return result;
   }
   if (isOpenHarmonyRuntime()) {
-    if (!checkMSFVersionMajor(sinceFormat)) {
+    const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
+    if (!msfResult.valid) {
       result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
       result.valid = false;
     }
   } else {
-    if (!checkMSFVersionMajor(sinceFormat)) {
-      const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
+    result = checkCharDistributionOSScene(sinceFormat, result);
+  }
+  
+  return result;
+}
+
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
+  const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
+  if (!msfResult.valid) {
+    if (msfResult.needDistCheck) {
+      const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
       if (!distributionOSCheck.valid) {
         result.message = distributionOSCheck.message;
         result.valid = false;
       }
+    } else {
+      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.valid = false;
     }
   }
-
   return result;
 }
 

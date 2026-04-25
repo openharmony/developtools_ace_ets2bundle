@@ -33,7 +33,7 @@ export type SimpleArray<T> = Array<T> | ReadonlyArray<T> | Readonly<Array<T>>;
 @memo_intrinsic
 export declare function factory<Value>(compute: () => Value): Value;
 
-export function cb(callback?: () => void) {
+export function cb(callback?: () => void): void {
     if (callback) return;
 }
 

@@ -93,32 +93,24 @@ final class MonitorNames extends BaseEnum<String> {
 
   private static <cctor>() {}
 
-  private constructor(ordinal: int, value: String) {
-    super(value);
+  private constructor(ordinal: int, value: String, name: String) {
+    super(value, name);
     this.#ordinal = ordinal;
   }
 
-  public static readonly name1: MonitorNames = new MonitorNames(0, "strArr.0");
+  public static readonly name1: MonitorNames = new MonitorNames(0, "strArr.0", "name1");
 
-  public static readonly name2: MonitorNames = new MonitorNames(1, "name");
+  public static readonly name2: MonitorNames = new MonitorNames(1, "name", "name2");
 
-  public static readonly name3: MonitorNames = new MonitorNames(2, "strArr.0");
+  public static readonly name3: MonitorNames = new MonitorNames(2, "strArr.0", "name3");
 
-  public static readonly name4: MonitorNames = new MonitorNames(3, "varF.ff");
-
-  private static readonly #NamesArray: String[] = ["name1", "name2", "name3", "name4"];
-
-  private static readonly #StringValuesArray: String[] = ["strArr.0", "name", "strArr.0", "varF.ff"];
+  public static readonly name4: MonitorNames = new MonitorNames(3, "varF.ff", "name4");
 
   private static readonly #ItemsArray: MonitorNames[] = [MonitorNames.name1, MonitorNames.name2, MonitorNames.name3, MonitorNames.name4];
 
-  public getName(): String {
-    return MonitorNames.#NamesArray[this.#ordinal];
-  }
-
   public static getValueOf(name: String): MonitorNames {
-    for (let i = ((MonitorNames.#NamesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (MonitorNames.#NamesArray[i]))) {
+    for (let i = ((MonitorNames.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (MonitorNames.#ItemsArray[i].getName()))) {
         return MonitorNames.#ItemsArray[i];
       }
     }
@@ -126,20 +118,12 @@ final class MonitorNames extends BaseEnum<String> {
   }
 
   public static fromValue(value: String): MonitorNames {
-    for (let i = ((MonitorNames.#StringValuesArray.length) - (1));((i) >= (0));(--i)) {
-      if (((value) == (MonitorNames.#StringValuesArray[i]))) {
+    for (let i = ((MonitorNames.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
+      if (((MonitorNames.#ItemsArray[i].valueOf()) == (value))) {
         return MonitorNames.#ItemsArray[i];
       }
     }
     throw new Error((("No enum MonitorNames with value ") + (value)));
-  }
-
-  public valueOf(): String {
-    return MonitorNames.#StringValuesArray[this.#ordinal];
-  }
-
-  public toString(): String {
-    return MonitorNames.#StringValuesArray[this.#ordinal];
   }
 
   public static values(): MonitorNames[] {

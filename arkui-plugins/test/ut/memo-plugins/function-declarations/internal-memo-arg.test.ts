@@ -71,7 +71,7 @@ export function contextLocalValue<Value>(__memo_context: __memo_context_type, __
 }
 
 @memo_intrinsic() 
-export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @Memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
+export function contextLocalScope<Value>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, name: string, value: Value, @Memo() content: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): void {
   const scope = __memo_context.scope<undefined>(__memo_id, 1);
   if (scope.unchanged) {
     scope.cached;
@@ -116,7 +116,7 @@ export function rememberControlledScope(__memo_context: __memo_context_type, __m
 }
 
 @Memo() 
-export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @Memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)) {
+export function Repeat(__memo_context: __memo_context_type, __memo_id: __memo_id_type, count: int, @Memo() action: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, index: int)=> void)): void {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (200707415)), 2);
   const __memo_parameter_count = __memo_scope.param(0, count), __memo_parameter_action = __memo_scope.param(1, action);
   if (__memo_scope.unchanged) {
