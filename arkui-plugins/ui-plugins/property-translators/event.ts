@@ -44,12 +44,15 @@ import {
     RegularPropertyCachedTranslator,
     RegularPropertyTranslator,
 } from './regularProperty';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function resetOnReuseWithEventTranslator(
     this: BasePropertyTranslator,
     newName: string, 
     originalName: string
 ): arkts.ExpressionStatement {
+    const propertyValue = this.property;
+    const propertyType = this.propertyType?.clone();
     const resetStateVars = arkts.factory.createAssignmentExpression(
         arkts.factory.createMemberExpression(
             arkts.factory.createThisExpression(),
@@ -59,8 +62,14 @@ function resetOnReuseWithEventTranslator(
             false
         ),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName)
-    )
+        factory.generateInitializeValue(propertyValue, propertyType, originalName)
+    );
+    if (this.isMemoShouldUpdate) {
+        PropertyValueCache.getInstance().collect({ value: propertyValue });
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
+        }
+    }
     return arkts.factory.createExpressionStatement(resetStateVars);
 }
 

@@ -48,7 +48,7 @@ import { PropertyCache } from './cache/propertyCache';
 import { annotation, backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { CustomDialogControllerPropertyCache } from './cache/customDialogControllerPropertyCache';
-import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
+import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collect-cache';
 
 export interface BasePropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -59,6 +59,7 @@ export abstract class BasePropertyTranslator {
     protected property: arkts.ClassProperty;
     protected propertyType: arkts.TypeNode | undefined;
     protected isMemoCached?: boolean;
+    protected isMemoShouldUpdate?: boolean;
     protected hasWatch?: boolean;
     protected makeType?: StateManagementTypes;
     protected hasResetOnReuse?: boolean;
@@ -74,6 +75,7 @@ export abstract class BasePropertyTranslator {
         this.property = options.property;
         this.propertyType = options.property.typeAnnotation?.clone();
         this.isMemoCached = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(options.property);
+        this.isMemoShouldUpdate = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(options.property.peer);
     }
 
     abstract translateMember(): arkts.AstNode[];
@@ -155,19 +157,34 @@ export abstract class BasePropertyTranslator {
         if (!this.stateManagementType || !this.makeType) {
             return undefined;
         }
+        const initializeProperty = this.property;
+        const initializePropertyType = this.propertyType?.clone();
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName),
+            factory.generateInitializeValue(initializeProperty, initializePropertyType, originalName),
         ];
         if (this.hasWatch) {
             factory.addWatchFunc(args, this.property);
         }
         collectStateManagementTypeImport(this.stateManagementType);
+        const stateManagementCallType = this.propertyType?.clone();
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
         );
+        if (this.isMemoShouldUpdate) {
+            const propertyValue = initializeProperty.value;
+            if (!!propertyValue) {
+                PropertyValueCache.getInstance().collect({ value: propertyValue });
+            }
+            if (!!initializePropertyType) {
+                PropertyValueCache.getInstance().collect({ value: initializePropertyType });
+            }
+            if (!!stateManagementCallType) {
+                PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+            }
+        }
         return arkts.factory.createExpressionStatement(assign);
     }
 
@@ -201,6 +218,8 @@ export abstract class BasePropertyTranslator {
         );
         if (this.isMemoCached) {
             PropertyFactoryCallTypeCache.getInstance().collect({ node: propertyType, metadata });
+        } else if (this.isMemoShouldUpdate) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
         }
         return factory.createIfInUpdateStruct(originalName, member, [asExpression]);
     }
@@ -228,7 +247,11 @@ export abstract class BasePropertyTranslator {
     }
     
     resetOnReuse(newName: string, originalName?: string): arkts.ExpressionStatement {
-        const arg = this.property.value ? this.property.value.clone() : arkts.factory.createUndefinedLiteral();
+        const propertyValue = this.property.value?.clone();
+        const arg = !!propertyValue ? propertyValue : arkts.factory.createUndefinedLiteral();
+        if (this.isMemoShouldUpdate && !!propertyValue) {
+            PropertyValueCache.getInstance().collect({ value: propertyValue });
+        }
         return factory.createResetOnReuseStmt(newName, arg);
     }
 }
@@ -252,7 +275,11 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
             this.shouldWrapPropertyType || (!!this.propertyType && arkts.isETSTypeReference(this.propertyType));
         const metadata = this.isMemoCached ? findCachedMemoMetadata(this.property, shouldWrapPropertyType) : undefined;
         this.cacheTranslatedInitializer(newName, originalName, metadata);
-        return this.translateWithoutInitializer(newName, originalName, metadata);
+        const rewriteMembers = this.translateWithoutInitializer(newName, originalName, metadata);
+        if (this.isMemoShouldUpdate) {
+            PropertyValueCache.getInstance().updateAll().reset();
+        }
+        return rewriteMembers;
     }
 
     protected cacheTranslatedInitializer(
@@ -266,6 +293,7 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
             if (initializeStruct) {
                 initializeStruct.range = this.property.range;
                 PropertyCache.getInstance().collectInitializeStruct(structName, [initializeStruct]);
+                PropertyCache.getInstance().setShouldMemoUpdateInitializeStruct(structName, !!this.isMemoShouldUpdate);
             }
         }
         if (this.hasUpdateStruct) {
@@ -322,8 +350,11 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
             this.shouldWrapPropertyType || (!!this.propertyType && arkts.isETSTypeReference(this.propertyType));
         const metadata = this.isMemoCached ? findCachedMemoMetadata(this.property, shouldWrapPropertyType) : undefined;
         this.cacheTranslatedInitializer(newName, originalName, metadata);
-        const res = this.translateWithoutInitializer(newName, originalName, metadata);
-        return res;
+        const rewriteMembers = this.translateWithoutInitializer(newName, originalName, metadata);
+        if (this.isMemoShouldUpdate) {
+            PropertyValueCache.getInstance().updateAll().reset();
+        }
+        return rewriteMembers;
     }
 
     protected cacheTranslatedInitializer(
@@ -340,6 +371,7 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
 
             if (initializeStruct) {
                 PropertyCache.getInstance().collectInitializeStruct(structName, [initializeStruct]);
+                PropertyCache.getInstance().setShouldMemoUpdateInitializeStruct(structName, !!this.isMemoShouldUpdate);
             }
         }
         if (this.hasUpdateStruct) {

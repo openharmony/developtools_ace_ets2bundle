@@ -41,6 +41,7 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithConsumeProperty(
     this: BasePropertyTranslator,
@@ -58,7 +59,8 @@ function initializeStructWithConsumeProperty(
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
-    if (this.property.value) {
+    const defaultValue = this.property.value;
+    if (!!defaultValue) {
         if (args.length === 2) {
             args.push(arkts.factory.createUndefinedLiteral());
         }
@@ -66,16 +68,23 @@ function initializeStructWithConsumeProperty(
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [arkts.factory.createProperty(
                 arkts.factory.createIdentifier('defaultValue'),
-                this.property.value.clone()
+                defaultValue
             )],
             true
         ));
+        if (this.isMemoShouldUpdate) {
+            PropertyValueCache.getInstance().collect({ value: defaultValue });
+        }
     }
+    const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
     );
+    if (this.isMemoShouldUpdate && !!stateManagementCallType) {
+        PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+    }
     return arkts.factory.createExpressionStatement(assign);
 }
 

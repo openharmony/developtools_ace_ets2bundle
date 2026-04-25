@@ -38,20 +38,20 @@ import { PropertyCache } from './cache/propertyCache';
 import { factory as UIFactory } from '../ui-factory';
 import { optionsHasField } from '../utils';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
-import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
+import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithRegularProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string
 ): arkts.Statement {
-    const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
+    const propertyValue = this.property.value;
     const binaryItem = arkts.factory.createBinaryExpression(
         factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             originalName
         ),
-        value ?? arkts.factory.createUndefinedLiteral(),
+        propertyValue ?? arkts.factory.createUndefinedLiteral(),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
     );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
@@ -59,6 +59,11 @@ function initializeStructWithRegularProperty(
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
         binaryItem
     );
+    if (this.isMemoShouldUpdate) {
+        if (!!propertyValue) {
+            PropertyValueCache.getInstance().collect({ value: propertyValue });
+        }
+    }
     return arkts.factory.createExpressionStatement(assign);
 }
 
@@ -67,8 +72,14 @@ function initializeStructWithCustomDialogControllerInit(
     newName: string,
     originalName: string
 ): arkts.Statement {
-    const value = this.property.value ?? arkts.factory.createUndefinedLiteral();
+    const propertyValue = this.property.value;
+    const value = propertyValue ?? arkts.factory.createUndefinedLiteral();
     const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+    if (this.isMemoShouldUpdate) {
+        if (!!propertyValue) {
+            PropertyValueCache.getInstance().collect({ value: propertyValue });
+        }
+    }
     return arkts.factory.createIfStatement(
         factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),

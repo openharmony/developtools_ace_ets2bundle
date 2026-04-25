@@ -42,6 +42,7 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithLocalStorageLinkProperty(
     this: BasePropertyTranslator,
@@ -59,19 +60,29 @@ function initializeStructWithLocalStorageLinkProperty(
     if (!localStorageLinkValueStr) {
         return undefined;
     }
+    const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(localStorageLinkValueStr),
         arkts.factory.create1StringLiteral(originalName),
-        this.property.value ?? arkts.factory.createUndefinedLiteral(),
+        defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
+    const propertyType = this.propertyType?.clone();
+    if (this.isMemoShouldUpdate) {
+        if (!!defaultValue) {
+            PropertyValueCache.getInstance().collect({ value: defaultValue });
+        }
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
+        }
+    }
     return arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata)
     );
 }
 

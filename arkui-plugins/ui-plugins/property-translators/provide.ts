@@ -42,6 +42,7 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithProvideProperty(
     this: BasePropertyTranslator,
@@ -55,20 +56,32 @@ function initializeStructWithProvideProperty(
     const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
     const alias = options?.alias ?? arkts.factory.create1StringLiteral(originalName);
     const allowOverride = options?.allowOverride ?? arkts.factory.createBooleanLiteral(false);
+    const initializeProperty = this.property;
+    const initializePropertyType = this.propertyType?.clone();
     const args: arkts.Expression[] = [
         arkts.factory.create1StringLiteral(originalName),
         alias,
-        factory.generateInitializeValue(this.property, this.propertyType, originalName),
+        factory.generateInitializeValue(initializeProperty, initializePropertyType, originalName),
         allowOverride,
     ];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
+    const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
     );
+    if (this.isMemoShouldUpdate) {
+        PropertyValueCache.getInstance().collect({ value: initializeProperty });
+        if (!!initializePropertyType) {
+            PropertyValueCache.getInstance().collect({ value: initializePropertyType });
+        }
+        if (!!stateManagementCallType) {
+            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        }
+    }
     return arkts.factory.createExpressionStatement(assign);
 }
 
