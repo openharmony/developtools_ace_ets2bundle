@@ -625,11 +625,11 @@ function getTestCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
  */
 function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const permissionConfig: JsDocNodeCheckConfigItemInterface = {
-      tagName: [PERMISSION_TAG_CHECK_NAME],
-      message: PERMISSION_TAG_CHECK_ERROR,
-      type: ts.DiagnosticCategory.Warning,
-      tagNameShouldExisted: false,
-      checkJsDocSuppressorValidCallback: checkPermissionValue
+    tagName: [PERMISSION_TAG_CHECK_NAME],
+    message: PERMISSION_TAG_CHECK_ERROR,
+    type: ts.DiagnosticCategory.Warning,
+    tagNameShouldExisted: false,
+    checkJsDocSuppressorValidCallback: checkPermissionValue
   }
   checkConfigArray.push(getJsDocNodeCheckConfigItem(permissionConfig));
 }
@@ -1347,37 +1347,37 @@ export function checkMSFVersionMajor(since: string): boolean {
 export function checkMSFVersionMajorError(since: string): MSFVersionCheckResult {
   const noParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)$/;
   const withParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)\(\d+\)$/;
-  
+
   const hasParentheses: boolean = withParenthesesReg.test(since);
   const noParentheses: boolean = noParenthesesReg.test(since);
-  
+
   if (!hasParentheses && !noParentheses) {
     return { valid: false, needDistCheck: false };
   }
-  
+
   const parts: string[] = since.split('.');
   const mValue: number = parseInt(parts[0]);
   const sValue: number = parseInt(parts[1]);
   const fValue: number = hasParentheses ? parseInt(parts[2].split('(')[0]) : parseInt(parts[2]);
-  
+
   if (sValue > MSF_SANDF_VERSION || fValue > MSF_SANDF_VERSION) {
     return { valid: false, needDistCheck: false };
   }
-  
+
   if (isOpenHarmonyRuntime()) {
     if (hasParentheses || mValue < MSF_INTEGER_VERSION) {
       return { valid: false, needDistCheck: false };
     }
     return { valid: true, needDistCheck: false };
   }
-  
+
   if (mValue >= MSF_INTEGER_VERSION) {
     if (hasParentheses) {
       return { valid: false, needDistCheck: false };
     }
     return { valid: true, needDistCheck: false };
   }
-  
+
   return { valid: false, needDistCheck: true };
 }
 
@@ -1917,7 +1917,7 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
   let diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined;
   const runTimeOS: string = projectConfig.runtimeOS;
   const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\.$/;
+  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\./;
   const apiAvailableRegex: RegExp = /^Invalid .+ version\.$/;
   if (sinceRegex.test(messageRegex)) {
     diagnosticInfo = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
@@ -2185,22 +2185,29 @@ export function isSourceRetentionAnnotationContentValid(annotation: ts.Annotatio
       }
       // Verify the nearest parent node of the current child node that utilises the `@available` annotation.
       // Check whether the parent node's version number is lower than that of the child node. If higher, trigger an alert.
-
-      let higherVersion = hasLargerVersionInParentNode(annotation.parent, parseVersion);
-      if (higherVersion) {
-        let msg = AVAILABLE_SCOPE_ERROR
-          .replace('$VERSION', higherVersion.version);
-        return {
-          valid: false,
-          message: msg,
-          type: ts.DiagnosticCategory.Warning
-        }
-      }
+      return checkParentVersionHierarchy(annotation.parent, parseVersion, result);
     }
   } catch (e) {
     return result;
   }
   return result;
+}
+
+function checkParentVersionHierarchy(
+  parentNode: ts.Node,
+  currentVersion: ParsedVersion,
+  result: ts.ConditionCheckResult
+): ts.ConditionCheckResult | null {
+  const higherVersion = hasLargerVersionInParentNode(parentNode, currentVersion);
+  if (!higherVersion) {
+    return result;
+  }
+  const message = AVAILABLE_SCOPE_ERROR.replace('$VERSION', higherVersion.version);
+  return {
+    valid: false,
+    message: message,
+    type: ts.DiagnosticCategory.Warning
+  };
 }
 
 /**

@@ -333,7 +333,7 @@ export enum DeviceDiffType {
 /**
  * @since Label error level configuration constant
  */
-export const SINCE_LEVEL_WARNING: string = 'warning';
+export const SINCE_LEVEL_WARNING: string = 'warn';
 export const SINCE_LEVEL_ERROR: string = 'error';
 
 /**
