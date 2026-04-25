@@ -682,18 +682,18 @@ function checkCrossplatformValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const mergingCommentHandle = checkMergingComments(CROSSPLATFORM_TAG_CHECK_NAME);
+  const mergingCommentHandle = checkCrossPlatformMergeValue(jsDocTags, config, node);
   if (!crossplatformDepsConfig) {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   const fileName: string = declaration.getSourceFile().fileName;
   if (!fileName || fileName === '') {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   // crossplatformDepsConfig
   const apiFileName: string = path.basename(fileName).replace(/\.d\.(ts|ets)$/, '');
   if (!crossplatformDepsConfig.get(apiFileName)) {
-    return mergingCommentHandle(jsDocTags, config, node, declaration);
+    return mergingCommentHandle;
   }
   const depsConfig: CrossplatformConfig[] = crossplatformDepsConfig.get(apiFileName);
 
@@ -705,8 +705,7 @@ function checkCrossplatformValue(
       return mergingCommentHandle(jsDocTags, config, node, declaration);
     }
   }
-  return mergingCommentHandle(jsDocTags, config, node, declaration);
-}
+  return mergingCommentHandle;
 
 function collectCrossplatformExternalModule(node: ts.Node, config: CrossplatformConfig): void {
   // get sourcefile of node
@@ -1887,7 +1886,7 @@ export function checkStageModuleValue(jsDocTags: readonly ts.JSDocTag[], config:
  * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
  * @returns {boolean} - Returns true if the Cross-Platform value is valid; otherwise, returns false.
  */
-export function checkCrossPlatformValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+export function checkCrossPlatformMergeValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
   // Find the JSDoc tag with CROSSPLATFORM_TAG_CHECK_NAME
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === CROSSPLATFORM_TAG_CHECK_NAME;
