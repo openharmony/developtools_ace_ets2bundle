@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { getAnnotationName, isDeclFromArkUI } from '../utils';
-import { BuiltInNames } from '../../../common/predefines';
+import { BuiltInNames, ETSGLOBAL } from '../../../common/predefines';
 import { ChainingCallDataSource } from '../chaining-call-data-source';
 import { CallInfo } from '../records';
 
@@ -87,7 +87,7 @@ export function isClassDeclaration(node: arkts.AstNode): node is arkts.ClassDecl
 export function isInEtsGlobalClassDeclaration(node: arkts.AstNode): boolean {
     while (node) {
         if (isClassDeclaration(node)) {
-            if (node.definition?.isGlobal) {
+            if (node.definition?.ident?.name === ETSGLOBAL) {
                 return true;
             } else {
                 return false;

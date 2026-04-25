@@ -71,6 +71,8 @@ export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
 
 export const INSIGHT_INTENT_FILE_NAME = 'insight_intent.json';
 
+export const ETSGLOBAL = 'ETSGLOBAL';
+
 export enum UIClass {
     LOCAL_STORAGE = 'LocalStorage',
 }
