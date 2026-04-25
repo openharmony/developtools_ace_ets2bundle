@@ -186,22 +186,22 @@ export class SdkComparisonHelper {
   }
 
   private checkMajorNumberVersion(sinceFormat: string, sincePointVersion: string[], distributeResult: DistributionOSApiAvailableVersionResult): boolean {
-      const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
-      if (!compatibileReg.test(sinceFormat)) {
-        return false;
-      }
-      switch (sincePointVersion.length) {
-        case 1:
-          return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
-        case 3:
-          if (!checkMSFVersionMajor(sinceFormat)) {
-            return false;
-          } else if (comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less) {
-            return true;
-          }
-        default:
+    const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2})$/;
+    if (!compatibileReg.test(sinceFormat)) {
+      return false;
+    }
+    switch (sincePointVersion.length) {
+      case 1:
+        return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
+      case 3:
+        if (!checkMSFVersionMajor(sinceFormat)) {
           return false;
-      }
+        } else if (comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less) {
+          return true;
+        }
+      default:
+        return false;
+    }
   }
 
   private distributionVersionFormat(): DistributionOSApiAvailableVersionResult {
@@ -223,7 +223,7 @@ export class SdkComparisonHelper {
     }
     return distributeResult;
   }
-  
+
   /**
    * Determine if the MSF version is more than 26, Integer does not make judgments.
    * @param since - Version string to validate
@@ -239,7 +239,7 @@ export class SdkComparisonHelper {
     }
     return true;
   }
-
+  
   /**
    * Extracts comparison parts from a binary expression and resolves declaration values.
    *
