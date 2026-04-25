@@ -36,6 +36,9 @@ export class TSTypeLiteral extends TypeNode {
         super(pointer)
         
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_LITERAL_TYPE;
+    }
     static createTSTypeLiteral(members: readonly AstNode[]): TSTypeLiteral {
         return new TSTypeLiteral(global.generatedEs2panda._CreateTSTypeLiteral(global.context, passNodeArray(members), members.length))
     }

@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class TSEnumMember extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_MEMBER)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_ENUM_MEMBER;
     }
     static createTSEnumMember(key?: Expression, init?: Expression): TSEnumMember {
         return new TSEnumMember(global.generatedEs2panda._CreateTSEnumMember(global.context, passNode(key), passNode(init)))

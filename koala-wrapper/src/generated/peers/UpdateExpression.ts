@@ -32,10 +32,13 @@ import {
 import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class UpdateExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_UPDATE_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_UPDATE_EXPRESSION;
     }
     static createUpdateExpression(argument: Expression | undefined, updateOperator: Es2pandaTokenType, isPrefix: boolean): UpdateExpression {
         return new UpdateExpression(global.generatedEs2panda._CreateUpdateExpression(global.context, passNode(argument), updateOperator, isPrefix))

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -133,7 +133,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public getDate(): number {
     return 0;
   }
-
+  static {
+  }
 }
 
 @Observed() class NewDate implements IObservedObject, ISubscribedWatches {
@@ -164,18 +165,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
-
   @JSONRename({newName:"data"}) public __backing_data: DateClass = new DateClass(11);
-
-  public constructor(data: DateClass) {
-    this.data = data;
-  }
-
   public get data(): DateClass {
     this.conditionalAddRef(this.__meta);
     return this.__backing_data;
   }
-
   public set data(newValue: DateClass) {
     if (((this.__backing_data) !== (newValue))) {
       this.__backing_data = newValue;
@@ -183,22 +177,39 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.executeOnSubscribingWatches("data");
     }
   }
-
+  public constructor(data: DateClass) {
+    this.data = data;
+  }
+  static {
+  }
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_label = ((({let gensym___171896504 = initializers;
-    (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? ("date"));
-    this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___209155591 = initializers;
-    (((gensym___209155591) == (null)) ? undefined : gensym___209155591.data)}) as DateClass))
+    this.__backing_label = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? ("date"));
+    this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.data)}) as DateClass))
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
-    if (({let gensym___237646022 = initializers;
-    (((gensym___237646022) == (null)) ? undefined : gensym___237646022.__options_has_data)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_data)})) {
       this.__backing_data!.update((initializers!.data as DateClass));
     }
+  }
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+    throw new Error("Declare interface");
   }
 
   private __backing_label?: string;
@@ -215,19 +226,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public get data(): DateClass {
     return this.__backing_data!.get();
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
@@ -249,15 +247,30 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   ${dumpConstructor()}
 
+  static {
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___225289068 = initializers;
-    (((gensym___225289068) == (null)) ? undefined : gensym___225289068.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
+    this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   private __backing_newData?: IStateDecoratedVariable<NewDate>;
 
@@ -267,19 +280,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public set newData(value: NewDate) {
     this.__backing_newData!.set(value);
-  }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
   }
 
   @Memo() 
@@ -316,6 +316,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   ${dumpConstructor()}
 
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -332,14 +334,14 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', 'DateClass', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', 'DateClass', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_data', '(IObjectLinkDecoratedVariable<DateClass> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_data', '(boolean | undefined)')}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}
   
@@ -352,7 +354,7 @@ function testObjectLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test objectlink observed transform',
-    [objectlinkTrackTransform, uiNoRecheck, recheck],
+    [objectlinkTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObjectLinkTransformer],
     },

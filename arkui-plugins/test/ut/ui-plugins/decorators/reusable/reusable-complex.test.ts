@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -100,35 +100,35 @@ class Message {
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___83835842 = initializers;
-    (((gensym___83835842) == (null)) ? undefined : gensym___83835842.display)})) ?? (true)));
+    this.__backing_display = STATE_MGMT_FACTORY.makeState<boolean>(this, "display", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.display)})) ?? (true)));
   }
-  
+
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-  
-  private __backing_display?: IStateDecoratedVariable<boolean>;
-  
-  public get display(): boolean {
-    return this.__backing_display!.get();
-  }
-  
-  public set display(value: boolean) {
-    this.__backing_display!.set(value);
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index(false, ({let gensym___149025070 = storage;
-      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
+      return new Index(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_display?: IStateDecoratedVariable<boolean>;
+
+  public get display(): boolean {
+    return this.__backing_display!.get();
+  }
+
+  public set display(value: boolean) {
+    this.__backing_display!.set(value);
+  }
+
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -152,7 +152,7 @@ class Message {
           message: new Message("Child"),
           __options_has_message: true,
         };
-      }), undefined, "res", undefined);
+      }), undefined, undefined, undefined);
       if (this.display) {
         Child._invoke(undefined, (() => {
           return {
@@ -163,51 +163,53 @@ class Message {
       }
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+
+  static {
+  }
 }
 
 @Reusable() @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___91869411 = initializers;
-    (((gensym___91869411) == (null)) ? undefined : gensym___91869411.message)})) ?? (new Message("AboutToReuse"))));
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<Message>(this, "message", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (new Message("AboutToReuse"))));
   }
-  
+
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-  
+
   public override constructor __toRecord(params: Object): Record<string, Object> {
     const paramsCasted = (params as __Options_Child);
     return {
       "message": ((paramsCasted.message) ?? (new Object())),
     };
   }
-  
-  private __backing_message?: IStateDecoratedVariable<Message>;
-  
-  public get message(): Message {
-    return this.__backing_message!.get();
-  }
-  
-  public set message(value: Message) {
-    this.__backing_message!.set(value);
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_message?: IStateDecoratedVariable<Message>;
+
+  public get message(): Message {
+    return this.__backing_message!.get();
+  }
+
+  public set message(value: Message) {
+    this.__backing_message!.set(value);
+  }
+
   public aboutToReuse(params: Record<string, ESObject>) {}
-  
+
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -222,9 +224,11 @@ class Message {
       }), undefined);
     }));
   }
-  
- ${dumpConstructor()}
-  
+
+  ${dumpConstructor()}
+
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -238,14 +242,14 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_display', '(boolean | undefined)')}
   
 }
 
 @Reusable() @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
   
@@ -258,7 +262,7 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex reusable',
-    [reusableTransform, uiNoRecheck, recheck],
+    [reusableTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testReusableTransformer],
     },

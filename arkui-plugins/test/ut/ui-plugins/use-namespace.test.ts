@@ -18,7 +18,7 @@ import { PluginTester } from '../../utils/plugin-tester';
 import { mockBuildConfig } from '../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../utils/path-config';
 import { parseDumpSrc } from '../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../utils/shared-types';
 import { dumpConstructor } from '../../utils/simplify-dump';
 import { uiTransform } from '../../../ui-plugins';
@@ -74,7 +74,7 @@ ns.ns_num;
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
   
@@ -86,9 +86,10 @@ ns.ns_num;
       return;
     }), @Memo() (() => {}));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_Index {
@@ -102,7 +103,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test namespace usage',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

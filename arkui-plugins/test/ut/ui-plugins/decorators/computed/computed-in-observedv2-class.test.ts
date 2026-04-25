@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -81,20 +81,6 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_firstName");
 
-  @JSONRename({newName:"lastName"}) public __backing_lastName: string = "Li";
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_lastName");
-
-  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
-    console.info("---------Computed----------");
-    return ((((this.firstName) + (" "))) + (this.lastName));
-  }), "fullName");
-
-  @Computed() 
-  public get fullName(): string {
-    return this.__computed_fullName!.get();
-  }
-
   public get firstName(): string {
     this.conditionalAddRef(this.__meta_firstName);
     return UIUtils.makeObserved(this.__backing_firstName);
@@ -107,6 +93,10 @@ function main() {}
       this.executeOnSubscribingWatches("firstName");
     }
   }
+
+  @JSONRename({newName:"lastName"}) public __backing_lastName: string = "Li";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_lastName");
 
   public get lastName(): string {
     this.conditionalAddRef(this.__meta_lastName);
@@ -121,7 +111,20 @@ function main() {}
     }
   }
 
+  private __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    console.info("---------Computed----------");
+    return ((((this.firstName) + (" "))) + (this.lastName));
+  }), "fullName");
+
+  @Computed() 
+  public get fullName(): string {
+    return this.__computed_fullName!.get();
+  }
+
   public constructor() {}
+
+  static {
+  }
 
 }
 `;
@@ -132,7 +135,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Computed decorator in @ObservedV2 class',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

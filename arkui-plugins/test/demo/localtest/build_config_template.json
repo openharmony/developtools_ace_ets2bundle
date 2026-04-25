@@ -30,7 +30,7 @@
   "moduleName": "entry",
   "dependentModuleList": [],
   "hasMainModule": true,
-  "buildLoaderJson": "",
+  "buildLoaderJson": "./demo/localtest/loader_template.json",
   "integratedHsp": false,
   "allowEmptyBundleName": false,
   "declgenV2OutPath": "",

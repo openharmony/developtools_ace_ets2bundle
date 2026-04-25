@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,14 +13,35 @@
  * limitations under the License.
  */
 
-import { Component, ResourceStr, Builder} from "@ohos.arkui.component"
-import { PropRef, State } from "@ohos.arkui.stateManagement"
+import { Component, ResourceStr, Builder, ComponentV2, BuilderParam, Entry } from "@ohos.arkui.component"
+import { PropRef, State, Local, Monitor, Computed, ComponentInit, ComponentAppear } from "@ohos.arkui.stateManagement"
 
 @Component
 export declare struct SwipeRefresher {
   @PropRef content?: ResourceStr;
   @PropRef isLoading: boolean;
-  @State code: number;
+
+  @Builder build(): void;
+}
+
+@Entry
+@ComponentV2
+export declare struct DeclaredComponentV2 {
+  @Local content: number;
+
+  @BuilderParam builderParamContent: () => void;
+
+  @Monitor(["content"])
+  onContentChange(): void;
+
+  @Computed
+  get text(): string;
+
+  @ComponentInit
+  onComponentInit(): void;
+
+  @ComponentAppear
+  onComponentAppear(): void;
 
   @Builder build(): void;
 }

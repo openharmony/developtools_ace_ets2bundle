@@ -33,10 +33,13 @@ import { Statement } from "./Statement"
 import { ClassDefinition } from "./ClassDefinition"
 import { Decorator } from "./Decorator"
 export class ClassDeclaration extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION;
     }
     static createClassDeclaration(def?: ClassDefinition): ClassDeclaration {
         return new ClassDeclaration(global.generatedEs2panda._CreateClassDeclaration(global.context, passNode(def)))

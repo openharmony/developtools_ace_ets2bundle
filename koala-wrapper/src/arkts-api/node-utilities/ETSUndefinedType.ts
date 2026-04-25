@@ -14,11 +14,21 @@
  */
 
 import { ETSUndefinedType } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSUndefinedType(original: ETSUndefinedType): ETSUndefinedType {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(ETSUndefinedType.updateETSUndefinedType, attachModifiers);
+    const update = updateThenAttach(
+        ETSUndefinedType.updateETSUndefinedType,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original);
 }

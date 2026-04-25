@@ -16,7 +16,6 @@
 import { LANGUAGE_VERSION } from './predefines';
 import { BuildConfig, DependentModuleConfig } from './plugin-context';
 
-
 export class FileManager {
     private static instance: FileManager | undefined = undefined;
     static arkTSModuleMap: Map<string, DependentModuleConfig> = new Map();

@@ -33,10 +33,13 @@ import { Expression } from "./Expression"
 import { Es2pandaPropertyKind } from "./../Es2pandaEnums"
 import { ValidationInfo } from "./ValidationInfo"
 export class Property extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY;
     }
     static createProperty(key?: Expression, value?: Expression): Property {
         return new Property(global.generatedEs2panda._CreateProperty(global.context, passNode(key), passNode(value)))
@@ -70,6 +73,11 @@ export class Property extends Expression {
     }
     get isAccessor(): boolean {
         return global.generatedEs2panda._PropertyIsAccessorConst(global.context, this.peer)
+    }
+    /** @deprecated */
+    setValue(value?: Expression): this {
+        global.es2panda._PropertySetValue(global.context, this.peer, passNode(value))
+        return this
     }
 }
 export function isProperty(node: AstNode): node is Property {

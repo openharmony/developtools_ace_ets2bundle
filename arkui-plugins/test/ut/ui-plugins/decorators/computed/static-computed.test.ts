@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -95,50 +95,40 @@ function main() {}
   }
 
   @JSONRename({newName:"firstName"}) public static __backing_firstName: string = "Hua";
-
   @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_firstName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_firstName");
-
-  @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
-
-  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_lastName");
-
-  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
-    return ((((Name.firstName) + (" "))) + (Name.lastName));
-  }), "fullName");
-
-  @Computed() 
-  public static get fullName(): string {
-    return Name.__computed_fullName.get();
-  }
-
-  static {
-
-  }
   public static get firstName(): string {
     Name.__meta_firstName.addRef();
     return UIUtils.makeObserved(Name.__backing_firstName);
   }
-
   public static set firstName(newValue: string) {
     if (((Name.__backing_firstName) !== (newValue))) {
       Name.__backing_firstName = newValue;
       Name.__meta_firstName.fireChange();
     }
   }
-
+  @JSONRename({newName:"lastName"}) public static __backing_lastName: string = "Li";
+  @JSONStringifyIgnore() @JSONParseIgnore() public static __meta_lastName: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(undefined, "__metaV2_lastName");
   public static get lastName(): string {
     Name.__meta_lastName.addRef();
     return UIUtils.makeObserved(Name.__backing_lastName);
   }
-
   public static set lastName(newValue: string) {
     if (((Name.__backing_lastName) !== (newValue))) {
       Name.__backing_lastName = newValue;
       Name.__meta_lastName.fireChange();
     }
   }
-
+  public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
+    return ((((Name.firstName) + (" "))) + (Name.lastName));
+  }), "fullName");
+  @Computed() 
+  public static get fullName(): string {
+    return Name.__computed_fullName.get();
+  }
   public constructor() {}
+  static {
+
+  }
 
 }
 
@@ -148,6 +138,20 @@ function main() {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+    });
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   public static __backing_localVar1: ILocalDecoratedVariable<string> = STATE_MGMT_FACTORY.makeStaticLocal<string>("localVar1", "stateVar1");
 
@@ -177,26 +181,9 @@ function main() {}
   public static get fullName(): string {
     return Parent.__computed_fullName.get();
   }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
-
   public constructor() {}
-
   static {
 
   }
@@ -208,6 +195,20 @@ function main() {}
   public __updateStruct(initializers: (__Options_Parent2 | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent2 | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent2)=> void) | undefined), initializers: ((()=> __Options_Parent2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent2, __Options_Parent2>(style, ((): Parent2 => {
+      return new Parent2();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent2>(),
+    });
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent2, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent2 {
+    throw new Error("Declare interface");
+  }
 
   public static __computed_fullName = STATE_MGMT_FACTORY.makeComputed<string>((() => {
     return ((((Name.firstName) + (" "))) + (Name.lastName));
@@ -226,26 +227,9 @@ function main() {}
   public static get fullName2(): string {
     return Parent2.__computed_fullName2.get();
   }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent2)=> void) | undefined), initializers: ((()=> __Options_Parent2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent2, __Options_Parent2>(style, ((): Parent2 => {
-      return new Parent2();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent2>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent2 {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
-
   public constructor() {}
-
   static {
 
   }
@@ -280,20 +264,18 @@ function main() {}
   public static get fullName(): string {
     return Name2.__computed_fullName.get();
   }
-
+  public constructor() {}
   static {
 
   }
-  public constructor() {}
-
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar2', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar2', '(boolean | undefined)')}
   
@@ -310,7 +292,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Computed decorated static getter method',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

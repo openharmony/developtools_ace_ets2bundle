@@ -77,7 +77,7 @@ export class BuilderFactory {
         if (!value) {
             return _node;
         }
-        if (isFromBuilder1_1(arkts.getDecl(value))) {
+        if (arkts.isIdentifier(value) && isFromBuilder1_1(arkts.getDecl(value))) {
             addcompatibleComponentImport();
             return generateBuilderCompatible(_node, value.name) as arkts.Property;
         }
@@ -85,7 +85,8 @@ export class BuilderFactory {
             return _node;
         }
         const newValue = BuilderFactory.rewriteBuilderArrowFunction(value);
-        return arkts.factory.updateProperty(_node, _node.key, newValue);
+        _node.setValue(newValue);
+        return _node;
     }
 
     /**

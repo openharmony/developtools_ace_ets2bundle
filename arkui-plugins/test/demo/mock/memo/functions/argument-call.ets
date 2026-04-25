@@ -50,3 +50,23 @@ function args_with_default_values(
     console.log(arg1, arg2, arg3, arg4)
     console.log(arg2())
 }
+
+@Memo
+function memo_with_non_memo(non_memo_cb: () => void): void {
+
+}
+
+function non_memo(cb: () => void): void {
+
+}
+
+@Memo
+() => {
+    memo_with_non_memo(() => {
+        non_memo(() => {
+            const inner_cb = (msg: string) => {
+                let obj = msg;
+            }
+        })
+    })
+}

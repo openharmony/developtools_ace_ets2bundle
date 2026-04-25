@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSIntersectionType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERSECTION_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERSECTION_TYPE;
     }
     static createTSIntersectionType(types: readonly Expression[]): TSIntersectionType {
         return new TSIntersectionType(global.generatedEs2panda._CreateTSIntersectionType(global.context, passNodeArray(types), types.length))

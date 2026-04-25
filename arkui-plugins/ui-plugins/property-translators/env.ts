@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes, NodeCacheNames } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
@@ -26,119 +26,126 @@ import {
     hasDecorator,
     findCachedMemoMetadata,
     getValueInEnvAnnotation,
-    EnvOptions
+    EnvOptions,
+    checkIsNameStartWithBackingField
 } from './utils';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
+import { 
+    BasePropertyTranslator, 
+    InterfacePropertyCachedTranslator, 
+    InterfacePropertyTranslator, 
+    InterfacePropertyTypes, 
+    PropertyCachedTranslator, 
+    PropertyCachedTranslatorOptions, 
+    PropertyTranslator, 
+    PropertyTranslatorOptions 
+} from './base';
+// import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { CustomComponentInterfacePropertyInfo } from 'collectors/ui-collectors/records';
 
-export class EnvTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
-    translateMember(): arkts.AstNode[] {
-        const originalName: string = expectName(this.property.key);
-        const newName: string = backingField(originalName);
-        this.cacheTranslatedInitializer(newName, originalName);
-        return this.translateWithoutInitializer(newName, originalName);
+function initializeStructWithEnvProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.Statement | undefined {
+    if (!this.stateManagementType || !this.makeType) {
+        return undefined;
+    }
+    const options: EnvOptions | undefined = getValueInEnvAnnotation(this.property);
+    if (!options) {
+        return undefined;
+    }
+    const envValue = options.envValue;
+    const args: arkts.Expression[] = [
+        envValue!,
+        arkts.factory.create1StringLiteral(originalName)
+    ];
+    const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
+        generateThisBacking(newName),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+    );
+    return arkts.factory.createExpressionStatement(assign);
+}
+
+export class EnvTranslator extends PropertyTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.ENV_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_ENV;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = false;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = false;
+
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
     }
 
-    cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(originalName, newName);
-        initializeStruct.range = this.property.range;
-        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        if (!!this.structInfo.annotations?.reusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
-        }
-    }
-
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
-            newName,
-            this.property,
-            StateManagementTypes.ENV_DECORATED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-        field.range = this.property.range;
-        if (this.isMemoCached) {
-            const metadata = findCachedMemoMetadata(this.property, false);
-            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
-            arkts.NodeCache.getInstance().collect(getter, metadata);
-        }
-        return [field, getter];
-    }
-
-    translateGetter(
+    initializeStruct(
+        newName: string,
         originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
+    }
+}
+
+export class EnvCachedTranslator extends PropertyCachedTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.ENV_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_ENV;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = false;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = false;
+
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
     }
 
-    generateInitializeStruct(originalName: string, newName: string): arkts.AstNode {
-        const options: EnvOptions | undefined = getValueInEnvAnnotation(this.property);
-        const envValue = options!.envValue;
-        const args: arkts.Expression[] = [
-            envValue!,
-            arkts.factory.create1StringLiteral(originalName)
-        ];
-        const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_ENV,
-                this.propertyType?.clone(),
-                args,
-                true,
-                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
-            )
-        );
-        return arkts.factory.createExpressionStatement(assign);
+    initializeStruct(
+        newName: string,
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
 export class EnvInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
-    translateProperty(): T {
-        if (arkts.isMethodDefinition(this.property)) {
-            this.modified = true;
-            return flatVisitMethodWithOverloads(this.property, this.updateStateMethodInInterface) as T;
-        } else if (arkts.isClassProperty(this.property)) {
-            this.modified = true;
-            return this.updateStatePropertyInInterface(this.property) as T;
-        }
-        return this.property;
-    }
+    protected decorator: DecoratorNames = DecoratorNames.ENV;
 
+    /**
+     * @deprecated
+     */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.ENV)) {
-            return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.ENV)) {
-            return true;
+        if (arkts.isMethodDefinition(node)) {
+            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.ENV);
+        } else if (arkts.isClassProperty(node)) {
+            return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.ENV);
         }
         return false;
     }
+}
+
+export class EnvCachedInterfaceTranslator<
+    T extends InterfacePropertyTypes,
+> extends InterfacePropertyCachedTranslator<T> {
+    protected decorator: DecoratorNames = DecoratorNames.ENV;
 
     /**
-     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `EnvDecoratedVariable<T> | undefined`.
-     *
-     * @param method expecting getter with `@Env` and a setter with `@Env` in the overloads.
+     * @deprecated
      */
-    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        const metadata = findCachedMemoMetadata(method);
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.ENV, metadata);
-    }
-
-    /**
-     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `EnvDecoratedVariable<T> | undefined`.
-     *
-     * @param property expecting property with `@Env`.
-     */
-    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.ENV);
+    static canBeTranslated(
+        node: arkts.AstNode,
+        metadata?: CustomComponentInterfacePropertyInfo
+    ): node is InterfacePropertyTypes {
+        return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasEnv;
     }
 }

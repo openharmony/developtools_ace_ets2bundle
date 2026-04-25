@@ -19,36 +19,47 @@ import * as arkts from '@koalaui/libarkts';
 const isDebugLog: boolean = false;
 const isDebugDump: boolean = false;
 const isPerformance: boolean = false;
+const isPerformanceDetail: boolean = false;
+const isNodeCacheLogPerformance: boolean = false;
 const enableMemoryTracker: boolean = false;
 const enablePhasesDebug: boolean = false;
 arkts.Performance.getInstance().skip(!isPerformance);
 arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
 arkts.Debugger.getInstance().enablePhasesDebug(enablePhasesDebug);
+arkts.Performance.getInstance().skip(!isPerformance).skipDetail(!isPerformanceDetail);
+arkts.Performance.getInstance().enableMemoryTracker(enableMemoryTracker);
+arkts.NodeCacheFactory.getInstance().shouldPerfLog(isNodeCacheLogPerformance);
 export function getEnumName(enumType: any, value: number): string | undefined {
     return enumType[value];
 }
 
 function mkDir(filePath: string): void {
-    const parent = path.join(filePath, '..');
-    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
-        mkDir(parent);
+    try {
+        const parent = path.join(filePath, '..');
+        if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
+            mkDir(parent);
+        }
+        fs.mkdirSync(filePath);
+    } catch (e) {
+        // do nothing
     }
-    fs.mkdirSync(filePath);
 }
 
 export function debugDumpAstNode(
     node: arkts.AstNode,
     fileName: string,
     cachePath: string | undefined,
-    programFileName: string): void {
+    programFileName: string
+): void {
     if (!isDebugDump) {
         return;
-    } 
+    }
     const currentDirectory = process.cwd();
     const modifiedFileName = programFileName.replaceAll('.', '_');
-    const outputDir: string = cachePath
+    let outputDir: string = cachePath
         ? path.resolve(currentDirectory, cachePath, modifiedFileName)
         : path.resolve(currentDirectory, 'dist', 'cache', modifiedFileName);
+    outputDir = outputDir.replaceAll('<', '_').replaceAll('>', '_');
     const filePath: string = path.resolve(outputDir, fileName.replaceAll('\/', '_'));
     if (!fs.existsSync(outputDir)) {
         mkDir(outputDir);
@@ -67,4 +78,41 @@ export function debugLog(message?: any, ...optionalParams: any[]): void {
 
 export function getDumpFileName(state: number, prefix: string, index: number | undefined, suffix: string): string {
     return `${state}_${prefix}_${index ?? ''}_${suffix}.sts`;
+}
+
+export function getPerfName(level: number[], name: string): string {
+    if (!isPerformanceDetail) {
+        return '';
+    }
+    const levelName: string = level.join('.');
+    return [levelName, name].join(' --- ');
+}
+
+export function performanceLog<T extends any[], R>(
+  fn: (...args: T) => R,
+  label: string = fn.name
+): (...args: T) => R {
+  const timedFunction = function (this: any, ...args: T): R {
+    arkts.Performance.getInstance().createDetailedEvent(label);
+    try {
+      const result = fn.apply(this, args);
+      if (result instanceof Promise) {
+        return result.finally(() => {
+            arkts.Performance.getInstance().stopDetailedEvent(label); 
+        }) as R;
+      }
+      arkts.Performance.getInstance().stopDetailedEvent(label);
+      return result;
+    } catch (error) {
+      arkts.Performance.getInstance().stopDetailedEvent(label); 
+      throw error;
+    }
+  };
+
+  Object.defineProperty(timedFunction, 'name', { 
+    value: label || fn.name, 
+    configurable: true 
+  });
+  
+  return timedFunction;
 }

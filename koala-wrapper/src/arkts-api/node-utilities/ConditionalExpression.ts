@@ -15,7 +15,12 @@
 
 import { ConditionalExpression, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateConditionalExpression(
     original: ConditionalExpression,
@@ -31,6 +36,11 @@ export function updateConditionalExpression(
         return original;
     }
 
-    const update = updateThenAttach(ConditionalExpression.updateConditionalExpression, attachModifiers);
+    const update = updateThenAttach(
+        ConditionalExpression.updateConditionalExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, test, consequent, alternate);
 }

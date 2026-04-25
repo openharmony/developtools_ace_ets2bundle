@@ -15,17 +15,16 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    BuilderLambdaNames,
     CustomComponentAnontations,
-    CustomComponentNames,
-    CustomDialogNames,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
     optionsHasField,
 } from './utils';
 import { GenSymGenerator } from '../common/gensym-generator';
 import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/safe-types';
-import { ArkTsDefaultNames, DecoratorNames } from '../common/predefines';
+import { BuilderLambdaNames, BuiltInNames, CustomComponentNames, CustomDialogNames, DecoratorNames } from '../common/predefines';
+import { MetaDataCollector } from '../common/metadata-collector';
+import { ImportCollector } from '../common/import-collector';
 import { needDefiniteOrOptionalModifier, hasDecoratorName } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 
@@ -299,6 +298,7 @@ export class factory {
 
     /**
      * create intrinsic `@Retention({policy:"SOURCE"})` AnnotationDeclaration with configurations.
+     * @deprecated
      */
     static createIntrinsicAnnotationDeclaration(
         config: PartialExcept<IntrinsicAnnotationDeclarationConfiguration, 'expr'>
@@ -488,7 +488,7 @@ export class factory {
         return arkts.factory.createClassStaticBlock(
             arkts.factory.createFunctionExpression(
                 factory.createScriptFunction({
-                    key: arkts.factory.createIdentifier(ArkTsDefaultNames.DEFAULT_STATIC_BLOCK_NAME),
+                    key: arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
                     body: arkts.factory.createBlock([]),
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     flags:
@@ -577,7 +577,7 @@ export class factory {
      * find arkts.ObjectExpression type from its declaration.
      */
     static findObjectType(obj: arkts.ObjectExpression): arkts.TypeNode | undefined {
-        const decl = arkts.getDecl(obj);
+        const decl = arkts.getPeerObjectDecl(obj.peer);
         if (!decl) {
             return undefined;
         }
@@ -591,6 +591,13 @@ export class factory {
         }
         if (!typeName) {
             return undefined;
+        }
+        const declModuleName = arkts.getProgramFromAstNode(decl)?.moduleName;
+        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
+        if (!!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
+            const localTypeName = `${typeName}_${GenSymGenerator.getInstance().id(typeName)}`;
+            ImportCollector.getInstance().collectLocalImport(typeName, declModuleName, localTypeName);
+            return this.createTypeReferenceFromString(localTypeName);
         }
         return this.createTypeReferenceFromString(typeName);
     }

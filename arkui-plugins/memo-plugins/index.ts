@@ -20,7 +20,7 @@ import { PositionalIdTracker } from './utils';
 import { ReturnTransformer } from './return-transformer';
 import { ParameterTransformer } from './parameter-transformer';
 import { ProgramVisitor } from '../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK } from '../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK, NodeCacheNames } from '../common/predefines';
 import { debugLog } from '../common/debug';
 import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
@@ -33,6 +33,7 @@ export function unmemoizeTransform(): Plugins {
         clean() {
             ProgramSkipper.clear();
             PositionalIdTracker.clear();
+            arkts.NodeCacheFactory.getInstance().clear();
         },
     };
 }
@@ -83,6 +84,7 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
+        // arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).visualize();
         const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
         const parameterTransformer = new ParameterTransformer({ positionalIdTracker });
         const returnTransformer = new ReturnTransformer();
@@ -97,7 +99,7 @@ function checkedProgramVisit(
             returnTransformer,
             signatureTransformer,
             internalsTransformer,
-            useCache: arkts.NodeCache.getInstance().isCollected(),
+            useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).isCollected(),
         });
         const skipPrefixNames = isFrameworkMode
             ? EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK
@@ -111,7 +113,7 @@ function checkedProgramVisit(
             isFrameworkMode
         });
         program = programVisitor.programVisitor(program);
-        arkts.NodeCache.getInstance().clear();
+        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
     }
     return program;
 }

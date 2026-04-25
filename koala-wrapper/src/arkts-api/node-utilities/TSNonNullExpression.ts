@@ -15,13 +15,23 @@
 
 import { Expression, TSNonNullExpression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSNonNullExpression(original: TSNonNullExpression, expr?: Expression): TSNonNullExpression {
     if (isSameNativeObject(expr, original.expr)) {
         return original;
     }
 
-    const update = updateThenAttach(TSNonNullExpression.updateTSNonNullExpression, attachModifiers);
+    const update = updateThenAttach(
+        TSNonNullExpression.updateTSNonNullExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, expr);
 }

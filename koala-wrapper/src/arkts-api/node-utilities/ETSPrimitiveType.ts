@@ -15,7 +15,12 @@
 
 import { ETSPrimitiveType } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaPrimitiveType } from '../../generated/Es2pandaEnums';
 
 export function updateETSPrimitiveType(original: ETSPrimitiveType, type: Es2pandaPrimitiveType): ETSPrimitiveType {
@@ -23,6 +28,11 @@ export function updateETSPrimitiveType(original: ETSPrimitiveType, type: Es2pand
         return original;
     }
 
-    const update = updateThenAttach(ETSPrimitiveType.updateETSPrimitiveType, attachModifiers);
+    const update = updateThenAttach(
+        ETSPrimitiveType.updateETSPrimitiveType,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, type);
 }

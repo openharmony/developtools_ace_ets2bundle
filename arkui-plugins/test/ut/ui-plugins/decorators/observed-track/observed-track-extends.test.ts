@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -86,16 +86,12 @@ function main() {}
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
   
   @JSONRename({newName:"propA"}) public __backing_propA: number = 1;
-  
-  @JSONRename({newName:"trackA"}) public __backing_trackA: number = 2;
-  
-  public constructor() {}
-  
+
   public get propA(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_propA;
   }
-  
+
   public set propA(newValue: number) {
     if (((this.__backing_propA) !== (newValue))) {
       this.__backing_propA = newValue;
@@ -103,12 +99,13 @@ function main() {}
       this.executeOnSubscribingWatches("propA");
     }
   }
-  
+  @JSONRename({newName:"trackA"}) public __backing_trackA: number = 2;
+
   public get trackA(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_trackA;
   }
-  
+
   public set trackA(newValue: number) {
     if (((this.__backing_trackA) !== (newValue))) {
       this.__backing_trackA = newValue;
@@ -116,7 +113,10 @@ function main() {}
       this.executeOnSubscribingWatches("trackA");
     }
   }
-  
+
+  public constructor() {}
+  static {
+  }
 }
 
 class G extends A {
@@ -156,7 +156,8 @@ class G extends A {
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   public constructor() {}
-  
+  static {
+  }
 }
 `;
 
@@ -166,7 +167,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed track transform with extends',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -147,7 +147,7 @@ class Info {
 
 @ComponentV2() export interface __Options_Index {
   ${ignoreNewLines(`
-  infoList?: Info[];
+  @Local() infoList?: Info[];
   @Local() __backing_infoList?: Info[];
   __options_has_infoList?: boolean;
   `)}
@@ -156,8 +156,8 @@ class Info {
 
 @ComponentV2() export interface __Options_MiddleComponent {
   ${ignoreNewLines(`
-  info: Info;
-  @Require() @Param() __backing_info?: Info;
+  @Param() @Require() info: Info;
+  @Param() __backing_info?: Info;
   __options_has_info?: boolean;
   `)}
   
@@ -165,8 +165,8 @@ class Info {
 
 @ComponentV2() export interface __Options_SubComponent {
   ${ignoreNewLines(`
-  region: Region;
-  @Require() @Param() __backing_region?: Region;
+  @Param() @Require() region: Region;
+  @Param() __backing_region?: Region;
   __options_has_region?: boolean;
   `)}
   
@@ -253,15 +253,6 @@ class Info {
     this.__backing_infoList!.resetOnReuse([new Info("Alice", 8, 0, 0), new Info("Barry", 10, 1, 20), new Info("Cindy", 18, 24, 40)]);
   }
 
-  private __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
-
-  public get infoList(): Array<Info> {
-    return this.__backing_infoList!.get();
-  }
-
-  public set infoList(value: Array<Info>) {
-    this.__backing_infoList!.set(value);
-  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -273,8 +264,17 @@ class Info {
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
     throw new Error("Declare interface");
+  }
+  private __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
+
+  public get infoList(): Array<Info> {
+    return this.__backing_infoList!.get();
+  }
+
+  public set infoList(value: Array<Info>) {
+    this.__backing_infoList!.set(value);
   }
 
   @Memo() 
@@ -287,7 +287,7 @@ class Info {
       ForEachImpl<Info>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Info>((() => {
           return this.infoList;
-        }), @Memo() ((info: Info) => {
+        }), ((info: Info) => {
           MiddleComponent._invoke(undefined, (() => {
             return {
               info: info,
@@ -310,7 +310,8 @@ class Info {
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
@@ -329,12 +330,6 @@ class Info {
     this.__backing_info!.resetOnReuse((initializers!.info as Info));
   }
 
-  private __backing_info?: IParamDecoratedVariable<Info>;
-
-  public get info(): Info {
-    return this.__backing_info!.get();
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MiddleComponent)=> void) | undefined), initializers: ((()=> __Options_MiddleComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<MiddleComponent, __Options_MiddleComponent>(style, ((): MiddleComponent => {
@@ -345,8 +340,13 @@ class Info {
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MiddleComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MiddleComponent {
+  public static $_invoke(initializers?: __Options_MiddleComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): MiddleComponent {
     throw new Error("Declare interface");
+  }
+  private __backing_info?: IParamDecoratedVariable<Info>;
+
+  public get info(): Info {
+    return this.__backing_info!.get();
   }
 
   @Memo() 
@@ -376,7 +376,8 @@ class Info {
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
@@ -395,12 +396,6 @@ class Info {
     this.__backing_region!.resetOnReuse((initializers!.region as Region));
   }
 
-  private __backing_region?: IParamDecoratedVariable<Region>;
-
-  public get region(): Region {
-    return this.__backing_region!.get();
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: SubComponent)=> void) | undefined), initializers: ((()=> __Options_SubComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<SubComponent, __Options_SubComponent>(style, ((): SubComponent => {
@@ -411,8 +406,13 @@ class Info {
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_SubComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): SubComponent {
+  public static $_invoke(initializers?: __Options_SubComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): SubComponent {
     throw new Error("Declare interface");
+  }
+  private __backing_region?: IParamDecoratedVariable<Region>;
+
+  public get region(): Region {
+    return this.__backing_region!.get();
   }
 
   @Memo() 
@@ -431,26 +431,27 @@ class Info {
   }
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_MiddleComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_SubComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)', [dumpAnnotation('Require')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
   
 }
@@ -466,7 +467,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Param Decorator with @Require',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'parsed': [testParsedTransformer],
         'checked:ui-no-recheck': [testCheckedTransformer],

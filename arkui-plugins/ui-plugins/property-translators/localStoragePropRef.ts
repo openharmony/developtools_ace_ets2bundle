@@ -16,9 +16,17 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes } from '../../common/predefines';
-import { InterfacePropertyTranslator, InterfacePropertyTypes, PropertyTranslator } from './base';
-import { GetterSetter, InitializerConstructor } from './types';
+import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
+import {
+    BasePropertyTranslator,
+    InterfacePropertyCachedTranslator,
+    InterfacePropertyTranslator,
+    InterfacePropertyTypes,
+    PropertyCachedTranslator,
+    PropertyCachedTranslatorOptions,
+    PropertyTranslator,
+    PropertyTranslatorOptions,
+} from './base';
 import {
     generateToRecord,
     createGetter,
@@ -29,142 +37,142 @@ import {
     hasDecorator,
     getValueInAnnotation,
     findCachedMemoMetadata,
+    checkIsNameStartWithBackingField,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
-export class LocalStoragePropRefTranslator extends PropertyTranslator implements InitializerConstructor, GetterSetter {
-    translateMember(): arkts.AstNode[] {
-        const originalName: string = expectName(this.property.key);
-        const newName: string = backingField(originalName);
-
-        this.cacheTranslatedInitializer(newName, originalName);
-        return this.translateWithoutInitializer(newName, originalName);
+function initializeStructWithLocalStoragePropRefProperty(
+    this: BasePropertyTranslator,
+    newName: string,
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
+): arkts.Statement | undefined {
+    if (!this.stateManagementType || !this.makeType) {
+        return undefined;
     }
-
-    cacheTranslatedInitializer(newName: string, originalName: string): void {
-        const initializeStruct: arkts.AstNode = this.generateInitializeStruct(newName, originalName);
-        initializeStruct.range = this.property.range;
-        PropertyCache.getInstance().collectInitializeStruct(this.structInfo.name, [initializeStruct]);
-        if (!!this.structInfo.annotations?.reusable) {
-            const toRecord = generateToRecord(newName, originalName);
-            PropertyCache.getInstance().collectToRecord(this.structInfo.name, [toRecord]);
+    const localStoragePropRefValueStr: string | undefined = getValueInAnnotation(
+        this.property,
+        DecoratorNames.LOCAL_STORAGE_PROP_REF
+    );
+    if (!localStoragePropRefValueStr) {
+        return undefined;
+    }
+    const defaultValue = this.property.value;
+    const args: arkts.Expression[] = [
+        arkts.factory.createStringLiteral(localStoragePropRefValueStr),
+        arkts.factory.create1StringLiteral(originalName),
+        defaultValue ?? arkts.factory.createUndefinedLiteral(),
+    ];
+    if (this.hasWatch) {
+        factory.addWatchFunc(args, this.property);
+    }
+    collectStateManagementTypeImport(this.stateManagementType);
+    const propertyType = this.propertyType?.clone();
+    if (this.isMemoShouldUpdate) {
+        if (!!defaultValue) {
+            PropertyValueCache.getInstance().collect({ value: defaultValue });
+        }
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
         }
     }
+    return arkts.factory.createAssignmentExpression(
+        generateThisBacking(newName),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+        factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata)
+    );
+}
 
-    generateInitializeStruct(newName: string, originalName: string): arkts.AstNode {
-        const localStoragePropRefValueStr: string | undefined = getValueInAnnotation(
-            this.property,
-            DecoratorNames.LOCAL_STORAGE_PROP_REF
-        );
-        if (!localStoragePropRefValueStr) {
-            throw new Error('LocalStoragePropRef required only one value!!');
-        }
+export class LocalStoragePropRefTranslator extends PropertyTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_LOCAL_STORAGE_PROP_REF;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = true;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
 
-        const args: arkts.Expression[] = [
-            arkts.factory.createStringLiteral(localStoragePropRefValueStr),
-            arkts.factory.create1StringLiteral(originalName),
-            this.property.value ?? arkts.factory.createUndefinedLiteral(),
-        ];
-        factory.judgeIfAddWatchFunc(args, this.property);
-        collectStateManagementTypeImport(StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED);
-        return arkts.factory.createAssignmentExpression(
-            generateThisBacking(newName),
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            factory.generateStateMgmtFactoryCall(
-                StateManagementTypes.MAKE_LOCAL_STORAGE_PROP_REF,
-                this.propertyType?.clone(),
-                args,
-                true,
-                this.isMemoCached ? findCachedMemoMetadata(this.property, true) : undefined
-            )
-        );
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
     }
 
-    translateWithoutInitializer(newName: string, originalName: string): arkts.AstNode[] {
-        const field = factory.createOptionalClassProperty(
-            newName,
-            this.property,
-            StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
-        const thisSet: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-            generateGetOrSetCall(thisValue, GetSetTypes.SET)
-        );
-        const getter: arkts.MethodDefinition = this.translateGetter(originalName, this.propertyType, thisGet);
-        const setter: arkts.MethodDefinition = this.translateSetter(originalName, this.propertyType, thisSet);
-        field.range = this.property.range;
-        thisGet.range = this.property.range;
-        thisSet.range = this.property.range;
-        if (this.isMemoCached) {
-            const metadata = findCachedMemoMetadata(this.property, false);
-            arkts.NodeCache.getInstance().collect(field, { ...metadata, isWithinTypeParams: true });
-            arkts.NodeCache.getInstance().collect(getter, metadata);
-            arkts.NodeCache.getInstance().collect(setter, metadata);
-        }
-        return [field, getter, setter];
-    }
-
-    translateGetter(
+    initializeStruct(
+        newName: string,
         originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        returnValue: arkts.Expression
-    ): arkts.MethodDefinition {
-        return createGetter(originalName, typeAnnotation, returnValue);
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        return initializeStructWithLocalStoragePropRefProperty.bind(this)(newName, originalName, metadata);
+    }
+}
+
+export class LocalStoragePropRefCachedTranslator extends PropertyCachedTranslator {
+    protected stateManagementType: StateManagementTypes = StateManagementTypes.LOCAL_STORAGE_PROP_REF_DECORATED;
+    protected makeType: StateManagementTypes = StateManagementTypes.MAKE_LOCAL_STORAGE_PROP_REF;
+    protected shouldWrapPropertyType: boolean = true;
+    protected hasInitializeStruct: boolean = true;
+    protected hasUpdateStruct: boolean = false;
+    protected hasToRecord: boolean = true;
+    protected hasField: boolean = true;
+    protected hasGetter: boolean = true;
+    protected hasSetter: boolean = true;
+
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
+        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
     }
 
-    translateSetter(
+    initializeStruct(
+        newName: string,
         originalName: string,
-        typeAnnotation: arkts.TypeNode | undefined,
-        statement: arkts.AstNode
-    ): arkts.MethodDefinition {
-        return createSetter2(originalName, typeAnnotation, statement);
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.Statement | undefined {
+        return initializeStructWithLocalStoragePropRefProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
 export class LocalStoragePropRefInterfaceTranslator<
-    T extends InterfacePropertyTypes
+    T extends InterfacePropertyTypes,
 > extends InterfacePropertyTranslator<T> {
-    translateProperty(): T {
-        if (arkts.isMethodDefinition(this.property)) {
-            this.modified = true;
-            return flatVisitMethodWithOverloads(this.property, this.updateStateMethodInInterface) as T;
-        } else if (arkts.isClassProperty(this.property)) {
-            this.modified = true;
-            return this.updateStatePropertyInInterface(this.property) as T;
-        }
-        return this.property;
-    }
+    protected decorator: DecoratorNames = DecoratorNames.LOCAL_STORAGE_PROP_REF;
 
+    /**
+     * @deprecated
+     */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
-        if (arkts.isMethodDefinition(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP_REF)) {
-            return true;
-        } else if (arkts.isClassProperty(node) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP_REF)) {
-            return true;
+        if (arkts.isMethodDefinition(node)) {
+            return (
+                checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP_REF)
+            );
+        } else if (arkts.isClassProperty(node)) {
+            return (
+                checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_PROP_REF)
+            );
         }
         return false;
     }
+}
+
+export class LocalStoragePropRefCachedInterfaceTranslator<
+    T extends InterfacePropertyTypes,
+> extends InterfacePropertyCachedTranslator<T> {
+    protected decorator: DecoratorNames = DecoratorNames.LOCAL_STORAGE_PROP_REF;
 
     /**
-     * Wrap getter's return type and setter's param type (expecting an union type with `T` and `undefined`)
-     * to `ILocalStoragePropRefDecoratedVariable<T> | undefined`.
-     *
-     * @param method expecting getter with `@LocalStoragePropRef` and a setter with `@LocalStoragePropRef` in the overloads.
+     * @deprecated
      */
-    private updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
-        const metadata = findCachedMemoMetadata(method);
-        return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.LOCAL_STORAGE_PROP_REF, metadata);
-    }
-
-    /**
-     * Wrap to the type of the property (expecting an union type with `T` and `undefined`)
-     * to `ILocalStoragePropRefDecoratedVariable<T> | undefined`.
-     *
-     * @param property expecting property with `@LocalStoragePropRef`.
-     */
-    private updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.LOCAL_STORAGE_PROP_REF);
+    static canBeTranslated(
+        node: arkts.AstNode,
+        metadata?: CustomComponentInterfacePropertyInfo
+    ): node is InterfacePropertyTypes {
+        return (
+            !!metadata?.name?.startsWith(StateManagementTypes.BACKING) &&
+            !!metadata.annotationInfo?.hasLocalStoragePropRef
+        );
     }
 }

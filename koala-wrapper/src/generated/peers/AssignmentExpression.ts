@@ -32,9 +32,12 @@ import {
 import { Expression } from "./Expression"
 import { Es2pandaTokenType } from "./../Es2pandaEnums"
 export class AssignmentExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ASSIGNMENT_EXPRESSION;
     }
     get left(): Expression | undefined {
         return unpackNode(global.generatedEs2panda._AssignmentExpressionLeftConst(global.context, this.peer))

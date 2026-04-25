@@ -14,10 +14,15 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { PluginContext, Plugins } from '../../../common/plugin-context';
+import { initResourceInfo, initRouterInfo, loadBuildJson, PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
-import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
+import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { CheckedTransformer } from '../../../ui-plugins/checked-transformer';
+import { Collector } from '../../../collectors/collector';
+import { MetaDataCollector } from '../../../common/metadata-collector';
+import { ImportCollector } from '../../../common/import-collector';
+import { DeclarationCollector } from '../../../common/declaration-collector';
+import { LogCollector } from '../../../common/log-collector';
 
 /**
  * AfterCheck uiTransform with no recheck AST.
@@ -30,7 +35,16 @@ export const uiNoRecheck: Plugins = {
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
             script = program.astNode;
-            const checkedTransformer = new CheckedTransformer(this.getProjectConfig());
+            const projectConfig = this.getProjectConfig();
+            const aceBuildJson = loadBuildJson(projectConfig);
+            const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, global.RESOURCE_PATH);
+            MetaDataCollector.getInstance()
+                .setProjectConfig(projectConfig)
+                .setRouterInfo(initRouterInfo(aceBuildJson))
+                .setResourceInfo(resourceInfo);
+            const checkedTransformer = new CheckedTransformer({
+                useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
+            });
             const programVisitor = new ProgramVisitor({
                 pluginName: uiNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
@@ -40,6 +54,11 @@ export const uiNoRecheck: Plugins = {
             });
             program = programVisitor.programVisitor(program);
             script = program.astNode;
+            MetaDataCollector.getInstance().reset();
+            ImportCollector.getInstance().reset();
+            DeclarationCollector.getInstance().reset();
+            LogCollector.getInstance().reset();
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
             return script;
         }
         return script;

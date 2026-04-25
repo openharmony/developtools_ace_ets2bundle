@@ -15,13 +15,13 @@
 
 import * as path from 'path';
 import { PluginTester } from '../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../utils/artkts-config';
-import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { mockBuildConfig, mockProjectConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH, MOCK_LOADER_JSON_FILE_NAME } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
-import { Plugins } from '../../../../common/plugin-context';
+import { Plugins, ProjectConfig } from '../../../../common/plugin-context';
 import { dumpConstructor } from '../../../utils/simplify-dump';
 
 const COMPONENT_DIR_PATH: string = 'router-map-pages';
@@ -31,7 +31,13 @@ buildConfig.compileFiles = [
     path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, COMPONENT_DIR_PATH, 'page1.ets'),
 ];
 
-const pluginTester = new PluginTester('test router map transform', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.buildLoaderJson = 
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, COMPONENT_DIR_PATH, MOCK_LOADER_JSON_FILE_NAME);
+
+buildConfig.projectConfig = projectConfig;
+
+const pluginTester = new PluginTester('test router map transform', buildConfig, projectConfig);
 
 const parsedTransform: Plugins = {
     name: 'parsedTrans',
@@ -55,7 +61,7 @@ import { Component as Component, RelativeContainer as RelativeContainer, Builder
 
 function main() {}
 
-@Memo() 
+@Builder() 
 function builderOne() {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
     instance.setTextOptions("100", undefined);
@@ -72,15 +78,6 @@ function builderOne() {
   
   public __updateStruct(initializers: (__Options_Page1 | undefined)): void {}
   
-  private __backing_message?: string;
-  public get message(): string {
-    return (this.__backing_message as string);
-  }
-  
-  public set message(value: string) {
-    this.__backing_message = value;
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Page1)=> void) | undefined), initializers: ((()=> __Options_Page1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Page1, __Options_Page1>(style, ((): Page1 => {
@@ -90,8 +87,17 @@ function builderOne() {
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Page1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Page1 {
+  public static $_invoke(initializers?: __Options_Page1, storage?: LocalStorage, @Builder() content?: (()=> void)): Page1 {
     throw new Error("Declare interface");
+  }
+  
+  private __backing_message?: string;
+  public get message(): string {
+    return (this.__backing_message as string);
+  }
+  
+  public set message(value: string) {
+    this.__backing_message = value;
   }
   
   @Memo() 
@@ -110,7 +116,15 @@ function builderOne() {
   }
   
   ${dumpConstructor()}
-  
+  static {
+  }
+}
+
+class __NavigationBuilderRegisterClass {
+  public static staticBlockTriggerField: boolean = false;
+  static {
+    EntryPoint.NavigationBuilderRegister("pageOne", wrapBuilder(builderOne));
+  }
 }
 
 @Component() export interface __Options_Page1 {
@@ -127,13 +141,6 @@ function builderOne() {
   throw new InvalidStoreAccessError();
   }
 }
-
-class __NavigationBuilderRegisterClass {
-  public static staticBlockTriggerField: boolean = false;
-  static {
-    EntryPoint.NavigationBuilderRegister("pageOne", wrapBuilder(builderOne));
-  }
-}
 `;
 
 function testCheckedTransformer(this: PluginTestContext): void {
@@ -142,7 +149,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test router map transform',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

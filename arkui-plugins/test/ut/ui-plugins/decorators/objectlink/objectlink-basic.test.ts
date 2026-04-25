@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -103,7 +103,8 @@ function main() {}
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @Observed() class B implements IObservedObject, ISubscribedWatches {
@@ -136,7 +137,8 @@ function main() {}
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
@@ -152,11 +154,6 @@ function main() {}
     }
   }
 
-  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
-
-  public get objectlinkvar(): A {
-    return this.__backing_objectlinkvar!.get();
-  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -167,15 +164,22 @@ function main() {}
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+
+  public get objectlinkvar(): A {
+    return this.__backing_objectlinkvar!.get();
+  }
+
   @Memo() 
   public build() {}
-  
-  ${dumpConstructor()}
 
+  ${dumpConstructor()}
+  static {
+  }
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
@@ -203,6 +207,20 @@ function main() {}
     }
   }
 
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
+      return new MyStateSample2(false, ({let gensym___64599093 = storage;
+      (((gensym___64599093) == (null)) ? undefined : gensym___64599093())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample2 {
+    throw new Error("Declare interface");
+  }
+
   private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined)>;
 
   public get objectlinkvar1(): (A | undefined) {
@@ -221,43 +239,31 @@ function main() {}
     return this.__backing_objectlinkvar3!.get();
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
-      return new MyStateSample2(false, ({let gensym___64599093 = storage;
-      (((gensym___64599093) == (null)) ? undefined : gensym___64599093())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {}
-  
-  ${dumpConstructor()}
 
+  ${dumpConstructor()}
+  static {
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_MyStateSample2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '(A | B)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '(A | B)', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar2', '(IObjectLinkDecoratedVariable<(A | B)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '(A | B | null)', [], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '(A | B | null)', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar3', '(IObjectLinkDecoratedVariable<(A | B | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar3', '(boolean | undefined)')}
   
@@ -270,7 +276,7 @@ function testObjectLinkTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test objectlink basic transform',
-    [objectlinkTrackTransform, uiNoRecheck, recheck],
+    [objectlinkTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObjectLinkTransformer],
     },

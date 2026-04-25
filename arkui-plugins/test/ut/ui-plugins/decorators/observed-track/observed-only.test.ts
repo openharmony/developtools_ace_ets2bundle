@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -59,44 +59,40 @@ function main() {}
 
 @Observed() class A implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-  
+
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
-  
+
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
     return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
-  
+
   public executeOnSubscribingWatches(propertyName: string): void {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
   }
-  
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
       meta.addRef();
     }
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
-  
+
   @JSONRename({newName:"propA"}) public __backing_propA: number = 1;
 
-  @JSONRename({newName:"trackA"}) public __backing_trackA: number = 2;
-  
-  public constructor() {}
-  
   public get propA(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_propA;
   }
-  
+
   public set propA(newValue: number) {
     if (((this.__backing_propA) !== (newValue))) {
       this.__backing_propA = newValue;
@@ -104,12 +100,14 @@ function main() {}
       this.executeOnSubscribingWatches("propA");
     }
   }
-  
+
+  @JSONRename({newName:"trackA"}) public __backing_trackA: number = 2;
+
   public get trackA(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_trackA;
   }
-  
+
   public set trackA(newValue: number) {
     if (((this.__backing_trackA) !== (newValue))) {
       this.__backing_trackA = newValue;
@@ -117,7 +115,12 @@ function main() {}
       this.executeOnSubscribingWatches("trackA");
     }
   }
-  
+
+  public constructor() {}
+
+  static {
+  }
+
 }
 `;
 
@@ -127,7 +130,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed only transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

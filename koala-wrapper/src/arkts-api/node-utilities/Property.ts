@@ -15,19 +15,22 @@
 
 import { Expression, Property } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateProperty(original: Property, key?: Expression, value?: Expression): Property {
     if (isSameNativeObject(key, original.key) && isSameNativeObject(value, original.value)) {
         return original;
     }
-
-    const update = updateThenAttach(Property.updateProperty, attachModifiers);
-    const newNode = update(original, key, value);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
+    if (isSameNativeObject(key, original.key)) {
+        original.setValue(value);
+        return original
     }
-    return newNode;
 
+    const update = updateThenAttach(Property.updateProperty, attachModifiers, attachParent, refreshNodeCache);
+    return update(original, key, value);
 }

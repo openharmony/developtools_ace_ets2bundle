@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -98,28 +98,6 @@ interface trackInterface {
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_bb: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_bb");
 
-  public get propF(): number {
-    this.conditionalAddRef(this.__meta_propF);
-    return UIUtils.makeObserved(this.__backing_propF);
-  }
-
-  public set propF(newValue: number) {
-    if (((this.__backing_propF) !== (newValue))) {
-      this.__backing_propF = newValue;
-      this.__meta_propF.fireChange();
-      this.executeOnSubscribingWatches("propF");
-    }
-  }
-  
-  public get trackF(): number {
-    return this.trackF;
-  }
-
-  public set trackF(trackF: number) {
-    this.trackF = trackF;
-    return;
-  }
-  
   public get bb(): boolean {
     this.conditionalAddRef(this.__meta_bb);
     return UIUtils.makeObserved((this.__backing_bb as boolean));
@@ -137,6 +115,29 @@ interface trackInterface {
     this.bb = bb;
   }
 
+  public get propF(): number {
+    this.conditionalAddRef(this.__meta_propF);
+    return UIUtils.makeObserved(this.__backing_propF);
+  }
+
+  public set propF(newValue: number) {
+    if (((this.__backing_propF) !== (newValue))) {
+      this.__backing_propF = newValue;
+      this.__meta_propF.fireChange();
+      this.executeOnSubscribingWatches("propF");
+    }
+  }
+
+  public get trackF(): number {
+    return this.trackF;
+  }
+
+  public set trackF(trackF: number) {
+    this.trackF = trackF;
+    return;
+  }
+  static {
+  }
 }
 `;
 
@@ -146,7 +147,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @ObservedV2 implements interface',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

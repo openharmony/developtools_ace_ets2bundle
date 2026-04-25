@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -59,19 +59,19 @@ function main() {}
 
 class C implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-  
+
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
-  
+
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
     return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
-  
+
   public executeOnSubscribingWatches(propertyName: string): void {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
@@ -83,20 +83,14 @@ class C implements IObservedObject, ISubscribedWatches {
       meta.addRef();
     }
   }
-  
+
   public propC: number = 1;
-  
   @JSONRename({newName:"trackC"}) public __backing_trackC: number = 2;
-  
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackC: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackC");
-  
-  public constructor() {}
-  
   public get trackC(): number {
     this.conditionalAddRef(this.__meta_trackC);
     return this.__backing_trackC;
   }
-  
   public set trackC(newValue: number) {
     if (((this.__backing_trackC) !== (newValue))) {
       this.__backing_trackC = newValue;
@@ -104,7 +98,9 @@ class C implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("trackC");
     }
   }
-  
+  public constructor() {}
+  static {
+  }
 }
 `;
 
@@ -114,7 +110,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test track only transform',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

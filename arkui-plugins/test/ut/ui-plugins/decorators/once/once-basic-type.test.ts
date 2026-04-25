@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -63,31 +63,43 @@ function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", ((({let gensym___35048285 = initializers;
-    (((gensym___35048285) == (null)) ? undefined : gensym___35048285.onceVar1)})) ?? ("stateVar1")));
-    this.__backing_onceVar2 = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceVar2", ((({let gensym___241100287 = initializers;
-    (((gensym___241100287) == (null)) ? undefined : gensym___241100287.onceVar2)})) ?? (50)));
-    this.__backing_onceVar3 = STATE_MGMT_FACTORY.makeParamOnce<boolean>(this, "onceVar3", ((({let gensym___114153851 = initializers;
-    (((gensym___114153851) == (null)) ? undefined : gensym___114153851.onceVar3)})) ?? (true)));
-    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<undefined>(this, "onceVar4", ((({let gensym___18636164 = initializers;
-    (((gensym___18636164) == (null)) ? undefined : gensym___18636164.onceVar4)})) ?? (undefined)));
-    this.__backing_onceVar5 = STATE_MGMT_FACTORY.makeParamOnce<null>(this, "onceVar5", ((({let gensym___60128231 = initializers;
-    (((gensym___60128231) == (null)) ? undefined : gensym___60128231.onceVar5)})) ?? (null)));
+    this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar1)})) ?? ("stateVar1")));
+    this.__backing_onceVar2 = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceVar2", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar2)})) ?? (50)));
+    this.__backing_onceVar3 = STATE_MGMT_FACTORY.makeParamOnce<boolean>(this, "onceVar3", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar3)})) ?? (true)));
+    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<undefined>(this, "onceVar4", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar4)})) ?? (undefined)));
+    this.__backing_onceVar5 = STATE_MGMT_FACTORY.makeParamOnce<null>(this, "onceVar5", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar5)})) ?? (null)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_onceVar1!.resetOnReuse(((({let gensym___243327348 = initializers;
-    (((gensym___24332734) == (null)) ? undefined : gensym___24332734.onceVar1)})) ?? ("stateVar1")));
-    this.__backing_onceVar2!.resetOnReuse(((({let gensym___162552729 = initializers;
-    (((gensym___162552729) == (null)) ? undefined : gensym___162552729.onceVar2)})) ?? (50)));
-    this.__backing_onceVar3!.resetOnReuse(((({let gensym___194665329 = initializers;
-    (((gensym___194665329) == (null)) ? undefined : gensym___194665329.onceVar3)})) ?? (true)));
-    this.__backing_onceVar4!.resetOnReuse(((({let gensym___72527275 = initializers;
-    (((gensym___72527275) == (null)) ? undefined : gensym___72527275.onceVar4)})) ?? (undefined)));
-    this.__backing_onceVar5!.resetOnReuse(((({let gensym___122742778 = initializers;
-    (((gensym___122742778) == (null)) ? undefined : gensym___122742778.onceVar5)})) ?? (null)));
+    this.__backing_onceVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar1)})) ?? ("stateVar1")));
+    this.__backing_onceVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar2)})) ?? (50)));
+    this.__backing_onceVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar3)})) ?? (true)));
+    this.__backing_onceVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar4)})) ?? (undefined)));
+    this.__backing_onceVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar5)})) ?? (null)));
+  }
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Parent>(),
+    });
+  }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
   }
 
   private __backing_onceVar1?: IParamOnceDecoratedVariable<string>;
@@ -140,44 +152,32 @@ function main() {}
     this.__backing_onceVar5!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Parent>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
 
   public constructor() {}
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(string | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<string> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar2', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(boolean | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar3', '(IParamOnceDecoratedVariable<boolean> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(undefined | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<undefined> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(null | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar5', '(IParamOnceDecoratedVariable<null> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar5', '(boolean | undefined)')}
   
@@ -190,7 +190,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic type @Once decorated variables transformation',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

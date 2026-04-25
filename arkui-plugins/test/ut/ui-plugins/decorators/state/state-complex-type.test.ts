@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -122,33 +122,46 @@ final class StateType extends BaseEnum<int> {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", ((({let gensym___213853607 = initializers;
-    (((gensym___213853607) == (null)) ? undefined : gensym___213853607.stateVar1)})) ?? (new Per(6))));
-    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<Array<number>>(this, "stateVar2", ((({let gensym___113574154 = initializers;
-    (((gensym___113574154) == (null)) ? undefined : gensym___113574154.stateVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<StateType>(this, "stateVar3", ((({let gensym___166994972 = initializers;
-    (((gensym___166994972) == (null)) ? undefined : gensym___166994972.stateVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<Set<string>>(this, "stateVar4", ((({let gensym___148024261 = initializers;
-    (((gensym___148024261) == (null)) ? undefined : gensym___148024261.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "stateVar5", ((({let gensym___99384342 = initializers;
-    (((gensym___99384342) == (null)) ? undefined : gensym___99384342.stateVar5)})) ?? ([true, false])));
-    this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar6", ((({let gensym___133364871 = initializers;
-    (((gensym___133364871) == (null)) ? undefined : gensym___133364871.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_stateVar7 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar7", ((({let gensym___69403028 = initializers;
-    (((gensym___69403028) == (null)) ? undefined : gensym___69403028.stateVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_stateVar8 = STATE_MGMT_FACTORY.makeState<((sr: string)=> void)>(this, "stateVar8", ((({let gensym___219403122 = initializers;
-    (((gensym___219403122) == (null)) ? undefined : gensym___219403122.stateVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeState<Date>(this, "stateVar9", ((({let gensym___171171899 = initializers;
-    (((gensym___171171899) == (null)) ? undefined : gensym___171171899.stateVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeState<Map<number, Per>>(this, "stateVar10", ((({let gensym___91651348 = initializers;
-    (((gensym___91651348) == (null)) ? undefined : gensym___91651348.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<(string | number)>(this, "stateVar11", ((({let gensym___56045278 = initializers;
-    (((gensym___56045278) == (null)) ? undefined : gensym___56045278.stateVar11)})) ?? (0.0)));
-    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<(Set<string> | Per)>(this, "stateVar12", ((({let gensym___164759887 = initializers;
-    (((gensym___164759887) == (null)) ? undefined : gensym___164759887.stateVar12)})) ?? (new Per(6))));
+    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))));
+    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<Array<number>>(this, "stateVar2", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<StateType>(this, "stateVar3", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (StateType.TYPE3)));
+    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<Set<string>>(this, "stateVar4", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "stateVar5", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? ([true, false])));
+    this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar6", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
+    this.__backing_stateVar7 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar7", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar7)})) ?? ([new Per(7), new Per(11)])));
+    this.__backing_stateVar8 = STATE_MGMT_FACTORY.makeState<((sr: string)=> void)>(this, "stateVar8", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar8)})) ?? (((sr: string) => {}))));
+    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeState<Date>(this, "stateVar9", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar9)})) ?? (new Date("2025-4-23"))));
+    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeState<Map<number, Per>>(this, "stateVar10", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
+    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<(string | number)>(this, "stateVar11", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar11)})) ?? (0.0)));
+    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<(Set<string> | Per)>(this, "stateVar12", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar12)})) ?? (new Per(6))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
+      return new Parent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
+    throw new Error("Declare interface");
+  }
 
   private __backing_stateVar1?: IStateDecoratedVariable<Per>;
 
@@ -270,72 +283,61 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar12!.set(value);
   }
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
-    throw new Error("Declare interface");
-  }
-
   @Memo() 
   public build() {}
 
   ${dumpConstructor()}
 
+  static {
+  }
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Per | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(Array<number> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IStateDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(StateType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(StateType | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IStateDecoratedVariable<StateType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Set<string> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IStateDecoratedVariable<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(Array<boolean> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(IStateDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar6', '(Array<Per> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar6', '(IStateDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar7', '(Array<Per> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar7', '(IStateDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(((sr: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar8', '(IStateDecoratedVariable<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar9', '(Date | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar9', '(IStateDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar10', '(IStateDecoratedVariable<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar11', '((string | number) | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar11', '(IStateDecoratedVariable<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar12', '(IStateDecoratedVariable<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar12', '(boolean | undefined)')}
   
@@ -348,7 +350,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @State decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

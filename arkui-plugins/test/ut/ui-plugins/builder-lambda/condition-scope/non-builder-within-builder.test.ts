@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { collectNoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -61,6 +61,7 @@ import { Component as Component, Builder as Builder } from "@ohos.arkui.componen
 
 function main() {}
 
+@Builder() 
 @Memo() 
 function TestComponent(@MemoSkip() init: TestInitCallback, @MemoSkip() update: TestUpdateCallback): void {}
 
@@ -71,41 +72,43 @@ type TestUpdateCallback = (()=> void);
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
-  
+
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___249621102 = storage;
-      (((gensym___249621102) == (null)) ? undefined : gensym___249621102())}));
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
-  
+
   @Memo() 
   public build() {
     TestComponent((() => {
       if (true) {
-        
+
       }
     }), (() => {
       if (false) {
-        
+
       }
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
+
 }
 
 @Component() export interface __Options_MyStateSample {
-  
+
 }
 `;
 
@@ -115,7 +118,7 @@ function testUITransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test no conditionScope in non-@Builder function',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
     },

@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -71,7 +71,17 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
-
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
+    throw new Error("Declare interface");
+  }
   private __backing_numB?: IStoragePropRefDecoratedVariable<number>;
 
   public get numB(): number {
@@ -121,45 +131,31 @@ function main() {}
   public set nullB(value: null) {
     this.__backing_nullB!.set(value);
   }
-
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___203542966 = storage;
-      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
-    throw new Error("Declare interface");
-  }
-  
   @Memo() 
   public build() {}
-  
   ${dumpConstructor()}
-
+  static {
+  }
 }
 
 @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numB', '(IStoragePropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop2" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringB', '(IStoragePropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop3" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanB', '(IStoragePropRefDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop4" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_undefinedB', '(IStoragePropRefDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_undefinedB', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop5" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_nullB', '(IStoragePropRefDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_nullB', '(boolean | undefined)')}
   
@@ -172,7 +168,7 @@ function testStoragePropTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @StoragePropRef primitive type transform',
-    [storagePropTransform, uiNoRecheck, recheck],
+    [storagePropTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testStoragePropTransformer],
     },
