@@ -1772,7 +1772,6 @@ export function checkSystemApiValue(jsDocTags: readonly ts.JSDocTag[], config: t
   if (!jsDocTag) {
     return false;
   }
-  console.log('====================')
   // Extract the version range from the JSDoc tag comment
   const versionRange = extractVersionRange(jsDocTag.comment);
 
