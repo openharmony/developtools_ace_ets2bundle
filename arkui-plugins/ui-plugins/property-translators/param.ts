@@ -40,13 +40,22 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function resetOnReuseWithParamProperty(
     this: BasePropertyTranslator,
     newName: string, 
     originalName: string
 ): arkts.ExpressionStatement {
-    const arg = factory.generateInitializeValue(this.property.clone(), this.propertyType?.clone(), originalName);
+    const propertyValue = this.property;
+    const propertyType = this.propertyType?.clone();
+    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+    if (this.isMemoShouldUpdate) {
+        PropertyValueCache.getInstance().collect({ value: propertyValue });
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
+        }
+    }
     return factory.createResetOnReuseStmt(newName, arg);
 }
 

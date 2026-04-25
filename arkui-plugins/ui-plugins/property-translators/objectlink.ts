@@ -40,6 +40,7 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithObjectLinkProperty(
     this: BasePropertyTranslator,
@@ -47,25 +48,35 @@ function initializeStructWithObjectLinkProperty(
     originalName: string,
     metadata?: arkts.AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
-    if (!this.stateManagementType || !this.makeType) {
+    if (!this.stateManagementType || !this.makeType || !this.propertyType) {
         return undefined;
     }
+    const initializerPropertyType = this.propertyType.clone();
     const initializers = arkts.factory.createTSAsExpression(
         factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             originalName
         ),
-        this.propertyType,
+        initializerPropertyType,
         false
     );
     const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
     }
+    const stateManagementCallType = this.propertyType.clone();
+    if (this.isMemoShouldUpdate) {
+        if (!!initializerPropertyType) {
+            PropertyValueCache.getInstance().collect({ value: initializerPropertyType });
+        }
+        if (!!stateManagementCallType) {
+            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        }
+    }
     return arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
     );
 }
 

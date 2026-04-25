@@ -125,6 +125,9 @@ export class CacheFactory {
                     StructFactory.generateLifecycleObserverCall
                 ),
             ]);
+            if (PropertyCache.getInstance().shouldMemoUpdateInitializeStruct(metadata.name)) {
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
+            }
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
         const contentParam = UIFactory.createContentParameter();

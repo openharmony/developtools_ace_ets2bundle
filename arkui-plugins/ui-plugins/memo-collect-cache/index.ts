@@ -18,5 +18,6 @@ export * from './builder-param/classPropertyValueCache';
 // export * from './condition-scope/conditionScopeInfoCache';
 export * from './builder-lambda/initialbuilderLambdaBodyCache';
 export * from './property/propertyFactoryCallTypeCache';
+export * from './property/propertyValueCache';
 export * from './custom-dialog/customDialogControllerCache';
 export * from './custom-dialog/customDialogControllerBuilderCache';

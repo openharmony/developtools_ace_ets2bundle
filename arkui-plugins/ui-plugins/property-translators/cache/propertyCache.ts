@@ -23,12 +23,18 @@ export interface PropertyCachedBody {
     resetStateVarsBody?: arkts.AstNode[];
 }
 
+export interface PropertyMemoCachedInfo {
+    shouldMemoUpdateInitializeStruct?: boolean;
+}
+
 export class PropertyCache {
     private _cache: Map<string, PropertyCachedBody>;
+    private _memoInfoCache: Map<string, PropertyMemoCachedInfo>;
     private static instance: PropertyCache;
 
     private constructor() {
         this._cache = new Map<string, PropertyCachedBody>();
+        this._memoInfoCache = new Map<string, PropertyMemoCachedInfo>();
     }
 
     static getInstance(): PropertyCache {
@@ -40,6 +46,11 @@ export class PropertyCache {
 
     reset(): void {
         this._cache.clear();
+        this._memoInfoCache.clear();
+    }
+
+    shouldMemoUpdateInitializeStruct(name: string): boolean {
+        return !!this._memoInfoCache.get(name)?.shouldMemoUpdateInitializeStruct;
     }
 
     getInitializeBody(name: string): arkts.AstNode[] {
@@ -56,6 +67,12 @@ export class PropertyCache {
 
     getResetStateVars(name: string): arkts.AstNode[] {
         return this._cache.get(name)?.resetStateVarsBody ?? [];
+    }
+
+    setShouldMemoUpdateInitializeStruct(name: string, value: boolean): void {
+        const memoCachedInfo: PropertyMemoCachedInfo = this._memoInfoCache.get(name) ?? {};
+        memoCachedInfo.shouldMemoUpdateInitializeStruct = !!memoCachedInfo.shouldMemoUpdateInitializeStruct || value;
+        this._memoInfoCache.set(name, memoCachedInfo);
     }
 
     collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {

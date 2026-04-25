@@ -41,6 +41,7 @@ import { factory } from './factory';
 import { factory as UIFactory } from '../ui-factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function factoryCallWithLocalProperty(
     this: BasePropertyTranslator,
@@ -51,18 +52,28 @@ function factoryCallWithLocalProperty(
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
+    const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.create1StringLiteral(originalName),
-        this.property.value ?? arkts.factory.createUndefinedLiteral(),
+        defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
     collectStateManagementTypeImport(this.stateManagementType);
+    const propertyType = this.propertyType?.clone();
     const factoryCall: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
         this.makeType,
-        this.propertyType?.clone(),
+        propertyType,
         args,
         !isStatic,
         metadata
     );
+    if (this.isMemoShouldUpdate) {
+        if (!!defaultValue) {
+            PropertyValueCache.getInstance().collect({ value: defaultValue });
+        }
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
+        }
+    }
     return factoryCall;
 }
 

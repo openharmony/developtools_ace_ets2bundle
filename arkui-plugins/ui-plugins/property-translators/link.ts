@@ -42,6 +42,7 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
 
 function initializeStructWithLinkProperty(
     this: BasePropertyTranslator,
@@ -72,15 +73,21 @@ function initializeStructWithLinkProperty(
     }
     collectStateManagementTypeImport(this.stateManagementType);
     collectStateManagementTypeImport(StateManagementTypes.LINK_SOURCE_TYPE);
+    const propertyType = this.propertyType?.clone();
     const consequent = arkts.BlockStatement.createBlockStatement([
         arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
                 generateThisBacking(newName, false, false),
                 arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+                factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata)
             )
         ),
     ]);
+    if (this.isMemoShouldUpdate) {
+        if (!!propertyType) {
+            PropertyValueCache.getInstance().collect({ value: propertyType });
+        }
+    }
     return arkts.factory.createExpressionStatement(arkts.factory.createIfStatement(test, consequent));
 }
 
