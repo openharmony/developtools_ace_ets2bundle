@@ -39,10 +39,13 @@ import { Es2pandaScriptFunctionFlags } from "./../Es2pandaEnums"
 import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class ScriptFunction extends AstNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION;
     }
     static createScriptFunction(databody: AstNode | undefined, datasignature: FunctionSignature | undefined, datafuncFlags: number, dataflags: number): ScriptFunction {
         return new ScriptFunction(global.generatedEs2panda._CreateScriptFunction(global.context, passNode(databody), passNode(datasignature), datafuncFlags, dataflags))

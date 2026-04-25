@@ -24,13 +24,13 @@ import {
     GLOBAL_ANNOTATION_MODULE
 } from './predefines';
 import { DecoratorNames } from '../../common/predefines';
-import { BuilderLambdaNames } from '../utils';
+// import { BuilderLambdaNames } from '../utils';
 import { ImportCollector } from '../../common/import-collector';
 
 
 /**
  * 
- * @param result 
+ * @param result
  * @returns let result = ESValue.instantiateEmptyObject()
  */
 export function createEmptyESValue(result: string): arkts.VariableDeclaration {
@@ -52,14 +52,14 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
                     undefined,
                     undefined
                 )
-            )
+            ),
         ]
     );
 }
 
 /**
- * 
- * @param value 
+ *
+ * @param value
  * @returns ESValue.wrap(value)
  */
 export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
@@ -77,10 +77,10 @@ export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
 }
 
 /**
- * 
- * @param object 
- * @param key 
- * @param value 
+ *
+ * @param object
+ * @param key
+ * @param value
  * @returns object.setProperty(key, value)
  */
 export function setPropertyESValue(object: string, key: string, value: arkts.AstNode): arkts.ExpressionStatement {
@@ -94,19 +94,16 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
                 false
             ),
             undefined,
-            [
-                arkts.factory.createStringLiteral(key),
-                value.clone()
-            ]
+            [arkts.factory.createStringLiteral(key), value.clone()]
         )
     );
 }
 
 /**
- * 
- * @param result 
- * @param obj 
- * @param key 
+ *
+ * @param result
+ * @param obj
+ * @param key
  * @returns let result = object.getProperty(key)
  */
 export function getPropertyESValue(result: string, obj: string, key: string): arkts.VariableDeclaration {
@@ -128,13 +125,13 @@ export function getPropertyESValue(result: string, obj: string, key: string): ar
                     undefined,
                     [arkts.factory.create1StringLiteral(key)]
                 )
-            )
+            ),
         ]
     );
 }
 
 /**
- * 
+ *
  * @param {string} stateVarName - Original state variable name to be proxied.
  * @returns {string} Proxied variable name in the format: "__Proxy_{stateVarName}".
  */
@@ -144,7 +141,7 @@ export function stateProxy(stateVarName: string): string {
 
 /**
  * get elmtId
- * @returns         
+ * @returns
  *      let __Interop_ViewStackProcessor_Internal = global.getProperty("ViewStackProcessor");
  *      let createId = __Interop_ViewStackProcessor_Internal.getProperty("AllocateNewElmetIdForNextComponent");
  *      let elmtId = createId.invoke();
@@ -153,39 +150,39 @@ export function createELMTID(): arkts.Statement {
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteropInternalNames.ELMTID),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createCallExpression(
-                        arkts.factory.createMemberExpression(
-                            arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
-                            arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
-                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                            false,
-                            false
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(InteropInternalNames.ELMTID),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createCallExpression(
+                            arkts.factory.createMemberExpression(
+                                arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
+                                arkts.factory.createIdentifier(ESValueMethodNames.GETPROPERTY),
+                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                false,
+                                false
+                            ),
+                            undefined,
+                            [arkts.factory.create1StringLiteral('ViewStackProcessor')]
                         ),
-                        undefined,
-                        [arkts.factory.create1StringLiteral('ViewStackProcessor')]
+                        arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
                     ),
-                    arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                [
-                    arkts.factory.createStringLiteral('AllocateNewElmetIdForNextComponent')
-                ]
+                    undefined,
+                    [arkts.factory.createStringLiteral('AllocateNewElmetIdForNextComponent')]
+                )
             )
-        )]
+        ]
     );
 }
 
 /**
  * 
- * @param componentName 
+ * @param componentName
  * @returns return {
  *              component: __Interop_Component_Internal,
  *              name: componentName,
@@ -211,28 +208,30 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
 }
 
 /**
- * createGlobal 
+ * createGlobal
  * @returns let global = ESValue.getGlobal();
  */
 export function createGlobal(): arkts.Statement {
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
-        [arkts.factory.createVariableDeclarator(
-            arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
-            arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
-            arkts.factory.createCallExpression(
-                arkts.factory.createMemberExpression(
-                    arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
-                    arkts.factory.createIdentifier('getGlobal'),
-                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                    false,
-                    false
-                ),
-                undefined,
-                undefined
+        [
+            arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_LET,
+                arkts.factory.createIdentifier(InteropInternalNames.GLOBAL),
+                arkts.factory.createCallExpression(
+                    arkts.factory.createMemberExpression(
+                        arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
+                        arkts.factory.createIdentifier('getGlobal'),
+                        arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                        false,
+                        false
+                    ),
+                    undefined,
+                    undefined
+                )
             )
-        )]
+        ]
     );
 }
 
@@ -254,20 +253,32 @@ export function isArkTS1_1(node: arkts.MemberExpression): boolean {
     return true;
 }
 
+export function insertInteropComponentImports(): void {
+    ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
+    ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
+    ImportCollector.getInstance().collectSource(
+        InteroperAbilityNames.GETCOMPATIBLESTATE,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
+    ImportCollector.getInstance().collectSource(
+        BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
+    ImportCollector.getInstance().collectSource(
+        BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER,
+        InteroperAbilityNames.INTEROP
+    );
+    ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
+}
+
 export function isInteropComponent(node: arkts.CallExpression): boolean {
     if (
         arkts.isMemberExpression(node.expression) &&
         isInstantiateImpl(node.expression) &&
         isArkTS1_1(node.expression)
     ) {
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.ARKUICOMPATIBLE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.ARKUICOMPATIBLE);
-        ImportCollector.getInstance().collectSource(InteroperAbilityNames.GETCOMPATIBLESTATE, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(InteroperAbilityNames.GETCOMPATIBLESTATE);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER);
-        ImportCollector.getInstance().collectSource(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER, InteroperAbilityNames.INTEROP);
-        ImportCollector.getInstance().collectImport(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER);
         return true;
     }
     return false;
@@ -282,11 +293,11 @@ function isDecoratorAnnotation(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(anno.expr);
+        const decl = arkts.getPeerIdentifierDecl(anno.expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || moduleName !== GLOBAL_ANNOTATION_MODULE) {
             return false;
         }
@@ -301,10 +312,10 @@ export function hasDecoratorInterop(
         | arkts.MethodDefinition
         | arkts.ETSParameterExpression
         | arkts.ETSFunctionType,
-    decoratorName: DecoratorNames
+    decoratorName: string
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
     }
-    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+    return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
 }

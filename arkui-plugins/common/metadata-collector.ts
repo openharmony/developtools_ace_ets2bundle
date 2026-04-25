@@ -13,14 +13,20 @@
  * limitations under the License.
  */
 
-import { RouterInfo } from '../ui-plugins/struct-translators/utils';
-import { ProjectConfig } from './plugin-context';
+import * as arkts from '@koalaui/libarkts';
+import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents, RouterInfo } from './plugin-context';
+import { ImportInfo, collectFileImportsByProgram } from './import-info';
 
 export class MetaDataCollector {
+    public resourceInfo: ResourceInfo | undefined;
     public projectConfig: ProjectConfig | undefined;
     public fileAbsName: string | undefined;
     public externalSourceName: string | undefined;
     public routerInfo: Map<string, RouterInfo[]> = new Map<string, RouterInfo[]>();
+    public componentsInfo: UIComponents | undefined;
+    public consistentResourceMap: ConsistentResourceMap | undefined;
+    public mainPageNames: string[] | undefined;
+    private importsInfoCache: ImportInfo | undefined;
     private static instance: MetaDataCollector | null = null;
 
     static getInstance(): MetaDataCollector {
@@ -50,10 +56,51 @@ export class MetaDataCollector {
         return this;
     }
 
+    setResourceInfo(resourceInfo: ResourceInfo | undefined): this {
+        this.resourceInfo = resourceInfo;
+        return this;
+    }
+
+    setComponentsInfo(componentsInfo: UIComponents | undefined): this {
+        this.componentsInfo = componentsInfo;
+        return this;
+    }
+
+    setConsistentResourceMap(resourceMap: ConsistentResourceMap | undefined): this {
+        this.consistentResourceMap = resourceMap;
+        return this;
+    }
+
+    setMainPages(mainPages: string[] | undefined): this {
+        this.mainPageNames = mainPages;
+        return this;
+    }
+
+    setImportsInfo(importsInfoCache: ImportInfo | undefined): this {
+        this.importsInfoCache = importsInfoCache;
+        return this;
+    }
+
+    getImportsInfo(program: arkts.Program | undefined): ImportInfo | undefined {
+        if (!program) {
+            return undefined;
+        }
+        if (this.importsInfoCache && this.fileAbsName === program.absName) {
+            return this.importsInfoCache;
+        }
+        this.importsInfoCache = collectFileImportsByProgram(program);
+        return this.importsInfoCache;
+    }
+
     reset(): void {
         this.projectConfig = undefined;
         this.fileAbsName = undefined;
         this.externalSourceName = undefined;
         this.routerInfo.clear();
+        this.resourceInfo = undefined;
+        this.componentsInfo = undefined;
+        this.consistentResourceMap = undefined;
+        this.mainPageNames = undefined;
+        this.importsInfoCache = undefined;
     }
 }

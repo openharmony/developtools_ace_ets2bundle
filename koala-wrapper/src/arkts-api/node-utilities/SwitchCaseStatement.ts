@@ -15,7 +15,12 @@
 
 import { Expression, Statement, SwitchCaseStatement } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateSwitchCaseStatement(
     original: SwitchCaseStatement,
@@ -26,6 +31,11 @@ export function updateSwitchCaseStatement(
         return original;
     }
 
-    const update = updateThenAttach(SwitchCaseStatement.updateSwitchCaseStatement, attachModifiers);
+    const update = updateThenAttach(
+        SwitchCaseStatement.updateSwitchCaseStatement,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, test, consequent);
 }

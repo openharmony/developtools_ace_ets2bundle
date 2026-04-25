@@ -14,11 +14,21 @@
  */
 
 import { ThisExpression } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateThisExpression(original: ThisExpression): ThisExpression {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(ThisExpression.updateThisExpression, attachModifiers);
+    const update = updateThenAttach(
+        ThisExpression.updateThisExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original);
 }

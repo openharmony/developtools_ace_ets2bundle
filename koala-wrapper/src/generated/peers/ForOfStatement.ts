@@ -32,6 +32,9 @@ export class ForOfStatement extends LoopStatement {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT);
         super(pointer);
     }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_FOR_OF_STATEMENT;
+    }
     static createForOfStatement(
         left: AstNode | undefined,
         right: Expression | undefined,

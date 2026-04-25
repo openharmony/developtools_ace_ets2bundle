@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { GetSetDumper, dumpGetterSetter, dumpAnnotation, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -101,16 +101,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}
 
-  private __backing_selectedDate?: ILinkDecoratedVariable<Date>;
-
-  public get selectedDate(): Date {
-    return this.__backing_selectedDate!.get();
-  }
-
-  public set selectedDate(value: Date) {
-    this.__backing_selectedDate!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: DateComponent)=> void) | undefined), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<DateComponent, __Options_DateComponent>(style, ((): DateComponent => {
@@ -120,8 +110,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): DateComponent {
+  public static $_invoke(initializers?: __Options_DateComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): DateComponent {
     throw new Error("Declare interface");
+  }
+
+  private __backing_selectedDate?: ILinkDecoratedVariable<Date>;
+
+  public get selectedDate(): Date {
+    return this.__backing_selectedDate!.get();
+  }
+
+  public set selectedDate(value: Date) {
+    this.__backing_selectedDate!.set(value);
   }
 
   @Memo() 
@@ -157,8 +157,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  ${dumpConstructor()}
-  
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
@@ -169,16 +172,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
 
-  private __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
-
-  public get parentSelectedDate(): Date {
-    return this.__backing_parentSelectedDate!.get();
-  }
-
-  public set parentSelectedDate(value: Date) {
-    this.__backing_parentSelectedDate!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
@@ -188,8 +181,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
+  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): ParentComponent {
     throw new Error("Declare interface");
+  }
+
+  private __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
+
+  public get parentSelectedDate(): Date {
+    return this.__backing_parentSelectedDate!.get();
+  }
+
+  public set parentSelectedDate(value: Date) {
+    this.__backing_parentSelectedDate!.set(value);
   }
 
   @Memo() 
@@ -231,11 +234,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }));
   }
 
-  ${dumpConstructor()}
-
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  static {
+  }
 }
-
-@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
   @Memo() 
@@ -249,14 +253,14 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Component() export interface __Options_DateComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('__Link_intrinsic')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
   
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_ParentComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}
   
@@ -269,7 +273,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Link decorated variables passing',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

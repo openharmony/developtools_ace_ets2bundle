@@ -15,7 +15,12 @@
 
 import { ObjectExpression, Property } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaAstNodeType } from '../../Es2pandaEnums';
 
 export function updateObjectExpression(
@@ -32,6 +37,11 @@ export function updateObjectExpression(
         return original;
     }
 
-    const update = updateThenAttach(ObjectExpression.updateObjectExpression, attachModifiers);
+    const update = updateThenAttach(
+        ObjectExpression.updateObjectExpression,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, nodeType, properties, trailingComma);
 }

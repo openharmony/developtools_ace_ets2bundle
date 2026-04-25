@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, ignoreNewLines, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -61,7 +61,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
   public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainer {
     throw new Error("Declare interface");
   }
-  
+
   @Builder() 
   public closerBuilder() {}
 
@@ -147,12 +147,28 @@ function main() {}
 
 @Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_closer = ((((({let gensym___38813563 = initializers;
-    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (content))) ?? (((({let gensym___38813563 = initializers;
-    (((gensym___38813563) == (null)) ? undefined : gensym___38813563.closer)})) ?? (this.closerBuilder))))
+    this.__backing_closer = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (this.closerBuilder))))
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
+
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: CustomContainer)=> void) | undefined), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<CustomContainer, __Options_CustomContainer>(style, ((): CustomContainer => {
+      return new CustomContainer(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+    }), initializers, reuseId, content);
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainer {
+    throw new Error("Declare interface");
+  }
+
+  @Memo() 
+  public closerBuilder() {}
 
   private __backing_closer?: @Memo() (()=> void);
 
@@ -163,27 +179,13 @@ function main() {}
   public set closer(value: @Memo() (()=> void)) {
     this.__backing_closer = value;
   }
-  
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: CustomContainer)=> void) | undefined), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponent._invokeImpl<CustomContainer, __Options_CustomContainer>(style, ((): CustomContainer => {
-      return new CustomContainer(false, ({let gensym___149025070 = storage;
-      (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
-    }), initializers, reuseId, content);
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CustomContainer, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainer {
-    throw new Error("Declare interface");
-  }
-
-  @Memo() 
-  public closerBuilder() {}
 
   @Memo() 
   public build() {}
 
   ${dumpConstructor()}
+  static {
+  }
 
 }
 
@@ -191,17 +193,17 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomContainerUser)=> void) | undefined), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomContainerUser, __Options_CustomContainerUser>(style, ((): CustomContainerUser => {
-      return new CustomContainerUser(false, ({let gensym___46528967 = storage;
-      (((gensym___46528967) == (null)) ? undefined : gensym___46528967())}));
+      return new CustomContainerUser(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
 
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomContainerUser {
+  public static $_invoke(initializers?: __Options_CustomContainerUser, storage?: LocalStorage, @Builder() content?: (()=> void)): CustomContainerUser {
     throw new Error("Declare interface");
   }
 
@@ -240,6 +242,8 @@ function main() {}
   }
 
   ${dumpConstructor()}
+  static {
+  }
 
 }
 
@@ -260,10 +264,10 @@ function testCustomComponentTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test custom component call transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         parsed: [testParedTransformer],
-        checked: [testCustomComponentTransformer],
+        'checked:ui-no-recheck': [testCustomComponentTransformer],
     },
     {
         stopAfter: 'checked',

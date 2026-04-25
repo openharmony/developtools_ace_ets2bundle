@@ -312,152 +312,6 @@ export function hasAnnotation(annoArray: readonly arkts.AnnotationUsage[], annot
     return (annoArray || []).some((anno) => anno.expr && getIdentifierName(anno.expr) === annotationName);
 }
 
-interface ComponentJson {
-    name: string;
-    atomic?: boolean;
-    attrs: string[];
-    single?: boolean;
-    parents?: string[];
-    children?: string[];
-}
-
-export interface UISyntaxRuleComponents {
-    builtInAttributes: string[];
-    containerComponents: string[];
-    atomicComponents: string[];
-    singleChildComponents: string[];
-    validParentComponent: Map<string, string[]>;
-    validChildComponent: Map<string, string[]>;
-}
-
-export function getComponentsInfo(projectConfig: ProjectConfig | undefined, isCoding: boolean): UISyntaxRuleComponents {
-    const uiComponentPath = path.resolve(__dirname, UI_COMPONENT_PATH);
-    const uiComponentFiles = fs.existsSync(uiComponentPath) ? fs.readdirSync(uiComponentPath) : [];
-    const externalComponentPath = getExternalComponentPath(projectConfig, isCoding);
-    const externalComponentFiles = fs.existsSync(externalComponentPath) ? fs.readdirSync(externalComponentPath) : [];
-
-    let builtInAttributes: string[] = [];
-    let containerComponents: string[] = [];
-    let atomicComponents: string[] = [];
-    let singleChildComponents: string[] = [];
-    let validParentComponent: Map<string, string[]> = new Map();
-    let validChildComponent: Map<string, string[]> = new Map();
-    const componentsInfo: UISyntaxRuleComponents = {
-        builtInAttributes,
-        containerComponents,
-        atomicComponents,
-        singleChildComponents,
-        validParentComponent,
-        validChildComponent,
-    };
-
-    extractComponentInfo(componentsInfo, uiComponentPath, uiComponentFiles);
-    extractComponentInfo(componentsInfo, externalComponentPath, externalComponentFiles);
-    return componentsInfo;
-}
-
-function extractComponentInfo(componentsInfo: UISyntaxRuleComponents, componentPath: string, files: string[]): void {
-    if (files.length === 0) {
-        return;
-    }
-    files.forEach((file) => {
-        if (path.extname(file) === '.json') {
-            const filePath = path.join(componentPath, file);
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            let componentJson: ComponentJson;
-            try {
-                componentJson = JSON.parse(fileContent);
-            } catch (error) {
-                console.error(`Invalid JSON: ${filePath}`, (error as Error).message);
-                return;
-            }
-            
-            // Record the container component name
-            if ((!componentJson.atomic || componentJson.atomic !== true) && componentJson.name) {
-                componentsInfo.containerComponents.push(componentJson.name);
-            }
-            // Record the atomic component name
-            if (componentJson.atomic && componentJson.atomic === true && componentJson.name) {
-                componentsInfo.atomicComponents.push(componentJson.name);
-            }
-            // Record the name of a single subcomponent component name
-            if (componentJson.single && componentJson.single === true && componentJson.name) {
-                componentsInfo.singleChildComponents.push(componentJson.name);
-            }
-            // Record a valid parent component name
-            if (componentJson.parents && componentJson.name) {
-                componentsInfo.validParentComponent.set(componentJson.name, componentJson.parents);
-            }
-            // Record a valid children component name
-            if (componentJson.children && componentJson.name) {
-                componentsInfo.validChildComponent.set(componentJson.name, componentJson.children);
-            }
-            // Document all built-in attributes
-            componentJson.attrs
-                ?.filter((attr) => !componentsInfo.builtInAttributes.includes(attr))
-                .forEach((attr) => componentsInfo.builtInAttributes.push(attr));
-        }
-    });
-}
-
-function getExternalComponentPath(projectConfig: ProjectConfig | undefined, isCoding: boolean): string {
-    if (!projectConfig) {
-        return '';
-    }
-    const externalComponentPaths = isCoding
-        ? (projectConfig.externalApiPath ? [projectConfig.externalApiPath] : [])
-        : (projectConfig.externalApiPaths ?? []);
-    const subPath = isCoding ? EXTERNAL_COMPONENT_PATH_EDIT : EXTERNAL_COMPONENT_PATH_COMPILE;
-    for (const sdkPath of externalComponentPaths) {
-        const fullPath = path.resolve(sdkPath, subPath);
-        if (fs.existsSync(fullPath)) {
-            return fullPath;
-        }
-    }
-    return '';
-}
-
-export function getConsistentResourceInfo(): Map<string, { id: string; resourceName: string }[]> {
-    const resultMap = new Map<string, { id: string; resourceName: string }[]>();
-    const consistentResourcePath =
-        path.resolve(__dirname, '../../../../../../../previewer/common/resources/entry/resources.txt');
-    let resourceText: string = '';
-    try {
-        // The contents of the file are read synchronously
-        resourceText = fs.readFileSync(path.resolve(consistentResourcePath), 'utf-8');
-    } catch (error: unknown) {
-        return resultMap;
-    }
-    // Split text by line
-    const lines = resourceText.split('\n');
-    for (const line of lines) {
-        // Skip blank lines
-        if (!line.trim()) {
-            continue;
-        }
-        const match = line.match(/id:(\d+),\s*'([^']+)'\s*'([^']+)'/);
-        if (match && match.length === 4) {
-            const id = match[1];
-            const value = match[2];
-            const resourceName = match[3];
-            // Remove resource names that start with 'ohos_id' or 'ohos_fa'
-            if (resourceName.startsWith('ohos_id') || resourceName.startsWith('ohos_fa')) {
-                continue;
-            }
-            let entries = resultMap.get(value);
-            if (!entries) {
-                entries = [];
-                resultMap.set(value, entries);
-            }
-            entries.push({
-                id: id,
-                resourceName: resourceName,
-            });
-        }
-    }
-    return resultMap;
-}
-
 export function isBuiltInAttribute(context: UISyntaxRuleContext, attributeName: string): boolean {
     if (!context.componentsInfo) {
         return false;
@@ -493,17 +347,6 @@ export function isSingleChildComponent(context: UISyntaxRuleContext, componentNa
         return false;
     }
     return context.componentsInfo.singleChildComponents.includes(componentName);
-}
-
-export function readJSON<T>(path: string): T | null {
-    if (!fs.existsSync(path)) {
-        return null;
-    }
-    const content = fs.readFileSync(path).toString();
-    if (!content) {
-        return null;
-    }
-    return JSON.parse(content) as T;
 }
 
 export function tracePerformance<T extends (...args: any[]) => any>(name: string, fn: T): T {
@@ -546,7 +389,7 @@ export function getAnnotationUsageByName(
             return false;
         }
         const program = arkts.getProgramFromAstNode(annotationDeclaration);
-        if (!isFromPresetModules(program.moduleName)) {
+        if (!program || !isFromPresetModules(program.moduleName)) {
             return false;
         }
         return true;
@@ -613,9 +456,8 @@ export const TypeFlags = {
 
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    return program.absName;
+    return program?.absName;
 }
-
 export interface ImportInfo {
     importedNames: Set<string>;
     arkUIImportNode?: arkts.ImportDeclaration;

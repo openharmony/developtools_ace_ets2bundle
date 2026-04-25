@@ -31,10 +31,13 @@ import {
 
 import { Literal } from "./Literal"
 export class NullLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_NULL_LITERAL;
     }
     static createNullLiteral(): NullLiteral {
         return new NullLiteral(global.generatedEs2panda._CreateNullLiteral(global.context))

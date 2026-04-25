@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -93,9 +93,7 @@ class E implements IObservedObject, ISubscribedWatches {
   @JSONRename({newName:"trackE"}) public __backing_trackE: Info = new Info();
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackE: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackE");
-  
-  public constructor() {}
-  
+
   public get trackE(): Info {
     this.conditionalAddRef(this.__meta_trackE);
     return this.__backing_trackE;
@@ -108,7 +106,11 @@ class E implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("trackE");
     }
   }
-  
+
+  public constructor() {}
+  static {
+  }
+
 }
 
 @Observed() class E1 implements IObservedObject, ISubscribedWatches {
@@ -139,13 +141,9 @@ class E implements IObservedObject, ISubscribedWatches {
   }
   
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
-  
+
   @JSONRename({newName:"propE1"}) public __backing_propE1: Info = new Info();
 
-  @JSONRename({newName:"trackE1"}) public __backing_trackE1: Info = new Info();
-  
-  public constructor() {}
-  
   public get propE1(): Info {
     this.conditionalAddRef(this.__meta);
     return this.__backing_propE1;
@@ -158,7 +156,9 @@ class E implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("propE1");
     }
   }
-  
+
+  @JSONRename({newName:"trackE1"}) public __backing_trackE1: Info = new Info();
+
   public get trackE1(): Info {
     this.conditionalAddRef(this.__meta);
     return this.__backing_trackE1;
@@ -171,7 +171,11 @@ class E implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("trackE1");
     }
   }
-  
+
+  public constructor() {}
+  static {
+  }
+
 }
 `;
 
@@ -181,7 +185,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed track transform with class property',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

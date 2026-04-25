@@ -34,10 +34,13 @@ import { Expression } from "./Expression"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 import { Identifier } from "./Identifier"
 export class TSTypeReference extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_REFERENCE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_REFERENCE;
     }
     static createTSTypeReference(typeName?: Expression, typeParams?: TSTypeParameterInstantiation): TSTypeReference {
         return new TSTypeReference(global.generatedEs2panda._CreateTSTypeReference(global.context, passNode(typeName), passNode(typeParams)))

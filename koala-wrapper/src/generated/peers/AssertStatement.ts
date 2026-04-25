@@ -32,10 +32,13 @@ import {
 import { Statement } from "./Statement"
 import { Expression } from "./Expression"
 export class AssertStatement extends Statement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_ASSERT_STATEMENT)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_ASSERT_STATEMENT;
     }
     static createAssertStatement(test?: Expression, second?: Expression): AssertStatement {
         return new AssertStatement(global.generatedEs2panda._CreateAssertStatement(global.context, passNode(test), passNode(second)))

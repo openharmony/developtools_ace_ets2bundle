@@ -33,10 +33,13 @@ import { MaybeOptionalExpression } from "./MaybeOptionalExpression"
 import { Expression } from "./Expression"
 import { Es2pandaMemberExpressionKind } from "./../Es2pandaEnums"
 export class MemberExpression extends MaybeOptionalExpression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_MEMBER_EXPRESSION;
     }
     static createMemberExpression(object_arg: Expression | undefined, property: Expression | undefined, kind: Es2pandaMemberExpressionKind, computed: boolean, optional_arg: boolean): MemberExpression {
         return new MemberExpression(global.generatedEs2panda._CreateMemberExpression(global.context, passNode(object_arg), passNode(property), kind, computed, optional_arg))

@@ -31,10 +31,13 @@ import {
 
 import { Expression } from "./Expression"
 export class ChainExpression extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_CHAIN_EXPRESSION;
     }
     static createChainExpression(expression?: Expression): ChainExpression {
         return new ChainExpression(global.generatedEs2panda._CreateChainExpression(global.context, passNode(expression)))

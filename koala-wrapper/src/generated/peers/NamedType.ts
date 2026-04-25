@@ -33,10 +33,13 @@ import { TypeNode } from "./TypeNode"
 import { Identifier } from "./Identifier"
 import { TSTypeParameterInstantiation } from "./TSTypeParameterInstantiation"
 export class NamedType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_NAMED_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_NAMED_TYPE;
     }
     static createNamedType(name?: Identifier): NamedType {
         return new NamedType(global.generatedEs2panda._CreateNamedType(global.context, passNode(name)))

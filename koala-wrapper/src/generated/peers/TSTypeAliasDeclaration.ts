@@ -36,10 +36,13 @@ import { TypeNode } from "./TypeNode"
 import { Decorator } from "./Decorator"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSTypeAliasDeclaration extends AnnotatedStatement {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION;
     }
     static createTSTypeAliasDeclaration(id?: Identifier, typeParams?: TSTypeParameterDeclaration, typeAnnotation?: TypeNode): TSTypeAliasDeclaration {
         return new TSTypeAliasDeclaration(global.generatedEs2panda._CreateTSTypeAliasDeclaration(global.context, passNode(id), passNode(typeParams), passNode(typeAnnotation)))

@@ -16,7 +16,12 @@
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { MemberExpression } from '../to-be-generated/MemberExpression';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 import { Es2pandaMemberExpressionKind } from '../../generated/Es2pandaEnums';
 
 export function updateMemberExpression(
@@ -37,6 +42,6 @@ export function updateMemberExpression(
         return original;
     }
 
-    const update = updateThenAttach(MemberExpression.update, attachModifiers);
+    const update = updateThenAttach(MemberExpression.update, attachModifiers, attachParent, refreshNodeCache);
     return update(original, object, property, kind, computed, optional);
 }

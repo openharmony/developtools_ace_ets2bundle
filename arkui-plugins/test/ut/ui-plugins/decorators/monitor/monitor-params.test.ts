@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -152,31 +152,6 @@ class GGG {
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
-  @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
-
-  @JSONRename({newName:"job"}) public __backing_job: AAA = new AAA();
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_job");
-
-  public age: number = 25;
-
-  private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
-
-  private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
-
-  private __monitor_onJobChange: (IMonitorDecoratedVariable | undefined);
-
-  @Monitor({value:["name"]}) 
-  public onNameChange(monitor: IMonitor) {}
-
-  @Monitor({value:["strArr.0", "age"]}) 
-  public onAgeChange(monitor: IMonitor) {}
-
-  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) 
-  public onJobChange(monitor: IMonitor) {}
-
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved(this.__backing_name);
@@ -189,6 +164,10 @@ class GGG {
       this.executeOnSubscribingWatches("name");
     }
   }
+
+  @JSONRename({newName:"strArr"}) public __backing_strArr: Array<string> = ["North", "east"];
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_strArr: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_strArr");
 
   public get strArr(): Array<string> {
     this.conditionalAddRef(this.__meta_strArr);
@@ -203,6 +182,10 @@ class GGG {
     }
   }
 
+  @JSONRename({newName:"job"}) public __backing_job: AAA = new AAA();
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_job: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_job");
+
   public get job(): AAA {
     this.conditionalAddRef(this.__meta_job);
     return UIUtils.makeObserved(this.__backing_job);
@@ -215,6 +198,23 @@ class GGG {
       this.executeOnSubscribingWatches("job");
     }
   }
+
+  public age: number = 25;
+
+  private __monitor_onNameChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["name"]}) 
+  public onNameChange(monitor: IMonitor) {}
+
+  private __monitor_onAgeChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["strArr.0", "age"]}) 
+  public onAgeChange(monitor: IMonitor) {}
+
+  private __monitor_onJobChange: (IMonitorDecoratedVariable | undefined);
+
+  @Monitor({value:["job.aaa.bbb.ccc.1.dd.0"]}) 
+  public onJobChange(monitor: IMonitor) {}
 
   public constructor() {
     this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
@@ -255,6 +255,8 @@ class GGG {
     }));
   }
 
+  static {
+  }
 }
 
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
@@ -294,6 +296,20 @@ class GGG {
     this.__monitor_onPerChange!.resetOnReuse();
   }
 
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+
   private __backing_per?: ILocalDecoratedVariable<EEE>;
 
   public get per(): EEE {
@@ -326,20 +342,6 @@ class GGG {
 
   private __monitor_onPerChange: (IMonitorDecoratedVariable | undefined);
 
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
-  }
-
   @Monitor({value:["per.ee.ff", "v1", "numArr.1"]}) 
   public onPerChange(monitor: IMonitor) {}
 
@@ -347,19 +349,20 @@ class GGG {
   public build() {}
 
   public constructor() {}
-
+  static {
+  }
 }
 
 @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'v1', '(boolean | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'v1', '(boolean | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_v1', '(ILocalDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_v1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numArr', '(Array<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'numArr', '(Array<string> | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numArr', '(ILocalDecoratedVariable<Array<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numArr', '(boolean | undefined)')}
   
@@ -372,7 +375,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @Monitor decorator parameters transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

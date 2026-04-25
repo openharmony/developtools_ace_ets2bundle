@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -77,52 +77,42 @@ function main() {}
 
 @Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
   public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___58710805 = initializers;
-    (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? (0)));
-    this.__backing_costOfOneAttempt = ((({let gensym___88948111 = initializers;
-    (((gensym___88948111) == (null)) ? undefined : gensym___88948111.costOfOneAttempt)})) ?? (1));
-  }
-
-  public __updateStruct(initializers: (__Options_CountDownComponent | undefined)): void {
-    if (({let gensym___142908272 = initializers;
-    (((gensym___142908272) == (null)) ? undefined : gensym___142908272.__options_has_count)})) {
-      this.__backing_count!.update((initializers!.count as number));
+    this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)));
+    this.__backing_costOfOneAttempt = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.costOfOneAttempt)})) ?? (1));
     }
-  }
-
-  private __backing_count?: IPropRefDecoratedVariable<number>;
-
-  public get count(): number {
-    return this.__backing_count!.get();
-  }
-
-  public set count(value: number) {
-    this.__backing_count!.set(value);
-  }
-
-  private __backing_costOfOneAttempt?: number;
-
-  public get costOfOneAttempt(): number {
-    return (this.__backing_costOfOneAttempt as number);
-  }
-
-  public set costOfOneAttempt(value: number) {
-    this.__backing_costOfOneAttempt = value;
-  }
-
+  public __updateStruct(initializers: (__Options_CountDownComponent | undefined)): void {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count)})) {
+      this.__backing_count!.update((initializers!.count as number));
+      }
+    }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CountDownComponent)=> void) | undefined), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CountDownComponent, __Options_CountDownComponent>(style, ((): CountDownComponent => {
-      return new CountDownComponent(false, ({let gensym___17371929 = storage;
-      (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
-    }), initializers, reuseId, content);
-  }
-  
+      return new CountDownComponent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      }), initializers, reuseId, content);
+      }
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_CountDownComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CountDownComponent {
+  public static $_invoke(initializers?: __Options_CountDownComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): CountDownComponent {
     throw new Error("Declare interface");
-  }
-  
+    }
+  private __backing_count?: IPropRefDecoratedVariable<number>;
+  public get count(): number {
+    return this.__backing_count!.get();
+    }
+  public set count(value: number) {
+    this.__backing_count!.set(value);
+    }
+  private __backing_costOfOneAttempt?: number;
+  public get costOfOneAttempt(): number {
+    return (this.__backing_costOfOneAttempt as number);
+    }
+  public set costOfOneAttempt(value: number) {
+    this.__backing_costOfOneAttempt = value;
+    }
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -146,48 +136,41 @@ function main() {}
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("Try again", undefined).onClick(((e: ClickEvent) => {
           this.count -= this.costOfOneAttempt;
-        }));
+          }));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
-    }));
-  }
-  
+        }), undefined);
+      }));
+    }
   ${dumpConstructor()}
-
-}
+  static {
+    }
+  }
 
 @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___249912438 = initializers;
-    (((gensym___249912438) == (null)) ? undefined : gensym___249912438.countDownStartValue)})) ?? (10)));
-  }
-
+    this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)));
+    }
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
-
-  private __backing_countDownStartValue?: IStateDecoratedVariable<number>;
-
-  public get countDownStartValue(): number {
-    return this.__backing_countDownStartValue!.get();
-  }
-
-  public set countDownStartValue(value: number) {
-    this.__backing_countDownStartValue!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
-      return new ParentComponent(false, ({let gensym___192738000 = storage;
-      (((gensym___192738000) == (null)) ? undefined : gensym___192738000())}));
-    }), initializers, reuseId, content);
-  }
-  
+      return new ParentComponent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+      }), initializers, reuseId, content);
+      }
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): ParentComponent {
+  public static $_invoke(initializers?: __Options_ParentComponent, storage?: LocalStorage, @Builder() content?: (()=> void)): ParentComponent {
     throw new Error("Declare interface");
-  }
-  
+    }
+  private __backing_countDownStartValue?: IStateDecoratedVariable<number>;
+  public get countDownStartValue(): number {
+    return this.__backing_countDownStartValue!.get();
+    }
+  public set countDownStartValue(value: number) {
+    this.__backing_countDownStartValue!.set(value);
+    }
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -210,27 +193,27 @@ function main() {}
       ButtonImpl(@Memo() ((instance: ButtonAttribute): void => {
         instance.setButtonOptions("-1 - Nuggets in New Game", undefined).onClick(((e: ClickEvent) => {
           this.countDownStartValue -= 1;
-        }));
+          }));
         instance.applyAttributesFinish();
         return;
-      }), undefined);
+        }), undefined);
       CountDownComponent._invoke(undefined, (() => {
         return {
           count: this.countDownStartValue,
           __options_has_count: true,
           costOfOneAttempt: 2,
           __options_has_costOfOneAttempt: true,
-        };
-      }), undefined, undefined, undefined);
-    }));
-  }
-  
+          };
+        }), undefined, undefined, undefined);
+      }));
+    }
   ${dumpConstructor()}
-
-}
+  static {
+    }
+  }
 
 @Component() export interface __Options_CountDownComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
 
@@ -240,7 +223,7 @@ function main() {}
 }
 
 @Component() export interface __Options_ParentComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_countDownStartValue', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_countDownStartValue', '(boolean | undefined)')}
   
@@ -253,7 +236,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test @PropRef decorated variables passing',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

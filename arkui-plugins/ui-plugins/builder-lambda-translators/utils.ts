@@ -14,10 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { isAnnotation, matchPrefix } from '../../common/arkts-utils';
+import { coerceToAstNode, expectNameInTypeReference, isAnnotation, isDecoratorAnnotation, matchPrefix } from '../../common/arkts-utils';
 import {
-    BuilderLambdaNames,
-    expectNameInTypeReference,
     getValueInObjectAnnotation,
     isCustomComponentAnnotation,
 } from '../utils';
@@ -27,6 +25,7 @@ import {
     ARKUI_IMPORT_PREFIX_NAMES,
     ARKUI_NAV_DESTINATION_SOURCE_NAME,
     ARKUI_NAVIGATION_SOURCE_NAME,
+    BuilderLambdaNames,
     DecoratorNames,
     Dollars,
     InnerComponentAttributes,
@@ -35,6 +34,8 @@ import {
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
+import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { checkIsBuilderLambdaFunctionCallFromInfo } from '../../collectors/ui-collectors/utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 const ENTRY_WRAPPER_NAME = '__EntryWrapper';
@@ -48,6 +49,7 @@ export type BuilderLambdaDeclInfo = {
     moduleName?: string;
     hasReceiver?: boolean;
     isFromCommonMethod?: boolean;
+    isTrailingCall?: boolean;
 };
 
 export type BuilderLambdaStyleBodyInfo = {
@@ -56,6 +58,7 @@ export type BuilderLambdaStyleBodyInfo = {
     reuseId: arkts.AstNode | undefined;
     defaultReuseId: arkts.AstNode | undefined;
     structEntryStroage: string | undefined;
+    structPropertyInfos?: CustomComponentInterfacePropertyInfo[];
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -65,6 +68,11 @@ export type InstanceCallInfo = {
     call: arkts.CallExpression;
 };
 
+export type BuilderLambdaConditionBranchInfo = {
+    statements: readonly arkts.Statement[];
+    breakIndex: number;
+};
+
 export type BuilderLambdaChainingCallArgInfo = {
     arg: arkts.Expression;
     hasBuilder?: boolean;
@@ -72,7 +80,8 @@ export type BuilderLambdaChainingCallArgInfo = {
 
 export type OptionsPropertyInfo = {
     isBuilderParam: boolean;
-    isLinkIntrinsic: boolean;
+    isLink: boolean;
+    isNotBacking: boolean;
 };
 
 export type StructCalleeInfo = {
@@ -82,6 +91,36 @@ export type StructCalleeInfo = {
     structName?: string;
     structEntryStroage?: arkts.Expression;
 };
+
+export type BuilderLambdaArgInfo = {
+    isFunctionCall: boolean;
+};
+
+export type BuilderLambdaReusableArgInfo = {
+    isReusable?: boolean;
+    reuseId?: string;
+};
+
+export type BuilderLambdaSecondLastArgInfo = BuilderLambdaArgInfo & BuilderLambdaReusableArgInfo;
+
+export function buildSecondLastArgInfo(
+    type: arkts.Identifier | undefined,
+    isFunctionCall: boolean
+): BuilderLambdaSecondLastArgInfo {
+    let isReusable: boolean | undefined;
+    let reuseId: string | undefined;
+    if (!isFunctionCall && !!type) {
+        const customComponentDecl = arkts.getPeerIdentifierDecl(type.peer);
+        isReusable =
+            !!customComponentDecl &&
+            arkts.isClassDefinition(customComponentDecl) &&
+            customComponentDecl.annotations.some((anno) =>
+                isCustomComponentAnnotation(anno, StructDecoratorNames.RESUABLE)
+            );
+        reuseId = isReusable ? type.name : undefined;
+    }
+    return { isFunctionCall, isReusable, reuseId };
+}
 
 export function getStructCalleeInfoFromCallee(
     callee: arkts.AstNode | undefined,
@@ -113,15 +152,40 @@ export function getStructCalleeInfoFromCallee(
     return info;
 }
 
-/**
- * Determine whether the node is ForEach method declaration or call expression.
- *
- * @param node method definition node.
- * @param sourceName external source name.
- */
-export function isForEach(name: string | undefined, sourceName?: string): boolean {
-    const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
-    return name === InnerComponentNames.FOR_EACH && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
+export function getStructCalleeInfoFromCallInfo(
+    callee: arkts.AstNode | undefined, 
+    callInfo: CallInfo
+): StructCalleeInfo | undefined {
+    if (callInfo.structDeclInfo?.annotationInfo === undefined) {
+        return undefined;
+    }
+    if (!callee || !arkts.isMemberExpression(callee)) {
+        return undefined;
+    }
+    const info: StructCalleeInfo = {
+        isFromCustomDialog: callInfo.structDeclInfo.annotationInfo.hasCustomDialog,
+        isFromReuse: callInfo.structDeclInfo.annotationInfo.hasReusable,
+        isFromReuseV2: callInfo.structDeclInfo.annotationInfo.hasReusableV2,
+        structName: callInfo.structDeclInfo.name
+    };
+    if (callInfo.structDeclInfo.annotationInfo.hasEntry) {
+        const structDecl = arkts.getPeerIdentifierDecl(callee.object.peer);
+        if (!!structDecl && arkts.isClassDefinition(structDecl)) {
+            let structEntryStroage: arkts.Expression | undefined;
+            structDecl.annotations.forEach((anno) => {
+                if (structEntryStroage !== undefined) {
+                    return;
+                }
+                structEntryStroage = getValueInObjectAnnotation(
+                    anno,
+                    StructDecoratorNames.ENTRY,
+                    BuilderLambdaNames.STORAGE_PARAM_NAME
+                );
+            });
+            info.structEntryStroage = structEntryStroage;
+        }
+    }
+    return info;
 }
 
 /**
@@ -192,7 +256,7 @@ export function isFunctionWithReceiver(node: arkts.MethodDefinition): boolean {
  * @param node identifier node
  */
 export function isFunctionWithReceiverCall(node: arkts.Identifier): boolean {
-    const decl: arkts.AstNode | undefined = arkts.getDecl(node);
+    const decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(node.peer);
     if (decl && arkts.isMethodDefinition(decl)) {
         return isFunctionWithReceiver(decl);
     }
@@ -213,6 +277,13 @@ export function isStyleChainedCall(node: arkts.CallExpression): boolean {
 }
 
 /**
+ * Determine whether it is a style chained callee.
+ */
+export function isStyleChainedCallee(callee: arkts.AstNode): callee is arkts.MemberExpression {
+    return arkts.isMemberExpression(callee) && arkts.isCallExpression(callee.object);
+}
+
+/**
  * Determine whether it is a style function with receiver call.
  *
  * @param node call expression node
@@ -224,6 +295,20 @@ export function isStyleWithReceiverCall(node: arkts.CallExpression): boolean {
         !!node.arguments.length &&
         arkts.isCallExpression(node.arguments[0])
     );
+}
+
+/**
+ * Determine whether it is a style function with receiver callee.
+ */
+export function isStyleWithReceiverCallee(
+    node: arkts.CallExpression,
+    callee: arkts.AstNode,
+    isReceiver?: boolean
+): boolean {
+    if (node.arguments.length === 0) {
+        return false;
+    }
+    return !!isReceiver && arkts.isIdentifier(callee) && arkts.isCallExpression(node.arguments.at(0)!);
 }
 
 /**
@@ -423,7 +508,7 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
     let moduleName: string | undefined;
     if (isFunctionCall) {
-        moduleName = arkts.getProgramFromAstNode(decl).moduleName;
+        moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
     }
     const originType = func.returnTypeAnnotation;
     const params = func.params.map((p) => p.clone());
@@ -434,12 +519,45 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     return { name, isFunctionCall, params, returnType, moduleName, hasReceiver, isFromCommonMethod };
 }
 
+export function collectDeclInfoFromInfo(
+    node: arkts.AstNode, 
+    rootCallInfo: CallInfo, 
+    callInfo: CallInfo
+): BuilderLambdaDeclInfo | undefined {
+    if (!rootCallInfo?.isDeclFromMethod && !rootCallInfo?.isDeclFromFunction) {
+        return undefined;
+    }
+    const name: string = rootCallInfo.declName!;
+    const rootCallee: arkts.CallExpression = coerceToAstNode<arkts.CallExpression>(node);
+    const decl: arkts.MethodDefinition = coerceToAstNode<arkts.MethodDefinition>(findRootCalleeDecl(rootCallee)!);
+    const func: arkts.ScriptFunction = decl.scriptFunction;
+    const originType = func.returnTypeAnnotation;
+    const params: arkts.Expression[] = func.params.map((p) => p.clone());
+    const returnType: arkts.TypeNode | undefined = originType?.clone();
+    const isFunctionCall: boolean = !rootCallInfo.structDeclInfo && !callInfo.structDeclInfo;
+    const moduleName: string = rootCallInfo.moduleName!;
+    const isTrailingCall: boolean | undefined = rootCallInfo.isTrailingCall;
+    const hasReceiver: boolean | undefined = rootCallInfo.hasReceiver;
+    const isFromCommonMethod: boolean = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
+    return { name, params, returnType, isFunctionCall, moduleName, isTrailingCall, hasReceiver, isFromCommonMethod };
+}
+
+export function findRootCalleeDecl(rootCall: arkts.CallExpression | arkts.Identifier): arkts.AstNode | undefined {
+    let decl: arkts.AstNode | undefined;
+    if (arkts.isIdentifier(rootCall)) {
+        decl = arkts.getPeerIdentifierDecl(rootCall.peer);
+    } else {
+        decl = arkts.getDecl(rootCall.expression);
+    }
+    return decl;
+}
+
 export function findComponentAttributeFromCommonMethod(attrType: arkts.TypeNode | undefined): boolean {
     const nameNode = expectNameInTypeReference(attrType);
     if (!nameNode) {
         return false;
     }
-    const decl = arkts.getDecl(nameNode);
+    const decl = arkts.getPeerIdentifierDecl(nameNode.peer);
     return findCommonMethodInterfaceInExtends(decl);
 }
 
@@ -457,7 +575,7 @@ export function findCommonMethodInterfaceInExtends(interfaceNode: arkts.AstNode 
     }
     return extendNodes.some((node) => {
         const name = expectNameInTypeReference(node.expr);
-        const decl = !!name ? arkts.getDecl(name) : undefined;
+        const decl = !!name ? arkts.getPeerIdentifierDecl(name.peer) : undefined;
         return findCommonMethodInterfaceInExtends(decl);
     });
 }
@@ -572,11 +690,11 @@ export function isDoubleDollarCall(
         return false;
     }
     if (!ignoreDecl) {
-        const decl = arkts.getDecl(expr);
+        const decl = arkts.getPeerIdentifierDecl(expr.peer);
         if (!decl) {
             return false;
         }
-        const moduleName: string = arkts.getProgramFromAstNode(decl).moduleName;
+        const moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
         if (!moduleName || !matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, moduleName)) {
             return false;
         }
@@ -660,6 +778,16 @@ export function collectComponentAttributeImport(type: arkts.TypeNode | undefined
     }
 }
 
+export function checkIsWithInIfConditionScope(statement: arkts.AstNode): boolean {
+    if (!statement.parent) {
+        return false;
+    }
+    if (arkts.isIfStatement(statement.parent)) {
+        return arkts.isBlockStatement(statement) || arkts.isIfStatement(statement);
+    }
+    return false;
+}
+
 function findClassInstanceFromType(
     typeAnnotation: arkts.TypeNode | undefined
 ): arkts.TSInterfaceDeclaration | arkts.ClassDefinition | undefined {
@@ -674,7 +802,7 @@ function findClassInstanceFromType(
     if (!ident || !arkts.isIdentifier(ident)) {
         return undefined;
     }
-    const decl = arkts.getDecl(ident);
+    const decl = arkts.getPeerIdentifierDecl(ident.peer);
     if (!decl) {
         return undefined;
     }
@@ -728,85 +856,6 @@ export function flatObjectExpressionToEntries(
     return entries;
 }
 
-export function findBuilderName(node: arkts.TypeNode | arkts.ETSParameterExpression, ignoreDecl: boolean = false): boolean {
-    const hasBuilderAnnotation = node.annotations.find((anno) => {
-        const expr = anno.expr;
-        if (!expr || !arkts.isIdentifier(expr)) {
-            return false;
-        }
-        return expr.name === DecoratorNames.BUILDER || expr.name === 'memo' || expr.name === 'Memo';
-    });
-    if (!hasBuilderAnnotation) {
-        return false;
-    }
-    return true;
-}
-
-export function checkIsTrailingLambdaType(typeNode: arkts.AstNode | undefined, ignoreDecl: boolean = false, shouldIgnoreAnnotation: boolean = false): boolean {
-    if (!typeNode) {
-        return false;
-    }
-    const queue: arkts.AstNode[] = [typeNode];
-    const visitedNames: AstNodePointer[] = [];
-    let hasTrailingLambdaType: boolean = false;
-    let hasBuilderAnnotation: boolean = shouldIgnoreAnnotation;
-    let otherTypeLength: number = 0;
-    while (queue.length > 0 && otherTypeLength === 0 && !(hasTrailingLambdaType && hasBuilderAnnotation)) {
-        const node = queue.shift()!;
-        if (arkts.isETSFunctionType(node)) {
-            hasTrailingLambdaType ||= node.params.length === 0 && !!node.returnType && node.returnType.dumpSrc() === 'void';
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
-            if (!hasTrailingLambdaType && !hasBuilderAnnotation) {
-                otherTypeLength ++;
-            }
-        } else if (arkts.isETSUnionType(node)) {
-            queue.push(...node.types);
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
-        } else if (arkts.isETSTypeReference(node)) {
-            const name = expectNameInTypeReference(node);
-            if (!name) {
-                continue;
-            }
-            const decl = !!name ? arkts.getDecl(name) : undefined;
-            if (!decl || !arkts.isTSTypeAliasDeclaration(decl) || visitedNames.includes(decl.peer)) {
-                continue;
-            }
-            visitedNames.push(decl.peer);
-            const type = decl.typeAnnotation;
-            if (!type) {
-                continue;
-            }
-            queue.push(type);
-            hasBuilderAnnotation ||= findBuilderName(node, ignoreDecl);
-        } else if (!arkts.isETSUndefinedType(node)) {
-            otherTypeLength ++;
-        }
-    }
-    return hasTrailingLambdaType && hasBuilderAnnotation && otherTypeLength === 0;
-}
-
-/**
- * check whether the last parameter is trailing lambda in components.
- */
-export function checkIsTrailingLambdaInLastParam(params: readonly arkts.Expression[], ignoreDecl: boolean = false): boolean {
-    if (params.length === 0) {
-        return false;
-    }
-    const lastParam = params.at(params.length - 1)! as arkts.ETSParameterExpression;
-    const hasBuilder = findBuilderName(lastParam, ignoreDecl);
-    return checkIsTrailingLambdaType(lastParam.type, ignoreDecl, hasBuilder);
-}
-
-/**
- * remove any parameters except possible last trailing lambda parameter in components.
- */
-export function filterParamsExpectTrailingLambda(params: readonly arkts.Expression[]): readonly arkts.Expression[] {
-    if (checkIsTrailingLambdaInLastParam(params)) {
-        return [params.at(params.length - 1)!];
-    }
-    return [];
-}
-
 /**
  * find `XXXAttribute` interface name from the component's attribute interface.
  */
@@ -829,24 +878,6 @@ export function getDeclaredSetAttribtueMethodName(componentName: string): string
  */
 export function getTransformedComponentName(componentName: string): string {
     return `${componentName}Impl`;
-}
-
-export function isNavigationOrNavDestination(name: string | undefined, sourceName?: string): boolean {
-    const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
-    return (
-        (name === InnerComponentNames.NAVIGATION && externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME) ||
-        (name === InnerComponentNames.NAV_DESTINATION && externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME)
-    );
-}
-
-export function getIsUserCreateStack(
-    typeName: string | undefined,
-    args: readonly arkts.Expression[]
-): boolean | undefined {
-    if (typeName === InnerComponentNames.NAVIGATION) {
-        return args.length > 1 || (args.length === 1 && !arkts.isArrowFunctionExpression(args[0]));
-    }
-    return undefined;
 }
 
 export function isInEntryWrapper(node: arkts.AstNode): boolean {

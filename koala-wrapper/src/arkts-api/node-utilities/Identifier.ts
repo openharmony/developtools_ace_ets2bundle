@@ -15,18 +15,18 @@
 
 import { Identifier, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateIdentifier(original: Identifier, name: string, typeAnnotation?: TypeNode): Identifier {
     if (isSameNativeObject(name, original.name) && isSameNativeObject(typeAnnotation, original.typeAnnotation)) {
         return original;
     }
 
-    const update = updateThenAttach(Identifier.update2Identifier, attachModifiers);
-    const newNode = update(original, name, typeAnnotation);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(Identifier.update2Identifier, attachModifiers, attachParent, refreshNodeCache);
+    return update(original, name, typeAnnotation);
 }

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -93,26 +93,6 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var2: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var2");
 
-  @JSONRename({value:"name3"}) public var3: number = 3;
-
-  @TestDecor() public var4: number = 4;
-
-  @JSONRename({value:"name5"}) public __backing_var5: number = 5;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var5");
-
-  @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
-
-  @TestDecor() @JSONRename({newName:"var7"}) public __backing_var7: number = 7;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var7");
-
-  @JSONRename({value:"name8"}) @TestDecor() public __backing_var8: number = 8;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var8");
-
-  public constructor() {}
-
   public get var2(): number {
     this.conditionalAddRef(this.__meta_var2);
     return this.__backing_var2;
@@ -125,6 +105,14 @@ function main() {}
       this.executeOnSubscribingWatches("var2");
     }
   }
+
+  @JSONRename({value:"name3"}) public var3: number = 3;
+
+  @TestDecor() public var4: number = 4;
+
+  @JSONRename({value:"name5"}) public __backing_var5: number = 5;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var5: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var5");
 
   public get var5(): number {
     this.conditionalAddRef(this.__meta_var5);
@@ -139,6 +127,12 @@ function main() {}
     }
   }
 
+  @JSONRename({value:"name6"}) @TestDecor() public var6: number = 6;
+
+  @TestDecor() @JSONRename({newName:"var7"}) public __backing_var7: number = 7;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var7: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var7");
+
   public get var7(): number {
     this.conditionalAddRef(this.__meta_var7);
     return this.__backing_var7;
@@ -151,6 +145,10 @@ function main() {}
       this.executeOnSubscribingWatches("var7");
     }
   }
+
+  @JSONRename({value:"name8"}) @TestDecor() public __backing_var8: number = 8;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_var8: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_var8");
 
   public get var8(): number {
     this.conditionalAddRef(this.__meta_var8);
@@ -165,6 +163,11 @@ function main() {}
     }
   }
 
+  public constructor() {}
+
+  static {
+  }
+
 }
 `;
 
@@ -173,8 +176,8 @@ function testObservedJsonRenameTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test observed only transform',
-    [observedJsonRenameTransform, uiNoRecheck, recheck],
+    'test observed transform with JsonRename annotation',
+    [observedJsonRenameTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedJsonRenameTransformer],
     },

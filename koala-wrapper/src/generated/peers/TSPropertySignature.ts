@@ -33,10 +33,13 @@ import { AnnotatedAstNode } from "./AnnotatedAstNode"
 import { Expression } from "./Expression"
 import { TypeNode } from "./TypeNode"
 export class TSPropertySignature extends AnnotatedAstNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_PROPERTY_SIGNATURE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_PROPERTY_SIGNATURE;
     }
     static createTSPropertySignature(key: Expression | undefined, typeAnnotation: TypeNode | undefined, computed: boolean, optional_arg: boolean, readonly_arg: boolean): TSPropertySignature {
         return new TSPropertySignature(global.generatedEs2panda._CreateTSPropertySignature(global.context, passNode(key), passNode(typeAnnotation), computed, optional_arg, readonly_arg))

@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, beforeUINoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpAnnotation, dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -135,18 +135,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public propA: string = "hello";
-  
   @JSONRename({newName:"trackA"}) public __backing_trackA: string = "world";
-  
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_trackA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_trackA");
-  
-  public constructor() {}
-  
   public get trackA(): string {
     this.conditionalAddRef(this.__meta_trackA);
     return this.__backing_trackA;
   }
-  
   public set trackA(newValue: string) {
     if (((this.__backing_trackA) !== (newValue))) {
       this.__backing_trackA = newValue;
@@ -154,21 +148,23 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.executeOnSubscribingWatches("trackA");
     }
   }
-  
+  public constructor() {}
+  static {
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___76198660 = initializers;
-    (((gensym___76198660) == (null)) ? undefined : gensym___76198660.statevar)})) ?? ("Hello World")), ((_: string): void => {
+    this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")), ((_: string): void => {
       this.stateOnChange(_);
     }));
-    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", ((({let gensym___241486692 = initializers;
-    (((gensym___241486692) == (null)) ? undefined : gensym___241486692.propvar)})) ?? ("Hello World")), ((_: string): void => {
+    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propvar)})) ?? ("Hello World")), ((_: string): void => {
       this.propOnChange(_);
     }));
-    if (({let gensym___165820150 = initializers;
-    (((gensym___165820150) == (null)) ? undefined : gensym___165820150.__options_has_linkvar)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_linkvar)})) {
       this.__backing_linkvar = STATE_MGMT_FACTORY.makeLink<string>(this, "linkvar", initializers!.__backing_linkvar!, ((_: string): void => {
         this.linkOnChange(_);
       }));
@@ -179,104 +175,82 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
       this.storagePropOnChange(_);
     }))
-    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___172556967 = initializers;
-    (((gensym___172556967) == (null)) ? undefined : gensym___172556967.objectlinkvar)}) as A), ((_: string): void => {
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.objectlinkvar)}) as A), ((_: string): void => {
       this.objectLinkOnChange(_);
     }))
-    this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___244584558 = initializers;
-    (((gensym___244584558) == (null)) ? undefined : gensym___244584558.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
+    this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
       this.ProvideOnChange(_);
     }));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
-    if (({let gensym___122439192 = initializers;
-    (((gensym___122439192) == (null)) ? undefined : gensym___122439192.__options_has_propvar)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propvar)})) {
       this.__backing_propvar!.update((initializers!.propvar as string));
     }
-    if (({let gensym___94896492 = initializers;
-    (((gensym___94896492) == (null)) ? undefined : gensym___94896492.__options_has_objectlinkvar)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_objectlinkvar)})) {
       this.__backing_objectlinkvar!.update((initializers!.objectlinkvar as A));
     }
   }
-  
-  private __backing_statevar?: IStateDecoratedVariable<string>;
-  
-  public get statevar(): string {
-    return this.__backing_statevar!.get();
-  }
-  
-  public set statevar(value: string) {
-    this.__backing_statevar!.set(value);
-  }
-  
-  private __backing_propvar?: IPropRefDecoratedVariable<string>;
-  
-  public get propvar(): string {
-    return this.__backing_propvar!.get();
-  }
-  
-  public set propvar(value: string) {
-    this.__backing_propvar!.set(value);
-  }
-  
-  private __backing_linkvar?: ILinkDecoratedVariable<string>;
-
-  public get linkvar(): string {
-    return this.__backing_linkvar!.get();
-  }
-
-  public set linkvar(value: string) {
-    this.__backing_linkvar!.set(value);
-  }
-
-  private __backing_storagelinkvar?: IStorageLinkDecoratedVariable<string>;
-  
-  public get storagelinkvar(): string {
-    return this.__backing_storagelinkvar!.get();
-  }
-  
-  public set storagelinkvar(value: string) {
-    this.__backing_storagelinkvar!.set(value);
-  }
-  
-  private __backing_storagepropvar?: IStoragePropRefDecoratedVariable<string>;
-  
-  public get storagepropvar(): string {
-    return this.__backing_storagepropvar!.get();
-  }
-  
-  public set storagepropvar(value: string) {
-    this.__backing_storagepropvar!.set(value);
-  }
-  
-  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
-
-  public get objectlinkvar(): A {
-    return this.__backing_objectlinkvar!.get();
-  }
-
-  private __backing_providevar?: IProvideDecoratedVariable<string>;
-  
-  public get providevar(): string {
-    return this.__backing_providevar!.get();
-  }
-  
-  public set providevar(value: string) {
-    this.__backing_providevar!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
-      return new MyStateSample(false, ({let gensym___92334354 = storage;
-      (((gensym___92334354) == (null)) ? undefined : gensym___92334354())}));
+      return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample {
+  public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample {
     throw new Error("Declare interface");
+  }
+  private __backing_statevar?: IStateDecoratedVariable<string>;
+  public get statevar(): string {
+    return this.__backing_statevar!.get();
+  }
+  public set statevar(value: string) {
+    this.__backing_statevar!.set(value);
+  }
+  private __backing_propvar?: IPropRefDecoratedVariable<string>;
+  public get propvar(): string {
+    return this.__backing_propvar!.get();
+  }
+  public set propvar(value: string) {
+    this.__backing_propvar!.set(value);
+  }
+  private __backing_linkvar?: ILinkDecoratedVariable<string>;
+  public get linkvar(): string {
+    return this.__backing_linkvar!.get();
+  }
+  public set linkvar(value: string) {
+    this.__backing_linkvar!.set(value);
+  }
+  private __backing_storagelinkvar?: IStorageLinkDecoratedVariable<string>;
+  public get storagelinkvar(): string {
+    return this.__backing_storagelinkvar!.get();
+  }
+  public set storagelinkvar(value: string) {
+    this.__backing_storagelinkvar!.set(value);
+  }
+  private __backing_storagepropvar?: IStoragePropRefDecoratedVariable<string>;
+  public get storagepropvar(): string {
+    return this.__backing_storagepropvar!.get();
+  }
+  public set storagepropvar(value: string) {
+    this.__backing_storagepropvar!.set(value);
+  }
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+  public get objectlinkvar(): A {
+    return this.__backing_objectlinkvar!.get();
+  }
+  private __backing_providevar?: IProvideDecoratedVariable<string>;
+  public get providevar(): string {
+    return this.__backing_providevar!.get();
+  }
+  public set providevar(value: string) {
+    this.__backing_providevar!.set(value);
   }
 
   public stateOnChange(propName: string) {}
@@ -284,15 +258,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public propOnChange(propName: string) {}
   
   public linkOnChange(propName: string) {}
-
   public storageLinkOnChange(propName: string) {}
-  
   public storagePropOnChange(propName: string) {}
-  
   public objectLinkOnChange(propName: string) {}
-
   public ProvideOnChange(propName: string) {}
-  
   @Memo() 
   public build() {
     ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
@@ -303,9 +272,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       Child._invoke(undefined, undefined, undefined, undefined, undefined);
     }));
   }
-  
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
@@ -314,42 +283,32 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.ConsumeOnChange(_);
     }));
   }
-
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
-
-  private __backing_providevar?: IConsumeDecoratedVariable<string>;
-
-  public get providevar(): string {
-    return this.__backing_providevar!.get();
-  }
-
-  public set providevar(value: string) {
-    this.__backing_providevar!.set(value);
-  }
-  
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
-      return new Child(false, ({let gensym___29142858 = storage;
-      (((gensym___29142858) == (null)) ? undefined : gensym___29142858())}));
+      return new Child(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
   }
-  
+  private __backing_providevar?: IConsumeDecoratedVariable<string>;
+  public get providevar(): string {
+    return this.__backing_providevar!.get();
+  }
+  public set providevar(value: string) {
+    this.__backing_providevar!.set(value);
+  }
   public ConsumeOnChange(propName: string) {}
-  
   @Memo() 
   public build() {}
-  
   ${dumpConstructor()}
-  
+  static {
+  }
 }
-
-@Retention({policy:"SOURCE"}) @interface __Link_intrinsic {}
 
 class __EntryWrapper extends EntryPoint {
   @Memo() 
@@ -362,39 +321,39 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'stateOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)', [dumpAnnotation('State'), dumpAnnotation('Watch', { value: 'stateOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_statevar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propvar', '(string | undefined)', [dumpAnnotation('Watch', { value: 'propOnChange' }), dumpAnnotation('PropRef')])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propvar', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('__Link_intrinsic')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)', [dumpAnnotation('Watch', { value: 'linkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkvar', '(string | undefined)', [dumpAnnotation('Link'), dumpAnnotation('Watch', { value: 'linkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkvar', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagelinkvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagelinkvar', '(IStorageLinkDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storageLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagelinkvar', '(string | undefined)', [dumpAnnotation('StorageLink', { value: 'prop1' }), dumpAnnotation('Watch', { value: 'storageLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagelinkvar', '(IStorageLinkDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagelinkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagepropvar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'storagepropvar', '(string | undefined)', [dumpAnnotation('Watch', { value: 'storagePropOnChange' }), dumpAnnotation('StoragePropRef', { value: 'prop2' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storagepropvar', '(IStoragePropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storagepropvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)', [dumpAnnotation('Watch', { value: 'objectLinkOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [dumpAnnotation('ObjectLink'), dumpAnnotation('Watch', { value: 'objectLinkOnChange' })], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Provide', { alias: "providevar", allowOverride: false }), dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
 
 @Component() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)', [dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" }), dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
@@ -406,7 +365,7 @@ function testWatchTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic watch transform',
-    [watchTransform, uiNoRecheck, recheck],
+    [watchTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testWatchTransformer],
     },

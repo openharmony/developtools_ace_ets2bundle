@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
@@ -65,20 +65,20 @@ final class Status extends BaseEnum<int> {
   private readonly #ordinal: int;
 
   private static <cctor>() {}
-
+  
   private constructor(ordinal: int, value: int, name: String) {
     super(value, name);
     this.#ordinal = ordinal;
   }
-
+  
   public static readonly Success: Status = new Status(0, 200, "Success");
 
   public static readonly NotFound: Status = new Status(1, 404, "NotFound");
 
   public static readonly ServerError: Status = new Status(2, 500, "ServerError");
-
+  
   private static readonly #ItemsArray: Status[] = [Status.Success, Status.NotFound, Status.ServerError];
-
+  
   public static getValueOf(name: String): Status {
     for (let i = ((Status.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
       if (((name) == (Status.#ItemsArray[i].getName()))) {
@@ -96,7 +96,7 @@ final class Status extends BaseEnum<int> {
     }
     throw new Error((("No enum Status with value ") + (value)));
   }
-
+  
   public static values(): Status[] {
     return Status.#ItemsArray;
   }
@@ -139,49 +139,192 @@ final class Status extends BaseEnum<int> {
   }
   
   @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_numA");
-  
+
+  public get numA(): number {
+    this.conditionalAddRef(this.__meta_numA);
+    return this.__backing_numA;
+  }
+
+  public set numA(newValue: number) {
+    if (((this.__backing_numA) !== (newValue))) {
+      this.__backing_numA = newValue;
+      this.__meta_numA.fireChange();
+      this.executeOnSubscribingWatches("numA");
+    }
+  }
+
   @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_stringA");
-  
+
+  public get stringA(): string {
+    this.conditionalAddRef(this.__meta_stringA);
+    return this.__backing_stringA;
+  }
+
+  public set stringA(newValue: string) {
+    if (((this.__backing_stringA) !== (newValue))) {
+      this.__backing_stringA = newValue;
+      this.__meta_stringA.fireChange();
+      this.executeOnSubscribingWatches("stringA");
+    }
+  }
+
   @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_booleanA");
-  
+
+  public get booleanA(): boolean {
+    this.conditionalAddRef(this.__meta_booleanA);
+    return this.__backing_booleanA;
+  }
+
+  public set booleanA(newValue: boolean) {
+    if (((this.__backing_booleanA) !== (newValue))) {
+      this.__backing_booleanA = newValue;
+      this.__meta_booleanA.fireChange();
+      this.executeOnSubscribingWatches("booleanA");
+    }
+  }
+
   @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_arrayA");
-  
+
+  public get arrayA(): Array<number> {
+    this.conditionalAddRef(this.__meta_arrayA);
+    return this.__backing_arrayA;
+  }
+
+  public set arrayA(newValue: Array<number>) {
+    if (((this.__backing_arrayA) !== (newValue))) {
+      this.__backing_arrayA = newValue;
+      this.__meta_arrayA.fireChange();
+      this.executeOnSubscribingWatches("arrayA");
+    }
+  }
+
   @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_objectA");
-  
+
+  public get objectA(): Object {
+    this.conditionalAddRef(this.__meta_objectA);
+    return this.__backing_objectA;
+  }
+
+  public set objectA(newValue: Object) {
+    if (((this.__backing_objectA) !== (newValue))) {
+      this.__backing_objectA = newValue;
+      this.__meta_objectA.fireChange();
+      this.executeOnSubscribingWatches("objectA");
+    }
+  }
+
   @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_dateA");
-  
+
+  public get dateA(): Date {
+    this.conditionalAddRef(this.__meta_dateA);
+    return this.__backing_dateA;
+  }
+
+  public set dateA(newValue: Date) {
+    if (((this.__backing_dateA) !== (newValue))) {
+      this.__backing_dateA = newValue;
+      this.__meta_dateA.fireChange();
+      this.executeOnSubscribingWatches("dateA");
+    }
+  }
+
   @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_setA");
-  
+
+  public get setA(): Set<number> {
+    this.conditionalAddRef(this.__meta_setA);
+    return this.__backing_setA;
+  }
+
+  public set setA(newValue: Set<number>) {
+    if (((this.__backing_setA) !== (newValue))) {
+      this.__backing_setA = newValue;
+      this.__meta_setA.fireChange();
+      this.executeOnSubscribingWatches("setA");
+    }
+  }
+
   @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_mapA");
-  
+
+  public get mapA(): Map<number, string> {
+    this.conditionalAddRef(this.__meta_mapA);
+    return this.__backing_mapA;
+  }
+
+  public set mapA(newValue: Map<number, string>) {
+    if (((this.__backing_mapA) !== (newValue))) {
+      this.__backing_mapA = newValue;
+      this.__meta_mapA.fireChange();
+      this.executeOnSubscribingWatches("mapA");
+    }
+  }
+
   @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_unionA");
-  
+
+  public get unionA(): (string | undefined) {
+    this.conditionalAddRef(this.__meta_unionA);
+    return this.__backing_unionA;
+  }
+
+  public set unionA(newValue: (string | undefined)) {
+    if (((this.__backing_unionA) !== (newValue))) {
+      this.__backing_unionA = newValue;
+      this.__meta_unionA.fireChange();
+      this.executeOnSubscribingWatches("unionA");
+    }
+  }
+
   @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_classA");
-  
+
+  public get classA(): Person {
+    this.conditionalAddRef(this.__meta_classA);
+    return this.__backing_classA;
+  }
+
+  public set classA(newValue: Person) {
+    if (((this.__backing_classA) !== (newValue))) {
+      this.__backing_classA = newValue;
+      this.__meta_classA.fireChange();
+      this.executeOnSubscribingWatches("classA");
+    }
+  }
+
   @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_enumA");
-  
+
+  public get enumA(): Status {
+    this.conditionalAddRef(this.__meta_enumA);
+    return this.__backing_enumA;
+  }
+
+  public set enumA(newValue: Status) {
+    if (((this.__backing_enumA) !== (newValue))) {
+      this.__backing_enumA = newValue;
+      this.__meta_enumA.fireChange();
+      this.executeOnSubscribingWatches("enumA");
+    }
+  }
+
   public numB: number = 33;
   
   public stringB: string = "AA";
@@ -205,173 +348,32 @@ final class Status extends BaseEnum<int> {
   public enumB: Status = Status.NotFound;
   
   public constructor() {}
-  
-  public get numA(): number {
-    this.conditionalAddRef(this.__meta_numA);
-    return this.__backing_numA;
+  static {
   }
-  
-  public set numA(newValue: number) {
-    if (((this.__backing_numA) !== (newValue))) {
-      this.__backing_numA = newValue;
-      this.__meta_numA.fireChange();
-      this.executeOnSubscribingWatches("numA");
-    }
-  }
-  
-  public get stringA(): string {
-    this.conditionalAddRef(this.__meta_stringA);
-    return this.__backing_stringA;
-  }
-  
-  public set stringA(newValue: string) {
-    if (((this.__backing_stringA) !== (newValue))) {
-      this.__backing_stringA = newValue;
-      this.__meta_stringA.fireChange();
-      this.executeOnSubscribingWatches("stringA");
-    }
-  }
-  
-  public get booleanA(): boolean {
-    this.conditionalAddRef(this.__meta_booleanA);
-    return this.__backing_booleanA;
-  }
-  
-  public set booleanA(newValue: boolean) {
-    if (((this.__backing_booleanA) !== (newValue))) {
-      this.__backing_booleanA = newValue;
-      this.__meta_booleanA.fireChange();
-      this.executeOnSubscribingWatches("booleanA");
-    }
-  }
-  
-  public get arrayA(): Array<number> {
-    this.conditionalAddRef(this.__meta_arrayA);
-    return this.__backing_arrayA;
-  }
-  
-  public set arrayA(newValue: Array<number>) {
-    if (((this.__backing_arrayA) !== (newValue))) {
-      this.__backing_arrayA = newValue;
-      this.__meta_arrayA.fireChange();
-      this.executeOnSubscribingWatches("arrayA");
-    }
-  }
-  
-  public get objectA(): Object {
-    this.conditionalAddRef(this.__meta_objectA);
-    return this.__backing_objectA;
-  }
-  
-  public set objectA(newValue: Object) {
-    if (((this.__backing_objectA) !== (newValue))) {
-      this.__backing_objectA = newValue;
-      this.__meta_objectA.fireChange();
-      this.executeOnSubscribingWatches("objectA");
-    }
-  }
-  
-  public get dateA(): Date {
-    this.conditionalAddRef(this.__meta_dateA);
-    return this.__backing_dateA;
-  }
-  
-  public set dateA(newValue: Date) {
-    if (((this.__backing_dateA) !== (newValue))) {
-      this.__backing_dateA = newValue;
-      this.__meta_dateA.fireChange();
-      this.executeOnSubscribingWatches("dateA");
-    }
-  }
-  
-  public get setA(): Set<number> {
-    this.conditionalAddRef(this.__meta_setA);
-    return this.__backing_setA;
-  }
-  
-  public set setA(newValue: Set<number>) {
-    if (((this.__backing_setA) !== (newValue))) {
-      this.__backing_setA = newValue;
-      this.__meta_setA.fireChange();
-      this.executeOnSubscribingWatches("setA");
-    }
-  }
-  
-  public get mapA(): Map<number, string> {
-    this.conditionalAddRef(this.__meta_mapA);
-    return this.__backing_mapA;
-  }
-  
-  public set mapA(newValue: Map<number, string>) {
-    if (((this.__backing_mapA) !== (newValue))) {
-      this.__backing_mapA = newValue;
-      this.__meta_mapA.fireChange();
-      this.executeOnSubscribingWatches("mapA");
-    }
-  }
-  
-  public get unionA(): (string | undefined) {
-    this.conditionalAddRef(this.__meta_unionA);
-    return this.__backing_unionA;
-  }
-  
-  public set unionA(newValue: (string | undefined)) {
-    if (((this.__backing_unionA) !== (newValue))) {
-      this.__backing_unionA = newValue;
-      this.__meta_unionA.fireChange();
-      this.executeOnSubscribingWatches("unionA");
-    }
-  }
-  
-  public get classA(): Person {
-    this.conditionalAddRef(this.__meta_classA);
-    return this.__backing_classA;
-  }
-  
-  public set classA(newValue: Person) {
-    if (((this.__backing_classA) !== (newValue))) {
-      this.__backing_classA = newValue;
-      this.__meta_classA.fireChange();
-      this.executeOnSubscribingWatches("classA");
-    }
-  }
-  
-  public get enumA(): Status {
-    this.conditionalAddRef(this.__meta_enumA);
-    return this.__backing_enumA;
-  }
-  
-  public set enumA(newValue: Status) {
-    if (((this.__backing_enumA) !== (newValue))) {
-      this.__backing_enumA = newValue;
-      this.__meta_enumA.fireChange();
-      this.executeOnSubscribingWatches("enumA");
-    }
-  }
-  
+
 }
 
 @Observed() class mixed2 implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-  
+
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
-  
+
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
     return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
-  
+
   public executeOnSubscribingWatches(propertyName: string): void {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
-  
+
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
   }
-  
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
       meta.addRef();
@@ -379,36 +381,14 @@ final class Status extends BaseEnum<int> {
   }
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
-  
-  @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
-  
-  @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
-  
-  @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
-  
-  @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
-  
-  @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
-  
-  @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
-  
-  @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
-  
-  @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
-  
-  @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
-  
-  @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
 
-  @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
-  
-  public constructor() {}
-  
+  @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
+
   public get numA(): number {
     this.conditionalAddRef(this.__meta);
     return this.__backing_numA;
   }
-  
+
   public set numA(newValue: number) {
     if (((this.__backing_numA) !== (newValue))) {
       this.__backing_numA = newValue;
@@ -416,12 +396,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("numA");
     }
   }
-  
+
+  @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
+
   public get stringA(): string {
     this.conditionalAddRef(this.__meta);
     return this.__backing_stringA;
   }
-  
+
   public set stringA(newValue: string) {
     if (((this.__backing_stringA) !== (newValue))) {
       this.__backing_stringA = newValue;
@@ -429,12 +411,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("stringA");
     }
   }
-  
+
+  @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
+
   public get booleanA(): boolean {
     this.conditionalAddRef(this.__meta);
     return this.__backing_booleanA;
   }
-  
+
   public set booleanA(newValue: boolean) {
     if (((this.__backing_booleanA) !== (newValue))) {
       this.__backing_booleanA = newValue;
@@ -442,12 +426,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("booleanA");
     }
   }
-  
+
+  @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
+
   public get arrayA(): Array<number> {
     this.conditionalAddRef(this.__meta);
     return this.__backing_arrayA;
   }
-  
+
   public set arrayA(newValue: Array<number>) {
     if (((this.__backing_arrayA) !== (newValue))) {
       this.__backing_arrayA = newValue;
@@ -455,12 +441,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("arrayA");
     }
   }
-  
+
+  @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
+
   public get objectA(): Object {
     this.conditionalAddRef(this.__meta);
     return this.__backing_objectA;
   }
-  
+
   public set objectA(newValue: Object) {
     if (((this.__backing_objectA) !== (newValue))) {
       this.__backing_objectA = newValue;
@@ -468,12 +456,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("objectA");
     }
   }
-  
+
+  @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
+
   public get dateA(): Date {
     this.conditionalAddRef(this.__meta);
     return this.__backing_dateA;
   }
-  
+
   public set dateA(newValue: Date) {
     if (((this.__backing_dateA) !== (newValue))) {
       this.__backing_dateA = newValue;
@@ -481,12 +471,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("dateA");
     }
   }
-  
+
+  @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
+
   public get setA(): Set<number> {
     this.conditionalAddRef(this.__meta);
     return this.__backing_setA;
   }
-  
+
   public set setA(newValue: Set<number>) {
     if (((this.__backing_setA) !== (newValue))) {
       this.__backing_setA = newValue;
@@ -494,12 +486,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("setA");
     }
   }
-  
+
+  @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
+
   public get mapA(): Map<number, string> {
     this.conditionalAddRef(this.__meta);
     return this.__backing_mapA;
   }
-  
+
   public set mapA(newValue: Map<number, string>) {
     if (((this.__backing_mapA) !== (newValue))) {
       this.__backing_mapA = newValue;
@@ -507,12 +501,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("mapA");
     }
   }
-  
+
+  @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
+
   public get unionA(): (string | undefined) {
     this.conditionalAddRef(this.__meta);
     return this.__backing_unionA;
   }
-  
+
   public set unionA(newValue: (string | undefined)) {
     if (((this.__backing_unionA) !== (newValue))) {
       this.__backing_unionA = newValue;
@@ -520,12 +516,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("unionA");
     }
   }
-  
+
+  @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
+
   public get classA(): Person {
     this.conditionalAddRef(this.__meta);
     return this.__backing_classA;
   }
-  
+
   public set classA(newValue: Person) {
     if (((this.__backing_classA) !== (newValue))) {
       this.__backing_classA = newValue;
@@ -533,12 +531,14 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("classA");
     }
   }
-  
+
+  @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
+
   public get enumA(): Status {
     this.conditionalAddRef(this.__meta);
     return this.__backing_enumA;
   }
-  
+
   public set enumA(newValue: Status) {
     if (((this.__backing_enumA) !== (newValue))) {
       this.__backing_enumA = newValue;
@@ -546,87 +546,49 @@ final class Status extends BaseEnum<int> {
       this.executeOnSubscribingWatches("enumA");
     }
   }
-  
+
+  public constructor() {}
+  static {
+  }
+
 }
 
 class mixed3 implements IObservedObject, ISubscribedWatches {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
-  
+
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
   }
-  
+
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
     return this.subscribedWatches.removeWatchSubscriber(watchId);
   }
-  
+
   public executeOnSubscribingWatches(propertyName: string): void {
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
-  
+
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
 
   public setV1RenderId(renderId: RenderIdType): void {
     this.____V1RenderId = renderId;
   }
-  
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
       meta.addRef();
     }
   }
-  
-  @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_numA");
-  
-  @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_stringA");
-  
-  @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_booleanA");
-  
-  @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_arrayA");
-  
-  @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_objectA");
-  
-  @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_dateA");
-  
-  @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_setA");
-  
-  @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_mapA");
-  
-  @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_unionA");
-  
-  @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
-  
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_classA");
-  
-  @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_enumA");
-  
-  public constructor() {}
-  
+  @JSONRename({newName:"numA"}) public __backing_numA: number = 33;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_numA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_numA");
+
   public get numA(): number {
     this.conditionalAddRef(this.__meta_numA);
     return this.__backing_numA;
   }
-  
+
   public set numA(newValue: number) {
     if (((this.__backing_numA) !== (newValue))) {
       this.__backing_numA = newValue;
@@ -634,12 +596,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("numA");
     }
   }
-  
+
+  @JSONRename({newName:"stringA"}) public __backing_stringA: string = "AA";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_stringA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_stringA");
+
   public get stringA(): string {
     this.conditionalAddRef(this.__meta_stringA);
     return this.__backing_stringA;
   }
-  
+
   public set stringA(newValue: string) {
     if (((this.__backing_stringA) !== (newValue))) {
       this.__backing_stringA = newValue;
@@ -647,12 +613,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("stringA");
     }
   }
-  
+
+  @JSONRename({newName:"booleanA"}) public __backing_booleanA: boolean = true;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_booleanA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_booleanA");
+
   public get booleanA(): boolean {
     this.conditionalAddRef(this.__meta_booleanA);
     return this.__backing_booleanA;
   }
-  
+
   public set booleanA(newValue: boolean) {
     if (((this.__backing_booleanA) !== (newValue))) {
       this.__backing_booleanA = newValue;
@@ -660,12 +630,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("booleanA");
     }
   }
-  
+
+  @JSONRename({newName:"arrayA"}) public __backing_arrayA: Array<number> = [1, 2, 3];
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_arrayA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_arrayA");
+
   public get arrayA(): Array<number> {
     this.conditionalAddRef(this.__meta_arrayA);
     return this.__backing_arrayA;
   }
-  
+
   public set arrayA(newValue: Array<number>) {
     if (((this.__backing_arrayA) !== (newValue))) {
       this.__backing_arrayA = newValue;
@@ -673,12 +647,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("arrayA");
     }
   }
-  
+
+  @JSONRename({newName:"objectA"}) public __backing_objectA: Object = {};
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_objectA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_objectA");
+
   public get objectA(): Object {
     this.conditionalAddRef(this.__meta_objectA);
     return this.__backing_objectA;
   }
-  
+
   public set objectA(newValue: Object) {
     if (((this.__backing_objectA) !== (newValue))) {
       this.__backing_objectA = newValue;
@@ -686,12 +664,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("objectA");
     }
   }
-  
+
+  @JSONRename({newName:"dateA"}) public __backing_dateA: Date = new Date("2021-08-08");
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dateA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_dateA");
+
   public get dateA(): Date {
     this.conditionalAddRef(this.__meta_dateA);
     return this.__backing_dateA;
   }
-  
+
   public set dateA(newValue: Date) {
     if (((this.__backing_dateA) !== (newValue))) {
       this.__backing_dateA = newValue;
@@ -699,12 +681,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("dateA");
     }
   }
-  
+
+  @JSONRename({newName:"setA"}) public __backing_setA: Set<number> = new Set<number>();
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_setA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_setA");
+
   public get setA(): Set<number> {
     this.conditionalAddRef(this.__meta_setA);
     return this.__backing_setA;
   }
-  
+
   public set setA(newValue: Set<number>) {
     if (((this.__backing_setA) !== (newValue))) {
       this.__backing_setA = newValue;
@@ -712,12 +698,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("setA");
     }
   }
-  
+
+  @JSONRename({newName:"mapA"}) public __backing_mapA: Map<number, string> = new Map<number, string>();
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_mapA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_mapA");
+
   public get mapA(): Map<number, string> {
     this.conditionalAddRef(this.__meta_mapA);
     return this.__backing_mapA;
   }
-  
+
   public set mapA(newValue: Map<number, string>) {
     if (((this.__backing_mapA) !== (newValue))) {
       this.__backing_mapA = newValue;
@@ -725,12 +715,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("mapA");
     }
   }
-  
+
+  @JSONRename({newName:"unionA"}) public __backing_unionA: (string | undefined) = "";
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_unionA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_unionA");
+
   public get unionA(): (string | undefined) {
     this.conditionalAddRef(this.__meta_unionA);
     return this.__backing_unionA;
   }
-  
+
   public set unionA(newValue: (string | undefined)) {
     if (((this.__backing_unionA) !== (newValue))) {
       this.__backing_unionA = newValue;
@@ -738,12 +732,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("unionA");
     }
   }
-  
+
+  @JSONRename({newName:"classA"}) public __backing_classA: Person = new Person();
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_classA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_classA");
+
   public get classA(): Person {
     this.conditionalAddRef(this.__meta_classA);
     return this.__backing_classA;
   }
-  
+
   public set classA(newValue: Person) {
     if (((this.__backing_classA) !== (newValue))) {
       this.__backing_classA = newValue;
@@ -751,12 +749,16 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("classA");
     }
   }
-  
+
+  @JSONRename({newName:"enumA"}) public __backing_enumA: Status = Status.NotFound;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_enumA: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_enumA");
+
   public get enumA(): Status {
     this.conditionalAddRef(this.__meta_enumA);
     return this.__backing_enumA;
   }
-  
+
   public set enumA(newValue: Status) {
     if (((this.__backing_enumA) !== (newValue))) {
       this.__backing_enumA = newValue;
@@ -764,7 +766,11 @@ class mixed3 implements IObservedObject, ISubscribedWatches {
       this.executeOnSubscribingWatches("enumA");
     }
   }
-  
+
+  public constructor() {}
+  static {
+  }
+
 }
 `;
 
@@ -774,7 +780,7 @@ function testObservedOnlyTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test observed track transform with complex type',
-    [observedTrackTransform, uiNoRecheck, recheck],
+    [observedTrackTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testObservedOnlyTransformer],
     },

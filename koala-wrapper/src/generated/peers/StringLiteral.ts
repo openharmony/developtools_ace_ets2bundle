@@ -30,10 +30,13 @@ import {
 
 import { Literal } from "./Literal"
 export class StringLiteral extends Literal {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_STRING_LITERAL)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_STRING_LITERAL;
     }
     static createStringLiteral(): StringLiteral {
         return new StringLiteral(global.generatedEs2panda._CreateStringLiteral(global.context))

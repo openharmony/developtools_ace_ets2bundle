@@ -15,7 +15,12 @@
 
 import { Expression, TSClassImplements, TSTypeParameterInstantiation } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateTSClassImplements(
     original: TSClassImplements,
@@ -26,6 +31,11 @@ export function updateTSClassImplements(
         return original;
     }
 
-    const update = updateThenAttach(TSClassImplements.updateTSClassImplements, attachModifiers);
+    const update = updateThenAttach(
+        TSClassImplements.updateTSClassImplements,
+        attachModifiers,
+        attachParent,
+        refreshNodeCache
+    );
     return update(original, expression, typeParameters);
 }

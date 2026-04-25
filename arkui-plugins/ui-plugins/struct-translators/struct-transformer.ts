@@ -15,16 +15,12 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from '../../common/abstract-visitor';
-import { ProjectConfig } from '../../common/plugin-context';
-import { collectCustomComponentScopeInfo, CustomComponentNames, isCustomComponentClass } from '../utils';
+import { initResourceInfo, loadBuildJson, LoaderJson, ProjectConfig, ResourceInfo } from '../../common/plugin-context';
+import { collectCustomComponentScopeInfo, isCustomComponentClass } from '../utils';
 import {
     CustomComponentScopeInfo,
     isResourceNode,
-    ScopeInfoCollection,
-    LoaderJson,
-    ResourceInfo,
-    loadBuildJson,
-    initResourceInfo,
+    ScopeInfoCollection
 } from './utils';
 import { factory } from './factory';
 import { isEntryWrapperClass } from '../entry-translators/utils';
@@ -33,19 +29,20 @@ import { ImportCollector } from '../../common/import-collector';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
+import { CustomComponentNames } from '../../common/predefines';
 
 export class StructTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
-    aceBuildJson: LoaderJson;
+    aceBuildJson: Partial<LoaderJson>;
     resourceInfo: ResourceInfo;
 
-    constructor(projectConfig: ProjectConfig | undefined) {
+    constructor(projectConfig: ProjectConfig | undefined, resourcePath: string | undefined) {
         super();
         this.projectConfig = projectConfig;
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
-        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson);
+        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson, resourcePath);
     }
 
     reset(): void {

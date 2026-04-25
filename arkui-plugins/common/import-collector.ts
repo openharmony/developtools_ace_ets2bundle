@@ -58,10 +58,14 @@ export class ImportCollector {
     }
 
     reset(): void {
-        this.importInfos = [];
-        this.imported.clear();
         this.localMap.clear();
         this.sourceMap.clear();
+        this.clearImports();
+    }
+
+    clearImports(): void {
+        this.importInfos = [];
+        this.imported.clear();
     }
 
     collectSource(imported: string, source: string): void {
@@ -91,6 +95,21 @@ export class ImportCollector {
         });
         this.localMap.set(imported, _local);
         this.imported.add(imported);
+    }
+
+    collectLocalImport(
+        imported: string,
+        source: string,
+        local?: string,
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
+    ): void {
+        const _local: string = local ?? imported;
+        this.importInfos.push({
+            source,
+            imported,
+            local: _local,
+            kind,
+        });
     }
 
     getLocal(imported: string): string | undefined {

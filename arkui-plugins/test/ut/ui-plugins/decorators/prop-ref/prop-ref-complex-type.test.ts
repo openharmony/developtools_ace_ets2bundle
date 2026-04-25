@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { structNoRecheck, recheck, beforeUINoRecheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -122,269 +122,232 @@ final class PropType extends BaseEnum<int> {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<Per>(this, "propVar1", ((({let gensym___95172135 = initializers;
-    (((gensym___95172135) == (null)) ? undefined : gensym___95172135.propVar1)})) ?? (new Per(6))));
-    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<Array<number>>(this, "propVar2", ((({let gensym___222490386 = initializers;
-    (((gensym___222490386) == (null)) ? undefined : gensym___222490386.propVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<PropType>(this, "propVar3", ((({let gensym___201781257 = initializers;
-    (((gensym___201781257) == (null)) ? undefined : gensym___201781257.propVar3)})) ?? (PropType.TYPE3)));
-    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<Set<string>>(this, "propVar4", ((({let gensym___22028950 = initializers;
-    (((gensym___22028950) == (null)) ? undefined : gensym___22028950.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<Array<boolean>>(this, "propVar5", ((({let gensym___54872258 = initializers;
-    (((gensym___54872258) == (null)) ? undefined : gensym___54872258.propVar5)})) ?? ([true, false])));
-    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar6", ((({let gensym___128760941 = initializers;
-    (((gensym___128760941) == (null)) ? undefined : gensym___128760941.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar7", ((({let gensym___30534085 = initializers;
-    (((gensym___30534085) == (null)) ? undefined : gensym___30534085.propVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_propVar8 = STATE_MGMT_FACTORY.makePropRef<((sr: string)=> void)>(this, "propVar8", ((({let gensym___12471776 = initializers;
-    (((gensym___12471776) == (null)) ? undefined : gensym___12471776.propVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_propVar9 = STATE_MGMT_FACTORY.makePropRef<Date>(this, "propVar9", ((({let gensym___123472108 = initializers;
-    (((gensym___123472108) == (null)) ? undefined : gensym___123472108.propVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_propVar10 = STATE_MGMT_FACTORY.makePropRef<Map<number, Per>>(this, "propVar10", ((({let gensym___147847012 = initializers;
-    (((gensym___147847012) == (null)) ? undefined : gensym___147847012.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_propVar11 = STATE_MGMT_FACTORY.makePropRef<(string | number)>(this, "propVar11", ((({let gensym___117026760 = initializers;
-    (((gensym___117026760) == (null)) ? undefined : gensym___117026760.propVar11)})) ?? (0.0)));
-    this.__backing_propVar12 = STATE_MGMT_FACTORY.makePropRef<(Set<string> | Per)>(this, "propVar12", ((({let gensym___220245132 = initializers;
-    (((gensym___220245132) == (null)) ? undefined : gensym___220245132.propVar12)})) ?? (new Per(6))));
+    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<Per>(this, "propVar1", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? (new Per(6))));
+    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<Array<number>>(this, "propVar2", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<PropType>(this, "propVar3", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (PropType.TYPE3)));
+    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<Set<string>>(this, "propVar4", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<Array<boolean>>(this, "propVar5", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? ([true, false])));
+    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar6", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
+    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar7", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar7)})) ?? ([new Per(7), new Per(11)])));
+    this.__backing_propVar8 = STATE_MGMT_FACTORY.makePropRef<((sr: string)=> void)>(this, "propVar8", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar8)})) ?? (((sr: string) => {}))));
+    this.__backing_propVar9 = STATE_MGMT_FACTORY.makePropRef<Date>(this, "propVar9", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar9)})) ?? (new Date("2025-4-23"))));
+    this.__backing_propVar10 = STATE_MGMT_FACTORY.makePropRef<Map<number, Per>>(this, "propVar10", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
+    this.__backing_propVar11 = STATE_MGMT_FACTORY.makePropRef<(string | number)>(this, "propVar11", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar11)})) ?? (0.0)));
+    this.__backing_propVar12 = STATE_MGMT_FACTORY.makePropRef<(Set<string> | Per)>(this, "propVar12", ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar12)})) ?? (new Per(6))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
-    if (({let gensym___222986222 = initializers;
-    (((gensym___222986222) == (null)) ? undefined : gensym___222986222.__options_has_propVar1)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar1)})) {
       this.__backing_propVar1!.update((initializers!.propVar1 as Per));
     }
-    if (({let gensym___178023537 = initializers;
-    (((gensym___178023537) == (null)) ? undefined : gensym___178023537.__options_has_propVar2)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar2)})) {
       this.__backing_propVar2!.update((initializers!.propVar2 as Array<number>));
     }
-    if (({let gensym___221361445 = initializers;
-    (((gensym___221361445) == (null)) ? undefined : gensym___221361445.__options_has_propVar3)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar3)})) {
       this.__backing_propVar3!.update((initializers!.propVar3 as PropType));
     }
-    if (({let gensym___22732558 = initializers;
-    (((gensym___22732558) == (null)) ? undefined : gensym___22732558.__options_has_propVar4)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar4)})) {
       this.__backing_propVar4!.update((initializers!.propVar4 as Set<string>));
     }
-    if (({let gensym___143875977 = initializers;
-    (((gensym___143875977) == (null)) ? undefined : gensym___143875977.__options_has_propVar5)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar5)})) {
       this.__backing_propVar5!.update((initializers!.propVar5 as Array<boolean>));
     }
-    if (({let gensym___21159249 = initializers;
-    (((gensym___21159249) == (null)) ? undefined : gensym___21159249.__options_has_propVar6)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar6)})) {
       this.__backing_propVar6!.update((initializers!.propVar6 as Array<Per>));
     }
-    if (({let gensym___198355044 = initializers;
-    (((gensym___198355044) == (null)) ? undefined : gensym___198355044.__options_has_propVar7)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar7)})) {
       this.__backing_propVar7!.update((initializers!.propVar7 as Array<Per>));
     }
-    if (({let gensym___52710109 = initializers;
-    (((gensym___52710109) == (null)) ? undefined : gensym___52710109.__options_has_propVar8)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar8)})) {
       this.__backing_propVar8!.update((initializers!.propVar8 as ((sr: string)=> void)));
     }
-    if (({let gensym___202931084 = initializers;
-    (((gensym___202931084) == (null)) ? undefined : gensym___202931084.__options_has_propVar9)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar9)})) {
       this.__backing_propVar9!.update((initializers!.propVar9 as Date));
     }
-    if (({let gensym___211158796 = initializers;
-    (((gensym___211158796) == (null)) ? undefined : gensym___211158796.__options_has_propVar10)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar10)})) {
       this.__backing_propVar10!.update((initializers!.propVar10 as Map<number, Per>));
     }
-    if (({let gensym___109526633 = initializers;
-    (((gensym___109526633) == (null)) ? undefined : gensym___109526633.__options_has_propVar11)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar11)})) {
       this.__backing_propVar11!.update((initializers!.propVar11 as (string | number)));
     }
-    if (({let gensym___33495086 = initializers;
-    (((gensym___33495086) == (null)) ? undefined : gensym___33495086.__options_has_propVar12)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar12)})) {
       this.__backing_propVar12!.update((initializers!.propVar12 as (Set<string> | Per)));
     }
   }
-
-  private __backing_propVar1?: IPropRefDecoratedVariable<Per>;
-
-  public get propVar1(): Per {
-    return this.__backing_propVar1!.get();
-  }
-
-  public set propVar1(value: Per) {
-    this.__backing_propVar1!.set(value);
-  }
-
-  private __backing_propVar2?: IPropRefDecoratedVariable<Array<number>>;
-
-  public get propVar2(): Array<number> {
-    return this.__backing_propVar2!.get();
-  }
-
-  public set propVar2(value: Array<number>) {
-    this.__backing_propVar2!.set(value);
-  }
-
-  private __backing_propVar3?: IPropRefDecoratedVariable<PropType>;
-
-  public get propVar3(): PropType {
-    return this.__backing_propVar3!.get();
-  }
-
-  public set propVar3(value: PropType) {
-    this.__backing_propVar3!.set(value);
-  }
-
-  private __backing_propVar4?: IPropRefDecoratedVariable<Set<string>>;
-
-  public get propVar4(): Set<string> {
-    return this.__backing_propVar4!.get();
-  }
-
-  public set propVar4(value: Set<string>) {
-    this.__backing_propVar4!.set(value);
-  }
-
-  private __backing_propVar5?: IPropRefDecoratedVariable<Array<boolean>>;
-
-  public get propVar5(): Array<boolean> {
-    return this.__backing_propVar5!.get();
-  }
-
-  public set propVar5(value: Array<boolean>) {
-    this.__backing_propVar5!.set(value);
-  }
-
-  private __backing_propVar6?: IPropRefDecoratedVariable<Array<Per>>;
-
-  public get propVar6(): Array<Per> {
-    return this.__backing_propVar6!.get();
-  }
-
-  public set propVar6(value: Array<Per>) {
-    this.__backing_propVar6!.set(value);
-  }
-
-  private __backing_propVar7?: IPropRefDecoratedVariable<Array<Per>>;
-
-  public get propVar7(): Array<Per> {
-    return this.__backing_propVar7!.get();
-  }
-
-  public set propVar7(value: Array<Per>) {
-    this.__backing_propVar7!.set(value);
-  }
-
-  private __backing_propVar8?: IPropRefDecoratedVariable<((sr: string)=> void)>;
-
-  public get propVar8(): ((sr: string)=> void) {
-    return this.__backing_propVar8!.get();
-  }
-
-  public set propVar8(value: ((sr: string)=> void)) {
-    this.__backing_propVar8!.set(value);
-  }
-
-  private __backing_propVar9?: IPropRefDecoratedVariable<Date>;
-
-  public get propVar9(): Date {
-    return this.__backing_propVar9!.get();
-  }
-
-  public set propVar9(value: Date) {
-    this.__backing_propVar9!.set(value);
-  }
-
-  private __backing_propVar10?: IPropRefDecoratedVariable<Map<number, Per>>;
-
-  public get propVar10(): Map<number, Per> {
-    return this.__backing_propVar10!.get();
-  }
-
-  public set propVar10(value: Map<number, Per>) {
-    this.__backing_propVar10!.set(value);
-  }
-
-  private __backing_propVar11?: IPropRefDecoratedVariable<(string | number)>;
-
-  public get propVar11(): (string | number) {
-    return this.__backing_propVar11!.get();
-  }
-
-  public set propVar11(value: (string | number)) {
-    this.__backing_propVar11!.set(value);
-  }
-
-  private __backing_propVar12?: IPropRefDecoratedVariable<(Set<string> | Per)>;
-
-  public get propVar12(): (Set<string> | Per) {
-    return this.__backing_propVar12!.get();
-  }
-
-  public set propVar12(value: (Set<string> | Per)) {
-    this.__backing_propVar12!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
-      return new Parent(false, ({let gensym___9944067 = storage;
-      (((gensym___9944067) == (null)) ? undefined : gensym___9944067())}));
+      return new Parent(false, ({let gensym___<some_random_number> = storage;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
     }), initializers, reuseId, content);
   }
-  
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
   }
-  
+
+  private __backing_propVar1?: IPropRefDecoratedVariable<Per>;
+  public get propVar1(): Per {
+    return this.__backing_propVar1!.get();
+  }
+  public set propVar1(value: Per) {
+    this.__backing_propVar1!.set(value);
+  }
+  private __backing_propVar2?: IPropRefDecoratedVariable<Array<number>>;
+  public get propVar2(): Array<number> {
+    return this.__backing_propVar2!.get();
+  }
+  public set propVar2(value: Array<number>) {
+    this.__backing_propVar2!.set(value);
+  }
+  private __backing_propVar3?: IPropRefDecoratedVariable<PropType>;
+  public get propVar3(): PropType {
+    return this.__backing_propVar3!.get();
+  }
+  public set propVar3(value: PropType) {
+    this.__backing_propVar3!.set(value);
+  }
+  private __backing_propVar4?: IPropRefDecoratedVariable<Set<string>>;
+  public get propVar4(): Set<string> {
+    return this.__backing_propVar4!.get();
+  }
+  public set propVar4(value: Set<string>) {
+    this.__backing_propVar4!.set(value);
+  }
+  private __backing_propVar5?: IPropRefDecoratedVariable<Array<boolean>>;
+  public get propVar5(): Array<boolean> {
+    return this.__backing_propVar5!.get();
+  }
+  public set propVar5(value: Array<boolean>) {
+    this.__backing_propVar5!.set(value);
+  }
+  private __backing_propVar6?: IPropRefDecoratedVariable<Array<Per>>;
+  public get propVar6(): Array<Per> {
+    return this.__backing_propVar6!.get();
+  }
+  public set propVar6(value: Array<Per>) {
+    this.__backing_propVar6!.set(value);
+  }
+  private __backing_propVar7?: IPropRefDecoratedVariable<Array<Per>>;
+  public get propVar7(): Array<Per> {
+    return this.__backing_propVar7!.get();
+  }
+  public set propVar7(value: Array<Per>) {
+    this.__backing_propVar7!.set(value);
+  }
+  private __backing_propVar8?: IPropRefDecoratedVariable<((sr: string)=> void)>;
+  public get propVar8(): ((sr: string)=> void) {
+    return this.__backing_propVar8!.get();
+  }
+  public set propVar8(value: ((sr: string)=> void)) {
+    this.__backing_propVar8!.set(value);
+  }
+  private __backing_propVar9?: IPropRefDecoratedVariable<Date>;
+  public get propVar9(): Date {
+    return this.__backing_propVar9!.get();
+  }
+  public set propVar9(value: Date) {
+    this.__backing_propVar9!.set(value);
+  }
+  private __backing_propVar10?: IPropRefDecoratedVariable<Map<number, Per>>;
+  public get propVar10(): Map<number, Per> {
+    return this.__backing_propVar10!.get();
+  }
+  public set propVar10(value: Map<number, Per>) {
+    this.__backing_propVar10!.set(value);
+  }
+  private __backing_propVar11?: IPropRefDecoratedVariable<(string | number)>;
+  public get propVar11(): (string | number) {
+    return this.__backing_propVar11!.get();
+  }
+  public set propVar11(value: (string | number)) {
+    this.__backing_propVar11!.set(value);
+  }
+  private __backing_propVar12?: IPropRefDecoratedVariable<(Set<string> | Per)>;
+  public get propVar12(): (Set<string> | Per) {
+    return this.__backing_propVar12!.get();
+  }
+  public set propVar12(value: (Set<string> | Per)) {
+    this.__backing_propVar12!.set(value);
+  }
   @Memo() 
   public build() {}
-  
   ${dumpConstructor()}
+  static {
+  }
 
 }
 
 @Component() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(Array<number> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(Array<number> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(PropType | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(PropType | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<PropType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(Set<string> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(Set<string> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(Array<boolean> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(Array<boolean> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '(Array<Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar8', '(((sr: string)=> void) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar8', '(IPropRefDecoratedVariable<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar9', '(Date | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar9', '(Date | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar9', '(IPropRefDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar10', '(Map<number, Per> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar10', '(IPropRefDecoratedVariable<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar11', '((string | number) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar11', '((string | number) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar11', '(IPropRefDecoratedVariable<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar12', '((Set<string> | Per) | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar12', '(IPropRefDecoratedVariable<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar12', '(boolean | undefined)')}
   
@@ -397,7 +360,7 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex type @PropRef decorated variables transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },

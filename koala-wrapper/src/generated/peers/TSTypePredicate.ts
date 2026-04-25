@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { Expression } from "./Expression"
 export class TSTypePredicate extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_PREDICATE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_PREDICATE;
     }
     static createTSTypePredicate(parameterName: Expression | undefined, typeAnnotation: TypeNode | undefined, asserts: boolean): TSTypePredicate {
         return new TSTypePredicate(global.generatedEs2panda._CreateTSTypePredicate(global.context, passNode(parameterName), passNode(typeAnnotation), asserts))

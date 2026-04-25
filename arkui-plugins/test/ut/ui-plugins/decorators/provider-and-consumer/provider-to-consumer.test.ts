@@ -18,9 +18,9 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper } from '../../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
 import { Plugins } from '../../../../../common/plugin-context';
 
@@ -123,10 +123,6 @@ function main() {}
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_name: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_name");
 
-  @JSONRename({newName:"age"}) public __backing_age?: number;
-
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_age: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_age");
-
   public get name(): string {
     this.conditionalAddRef(this.__meta_name);
     return UIUtils.makeObserved((this.__backing_name as string));
@@ -139,6 +135,10 @@ function main() {}
       this.executeOnSubscribingWatches("name");
     }
   }
+
+  @JSONRename({newName:"age"}) public __backing_age?: number;
+
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_age: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_age");
 
   public get age(): number {
     this.conditionalAddRef(this.__meta_age);
@@ -157,7 +157,8 @@ function main() {}
     this.name = name;
     this.age = age;
   }
-
+  static {
+  }
 }
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
@@ -171,16 +172,6 @@ function main() {}
     this.__backing_users!.resetOnReuse(data);
   }
 
-  private __backing_users?: IProviderDecoratedVariable<Array<User>>;
-  
-  public get users(): Array<User> {
-    return this.__backing_users!.get();
-  }
-
-  public set users(value: Array<User>) {
-    this.__backing_users!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -191,8 +182,17 @@ function main() {}
   }
 
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Parent {
+  public static $_invoke(initializers?: __Options_Parent, storage?: LocalStorage, @Builder() content?: (()=> void)): Parent {
     throw new Error("Declare interface");
+  }
+  private __backing_users?: IProviderDecoratedVariable<Array<User>>;
+
+  public get users(): Array<User> {
+    return this.__backing_users!.get();
+  }
+
+  public set users(value: Array<User>) {
+    this.__backing_users!.set(value);
   }
 
   @Memo() 
@@ -228,6 +228,8 @@ function main() {}
   }
 
   public constructor() {}
+  static {
+  }
 
 }
 
@@ -242,16 +244,6 @@ function main() {}
     this.__backing_users!.resetOnReuse([]);
   }
 
-  private __backing_users?: IConsumerDecoratedVariable<Array<User>>;
-  
-  public get users(): Array<User> {
-    return this.__backing_users!.get();
-  }
-
-  public set users(value: Array<User>) {
-    this.__backing_users!.set(value);
-  }
-
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponentV2._invokeImpl<Child, __Options_Child>(style, ((): Child => {
@@ -262,8 +254,17 @@ function main() {}
   }
   
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
     throw new Error("Declare interface");
+  }
+  private __backing_users?: IConsumerDecoratedVariable<Array<User>>;
+
+  public get users(): Array<User> {
+    return this.__backing_users!.get();
+  }
+
+  public set users(value: Array<User>) {
+    this.__backing_users!.set(value);
   }
 
   @Memo() 
@@ -276,7 +277,7 @@ function main() {}
       ForEachImpl<User>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<User>((() => {
           return this.users;
-        }), @Memo() ((item: User) => {
+        }), ((item: User) => {
           ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined);
             instance.applyAttributesFinish();
@@ -305,18 +306,20 @@ function main() {}
   }
 
   public constructor() {}
+  static {
+  }
 
 }
 
 @ComponentV2() export interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Provider', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
 }
 
 @ComponentV2() export interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)')}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Consumer', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
@@ -329,7 +332,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test usage of @Provider and @Consumer decorator',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

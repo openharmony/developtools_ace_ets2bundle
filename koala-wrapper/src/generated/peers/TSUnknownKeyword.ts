@@ -31,10 +31,13 @@ import {
 
 import { TypeNode } from "./TypeNode"
 export class TSUnknownKeyword extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNKNOWN_KEYWORD)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_UNKNOWN_KEYWORD;
     }
     static createTSUnknownKeyword(): TSUnknownKeyword {
         return new TSUnknownKeyword(global.generatedEs2panda._CreateTSUnknownKeyword(global.context))

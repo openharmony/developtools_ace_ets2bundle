@@ -23,11 +23,12 @@ import {
     EntryWrapperNames,
     NavigationNames,
     TypeNames,
+    NodeCacheNames,
 } from '../../common/predefines';
 import { ProjectConfig } from '../../common/plugin-context';
 import { factory as uiFactory } from '../ui-factory';
 import { getRelativePagePath } from './utils';
-import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { EntryAnnoInfo } from '../utils';
 
 export class factory {
@@ -229,7 +230,7 @@ export class factory {
                 member.scriptFunction.id.name === EntryWrapperNames.ENTRY_FUNC
             ) {
                 addMemoAnnotation(member.scriptFunction);
-                arkts.NodeCache.getInstance().collect(member);
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(member);
             }
         });
     }
@@ -250,7 +251,7 @@ export class factory {
                 arkts.isIdentifier(member.key) &&
                 member.key.name === EntryWrapperNames.ENTRY_FUNC
             ) {
-                member.setAnnotations([annotation('Memo')]);
+                member.setAnnotations([annotation(MemoNames.MEMO_UI)]);
             }
         });
     }
@@ -466,17 +467,14 @@ export class factory {
         ];
         return uiFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
-            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            function: {
-                body: arkts.factory.createBlock([]),
-                params: params,
-                returnTypeAnnotation: arkts.factory.createPrimitiveType(
-                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
-                ),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-            },
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+ 	        kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+ 	        function: {
+ 	            params: params,
+ 	            returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+ 	            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+ 	            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE,
+ 	        },
+ 	        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE,
         });
     }
 
@@ -530,21 +528,18 @@ export class factory {
         ];
         return uiFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(EntryWrapperNames.NAVIGATION_BUILDER_REGISTER),
-            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            function: {
-                body: arkts.factory.createBlock([]),
-                typeParams: arkts.factory.createTypeParameterDeclaration(
-                    [arkts.factory.createTypeParameter(arkts.factory.createIdentifier(TypeNames.TYPE_T))],
-                    0
-                ),
-                params: params,
-                returnTypeAnnotation: arkts.factory.createPrimitiveType(
-                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
-                ),
-                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
-            },
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+ 	        kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+ 	        function: {
+ 	            typeParams: arkts.factory.createTypeParameterDeclaration(
+ 	                [arkts.factory.createTypeParameter(arkts.factory.createIdentifier(TypeNames.TYPE_T))],
+ 	                0
+ 	            ),
+ 	            returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+ 	            params: params,
+ 	            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+ 	            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE,
+ 	        },
+ 	        modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE,
         });
     }
 }

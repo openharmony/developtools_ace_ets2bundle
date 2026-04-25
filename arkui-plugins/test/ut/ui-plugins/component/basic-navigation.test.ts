@@ -18,7 +18,7 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
@@ -74,17 +74,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample1 | undefined)): void {}
-  
-  private __backing_pathStack?: NavPathStack;
-  
-  public get pathStack(): NavPathStack {
-    return (this.__backing_pathStack as NavPathStack);
-  }
-  
-  public set pathStack(value: NavPathStack) {
-    this.__backing_pathStack = value;
-  }
-  
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample1)=> void) | undefined), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample1, __Options_MyStateSample1>(style, ((): MyStateSample1 => {
@@ -92,11 +82,21 @@ function main() {}
       (((gensym___149025070) == (null)) ? undefined : gensym___149025070())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample1 {
+  public static $_invoke(initializers?: __Options_MyStateSample1, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample1 {
     throw new Error("Declare interface");
   }
+  private __backing_pathStack?: NavPathStack;
+
+  public get pathStack(): NavPathStack {
+    return (this.__backing_pathStack as NavPathStack);
+  }
+
+  public set pathStack(value: NavPathStack) {
+    this.__backing_pathStack = value;
+  }
+
   @Memo() 
   public build() {
     NavigationImpl(@Memo() ((instance: NavigationAttribute): void => {
@@ -121,9 +121,10 @@ function main() {}
       }));
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
@@ -133,16 +134,6 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {}
-  
-  private __backing_pathStack?: NavPathStack;
-  
-  public get pathStack(): NavPathStack {
-    return (this.__backing_pathStack as NavPathStack);
-  }
-  
-  public set pathStack(value: NavPathStack) {
-    this.__backing_pathStack = value;
-  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -151,10 +142,19 @@ function main() {}
       (((gensym___17371929) == (null)) ? undefined : gensym___17371929())}));
     }), initializers, reuseId, content);
   }
-  
+
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): MyStateSample2 {
+  public static $_invoke(initializers?: __Options_MyStateSample2, storage?: LocalStorage, @Builder() content?: (()=> void)): MyStateSample2 {
     throw new Error("Declare interface");
+  }
+  private __backing_pathStack?: NavPathStack;
+
+  public get pathStack(): NavPathStack {
+    return (this.__backing_pathStack as NavPathStack);
+  }
+
+  public set pathStack(value: NavPathStack) {
+    this.__backing_pathStack = value;
   }
 
   @Memo() 
@@ -163,7 +163,7 @@ function main() {}
       instance.setNavigationOptions(undefined, {
         moduleName: "entry",
         pagePath: "mock/component/basic-navigation",
-        isUserCreateStack: true,
+        isUserCreateStack: false,
       });
       instance.applyAttributesFinish();
       return;
@@ -181,9 +181,10 @@ function main() {}
       }));
     }));
   }
-  
+
   ${dumpConstructor()}
-  
+  static {
+  }
 }
 
 @Component() export interface __Options_MyStateSample1 {
@@ -229,7 +230,7 @@ function testCheckedTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test basic navigation transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testCheckedTransformer],
     },

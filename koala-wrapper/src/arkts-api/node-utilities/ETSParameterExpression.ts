@@ -17,8 +17,12 @@ import { Identifier } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
 import { AstNode } from '../peers/AstNode';
 import { ETSParameterExpression } from '../types';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSParameterExpression(
     original: ETSParameterExpression,
@@ -39,10 +43,8 @@ export function updateETSParameterExpression(
             node.annotations = original.annotations;
             return node;
         },
+        attachParent,
+        refreshNodeCache
     );
-    const newNode = update(original, identifier, initializer);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    return update(original, identifier, initializer);
 }

@@ -37,9 +37,12 @@ import { TypeNode } from "./TypeNode"
 import { Es2pandaObjectTypeKind } from "../Es2pandaEnums"
 import { Property } from "./Property"
 export class ObjectExpression extends AnnotatedExpression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION;
     }
     get properties(): readonly Expression[] {
         return unpackNodeArray(global.generatedEs2panda._ObjectExpressionPropertiesConst(global.context, this.peer))

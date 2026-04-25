@@ -32,10 +32,13 @@ import {
 import { TypeNode } from "./TypeNode"
 import { TSTypeParameter } from "./TSTypeParameter"
 export class TSInferType extends TypeNode {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_INFER_TYPE)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_INFER_TYPE;
     }
     static createTSInferType(typeParam?: TSTypeParameter): TSInferType {
         return new TSInferType(global.generatedEs2panda._CreateTSInferType(global.context, passNode(typeParam)))

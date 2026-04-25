@@ -14,13 +14,13 @@
  */
 
 import { ETSNullType } from '../../generated';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import { attachParent, updateThenAttach } from '../utilities/private';
 
 export function updateETSNullType(
     original: ETSNullType
 ): ETSNullType {
     /* TODO: no getter provided yet */
 
-    const update = updateThenAttach(ETSNullType.updateETSNullType, attachModifiers);
+    const update = updateThenAttach(ETSNullType.updateETSNullType, attachParent);
     return update(original);
 }

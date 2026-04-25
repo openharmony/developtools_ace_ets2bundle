@@ -18,9 +18,9 @@ import { PluginTester } from '../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
 import { parseDumpSrc } from '../../../utils/parse-string';
-import { uiNoRecheck, recheck, memoNoRecheck } from '../../../utils/plugins';
+import { uiNoRecheck, recheck, memoNoRecheck, collectNoRecheck } from '../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
-import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../utils/simplify-dump';
+import { dumpGetterSetter, GetSetDumper, dumpConstructor, dumpAnnotation } from '../../../utils/simplify-dump';
 import { uiTransform } from '../../../../ui-plugins';
 import { Plugins } from '../../../../common/plugin-context';
 
@@ -62,6 +62,7 @@ import { State as State } from "@ohos.arkui.stateManagement";
 @Memo() const globalBuilder: @Builder() ((value: string, size: number)=> void) = MyBuilder;
 const builderArr: Array<@Builder() ((value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
+@Builder() 
 @Memo() 
 function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
@@ -71,6 +72,7 @@ function MyBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }), undefined);
 }
 
+@Builder() 
 @Memo() 
 function YourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   TextImpl(@Memo() ((instance: TextAttribute): void => {
@@ -92,13 +94,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
   }
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-  private __backing_message?: IStateDecoratedVariable<string>;
-  public get message(): string {
-    return this.__backing_message!.get();
-  }
-  public set message(value: string) {
-    this.__backing_message!.set(value);
-  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
@@ -110,6 +106,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
     throw new Error("Declare interface");
   }
+
+  private __backing_message?: IStateDecoratedVariable<string>;
+  public get message(): string {
+    return this.__backing_message!.get();
+  }
+  public set message(value: string) {
+    this.__backing_message!.set(value);
+  }
+
   @Memo() 
   public build() {
     RowImpl(@Memo() ((instance: RowAttribute): void => {
@@ -121,7 +126,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return builderArr;
-        }), @Memo() ((item: @Builder() ((value: string, size: number)=> void)) => {
+        }), ((@Memo() item: @Builder() ((value: string, size: number)=> void)) => {
           item("Hello World", 30);
         }), undefined);
         return;
@@ -129,6 +134,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }));
   }
   ${dumpConstructor()}
+  static {
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -140,7 +147,7 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
@@ -176,6 +183,7 @@ import { State as State } from "@ohos.arkui.stateManagement";
 const builderArr: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> = [MyBuilder, YourBuilder];
 function main() {}
 
+@Builder() 
 @Memo() 
 function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (241300838)), 0);
@@ -203,6 +211,7 @@ function MyBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_typ
   }
 }
 
+@Builder() 
 @Memo() 
 function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @MemoSkip() value: string, @MemoSkip() size: number) {
   const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (160135018)), 0);
@@ -242,13 +251,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
     }
     public __updateStruct(initializers: (__Options_Index | undefined)): void {}
-    private __backing_message?: IStateDecoratedVariable<string>;
-    public get message(): string {
-        return this.__backing_message!.get();
-    }
-    public set message(value: string) {
-        this.__backing_message!.set(value);
-    }
+
     @MemoIntrinsic() 
     public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
       CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (46726221)), style, ((): Index => {
@@ -261,6 +264,17 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Index {
       throw new Error("Declare interface");
     }
+
+    private __backing_message?: IStateDecoratedVariable<string>;
+
+    public get message(): string {
+        return this.__backing_message!.get();
+    }
+
+    public set message(value: string) {
+        this.__backing_message!.set(value);
+    }
+
     @Memo() 
     public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
@@ -297,14 +311,14 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             }
             __memo_parameter_instance.value.setForEachOptions((() => {
               return builderArr;
-            }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
+            }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
               const __memo_parameter_item = __memo_scope.param(0, item);
               if (__memo_scope.unchanged) {
                 __memo_scope.cached;
                 return;
               }
-              item(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
+              __memo_parameter_item.value(__memo_context, ((__memo_id) + (218979098)), "Hello World", 30);
               {
                 __memo_scope.recache();
                 return;
@@ -326,8 +340,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
         }
     }
   ${dumpConstructor()}
+  static {
+  }
 }
-    
+
 class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
@@ -348,7 +364,7 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)')}
+    ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
 }
@@ -360,7 +376,7 @@ function testMemoTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test builder with generic builder type',
-    [parsedTransform, uiNoRecheck, memoNoRecheck, recheck],
+    [parsedTransform, collectNoRecheck, uiNoRecheck, memoNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testUITransformer],
         'checked:memo-no-recheck': [testMemoTransformer],

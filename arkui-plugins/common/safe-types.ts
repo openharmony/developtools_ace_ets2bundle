@@ -26,10 +26,10 @@ export type PartialNested<T> = {
     [P in keyof T]?: T[P] extends readonly any[] | any[]
         ? PartialArray<T[P]>
         : T[P] extends arkts.AstNode
-        ? PartialAstNode<T[P]>
-        : T[P] extends object
-        ? PartialObject<T[P]>
-        : PartialPrimitive<T[P]>;
+          ? PartialAstNode<T[P]>
+          : T[P] extends object
+            ? PartialObject<T[P]>
+            : PartialPrimitive<T[P]>;
 };
 
 type NestedKey<T, K extends string | number | symbol> = {

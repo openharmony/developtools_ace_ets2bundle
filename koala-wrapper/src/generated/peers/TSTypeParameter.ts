@@ -35,10 +35,13 @@ import { TypeNode } from "./TypeNode"
 import { Es2pandaModifierFlags } from "./../Es2pandaEnums"
 import { AnnotationUsage } from "./AnnotationUsage"
 export class TSTypeParameter extends Expression {
-     constructor(pointer: KNativePointer) {
+    constructor(pointer: KNativePointer) {
         assertValidPeer(pointer, Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_PARAMETER)
         super(pointer)
         
+    }
+    override get nodeType(): Es2pandaAstNodeType {
+        return Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_PARAMETER;
     }
     static createTSTypeParameter(name?: Identifier, constraint?: TypeNode, defaultType?: TypeNode): TSTypeParameter {
         return new TSTypeParameter(global.generatedEs2panda._CreateTSTypeParameter(global.context, passNode(name), passNode(constraint), passNode(defaultType)))

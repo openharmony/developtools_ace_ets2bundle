@@ -15,7 +15,12 @@
 
 import { ArrayExpression, Expression } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateArrayExpression(original: ArrayExpression, elements: readonly Expression[]): ArrayExpression {
     if (isSameNativeObject(elements, original.elements)) {
@@ -24,7 +29,9 @@ export function updateArrayExpression(original: ArrayExpression, elements: reado
     const update = updateThenAttach(
         ArrayExpression.updateArrayExpression,
         attachModifiers,
-        attachOptionalAndDeclaration
+        attachOptionalAndDeclaration,
+        attachParent,
+        refreshNodeCache
     );
     return update(original, elements);
 }

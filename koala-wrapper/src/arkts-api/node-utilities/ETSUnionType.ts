@@ -15,18 +15,18 @@
 
 import { ETSUnionType, TypeNode } from '../../generated';
 import { isSameNativeObject } from '../peers/ArktsObject';
-import { NodeCache } from '../utilities/nodeCache';
-import { attachModifiers, updateThenAttach } from '../utilities/private';
+import {
+    attachModifiers,
+    attachParent,
+    refreshNodeCache,
+    updateThenAttach,
+} from '../utilities/private';
 
 export function updateETSUnionType(original: ETSUnionType, types: readonly TypeNode[]): ETSUnionType {
     if (isSameNativeObject(types, original.types)) {
         return original;
     }
 
-    const update = updateThenAttach(ETSUnionType.updateETSUnionType, attachModifiers);
-    const newNode = update(original, types);
-    if (NodeCache.getInstance().has(original)) {
-        NodeCache.getInstance().refresh(original, newNode);
-    }
-    return newNode;
+    const update = updateThenAttach(ETSUnionType.updateETSUnionType, attachModifiers, attachParent, refreshNodeCache);
+    return update(original, types);
 }

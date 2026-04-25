@@ -1,0 +1,47 @@
+# Code owners for ArkUI ace_ets2bundle
+
+[编译工具链]
+compiler/main.js @VictorS67
+compiler/src/fast_build/common/ @VictorS67
+compiler/src/fast_build/ets_ui/ @VictorS67
+compiler/src/compile_info.ts @VictorS67
+compiler/src/component_map.ts @VictorS67
+compiler/src/constant_define.ts @VictorS67
+compiler/src/create_ast_node_utils.ts @VictorS67
+compiler/src/ets_checker.ts @VictorS67
+compiler/src/pre_define.ts @VictorS67
+compiler/src/pre_process.ts @VictorS67
+compiler/src/process_component_build.ts @VictorS67
+compiler/src/process_component_class.ts @VictorS67
+compiler/src/process_component_constructor.ts @VictorS67
+compiler/src/process_component_member.ts @VictorS67
+compiler/src/process_custom_component.ts @VictorS67
+compiler/src/process_import.ts @VictorS67
+compiler/src/process_struct_componentV2.ts @VictorS67
+compiler/src/process_ui_syntax.ts @VictorS67
+compiler/src/result_process.ts @VictorS67
+compiler/src/utils.ts @VictorS67
+compiler/src/validate_ui_syntax.ts @VictorS67
+compiler/test/ut/ @VictorS67
+compiler/test/utForPartialUpdate/ @VictorS67
+compiler/test/utForValidate/ @VictorS67
+compiler/test/transform_ut/ @VictorS67
+koala-wrapper/ @VictorS67
+arkui-plugins/ @VictorS67
+ets1.2/ @VictorS67
+
+# Code owners for ArkCompiler ace_ets2bundle
+
+[arkcompiler]
+compiler/src/fast_build/ark_compiler/ @klooer
+compiler/src/ark_utils.ts @klooer
+compiler/src/gen_abc_plugin.ts @klooer
+compiler/src/gen_abc.ts @klooer
+compiler/src/gen_merged_abc.ts @klooer
+compiler/src/gen_module_abc.ts @klooer
+compiler/src/process_kit_import.ts @klooer
+compiler/src/process_module_files.ts @klooer
+compiler/src/process_sendable.ts @klooer
+compiler/src/process_source_file.ts @klooer
+compiler/src/resolve_ohm_url.ts @klooer
+compiler/test/ark_compiler_ut/ @klooer
