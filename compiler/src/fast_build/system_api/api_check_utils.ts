@@ -412,6 +412,16 @@ function parseVersion(versionStr): number {
   return 0;
 }
 
+/**
+ * Determines if two version ranges have any overlap
+ * 
+ * @param {string} rangeStart1 - Start of first version range
+ * @param {string} rangeEnd1 - End of first version range 
+ * @param {string} rangeStart2 - Start of second version range
+ * @param {string} rangeEnd2 - End of second version range
+ * @returns {boolean} True if ranges intersect, false otherwise
+ */
+
 function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2): boolean {
   // Convert version strings to numeric representations
   const range1StartNum = parseVersion(rangeStart1);
