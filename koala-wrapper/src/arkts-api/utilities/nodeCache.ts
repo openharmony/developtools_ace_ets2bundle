@@ -36,16 +36,23 @@ export function copyCacheToClonedNode(original: AstNode, cloned: AstNode, should
         }
         const key: string = NodeCacheFactory.currentCacheKey;
         const cache: NodeCache = NodeCacheFactory.getInstance().getCache(key);
-        if (!cache.has(_original)) {
+        const hasMemo = cache.has(_original);
+        const shouldUpdateMemo = cache.shouldUpdateByPeer(_original.peer);
+        if (!hasMemo && !shouldUpdateMemo) {
             return false;
         }
-        if (shouldRefresh) {
-            cache.refresh(_original, _cloned);
-        } else {
-            const value = cache.get(_original)!;
-            cache.collect(_cloned, value.metadata);
+        if (hasMemo) {
+            if (shouldRefresh) {
+                cache.refresh(_original, _cloned);
+            } else {
+                const value = cache.get(_original)!;
+                cache.collect(_cloned, value.metadata);
+            }
         }
-        return cache.shouldUpdateByPeer(_cloned.peer);
+        if (shouldUpdateMemo) {
+            cache.addNodeToUpdateByPeer(_cloned.peer);
+        }
+        return cache.shouldUpdateByPeer(_original.peer);
     };
     traverseASTSync(original, cloned, traverseCallbackFn);
 }

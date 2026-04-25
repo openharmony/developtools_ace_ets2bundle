@@ -426,11 +426,18 @@ export class CacheFactory {
                         declInfo,
                     );
                 }
+                const shouldUpdateMemo = !!arg && arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(arg);
                 const shouldInsertToArgs = index === params.length - 1 && hasLastTrailingLambda;
                 if (shouldInsertToArgs) {
+                    if (shouldUpdateMemo) {
+                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                    }
                     args.push(modifiedArg);
                 } else {
                     modifiedArg = BuilderLambdaFactory.processModifiedArg(modifiedArg, index, moduleName, type?.name);
+                    if (shouldUpdateMemo && !!modifiedArg) {
+                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                    }
                     modifiedArgs.push(modifiedArg);
                 }
             },

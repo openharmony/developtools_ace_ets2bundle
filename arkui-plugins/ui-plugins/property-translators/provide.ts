@@ -74,7 +74,10 @@ function initializeStructWithProvideProperty(
         factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
     );
     if (this.isMemoShouldUpdate) {
-        PropertyValueCache.getInstance().collect({ value: initializeProperty });
+        const initializePropertyValue = initializeProperty.value;
+        if (!!initializePropertyValue) {
+            PropertyValueCache.getInstance().collect({ value: initializeProperty.value });
+        }
         if (!!initializePropertyType) {
             PropertyValueCache.getInstance().collect({ value: initializePropertyType });
         }
