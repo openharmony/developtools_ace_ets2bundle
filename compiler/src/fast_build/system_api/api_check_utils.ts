@@ -1548,7 +1548,9 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
 function getBuildVersionRegex(tag, functionType) {
   const tagName = `${projectConfig.runtimeOS}/${tag}/${functionType}`;
   const externalCheckers = externalApiCheckPlugin.get(tagName);
-
+  if (!externalCheckers || externalCheckers.length === 0) {
+    return undefined;
+  }
   for (const plugin of externalCheckers) {
     try {
       const externalModule = require(plugin.path);
