@@ -28,6 +28,7 @@ import {
     DecoratorNames,
     CustomComponentNames,
     CustomDialogNames,
+    ETSGLOBAL,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { ProjectConfig, ResourceList } from '../../common/plugin-context';
@@ -87,7 +88,7 @@ export function getResourceParams(id: number, type: number, params: arkts.Expres
  * @param node class declaration node
  */
 export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
-    if (node.definition?.isGlobal) {
+    if (node.definition?.ident?.name === 'ETSGLOBAL') {
         return true;
     }
     return false;
