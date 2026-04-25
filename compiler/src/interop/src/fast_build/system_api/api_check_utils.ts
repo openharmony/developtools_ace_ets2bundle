@@ -701,7 +701,7 @@ function checkCrossplatformValue(
     const config: CrossplatformConfig = depsConfig[i];
     if (config.function === functionKey) {
       collectCrossplatformExternalModule(node, config);
-      return mergingCommentHandle(jsDocTags, config, node, declaration);
+      return mergingCommentHandle;
     }
   }
   return mergingCommentHandle;
