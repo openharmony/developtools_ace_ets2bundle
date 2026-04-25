@@ -377,67 +377,57 @@ let permissionsArray: string[] = [];
 * @returns {number} Returns an integer value representing the version; returns 0 if parsing fails.
 */
 
-function parseVersion(versionStr) {
+function parseVersion(versionStr): number {
 
   const runtimeOS = projectConfig.runtimeOS;
-    // Regular expressions for different version formats
-  const distributionOSVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME,'getBuildVersionRegex'); // Matches x.y.z(w) format
+  // Regular expressions for different version formats
+  const distributionOSVersionPattern = getBuildVersionRegex(SINCE_TAG_NAME, 'getBuildVersionRegex'); // Matches x.y.z(w) format
   const simpleNumberPattern = /^\d{1,2}$/;                      // Matches 1-2 digit number
   const semanticVersionPattern = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/; // Matches x.y.z format
 
   // Check for build version format (x.y.z(w))
   if (distributionOSVersionPattern !== undefined && distributionOSVersionPattern.test(versionStr)) {
-      const matchResult = versionStr.match(distributionOSVersionPattern);
-      const buildNumber = parseInt(matchResult[4], 10); // Extract number in parentheses
-      return buildNumber * 10000;
+    const matchResult = versionStr.match(distributionOSVersionPattern);
+    const buildNumber = parseInt(matchResult[4], 10); // Extract number in parentheses
+    return buildNumber * 10000;
   }
 
   // Check for simple number format
   if (simpleNumberPattern.test(versionStr)) {
-      const numberValue = parseInt(versionStr, 10);
-      return numberValue * 10000;
+    const numberValue = parseInt(versionStr, 10);
+    return numberValue * 10000;
   }
 
   // Check for semantic version format (x.y.z)
   if (semanticVersionPattern.test(versionStr)) {
-      const versionParts = versionStr.split('.');
-      const majorVersion = parseInt(versionParts[0], 10);
-      const minorVersion = parseInt(versionParts[1], 10);
-      const patchVersion = parseInt(versionParts[2], 10);
-      return majorVersion * 10000 + minorVersion * 100 + patchVersion;
+    const versionParts = versionStr.split('.');
+    const majorVersion = parseInt(versionParts[0], 10);
+    const minorVersion = parseInt(versionParts[1], 10);
+    const patchVersion = parseInt(versionParts[2], 10);
+    return majorVersion * 10000 + minorVersion * 100 + patchVersion;
   }
 
   // Return 0 for unrecognized format
   return 0;
 }
 
-/**
-* Determines if two version ranges have any overlap
-* 
-* @param {string} rangeStart1 - Start of first version range
-* @param {string} rangeEnd1 - End of first version range 
-* @param {string} rangeStart2 - Start of second version range
-* @param {string} rangeEnd2 - End of second version range
-* @returns {boolean} True if ranges intersect, false otherwise
-*/
-function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2) {
-// Convert version strings to numeric representations
-const range1StartNum = parseVersion(rangeStart1);
-const range1EndNum = parseVersion(rangeEnd1);
-const range2StartNum = parseVersion(rangeStart2);
-const range2EndNum = parseVersion(rangeEnd2);
+function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2): boolean {
+  // Convert version strings to numeric representations
+  const range1StartNum = parseVersion(rangeStart1);
+  const range1EndNum = parseVersion(rangeEnd1);
+  const range2StartNum = parseVersion(rangeStart2);
+  const range2EndNum = parseVersion(rangeEnd2);
 
-// Normalize ranges to ensure start <= end
-const normalizedRange1Start = Math.min(range1StartNum, range1EndNum);
-const normalizedRange1End = Math.max(range1StartNum, range1EndNum); 
-const normalizedRange2Start = Math.min(range2StartNum, range2EndNum);
-const normalizedRange2End = Math.max(range2StartNum, range2EndNum);
+  // Normalize ranges to ensure start <= end
+  const normalizedRange1Start = Math.min(range1StartNum, range1EndNum);
+  const normalizedRange1End = Math.max(range1StartNum, range1EndNum);
+  const normalizedRange2Start = Math.min(range2StartNum, range2EndNum);
+  const normalizedRange2End = Math.max(range2StartNum, range2EndNum);
 
-// Check for range intersection
-// [22,22] [22,26]
-const rangesIntersect = (normalizedRange1End < normalizedRange2Start || normalizedRange2End < normalizedRange1Start);
+  // Check for range intersection
+  const rangesIntersect = (normalizedRange1End < normalizedRange2Start || normalizedRange2End < normalizedRange1Start);
 
-return rangesIntersect;
+  return rangesIntersect;
 }
 
 /**
@@ -448,34 +438,32 @@ return rangesIntersect;
 */
 function extractVersionRange(commentText) {
 
+  if (typeof commentText !== 'string' || !commentText) {
+    return undefined;
+  }
+  // Regular expression to match [since x.y.z - a.b.c] pattern
+  const VERSION_RANGE_PATTERN = /\[since (.*?)\]/;
 
-if (typeof commentText !== 'string' || !commentText) {
-  return undefined;
-}
+  // Check if pattern exists in comment
 
-// Regular expression to match [since x.y.z - a.b.c] pattern
-const VERSION_RANGE_PATTERN =  /\[since (.*?)\]/;
-
-// Check if pattern exists in comment
-
-if (!commentText.match(VERSION_RANGE_PATTERN)) {
-    return undefined;  
-}
-// Extract and clean the version range part
-const rawVersionRange = commentText.match(VERSION_RANGE_PATTERN)[0]
+  if (!commentText.match(VERSION_RANGE_PATTERN)) {
+    return undefined;
+  }
+  // Extract and clean the version range part
+  const rawVersionRange = commentText.match(VERSION_RANGE_PATTERN)[0]
     .replace('since', '')
     .replace('[', '')
     .replace(']', '')
     .trim();
 
-// Split into start and end versions
-const versionParts = rawVersionRange.split('-');
-if (versionParts.length !== 2) {
+  // Split into start and end versions
+  const versionParts = rawVersionRange.split('-');
+  if (versionParts.length !== 2) {
     return undefined;
-}
+  }
 
-// Return structured version range object
-return {
+  // Return structured version range object
+  return {
     start: versionParts[0].trim(),
     end: versionParts[1].trim()
   };
@@ -490,13 +478,13 @@ return {
 * @returns {boolean} - 如果版本范围与项目的 SDK 版本范围存在交集，则返回 true；否则返回 false;
 */
 function checkVersionRangeIntersection(versionRange): boolean {
-let isflag = false;
-const startVersion = versionRange.start;
-const endVersion = versionRange.end;
-const minSDKVersion = projectConfig.compatibleSdkVersion;
-const maxSDKVersion = projectConfig.compileSdkVersion;
-isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
-return !isflag;
+  let isflag = false;
+  const startVersion = versionRange.start;
+  const endVersion = versionRange.end;
+  const minSDKVersion = projectConfig.compileSdkVersion;
+  const maxSDKVersion = projectConfig.compileSdkVersion;
+  isflag = isVersionRangeIntersect(startVersion, endVersion, minSDKVersion, maxSDKVersion);
+  return !isflag;
 }
 
 /**
@@ -1677,11 +1665,10 @@ export function checkPermissionValue(
   if (permissionTags.length === 0) {
     return false;
   }
-
   let commentAll = '';
 
   for (const permissionTag of permissionTags) {
-    const comment = typeof permissionTag.comment === 'string'
+    let comment = typeof permissionTag.comment === 'string'
       ? permissionTag.comment
       : ts.getTextOfJSDocComment(permissionTag.comment);
 
@@ -1691,12 +1678,14 @@ export function checkPermissionValue(
 
     const versionRange = extractVersionRange(permissionTag.comment);
 
-    if (versionRange && checkVersionRangeIntersection(versionRange)) {
-      comment = comment.replace(/\s*and\s*$/, '').trim();
-    } else {
-      continue;
+    if (versionRange) {
+      if (checkVersionRangeIntersection(versionRange)) {
+        comment = comment.replace(/\s*and\s*$/, '').trim();
+      }
+      else {
+        continue
+      }
     }
-
     if (JsDocCheckService.validPermission(comment, permissionsArray)) {
       continue;
     }
@@ -1713,9 +1702,9 @@ export function checkPermissionValue(
     config.message = commentAll.replace(/\s*and\s*$/, '').trim();
     return true;
   }
-
   return false;
 }
+
 
 
 /**
