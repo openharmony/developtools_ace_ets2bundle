@@ -15,23 +15,26 @@
 
 import * as path from 'path';
 import { PluginTester } from '../../../../utils/plugin-tester';
-import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { mockBuildConfig, mockProjectConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpAnnotation } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
-import { Plugins } from '../../../../../common/plugin-context';
+import { Plugins, ProjectConfig } from '../../../../../common/plugin-context';
 
-const STATE_DIR_PATH: string = 'decorators/syncmonitor';
+const STATE_DIR_PATH: string = 'decorators/monitor';
 
 const buildConfig: BuildConfig = mockBuildConfig();
 buildConfig.compileFiles = [
-    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'syncmonitor-wildcard.ets'),
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'monitor-wildcard.ets'),
 ];
 
-const pluginTester = new PluginTester('test @SyncMonitor decorator wildCard transformation', buildConfig);
+const projectConfig: ProjectConfig = mockProjectConfig();
+projectConfig.compatibleSdkVersion = 26;
+
+const pluginTester = new PluginTester('test @Monitor decorator wildCard transformation', buildConfig, projectConfig);
 
 const parsedTransform: Plugins = {
     name: 'parsedTrans',
@@ -42,21 +45,17 @@ const expectedScript: string = `
 
 import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
 
-import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
-
-import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
 import { ColumnImpl as ColumnImpl } from "arkui.component.column";
 
-import { Memo as Memo } from "arkui.incremental.annotation";
+import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { ILocalDecoratedVariable as ILocalDecoratedVariable } from "arkui.stateManagement.decorator";
 
 import { IObservedObject as IObservedObject } from "arkui.stateManagement.decorator";
-
-import { UIUtils as UIUtils } from "arkui.stateManagement.utils";
-
-import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
 
 import { RenderIdType as RenderIdType } from "arkui.stateManagement.decorator";
 
@@ -64,7 +63,15 @@ import { WatchIdType as WatchIdType } from "arkui.stateManagement.decorator";
 
 import { ISubscribedWatches as ISubscribedWatches } from "arkui.stateManagement.decorator";
 
+import { IObservedAnyProp as IObservedAnyProp } from "arkui.stateManagement.decorator";
+
+import { UIUtils as UIUtils } from "arkui.stateManagement.utils";
+
 import { STATE_MGMT_FACTORY as STATE_MGMT_FACTORY } from "arkui.stateManagement.decorator";
+
+import { IMutableStateMeta as IMutableStateMeta } from "arkui.stateManagement.decorator";
+
+import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { NavInterface as NavInterface } from "arkui.component.customComponent";
 
@@ -82,18 +89,18 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 
 import { Entry as Entry, ComponentV2 as ComponentV2, Column as Column, Button as Button } from "@ohos.arkui.component";
 
-import { SyncMonitor as SyncMonitor, Monitor as Monitor, IMonitor as IMonitor, ObservedV2 as ObservedV2, Trace as Trace, Local as Local } from "@ohos.arkui.stateManagement";
+import { Monitor as Monitor, IMonitor as IMonitor, ObservedV2 as ObservedV2, Trace as Trace, Local as Local } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
 __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   bundleName: "com.example.mock",
   moduleName: "entry",
-  pagePath: "../../../decorators/syncmonitor/syncmonitor-wildcard",
-  pageFullPath: "test/demo/mock/decorators/syncmonitor/syncmonitor-wildcard",
+  pagePath: "../../../decorators/monitor/monitor-wildcard",
+  pageFullPath: "test/demo/mock/decorators/monitor/monitor-wildcard",
   integratedHsp: "false",
 } as NavInterface));
-@ObservedV2() class Per implements IObservedObject, ISubscribedWatches {
+@ObservedV2() class Per implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -115,8 +122,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONRename({newName:"ee"}) public __backing_ee: EE = new EE();
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_ee: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_ee");
-  @JSONRename({newName:"dd"}) public __backing_dd: DD = new DD();
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dd: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_dd");
   public get ee(): EE {
     this.conditionalAddRef(this.__meta_ee);
     return UIUtils.makeObserved(this.__backing_ee);
@@ -130,6 +135,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
   
+  @JSONRename({newName:"dd"}) public __backing_dd: DD = new DD();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_dd: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_dd");
   public get dd(): DD {
     this.conditionalAddRef(this.__meta_dd);
     return UIUtils.makeObserved(this.__backing_dd);
@@ -145,9 +152,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  public addRefAnyProp(): void {
+    this.__meta_ee.addRef();
+    this.__meta_dd.addRef();
+  }
+  
+  static {
+    
+  }
 }
 
-@ObservedV2() class DD implements IObservedObject, ISubscribedWatches {
+@ObservedV2() class DD implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -184,9 +199,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  public addRefAnyProp(): void {
+    this.__meta_num.addRef();
+  }
+  
+  static {
+    
+  }
 }
 
-@ObservedV2() class EE implements IObservedObject, ISubscribedWatches {
+@ObservedV2() class EE implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -208,8 +230,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @JSONRename({newName:"ff"}) public __backing_ff: FF = new FF();
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta_ff: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_ff");
-  @JSONRename({newName:"gg"}) public __backing_gg: GG = new GG();
-  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_gg: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_gg");
   public get ff(): FF {
     this.conditionalAddRef(this.__meta_ff);
     return UIUtils.makeObserved(this.__backing_ff);
@@ -223,6 +243,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
   
+  @JSONRename({newName:"gg"}) public __backing_gg: GG = new GG();
+  @JSONStringifyIgnore() @JSONParseIgnore() private __meta_gg: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__metaV2_gg");
   public get gg(): GG {
     this.conditionalAddRef(this.__meta_gg);
     return UIUtils.makeObserved(this.__backing_gg);
@@ -238,9 +260,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  public addRefAnyProp(): void {
+    this.__meta_ff.addRef();
+    this.__meta_gg.addRef();
+  }
+  
+  static {
+    
+  }
 }
 
-@ObservedV2() class FF implements IObservedObject, ISubscribedWatches {
+@ObservedV2() class FF implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -277,9 +307,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  public addRefAnyProp(): void {
+    this.__meta_num.addRef();
+  }
+  
+  static {
+    
+  }
 }
 
-@ObservedV2() class GG implements IObservedObject, ISubscribedWatches {
+@ObservedV2() class GG implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
   @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
     this.subscribedWatches.addWatchSubscriber(watchId);
@@ -316,12 +353,19 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  public addRefAnyProp(): void {
+    this.__meta_num.addRef();
+  }
+  
+  static {
+    
+  }
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<Per>(this, "per", new Per());
-    this.__SyncMonitor_onPerChange1 = STATE_MGMT_FACTORY.makeSyncMonitor([{
+    this.__monitor_onPerChange1 = STATE_MGMT_FACTORY.makeMonitor([{
       path: "per.ee.*",
       enableWildcard: true,
       valueCallback: ((): Any => {
@@ -340,7 +384,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       owner: this,
       functionName: "onPerChange1",
     });
-    this.__SyncMonitor_onPerChange2 = STATE_MGMT_FACTORY.makeSyncMonitor([{
+    this.__monitor_onPerChange2 = STATE_MGMT_FACTORY.makeMonitor([{
       path: "per.ee",
       valueCallback: ((): Any => {
         return ({let gensym___162548198 = this.per;
@@ -359,7 +403,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       owner: this,
       functionName: "onPerChange2",
     });
-    this.__SyncMonitor_onPerChange3 = STATE_MGMT_FACTORY.makeSyncMonitor([{
+    this.__monitor_onPerChange3 = STATE_MGMT_FACTORY.makeMonitor([{
       path: "per.*",
       enableWildcard: true,
       valueCallback: ((): Any => {
@@ -377,9 +421,23 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
     this.__backing_per!.resetOnReuse(new Per());
-    this.__SyncMonitor_onPerChange1!.resetOnReuse();
-    this.__SyncMonitor_onPerChange2!.resetOnReuse();
-    this.__SyncMonitor_onPerChange3!.resetOnReuse();
+    this.__monitor_onPerChange1!.resetOnReuse();
+    this.__monitor_onPerChange2!.resetOnReuse();
+    this.__monitor_onPerChange3!.resetOnReuse();
+  }
+  
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+      return new Index();
+    }), initializers, reuseId, content, {
+      sClass: Class.from<Index>(),
+    });
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
   }
   
   private __backing_per?: ILocalDecoratedVariable<Per>;
@@ -391,30 +449,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_per!.set(value);
   }
   
-  private __SyncMonitor_onPerChange1: (IMonitorDecoratedVariable | undefined);
-  private __SyncMonitor_onPerChange2: (IMonitorDecoratedVariable | undefined);
-  private __SyncMonitor_onPerChange3: (IMonitorDecoratedVariable | undefined);
-  @MemoIntrinsic() 
-  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    CustomComponentV2._invokeImpl<Index, __Options_Index>(style, ((): Index => {
-      return new Index();
-    }), initializers, reuseId, content, {
-      sClass: Class.from<Index>(),
-    });
-  }
-  
-  @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): Index {
-    throw new Error("Declare interface");
-  }
-  
-  @SyncMonitor({value:["per.ee.*", "per.dd"]}) 
+  private __monitor_onPerChange1: (IMonitorDecoratedVariable | undefined);
+  @Monitor({value:["per.ee.*", "per.dd"]}) 
   public onPerChange1(monitor: IMonitor) {}
   
-  @SyncMonitor({value:["per.ee", "per.dd.*"]}) 
+  private __monitor_onPerChange2: (IMonitorDecoratedVariable | undefined);
+  @Monitor({value:["per.ee", "per.dd.*"]}) 
   public onPerChange2(monitor: IMonitor) {}
   
-  @SyncMonitor({value:["per.*"]}) 
+  private __monitor_onPerChange3: (IMonitorDecoratedVariable | undefined);
+  @Monitor({value:["per.*"]}) 
   public onPerChange3(monitor: IMonitor) {}
   
   @Memo() 
@@ -428,6 +472,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  static {
+    
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -441,11 +488,29 @@ class __EntryWrapper extends EntryPoint {
 }
 
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() export interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(Per | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}
+  @Local() 
+  get per(): (Per | undefined) {
+    return undefined;
+  }
+  @Local() 
+  set per(per: (Per | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __backing_per(): (ILocalDecoratedVariable<Per> | undefined) {
+    return undefined;
+  }
+  set __backing_per(__backing_per: (ILocalDecoratedVariable<Per> | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
+  get __options_has_per(): (boolean | undefined) {
+    return undefined;
+  }
+  set __options_has_per(__options_has_per: (boolean | undefined)) {
+    throw new InvalidStoreAccessError();
+  }
   
 }
+
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {
@@ -453,8 +518,8 @@ function testParsedAndCheckedTransformer(this: PluginTestContext): void {
 }
 
 pluginTester.run(
-    'test @SyncMonitor decorator wildCard transformation',
-    [parsedTransform, uiNoRecheck, recheck],
+    'test @Monitor decorator wildCard transformation',
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testParsedAndCheckedTransformer],
     },
