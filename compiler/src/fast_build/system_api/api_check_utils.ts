@@ -1679,7 +1679,7 @@ export function checkPermissionValue(
 
     if (versionRange) {
       if (checkVersionRangeIntersection(versionRange)) {
-        comment = comment.replace(/\s*and\s*$/, '').trim();
+        comment = comment.replace(/\[since (.*?)\]/, '').trim();
       }
       else {
         continue
