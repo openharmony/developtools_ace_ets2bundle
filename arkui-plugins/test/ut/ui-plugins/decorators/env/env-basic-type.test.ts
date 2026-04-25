@@ -112,6 +112,10 @@ class __EntryWrapper extends EntryPoint {
     Index();
   }
   
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
   public constructor() {}
   
 }
@@ -386,6 +390,10 @@ class __EntryWrapper extends EntryPoint {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
   
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
   public constructor() {}
   
 }
