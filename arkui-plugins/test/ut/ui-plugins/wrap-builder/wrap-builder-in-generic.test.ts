@@ -157,7 +157,11 @@ class __EntryWrapper extends EntryPoint {
     public entry(): void {
         Index._invoke(undefined, undefined, undefined, undefined, undefined);
     }
-    public constructor() {}
+    public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
+  public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
@@ -385,7 +389,11 @@ class __EntryWrapper extends EntryPoint {
             return;
         }
     }
-    public constructor() {}
+    public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
+  public constructor() {}
 }
 @Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}

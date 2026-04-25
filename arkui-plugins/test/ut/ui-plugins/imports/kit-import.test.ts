@@ -97,6 +97,10 @@ class __EntryWrapper extends EntryPoint {
     A();
   }
 
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
   public constructor() {}
 
 }
@@ -254,6 +258,10 @@ class __EntryWrapper extends EntryPoint {
   @Memo() 
   public entry(): void {
     A._invoke(undefined, undefined, undefined, undefined, undefined);
+  }
+
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
 
   public constructor() {}
