@@ -158,7 +158,9 @@ function checkTypeDeclHasObserved(
     }
     const classInfo = classRecord.toRecord();
     const program = arkts.getProgramFromAstNode(decl);
-    const isFrom1_1 = FileManager.getInstance().getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
+    const isFrom1_1 = program !== undefined
+        ? FileManager.getInstance().getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1
+        : undefined;
     if (!isFrom1_1) {
         return false;
     }

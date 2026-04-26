@@ -870,9 +870,6 @@ export class factory {
         if (!initCallPtr || arkts.isIdentifier(lambdaBody)) {
             return lambdaBody;
         }
-        console.log(`[DEBUG] addOptionsArgsToLambdaBodyInStyleArg: lambdaBody: ${lambdaBody.dumpSrc()}, memo cache: ${
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(lambdaBody)
-        }`);
         const styleInternalsVisitor = new StyleInternalsVisitor();
         const newLambdaBody = styleInternalsVisitor
             .registerInitCall(initCallPtr)

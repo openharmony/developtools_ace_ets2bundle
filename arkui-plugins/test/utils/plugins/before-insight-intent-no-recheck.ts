@@ -21,10 +21,10 @@ import { UIVisitor } from '../../../collectors/ui-collectors/ui-visitor';
 import { MetaDataCollector } from '../../../common/metadata-collector';
 
 /**
- * AfterCheck before-ui-visit and cache any node that should be ui-transformed with no recheck AST.
+ * AfterCheck before-ui-visit and cache any node that should be ui-transformed (and insight-intent collect) with no recheck AST.
  */
-export const beforeUINoRecheck: Plugins = {
-    name: 'before-ui-no-recheck',
+export const beforeInsightIntentNoRecheck: Plugins = {
+    name: 'before-insight-intent-no-recheck',
     checked(this: PluginContext): arkts.EtsScript | undefined {
         let script: arkts.EtsScript | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
@@ -35,10 +35,10 @@ export const beforeUINoRecheck: Plugins = {
             const projectConfig = this.getProjectConfig();
             MetaDataCollector.getInstance()
                 .setProjectConfig(projectConfig)
-                .setShouldHandleInsightIntent(false);
+                .setShouldHandleInsightIntent(true);
             const uiVisitor = new UIVisitor();
             const programVisitor = new ProgramVisitor({
-                pluginName: beforeUINoRecheck.name,
+                pluginName: beforeInsightIntentNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
                 visitors: [uiVisitor],
                 skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,

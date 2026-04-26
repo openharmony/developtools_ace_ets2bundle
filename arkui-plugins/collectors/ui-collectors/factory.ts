@@ -22,11 +22,13 @@ import {
     checkCanCollectNormalClassFromInfo,
     checkIsComponentAttributeInterfaceFromInfo,
     checkIsDialogControllerNewInstanceFromInfo,
+    checkIsInsightIntentClassFromInfo,
 } from './utils';
 import {
     ArrowFunctionRecord,
     CustomComponentInterfaceRecord,
     CustomComponentRecord,
+    InsightIntentClassRecord,
     NewClassInstanceRecord,
     NormalClassRecord,
     NormalInterfaceRecord,
@@ -106,6 +108,20 @@ export class CollectFactory {
             return node;
         }
 
+        if (metadata.shouldHandleInsightIntent) {
+            const insightIntentClassRecord = new InsightIntentClassRecord(metadata);
+            insightIntentClassRecord.collect(node);
+
+            classInfo = insightIntentClassRecord.toRecord();
+            if (!classInfo) {
+                return node;
+            }
+            if (checkIsInsightIntentClassFromInfo(classInfo)) {
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, insightIntentClassRecord.toJSON());
+                return node;
+            }
+        }
+
         const classRecord = new NormalClassRecord(metadata);
         classRecord.collect(node);
 
@@ -120,7 +136,7 @@ export class CollectFactory {
         if (checkIsETSGlobalClassFromInfo(classInfo)) {
             const globalClassCollector = new GlobalClassCollector(metadata);
             globalClassCollector.visitor(node);
-            if (globalClassCollector.shouldCollectGlobalClass) {
+            if (metadata.shouldHandleInsightIntent || globalClassCollector.shouldCollectGlobalClass) {
                 arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
             }
             globalClassCollector.reset();
