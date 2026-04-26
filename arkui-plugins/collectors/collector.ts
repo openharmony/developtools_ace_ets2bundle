@@ -32,9 +32,11 @@ export interface CollectorOptions extends VisitorOptions {
     shouldCollectUI?: boolean;
     shouldCollectMemo?: boolean;
     shouldCheckUISyntax?: boolean;
+    shouldHandleInsightIntent?: boolean;
 }
 
 export class Collector extends AbstractVisitor {
+    private _shouldHandleInsightIntent: boolean;
     private _shouldIgnoreDecl?: boolean;
     private _shouldCollectUI?: boolean;
     private _shouldCollectMemo?: boolean;
@@ -46,6 +48,12 @@ export class Collector extends AbstractVisitor {
         this._shouldCollectUI = options?.shouldCollectUI;
         this._shouldCollectMemo = options?.shouldCollectMemo;
         this._shouldCheckUISyntax = options?.shouldCheckUISyntax;
+        this._shouldHandleInsightIntent = 
+            options?.shouldHandleInsightIntent ?? MetaDataCollector.getInstance().shouldHandleInsightIntent;
+    }
+
+    get shouldHandleInsightIntent(): boolean {
+        return this._shouldHandleInsightIntent;
     }
 
     get shouldIgnoreDecl(): boolean {
@@ -108,6 +116,7 @@ export class Collector extends AbstractVisitor {
             externalSourceName: this.externalSourceName,
             program: this.program,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
+            shouldHandleInsightIntent: this.shouldHandleInsightIntent
         };
     }
 

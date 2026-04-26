@@ -50,6 +50,7 @@ import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
 import { CustomDialogControllerPropertyCache } from '../property-translators/cache/customDialogControllerPropertyCache';
 import { collectStateManagementTypeImport, findDecoratorByName } from '../property-translators/utils';
+import { ResourceSourceCache } from '../insight-intent/resource-source-cache';
 import {
     getCustomComponentOptionsName,
     getTypeNameFromTypeParameter,
@@ -723,20 +724,26 @@ export class CacheFactory {
     static transformResourceFromInfo(resourceNode: arkts.CallExpression, metadata: CallInfo): arkts.CallExpression {
         const projectConfig = MetaDataCollector.getInstance().projectConfig;
         const resourceInfo = MetaDataCollector.getInstance().resourceInfo;
+        const shouldHandleInsightIntent = MetaDataCollector.getInstance().shouldHandleInsightIntent;
         const args: readonly arkts.Expression[] = resourceNode.arguments;
         if (!projectConfig || !resourceInfo || args.length <= 0) {
             return resourceNode;
         }
         const resourceKind: Dollars = metadata.isResourceCall!;
-        const firstArg: arkts.Expression = args.at(0)!;
+        const firstArg: arkts.Expression = args.at(0)!;;
         if (arkts.isStringLiteral(firstArg)) {
-            return StructFactory.processStringLiteralResourceNode(
+            const resultNode = StructFactory.processStringLiteralResourceNode(
                 resourceNode,
                 resourceInfo,
                 projectConfig,
                 resourceKind,
                 firstArg
             );
+            if (shouldHandleInsightIntent && resultNode.peer !== resourceNode.peer) {
+                const originalSource = `${resourceKind}('${firstArg.str}')`;
+                ResourceSourceCache.getInstance().set(resultNode, originalSource);
+            }
+            return resultNode;
         } else if (args && args.length) {
             return StructFactory.generateTransformedResourceCall(
                 resourceNode,

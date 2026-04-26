@@ -58,6 +58,7 @@ import {
     checkIsETSGlobalClassFromInfo,
     checkIsFunctionMethodDeclFromInfo,
     checkIsGlobalFunctionFromInfo,
+    checkIsInsightIntentClassFromInfo,
     checkIsInteropComponentCallFromInfo,
     checkIsMonitorMethodFromInfo,
     checkIsNormalClassHasTrackProperty,
@@ -75,6 +76,7 @@ import {
 } from '../collectors/ui-collectors/utils';
 import { coerceToAstNode } from '../collectors/ui-collectors/validators/utils';
 import { getPerfName } from '../common/debug';
+import { MetaDataCollector } from '../common/metadata-collector';
 import { ARKUI_BUILDER_SOURCE_NAME, ARKUI_INTEROP_SOURCE_NAME, EntryWrapperNames, NodeCacheNames } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
 import { factory as UIFactory } from './ui-factory';
@@ -101,6 +103,7 @@ import { PropertyRewriteCache } from './property-translators/cache/propertyRewri
 import { generateBuilderCompatible, insertCompatibleImport } from './interop/builder-interop';
 import { insertInteropComponentImports } from './interop/utils';
 import { generateArkUICompatible } from './interop/interop';
+import { InsightIntentHandler } from './insight-intent/insight-intent-handler';
 
 export class RewriteFactory {
     /**
@@ -124,6 +127,11 @@ export class RewriteFactory {
      * @internal
      */
     static rewriteStruct(node: arkts.ClassDeclaration, metadata: CustomComponentInfo): arkts.ClassDeclaration {
+        if (MetaDataCollector.getInstance().shouldHandleInsightIntent && checkIsInsightIntentClassFromInfo(metadata)) {
+            arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentStruct'));
+            InsightIntentHandler.getInstance().handleClass(node);
+            arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentStruct'));
+        }
         arkts.Performance.getInstance().createDetailedEvent(
             getPerfName([1, 1, 8, 1, 1], 'custom component class checked STRUCT')
         );
@@ -164,9 +172,14 @@ export class RewriteFactory {
      * @internal
      */
     static rewriteETSGlobalClass(node: arkts.ClassDeclaration, metadata: NormalClassInfo): arkts.ClassDeclaration {
-        arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 1, 1], 'EtsGlobalClass'));
+        if (MetaDataCollector.getInstance().shouldHandleInsightIntent) {
+            arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 1, 0], 'EtsGlobalClass-InsightIntent'));
+            InsightIntentHandler.getInstance().collectFromETSGlobal(node);
+            arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 1, 0], 'EtsGlobalClass-InsightIntent'));
+        }
+        arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 1, 1], 'EtsGlobalClass-UI'));
         const res = StructCacheFactory.transformETSGlobalClassFromInfo(node, metadata);
-        arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 1, 1], 'EtsGlobalClass'));
+        arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 1, 1], 'EtsGlobalClass-UI'));
         return res;
     }
 
@@ -192,6 +205,11 @@ export class RewriteFactory {
             const res = RewriteFactory.rewriteObservedClass(node, metadata);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 2], 'rewriteObservedClass'));
             return res;
+        }
+        if (MetaDataCollector.getInstance().shouldHandleInsightIntent && checkIsInsightIntentClassFromInfo(metadata)) {
+            arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentClass'));
+            InsightIntentHandler.getInstance().handleClass(node);
+            arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentClass'));
         }
         return node;
     }

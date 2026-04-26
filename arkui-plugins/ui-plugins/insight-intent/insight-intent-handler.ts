@@ -28,7 +28,8 @@ import {
     InsightIntentPageData
 } from './insight-intent-collector';
 import { LogCollector } from '../../common/log-collector';
-import { LogType, ObservedNames } from '../../common/predefines';
+import { MetaDataCollector } from '../../common/metadata-collector';
+import { INSIGHT_INTENT_FILE_NAME, LogType, ObservedNames } from '../../common/predefines';
 import { ResourceSourceCache } from './resource-source-cache';
 import Ajv, { ErrorObject } from 'ajv';
 import { isEtsGlobalClass } from '../struct-translators/utils';
@@ -259,7 +260,7 @@ function validatePageStruct(data: InsightIntentDataBase, node: arkts.AstNode): b
     if (!isStruct && arkts.isClassDeclaration(node)) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
-            type: LogType.ERROR,
+            level: LogType.ERROR,
             code: '10110016',
             message: '@InsightIntentPage must be applied to a struct page.'
         });
@@ -938,6 +939,7 @@ function validateParamMappings(paramMappings: Record<string, unknown> | null | u
  * - Check阶段直接解析：使用arkts.getDecl()获取变量值，无需缓存
  */
 export class InsightIntentHandler {
+    private static _instance: InsightIntentHandler;
     private intentNameSet = new Set<string>();
     private projectConfig: ProjectConfig;
     private collector: InsightIntentCollector;
@@ -968,8 +970,15 @@ export class InsightIntentHandler {
     // 用于跟踪已添加的 intentName，确保唯一性（全局）
     private intentNames: Set<string> = new Set();
 
-    constructor(projectConfig: ProjectConfig) {
-        this.projectConfig = projectConfig;
+    static getInstance(projectConfig?: ProjectConfig): InsightIntentHandler {
+        if (InsightIntentHandler._instance === undefined) {
+            InsightIntentHandler._instance = new InsightIntentHandler(projectConfig);
+        }
+        return InsightIntentHandler._instance;
+    }
+
+    constructor(projectConfig: ProjectConfig | undefined) {
+        this.projectConfig = projectConfig ?? MetaDataCollector.getInstance().projectConfig!;
         this.collector = InsightIntentCollector.getInstance();
         
         // 初始化装饰器处理器映射表
@@ -1010,7 +1019,7 @@ export class InsightIntentHandler {
         }
         
         try {
-            const insightIntentPath = path.join(projectConfig.aceProfilePath, 'insight_intent.json');
+            const insightIntentPath = path.join(projectConfig.aceProfilePath, INSIGHT_INTENT_FILE_NAME);
             const insightIntentCachePath = projectConfig.cachePath ?
                 path.join(projectConfig.cachePath, 'insight_compile_cache.json') : '';
             
@@ -1803,7 +1812,7 @@ export class InsightIntentHandler {
             if (!fs.existsSync(normalPagePath)) {
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
-                    type: LogType.ERROR,
+                    level: LogType.ERROR,
                     code: '10110017',
                     message: 'PagePath in @InsightIntentPage does not match the actual page path.'
                 });

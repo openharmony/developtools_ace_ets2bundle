@@ -69,6 +69,8 @@ export const PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES: string[] = ['ohos_id', 'ohos_
 export const APPLICATION_MAIN_BASE_RESOURCE_PATH = 'src/main/resources/base';
 export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
 
+export const INSIGHT_INTENT_FILE_NAME = 'insight_intent.json';
+
 export enum UIClass {
     LOCAL_STORAGE = 'LocalStorage',
 }
@@ -180,6 +182,18 @@ export enum BuilderNames {
 
 export enum InnerComponentAttributes {
     COMMON_METHOD = 'CommonMethod',
+}
+
+export enum InsightIntentDecoratorNames {
+    LINK = 'InsightIntentLink',
+    PAGE = 'InsightIntentPage',
+    FUNCTION_METHOD = 'InsightIntentFunctionMethod',
+    FUNCTION = 'InsightIntentFunction',
+    ENTRY = 'InsightIntentEntry',
+    LINK_PARAM_CATEGORY = 'LinkParamCategory',
+    LINK_INTENT_PARAM_MAPPING = 'LinkIntentParamMapping',
+    ENTITY = 'InsightIntentEntity',
+    FORM = 'InsightIntentForm'
 }
 
 export enum DecoratorNames {

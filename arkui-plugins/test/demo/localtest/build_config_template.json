@@ -13,6 +13,7 @@
   "buildMode": "Debug",
   "projectRootPath": "./demo/localtest/",
   "moduleRootPath": "./demo/localtest/entry/",
+  "aceProfilePath": "./dist/cache",
   "cachePath": "./dist/cache",
   "loaderOutPath": "./dist",
   "compileSdkVersion": 20,

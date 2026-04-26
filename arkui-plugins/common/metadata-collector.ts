@@ -18,6 +18,7 @@ import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents, Route
 import { ImportInfo, collectFileImportsByProgram } from './import-info';
 
 export class MetaDataCollector {
+    public shouldHandleInsightIntent: boolean = true;
     public resourceInfo: ResourceInfo | undefined;
     public projectConfig: ProjectConfig | undefined;
     public fileAbsName: string | undefined;
@@ -34,6 +35,11 @@ export class MetaDataCollector {
             this.instance = new MetaDataCollector();
         }
         return this.instance;
+    }
+
+    setShouldHandleInsightIntent(value: boolean): this {
+        this.shouldHandleInsightIntent = value;
+        return this;
     }
 
     setProjectConfig(config: ProjectConfig | undefined): this {
@@ -93,6 +99,7 @@ export class MetaDataCollector {
     }
 
     reset(): void {
+        this.shouldHandleInsightIntent = true;
         this.projectConfig = undefined;
         this.fileAbsName = undefined;
         this.externalSourceName = undefined;

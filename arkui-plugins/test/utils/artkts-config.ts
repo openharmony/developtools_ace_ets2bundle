@@ -84,6 +84,7 @@ export interface ArktsConfigBuilder {
     // logger: Logger; // TODO
     isDebug: boolean;
     projectConfig: ProjectConfig;
+    aceProfilePath: string;
 
     withBuildConfig(buildConfig: BuildConfig): this;
     withProjectConfig(projectConfig: ProjectConfig): this;
@@ -228,9 +229,15 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this._setBuildConfig(_buildConfig);
 
         const _projectConfig: ProjectConfig = projectConfig ?? mockProjectConfig();
-        this.projectConfig = _projectConfig;
+        this.projectConfig = this._postProcessProjectConfig(_projectConfig);
 
         this.isDebug = true;
+    }
+
+    get aceProfilePath(): string {
+        return this.projectConfig.aceProfilePath !== undefined 
+            ? this.projectConfig.aceProfilePath 
+            : path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH, this.hashId);
     }
 
     private _setBuildConfig(buildConfig: BuildConfig): void {
@@ -255,6 +262,16 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
         this.generateModuleInfos();
         this.generateArkTSConfigForModules();
         this.cacheArkTSConfig();
+    }
+
+    private _postProcessProjectConfig(projectConfig: ProjectConfig): ProjectConfig {
+        projectConfig.aceProfilePath = projectConfig.aceProfilePath !== undefined 
+            ? path.resolve(projectConfig.aceProfilePath, this.hashId) 
+            : path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH, this.hashId);
+        projectConfig.cachePath = projectConfig.cachePath !== undefined 
+            ? path.resolve(projectConfig.cachePath, this.hashId) 
+            : path.resolve(getRootPath(), MOCK_OUTPUT_CACHE_PATH, this.hashId);
+        return projectConfig;
     }
 
     private cacheArkTSConfig(): void {
@@ -362,7 +379,7 @@ class MockArktsConfigBuilder implements ArktsConfigBuilder {
     }
 
     withProjectConfig(projectConfig: ProjectConfig): this {
-        this.projectConfig = projectConfig;
+        this.projectConfig = this._postProcessProjectConfig(projectConfig);
         return this;
     }
 

@@ -34,6 +34,7 @@ export * from './parameter';
 export * from './property';
 export * from './arrow-function';
 export * from './new-class-instance';
+export * from './insight-intent-class';
 export * from './cache';
 
 export * from './shared-types';

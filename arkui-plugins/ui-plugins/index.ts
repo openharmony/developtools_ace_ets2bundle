@@ -31,6 +31,7 @@ import { LogCollector } from '../common/log-collector';
 import { AbstractVisitor } from '../common/abstract-visitor';
 import { Collector } from '../collectors/collector';
 import { getSystemResourcePath } from './utils';
+import { ResourceSourceCache } from './insight-intent/resource-source-cache';
 
 export function uiTransform(): Plugins {
     return {
@@ -153,7 +154,8 @@ function checkedProgramVisit(
         MetaDataCollector.getInstance()
             .setProjectConfig(projectConfig)
             .setRouterInfo(initRouterInfo(aceBuildJson))
-            .setResourceInfo(resourceInfo);
+            .setResourceInfo(resourceInfo)
+            .setShouldHandleInsightIntent(true);
         const visitors: AbstractVisitor[] = [];
         if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected()) {
             arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(true);
@@ -177,6 +179,7 @@ function checkedProgramVisit(
             pluginContext: context,
         });
         program = programVisitor.programVisitor(program);
+        ResourceSourceCache.getInstance().clear();
         MetaDataCollector.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();

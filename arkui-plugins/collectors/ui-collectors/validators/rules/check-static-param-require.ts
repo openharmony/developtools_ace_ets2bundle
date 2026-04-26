@@ -70,7 +70,7 @@ function collectStaticProperties(
 
 function reportStaticPropertyInit(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    propertyInfos: [arkts.AstNode, CustomComponentInterfacePropertyInfo][],
+    propertyInfos: [arkts.AstNode, CustomComponentInterfacePropertyInfo | undefined][],
     staticClassProperty: string[]
 ): void {
     propertyInfos.forEach(([propertyPtr, propertyInfo]) => {
