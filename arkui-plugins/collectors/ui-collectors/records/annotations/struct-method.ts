@@ -23,6 +23,7 @@ export interface StructMethodAnnotationInfo extends AnnotationInfo {
     hasBuilder?: boolean;
     hasComputed?: boolean;
     hasMonitor?: boolean;
+    hasSyncMonitor?: boolean;
     hasComponentInit?: boolean;
     hasComponentAppear?: boolean;
     hasComponentBuilt?: boolean;
@@ -36,6 +37,7 @@ export interface StructMethodAnnotations extends Annotations {
     [DecoratorNames.BUILDER]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPUTED]?: arkts.AnnotationUsage;
     [DecoratorNames.MONITOR]?: arkts.AnnotationUsage;
+    [DecoratorNames.SYNC_MONITOR]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPONENT_INIT]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPONENT_APPEAR]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPONENT_BUILT]?: arkts.AnnotationUsage;
@@ -57,6 +59,7 @@ export class StructMethodAnnotationRecord extends BaseAnnotationRecord<
             DecoratorNames.BUILDER,
             DecoratorNames.COMPUTED,
             DecoratorNames.MONITOR,
+            DecoratorNames.SYNC_MONITOR,
             DecoratorNames.COMPONENT_INIT,
             DecoratorNames.COMPONENT_APPEAR,
             DecoratorNames.COMPONENT_BUILT,

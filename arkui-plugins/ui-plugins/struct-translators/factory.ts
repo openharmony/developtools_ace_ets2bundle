@@ -92,14 +92,17 @@ import {
     CustomComponentNames,
     BuilderLambdaNames,
     CustomDialogNames,
+    ObservedNames,
 } from '../../common/predefines';
 import { BaseObservedPropertyTranslator } from '../property-translators/index';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { generateArkUICompatible } from '../interop/interop';
 import { MetaDataCollector } from '../../common/metadata-collector';
+import { isSdkVersionAtLeast } from '../builder-lambda-translators/utils';
 import { ComponentAttributeCache } from '../builder-lambda-translators/cache/componentAttributeCache';
 import { BaseMethodTranslator, MethodTranslator } from '../property-translators/base';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
+import { SyncMonitorCache } from '../property-translators/cache/syncMonitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
@@ -115,6 +118,8 @@ import {
     CustomDialogControllerCache,
     PropertyFactoryCallTypeCache
 } from '../memo-collect-cache';
+
+const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
 export class factory {
     /**
@@ -316,6 +321,7 @@ export class factory {
                 ...ComputedCache.getInstance().getCachedComputed(scope.name),
                 ...PropertyCache.getInstance().getInitializeBody(scope.name),
                 ...MonitorCache.getInstance().getCachedMonitors(scope.name),
+                ...SyncMonitorCache.getInstance().getCachedSyncMonitors(scope.name),
                 ...ComponentLifecycleCache.getInstance().getCachedInitMethodCalls(scope.name),
                 ...ComponentLifecycleCache.getInstance().getCachedLifecycleObserverCalls(
                     scope.name,
@@ -1219,20 +1225,27 @@ export class factory {
             return node;
         }
         const ObservedAnno: ObservedAnnoInfo = { isObserved, classHasTrack, isObservedV2, classHasTrace, className };
+        const implementsArr: arkts.TSClassImplements[] = [
+            ...node.implements,
+            arkts.TSClassImplements.createTSClassImplements(
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_OBJECT)
+            ),
+            arkts.TSClassImplements.createTSClassImplements(
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.SUBSCRIBED_WATCHES)
+            ),
+        ];
+        if (isObservedV2 && isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION)) {
+            implementsArr.push(arkts.TSClassImplements.createTSClassImplements(
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_ANY_PROP)
+            ));
+            collectStateManagementTypeImport(StateManagementTypes.OBSERVED_ANY_PROP);
+        }
         const updateClassDef: arkts.ClassDefinition = arkts.factory.updateClassDefinition(
             node,
             node.ident,
             node.typeParams,
             node.superTypeParams,
-            [
-                ...node.implements,
-                arkts.TSClassImplements.createTSClassImplements(
-                    UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_OBJECT)
-                ),
-                arkts.TSClassImplements.createTSClassImplements(
-                    UIFactory.createTypeReferenceFromString(StateManagementTypes.SUBSCRIBED_WATCHES)
-                ),
-            ],
+            implementsArr,
             undefined,
             node.super,
             factory.observedTrackPropertyMembers(node, ObservedAnno),
@@ -1284,12 +1297,18 @@ export class factory {
             body
         );
         return ObservedAnno.isObservedV2
-            ? returnNodes.concat(this.transformObservedV2Constuctor(definition, classScopeInfo.className))
+            ? returnNodes.concat(
+                ...(isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION) ? [this.createAddRefAnyPropMethod(definition)] : []),
+                this.transformObservedV2Constuctor(definition, classScopeInfo.className)
+            )
             : returnNodes;
     }
 
     static transformObservedV2Constuctor(definition: arkts.ClassDefinition, className: string): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = MonitorCache.getInstance().getCachedMonitors(className);
+        const addConstructorNodes: arkts.AstNode[] = [
+            ...MonitorCache.getInstance().getCachedMonitors(className),
+            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
+        ];
         let originConstructorMethod: arkts.MethodDefinition | undefined = definition.body.find(
             (it) =>
                 arkts.isMethodDefinition(it) &&
@@ -1320,6 +1339,102 @@ export class factory {
                     : arkts.factory.createBlock(addConstructorNodes),
             },
         });
+    }
+
+    static createAddRefAnyPropMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
+        const bodyStmts: arkts.Statement[] = [];
+        const hasObservedV2Parent: boolean = factory.hasObservedV2InParentChain(definition);
+        if (hasObservedV2Parent) {
+            bodyStmts.push(
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createCallExpression(
+                        arkts.factory.createMemberExpression(
+                            arkts.factory.createSuperExpression(),
+                            arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false
+                        ),
+                        undefined,
+                        undefined
+                    )
+                )
+            );
+        }
+        const traceProperties: string[] = [];
+        for (const member of definition.body) {
+            if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACE)) {
+                traceProperties.push(expectName(member.key));
+            }
+        }
+        traceProperties.forEach((propName: string) => {
+            const metaName: string = `${StateManagementTypes.META}_${propName}`;
+            bodyStmts.push(
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createCallExpression(
+                        arkts.factory.createMemberExpression(
+                            generateThisBacking(metaName),
+                            arkts.factory.createIdentifier(ObservedNames.ADD_REF),
+                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                            false,
+                            false
+                        ),
+                        undefined,
+                        undefined
+                    )
+                )
+            );
+        });
+        return UIFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+            function: {
+                key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+                body: arkts.factory.createBlock(bodyStmts),
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        });
+    }
+
+    static hasObservedV2InParentChain(definition: arkts.ClassDefinition): boolean {
+        const visited: Set<string> = new Set();
+        let current: arkts.ClassDefinition = definition;
+        while (true) {
+            const parentDef: arkts.ClassDefinition | undefined = factory.getSuperClassDecl(current);
+            if (!parentDef) {
+                break;
+            }
+            const parentName: string | undefined = parentDef.ident?.name;
+            if (!parentName || visited.has(parentName)) {
+                break;
+            }
+            visited.add(parentName);
+            if (hasDecorator(parentDef, DecoratorNames.OBSERVED_V2)) {
+                return true;
+            }
+            current = parentDef;
+        }
+        return false;
+    }
+
+    static getSuperClassDecl(definition: arkts.ClassDefinition): arkts.ClassDefinition | undefined {
+        const superNode = definition.super;
+        if (!superNode || !arkts.isETSTypeReference(superNode)) {
+            return undefined;
+        }
+        if (!superNode.part || !arkts.isETSTypeReferencePart(superNode.part)) {
+            return undefined;
+        }
+        const superName = superNode.part.name;
+        if (!superName || !arkts.isIdentifier(superName)) {
+            return undefined;
+        }
+        const decl = arkts.getDecl(superName);
+        if (!decl || !arkts.isClassDefinition(decl)) {
+            return undefined;
+        }
+        return decl;
     }
 
     /*

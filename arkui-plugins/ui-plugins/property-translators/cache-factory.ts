@@ -32,6 +32,7 @@ import {
     setterIfEqualsNewValueWithObservedV2TraceProperty,
 } from './observedV2Trace';
 import { MonitorCacheTranslator } from './monitor';
+import { SyncMonitorCacheTranslator } from './syncMonitor';
 import { PropertyRewriteCache } from './cache/propertyRewriteCache';
 import { ComputedCacheTranslator } from './computed';
 import { ComponentLifecycleCacheTranslator, ComponentLifecycleTranslator } from './componentLifecycle';
@@ -191,6 +192,16 @@ export class CacheFactory {
     ): arkts.MethodDefinition {
         const monitorTranslator = new MonitorCacheTranslator({ method, methodInfo: metadata });
         const newNodes: arkts.AstNode[] = monitorTranslator.translateMember();
+        PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
+        return method;
+    }
+
+    static rewriteSyncMonitorMethodFromInfo(
+        method: arkts.MethodDefinition,
+        metadata: StructMethodInfo | NormalClassMethodInfo
+    ): arkts.MethodDefinition {
+        const syncMonitorTranslator = new SyncMonitorCacheTranslator({ method, methodInfo: metadata });
+        const newNodes: arkts.AstNode[] = syncMonitorTranslator.translateMember();
         PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
         return method;
     }

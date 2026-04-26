@@ -103,14 +103,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     [ValidateBuildInStructRule, 'error'],
     [ValidateDecoratorTargetRule, 'error'],
     [WatchDecoratorFunctionRule, 'error'],
-    [WatchDecoratorRegularRule, 'error'],
-    [OldNewDecoratorMixUseCheckRule, 'error'],
-    [RequireDecoratorRegularRule, 'warn'],
-    [SpecificComponentChildrenRule, 'error'],
-    [EntryComponentV2InvalidParamsRule, 'error'],
-    [StructAttributeNoTypeRule, 'error'],
-    [CheckObjectLinkUseLiteralRule, 'error'],
-    [SyncMonitorDecoratorCheckRule, 'error'],
+    [SyncMonitorDecoratorCheckRule, 'error']
 ];
 
 export default rules;
