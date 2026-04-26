@@ -46,6 +46,7 @@ import { InnerComponentInfoCache } from '../builder-lambda-translators/cache/inn
 import { PropertyRewriteCache } from '../property-translators/cache/propertyRewriteCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
+import { SyncMonitorCache } from '../property-translators/cache/syncMonitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
 import { CustomDialogControllerPropertyCache } from '../property-translators/cache/customDialogControllerPropertyCache';
@@ -119,6 +120,7 @@ export class CacheFactory {
                 ...ComputedCache.getInstance().getCachedComputed(metadata.name),
                 ...PropertyCache.getInstance().getInitializeBody(metadata.name),
                 ...MonitorCache.getInstance().getCachedMonitors(metadata.name),
+                ...SyncMonitorCache.getInstance().getCachedSyncMonitors(metadata.name),
                 ...ComponentLifecycleCache.getInstance().getCachedInitMethodCalls(metadata.name),
                 ...ComponentLifecycleCache.getInstance().getCachedLifecycleObserverCalls(
                     metadata.name,
@@ -677,7 +679,10 @@ export class CacheFactory {
     }
 
     static rewriteObservedV2Constuctor(ctor: arkts.MethodDefinition, className: string): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = MonitorCache.getInstance().getCachedMonitors(className);
+        const addConstructorNodes: arkts.AstNode[] = [
+            ...MonitorCache.getInstance().getCachedMonitors(className),
+            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
+        ];
         const scriptFunc: arkts.ScriptFunction = ctor.scriptFunction;
         const originBody = scriptFunc.body as arkts.BlockStatement | undefined;
         if (!originBody) {
@@ -691,7 +696,10 @@ export class CacheFactory {
     }
 
     static createNewObservedV2Constuctor(className: string, isDecl: boolean): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = MonitorCache.getInstance().getCachedMonitors(className);
+        const addConstructorNodes: arkts.AstNode[] = [
+            ...MonitorCache.getInstance().getCachedMonitors(className),
+            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
+        ];
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
             function: {
