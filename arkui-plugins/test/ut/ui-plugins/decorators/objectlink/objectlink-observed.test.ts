@@ -112,16 +112,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
-
-  public setV1RenderId(renderId: RenderIdType): void {
-    this.____V1RenderId = renderId;
-  }
-
+  public setV1RenderId(renderId: RenderIdType): void {}
   protected conditionalAddRef(meta: IMutableStateMeta): void {
-    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
-      meta.addRef();
-    }
+    meta.addRef();
   }
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
@@ -152,16 +145,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.subscribedWatches.executeOnSubscribingWatches(propertyName);
   }
 
-  @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
-
-  public setV1RenderId(renderId: RenderIdType): void {
-    this.____V1RenderId = renderId;
-  }
-
+  public setV1RenderId(renderId: RenderIdType): void {}
   protected conditionalAddRef(meta: IMutableStateMeta): void {
-    if (OBSERVE.shouldAddRef(this.____V1RenderId)) {
-      meta.addRef();
-    }
+    meta.addRef();
   }
 
   @JSONStringifyIgnore() @JSONParseIgnore() private __meta: IMutableStateMeta = STATE_MGMT_FACTORY.makeMutableStateMeta(this, "__meta_");
