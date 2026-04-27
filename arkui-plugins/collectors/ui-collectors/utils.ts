@@ -403,7 +403,9 @@ export function checkHasLifecycleMethodFromInfo(metadata: StructMethodInfo): boo
         || !!metadata.annotationInfo?.hasComponentBuilt
         || !!metadata.annotationInfo?.hasComponentDisappear
         || !!metadata.annotationInfo?.hasComponentReuse
-        || !!metadata.annotationInfo?.hasComponentRecycle;
+        || !!metadata.annotationInfo?.hasComponentRecycle
+        || !!metadata.annotationInfo?.hasComponentActive
+        || !!metadata.annotationInfo?.hasComponentInactive;
 }
 
 export function checkIsDialogControllerNewInstanceFromInfo(metadata: NewClassInstanceInfo | undefined): boolean {

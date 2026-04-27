@@ -43,6 +43,7 @@ import { MonitorCache } from './property-translators/cache/monitorCache';
 import { SyncMonitorCache } from './property-translators/cache/syncMonitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
 import { ComponentLifecycleCache } from './property-translators/cache/componentLifecycleCache';
+import { ActiveInactiveCache } from './property-translators/cache/activeInactiveCache';
 import { InsightIntentHandler } from './insight-intent/insight-intent-handler';
 import { NormalClassInfo, RecordInfo } from '../collectors/ui-collectors/records';
 import { CustomComponentNames, CustomDialogNames, LANGUAGE_VERSION, NodeCacheNames } from '../common/predefines';
@@ -89,6 +90,7 @@ export class CheckedTransformer extends AbstractVisitor {
         SyncMonitorCache.getInstance().reset();
         ComputedCache.getInstance().reset();
         ComponentLifecycleCache.getInstance().reset();
+        ActiveInactiveCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
         InnerComponentInfoCache.getInstance().reset();
         ImportCollector.getInstance().clearImports();

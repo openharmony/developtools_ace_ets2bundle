@@ -365,7 +365,9 @@ export function classifyMethod(method: arkts.AstNode, classInfo: ClassInfo): Met
         hasDecorator(method, DecoratorNames.COMPONENT_BUILT) ||
         hasDecorator(method, DecoratorNames.COMPONENT_DISAPPEAR) ||
         hasDecorator(method, DecoratorNames.COMPONENT_REUSE) ||
-        hasDecorator(method, DecoratorNames.COMPONENT_RECYCLE)) {
+        hasDecorator(method, DecoratorNames.COMPONENT_RECYCLE) ||
+        hasDecorator(method, DecoratorNames.COMPONENT_ACTIVE) ||
+        hasDecorator(method, DecoratorNames.COMPONENT_INACTIVE)) {
         return new ComponentLifecycleTranslator({ method, classInfo });
     }
     return undefined;

@@ -24,6 +24,8 @@ const LIFECYCLE_DECORATORS_WITHOUT_PARAMS: Set<string> = new Set([
     PresetDecorators.COMPONENTBUILT,
     PresetDecorators.COMPONENTRECYCLE,
     PresetDecorators.COMPONENTDISAPPEAR,
+    PresetDecorators.COMPONENTACTIVE,
+    PresetDecorators.COMPONENTINACTIVE,
 ]);
 
 const LIFECYCLE_METHODS: Set<string> = new Set([
@@ -39,6 +41,20 @@ const LIFECYCLE_DECORATORS: Set<string> = new Set([
     PresetDecorators.COMPONENTREUSE,
 ]);
 
+const ACTIVE_INACTIVE_DECORATORS: Set<string> = new Set([
+    PresetDecorators.COMPONENTACTIVE,
+    PresetDecorators.COMPONENTINACTIVE,
+]);
+
+const OTHER_LIFECYCLE_DECORATORS: Set<string> = new Set([
+    PresetDecorators.COMPONENTINIT,
+    PresetDecorators.COMPONENTAPPEAR,
+    PresetDecorators.COMPONENTBUILT,
+    PresetDecorators.COMPONENTDISAPPEAR,
+    PresetDecorators.COMPONENTREUSE,
+    PresetDecorators.COMPONENTRECYCLE,
+]);
+
 // @ComponentReuse param type in @Component
 const REUSE_OBJECT_TYPE_NAME: string = 'ReuseObject';
 
@@ -50,6 +66,9 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
             componentReuseInComponentParameter: `In the struct decorated with '@Component', the '@ComponentReuse' decorated function can have either no parameters or a single parameter of the 'ReuseObject' type.`,
             lifecycleDecoratorInvalidMethod:`'{{decoratorName}}' cannot decorate '{{LifecycleMethod}}'.`,
             lifecycleDecoratorDecorateMethod:`'{{decoratorName}}' can only decorate methods.`,
+            activeInactiveMutualExclusive: `'@ComponentActive' and '@ComponentInactive' cannot decorate the same method.`,
+            activeInactiveCannotBeStatic: `Methods decorated with '{{decoratorName}}' cannot be static.`,
+            activeInactiveConflictWithLifecycle: `'{{decoratorName}}' cannot be used with '{{conflictDecoratorName}}' on the same method.`,
         };
     }
 
@@ -57,10 +76,9 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         if (!arkts.isStructDeclaration(node)) {
             return;
         }
-        // Struct only check is in validate-decorator-target.ts
-        // Only check lifecycle decorators in struct here
         this.checkLifecycleDecoratorDecorateMethod(node);
         this.checkLifecycleMethodParameters(node);
+        this.checkActiveInactiveConstraints(node);
     }
 
     private checkLifecycleDecoratorDecorateMethod(structNode: arkts.StructDeclaration): void {
@@ -276,6 +294,65 @@ class LifecycleDecoratorCheckRule extends AbstractUISyntaxRule {
         decoratorName: string,
     ): arkts.AnnotationUsage | undefined {
         return annotations.find((annotation) => getAnnotationName(annotation) === decoratorName);
+    }
+
+    private checkActiveInactiveConstraints(structNode: arkts.StructDeclaration): void {
+        if (!structNode.definition || !structNode.definition.body) {
+            return;
+        }
+
+        for (const member of structNode.definition.body) {
+            if (!arkts.isMethodDefinition(member)) {
+                continue;
+            }
+
+            const annotations = member.scriptFunction.annotations;
+            if (!annotations || annotations.length === 0) {
+                continue;
+            }
+
+            const hasActive = this.hasDecorator(annotations, PresetDecorators.COMPONENTACTIVE);
+            const hasInactive = this.hasDecorator(annotations, PresetDecorators.COMPONENTINACTIVE);
+
+            if (!hasActive && !hasInactive) {
+                continue;
+            }
+
+            if (hasActive && hasInactive) {
+                const annotation = this.findDecorator(annotations, PresetDecorators.COMPONENTACTIVE);
+                this.report({
+                    node: annotation!,
+                    message: this.messages.activeInactiveMutualExclusive,
+                });
+            }
+
+            if (member.isStatic) {
+                const activeInactiveAnnotation = this.findDecorator(annotations, hasActive ? PresetDecorators.COMPONENTACTIVE : PresetDecorators.COMPONENTINACTIVE);
+                this.report({
+                    node: activeInactiveAnnotation!,
+                    message: this.messages.activeInactiveCannotBeStatic,
+                    data: {
+                        decoratorName: hasActive ? '@ComponentActive' : '@ComponentInactive',
+                    },
+                });
+            }
+
+            for (const annotation of annotations) {
+                const otherName = getAnnotationName(annotation);
+                if (!otherName || !OTHER_LIFECYCLE_DECORATORS.has(otherName)) {
+                    continue;
+                }
+                const activeInactiveAnnotation = this.findDecorator(annotations, hasActive ? PresetDecorators.COMPONENTACTIVE : PresetDecorators.COMPONENTINACTIVE);
+                this.report({
+                    node: activeInactiveAnnotation!,
+                    message: this.messages.activeInactiveConflictWithLifecycle,
+                    data: {
+                        decoratorName: hasActive ? '@ComponentActive' : '@ComponentInactive',
+                        conflictDecoratorName: `@${otherName}`,
+                    },
+                });
+            }
+        }
     }
 
 }
