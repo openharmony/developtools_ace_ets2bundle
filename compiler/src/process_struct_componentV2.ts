@@ -38,6 +38,7 @@ import {
   IS_REUSABLE_,
   GET_ATTRIBUTE,
   COMPONENT_ENV_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR,
   COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
@@ -93,6 +94,7 @@ export class StructInfo {
   computedDecoratorSet: Set<string> = new Set();
   monitorDecoratorSet: Set<string> = new Set();
   envDecoratorSet: Set<string> = new Set();
+  customEnvDecoratorSet: Set<string> = new Set();
   syncMonitorDecoratorSet: Set<string> = new Set();
 }
 
@@ -254,7 +256,9 @@ function traverseStructInfo(structInfo: StructInfo,
   const needInitFromParams: string[] = [...structInfo.builderParamDecoratorSet,
     ...structInfo.eventDecoratorMap.keys()];
   for (const property of structInfo.propertiesMap) {
-    if (!structInfo.staticPropertySet.has(property[0]) && !structInfo.envDecoratorSet.has(property[0])) {
+    if (!structInfo.staticPropertySet.has(property[0]) &&
+      !structInfo.envDecoratorSet.has(property[0]) &&
+      !structInfo.customEnvDecoratorSet.has(property[0])) {
       setPropertyStatement(structInfo, addStatementsInConstructor, property[0], property[1],
         needInitFromParams, addStatementsInResetOnReuse);
     }
@@ -361,6 +365,9 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
       checkEnvDecoratorExp(envDecorator, envTypeName.currentTypeName);
     }
   }
+  if (structInfo.customEnvDecoratorSet.has(propName)) {
+    return transformCustomEnvProperty(member, decorators);
+  }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
     return processRequireBuilderParamProperty(member, decorators, initializer);
   }
@@ -393,6 +400,13 @@ function checkEnvInitializerV2(member: ts.PropertyDeclaration, log: LogInfo[]): 
       code: '10905362'
     })
   }
+}
+
+function transformCustomEnvProperty(member: ts.PropertyDeclaration,
+  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
+  return ts.factory.updatePropertyDeclaration(member,
+    ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
+    member.name, member.questionToken, member.type, member.initializer);
 }
 
 function processParamProperty(member: ts.PropertyDeclaration,
@@ -535,6 +549,7 @@ class PropertyDecorator {
   hasOnce: boolean = false;
   hasEvent: boolean = false;
   hasEnv: boolean = false;
+  hasCustomEnv: boolean = false;
 }
 
 const decoratorsFunc: Record<string, Function> = {
@@ -547,6 +562,7 @@ const decoratorsFunc: Record<string, Function> = {
   'Provider': parseProviderDecorator,
   'Consumer': parseConsumerDecorator,
   'Env': parseEnvDecorator,
+  'CustomEnv': parseCustomEnvDecorator,
 };
 
 function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: readonly ts.Decorator[],
@@ -611,6 +627,12 @@ function parseEnvDecorator(propertyDecorator: PropertyDecorator, member: ts.Prop
   structInfo: StructInfo): void {
   propertyDecorator.hasEnv = true;
   structInfo.envDecoratorSet.add(member.name.getText());
+}
+
+function parseCustomEnvDecorator(propertyDecorator: PropertyDecorator, member: ts.PropertyDeclaration,
+  structInfo: StructInfo): void {
+  propertyDecorator.hasCustomEnv = true;
+  structInfo.customEnvDecoratorSet.add(member.name.getText());
 }
 
 function parseOnceDecorator(propertyDecorator: PropertyDecorator): void {
