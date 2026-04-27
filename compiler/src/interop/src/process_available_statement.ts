@@ -39,20 +39,17 @@ export function processAvailableStatement(node: ts.CallExpression): ts.CallExpre
  * Extract and validate the base expression from a call expression
  * Handles nested parenthesized expressions recursively
  * @param expression The expression to extract from
- * @return Extracted base expression or null if invalid
+ * @return Extracted base expression (can be Identifier or PropertyAccessExpression), or null if invalid
  */
-function extractBaseExpression(expression: ts.Expression): ts.Identifier | null {
-  let currentExpr: ts.Expression = expression;
-
-  if (ts.isParenthesizedExpression(currentExpr) ||
-    ts.isElementAccessExpression(currentExpr) ||
-    ts.isNonNullExpression(currentExpr)) {
-    currentExpr = extractBaseExpression(currentExpr.expression);
-  } else if (ts.isPropertyAccessExpression(currentExpr)) {
-    currentExpr = currentExpr.expression;
+function extractBaseExpression(expression: ts.Expression): ts.Expression | null {
+  if (ts.isParenthesizedExpression(expression) ||
+    ts.isNonNullExpression(expression)) {
+    return extractBaseExpression(expression.expression);
   }
-  if (ts.isIdentifier(currentExpr)) {
-    return currentExpr;
+
+  if (ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression)) {
+    return expression.expression;
   }
 
   return null;
@@ -119,7 +116,7 @@ function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression
     return node;
   }
 
-  const baseExpr: ts.Identifier | null = extractBaseExpression(node.expression);
+  const baseExpr: ts.Expression | null = extractBaseExpression(node.expression);
   if (!baseExpr) {
     return node;
   }
