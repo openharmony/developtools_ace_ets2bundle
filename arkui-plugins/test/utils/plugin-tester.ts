@@ -65,6 +65,10 @@ class PluginTester {
         this.configBuilder = new MockArktsConfigBuilder(this.hashId, buildConfig, projectConfig);
     }
 
+    get aceProfilePath(): string {
+        return this.configBuilder.aceProfilePath;
+    }
+
     private clear(): void {
         this.clearCache();
         this.configBuilder.clear();

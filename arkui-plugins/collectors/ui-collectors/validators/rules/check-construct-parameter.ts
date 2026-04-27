@@ -160,7 +160,7 @@ function getParameterAnnotationsAndName(parameterProperty: arkts.AstNode): {
         if (!parameterNode || !isFunctionDeclaration(parameterNode)) {
             return { parameterAnnotations: [], parameterName: '' };
         }
-        const funcAnnotations = parameterNode.funcExpr.function?.annotations;
+        const funcAnnotations = parameterNode.funcExpr.scriptFunction?.annotations;
         if (!funcAnnotations || funcAnnotations.length === 0) {
             return { parameterAnnotations: [DecoratorNames.REGULAR], parameterName: parameterName };
         }

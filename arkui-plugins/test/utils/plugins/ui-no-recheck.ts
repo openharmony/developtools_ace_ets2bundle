@@ -41,7 +41,8 @@ export const uiNoRecheck: Plugins = {
             MetaDataCollector.getInstance()
                 .setProjectConfig(projectConfig)
                 .setRouterInfo(initRouterInfo(aceBuildJson))
-                .setResourceInfo(resourceInfo);
+                .setResourceInfo(resourceInfo)
+                .setShouldHandleInsightIntent(false);
             const checkedTransformer = new CheckedTransformer({
                 useCache: arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
             });

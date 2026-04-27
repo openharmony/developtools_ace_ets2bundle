@@ -48,7 +48,8 @@ import {
     RecordInfo,
     StructMethodInfo,
     StructPropertyInfo,
-    StructAnnotationInfo
+    StructAnnotationInfo,
+    InsightIntentClassInfo
 } from './records';
 import { AnnotationInfo, Annotations } from './records/annotations/base';
 
@@ -106,7 +107,7 @@ export function getAnnotationName(anno: arkts.AnnotationUsage, ignoreDecl?: bool
     }
     const expr: arkts.Identifier = anno.expr;
     const name: string = expr.name;
-    const whiteList: string[] = getNonArkUIAnnotationWhiteList();
+    const whiteList: string[] = getBuiltInAnnotationWhiteList();
     if (whiteList.includes(name)) {
         return name;
     }
@@ -120,7 +121,7 @@ export function getAnnotationName(anno: arkts.AnnotationUsage, ignoreDecl?: bool
     return name;
 }
 
-export function getNonArkUIAnnotationWhiteList(): string[] {
+export function getBuiltInAnnotationWhiteList(): string[] {
     return [DecoratorNames.JSONSTRINGIFYIGNORE, DecoratorNames.JSONRENAME];
 }
 
@@ -135,7 +136,7 @@ export function getArkUIAnnotationNames(
     if (keys.length === 0) {
         return [];
     }
-    const whiteList: string[] = getNonArkUIAnnotationWhiteList();
+    const whiteList: string[] = getBuiltInAnnotationWhiteList();
     let filteredList: string[] = [];
     Object.keys(annotations).forEach((name, idx) => {
         if (whiteList.includes(name) || !keys.at(idx)) {
@@ -248,6 +249,16 @@ export function checkIsNormalClassHasTrackProperty(info: NormalClassInfo | undef
 
 export function checkIsETSGlobalClassFromInfo(info: NormalClassInfo | undefined): boolean {
     return !!info?.isETSGlobal;
+}
+
+export function checkIsInsightIntentClassFromInfo(info: InsightIntentClassInfo): boolean {
+    const annotationInfo = info?.annotationInfo ?? {};
+    return !!annotationInfo.hasInsightIntentEntity
+        || !!annotationInfo.hasInsightIntentEntry
+        || !!annotationInfo.hasInsightIntentForm
+        || !!annotationInfo.hasInsightIntentFunction
+        || !!annotationInfo.hasInsightIntentLink
+        || !!annotationInfo.hasInsightIntentPage;
 }
 
 export function checkIsCommonMethodInterfaceFromInfo(info: NormalInterfaceInfo | undefined): boolean {

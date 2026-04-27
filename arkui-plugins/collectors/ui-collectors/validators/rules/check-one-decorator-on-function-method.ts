@@ -68,7 +68,7 @@ function _checkOneDecoratorOnFunctionMethod(
         }
     }
     //  `@AnimatableExtend` 装饰器只能用于带有 `this` 参数的函数
-    if (metadata.annotationInfo?.hasAnimatableExtend && !hasThisParameter(node.funcExpr.function!)) {
+    if (metadata.annotationInfo?.hasAnimatableExtend && !hasThisParameter(node.funcExpr.scriptFunction!)) {
         const annotationNode = metadata.annotations?.[DecoratorNames.ANIMATABLE_EXTEND]!;
         this.report({
             node: annotationNode,

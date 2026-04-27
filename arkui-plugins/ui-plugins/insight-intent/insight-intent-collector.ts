@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import * as fs from 'fs';
 import { PluginContext } from '../../common/plugin-context';
+import { INSIGHT_INTENT_FILE_NAME } from '../../common/predefines';
 
 /**
  * InsightIntent 数据项基础接口
@@ -608,7 +609,7 @@ export class InsightIntentCollector {
                 fs.mkdirSync(cachePath, { recursive: true });
             }
 
-            const outputPath = path.join(aceProfilePath, 'insight_intent.json');
+            const outputPath = path.join(aceProfilePath, INSIGHT_INTENT_FILE_NAME);
             
             // 读取现有配置文件（如果存在）
             let existingConfig: Partial<InsightIntentConfig> = {};

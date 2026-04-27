@@ -80,6 +80,11 @@ try {
     jsonData.loaderOutPath = changePathToAbsPath(jsonData.loaderOutPath);
   }
 
+  // aceProfilePath
+  if (jsonData.aceProfilePath) {
+    jsonData.aceProfilePath = changePathToAbsPath(jsonData.aceProfilePath);
+  }
+
   // cachePath
   if (jsonData.cachePath) {
     jsonData.cachePath = changePathToAbsPath(jsonData.cachePath);

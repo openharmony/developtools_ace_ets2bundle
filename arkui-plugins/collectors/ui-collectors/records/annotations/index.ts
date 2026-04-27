@@ -24,3 +24,4 @@ export * from './normal-interface-property';
 export * from './call-declaration';
 export * from './parameter';
 export * from './arrow-function';
+export * from './insight-intent-class';

@@ -47,7 +47,7 @@ export abstract class BaseAnnotationRecord<
     protected _ignoredAnnotations: Annotations = {};
     protected _ignoredAnnotationInfo: AnnotationInfo = {};
 
-    private _allAnnotationsAsIgnored: boolean = false;
+    protected _allAnnotationsAsIgnored: boolean = false;
 
     constructor(options: RecordOptions) {
         super(options);
@@ -86,24 +86,24 @@ export abstract class BaseAnnotationRecord<
         return this._ignoredAnnotationInfo;
     }
 
-    private updateAnnotationInfo(name: string | undefined): void {
+    protected updateAnnotationInfo(name: string | undefined): void {
         const newInfo = this.updateAnnotationInfoByName(this._annotationInfo, name);
         this._annotationInfo = newInfo;
     }
 
-    private updateAnnotations(anno: arkts.AnnotationUsage, name: string | undefined): void {
+    protected updateAnnotations(anno: arkts.AnnotationUsage, name: string | undefined): void {
         if (!!name && !!this._annotationInfo[`has${name}`] && !this._annotations[name]) {
             this._annotations = { ...this._annotations, [name]: anno };
         }
     }
 
-    private updateIgnoreAnnotationInfo(name: string | undefined): void {
+    protected updateIgnoreAnnotationInfo(name: string | undefined): void {
         if (!!name && !this.annotationNames.includes(name)) {
             this._ignoredAnnotationInfo[`has${name}`] = true;
         }
     }
 
-    private updateIgnoreAnnotations(anno: arkts.AnnotationUsage, name: string | undefined): void {
+    protected updateIgnoreAnnotations(anno: arkts.AnnotationUsage, name: string | undefined): void {
         if (!!name && !!this._ignoredAnnotationInfo[`has${name}`] && !this._ignoredAnnotations[name]) {
             this._ignoredAnnotations = { ...this._ignoredAnnotations, [name]: anno };
         }

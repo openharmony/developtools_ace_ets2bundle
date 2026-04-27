@@ -17,17 +17,20 @@ import * as arkts from '@koalaui/libarkts';
 
 export interface RecordOptions {
     shouldIgnoreDecl: boolean;
+    shouldHandleInsightIntent?: boolean;
 }
 
 export abstract class BaseRecord<Node extends arkts.AstNode, T extends Record<string, unknown>> {
     protected info: T | undefined;
     protected _shouldIgnoreDecl: boolean;
+    protected _shouldHandleInsightIntent: boolean;
 
     private _isChanged: boolean = false;
     private _isCollected: boolean = false;
 
     constructor(options: RecordOptions) {
         this._shouldIgnoreDecl = options.shouldIgnoreDecl;
+        this._shouldHandleInsightIntent = !!options.shouldHandleInsightIntent;
     }
 
     protected get isChanged(): boolean {
@@ -46,6 +49,10 @@ export abstract class BaseRecord<Node extends arkts.AstNode, T extends Record<st
         return this._shouldIgnoreDecl;
     }
 
+    get shouldHandleInsightIntent(): boolean {
+        return this._shouldHandleInsightIntent;
+    }
+
     set shouldIgnoreDecl(value: boolean) {
         this._shouldIgnoreDecl = value;
     }
@@ -53,6 +60,7 @@ export abstract class BaseRecord<Node extends arkts.AstNode, T extends Record<st
     getOptions(): RecordOptions {
         return {
             shouldIgnoreDecl: this._shouldIgnoreDecl,
+            shouldHandleInsightIntent: this._shouldHandleInsightIntent
         };
     }
 
