@@ -206,6 +206,7 @@
         "ImageAnimator",
         "IndicatorComponent",
         "LazyVGridLayout",
+        "LazyVWaterFlowLayout",
         "Line",
         "List",
         "ListItem",
@@ -510,6 +511,11 @@
             "name": "LazyVGridLayout",
             "type": "LazyVGridLayoutAttribute",
             "instance": "LazyVGridLayoutInstance"
+          },
+          {
+            "name": "LazyVWaterFlowLayout",
+            "type": "LazyVWaterFlowLayoutAttribute",
+            "instance": "LazyVWaterFlowLayoutInstance"
           },
           {
             "name": "Line",
