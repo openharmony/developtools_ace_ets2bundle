@@ -2,7 +2,8 @@
     "name": "WaterFlow",
     "children": [
         "FlowItem",
-        "LazyVGridLayout"
+        "LazyVGridLayout",
+        "LazyVWaterFlowLayout"
     ],
     "attrs": [
         "onReachEnd",

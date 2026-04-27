@@ -1,6 +1,6 @@
 {
   "name": "List",
-  "children": ["ListItem", "Section", "ListItemGroup", "LazyVGridLayout"],
+  "children": ["ListItem", "Section", "ListItemGroup", "LazyVGridLayout", "LazyVWaterFlowLayout"],
   "attrs": [
     "listDirection", "scrollBar", "edgeEffect", "divider", "editMode", "editModeOptions", "cachedCount", "sticky",
     "chainAnimation", "lanes", "onScroll", "onReachStart", "onReachEnd", "onScrollStop", "onItemDelete",
