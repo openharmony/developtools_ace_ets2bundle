@@ -68,4 +68,4 @@ export enum BuilderParams {
     PARAM_WRAPPED_IT = 'param_wrapped_it',
 }
 
-export const GLOBAL_ANNOTATION_MODULE = 'dynamic/@ohos.arkui.GlobalAnnotation';
+export const GLOBAL_ANNOTATION_MODULE = 'dynamic.@ohos.arkui.GlobalAnnotation';
