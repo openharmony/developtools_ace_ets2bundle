@@ -1,5 +1,5 @@
 {
     "name": "WithEnv",
     "single": true,
-    "attrs": ["env", "customEnv", "testEnv"]
+    "attrs": ["env", "customEnv"]
 }
