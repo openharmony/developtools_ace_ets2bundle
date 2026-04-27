@@ -57,6 +57,8 @@ const LifecycleDecorators: Set<string> = new Set([
     PresetDecorators.COMPONENTRECYCLE,
     PresetDecorators.COMPONENTREUSE,
     PresetDecorators.COMPONENTDISAPPEAR,
+    PresetDecorators.COMPONENTACTIVE,
+    PresetDecorators.COMPONENTINACTIVE,
 ]);
 
 // Can only be used with decorators for struct
