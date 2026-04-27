@@ -70,6 +70,7 @@ import {
   COMPONENT_DECORATOR_REUSABLE_V2,
   MAIN_COMPONENT_DECORATORS,
   COMPONENT_ENV_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR,
   NON_FUNCTION_TYPE_WITH_V1_DECORATORS,
   COMPONENTV2_LOCAL_DECORATOR,
   COMPONENTV2_PARAM_DECORATOR,
@@ -163,6 +164,7 @@ export class IComponentSet {
   privateCollection: Set<string> = new Set();
   regularStaticCollection: Set<string> = new Set();
   envs: Set<string> = new Set();
+  customEnvs: Set<string> = new Set();
 }
 
 export let componentCollection: ComponentCollection = new ComponentCollection();
@@ -193,6 +195,7 @@ export const provideInitialization: Map<string, Set<string>> = new Map();
 export const privateCollection: Map<string, Set<string>> = new Map();
 export const regularStaticCollection: Map<string, Set<string>> = new Map();
 export const envCollection: Map<string, Set<string>> = new Map();
+export const customEnvCollection: Map<string, Set<string>> = new Map();
 
 export const isStaticViewCollection: Map<string, boolean> = new Map();
 
@@ -855,7 +858,8 @@ function checkDecoratorCount(node: ts.Node, sourceFileNode: ts.SourceFile, log: 
       const decoratorName: string = item.getText().replace(/\([^\(\)]*\)/, '');
       if (!excludeDecorators.includes(decoratorName) && (constantDefine.DECORATOR_V2.includes(decoratorName) ||
         decoratorName === constantDefine.DECORATOR_BUILDER_PARAM ||
-        decoratorName === constantDefine.DECORATOR_ENV)) {
+        decoratorName === constantDefine.DECORATOR_ENV ||
+        decoratorName === constantDefine.DECORATOR_CUSTOM_ENV)) {
         const count: number = v2DecoratorMap.get(decoratorName) || 0;
         v2DecoratorMap.set(decoratorName, count + 1);
         return;
@@ -2330,6 +2334,7 @@ function collectComponentProps(node: ts.StructDeclaration, structInfo: StructInf
   stateCollection.set(componentName, componentSet.states);
   linkCollection.set(componentName, componentSet.links);
   envCollection.set(componentName, componentSet.envs);
+  customEnvCollection.set(componentName, componentSet.customEnvs);
   storedFileInfo.overallLinkCollection.set(componentName, componentSet.links);
   propCollection.set(componentName, componentSet.props);
   regularCollection.set(componentName, componentSet.regulars);
@@ -2371,6 +2376,8 @@ class RecordRequire {
   hasProvide: boolean = false;
   hasEnv: boolean = false;
   envDecorator: ts.Decorator | undefined = undefined;
+  hasCustomEnv: boolean = false;
+  customEnvDecorator: ts.Decorator | undefined = undefined;
 }
 
 function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComponentSet,
@@ -2409,6 +2416,7 @@ function traversalComponentProps(node: ts.StructDeclaration, componentSet: IComp
             }
           }
           checkEnvDecorator(node, recordRequire, item);
+          checkCustomEnvDecoratorInterop(node, recordRequire, item);
           regularAndRequire(decorators, componentSet, recordRequire, propertyName, accessQualifierResult);
           checkRequire(propertyName, componentSet, recordRequire);
         }
@@ -2617,6 +2625,23 @@ function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequ
   }
 }
 
+function checkCustomEnvDecoratorInterop(node: ts.StructDeclaration, recordRequire: RecordRequire,
+  item: ts.PropertyDeclaration): void {
+  if (!recordRequire.hasCustomEnv) {
+    return;
+  }
+  const structName: string = node.name.escapedText.toString();
+  const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
+  if (!structInfo.isComponentV1 && !structInfo.isComponentV2) {
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905370',
+      message: `The '@CustomEnv' decorator can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
+      pos: item.getStart()
+    });
+  }
+}
+
 export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (!checker || !node.expression || !ts.isCallExpression(node.expression) ||
@@ -2760,6 +2785,11 @@ function collectionStates(node: ts.Decorator, decorator: string, name: string,
       recordRequire.hasEnv = true;
       recordRequire.envDecorator = node;
       componentSet.envs.add(name);
+      break;
+    case COMPONENT_CUSTOM_ENV_DECORATOR:
+      recordRequire.hasCustomEnv = true;
+      recordRequire.customEnvDecorator = node;
+      componentSet.customEnvs.add(name);
       break;
   }
 }

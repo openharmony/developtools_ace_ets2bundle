@@ -23,6 +23,7 @@ const REQUIRE: string = 'Require';
 const BUILDER_PARAM: string = 'BuilderParam';
 const DECORATOR_BUILDER_PARAM: string = '@BuilderParam';
 const DECORATOR_ENV: string = '@Env';
+const DECORATOR_CUSTOM_ENV: string = '@CustomEnv';
 const MONITOR_DECORATOR: string = '@Monitor';
 const SYNC_MONITOR_DECORATOR: string = '@SyncMonitor';
 const TRACE_DECORATOR: string = '@Trace';
@@ -91,6 +92,7 @@ export default {
   BUILDER_PARAM,
   DECORATOR_BUILDER_PARAM,
   DECORATOR_ENV,
+  DECORATOR_CUSTOM_ENV,
   BYTE_CODE_HAR,
   CLOSED_SOURCE_HAR,
   SHARED_HSP,

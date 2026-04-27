@@ -89,7 +89,8 @@ import {
   componentCollection,
   localStorageLinkCollection,
   localStoragePropCollection,
-  envCollection
+  envCollection,
+  customEnvCollection
 } from './validate_ui_syntax';
 import {
   PropMapManager,
@@ -529,8 +530,30 @@ function validateAssignEnvV1(log: LogInfo[], item: ts.PropertyAssignment): void 
   });
 }
 
+function isChildCustomEnvProperty(info: ChildAndParentComponentInfo, itemName: string): boolean {
+  if (info.childStructInfo.isComponentV2) {
+    return info.childStructInfo.customEnvDecoratorSet.has(itemName);
+  }
+  const v1CustomEnvSet: Set<string> = customEnvCollection.get(info.childName);
+  return !!v1CustomEnvSet && v1CustomEnvSet.has(itemName);
+}
+
+function validateAssignCustomEnv(log: LogInfo[], item: ts.PropertyAssignment,
+  childName: string, itemName: string): void {
+  log.push({
+    type: LogType.ERROR,
+    message: `The '@CustomEnv' property '${itemName}' in the custom component '${childName}' cannot be initialized by parent component.`,
+    pos: item.getStart(),
+    code: '10905375'
+  });
+}
+
 function validateChildProperty(item: ts.PropertyAssignment, itemName: string,
   childParam: ts.PropertyAssignment[], log: LogInfo[], info: ChildAndParentComponentInfo): void {
+  if (isChildCustomEnvProperty(info, itemName)) {
+    validateAssignCustomEnv(log, item, info.childName, itemName);
+    return;
+  }
   const isParentV2: boolean = info.parentStructInfo.isComponentV2;
   if (info.childStructInfo.isComponentV2) {
     if (isInitFromParent(item)) {
