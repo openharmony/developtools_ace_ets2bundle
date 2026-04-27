@@ -56,7 +56,9 @@ function _checkComponentComponentV2MixUse(
         return;
     }
     const declProgram = arkts.getProgramFromAstNode(decl);
-    const isFrom1_1 = FileManager.getInstance().getLanguageVersionByFilePath(declProgram.absName) === LANGUAGE_VERSION.ARKTS_1_1;
+    const isFrom1_1 = declProgram !== undefined
+        ? FileManager.getInstance().getLanguageVersionByFilePath(declProgram.absName) === LANGUAGE_VERSION.ARKTS_1_1
+        : undefined;
     if (isFrom1_1) {
         return;
     }

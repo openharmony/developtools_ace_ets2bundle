@@ -15,10 +15,15 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AnnotationInfo, Annotations, BaseAnnotationRecord } from './base';
-import { StructDecoratorNames } from '../../../../common/predefines';
+import { InsightIntentDecoratorNames, StructDecoratorNames } from '../../../../common/predefines';
 import { RecordOptions } from '../base';
+import { MetaDataCollector } from 'common/metadata-collector';
 
-export interface StructAnnotationInfo extends AnnotationInfo {
+export interface InsightIntentStructAnnotationInfo extends AnnotationInfo {
+    hasInsightIntentPage?: boolean;
+}
+
+export interface StructAnnotationInfo extends AnnotationInfo, InsightIntentStructAnnotationInfo {
     hasComponent?: boolean;
     hasComponentV2?: boolean;
     hasEntry?: boolean;
@@ -51,6 +56,28 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
         this.annotationNames = Object.values(StructDecoratorNames);
     }
 
+    protected updateIgnoreAnnotationInfo(name: string | undefined): void {
+        if (name === undefined) {
+            return;
+        }
+        if (this.shouldHandleInsightIntent && name === InsightIntentDecoratorNames.PAGE) {
+            this.updateAnnotationInfo(name);
+            return;
+        }
+        super.updateIgnoreAnnotationInfo(name);
+    }
+
+    protected updateIgnoreAnnotations(anno: arkts.AnnotationUsage, name: string | undefined): void {
+        if (name === undefined) {
+            return;
+        }
+        if (this.shouldHandleInsightIntent && name === InsightIntentDecoratorNames.PAGE) {
+            this.updateAnnotations(anno, name);
+            return;
+        }
+        super.updateAnnotations(anno, name);
+    }
+
     updateAnnotationInfoByName(info: StructAnnotationInfo, name: string | undefined): StructAnnotationInfo {
         switch (name) {
             case StructDecoratorNames.COMPONENT:
@@ -76,6 +103,9 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
                 break;
             case StructDecoratorNames.PREVIEW:
                 info.hasPreview = true;
+                break;
+            case InsightIntentDecoratorNames.PAGE:
+                info.hasInsightIntentPage = true;
                 break;
             default:
                 return info;

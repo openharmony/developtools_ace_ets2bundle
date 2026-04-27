@@ -15,6 +15,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { INSIGHT_INTENT_FILE_NAME } from '../../common/predefines';
 
 export const ARKTS_CONFIG_FILE_PATH: string = 'arktsconfig.json';
 export const PANDA_SDK_STDLIB_PATH: string = 'lib';
@@ -76,4 +77,27 @@ function ensurePathExists(filePath: string): void {
     }
 }
 
-export { getRootPath, getResourcePath, getMockRootPath, changeFileExtension, getFileName, ensurePathExists };
+function getInsightIntentJsonPath(aceProfilePath: string): string {
+    return path.resolve(aceProfilePath, INSIGHT_INTENT_FILE_NAME);
+}
+
+function loadJson(filePath: string) {
+  if (!fs.existsSync(filePath)) {
+    console.error(`cannot find filePath: ${filePath}`);
+    return undefined;
+  }
+  
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(fileContent);
+};
+
+export { 
+    getRootPath, 
+    getResourcePath, 
+    getMockRootPath, 
+    changeFileExtension, 
+    getFileName, 
+    ensurePathExists,
+    getInsightIntentJsonPath,
+    loadJson
+};

@@ -68,7 +68,7 @@ export class CheckedTransformer extends AbstractVisitor {
         this.scope = { customComponents: [] };
         this.projectConfig = MetaDataCollector.getInstance().projectConfig;
         this.resourceInfo = MetaDataCollector.getInstance().resourceInfo;
-        this.insightIntentHandler = new InsightIntentHandler(this.projectConfig!);
+        this.insightIntentHandler = InsightIntentHandler.getInstance(this.projectConfig);
     }
 
     init(): void {
@@ -175,8 +175,10 @@ export class CheckedTransformer extends AbstractVisitor {
             this.scope.customComponents.length > 0 &&
             isCustomComponentClass(node, this.scope.customComponents[this.scope.customComponents.length - 1])
         ) {
-            // 处理 InsightIntent 装饰器（对于 struct/自定义组件）
-            this.insightIntentHandler.handleClass(node);
+            if (MetaDataCollector.getInstance().shouldHandleInsightIntent) {
+                // 处理 InsightIntent 装饰器（对于 struct/自定义组件）
+                this.insightIntentHandler.handleClass(node);
+            }
             const scope: CustomComponentScopeInfo = this.scope.customComponents[this.scope.customComponents.length - 1];
             const newClass: arkts.ClassDeclaration = structFactory.tranformClassMembers(node, scope);
             this.exit(beforeChildren);
@@ -191,8 +193,10 @@ export class CheckedTransformer extends AbstractVisitor {
             entryFactory.addMemoToEntryWrapperClassMethods(node);
             return node;
         } else if (arkts.isClassDeclaration(node)) {
-            // 新增节点处理入口
-            this.insightIntentHandler.nodeHandleEntry(node)
+            if (MetaDataCollector.getInstance().shouldHandleInsightIntent) {
+                // 新增节点处理入口
+                this.insightIntentHandler.nodeHandleEntry(node);
+            }
             return structFactory.transformNormalClass(node, this.externalSourceName);
         } else if (arkts.isCallExpression(node)) {
             return structFactory.transformCallExpression(

@@ -27,9 +27,11 @@ import { MetaDataCollector } from '../../common/metadata-collector';
 export interface UIVisitorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
     shouldCheckUISyntax?: boolean;
+    shouldHandleInsightIntent?: boolean;
 }
 
 export class UIVisitor extends AbstractVisitor {
+    private _shouldHandleInsightIntent: boolean;
     private _shouldIgnoreDecl?: boolean;
     private _shouldCheckUISyntax?: boolean;
 
@@ -37,6 +39,8 @@ export class UIVisitor extends AbstractVisitor {
         super(options);
         this._shouldIgnoreDecl = options?.shouldIgnoreDecl;
         this._shouldCheckUISyntax = options?.shouldCheckUISyntax;
+        this._shouldHandleInsightIntent = 
+            options?.shouldHandleInsightIntent ?? MetaDataCollector.getInstance().shouldHandleInsightIntent;
     }
 
     get shouldIgnoreDecl(): boolean {
@@ -45,6 +49,10 @@ export class UIVisitor extends AbstractVisitor {
 
     get shouldCheckUISyntax(): boolean {
         return this._shouldCheckUISyntax ?? false;
+    }
+
+    get shouldHandleInsightIntent(): boolean {
+        return this._shouldHandleInsightIntent;
     }
 
     init(): void {
@@ -72,6 +80,7 @@ export class UIVisitor extends AbstractVisitor {
             externalSourceName: this.externalSourceName,
             program: this.program,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
+            shouldHandleInsightIntent: this.shouldHandleInsightIntent
         };
     }
 
