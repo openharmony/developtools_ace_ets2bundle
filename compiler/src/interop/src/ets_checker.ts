@@ -18,6 +18,7 @@ import path from 'path';
 import * as ts from 'typescript';
 import * as crypto from 'crypto';
 const fse = require('fs-extra');
+const JSON5 = require('json5');
 import { fileInfoCache } from './file_info_cache';
 
 import {
@@ -830,6 +831,16 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     const processBuildHaprrecordInfo = MemoryMonitor.recordStage(MemoryDefine.PROCESS_BUILD_HAP);
     processBuildHap(cacheFile, rootFileNames, parentEvent, rollupShareObject);
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
+  }
+
+  if (projectConfig.compileHar && projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+    if (projectConfig.byteCodeHar && projectConfig.declaredFilesPath) {
+      performDeclarationMerging(projectConfig.declaredFilesPath, true);
+    } else if (projectConfig.cachePath && projectConfig.moduleName) {
+      performDeclarationMerging(path.join(projectConfig.cachePath, projectConfig.moduleName), false);
+    } else {
+      logger.warn('Missing required paths, skip declaration merging');
+    }
   }
 
   maxMemoryInServiceChecker = process.memoryUsage().heapUsed;
@@ -2220,4 +2231,67 @@ export function resetEtsCheck(): void {
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
   maxMemoryInServiceChecker = 0;
+}
+
+function performDeclarationMerging(inputDir: string, isByteCodeHar: boolean): void {
+  const entryDeclarationFiles: string[] = [];
+  const modulePath: string | undefined = projectConfig.modulePath;
+
+  if (projectConfig.ohExports && projectConfig.ohExports.length > 0) {
+    if (!modulePath) {
+      logger.warn('modulePath is not set, skip declaration merging');
+      return;
+    }
+    projectConfig.ohExports.forEach(element => {
+      const declareFile = element.replace(modulePath, inputDir).replace(/\.(ets|ts)$/, '.d.$1');
+      entryDeclarationFiles.push(declareFile);
+    });
+  } else {
+    if (!modulePath) {
+      logger.warn('modulePath is not set, skip declaration merging');
+      return;
+    }
+    const pkgJsonPath = path.join(modulePath, 'oh-package.json5');
+    if (!fs.existsSync(pkgJsonPath)) {
+      logger.warn('oh-package.json5 not found, skip declaration merging');
+      return;
+    }
+    try {
+      const pkgContent = JSON5.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
+      const mainField = pkgContent.main;
+      if (!mainField) {
+        logger.warn('main field not found in oh-package.json5, skip declaration merging');
+        return;
+      }
+      const entryFileName = mainField.replace(/\.(ets|ts)$/, '.d.$1');
+      const entryFilePath = path.join(inputDir, entryFileName);
+      entryDeclarationFiles.push(entryFilePath);
+    } catch (error) {
+      logger.warn(`Failed to parse oh-package.json5: ${error.message}`);
+      return;
+    }
+  }
+
+  if (entryDeclarationFiles.length === 0) {
+    logger.debug('No entry declaration files found for merging');
+    return;
+  }
+
+  // Perform merging for all entry declaration files in one pass
+  const projectPath = (projectConfig.byteCodeHar || projectConfig.compileShared)
+    ? path.join(projectConfig.declaredFilesPath, '..')
+    : projectConfig.cachePath;
+  try {
+    const { DeclarationMerger } = require('./declaration_merger');
+    DeclarationMerger.mergeDeclarationFiles({
+      entryFiles: entryDeclarationFiles,
+      projectPath: projectPath,
+      isByteCodeHar: isByteCodeHar,
+      moduleRootPath: projectConfig.moduleRootPath,
+      packageDir: projectConfig.packageDir,
+      systemModules: systemModules
+    });
+  } catch (error) {
+    logger.error(`Failed to merge declaration files: ${error.message}`);
+  }
 }

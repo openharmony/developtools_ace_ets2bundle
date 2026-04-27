@@ -306,10 +306,10 @@ export function circularFile(inputPath: string, outputPath: string): void {
 function copyFile(inputFile: string, outputFile: string): void {
   try {
     const parent: string = path.join(outputFile, '..');
-    if (!(fileInfoCache.isDirectory(parent))) {
+    if (!(fs.existsSync(parent) && fs.statSync(parent).isDirectory())) {
       mkDir(parent);
     }
-    if (fileInfoCache.fileExists(outputFile)) {
+    if (fs.existsSync(outputFile)) {
       return;
     }
     const readStream: fs.ReadStream = fs.createReadStream(inputFile);
@@ -352,9 +352,9 @@ export function toHashData(path: string): string {
 }
 
 export function writeFileSync(filePath: string, content: string): void {
-  if (!fileInfoCache.fileExists(filePath)) {
+  if (!fs.existsSync(filePath)) {
     const parent: string = path.join(filePath, '..');
-    if (!fileInfoCache.isDirectory(parent)) {
+    if (!(fs.existsSync(parent) && !fs.statSync(parent).isFile())) {
       mkDir(parent);
     }
   }
@@ -478,6 +478,10 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
         originalDeclarationContent: sourceContent
       };
       harFilesRecord.set(sourcePath, genFilesInHar);
+      if (projectConfig.compileHar && projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+        mkdirsSync(path.dirname(jsFilePath));
+        fs.writeFileSync(jsFilePath, sourceContent);
+      }
       return;
     } else {
       mkdirsSync(path.dirname(jsFilePath));
