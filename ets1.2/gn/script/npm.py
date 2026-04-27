@@ -84,15 +84,28 @@ def pack(project_path, pack_destination):
     os.chdir(project_path)
     pack_destination_dirname = os.path.dirname(pack_destination)
     os.makedirs(pack_destination_dirname, exist_ok=True)
-    cmd = ["npm", "pack", "--pack-destination", pack_destination_dirname, "--verbose", "--ignore-scripts"]
+    # npm v6 doesn't support --pack-destination, pack to current dir and move
+    # cmd = ["npm", "pack", "--pack-destination", pack_destination_dirname, "--verbose", "--ignore-scripts"]
+    cmd = ["npm", "pack", "--verbose", "--ignore-scripts"]
     result = subprocess.run(cmd, env=os.environ,
         capture_output=True,
         text=True,
         check=True)
+    if result.returncode != 0:
+        print(f"npm pack failed with stdout:\n{result.stdout}")
+        print(f"npm pack failed with stderr:\n{result.stderr}")
+        raise Exception(f"npm pack failed with exit code {result.returncode}")
     tgz_filename = result.stdout.strip()
     if not tgz_filename:
-        raise Exception("npm pack didn't output a filename")
-    shutil.move(os.path.join(pack_destination_dirname, tgz_filename), pack_destination)
+        # Try to find the filename in stdout (npm outputs the filename at the end)
+        for line in result.stdout.split('\n'):
+            if line.endswith('.tgz'):
+                tgz_filename = line
+                break
+        if not tgz_filename:
+            raise Exception(f"npm pack didn't output a filename. stdout:\n{result.stdout}")
+    # Move the generated tarball to the destination
+    shutil.move(tgz_filename, pack_destination)
 
 def copy_target(args):
     if not os.path.exists(args.built_file_path):
