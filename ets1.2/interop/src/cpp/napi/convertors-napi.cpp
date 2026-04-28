@@ -320,15 +320,15 @@ void Exports::addMethod(const char* module, const char* name, napi_type_t impl)
     }
     it->second.push_back(std::make_pair(name, impl));
 }
-
 const std::vector<std::pair<std::string, napi_type_t>>& Exports::getMethods(const std::string& module)
 {
     auto it = implementations.find(module);
-    if (it == implementations.end()) {
+    if (it != implementations.end()) {
+        return it->second;
+    } else {
         LOGE("Module %s is not registered", module.c_str());
         INTEROP_FATAL("Fatal error");
     }
-    return it->second;
 }
 
 //
