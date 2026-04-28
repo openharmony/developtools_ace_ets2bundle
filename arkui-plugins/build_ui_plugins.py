@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 
 
 def copy_files(source_path, dest_path, is_file=False):
@@ -93,6 +94,10 @@ def copy_output(options):
         'require-from-string',  # ajv dependency
     ]
     copy_runtime_deps(options.source_path, options.output_path, runtime_deps)
+
+    # Update output path timestamp for incremental build
+    current_time = time.time()
+    os.utime(options.output_path, (current_time, current_time))
 
 
 def parse_args():
