@@ -56,8 +56,8 @@ export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation 
 export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version must be an integer between 1 and 999,
  and when the OpenHarmony version is greater than or equal to 26, the version number format also supports the M.S.F format.`;
 export const APIAVAILABLE_CHECK_ERROR: string = 'Invalid parameters for apiAvailable.';
-export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The OpenHarmony api version must be an integer between 1 and 99.
- The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than 26, and S and F must be between 0 and 99.`;
+export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The OpenHarmony api version must be an integer between 1 and 25.
+ The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be between 0 and 99.`;
 export const APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR: string = 'Invalid $RUNTIMEOS version.';
 export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
   ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']],
@@ -255,15 +255,15 @@ export class BuildDiagnosticInfo implements BuildDiagnosticInterface {
 }
 
 export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>> = new Map([
-  [FORM_TAG_CHECK_ERROR, { code: '11706006', description: 'can\'t support form application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation,and switch to the supported Stage model interfaces.'] }],
-  [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation,and switch to the supported FA model interfaces.'] }],
-  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API is only since in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation,and switch to the supported interfaces.'] }]
+  [FORM_TAG_CHECK_ERROR, { code: '11706006', description: 'can\'t support form application.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [CROSSPLATFORM_TAG_CHECK_ERROR, { code: '11706007', description: 'can\'t support crossplatform application.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [FA_TAG_CHECK_ERROR, { code: '11706008', description: 'FA model interface used in Stage projects.', solutions: ['Check the official API reference documentation, and switch to the supported Stage model interfaces.'] }],
+  [STAGE_TAG_CHECK_ERROR, { code: '11706009', description: 'Stage model interface used in FA projects.', solutions: ['Check the official API reference documentation, and switch to the supported FA model interfaces.'] }],
+  [ATOMICSERVICE_TAG_CHECK_ERROR, { code: '11706010', description: 'can\'t support atomicservice application.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API requires version $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }]
 ])
 
 export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
