@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -248,8 +248,9 @@ export function setAllParents(ast: AstNode): void {
 }
 
 export function generateTsDeclarationsFromContext(
-  outputDeclEts: string,
-  outputEts: string,
+  inputFiles: string[],
+  outputDeclEts: string[],
+  outputEts: string[],
   exportAll: boolean,
   isolated: boolean,
   recordFile: string,
@@ -257,8 +258,10 @@ export function generateTsDeclarationsFromContext(
 ): KInt {
   return global.es2panda._GenerateTsDeclarationsFromContext(
     global.context,
-    passString(outputDeclEts),
-    passString(outputEts),
+    outputDeclEts.length,
+    passStringArray(inputFiles),
+    passStringArray(outputDeclEts),
+    passStringArray(outputEts),
     exportAll,
     isolated,
     passString(recordFile),

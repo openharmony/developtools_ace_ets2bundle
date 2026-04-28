@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,13 +22,16 @@ import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../common/predefines';
 import { debugLog } from '../common/debug';
 import { PluginContext, Plugins } from '../common/plugin-context';
+import { ProgramSkipper } from '../common/program-skipper';
 
 export function interopTransform():Plugins {
   return {
     name: 'interop-plugin',
     parsed: parsedTransform,
     checked: checkedTransform,
-    clean(): void {},
+    clean(): void {
+      ProgramSkipper.clear();
+    },
   };
 }
 
