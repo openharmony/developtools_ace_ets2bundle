@@ -56,8 +56,11 @@ KInteropBuffer impl_MaterializeBuffer(
     KNativePointer data, KLong length, KInt resourceId, KNativePointer holdPtr, KNativePointer releasePtr)
 {
     auto hold = reinterpret_cast<void (*)(KInt)>(holdPtr);
-    auto release = reinterpret_cast<void (*)(KInt)>(releasePtr);
+    if (hold == nullptr) {
+        INTEROP_FATAL("MaterializeBuffer failed!")
+    }
     hold(resourceId);
+    auto release = reinterpret_cast<void (*)(KInt)>(releasePtr);
     return KInteropBuffer { length, data, resourceId, release };
 }
 KOALA_INTEROP_5(MaterializeBuffer, KInteropBuffer, KNativePointer, KLong, KInt, KNativePointer, KNativePointer)
@@ -73,6 +76,9 @@ KOALA_INTEROP_1(GetNativeBufferPointer, KNativePointer, KInteropBuffer)
 KInt impl_StringLength(KNativePointer ptr)
 {
     string* s = reinterpret_cast<string*>(ptr);
+    if (s == nullptr) {
+        INTEROP_FATAL("StringLength failed!")
+    }
     return s->length();
 }
 KOALA_INTEROP_1(StringLength, KInt, KNativePointer)
@@ -130,27 +136,40 @@ KOALA_INTEROP_0(GetStringFinalizer, KNativePointer)
 void impl_InvokeFinalizer(KNativePointer obj, KNativePointer finalizer)
 {
     auto finalizer_f = reinterpret_cast<void (*)(KNativePointer)>(finalizer);
+    if (finalizer_f == nullptr) {
+        INTEROP_FATAL("Invoke Finalizer failed!")
+    }
     finalizer_f(obj);
 }
 KOALA_INTEROP_V2(InvokeFinalizer, KNativePointer, KNativePointer)
 
 KInteropReturnBuffer impl_GetPtrVector(KNativePointer ptr)
 {
-    auto vector = reinterpret_cast<std::vector<void*>*>(ptr);
-    return KInteropReturnBuffer::from(*vector, nullptr);
+    auto vectorPtr = reinterpret_cast<std::vector<void*>*>(ptr);
+    if (vectorPtr == nullptr) {
+        INTEROP_FATAL("GetPtrVector failed!")
+    }
+    return KInteropReturnBuffer::from(*vectorPtr, nullptr);
 }
 KOALA_INTEROP_1(GetPtrVector, KInteropReturnBuffer, KNativePointer)
 
 KInt impl_GetPtrVectorSize(KNativePointer ptr)
 {
-    return reinterpret_cast<std::vector<void*>*>(ptr)->size();
+    auto vectorPtr = reinterpret_cast<std::vector<void*>*>(ptr);
+    if (vectorPtr == nullptr) {
+        INTEROP_FATAL("GetPtrVectorSize failed!")
+    }
+    return vectorPtr->size();
 }
 KOALA_INTEROP_1(GetPtrVectorSize, KInt, KNativePointer)
 
 KNativePointer impl_GetPtrVectorElement(KNativePointer ptr, KInt index)
 {
-    auto vector = reinterpret_cast<std::vector<void*>*>(ptr);
-    auto element = vector->at(index);
+    auto vectorPtr = reinterpret_cast<std::vector<void*>*>(ptr);
+    if (vectorPtr == nullptr) {
+        INTEROP_FATAL("GetPtrVectorElement failed!")
+    }
+    auto element = vectorPtr->at(index);
     return nativePtr(element);
 }
 KOALA_INTEROP_2(GetPtrVectorElement, KNativePointer, KNativePointer, KInt)
@@ -226,7 +245,7 @@ void* GetVmloaderImpl(const char* path, const char* name)
     if (!lib && name) {
         auto aLibrary =
 #ifndef KOALA_OHOS // dlopen on OHOS doesn't like paths
-            std::string(path) + "/" +
+            ((path == nullptr) ? "" : std::string(path)) + "/" +
 #endif
             libName("vmloader");
         lib = loadLibrary(aLibrary);
@@ -378,6 +397,9 @@ KOALA_INTEROP_2(LoadView, KStringPtr, KStringPtr, KStringPtr)
 
 KNativePointer impl_Malloc(KLong length)
 {
+    if (length == 0) {
+        INTEROP_FATAL("Zero allocation size. Memory allocation failed!")
+    }
     const auto ptr = static_cast<char*>(malloc(length));
     if (ptr == nullptr) {
         INTEROP_FATAL("Memory allocation failed!")
@@ -413,6 +435,9 @@ KInt impl_ReadByte(KNativePointer data, KLong index, KLong length)
         )
     }
     uint8_t* ptr = reinterpret_cast<uint8_t*>(data);
+    if (ptr == nullptr) {
+        INTEROP_FATAL("Read byte failed!")
+    }
     return ptr[index];
 }
 KOALA_INTEROP_DIRECT_3(ReadByte, KInt, KNativePointer, KLong, KLong)
@@ -425,6 +450,9 @@ void impl_WriteByte(KNativePointer data, KInt index, KLong length, KInt value)
         )
     }
     uint8_t* ptr = reinterpret_cast<uint8_t*>(data);
+    if (ptr == nullptr) {
+        INTEROP_FATAL("Read byte failed!")
+    }
     ptr[index] = value;
 }
 KOALA_INTEROP_DIRECT_V4(WriteByte, KNativePointer, KLong, KLong, KInt)
@@ -432,7 +460,7 @@ KOALA_INTEROP_DIRECT_V4(WriteByte, KNativePointer, KLong, KLong, KInt)
 void impl_CopyArray(KNativePointer data, KLong length, KByte* array)
 {
     if (!array || !data) {
-        INTEROP_FATAL("CopyArray called with incorrect nullptr args (array, data):(%p, %p)", array, data)
+        INTEROP_FATAL("CopyArray called with incorrect nullptr args (array, data)")
     }
 
     interop_memory_copy(data, length, array, length);
@@ -496,20 +524,31 @@ KOALA_INTEROP_CTX_V4(CallCallbackSync, KInt, KInt, KSerializerBuffer, KInt)
 
 void impl_CallCallbackResourceHolder(KNativePointer holder, KInt resourceId)
 {
-    reinterpret_cast<void (*)(KInt)>(holder)(resourceId);
+    auto ptr = reinterpret_cast<void (*)(KInt)>(holder);
+    if (ptr == nullptr) {
+        INTEROP_FATAL("Call Callback resource holder failed!")
+    }
+    ptr(resourceId);
 }
 KOALA_INTEROP_V2(CallCallbackResourceHolder, KNativePointer, KInt)
 
 void impl_CallCallbackResourceReleaser(KNativePointer releaser, KInt resourceId)
 {
-    reinterpret_cast<void (*)(KInt)>(releaser)(resourceId);
+    auto ptr = reinterpret_cast<void (*)(KInt)>(releaser);
+    if (ptr == nullptr) {
+        INTEROP_FATAL("Call Callback resource releaser failed!")
+    }
+    ptr(resourceId);
 }
 KOALA_INTEROP_V2(CallCallbackResourceReleaser, KNativePointer, KInt)
 
 KInt impl_CallForeignVM(KNativePointer foreignContextRaw, KInt function, KSerializerBuffer data, KInt length)
 {
     const ForeignVMContext* foreignContext = (const ForeignVMContext*)foreignContextRaw;
-    // Improve: set actuall callbacks caller/holder/releaser.
+    if (foreignContext == nullptr) {
+        INTEROP_FATAL("Call Foreign VM failed!")
+    }
+    // Improve: set actual callbacks caller/holder/releaser.
     /*
      *(int64_t*)(data + 8) = impl_CallCallbackSync;
      *(int64_t*)(data + 16) = 0;
@@ -555,13 +594,14 @@ KOALA_INTEROP_V1(NativeLog, KStringPtr)
 void resolveDeferred(KVMDeferred* deferred, uint8_t* argsData, int32_t argsLength)
 {
 #ifdef KOALA_NAPI
-    auto status =
-        napi_call_threadsafe_function((napi_threadsafe_function)deferred->handler, deferred, napi_tsfn_nonblocking);
-    if (status != napi_ok)
-        LOGE("cannot call thread-safe function; status=%d", status);
-    if (deferred->handler) {
-        napi_release_threadsafe_function((napi_threadsafe_function)deferred->handler, napi_tsfn_release);
-        deferred->handler = nullptr;
+    // Keep handler because 'deferred' will be deleted in resolveDeferredImpl
+    const auto handler = (napi_threadsafe_function)deferred->handler;
+    if (handler) {
+        const auto status = napi_call_threadsafe_function(handler, deferred, napi_tsfn_nonblocking);
+        if (status != napi_ok) {
+            LOGE("cannot call thread-safe function; status=%d", status);
+        }
+        napi_release_threadsafe_function(handler, napi_tsfn_release);
     }
 #endif
 #ifdef KOALA_ANI
@@ -835,8 +875,11 @@ KOALA_INTEROP_CTX_3(Utf8ToString, KStringPtr, KByte*, KInt, KInt)
 #if defined(KOALA_NAPI) || defined(KOALA_ANI)
 KStringPtr impl_RawUtf8ToString(KVMContext vmContext, KNativePointer data)
 {
-    auto string = (const char*)data;
-    KStringPtr result(string, strlen(string), false);
+    auto stringPtr = (const char*)data;
+    if (stringPtr == nullptr) {
+        INTEROP_FATAL("RawUtf8ToString failed!")
+    }
+    KStringPtr result(stringPtr, strlen(stringPtr), false);
     return result;
 }
 KOALA_INTEROP_CTX_1(RawUtf8ToString, KStringPtr, KNativePointer)
@@ -869,7 +912,7 @@ KOALA_INTEROP_DIRECT_3(CompareAndSwapAtomic, KBoolean, KNativePointer, KInt, KIn
 KStringPtr impl_StdStringToString(KVMContext vmContext, KNativePointer stringPtr)
 {
     std::string* string = reinterpret_cast<std::string*>(stringPtr);
-    KStringPtr result(string ? string->c_str() : nullptr, string->size(), false);
+    KStringPtr result(string ? string->c_str() : nullptr, string ? string->size() : 0, false);
     return result;
 }
 KOALA_INTEROP_CTX_1(StdStringToString, KStringPtr, KNativePointer)

@@ -268,12 +268,18 @@ struct InteropTypeConverter<KStringArray> {
     static char* strndup(const void* str, size_t n)
     {
         char* mem = static_cast<char*>(malloc(n + 1));
+        if (mem == nullptr) {
+            INTEROP_FATAL("malloc failed!")
+        }
         interop_memory_copy(mem, n + 1, str, n);
         mem[n] = 0;
         return mem;
     }
     static size_t decodeLength(const uint8_t* data)
     {
+        if (data == nullptr) {
+            INTEROP_FATAL("decodeLength failed!")
+        }
         return (data[NUM_3] << NUM_24) | (data[NUM_2] << NUM_16) | (data[NUM_1] << NUM_8) | data[0];
     }
     static KStringArray convertFrom(napi_env env, InteropType value)
