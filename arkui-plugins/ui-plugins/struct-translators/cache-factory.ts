@@ -34,12 +34,14 @@ import {
     DecoratorNames,
     Dollars,
     NodeCacheNames,
+    ObservedNames,
     RESOURCE_TYPE,
     StateManagementTypes,
     StructDecoratorNames,
 } from '../../common/predefines';
-import { collect } from '../../common/arkts-utils';
+import { collect, expectName } from '../../common/arkts-utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
+import { isSdkVersionAtLeast } from '../builder-lambda-translators/utils';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { getCustomComponentNameFromAnnotationInfo } from '../../collectors/ui-collectors/utils';
 import { InnerComponentInfoCache } from '../builder-lambda-translators/cache/innerComponentInfoCache';
@@ -50,7 +52,7 @@ import { SyncMonitorCache } from '../property-translators/cache/syncMonitorCache
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
 import { CustomDialogControllerPropertyCache } from '../property-translators/cache/customDialogControllerPropertyCache';
-import { collectStateManagementTypeImport, findDecoratorByName } from '../property-translators/utils';
+import { collectStateManagementTypeImport, findDecoratorByName, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { ResourceSourceCache } from '../insight-intent/resource-source-cache';
 import {
     getCustomComponentOptionsName,
@@ -72,6 +74,8 @@ import {
     CustomDialogControllerCache,
     PropertyFactoryCallTypeCache,
 } from '../memo-collect-cache';
+
+const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
 interface RewritedStructMethodInfo {
     hasInitializeStruct?: boolean;
@@ -612,7 +616,9 @@ export class CacheFactory {
         if (!definition || !metadata.name) {
             return node;
         }
-        definition.setImplements([
+        const classAnnoInfo: NormalClassAnnotationInfo | undefined = metadata.annotationInfo;
+        const isObservedV2: boolean = !!classAnnoInfo?.hasObservedV2;
+        const implementsArr: arkts.TSClassImplements[] = [
             ...definition.implements,
             arkts.TSClassImplements.createTSClassImplements(
                 UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_OBJECT)
@@ -620,7 +626,14 @@ export class CacheFactory {
             arkts.TSClassImplements.createTSClassImplements(
                 UIFactory.createTypeReferenceFromString(StateManagementTypes.SUBSCRIBED_WATCHES)
             ),
-        ]);
+        ];
+        if (isObservedV2 && isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION)) {
+            implementsArr.push(arkts.TSClassImplements.createTSClassImplements(
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_ANY_PROP)
+            ));
+            collectStateManagementTypeImport(StateManagementTypes.OBSERVED_ANY_PROP);
+        }
+        definition.setImplements(implementsArr);
         definition.setBody(this.createObservedMembers(definition, metadata));
         collectStateManagementTypeImport(StateManagementTypes.OBSERVED_OBJECT);
         collectStateManagementTypeImport(StateManagementTypes.SUBSCRIBED_WATCHES);
@@ -666,12 +679,16 @@ export class CacheFactory {
         const newStaticBlock = !isDecl && !hasStaticBlock 
             ? [UIFactory.createClassStaticBlock()] 
             : [];
+        const addRefAnyPropMethod = isObservedV2 && isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION)
+            ? [this.createAddRefAnyPropMethod(definition, isDecl)]
+            : [];
         const returnNodes: arkts.AstNode[] = collect(
             watchMembers,
             v1RenderIdMembers,
             conditionalAddRef,
             metaProperty,
             ...propertyMembers,
+            addRefAnyPropMethod,
             newConstructor,
             newStaticBlock
         );
@@ -712,6 +729,109 @@ export class CacheFactory {
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
         });
+    }
+
+    static createAddRefAnyPropMethod(definition: arkts.ClassDefinition, isDecl: boolean): arkts.MethodDefinition {
+        let body: arkts.BlockStatement | undefined;
+        let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        if (!isDecl) {
+            const bodyStmts: arkts.Statement[] = [];
+            const hasObservedV2Parent: boolean = CacheFactory.hasObservedV2InParentChain(definition);
+            if (hasObservedV2Parent) {
+                bodyStmts.push(
+                    arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(
+                            arkts.factory.createMemberExpression(
+                                arkts.factory.createSuperExpression(),
+                                arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                false,
+                                false
+                            ),
+                            undefined,
+                            undefined
+                        )
+                    )
+                );
+            }
+            const traceProperties: string[] = [];
+            for (const member of definition.body) {
+                if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACE)) {
+                    traceProperties.push(expectName(member.key));
+                }
+            }
+            traceProperties.forEach((propName: string) => {
+                const metaName: string = `${StateManagementTypes.META}_${propName}`;
+                bodyStmts.push(
+                    arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(
+                            arkts.factory.createMemberExpression(
+                                generateThisBacking(metaName),
+                                arkts.factory.createIdentifier(ObservedNames.ADD_REF),
+                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                false,
+                                false
+                            ),
+                            undefined,
+                            undefined
+                        )
+                    )
+                );
+            });
+            body = arkts.factory.createBlock(bodyStmts);
+        } else {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
+        return UIFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+            function: {
+                key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+                body: body,
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            },
+            modifiers: modifiers,
+        });
+    }
+
+    static hasObservedV2InParentChain(definition: arkts.ClassDefinition): boolean {
+        const visited: Set<string> = new Set();
+        let current: arkts.ClassDefinition = definition;
+        while (true) {
+            const parentDef: arkts.ClassDefinition | undefined = CacheFactory.getSuperClassDecl(current);
+            if (!parentDef) {
+                break;
+            }
+            const parentName: string | undefined = parentDef.ident?.name;
+            if (!parentName || visited.has(parentName)) {
+                break;
+            }
+            visited.add(parentName);
+            if (hasDecorator(parentDef, DecoratorNames.OBSERVED_V2)) {
+                return true;
+            }
+            current = parentDef;
+        }
+        return false;
+    }
+
+    static getSuperClassDecl(definition: arkts.ClassDefinition): arkts.ClassDefinition | undefined {
+        const superNode = definition.super;
+        if (!superNode || !arkts.isETSTypeReference(superNode)) {
+            return undefined;
+        }
+        if (!superNode.part || !arkts.isETSTypeReferencePart(superNode.part)) {
+            return undefined;
+        }
+        const superName = superNode.part.name;
+        if (!superName || !arkts.isIdentifier(superName)) {
+            return undefined;
+        }
+        const decl = arkts.getDecl(superName);
+        if (!decl || !arkts.isClassDefinition(decl)) {
+            return undefined;
+        }
+        return decl;
     }
 
     /**
