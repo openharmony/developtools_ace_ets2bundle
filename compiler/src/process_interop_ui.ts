@@ -38,7 +38,7 @@ export function isStructDeclaration(node: ts.Node): boolean {
   return ts.isStructDeclaration(node);
 }
 
-class HandleUIImports {
+export class HandleUIImports {
   private context: ts.TransformationContext;
   private typeChecker: ts.TypeChecker;
   private readonly output: string | undefined;
@@ -51,9 +51,9 @@ class HandleUIImports {
 
   private readonly trueSymbolAtLocationCache = new Map<ts.Node, ts.Symbol | null>();
 
-  constructor(program: ts.Program, context: ts.TransformationContext, output?: string | undefined) {
+  constructor(typeChecker: ts.TypeChecker, context: ts.TransformationContext, output?: string | undefined) {
     this.context = context;
-    this.typeChecker = program.getTypeChecker();
+    this.typeChecker = typeChecker;
     this.output = output;
   }
 
@@ -316,7 +316,7 @@ class HandleUIImports {
 
 /*
  * process interop ui
- *
+ * @deprecated use declgen stages.
  * @param program - the ts.Program instance of the current compilation
  */
 export function createCustomTransformer(
@@ -324,7 +324,7 @@ export function createCustomTransformer(
 ): (ctx: ts.TransformationContext) => (sourceFile: ts.SourceFile) => ts.SourceFile {
   return (ctx) => {
     return (sourceFile: ts.SourceFile) => {
-      const handleUIImports = new HandleUIImports(program, ctx);
+      const handleUIImports = new HandleUIImports(program.getTypeChecker(), ctx);
       return handleUIImports.createCustomTransformer(sourceFile);
     }
   }
@@ -362,7 +362,10 @@ function getSourceFiles(program: ts.Program, filePaths: string[]): ts.SourceFile
   const sourceFiles: ts.SourceFile[] = [];
 
   filePaths.forEach(filePath => {
-    sourceFiles.push(program.getSourceFile(filePath));
+    const sourceFile = program.getSourceFile(filePath);
+    if (sourceFile) {
+      sourceFiles.push(sourceFile);
+    }
   });
   return sourceFiles;
 }
@@ -380,7 +383,7 @@ export function processInteropUI(path: string, outPath = ''): void {
 
   const createTransformer = (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
     return (sourceFile: ts.SourceFile) => {
-      const handleUIImports = new HandleUIImports(program, ctx, outPath);
+      const handleUIImports = new HandleUIImports(program.getTypeChecker(), ctx, outPath);
       return handleUIImports.createCustomTransformer(sourceFile);
     }
   }
