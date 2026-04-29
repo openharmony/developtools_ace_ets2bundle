@@ -594,14 +594,13 @@ KOALA_INTEROP_V1(NativeLog, KStringPtr)
 void resolveDeferred(KVMDeferred* deferred, uint8_t* argsData, int32_t argsLength)
 {
 #ifdef KOALA_NAPI
-    // Keep handler because 'deferred' will be deleted in resolveDeferredImpl
-    const auto handler = (napi_threadsafe_function)deferred->handler;
-    if (handler) {
-        const auto status = napi_call_threadsafe_function(handler, deferred, napi_tsfn_nonblocking);
-        if (status != napi_ok) {
-            LOGE("cannot call thread-safe function; status=%d", status);
-        }
-        napi_release_threadsafe_function(handler, napi_tsfn_release);
+    auto status =
+        napi_call_threadsafe_function((napi_threadsafe_function)deferred->handler, deferred, napi_tsfn_nonblocking);
+    if (status != napi_ok)
+        LOGE("cannot call thread-safe function; status=%d", status);
+    if (deferred->handler) {
+        napi_release_threadsafe_function((napi_threadsafe_function)deferred->handler, napi_tsfn_release);
+        deferred->handler = nullptr;
     }
 #endif
 #ifdef KOALA_ANI
