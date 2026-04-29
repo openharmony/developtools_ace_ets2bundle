@@ -2533,15 +2533,19 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   if (!node.expression || (ts.isPropertyAccessExpression(node.expression) && node.expression.name?.getText() !== SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO)) {
     return result;
   }
+
+  if (!isApiAvailableStatement(node)) {
+    return result;
+  }
   
   if (!node.arguments || node.arguments.length !== 1) {
     result.valid = false;
     return result;
   }
 
-  const compatibileReg: RegExp = /^(?:[1-9]\d{0,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
+  const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
   const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g,'');
+  const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
   const sincePoint: string[] = sinceFormat.split('.');
   if (!compatibileReg.test(sinceFormat)) {
     result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
@@ -2776,7 +2780,9 @@ export function checkFileHasAvailableByFileName(sourceFileName: string): boolean
 /**
  * Obtaining the alarm categort of the @since tag
  * 
- * @param sinceErrorLevel - Configured error level
+ * Configuring 'apiCompatibilityCheck' in 'build-profile.json5' can enable compatibility alarm error level.
+ * 
+ * @param sinceErrorLevel - Developer configured 'apiCompatibilityCheck' attribute to set alarm levels
  * @returns TypeScript alarm type
  */
 function getSinceDiagnosticType(sinceErrorLevel?: string): ts.DiagnosticCategory {
