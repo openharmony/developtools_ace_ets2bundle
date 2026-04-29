@@ -297,7 +297,8 @@
         "ArcScrollBar",
         "UnionEffectContainer",
         "UIPickerComponent",
-        "DistortionComponent"
+        "DistortionComponent",
+        "LazyColumnLayout"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -966,6 +967,11 @@
             "name": "DistortionComponent",
             "type": "DistortionComponentAttribute",
             "instance": "DistortionComponentInstance"
+          },
+          {
+            "name": "LazyColumnLayout",
+            "type": "LazyColumnLayoutAttribute",
+            "instance": "LazyColumnLayoutInstance"
           },
         ]
       },

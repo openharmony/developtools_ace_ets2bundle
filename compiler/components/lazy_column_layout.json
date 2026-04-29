@@ -1,0 +1,7 @@
+{
+    "name": "LazyColumnLayout",
+    "parents": ["WaterFlow", "FlowItem", "Scroll", "List", "LazyColumnLayout"],
+    "attrs": [
+        "space", "alignItems", "onVisibleIndexesChange"
+    ]
+}
