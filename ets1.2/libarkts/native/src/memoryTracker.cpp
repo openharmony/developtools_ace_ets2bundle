@@ -93,42 +93,25 @@ MemoryStats GetMemoryStats()
     struct rusage ru;
     if (getrusage(RUSAGE_SELF, &ru) == 0) {
         stats.peakRss = static_cast<size_t>(ru.ru_maxrss) * BYTES_PER_KB; // KB -> 字节
-        stats.pageFaultsMinor = static_cast<size_t>(ru.ru_minflt);
-        stats.pageFaultsMajor = static_cast<size_t>(ru.ru_majflt);
+        stats.pageFaultsMinor = ru.ru_minflt;
+        stats.pageFaultsMajor = ru.ru_majflt;
     }
     std::ifstream statusFile(MEMORY_STATUS_FILE);
     if (!statusFile) {
         return stats;
     }
     std::string line;
+    std::smatch matches;
     while (std::getline(statusFile, line)) {
-        std::smatch matchesRss;
-        std::smatch matchesSize;
-        bool resultRss = false;
-        bool resultSize = false;
-        try {
-            resultRss = std::regex_match(line, matchesRss, VM_RSS_REGEX);
-        } catch(const std::exception& e) {
-            std::cerr << e.what() << '\n';
-        }
-        try {
-            resultSize = std::regex_match(line, matchesSize, VM_SIZE_REGEX);
-        } catch(const std::exception& e) {
-            std::cerr << e.what() << '\n';
-        }
-        if (resultRss && matchesRss.size() >= MATCH_GROUP_SIZE) {
-            stats.currentRss = std::stoull(matchesRss[MATCH_GROUP_VALUE].str());
-            std::string unit = matchesRss[MATCH_GROUP_UNIT].str();
+        if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+            stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+            std::string unit = matches[MATCH_GROUP_UNIT].str();
             if (unit == UNIT_K) {
                 stats.currentRss *= BYTES_PER_KB;
             }
-        } else if (resultSize && matchesSize.size() >= MATCH_GROUP_SIZE) {
-            try {
-                stats.currentVss = std::stoull(matchesSize[MATCH_GROUP_VALUE].str());
-            } catch(const std::exception& e) {
-                std::cerr << e.what() << '\n';
-            }
-            std::string unit = matchesSize[MATCH_GROUP_UNIT].str();
+        } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+            stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+            std::string unit = matches[MATCH_GROUP_UNIT].str();
             if (unit == UNIT_K) {
                 stats.currentVss *= BYTES_PER_KB;
             }
