@@ -19,11 +19,20 @@ import {
     getClassPropertyAnnotationNames,
     getClassPropertyName,
     TypeFlags,
-    isFromPresetModules,
     getIdentifierName,
     addImportFixes,
 } from '../utils';
 import { AbstractUISyntaxRule, FixSuggestion } from './ui-syntax-rule';
+
+const LIFECYCLE_DECORATORS: Set<string> = new Set([
+    PresetDecorators.COMPONENTINIT,
+    PresetDecorators.COMPONENTAPPEAR,
+    PresetDecorators.COMPONENTBUILT,
+    PresetDecorators.COMPONENTRECYCLE,
+    PresetDecorators.COMPONENTDISAPPEAR,
+    PresetDecorators.COMPONENTACTIVE,
+    PresetDecorators.COMPONENTINACTIVE
+]);
 
 const CONTEXT_TYPE_CLASS = 'class';
 const CONTEXT_TYPE_STRUCT = 'struct';
@@ -270,7 +279,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return;
         }
         const source = member.source;
-        if (!source || isFromPresetModules(source.str)) {
+        if (!source) {
             return;
         }
         const specifiers = member.specifiers;
@@ -332,7 +341,8 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         return body.scriptFunction!.annotations!.filter(
             (annotation) =>
                 annotation.expr && arkts.isIdentifier(annotation.expr) &&
-                annotation.expr.name !== PresetDecorators.SYNC_MONITOR
+                annotation.expr.name !== PresetDecorators.SYNC_MONITOR &&
+                !LIFECYCLE_DECORATORS.has(annotation.expr.name)
         );
     }
 

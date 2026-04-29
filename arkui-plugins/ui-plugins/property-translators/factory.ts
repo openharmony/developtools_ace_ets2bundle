@@ -41,6 +41,8 @@ import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 const MONITOR_WILDCARD_SUFFIX = '.*';
+const MONITOR_WILDCARD_MIN_VERSION = 26;
+const MONITOR_WILDCARD_PROPERTY_NAME = 'enableWildcard';
 
 export class factory {
     /**
@@ -893,29 +895,42 @@ export class factory {
      * @param monitorItem monitored property name.
      */
     static createMonitorPathsInfoParameter(monitorItem: string): arkts.ObjectExpression {
-        const itemNameSplit: string[] = monitorItem.split('.');
+        const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
+        const hasWildcard: boolean = monitorItem.endsWith(MONITOR_WILDCARD_SUFFIX) &&
+            compatibleVersion !== undefined && compatibleVersion >= MONITOR_WILDCARD_MIN_VERSION;
+        const valueCallbackPath: string = hasWildcard
+            ? monitorItem.substring(0, monitorItem.length - MONITOR_WILDCARD_SUFFIX.length)
+            : monitorItem;
+        const itemNameSplit: string[] = valueCallbackPath.split('.');
         let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
-        if (itemNameSplit.length > 0) {
+        if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
             monitorVariable = this.generateMonitorVariable(itemNameSplit);
         }
+        const properties: arkts.Property[] = [
+            arkts.factory.createProperty(
+                arkts.factory.createIdentifier(MonitorNames.PATH),
+                arkts.factory.create1StringLiteral(monitorItem)
+            ),
+        ];
+        if (hasWildcard) {
+            properties.push(arkts.factory.createProperty(
+                arkts.factory.createIdentifier(MONITOR_WILDCARD_PROPERTY_NAME),
+                arkts.factory.createBooleanLiteral(true)
+            ));
+        }
+        properties.push(arkts.factory.createProperty(
+            arkts.factory.createIdentifier(MonitorNames.VALUE_CALL_CACK),
+            arkts.factory.createArrowFunction(
+                UIFactory.createScriptFunction({
+                    flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
+                    body: arkts.factory.createBlock([arkts.factory.createReturnStatement(monitorVariable)]),
+                    returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                })
+            )
+        ));
         return arkts.factory.createObjectExpression(
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            [
-                arkts.factory.createProperty(
-                    arkts.factory.createIdentifier(MonitorNames.PATH),
-                    arkts.factory.create1StringLiteral(monitorItem)
-                ),
-                arkts.factory.createProperty(
-                    arkts.factory.createIdentifier(MonitorNames.VALUE_CALL_CACK),
-                    arkts.factory.createArrowFunction(
-                        UIFactory.createScriptFunction({
-                            flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                            body: arkts.factory.createBlock([arkts.factory.createReturnStatement(monitorVariable)]),
-                            returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
-                        })
-                    )
-                ),
-            ],
+            properties,
             false
         );
     }
@@ -1020,7 +1035,7 @@ export class factory {
         ];
         if (hasWildcard) {
             properties.push(arkts.factory.createProperty(
-                arkts.factory.createIdentifier('isWildcard'),
+                arkts.factory.createIdentifier(MONITOR_WILDCARD_PROPERTY_NAME),
                 arkts.factory.createBooleanLiteral(true)
             ));
         }

@@ -1298,7 +1298,7 @@ export class factory {
         );
         return ObservedAnno.isObservedV2
             ? returnNodes.concat(
-                ...(isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION) ? [this.createAddRefAnyPropMethod(definition)] : []),
+                ...(isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION) ? [this.createAddRefAnyPropMethod(definition, isDecl)] : []),
                 this.transformObservedV2Constuctor(definition, classScopeInfo.className)
             )
             : returnNodes;
@@ -1341,59 +1341,66 @@ export class factory {
         });
     }
 
-    static createAddRefAnyPropMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
-        const bodyStmts: arkts.Statement[] = [];
-        const hasObservedV2Parent: boolean = factory.hasObservedV2InParentChain(definition);
-        if (hasObservedV2Parent) {
-            bodyStmts.push(
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(
-                        arkts.factory.createMemberExpression(
-                            arkts.factory.createSuperExpression(),
-                            arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
-                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                            false,
-                            false
-                        ),
-                        undefined,
-                        undefined
+    static createAddRefAnyPropMethod(definition: arkts.ClassDefinition, isDecl: boolean): arkts.MethodDefinition {
+        let body: arkts.BlockStatement | undefined;
+        let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
+        if (!isDecl) {
+            const bodyStmts: arkts.Statement[] = [];
+            const hasObservedV2Parent: boolean = factory.hasObservedV2InParentChain(definition);
+            if (hasObservedV2Parent) {
+                bodyStmts.push(
+                    arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(
+                            arkts.factory.createMemberExpression(
+                                arkts.factory.createSuperExpression(),
+                                arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
+                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                false,
+                                false
+                            ),
+                            undefined,
+                            undefined
+                        )
                     )
-                )
-            );
-        }
-        const traceProperties: string[] = [];
-        for (const member of definition.body) {
-            if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACE)) {
-                traceProperties.push(expectName(member.key));
+                );
             }
-        }
-        traceProperties.forEach((propName: string) => {
-            const metaName: string = `${StateManagementTypes.META}_${propName}`;
-            bodyStmts.push(
-                arkts.factory.createExpressionStatement(
-                    arkts.factory.createCallExpression(
-                        arkts.factory.createMemberExpression(
-                            generateThisBacking(metaName),
-                            arkts.factory.createIdentifier(ObservedNames.ADD_REF),
-                            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                            false,
-                            false
-                        ),
-                        undefined,
-                        undefined
+            const traceProperties: string[] = [];
+            for (const member of definition.body) {
+                if (arkts.isClassProperty(member) && hasDecorator(member, DecoratorNames.TRACE)) {
+                    traceProperties.push(expectName(member.key));
+                }
+            }
+            traceProperties.forEach((propName: string) => {
+                const metaName: string = `${StateManagementTypes.META}_${propName}`;
+                bodyStmts.push(
+                    arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(
+                            arkts.factory.createMemberExpression(
+                                generateThisBacking(metaName),
+                                arkts.factory.createIdentifier(ObservedNames.ADD_REF),
+                                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                                false,
+                                false
+                            ),
+                            undefined,
+                            undefined
+                        )
                     )
-                )
-            );
-        });
+                );
+            });
+            body = arkts.factory.createBlock(bodyStmts);
+        } else {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
             function: {
                 key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
-                body: arkts.factory.createBlock(bodyStmts),
+                body: body,
                 returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
             },
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            modifiers: modifiers,
         });
     }
 
