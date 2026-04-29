@@ -252,6 +252,7 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
     'skipBaseUrlInKeyForCompilationSettings': shareDocumentRegistryCache,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
+    'compileSdkVersion': projectConfig.compileSdkVersion,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
     'enableStrictCheckOHModule': enableStrictCheckOHModule,
