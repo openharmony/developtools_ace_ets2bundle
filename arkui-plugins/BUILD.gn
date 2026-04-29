@@ -18,6 +18,8 @@ npm_path = "//prebuilts/build-tools/common/nodejs/current/bin/npm"
 
 action("gen_ui_plugins") {
   script = "build_ui_plugins.py"
+  ui_plugin_source = "//developtools/ace_ets2bundle/arkui-plugins"
+  inputs = [ ui_plugin_source ]
   args = [
     "--source_path",
     rebase_path(get_path_info(".", "abspath")),
