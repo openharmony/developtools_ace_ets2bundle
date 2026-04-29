@@ -81,6 +81,7 @@ class ParseIntent {
     this.currentFilePath = '';
     this.heritageClassSet = new Set<string>();
     this.heritageClassSet.add('IntentEntity_sdk');
+    this.heritageClassSet.add('InsightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('insightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.updatePageIntentObj = new Map();
@@ -291,6 +292,26 @@ class ParseIntent {
       this.analyzeDecoratorArgs(args, intentObj, IntentEntityInfoChecker);
       const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, undefined, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       const entityId: string = this.getEntityId(node);
+      const currentClassType = this.checker.getTypeAtLocation(node);
+      const baseTypes = this.checker.getBaseTypes(currentClassType as ts.InterfaceType);
+      let parentClassName = 'None';
+      if (baseTypes && baseTypes.length > 0) {
+        const parentSymbol = baseTypes[0].getSymbol();
+        if (parentSymbol) {
+          parentClassName = parentSymbol.getName();
+        }
+      }
+      if (!entityId && entityId !== '' && parentClassName == "AppIntentEntity" ) {
+        const errorMessage: string = `The entityId is not defined in class ${entityClassName}.`;
+        this.transformLog.push({
+          type: LogType.ERROR,
+          message: errorMessage,
+          pos: this.currentNode.getStart(),
+          code: '10110008',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the required parameters as specified in the error message']
+        });
+      }
       Object.assign(properties, {
         'entityId': entityId
       });
@@ -1927,6 +1948,8 @@ class ParseIntent {
     this.currentFilePath = '';
     this.heritageClassSet = new Set<string>();
     this.heritageClassSet.add('IntentEntity_sdk');
+    this.heritageClassSet.add('InsightIntent.AppIntentEntity_sdk');
+    this.heritageClassSet.add('insightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.isInitCache = false;
     this.isUpdateCompile = true;
