@@ -209,6 +209,8 @@ const sizeInVPClass: string = 'SizeInVP';
 const sizeClass: string = 'Size';
 const uiEnvWindowAvoidAreaInfoPXClass: string = 'UIEnvWindowAvoidAreaInfoPX';
 const uiEnvWindowAvoidAreaInfoVPClass: string = 'UIEnvWindowAvoidAreaInfoVP';
+const envPrimitiveNumberType: string = 'number';
+const envPrimitiveBooleanType: string = 'boolean';
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
@@ -218,12 +220,19 @@ const envWindowAvoidAreaPx: string = 'SystemProperties.WINDOW_AVOID_AREA_PX';
 const envWindowSize: string = 'SystemProperties.WINDOW_SIZE';
 const envWindowSizePx: string = 'SystemProperties.WINDOW_SIZE_PX';
 
-const envAllowTypesAndArgs: Map<string, string> = new Map([
-  [envSupportClass, envSupportArg],
-  [uiEnvWindowAvoidAreaInfoVPClass, envWindowAvoidArea],
-  [uiEnvWindowAvoidAreaInfoPXClass, envWindowAvoidAreaPx],
-  [sizeInVPClass, envWindowSize],
-  [sizeClass, envWindowSizePx]
+const envIsFocused: string = 'SystemProperties.WINDOW_IS_FOCUSED';
+const envIsHighlighted: string = 'SystemProperties.WINDOW_IS_HIGHLIGHTED';
+const systemDensity: string = 'SystemProperties.WINDOW_SYSTEM_DENSITY';
+const systemDisplayId: string = 'SystemProperties.WINDOW_DISPLAY_ID';
+
+ const envAllowTypesAndArgs: Map<string, Array<string>> = new Map([
+  [envSupportClass, [envSupportArg]],
+  [uiEnvWindowAvoidAreaInfoVPClass, [envWindowAvoidArea]],
+  [uiEnvWindowAvoidAreaInfoPXClass, [envWindowAvoidAreaPx]],
+  [sizeInVPClass, [envWindowSize]],
+  [sizeClass, [envWindowSizePx]],
+  [envPrimitiveNumberType, [systemDisplayId, systemDensity]],
+  [envPrimitiveBooleanType, [envIsFocused, envIsHighlighted]]
 ]);
 
 export function validateUISyntax(source: string, content: string, filePath: string,
@@ -2520,17 +2529,21 @@ export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string
   if (!envAllowTypesAndArgs.has(currentTypeName)) {
     return;
   }
-  if (argText !== envAllowTypesAndArgs.get(currentTypeName)) {
+  if (!envAllowTypesAndArgs.get(currentTypeName)?.includes(argText)) {
     validateEnvDecoratorExp(envExp, currentTypeName);
   }
 }
 
 export function validateEnvDecoratorExp(node: ts.Expression, currentTypeName: string): void {
-  const trueArg: string = envAllowTypesAndArgs.get(currentTypeName);
+  const trueArgs: Array<string> | undefined = envAllowTypesAndArgs.get(currentTypeName);
+  if (trueArgs === undefined || trueArgs.length === 0) {
+    return;
+  }
+  const acceptArgStr: string = trueArgs.join(', ');
   transformLog.errors.push({
     type: LogType.ERROR,
     code: '10905368',
-    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${trueArg}.`,
+    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${acceptArgStr}.`,
     pos: node.getStart()
   });
 }
@@ -2558,10 +2571,15 @@ export function checkEnvType(propertyType: ts.Type, envTypeName: EnvTypeName): b
   }
   const symbol = propertyType.getSymbol();
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (!symbol || !checker) {
+  if (!checker) {
     return false;
   }
-  if (['string', 'number', 'boolean'].includes(checker.typeToString(propertyType))) {
+  const typeName = checker.typeToString(propertyType);
+  if (envAllowTypesAndArgs.has(typeName)) {
+    envTypeName.currentTypeName = typeName;
+    return true;
+  }
+  if (['string', 'number', 'boolean'].includes(typeName)) {
     return false;
   }
   if (symbol.declarations && symbol.declarations.some(declaration => ts.isTypeAliasDeclaration(declaration))) {
