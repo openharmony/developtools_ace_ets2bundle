@@ -51,6 +51,7 @@ import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { SyncMonitorCache } from '../property-translators/cache/syncMonitorCache';
 import { PropertyCache } from '../property-translators/cache/propertyCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
+import { ActiveInactiveCache } from '../property-translators/cache/activeInactiveCache';
 import { CustomDialogControllerPropertyCache } from '../property-translators/cache/customDialogControllerPropertyCache';
 import { collectStateManagementTypeImport, findDecoratorByName, generateThisBacking, hasDecorator } from '../property-translators/utils';
 import { ResourceSourceCache } from '../insight-intent/resource-source-cache';
@@ -131,6 +132,7 @@ export class CacheFactory {
                     metadata.name,
                     StructFactory.generateLifecycleObserverCall
                 ),
+                ...ActiveInactiveCache.getInstance().getCachedCallStatements(metadata.name),
             ]);
             if (PropertyCache.getInstance().shouldMemoUpdateInitializeStruct(metadata.name)) {
                 arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);

@@ -30,6 +30,8 @@ export interface StructMethodAnnotationInfo extends AnnotationInfo {
     hasComponentDisappear?: boolean;
     hasComponentReuse?: boolean;
     hasComponentRecycle?: boolean;
+    hasComponentActive?: boolean;
+    hasComponentInactive?: boolean;
 }
 
 export interface StructMethodAnnotations extends Annotations {
@@ -44,6 +46,8 @@ export interface StructMethodAnnotations extends Annotations {
     [DecoratorNames.COMPONENT_DISAPPEAR]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPONENT_REUSE]?: arkts.AnnotationUsage;
     [DecoratorNames.COMPONENT_RECYCLE]?: arkts.AnnotationUsage;
+    [DecoratorNames.COMPONENT_ACTIVE]?: arkts.AnnotationUsage;
+    [DecoratorNames.COMPONENT_INACTIVE]?: arkts.AnnotationUsage;
 }
 
 export class StructMethodAnnotationRecord extends BaseAnnotationRecord<
@@ -65,7 +69,9 @@ export class StructMethodAnnotationRecord extends BaseAnnotationRecord<
             DecoratorNames.COMPONENT_BUILT,
             DecoratorNames.COMPONENT_DISAPPEAR,
             DecoratorNames.COMPONENT_REUSE,
-            DecoratorNames.COMPONENT_RECYCLE
+            DecoratorNames.COMPONENT_RECYCLE,
+            DecoratorNames.COMPONENT_ACTIVE,
+            DecoratorNames.COMPONENT_INACTIVE
         ];
     }
 
