@@ -3083,6 +3083,11 @@ export class InsightIntentHandler {
         data.functionName = methodName;
         // 从 scriptFunction.params 获取方法参数列表
         const params = methodDef.scriptFunction?.params;
+        const returnTypeNode = methodDef.scriptFunction?.returnTypeAnnotation;
+        if (returnTypeNode) {
+            const typeString = returnTypeNode.dumpSrc();
+            data.functionReturnType = typeString;
+        }
         if (params && params.length > 0) {
             data.functionParamList = params
                 .map((param: arkts.Expression) => {
