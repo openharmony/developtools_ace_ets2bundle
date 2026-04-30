@@ -80,33 +80,33 @@ function main() {}
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
-    this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "message",
       valueCallback: ((): Any => {
         return this.message;
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "name",
       valueCallback: ((): Any => {
         return this.name;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onStrChange();
-    }), {
+    }), ({
       owner: this,
       functionName: "onStrChange",
-    });
-    this.__monitor_onMsgChange = STATE_MGMT_FACTORY.makeMonitor([{
+    } as MakeMonitorOptions));
+    this.__monitor_onMsgChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "message",
       valueCallback: ((): Any => {
         return this.message;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onMsgChange();
-    }), {
+    }), ({
       owner: this,
       functionName: "onMsgChange",
-    });
+    } as MakeMonitorOptions));
   }
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}

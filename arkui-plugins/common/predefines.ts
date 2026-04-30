@@ -317,6 +317,8 @@ export enum StateManagementTypes {
     MAKE_COMPUTED = 'makeComputed',
     MAKE_MONITOR = 'makeMonitor',
     MAKE_SYNC_MONITOR = 'makeSyncMonitor',
+    IMONITOR_PATH_INFO = 'IMonitorPathInfo',
+    MAKE_MONITOR_OPTIONS = 'MakeMonitorOptions',
     UI_UTILS = 'UIUtils',
     MAKE_OBSERVED = 'makeObserved',
     MAKE_BUILDER_PARAM_PROXY = 'makeBuilderParameterProxy',
@@ -444,7 +446,9 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
         [
             StateManagementTypes.MONITOR_DECORATED,
             StateManagementTypes.STATE_MANAGEMENT_FACTORY,
-            StateManagementTypes.I_MONITOR
+            StateManagementTypes.I_MONITOR,
+            StateManagementTypes.IMONITOR_PATH_INFO,
+            StateManagementTypes.MAKE_MONITOR_OPTIONS
         ]
     ],
     [
