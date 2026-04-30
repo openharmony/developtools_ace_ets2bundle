@@ -217,29 +217,29 @@ class GGG {
   public onJobChange(monitor: IMonitor) {}
 
   public constructor() {
-    this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "name",
       valueCallback: ((): Any => {
         return this.name;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onNameChange(_m);
     }));
-    this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "strArr.0",
       valueCallback: ((): Any => {
         return ({let gensym___127309370 = this.strArr;
         (((gensym___127309370) == (null)) ? undefined : gensym___127309370.$_get(0))});
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "age",
       valueCallback: ((): Any => {
         return this.age;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onAgeChange(_m);
     }));
-    this.__monitor_onJobChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onJobChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "job.aaa.bbb.ccc.1.dd.0",
       valueCallback: ((): Any => {
         return ({let gensym___1661894 = ({let gensym___87426618 = ({let gensym___223024592 = ({let gensym___215921992 = ({let gensym___22088104 = ({let gensym___245550938 = this.job;
@@ -250,7 +250,7 @@ class GGG {
         (((gensym___87426618) == (null)) ? undefined : gensym___87426618.dd)});
         (((gensym___1661894) == (null)) ? undefined : gensym___1661894.$_get(0))});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onJobChange(_m);
     }));
   }
@@ -264,25 +264,25 @@ class GGG {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<EEE>(this, "per", new EEE());
     this.__backing_v1 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "v1", true);
     this.__backing_numArr = STATE_MGMT_FACTORY.makeLocal<Array<string>>(this, "numArr", ["1", "3", "5"]);
-    this.__monitor_onPerChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onPerChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "per.ee.ff",
       valueCallback: ((): Any => {
         return ({let gensym___164069504 = ({let gensym___239523226 = this.per;
         (((gensym___239523226) == (null)) ? undefined : gensym___239523226.ee)});
         (((gensym___164069504) == (null)) ? undefined : gensym___164069504.ff)});
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "v1",
       valueCallback: ((): Any => {
         return this.v1;
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "numArr.1",
       valueCallback: ((): Any => {
         return ({let gensym___124152275 = this.numArr;
         (((gensym___124152275) == (null)) ? undefined : gensym___124152275.$_get(1))});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onPerChange(_m);
     }), this);
   }

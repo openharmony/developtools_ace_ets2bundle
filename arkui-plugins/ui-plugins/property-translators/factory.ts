@@ -797,6 +797,7 @@ export class factory {
             collectStateManagementTypeImport(StateManagementTypes.I_MONITOR);
         }
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+        collectStateManagementTypeImport(StateManagementTypes.IMONITOR_PATH_INFO);
         const args: arkts.AstNode[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName, paramsLength)];
         const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
         if (compatibleVersion !== undefined && compatibleVersion >= 24) {
@@ -814,7 +815,12 @@ export class factory {
                 ],
                 false
             );
-            args.push(makeMonitorOptions);
+            collectStateManagementTypeImport(StateManagementTypes.MAKE_MONITOR_OPTIONS);
+            args.push(arkts.factory.createTSAsExpression(
+                makeMonitorOptions,
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.MAKE_MONITOR_OPTIONS),
+                false
+            ));
         } else if (isFromStruct) {
             args.push(arkts.factory.createThisExpression());
         }
@@ -838,7 +844,11 @@ export class factory {
             return arkts.factory.createArrayExpression([]);
         }
         const params = monitorItem.map((itemName: string) => {
-            return factory.createMonitorPathsInfoParameter(itemName);
+            return arkts.factory.createTSAsExpression(
+                factory.createMonitorPathsInfoParameter(itemName),
+                UIFactory.createTypeReferenceFromString(StateManagementTypes.IMONITOR_PATH_INFO),
+                false
+            );
         });
         return arkts.factory.createArrayExpression(params);
     }
