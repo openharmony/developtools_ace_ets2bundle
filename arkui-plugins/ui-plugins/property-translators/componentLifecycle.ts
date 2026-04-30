@@ -29,6 +29,7 @@ import {
     LifecycleMethodType,
     LifecycleMethodInfo
 } from './cache/componentLifecycleCache';
+import { ActiveInactiveCache } from './cache/activeInactiveCache';
 import { StructMethodInfo } from '../../collectors/ui-collectors/records';
 
 /**
@@ -53,9 +54,16 @@ function collectLifecycleMethods(
         ComponentLifecycleCache.getInstance().collectInitMethod(structName, methodName);
     }
 
+    if (hasDecorator(this.method, DecoratorNames.COMPONENT_ACTIVE)) {
+        ActiveInactiveCache.getInstance().collectActiveMethod(structName, methodName);
+    }
+
+    if (hasDecorator(this.method, DecoratorNames.COMPONENT_INACTIVE)) {
+        ActiveInactiveCache.getInstance().collectInactiveMethod(structName, methodName);
+    }
+
     for (const [decorator, lifecycleType] of matchedDecorators) {
         if (decorator !== DecoratorNames.COMPONENT_INIT && methodName !== lifecycleType) {
-            // Standard lifecycle methods (e.g., aboutToAppear) are skipped - framework handles them
             collectLifecycleMethod.bind(this)(structName, methodName, lifecycleType);
         }
     }

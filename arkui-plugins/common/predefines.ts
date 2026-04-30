@@ -238,6 +238,8 @@ export enum DecoratorNames {
     COMPONENT_DISAPPEAR = 'ComponentDisappear',
     COMPONENT_REUSE = 'ComponentReuse',
     COMPONENT_RECYCLE = 'ComponentRecycle',
+    COMPONENT_ACTIVE = 'ComponentActive',
+    COMPONENT_INACTIVE = 'ComponentInactive',
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
     STORAGE_PROP = 'StorageProp',
     REGULAR = 'Regular',
@@ -325,6 +327,7 @@ export enum StateManagementTypes {
     CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
     REUSE_OBJECT = 'ReuseObject',
     I_MONITOR = 'IMonitor',
+    REGISTER_ACTIVE_AND_INACTIVE_FUNC = 'registerActiveAndInactiveCallback',
 }
 
 export enum AnimationNames {
@@ -495,6 +498,8 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.COMPONENT_DISAPPEAR, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_REUSE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_RECYCLE, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_ACTIVE, [StateManagementTypes.UI_UTILS]],
+    [DecoratorNames.COMPONENT_INACTIVE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
 ]);
 

@@ -108,6 +108,7 @@ import { ComputedCache } from '../property-translators/cache/computedCache';
 import { ComponentLifecycleCache } from '../property-translators/cache/componentLifecycleCache';
 import { LifecycleMethodType } from '../property-translators/cache/componentLifecycleCache';
 import type { LifecycleObserverCallInfo } from '../property-translators/cache/componentLifecycleCache';
+import { ActiveInactiveCache } from '../property-translators/cache/activeInactiveCache';
 import { insertInteropComponentImports, isInteropComponent } from '../interop/utils';
 import { GenSymGenerator } from '../../common/gensym-generator';
 import { BindableFactory } from '../builder-lambda-translators/bindable-factory';
@@ -327,6 +328,7 @@ export class factory {
                     scope.name,
                     factory.generateLifecycleObserverCall
                 ),
+                ...ActiveInactiveCache.getInstance().getCachedCallStatements(scope.name),
             ]);
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
