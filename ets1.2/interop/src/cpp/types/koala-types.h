@@ -119,6 +119,9 @@ struct KStringPtrImpl {
         if (_value && _owned)
             free(_value);
         auto memSize { static_cast<std::size_t>(std::max(0, _length + 1)) };
+        if (memSize == 0) {
+            INTEROP_FATAL("Zero allocate size. Cannot allocate memory");
+        }
         _value = reinterpret_cast<char*>(malloc(memSize));
         if (!_value) {
             INTEROP_FATAL("Cannot allocate memory");
