@@ -164,33 +164,33 @@ function main() {}
   }
 
   public constructor() {
-    this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onNameChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "name",
       valueCallback: ((): Any => {
         return this.name;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onNameChange(_m);
     }));
-    this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onAgeChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "age",
       valueCallback: ((): Any => {
         return this.age;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onAgeChange(_m);
     }));
-    this.__monitor_onChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "region",
       valueCallback: ((): Any => {
         return this.region;
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "job",
       valueCallback: ((): Any => {
         return this.job;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onChange(_m);
     }));
   }

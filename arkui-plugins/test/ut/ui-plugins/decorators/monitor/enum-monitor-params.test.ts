@@ -201,24 +201,24 @@ final class MonitorNames extends BaseEnum<String> {
   public changeCCC(monitor: IMonitor) {}
 
   public constructor() {
-    this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_changeCCC = STATE_MGMT_FACTORY.makeMonitor([({
       path: "strArr.0",
       valueCallback: ((): Any => {
         return ({let gensym___127309370 = this.strArr;
         (((gensym___127309370) == (null)) ? undefined : gensym___127309370.$_get(0))});
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "name",
       valueCallback: ((): Any => {
         return this.name;
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "strArr.0",
       valueCallback: ((): Any => {
         return ({let gensym___214506040 = this.strArr;
         (((gensym___214506040) == (null)) ? undefined : gensym___214506040.$_get(0))});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.changeCCC(_m);
     }));
   }
@@ -230,13 +230,13 @@ final class MonitorNames extends BaseEnum<String> {
 @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_varF = STATE_MGMT_FACTORY.makeLocal<FFF>(this, "varF", new FFF());
-    this.__monitor_changeEEE = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_changeEEE = STATE_MGMT_FACTORY.makeMonitor([({
       path: "varF.ff",
       valueCallback: ((): Any => {
         return ({let gensym___55756901 = this.varF;
         (((gensym___55756901) == (null)) ? undefined : gensym___55756901.ff)});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.changeEEE(_m);
     }), this);
   }
