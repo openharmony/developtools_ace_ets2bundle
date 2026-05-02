@@ -76,17 +76,17 @@ function main() {}
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
     this.__backing_age = STATE_MGMT_FACTORY.makeLocal<number>(this, "age", 24);
-    this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onStrChange = STATE_MGMT_FACTORY.makeMonitor([({
       path: "message",
       valueCallback: ((): Any => {
         return this.message;
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "name",
       valueCallback: ((): Any => {
         return this.name;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onStrChange(_m);
     }), this);
   }

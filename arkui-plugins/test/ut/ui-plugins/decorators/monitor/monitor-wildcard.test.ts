@@ -365,56 +365,56 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 @Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<Per>(this, "per", new Per());
-    this.__monitor_onPerChange1 = STATE_MGMT_FACTORY.makeMonitor([{
+    this.__monitor_onPerChange1 = STATE_MGMT_FACTORY.makeMonitor([({
       path: "per.ee.*",
       enableWildcard: true,
       valueCallback: ((): Any => {
         return ({let gensym___145269047 = this.per;
         (((gensym___145269047) == (null)) ? undefined : gensym___145269047.ee)});
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "per.dd",
       valueCallback: ((): Any => {
         return ({let gensym___14173770 = this.per;
         (((gensym___14173770) == (null)) ? undefined : gensym___14173770.dd)});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onPerChange1(_m);
-    }), {
+    }), ({
       owner: this,
       functionName: "onPerChange1",
-    });
-    this.__monitor_onPerChange2 = STATE_MGMT_FACTORY.makeMonitor([{
+    } as MakeMonitorOptions));
+    this.__monitor_onPerChange2 = STATE_MGMT_FACTORY.makeMonitor([({
       path: "per.ee",
       valueCallback: ((): Any => {
         return ({let gensym___162548198 = this.per;
         (((gensym___162548198) == (null)) ? undefined : gensym___162548198.ee)});
       }),
-    }, {
+    } as IMonitorPathInfo), ({
       path: "per.dd.*",
       enableWildcard: true,
       valueCallback: ((): Any => {
         return ({let gensym___240028736 = this.per;
         (((gensym___240028736) == (null)) ? undefined : gensym___240028736.dd)});
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onPerChange2(_m);
-    }), {
+    }), ({
       owner: this,
       functionName: "onPerChange2",
-    });
-    this.__monitor_onPerChange3 = STATE_MGMT_FACTORY.makeMonitor([{
+    } as MakeMonitorOptions));
+    this.__monitor_onPerChange3 = STATE_MGMT_FACTORY.makeMonitor([({
       path: "per.*",
       enableWildcard: true,
       valueCallback: ((): Any => {
         return this.per;
       }),
-    }], ((_m: IMonitor) => {
+    } as IMonitorPathInfo)], ((_m: IMonitor) => {
       this.onPerChange3(_m);
-    }), {
+    }), ({
       owner: this,
       functionName: "onPerChange3",
-    });
+    } as MakeMonitorOptions));
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
