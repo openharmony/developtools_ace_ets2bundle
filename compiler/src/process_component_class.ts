@@ -101,6 +101,7 @@ import {
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   DECORATOR_REUSEABLE,
   COMPONENT_ENV_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR,
   COMPONENT_DECORATOR_COMPONENT_V2,
   COMPONENT_DECORATOR_COMPONENT,
   REUSEPOOL,
@@ -733,6 +734,12 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
         updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
           ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
           propertyItem.name, propertyItem.questionToken, propertyItem.type, undefined);
+        continue;
+      }
+      if (decoratorName === COMPONENT_CUSTOM_ENV_DECORATOR) {
+        updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
+          ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
+          propertyItem.name, propertyItem.questionToken, propertyItem.type, propertyItem.initializer);
         continue;
       }
       const newUpdatePropertyItem = createPropertyDeclaration(

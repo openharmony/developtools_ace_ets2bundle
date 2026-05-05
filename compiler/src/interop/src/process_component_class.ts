@@ -100,7 +100,8 @@ import {
   PUV2_VIEW_BASE,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   DECORATOR_REUSEABLE,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR
 } from './pre_define';
 import {
   BUILDIN_STYLE_NAMES,
@@ -486,6 +487,12 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
         updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
           ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
           propertyItem.name, propertyItem.questionToken, propertyItem.type, undefined);
+        continue;
+      }
+      if (decoratorName === COMPONENT_CUSTOM_ENV_DECORATOR) {
+        updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
+          ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
+          propertyItem.name, propertyItem.questionToken, propertyItem.type, propertyItem.initializer);
         continue;
       }
       const newUpdatePropertyItem = createPropertyDeclaration(
