@@ -190,7 +190,7 @@ class __EntryWrapper extends EntryPoint {
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}

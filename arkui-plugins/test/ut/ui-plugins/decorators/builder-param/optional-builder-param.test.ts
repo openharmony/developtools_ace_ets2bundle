@@ -179,7 +179,7 @@ function showTextBuilder() {
   }
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(((()=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
@@ -188,7 +188,7 @@ function showTextBuilder() {
   
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;
@@ -434,7 +434,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
@@ -443,7 +443,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;

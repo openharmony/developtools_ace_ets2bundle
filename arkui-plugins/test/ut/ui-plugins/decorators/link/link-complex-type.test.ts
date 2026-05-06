@@ -317,7 +317,7 @@ final class LinkType extends BaseEnum<int> {
 
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}

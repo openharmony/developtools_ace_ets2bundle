@@ -102,7 +102,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 
 }
 
-@Component() export interface __Options_CustomContainer {
+@Component() interface __Options_CustomContainer {
   ${ignoreNewLines(`
   @BuilderParam() closer?: (()=> void);
   __options_has_closer?: boolean;
@@ -110,7 +110,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
   
 }
 
-@Component() export interface __Options_CustomContainerUser {
+@Component() interface __Options_CustomContainerUser {
 
 }
 `;
@@ -247,13 +247,13 @@ function main() {}
 
 }
 
-@Component() export interface __Options_CustomContainer {
+@Component() interface __Options_CustomContainer {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
   
 }
 
-@Component() export interface __Options_CustomContainerUser {
+@Component() interface __Options_CustomContainerUser {
 
 }
 `;

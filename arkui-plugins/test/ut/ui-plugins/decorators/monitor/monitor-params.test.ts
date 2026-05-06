@@ -353,7 +353,7 @@ class GGG {
   }
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}

@@ -168,7 +168,7 @@ class BooleanClass {
   }
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(Array<boolean> | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}

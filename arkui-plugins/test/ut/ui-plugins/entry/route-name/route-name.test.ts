@@ -85,7 +85,7 @@ __EntryWrapper.RegisterNamedRouter("MyPage", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface))
 
-@Entry({routeName:"MyPage"}) @Component() export interface __Options_MyStateSample {
+@Entry({routeName:"MyPage"}) @Component() interface __Options_MyStateSample {
 
 }
 `;

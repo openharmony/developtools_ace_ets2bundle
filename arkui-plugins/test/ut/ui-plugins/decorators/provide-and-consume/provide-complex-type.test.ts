@@ -385,7 +385,7 @@ final class PropType extends BaseEnum<int> {
   }
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(Per | undefined)', [dumpAnnotation('Provide', { alias: "provideVar1", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}

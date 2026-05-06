@@ -158,7 +158,7 @@ interface Person {
   }
 }
 
-@Component() export interface __Options_BuilderDemo {
+@Component() interface __Options_BuilderDemo {
   
 }
 `;

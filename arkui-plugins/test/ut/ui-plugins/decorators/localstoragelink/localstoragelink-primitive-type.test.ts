@@ -145,7 +145,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numA', '(ILocalStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numA', '(boolean | undefined)')}

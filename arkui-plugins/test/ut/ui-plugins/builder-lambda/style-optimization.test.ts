@@ -127,7 +127,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_StyleOptimization {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
   
 }
 `;
@@ -265,7 +265,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_StyleOptimization {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
   
 }
 `;

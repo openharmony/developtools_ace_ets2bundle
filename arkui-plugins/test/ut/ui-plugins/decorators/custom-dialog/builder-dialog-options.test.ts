@@ -99,7 +99,7 @@ import hilog from "@ohos.hilog";
 
 }
 
-@Component() export interface __Options_CustomDialogUser {
+@Component() interface __Options_CustomDialogUser {
   ${ignoreNewLines(`
   dialogController?: (CustomDialogController | null);
   __options_has_dialogController?: boolean;
@@ -107,7 +107,7 @@ import hilog from "@ohos.hilog";
   
 }
 
-@Component() export interface __Options_CustomDialogUser2 {
+@Component() interface __Options_CustomDialogUser2 {
   ${ignoreNewLines(`
   dialogController?: (CustomDialogController | null);
   __options_has_dialogController?: boolean;
@@ -245,13 +245,13 @@ function builder2() {}
   }
 }
 
-@Component() export interface __Options_CustomDialogUser {
+@Component() interface __Options_CustomDialogUser {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 
-@Component() export interface __Options_CustomDialogUser2 {
+@Component() interface __Options_CustomDialogUser2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   

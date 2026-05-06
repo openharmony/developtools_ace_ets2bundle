@@ -199,7 +199,7 @@ function main() {}
   static {
   }
   }
-  @CustomDialog() export interface __Options_CustomDialogExample {
+  @CustomDialog() interface __Options_CustomDialogExample {
   get aaController(): ((CustomDialogController | undefined) | undefined) {
     return undefined;
   }
@@ -253,7 +253,7 @@ function main() {}
     throw new InvalidStoreAccessError();
   }
   }
-  @Component() export interface __Options_CustomDialogUser {
+  @Component() interface __Options_CustomDialogUser {
   }
 `;
 
@@ -488,7 +488,7 @@ function main() {}
   }
   }
 
-  @CustomDialog() export interface __Options_CustomDialogExample {
+  @CustomDialog() interface __Options_CustomDialogExample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
 
@@ -502,7 +502,7 @@ function main() {}
 
   }
 
-  @Component() export interface __Options_CustomDialogUser {
+  @Component() interface __Options_CustomDialogUser {
 
   }
 `;

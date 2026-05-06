@@ -159,7 +159,7 @@ class __EntryWrapper extends EntryPoint {
     }
     public constructor() {}
 }
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
@@ -387,7 +387,7 @@ class __EntryWrapper extends EntryPoint {
     }
     public constructor() {}
 }
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}

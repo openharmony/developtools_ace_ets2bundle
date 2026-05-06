@@ -104,7 +104,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 
 }
 
-@ComponentV2() export interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${ignoreNewLines(`
   @Param() index?: number;
   @Param() __backing_index?: number;
@@ -119,7 +119,7 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
   
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${ignoreNewLines(`
   @Local() index?: number;
   @Local() __backing_index?: number;
@@ -328,7 +328,7 @@ function main() {}
   }
 }
 
-@ComponentV2() export interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IParamDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
@@ -344,7 +344,7 @@ function main() {}
   
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}

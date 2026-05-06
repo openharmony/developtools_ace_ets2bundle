@@ -208,7 +208,7 @@ class AB {
   }
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'arr', '(Array<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arr', '(boolean | undefined)')}
   

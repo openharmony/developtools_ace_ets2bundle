@@ -188,13 +188,13 @@ function main() {}
   
 }
 
-@Component() export interface __Options_CustomDialogUserV1 {
+@Component() interface __Options_CustomDialogUserV1 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 
-@ComponentV2() export interface __Options_CustomDialogUserV2 {
+@ComponentV2() interface __Options_CustomDialogUserV2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   

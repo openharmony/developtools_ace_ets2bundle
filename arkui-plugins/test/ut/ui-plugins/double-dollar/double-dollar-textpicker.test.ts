@@ -214,7 +214,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_tt', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_tt', '(boolean | undefined)')}

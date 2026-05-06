@@ -163,7 +163,7 @@ function main() {}
   }
 }
 
-@ComponentV2() export interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(string | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IParamDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}

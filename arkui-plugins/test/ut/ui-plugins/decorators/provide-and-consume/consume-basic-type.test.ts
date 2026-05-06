@@ -105,7 +105,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 
 }
 
-@Component() export interface __Options_PropParent {
+@Component() interface __Options_PropParent {
   ${ignoreNewLines(`
   @Consume() conVar1?: string;
   @Consume() __backing_conVar1?: string;
@@ -404,7 +404,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_PropParent {
+@Component() interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}
