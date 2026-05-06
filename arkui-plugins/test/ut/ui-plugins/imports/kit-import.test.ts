@@ -108,7 +108,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface))
 
-@Entry() @Component() export interface __Options_A {
+@Entry() @Component() interface __Options_A {
   ${ignoreNewLines(`
   @State() a?: string;
   @State() __backing_a?: string;
@@ -260,7 +260,7 @@ class __EntryWrapper extends EntryPoint {
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_A {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_A {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}

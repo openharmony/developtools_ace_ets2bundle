@@ -212,7 +212,7 @@ function main() {}
     }
   }
 
-@Component() export interface __Options_CountDownComponent {
+@Component() interface __Options_CountDownComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
@@ -222,7 +222,7 @@ function main() {}
   
 }
 
-@Component() export interface __Options_ParentComponent {
+@Component() interface __Options_ParentComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_countDownStartValue', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_countDownStartValue', '(boolean | undefined)')}

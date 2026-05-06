@@ -92,7 +92,7 @@ ns.ns_num;
   }
 }
 
-@Component() export interface __Options_Index {
+@Component() interface __Options_Index {
   
 }
 `;

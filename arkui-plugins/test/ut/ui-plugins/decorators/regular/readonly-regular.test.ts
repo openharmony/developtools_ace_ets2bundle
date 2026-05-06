@@ -82,7 +82,7 @@ function main() {}
 
     }
 }
-@ComponentV2() export interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'readOnlyParam', '(number | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_readOnlyParam', '(boolean | undefined)')}
 }

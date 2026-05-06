@@ -291,7 +291,7 @@ function main() {}
 
 }
 
-@Component() export interface __Options_PropParent {
+@Component() interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)', [dumpAnnotation('Provide', { alias: "provideVar1", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}

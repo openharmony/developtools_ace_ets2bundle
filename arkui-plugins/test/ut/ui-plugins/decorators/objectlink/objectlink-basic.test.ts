@@ -233,14 +233,14 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
   
 }
 
-@Component() export interface __Options_MyStateSample2 {
+@Component() interface __Options_MyStateSample2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}

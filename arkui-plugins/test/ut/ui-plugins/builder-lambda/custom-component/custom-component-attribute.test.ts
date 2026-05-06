@@ -122,7 +122,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/custom-component/custom-component-attribute",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() export interface __Options_IDataSourcePrefetchingMethods {
+@Entry() @Component() interface __Options_IDataSourcePrefetchingMethods {
   ${ignoreNewLines(`
     @State() loadedCount?: string;
     @State() __backing_loadedCount?: string;
@@ -131,7 +131,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Component() export interface __Options_PictureItemComponent {
+@Component() interface __Options_PictureItemComponent {
   ${ignoreNewLines(`
     @Link() loadedCount?: string;
     @Link() __backing_loadedCount?: string;
@@ -310,14 +310,14 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_IDataSourcePrefetchingMethods {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_IDataSourcePrefetchingMethods {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'loadedCount', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_loadedCount', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_loadedCount', '(boolean | undefined)')}
   
 }
 
-@Component() export interface __Options_PictureItemComponent {
+@Component() interface __Options_PictureItemComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'loadedCount', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_loadedCount', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_loadedCount', '(boolean | undefined)')}

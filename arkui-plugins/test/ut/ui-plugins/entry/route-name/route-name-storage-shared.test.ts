@@ -88,7 +88,7 @@ __EntryWrapper.RegisterNamedRouter("MyPage", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface))
 
-@Entry({routeName:"MyPage",storage:"myStorage",useSharedStorage:true}) @Component() export interface __Options_MyStateSample {
+@Entry({routeName:"MyPage",storage:"myStorage",useSharedStorage:true}) @Component() interface __Options_MyStateSample {
 }
 `;
 

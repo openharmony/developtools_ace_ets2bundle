@@ -72,7 +72,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/exports/struct-default-export\",
     integratedHsp: \"false\",
 } as NavInterface))
-@Entry() @Component() export interface __Options_A {
+@Entry() @Component() interface __Options_A {
 }
 `;
 

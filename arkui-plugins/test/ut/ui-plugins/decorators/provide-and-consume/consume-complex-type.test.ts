@@ -126,7 +126,7 @@ enum PropType {
 
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${ignoreNewLines(`
   @Consume() conVar1?: Per;
   @Consume() __backing_conVar1?: Per;
@@ -513,7 +513,7 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(Per | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}

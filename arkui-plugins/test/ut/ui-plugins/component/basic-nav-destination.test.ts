@@ -113,7 +113,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_NavDestinationStruct {
+@Component() interface __Options_NavDestinationStruct {
   
 }
 `;

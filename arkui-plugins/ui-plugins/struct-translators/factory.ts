@@ -139,7 +139,7 @@ export class factory {
         ) {
             _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT;
         }
-        return _modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+        return _modifiers;
     }
 
     /**

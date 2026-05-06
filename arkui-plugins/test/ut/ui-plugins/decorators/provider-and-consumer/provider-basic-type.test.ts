@@ -146,7 +146,7 @@ function main() {}
     }
   }
 
-@ComponentV2() export interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar1', '(IProviderDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar1', '(boolean | undefined)')}

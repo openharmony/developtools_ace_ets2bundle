@@ -107,7 +107,7 @@ type TestUpdateCallback = (()=> void);
 
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
 
 }
 `;

@@ -237,19 +237,19 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
   
 }
 
-@Component() export interface __Options_ComA {
+@Component() interface __Options_ComA {
   
 }
 
-@Reusable() @Component() export interface __Options_ComB {
+@Reusable() @Component() interface __Options_ComB {
   
 }
 
-@ReusableV2() @ComponentV2() export interface __Options_ComC {
+@ReusableV2() @ComponentV2() interface __Options_ComC {
   
 }
 

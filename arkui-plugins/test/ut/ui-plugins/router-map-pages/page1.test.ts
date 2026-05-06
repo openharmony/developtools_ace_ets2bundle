@@ -127,7 +127,7 @@ class __NavigationBuilderRegisterClass {
   }
 }
 
-@Component() export interface __Options_Page1 {
+@Component() interface __Options_Page1 {
   get message(): (string | undefined) {
   return undefined;
   }

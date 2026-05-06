@@ -186,7 +186,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_Ancestors {
+@Component() interface __Options_Ancestors {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
