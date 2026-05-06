@@ -464,24 +464,6 @@ export class factory {
      */
     static createV1RenderIdMembers(isObservedV2: boolean, isDecl: boolean): arkts.AstNode[] {
         const members: arkts.AstNode[] = [];
-        if (!isObservedV2 && !isDecl) {
-            const v1RenderId: arkts.ClassProperty = arkts.factory.createClassProperty(
-                arkts.factory.createIdentifier(ObservedNames.V1_RERENDER_ID),
-                arkts.factory.createNumericLiteral(0),
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(StateManagementTypes.RENDER_ID_TYPE)
-                    )
-                ),
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-                false
-            );
-            v1RenderId.setAnnotations([
-                annotation(DecoratorNames.JSONSTRINGIFYIGNORE),
-                annotation(DecoratorNames.JSONPARSEIGNORE),
-            ]);
-            members.push(v1RenderId);
-        }
         const setV1RenderId: arkts.MethodDefinition = factory.setV1RenderId(isObservedV2, isDecl);
         collectStateManagementTypeImport(StateManagementTypes.RENDER_ID_TYPE);
         members.push(setV1RenderId);
@@ -496,16 +478,6 @@ export class factory {
         let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         if (!isDecl) {
             const bodyStatements: arkts.Statement[] = [];
-            if (!isObservedV2) {
-                const assignRenderId: arkts.ExpressionStatement = arkts.factory.createExpressionStatement(
-                    arkts.factory.createAssignmentExpression(
-                        generateThisBacking(ObservedNames.V1_RERENDER_ID),
-                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                        arkts.factory.createIdentifier(ObservedNames.RERENDER_ID)
-                    )
-                );
-                bodyStatements.push(assignRenderId);
-            }
             body = arkts.factory.createBlock(bodyStatements);
         } else {
             modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
@@ -553,7 +525,7 @@ export class factory {
             key: arkts.factory.createIdentifier(ObservedNames.CONDITIONAL_ADD_REF),
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             function: {
-                body: arkts.factory.createBlock(isObservedV2 ? [metaAddRef] : [factory.shouldAddRef(metaAddRef)]),
+                body: arkts.factory.createBlock([metaAddRef]),
                 params: [
                     arkts.factory.createParameterDeclaration(
                         arkts.factory.createIdentifier(
