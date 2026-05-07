@@ -88,6 +88,7 @@ export type StructCalleeInfo = {
     isFromCustomDialog?: boolean;
     isFromReuse?: boolean;
     isFromReuseV2?: boolean;
+    isFromEntry?: boolean;
     structName?: string;
     structEntryStroage?: arkts.Expression;
 };
@@ -142,6 +143,7 @@ export function getStructCalleeInfoFromCallee(
             StructDecoratorNames.CUSTOMDIALOG,
             shouldIgnoreDecl
         );
+        info.isFromEntry ||= isCustomComponentAnnotation(anno, StructDecoratorNames.ENTRY, shouldIgnoreDecl);
         info.structEntryStroage ||= getValueInObjectAnnotation(
             anno,
             StructDecoratorNames.ENTRY,
@@ -166,6 +168,7 @@ export function getStructCalleeInfoFromCallInfo(
         isFromCustomDialog: callInfo.structDeclInfo.annotationInfo.hasCustomDialog,
         isFromReuse: callInfo.structDeclInfo.annotationInfo.hasReusable,
         isFromReuseV2: callInfo.structDeclInfo.annotationInfo.hasReusableV2,
+        isFromEntry: callInfo.structDeclInfo.annotationInfo.hasEntry,
         structName: callInfo.structDeclInfo.name
     };
     if (callInfo.structDeclInfo.annotationInfo.hasEntry) {
