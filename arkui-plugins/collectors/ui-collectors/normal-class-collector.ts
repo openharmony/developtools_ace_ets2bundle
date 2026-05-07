@@ -127,8 +127,8 @@ export class NormalClassCollector extends AbstractVisitor {
         }
         if (this.canCollectPropertyFromInfo(propertyInfo)) {
             arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
-        }
-        if (this.canRememberPropertyFromInfo(propertyInfo)) {
+            this._rememberedProperties.push({ info: propertyInfo, node, record: propertyRecord });
+        } else if (this.canRememberPropertyFromInfo(propertyInfo)) {
             this._rememberedProperties.push({ info: propertyInfo, node, record: propertyRecord });
         }
         withInfoCallback?.(node, propertyInfo);
@@ -154,7 +154,9 @@ export class NormalClassCollector extends AbstractVisitor {
             return;
         }
         const { node, record } = collection;
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
+        if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).has(node)) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
+        }
         withCollectCallback?.(collection);
     }
 
