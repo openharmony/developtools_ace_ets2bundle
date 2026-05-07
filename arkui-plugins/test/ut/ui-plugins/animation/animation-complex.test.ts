@@ -1,0 +1,165 @@
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from 'path';
+import { PluginTester } from '../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../utils/path-config';
+import { parseDumpSrc } from '../../../utils/parse-string';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../utils/shared-types';
+import { uiTransform } from '../../../../ui-plugins';
+import { Plugins } from '../../../../common/plugin-context';
+import { dumpConstructor } from '../../../utils/simplify-dump';
+
+const ANIMATION_DIR_PATH: string = 'animation';
+
+const buildConfig: BuildConfig = mockBuildConfig();
+buildConfig.compileFiles = [
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, ANIMATION_DIR_PATH, 'animation-complex.ets'),
+];
+
+const animationTransform: Plugins = {
+    name: 'animation',
+    parsed: uiTransform().parsed,
+};
+
+const pluginTester = new PluginTester('test complex animation transform', buildConfig);
+
+const expectedScript: string = `
+
+import { MemoIntrinsic as MemoIntrinsic } from "arkui.incremental.annotation";
+
+import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
+
+import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+
+import { Memo as Memo } from "arkui.incremental.annotation";
+
+import { TextAttribute as TextAttribute } from "arkui.component.text";
+
+import { TextImpl as TextImpl } from "arkui.component.text";
+
+import { Memo as Memo } from "arkui.incremental.annotation";
+
+import { NavInterface as NavInterface } from "arkui.component.customComponent";
+
+import { PageLifeCycle as PageLifeCycle } from "arkui.component.customComponent";
+
+import { EntryPoint as EntryPoint } from "arkui.component.customComponent";
+
+import { CustomComponent as CustomComponent } from "arkui.component.customComponent";
+
+import { Builder as Builder } from "arkui.component.builder";
+
+import { LocalStorage as LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
+
+import { Text as Text, Column as Column, Component as Component, Color as Color, Curve as Curve } from "@ohos.arkui.component";
+
+import { Entry as Entry } from "@ohos.arkui.component";
+
+function main() {}
+
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../animation/animation-complex",
+  pageFullPath: "test/demo/mock/animation/animation-complex",
+  integratedHsp: "false",
+} as NavInterface));
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct AnimatablePropertyExample extends CustomComponent<AnimatablePropertyExample, __Options_AnimatablePropertyExample> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_AnimatablePropertyExample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
+  
+  public __updateStruct(initializers: (__Options_AnimatablePropertyExample | undefined)): void {}
+  
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: AnimatablePropertyExample)=> void) | undefined), initializers: ((()=> __Options_AnimatablePropertyExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<AnimatablePropertyExample, __Options_AnimatablePropertyExample>(style, ((): AnimatablePropertyExample => {
+      return new AnimatablePropertyExample(false, ({let gensym___203542966 = storage;
+      (((gensym___203542966) == (null)) ? undefined : gensym___203542966())}));
+    }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_AnimatablePropertyExample, storage?: LocalStorage, @Builder() content?: (()=> void)): AnimatablePropertyExample {
+    throw new Error("Declare interface");
+  }
+  
+  @Memo() 
+  public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions("AnimatableProperty", undefined).animationStart({
+          duration: 2000,
+          curve: Curve.Ease,
+        }).height(100).backgroundColor(Color.Red).animationStop({
+          duration: 2000,
+          curve: Curve.Ease,
+        }).animationStart({
+          duration: 2000,
+          curve: Curve.Ease,
+        }).fontColor(Color.Red).fontSize(20).animationStop({
+          duration: 2000,
+          curve: Curve.Ease,
+        }).width("100%");
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+    }));
+  }
+  
+  ${dumpConstructor()}
+  
+  static {
+    
+  }
+}
+
+class __EntryWrapper extends EntryPoint {
+  @Memo() 
+  public entry(): void {
+    AnimatablePropertyExample._invoke(undefined, undefined, undefined, undefined, undefined);
+  }
+  
+  public constructor() {}
+  
+}
+
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_AnimatablePropertyExample {
+  
+}
+
+`;
+
+function testAnimationTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedScript));
+}
+
+pluginTester.run(
+    'test complex animation transform',
+    [animationTransform, beforeUINoRecheck, uiNoRecheck, recheck],
+    {
+        checked: [testAnimationTransformer],
+    },
+    {
+        stopAfter: 'checked'
+    }
+);

@@ -218,7 +218,7 @@ export class CacheFactory {
         }
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 1], 'find instance style'));
         let instanceCalls: InstanceCallInfo[] = [];
-        const animateStartStacks: InstanceCallInfo[] = [];
+        const animateStartStack: InstanceCallInfo[] = [];
         let leaf: arkts.CallExpression = node;
         const chainingCallInfos = metadata.chainingCallInfos ?? [];
         while (chainingCallInfos.length > 0) {
@@ -229,15 +229,18 @@ export class CacheFactory {
                 continue;
             }
             if (updateInfo.instanceCalls.length > 1 && updateInfo.hasAnimate) {
+                while (animateStartStack.length > 0) {
+                    instanceCalls.push(animateStartStack.pop()!);
+                }
                 instanceCalls.push(updateInfo.instanceCalls.at(0)!);
-                animateStartStacks.push(updateInfo.instanceCalls.at(1)!);
+                animateStartStack.push(updateInfo.instanceCalls.at(1)!);
             } else {
                 instanceCalls.push(...updateInfo.instanceCalls);
-                while (animateStartStacks.length > 0) {
-                    instanceCalls.push(animateStartStacks.pop()!);
-                }
             }
             leaf = updateInfo.leaf;
+        }
+        while (animateStartStack.length > 0) {
+            instanceCalls.push(animateStartStack.pop()!);
         }
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 1], 'find instance style'));
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 2], 'findBuilderLambdaDeclInfo'));
