@@ -278,6 +278,7 @@
         "Web",
         "WindowScene",
         "WithTheme",
+        "WithEnv",
         "XComponent",
         "GridRow",
         "GridCol",
