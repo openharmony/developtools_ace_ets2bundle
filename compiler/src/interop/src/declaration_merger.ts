@@ -59,6 +59,31 @@ function createDeclarationModuleResolver(
   };
 }
 
+class NameCollisionResolver {
+  private nameMap: Map<string, Map<ts.Symbol, string>> = new Map();
+
+  resolve(symbol: ts.Symbol, preferredName: string): string {
+    let bucket: Map<ts.Symbol, string> | undefined = this.nameMap.get(preferredName);
+    if (!bucket) {
+      bucket = new Map();
+      this.nameMap.set(preferredName, bucket);
+    }
+    const existing: string | undefined = bucket.get(symbol);
+    if (existing !== undefined) {
+      return existing;
+    }
+    const name: string = bucket.size === 0 ? preferredName : `${preferredName}_${bucket.size}`;
+    bucket.set(symbol, name);
+    return name;
+  }
+}
+
+interface EmittedEntry {
+  lineIndex: number;
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+}
+
 export interface DeclarationMergeOptions {
   entryFile?: string;
   entryFiles?: string[];
@@ -78,7 +103,11 @@ export class DeclarationMerger {
   private program: ts.Program;
   private checker: ts.TypeChecker;
   private printer: ts.Printer;
-  private mergedDeclarations: Set<string> = new Set();
+  private emittedEntries: Map<ts.Symbol, EmittedEntry> = new Map();
+  private importStatements: Set<string> = new Set();
+  private nameResolver: NameCollisionResolver = new NameCollisionResolver();
+  private pendingRenames: Map<string, string> = new Map();
+  private entryExportSymbols: Set<ts.Symbol> = new Set();
   private entrySourceFile: ts.SourceFile | undefined;
 
   private constructor(options: DeclarationMergeOptions, rootFiles: string[]) {
@@ -92,10 +121,13 @@ export class DeclarationMerger {
   }
 
   private mergeEntry(entryFile: string): void {
-    this.mergedDeclarations = new Set();
+    this.emittedEntries = new Map();
+    this.importStatements = new Set();
+    this.nameResolver = new NameCollisionResolver();
+    this.entryExportSymbols = new Set();
     this.entrySourceFile = this.program.getSourceFile(entryFile);
     if (!this.entrySourceFile) {
-      logger.warn(`Declaration entry file not found in program: ${entryFile}`);
+      logger.debug(`Declaration entry file not found in program: ${entryFile}`);
       return;
     }
 
@@ -140,7 +172,6 @@ export class DeclarationMerger {
     }
 
     const lines: string[] = [];
-    const visitedFiles: Set<string> = new Set();
     const unexportedNames: string[] = [];
     const entrySymbol: ts.Symbol | undefined =
       this.checker.getSymbolAtLocation(this.entrySourceFile);
@@ -149,10 +180,16 @@ export class DeclarationMerger {
     }
 
     for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
-      this.processExportSymbol(exportSymbol, lines, visitedFiles, unexportedNames);
+      const resolved = this.resolveToActualDeclaration(exportSymbol);
+      if (resolved) {
+        this.entryExportSymbols.add(resolved);
+      }
     }
 
-    this.processEntryImports(lines);
+    for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
+      this.processExportSymbol(exportSymbol, lines, unexportedNames);
+    }
+
     this.appendExportStatements(unexportedNames, lines);
 
     return this.sortImportLinesFirst(lines).join('\n\n');
@@ -161,17 +198,10 @@ export class DeclarationMerger {
   private processExportSymbol(
     exportSymbol: ts.Symbol,
     lines: string[],
-    visitedFiles: Set<string>,
     unexportedNames: string[]
   ): void {
     const renameInfo = this.resolveExportRename(exportSymbol);
     const isDefault: boolean = exportSymbol.name === 'default';
-
-    const sysApiInfo = this.findSystemApiModuleInChain(exportSymbol);
-    if (sysApiInfo) {
-      this.appendExternalExportStatement(sysApiInfo, renameInfo, lines);
-      return;
-    }
 
     const resolved = this.resolveToActualDeclaration(exportSymbol);
     if (!resolved) {
@@ -187,34 +217,267 @@ export class DeclarationMerger {
     }
 
     const sourceFile: ts.SourceFile = declaration.getSourceFile();
-    let text: string = this.getDeclarationText(declaration, sourceFile);
+    const declName: string = this.getLocalNameOfDeclaration(declaration);
+    const preferredName: string = isDefault ? declName : renameInfo.exportedName;
+    const emitName: string = this.nameResolver.resolve(resolved, preferredName);
+
+    const nameRenames: Map<string, string> = new Map();
+    if (emitName !== declName) {
+      nameRenames.set(declName, emitName);
+    }
+    const text: string = this.printWithRenames(declaration, sourceFile, nameRenames);
     if (!text) {
       return;
     }
 
-    if (renameInfo.exportedName !== renameInfo.originalName) {
-      text = this.renameInText(text, renameInfo.originalName, renameInfo.exportedName);
-    }
-
-    if (this.addUniqueLine(lines, text)) {
-      this.collectTransitiveImports(sourceFile, lines, visitedFiles);
+    const added: boolean = this.addDeclaration(resolved, declaration, sourceFile, lines, text);
+    if (added) {
+      this.processDeclarationDeps(resolved, declaration, lines);
     }
 
     if (isDefault) {
-      const localName: string = this.getLocalNameOfDeclaration(declaration);
-      this.addUniqueLine(lines, `export default ${localName};`);
-    } else if (!this.textHasExportModifier(text)) {
-      unexportedNames.push(renameInfo.exportedName);
+      this.addUniqueImport(lines, `export default ${emitName};`);
+    } else if (!this.nodeHasExportModifier(declaration)) {
+      unexportedNames.push(emitName);
     }
   }
 
-  private addUniqueLine(lines: string[], text: string): boolean {
-    if (this.mergedDeclarations.has(text)) {
+  private addDeclaration(
+    symbol: ts.Symbol,
+    node: ts.Node,
+    sourceFile: ts.SourceFile,
+    lines: string[],
+    text: string
+  ): boolean {
+    if (this.emittedEntries.has(symbol)) {
       return false;
     }
     lines.push(text);
-    this.mergedDeclarations.add(text);
+    this.emittedEntries.set(symbol, {
+      lineIndex: lines.length - 1,
+      node,
+      sourceFile,
+    });
     return true;
+  }
+
+  private addUniqueImport(lines: string[], text: string): boolean {
+    if (this.importStatements.has(text)) {
+      return false;
+    }
+    lines.push(text);
+    this.importStatements.add(text);
+    return true;
+  }
+
+  private processDeclarationDeps(
+    resolved: ts.Symbol,
+    declaration: ts.Declaration,
+    lines: string[]
+  ): void {
+    const localRenames: Map<string, string> = new Map();
+
+    const savedPending: Map<string, string> = this.pendingRenames;
+    this.pendingRenames = localRenames;
+
+    this.collectReferencedTypes(declaration, lines);
+
+    this.pendingRenames = savedPending;
+
+    if (localRenames.size > 0) {
+      const entry = this.emittedEntries.get(resolved);
+      if (entry) {
+        lines[entry.lineIndex] = this.printWithRenames(
+          entry.node, entry.sourceFile, localRenames
+        );
+      }
+      for (const [from, to] of localRenames) {
+        this.pendingRenames.set(from, to);
+      }
+    }
+  }
+
+  private collectReferencedTypes(
+    declaration: ts.Declaration,
+    lines: string[]
+  ): void {
+    const visit = (node: ts.Node): void => {
+      const identifier = this.extractTypeIdentifier(node);
+      if (identifier) {
+        this.processTypeReference(identifier, lines);
+      }
+      ts.forEachChild(node, visit);
+    };
+
+    ts.forEachChild(declaration, visit);
+  }
+
+  private extractTypeIdentifier(node: ts.Node): ts.Identifier | undefined {
+    if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+      return node.typeName;
+    }
+    if (ts.isExpressionWithTypeArguments(node) && ts.isIdentifier(node.expression)) {
+      return node.expression;
+    }
+    return undefined;
+  }
+
+  private processTypeReference(identifier: ts.Identifier, lines: string[]): void {
+    const refSymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(identifier);
+    if (!refSymbol) {
+      return;
+    }
+    if (this.isTypeParameterSymbol(refSymbol)) {
+      return;
+    }
+
+    const resolved = this.resolveToActualDeclaration(refSymbol);
+    if (!resolved || this.emittedEntries.has(resolved)) {
+      return;
+    }
+    if (this.isTypeParameterSymbol(resolved)) {
+      return;
+    }
+    if (this.entryExportSymbols.has(resolved)) {
+      return;
+    }
+
+    const refDecl: ts.Declaration = resolved.declarations[0];
+    if (this.isDefaultLibraryDeclaration(refDecl)) {
+      return;
+    }
+
+    const sysApiDecl = this.isSystemApiDeclaration(refDecl);
+    if (sysApiDecl) {
+      this.emitSystemApiImport(refSymbol, resolved, sysApiDecl, identifier, lines);
+    } else {
+      this.inlineReferencedDeclaration(resolved, refDecl, identifier, lines);
+    }
+  }
+
+  private emitSystemApiImport(
+    refSymbol: ts.Symbol,
+    resolved: ts.Symbol,
+    sysApiDecl: { moduleName: string; name: string },
+    identifier: ts.Identifier,
+    lines: string[]
+  ): void {
+    const localName: string = identifier.text;
+    const emitName: string = this.nameResolver.resolve(resolved, localName);
+    if (this.isDefaultExportOfModule(refSymbol)) {
+      this.addUniqueImport(lines, `import ${emitName} from '${sysApiDecl.moduleName}';`);
+    } else {
+      const importName: string = emitName !== sysApiDecl.name
+        ? `${sysApiDecl.name} as ${emitName}`
+        : emitName;
+      this.addUniqueImport(lines, `import { ${importName} } from '${sysApiDecl.moduleName}';`);
+    }
+    this.emittedEntries.set(resolved, { lineIndex: -1, node: refSymbol.declarations[0], sourceFile: refSymbol.declarations[0].getSourceFile() });
+  }
+
+  private inlineReferencedDeclaration(
+    resolved: ts.Symbol,
+    refDecl: ts.Declaration,
+    identifier: ts.Identifier,
+    lines: string[]
+  ): void {
+    const sourceFile: ts.SourceFile = refDecl.getSourceFile();
+    const declName: string = this.getLocalNameOfDeclaration(refDecl);
+    const localName: string = identifier.text;
+    const emitName: string = this.nameResolver.resolve(resolved, localName);
+
+    const nameRenames: Map<string, string> = new Map();
+    if (emitName !== declName) {
+      nameRenames.set(declName, emitName);
+      this.pendingRenames.set(declName, emitName);
+    }
+
+    const text: string = this.printWithRenames(refDecl, sourceFile, nameRenames, true);
+    if (!text) {
+      return;
+    }
+
+    if (this.addDeclaration(resolved, refDecl, sourceFile, lines, text)) {
+      this.processDeclarationDeps(resolved, refDecl, lines);
+    }
+  }
+
+  private isTypeParameterSymbol(symbol: ts.Symbol): boolean {
+    return (symbol.flags & ts.SymbolFlags.TypeParameter) !== 0;
+  }
+
+  private isDefaultLibraryDeclaration(decl: ts.Declaration): boolean {
+    return this.program.isSourceFileDefaultLibrary(decl.getSourceFile());
+  }
+
+  private printWithRenames(
+    node: ts.Node,
+    sourceFile: ts.SourceFile,
+    renames: Map<string, string>,
+    stripExport: boolean = false
+  ): string {
+    const printNode: ts.Node = this.getDeclarationNode(node);
+
+    let text: string;
+    if (renames.size === 0) {
+      text = this.sanitizeDeclarationText(
+        this.printer.printNode(ts.EmitHint.Unspecified, printNode, sourceFile)
+      );
+    } else {
+      const statement = ts.isStatement(printNode)
+        ? printNode as ts.Statement
+        : ts.factory.createExpressionStatement(printNode as ts.Expression);
+      const syntheticFile = ts.factory.createSourceFile(
+        [statement],
+        ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
+        ts.NodeFlags.None
+      );
+
+      const result = ts.transform(syntheticFile, [
+        (context: ts.TransformationContext) => {
+          const visitor = (n: ts.Node): ts.Node => {
+            if (ts.isIdentifier(n) && renames.has(n.text)) {
+              return ts.factory.createIdentifier(renames.get(n.text)!);
+            }
+            return ts.visitEachChild(n, visitor, context);
+          };
+          return (sf: ts.SourceFile) => ts.visitEachChild(sf, visitor, context) as ts.SourceFile;
+        }
+      ]);
+
+      const transformed = result.transformed[0] as ts.SourceFile;
+      text = this.sanitizeDeclarationText(
+        this.printer.printNode(ts.EmitHint.Unspecified, transformed.statements[0], sourceFile)
+      );
+      result.dispose();
+    }
+
+    if (stripExport) {
+      text = this.stripExportModifier(text);
+    }
+    return text;
+  }
+
+  private stripExportModifier(text: string): string {
+    return text.replace(
+      /^(\s*@\S+\s*)*export\s+(default\s+)?(declare\s+)?/gm,
+      (_match: string, decorators: string, _hasDefault: string, hasDeclare: string): string => {
+        const prefix: string = decorators ?? '';
+        return prefix + 'declare ';
+      }
+    );
+  }
+
+  private nodeHasExportModifier(node: ts.Node): boolean {
+    const decl = this.getDeclarationNode(node);
+    if (!ts.canHaveModifiers(decl)) {
+      return false;
+    }
+    const modifiers = ts.getModifiers(decl);
+    if (!modifiers) {
+      return false;
+    }
+    return modifiers.some((m: ts.ModifierLike): boolean => m.kind === ts.SyntaxKind.ExportKeyword);
   }
 
   private sortImportLinesFirst(lines: string[]): string[] {
@@ -230,16 +493,11 @@ export class DeclarationMerger {
     return [...importLines, ...declarationLines];
   }
 
-  private textHasExportModifier(text: string): boolean {
-    const stripped: string = text.replace(/^@\S+\s*/gm, '').trimStart();
-    return stripped.startsWith('export ');
-  }
-
   private appendExportStatements(names: string[], lines: string[]): void {
     if (names.length === 0) {
       return;
     }
-    this.addUniqueLine(lines, `export { ${names.join(', ')} };`);
+    this.addUniqueImport(lines, `export { ${names.join(', ')} };`);
   }
 
   private getDeclImportInfo(decl: ts.Node): { name: string; moduleSpecifier?: string } | null {
@@ -275,43 +533,6 @@ export class DeclarationMerger {
     return { exportedName, originalName };
   }
 
-  private findSystemApiModuleInChain(symbol: ts.Symbol): { moduleName: string; name: string } | null {
-    const visited: Set<ts.Symbol> = new Set();
-    let current: ts.Symbol | undefined = symbol;
-
-    while (current) {
-      if (visited.has(current)) {
-        break;
-      }
-      visited.add(current);
-
-      const decl: ts.Declaration | undefined = current.declarations?.[0];
-      if (!decl) {
-        break;
-      }
-
-      const info = this.getDeclImportInfo(decl);
-      if (!info) {
-        break;
-      }
-
-      if (info.moduleSpecifier && this.isSystemApiModuleName(info.moduleSpecifier)) {
-        return { moduleName: info.moduleSpecifier, name: info.name };
-      }
-
-      if (!(current.flags & ts.SymbolFlags.Alias)) {
-        break;
-      }
-      const aliased: ts.Symbol = this.checker.getAliasedSymbol(current);
-      if (!aliased || aliased === current) {
-        break;
-      }
-      current = aliased;
-    }
-
-    return null;
-  }
-
   private resolveToActualDeclaration(symbol: ts.Symbol): ts.Symbol | null {
     const visited: Set<ts.Symbol> = new Set();
     let current: ts.Symbol | undefined = symbol;
@@ -343,229 +564,7 @@ export class DeclarationMerger {
     const namePart: string = renameInfo.exportedName !== sysApiInfo.name
       ? `${sysApiInfo.name} as ${renameInfo.exportedName}`
       : sysApiInfo.name;
-    this.addUniqueLine(lines, `export { ${namePart} } from '${sysApiInfo.moduleName}';`);
-  }
-
-  private collectTransitiveImports(
-    sourceFile: ts.SourceFile,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    if (visitedFiles.has(sourceFile.fileName) || sourceFile === this.entrySourceFile) {
-      return;
-    }
-    visitedFiles.add(sourceFile.fileName);
-
-    const skipNames: Set<string> = this.getExportNamesOfFile(sourceFile);
-    this.processFileImports(sourceFile, skipNames, lines, visitedFiles);
-  }
-
-  private processEntryImports(lines: string[]): void {
-    if (!this.entrySourceFile) {
-      return;
-    }
-    const skipNames: Set<string> = this.getExportNamesOfFile(this.entrySourceFile);
-    this.addLocalExportNames(this.entrySourceFile, skipNames);
-    this.processFileImports(this.entrySourceFile, skipNames, lines, new Set<string>());
-  }
-
-  private getExportNamesOfFile(sourceFile: ts.SourceFile): Set<string> {
-    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(sourceFile);
-    const exports: ts.Symbol[] = symbol ? this.checker.getExportsOfModule(symbol) : [];
-    return new Set(exports.map((e: ts.Symbol): string => e.name));
-  }
-
-  private addLocalExportNames(sourceFile: ts.SourceFile, names: Set<string>): void {
-    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(sourceFile);
-    if (!symbol) {
-      return;
-    }
-    for (const exp of this.checker.getExportsOfModule(symbol)) {
-      const renameInfo = this.resolveExportRename(exp);
-      names.add(renameInfo.originalName);
-      if (exp.name === 'default') {
-        const decl: ts.Declaration | undefined = exp.declarations?.[0];
-        if (decl && ts.isExportAssignment(decl) && !decl.isExportEquals) {
-          if (ts.isIdentifier(decl.expression)) {
-            names.add(decl.expression.text);
-          }
-        }
-      }
-    }
-  }
-
-  private processFileImports(
-    sourceFile: ts.SourceFile,
-    skipNames: Set<string>,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    ts.forEachChild(sourceFile, (node: ts.Node): void => {
-      if (!ts.isImportDeclaration(node)) {
-        return;
-      }
-      const clause = node.importClause;
-      if (!clause || !ts.isStringLiteral(node.moduleSpecifier)) {
-        return;
-      }
-
-      const isSystemApi: boolean = this.isSystemApiModuleName(node.moduleSpecifier.text);
-      this.processNamedImports(clause, isSystemApi, skipNames, lines, visitedFiles);
-      this.processDefaultImport(clause, node.moduleSpecifier, isSystemApi, skipNames, lines, visitedFiles);
-    });
-  }
-
-  private processNamedImports(
-    clause: ts.ImportClause,
-    isSystemApi: boolean,
-    skipNames: Set<string>,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    if (!clause.namedBindings || !ts.isNamedImports(clause.namedBindings)) {
-      return;
-    }
-    for (const elem of clause.namedBindings.elements) {
-      if (skipNames.has(elem.name.text)) {
-        continue;
-      }
-      if (isSystemApi) {
-        this.processSystemApiNamedImport(elem, lines);
-      } else {
-        this.processLocalNamedImport(elem, lines, visitedFiles);
-      }
-    }
-  }
-
-  private processDefaultImport(
-    clause: ts.ImportClause,
-    specifier: ts.StringLiteral,
-    isSystemApi: boolean,
-    skipNames: Set<string>,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    if (!clause.name) {
-      return;
-    }
-    const name: string = clause.name.text;
-    if (skipNames.has(name)) {
-      return;
-    }
-
-    if (isSystemApi) {
-      this.addUniqueLine(lines, `import ${name} from '${specifier.text}';`);
-      return;
-    }
-    this.processLocalDefaultImport(clause.name, lines, visitedFiles);
-  }
-
-  private processSystemApiNamedImport(elem: ts.ImportSpecifier, lines: string[]): void {
-    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(elem.name);
-    if (!symbol) {
-      return;
-    }
-
-    const sysApiInfo = this.findSystemApiModuleInChain(symbol);
-    if (!sysApiInfo) {
-      return;
-    }
-
-    const importName: string = elem.propertyName
-      ? `${sysApiInfo.name} as ${elem.name.text}`
-      : elem.name.text;
-    this.addUniqueLine(lines, `import { ${importName} } from '${sysApiInfo.moduleName}';`);
-  }
-
-  private processLocalNamedImport(
-    elem: ts.ImportSpecifier,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(elem.name);
-    if (!symbol) {
-      return;
-    }
-
-    const resolved = this.resolveToActualDeclaration(symbol);
-    if (!resolved) {
-      return;
-    }
-
-    const declaration: ts.Declaration = resolved.declarations[0];
-
-    const sysApiDecl = this.isSystemApiDeclaration(declaration);
-    if (sysApiDecl) {
-      const importName: string = elem.name.text !== sysApiDecl.name
-        ? `${sysApiDecl.name} as ${elem.name.text}`
-        : elem.name.text;
-      this.addUniqueLine(lines, `import { ${importName} } from '${sysApiDecl.moduleName}';`);
-      return;
-    }
-
-    const sourceFile: ts.SourceFile = declaration.getSourceFile();
-    let text: string = this.getDeclarationText(declaration, sourceFile);
-    if (!text) {
-      return;
-    }
-
-    text = this.stripExportModifier(text);
-
-    const originalName: string = elem.propertyName?.text ?? elem.name.text;
-    if (originalName !== elem.name.text) {
-      text = this.renameInText(text, originalName, elem.name.text);
-    }
-
-    if (this.addUniqueLine(lines, text)) {
-      this.collectTransitiveImports(sourceFile, lines, visitedFiles);
-    }
-  }
-
-  private processLocalDefaultImport(
-    importName: ts.Identifier,
-    lines: string[],
-    visitedFiles: Set<string>
-  ): void {
-    const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(importName);
-    if (!symbol) {
-      return;
-    }
-
-    const sysApiInfo = this.findSystemApiModuleInChain(symbol);
-    if (sysApiInfo) {
-      this.addUniqueLine(lines, `import ${importName.text} from '${sysApiInfo.moduleName}';`);
-      return;
-    }
-
-    const resolved = this.resolveToActualDeclaration(symbol);
-    if (!resolved) {
-      return;
-    }
-
-    const declaration: ts.Declaration = resolved.declarations[0];
-
-    const sysApiDecl = this.isSystemApiDeclaration(declaration);
-    if (sysApiDecl) {
-      this.addUniqueLine(lines, `import ${importName.text} from '${sysApiDecl.moduleName}';`);
-      return;
-    }
-
-    const sourceFile: ts.SourceFile = declaration.getSourceFile();
-    let text: string = this.getDeclarationText(declaration, sourceFile);
-    if (!text) {
-      return;
-    }
-
-    text = this.stripExportModifier(text);
-
-    const localName: string = this.getLocalNameOfDeclaration(declaration);
-    if (localName !== importName.text) {
-      text = this.renameInText(text, localName, importName.text);
-    }
-
-    if (this.addUniqueLine(lines, text)) {
-      this.collectTransitiveImports(sourceFile, lines, visitedFiles);
-    }
+    this.addUniqueImport(lines, `export { ${namePart} } from '${sysApiInfo.moduleName}';`);
   }
 
   private findAncestorImportDeclaration(node: ts.Node): ts.ImportDeclaration | null {
@@ -605,21 +604,27 @@ export class DeclarationMerger {
     return null;
   }
 
-  private renameInText(text: string, from: string, to: string): string {
-    const regex: RegExp = new RegExp(
-      '\\b' + from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'g'
-    );
-    return text.replace(regex, to);
-  }
-
-  private stripExportModifier(text: string): string {
-    return text.replace(
-      /^(\s*@\S+\s*)*export\s+(default\s+)?(declare\s+)?/gm,
-      (_match: string, decorators: string, _hasDefault: string, hasDeclare: string): string => {
-        const prefix: string = decorators ?? '';
-        return prefix + 'declare ';
+  private isDefaultExportOfModule(symbol: ts.Symbol): boolean {
+    const visited: Set<ts.Symbol> = new Set();
+    let current: ts.Symbol | undefined = symbol;
+    while (current) {
+      if (visited.has(current)) {
+        break;
       }
-    );
+      visited.add(current);
+      if (current.name === 'default') {
+        return true;
+      }
+      if (!(current.flags & ts.SymbolFlags.Alias)) {
+        break;
+      }
+      const aliased: ts.Symbol = this.checker.getAliasedSymbol(current);
+      if (!aliased || aliased === current) {
+        break;
+      }
+      current = aliased;
+    }
+    return false;
   }
 
   private sanitizeDeclarationText(text: string): string {
@@ -663,13 +668,6 @@ export class DeclarationMerger {
       current = current.parent;
     }
     return null;
-  }
-
-  private getDeclarationText(node: ts.Node, sourceFile: ts.SourceFile): string {
-    const printNode: ts.Node = this.getDeclarationNode(node);
-    const printedText: string =
-      this.printer.printNode(ts.EmitHint.Unspecified, printNode, sourceFile);
-    return this.sanitizeDeclarationText(printedText);
   }
 
   public static mergeDeclarationFiles(options: DeclarationMergeOptions): void {
