@@ -234,10 +234,10 @@ export class factory {
         if (!!structInfo?.isFromCustomDialog) {
             return lambdaBodyInfo;
         }
-        if (!!structInfo?.isFromReuse && !!structInfo?.structName) {
+        if (!!structInfo?.isFromReuse && !!structInfo?.structName && !structInfo?.isFromEntry) {
             lambdaBodyInfo.defaultReuseId = arkts.factory.createStringLiteral(structInfo.structName);
         }
-        if (!!structInfo?.isFromReuseV2 && !!structInfo?.structName) {
+        if (!!structInfo?.isFromReuseV2 && !!structInfo?.structName && !structInfo?.isFromEntry) {
             lambdaBodyInfo.defaultReuseId = arkts.factory.createArrowFunction(
                 UIFactory.createScriptFunction({
                     body: arkts.factory.createBlock([arkts.factory.createReturnStatement(arkts.factory.createStringLiteral(structInfo.structName))]),
