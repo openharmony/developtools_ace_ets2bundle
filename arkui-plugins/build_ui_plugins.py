@@ -75,10 +75,10 @@ def copy_output(options):
                os.path.join(options.output_path, 'lib/components'))
 
     # Copy InsightIntent schemas and configurations
-    insight_intents_src = os.path.join(options.source_path, '../compiler/insight_intents/schema/PlayGame_1.0.1.json')
+    insight_intents_src = os.path.join(options.source_path, '../compiler/insight_intents/schema')
     if os.path.exists(insight_intents_src):
         copy_files(insight_intents_src,
-                   os.path.join(options.output_path, 'lib/insight_intents/schema/PlayGame_1.0.1.json'), True)
+                   os.path.join(options.output_path, 'lib/insight_intents/schema'))
 
     copy_files(os.path.join(options.source_path, 'package.json'),
                os.path.join(options.output_path, 'package.json'), True)
