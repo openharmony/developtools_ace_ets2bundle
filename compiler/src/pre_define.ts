@@ -440,6 +440,11 @@ export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
 export const NAV_BAR_WIDTH: string = 'navBarWidth';
+export const CONTAINER_READER: string = 'ContainerReader';
+export const SIZE: string = 'size';
+export const WIDTH_BREAKPOINT: string = 'widthBreakpoint';
+export const HEIGHT_BREAKPOINT: string = 'heightBreakpoint';
+
 const SCROLL: string = 'Scroll';
 const ZOOM_SCALE: string = 'zoomScale';
 
@@ -507,7 +512,8 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
   [LIST_ITEM, new Set([SELECTED])],
-  [SCROLL, new Set([ZOOM_SCALE])]
+  [SCROLL, new Set([ZOOM_SCALE])],
+  [CONTAINER_READER, new Set([SIZE, WIDTH_BREAKPOINT, HEIGHT_BREAKPOINT])],
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
