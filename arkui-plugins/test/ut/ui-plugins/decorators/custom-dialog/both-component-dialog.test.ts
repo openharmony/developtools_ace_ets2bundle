@@ -226,7 +226,7 @@ function main() {}
   
 }
 
-@Component() @CustomDialog() export interface __Options_CustomDialogExample {
+@Component() @CustomDialog() interface __Options_CustomDialogExample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
 
@@ -236,7 +236,7 @@ function main() {}
   
 }
 
-@Component() export interface __Options_CustomDialogUser {
+@Component() interface __Options_CustomDialogUser {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   

@@ -123,7 +123,7 @@ function style22(this: TextAttribute): TextAttribute {
   }
 }
 
-@Component() export interface __Options_MM {
+@Component() interface __Options_MM {
   
 }
 `;

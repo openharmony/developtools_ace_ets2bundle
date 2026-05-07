@@ -302,7 +302,7 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}

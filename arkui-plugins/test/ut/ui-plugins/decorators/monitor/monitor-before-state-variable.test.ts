@@ -186,7 +186,7 @@ function main() {}
 
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}

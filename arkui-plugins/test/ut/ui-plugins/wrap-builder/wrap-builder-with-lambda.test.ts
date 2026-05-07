@@ -212,7 +212,7 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
@@ -473,7 +473,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}

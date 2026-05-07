@@ -100,7 +100,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${ignoreNewLines(`
   hello?: string;
   __options_has_hello?: boolean;
@@ -133,7 +133,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
   
 }
 
-@ComponentV2() export interface __Options_V2222 {
+@ComponentV2() interface __Options_V2222 {
   ${ignoreNewLines(`
   @Param() @Require() select1: string;
   @Param() __backing_select1?: string;
@@ -369,7 +369,7 @@ function main() {}
 
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
 
@@ -409,7 +409,7 @@ function main() {}
   
 }
 
-@ComponentV2() export interface __Options_V2222 {
+@ComponentV2() interface __Options_V2222 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', 'string', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}

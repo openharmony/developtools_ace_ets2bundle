@@ -147,7 +147,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}

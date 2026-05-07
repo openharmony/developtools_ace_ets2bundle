@@ -187,7 +187,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_MyStateSample1 {
+@Component() interface __Options_MyStateSample1 {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }
@@ -205,7 +205,7 @@ function main() {}
   
 }
 
-@Component() export interface __Options_MyStateSample2 {
+@Component() interface __Options_MyStateSample2 {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }

@@ -98,7 +98,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${ignoreNewLines(`
   @Consume() num?: number;
   @Consume() __backing_num?: number;
@@ -110,7 +110,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
   
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${ignoreNewLines(`
   @Provide({alias:"num"}) num?: number;
   @Provide({alias:"num"}) __backing_num?: number;
@@ -291,7 +291,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IConsumeDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
@@ -302,7 +302,7 @@ function main() {}
   
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Provide', { alias: "num", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}

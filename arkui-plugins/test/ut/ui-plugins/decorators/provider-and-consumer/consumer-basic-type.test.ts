@@ -147,7 +147,7 @@ function main() {}
 
 }
 
-@ComponentV2() export interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}

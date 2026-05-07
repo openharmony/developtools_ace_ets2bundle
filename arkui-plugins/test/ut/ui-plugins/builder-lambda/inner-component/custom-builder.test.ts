@@ -111,7 +111,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
 }
 `;
 
@@ -316,7 +316,7 @@ function main() {}
 
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   
 }
 `;

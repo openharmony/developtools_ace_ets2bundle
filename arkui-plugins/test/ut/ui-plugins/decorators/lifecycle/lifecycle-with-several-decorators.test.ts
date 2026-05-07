@@ -93,7 +93,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/lifecycle/lifecycle-with-several-decorators",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() export interface __Options_Index {
+@Entry() @Component() interface __Options_Index {
   
 }
 `;
@@ -195,7 +195,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
   
 }
 `;

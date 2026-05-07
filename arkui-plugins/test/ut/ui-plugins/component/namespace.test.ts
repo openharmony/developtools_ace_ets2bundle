@@ -113,7 +113,7 @@ export namespace NS1 {
       }
     }
     
-    @Component() export interface __Options_NS2_struct {
+    @Component() interface __Options_NS2_struct {
       
     }
     
@@ -131,7 +131,7 @@ export namespace NS1 {
   }
   
 }
-@Component() export interface __Options_Main {
+@Component() interface __Options_Main {
   
 }
 `;

@@ -319,7 +319,7 @@ final class StateType extends BaseEnum<int> {
   }
 }
 
-@ComponentV2() export interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(Per | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<Per> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}

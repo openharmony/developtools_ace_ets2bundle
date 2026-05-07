@@ -75,7 +75,7 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 
 }
 `;
@@ -144,7 +144,7 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 
 }
 `;
