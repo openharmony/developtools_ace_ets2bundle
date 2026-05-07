@@ -21,6 +21,7 @@ export * from './check-component-componentV2-mix-use';
 export * from './check-componentV2-mix';
 export * from './check-componentV2-state-usage';
 export * from './check-computed-decorator';
+export * from './check-computed-state-modification';
 export * from './check-construct-parameter-literal';
 export * from './check-construct-parameter';
 export * from './check-construct-private-parameter';
