@@ -1774,6 +1774,7 @@ export function checkSystemApiValue(jsDocTags: readonly ts.JSDocTag[], config: t
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === SYSTEM_API_TAG_CHECK_NAME;
   });
+
   // If the specific JSDoc tag is not found, return false
   if (!jsDocTag) {
     return false;
@@ -1788,7 +1789,6 @@ export function checkSystemApiValue(jsDocTags: readonly ts.JSDocTag[], config: t
     return true;
   }
 }
-
 
 /**
  * Checks the AtomicService value based on JSDoc tags and configuration.
@@ -1930,10 +1930,12 @@ export function checkFormValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsD
 
   // Update the configuration flag based on whether the tag exists
   config.tagNameShouldExisted = !jsDocTag;
+
   // If the tag is not found, return true
   if (!jsDocTag) {
     return true;
   }
+
   // Extract the version range from the tag's comment
   const versionRange = extractVersionRange(jsDocTag.comment);
 
@@ -1960,12 +1962,15 @@ export function checkTestValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsD
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === TEST_TAG_CHECK_NAME;
   });
+
   // If the tag is not found, return true
   if (!jsDocTag) {
     return false;
   }
+
   // Extract the version range from the tag's comment
   const versionRange = extractVersionRange(jsDocTag.comment);
+
   // If a version range exists, check if it intersects with the project's SDK version range and return the negated result
   if (versionRange !== undefined) {
     return checkVersionRangeIntersection(versionRange);
@@ -2493,8 +2498,6 @@ function checkParentVersionHierarchy(
  * apiAvailable('27.0.0')
  * 
  * Invalid sample
- * apiAvailable('25')
- * apiAvailable('27')
  * apiAvailable('25.0.0')
  * apiAvailable('6.1.1')
  * apiAvailable('6.1.1(24)')
@@ -2508,7 +2511,6 @@ function checkParentVersionHierarchy(
  * apiAvailable('25')
  * apiAvailable('26')
  * apiAvailable('27')
- * apiAvailable('25.0.0')
  * 
  * @param node  - current node
  * @returns Return the result of whether it meets the specifications
