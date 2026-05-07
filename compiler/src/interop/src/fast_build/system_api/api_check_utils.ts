@@ -2498,8 +2498,6 @@ function checkParentVersionHierarchy(
  * apiAvailable('27.0.0')
  * 
  * Invalid sample
- * apiAvailable('25')
- * apiAvailable('27')
  * apiAvailable('25.0.0')
  * apiAvailable('6.1.1')
  * apiAvailable('6.1.1(24)')
@@ -2513,7 +2511,6 @@ function checkParentVersionHierarchy(
  * apiAvailable('25')
  * apiAvailable('26')
  * apiAvailable('27')
- * apiAvailable('25.0.0')
  * 
  * @param node  - current node
  * @returns Return the result of whether it meets the specifications
