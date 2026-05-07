@@ -159,7 +159,7 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "PropA" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}

@@ -104,7 +104,7 @@ globalBuilder = wrapBuilder(myBuilder);
   }
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 
@@ -222,7 +222,7 @@ globalBuilder = wrapBuilder(myBuilder);
   static {
   }
 }
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 

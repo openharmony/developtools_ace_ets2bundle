@@ -159,7 +159,7 @@ function main() {}
 
 }
 
-@Component() export interface __Options_ResourceComponent {
+@Component() interface __Options_ResourceComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(Resource | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
 

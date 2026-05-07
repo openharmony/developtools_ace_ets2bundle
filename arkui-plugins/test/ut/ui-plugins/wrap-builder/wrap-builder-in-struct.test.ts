@@ -922,7 +922,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@ComponentV2() export interface __Options_Index2 {
+@ComponentV2() interface __Options_Index2 {
   ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}
@@ -992,7 +992,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsumer3', '(boolean | undefined)')}
 }
 
-@Component() export interface __Options_Index {
+@Component() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}

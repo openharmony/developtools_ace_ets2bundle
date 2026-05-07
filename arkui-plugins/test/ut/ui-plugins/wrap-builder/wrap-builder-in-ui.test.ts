@@ -124,7 +124,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 
@@ -312,7 +312,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() export interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 

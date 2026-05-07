@@ -145,7 +145,7 @@ class Info {
 
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${ignoreNewLines(`
   @Local() infoList?: Info[];
   @Local() __backing_infoList?: Info[];
@@ -154,7 +154,7 @@ class Info {
   
 }
 
-@ComponentV2() export interface __Options_MiddleComponent {
+@ComponentV2() interface __Options_MiddleComponent {
   ${ignoreNewLines(`
   @Param() @Require() info: Info;
   @Param() __backing_info?: Info;
@@ -163,7 +163,7 @@ class Info {
   
 }
 
-@ComponentV2() export interface __Options_SubComponent {
+@ComponentV2() interface __Options_SubComponent {
   ${ignoreNewLines(`
   @Param() @Require() region: Region;
   @Param() __backing_region?: Region;
@@ -435,21 +435,21 @@ class Info {
   }
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
 }
 
-@ComponentV2() export interface __Options_MiddleComponent {
+@ComponentV2() interface __Options_MiddleComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
-@ComponentV2() export interface __Options_SubComponent {
+@ComponentV2() interface __Options_SubComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}

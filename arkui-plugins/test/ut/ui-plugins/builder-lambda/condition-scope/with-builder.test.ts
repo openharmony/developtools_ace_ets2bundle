@@ -221,10 +221,10 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 
 }
 
-@Component() export interface __Options_MyStruct {
+@Component() interface __Options_MyStruct {
   
 }
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }
@@ -579,11 +579,11 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 
 }
 
-@Component() export interface __Options_MyStruct {
+@Component() interface __Options_MyStruct {
   
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }

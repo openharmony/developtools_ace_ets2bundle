@@ -107,7 +107,7 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 }
 
-@ComponentV2() export interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${ignoreNewLines(`
   @Param() @Once() onceParamNum?: number;
   @Param() @Once() __backing_onceParamNum?: number;
@@ -119,7 +119,7 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
   
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${ignoreNewLines(`
   @Local() localNum?: number;
   @Local() __backing_localNum?: number;
@@ -383,7 +383,7 @@ function main() {}
   }
 }
 
-@ComponentV2() export interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
@@ -394,7 +394,7 @@ function main() {}
   
 }
 
-@ComponentV2() export interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}

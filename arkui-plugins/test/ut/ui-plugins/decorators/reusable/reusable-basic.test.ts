@@ -162,11 +162,11 @@ function main() {}
   }
 }
 
-@Component() export interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   
 }
 
-@Component() @Reusable() export interface __Options_Child {
+@Component() @Reusable() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}

@@ -123,7 +123,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/env/env-basic-type",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @ComponentV2() export interface __Options_Index {
+@Entry() @ComponentV2() interface __Options_Index {
   ${ignoreNewLines(`
   @Env({value:SystemProperties.BREAK_POINT}) breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
   @Env({value:SystemProperties.BREAK_POINT}) __backing_breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
@@ -390,7 +390,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'breakpoint', '(uiObserver.WindowSizeLayoutBreakpointInfo | undefined)', ['@Env({value:SystemProperties.BREAK_POINT})'])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_breakpoint', '(IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_breakpoint', '(boolean | undefined)')}

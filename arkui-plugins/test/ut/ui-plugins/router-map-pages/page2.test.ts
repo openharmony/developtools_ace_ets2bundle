@@ -123,7 +123,7 @@ class __NavigationBuilderRegisterClass {
   }
 }
 
-@Component() export interface __Options_Page2 {
+@Component() interface __Options_Page2 {
   get message(): (string | undefined) {
   return undefined;
   }

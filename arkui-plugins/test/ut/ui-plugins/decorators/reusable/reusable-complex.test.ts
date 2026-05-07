@@ -241,14 +241,14 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_display', '(boolean | undefined)')}
   
 }
 
-@Reusable() @Component() export interface __Options_Child {
+@Reusable() @Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}

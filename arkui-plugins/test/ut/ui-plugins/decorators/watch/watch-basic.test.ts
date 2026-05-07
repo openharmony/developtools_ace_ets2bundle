@@ -313,7 +313,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_MyStateSample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)', [dumpAnnotation('State'), dumpAnnotation('Watch', { value: 'stateOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_statevar', '(boolean | undefined)')}
@@ -344,7 +344,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" }), dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}

@@ -129,7 +129,7 @@ class TimeTable {
   }
 }
 
-@Component() export interface __Options_ListItemGroupExample {
+@Component() interface __Options_ListItemGroupExample {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
 
@@ -289,7 +289,7 @@ class TimeTable {
   }
 }
 
-@Component() export interface __Options_ListItemGroupExample {
+@Component() interface __Options_ListItemGroupExample {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
   

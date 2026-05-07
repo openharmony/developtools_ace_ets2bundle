@@ -108,7 +108,7 @@ function main() {}
 
 }
 
-@Component() export interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'builderArr', '(Array<@Builder() ((p1: string, p2: number)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderArr', '(boolean | undefined)')}
 }`;

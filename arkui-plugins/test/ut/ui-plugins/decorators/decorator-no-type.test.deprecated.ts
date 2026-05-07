@@ -670,7 +670,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@Component() export interface __Options_Parent {
+@Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
@@ -703,7 +703,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@ComponentV2() export interface __Options_V2Parent {
+@ComponentV2() interface __Options_V2Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
@@ -752,7 +752,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@CustomDialog() export interface __Options_CC {
+@CustomDialog() interface __Options_CC {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
