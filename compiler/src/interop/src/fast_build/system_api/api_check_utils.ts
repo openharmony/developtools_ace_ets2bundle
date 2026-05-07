@@ -2810,9 +2810,8 @@ export function isApiAvailableStatement(node: ts.CallExpression): boolean {
     if (Array.isArray(type)) {
       return false;
     }
-    if (type.symbol && type.symbol.valueDeclaration) {
+    if (type.symbol && type.symbol.valueDeclaration?.name?.escapedText) {
       const symbolFileName: string = type.symbol.valueDeclaration.getSourceFile().fileName;
-      // @ts-ignore
       const symbolName: string = type.symbol.valueDeclaration.name.escapedText.toString();
       if (symbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) && symbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO) {
         return true;
