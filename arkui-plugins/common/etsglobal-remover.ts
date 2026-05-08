@@ -15,12 +15,13 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor } from './abstract-visitor';
+import { ETSGLOBAL } from './predefines';
 
 export class EtsglobalRemover extends AbstractVisitor {
     visitor(node: arkts.AstNode): arkts.AstNode {
         if (arkts.isEtsScript(node)) {
             const keep = node.statements.filter((it) => {
-                return !(arkts.isClassDeclaration(it) && it.definition?.isGlobal);
+                return !(arkts.isClassDeclaration(it) && it.definition?.ident?.name === ETSGLOBAL);
             });
             return arkts.factory.updateEtsScript(node, keep);
         }

@@ -18,7 +18,7 @@ import { NormalClassAnnotationInfo, NormalClassAnnotationRecord, NormalClassAnno
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 import { RecordCache } from './cache';
-import { BuiltInNames } from '../../../common/predefines';
+import { BuiltInNames, ETSGLOBAL } from '../../../common/predefines';
 import { AstNodePointer } from '../../../common/safe-types';
 
 export type NormalClassInfo = AnnotationRecord<NormalClassAnnotations, NormalClassAnnotationInfo> & {
@@ -75,7 +75,7 @@ export class NormalClassRecord extends BaseRecord<arkts.ClassDeclaration, Normal
         }
         this.name = definition.ident.name;
         this.definitionPtr = definition.peer;
-        this.isETSGlobal = definition.isGlobal;
+        this.isETSGlobal = this.name === ETSGLOBAL;
         this.isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         for (const anno of definition.annotations) {
             this._annotationRecord.collect(anno);

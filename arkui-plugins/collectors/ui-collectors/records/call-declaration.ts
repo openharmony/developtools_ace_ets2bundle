@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { CallDeclAnnotationInfo, CallDeclAnnotationRecord, CallDeclAnnotations } from './annotations';
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
-import { BuiltInNames, LANGUAGE_VERSION } from '../../../common/predefines';
+import { BuiltInNames, ETSGLOBAL, LANGUAGE_VERSION } from '../../../common/predefines';
 import { FileManager } from '../../../common/file-manager';
 
 export type CallDeclInfo = AnnotationRecord<CallDeclAnnotations, CallDeclAnnotationInfo> & {
@@ -104,7 +104,7 @@ export class CallDeclRecord extends BaseRecord<arkts.AstNode, CallDeclInfo> {
         this.modifiers = node.modifiers;
         this.hasReceiver = node.scriptFunction.hasReceiver;
         const classDef = node.findOuterParent<arkts.ClassDefinition>(arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION);
-        if (!!classDef && classDef.isGlobal) {
+        if (!!classDef && classDef.ident?.name === ETSGLOBAL) {
             this.isDeclFromFunction = true;
         } else {
             this.isDeclFromMethod = true;
