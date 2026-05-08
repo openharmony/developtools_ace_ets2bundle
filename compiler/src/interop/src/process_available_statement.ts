@@ -78,10 +78,11 @@ function processStringVersionArg(arg: ts.StringLiteral | ts.NoSubstitutionTempla
   if (!versionText || versionText.trim() === '') {
     return null;
   }
-  if (!isPointVersion(versionText)) {
+  const convertVersion: number = Number(convertToDistributeVersion(versionText));
+  if (isNaN(convertVersion)) {
     return null;
   }
-  return ts.factory.createNumericLiteral(convertToDistributeVersion(versionText));
+  return ts.factory.createNumericLiteral(convertVersion);
 }
 
 /**
