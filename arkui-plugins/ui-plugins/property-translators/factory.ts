@@ -718,7 +718,7 @@ export class factory {
      * @param originalName property name.
      */
     static generateInitializeValue(
-        property: arkts.ClassProperty,
+        propertyValue: arkts.Expression | undefined,
         propertyType: arkts.TypeNode | undefined,
         originalName: string
     ): arkts.Expression {
@@ -728,13 +728,13 @@ export class factory {
         );
         const binaryItem: arkts.Expression = arkts.factory.createBinaryExpression(
             outInitialize,
-            property.value ?? arkts.factory.createUndefinedLiteral(),
+            propertyValue ?? arkts.factory.createUndefinedLiteral(),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
-        const finalBinary: arkts.Expression = property.typeAnnotation
+        const finalBinary: arkts.Expression = propertyType
             ? binaryItem
             : arkts.factory.createTSAsExpression(binaryItem, propertyType, false);
-        return property.value ? finalBinary : factory.generateDefiniteInitializers(propertyType, originalName);
+        return propertyValue ? finalBinary : factory.generateDefiniteInitializers(propertyType, originalName);
     }
 
     /**
