@@ -143,7 +143,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() export interface __Options_AnimatablePropertyExample {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_AnimatablePropertyExample {
   
 }
 

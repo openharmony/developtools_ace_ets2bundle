@@ -45,15 +45,16 @@ import { PropertyValueCache } from '../memo-collect-cache';
 function resetOnReuseWithParamProperty(
     this: BasePropertyTranslator,
     newName: string, 
-    originalName: string
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
 ): arkts.ExpressionStatement {
-    const property = this.property;
+    const propertyValue = this.property.value?.clone();
     const propertyType = this.propertyType?.clone();
-    const arg = factory.generateInitializeValue(property, propertyType, originalName);
+    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
     if (this.isMemoShouldUpdate) {
-        const propertyValue = property.value;
         if (!!propertyValue) {
-            PropertyValueCache.getInstance().collect({ value: propertyValue });
+            const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+            PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
         }
         if (!!propertyType) {
             PropertyValueCache.getInstance().collect({ value: propertyType });

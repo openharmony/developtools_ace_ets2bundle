@@ -56,12 +56,12 @@ function initializeStructWithProvideProperty(
     const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
     const alias = options?.alias ?? arkts.factory.create1StringLiteral(originalName);
     const allowOverride = options?.allowOverride ?? arkts.factory.createBooleanLiteral(false);
-    const initializeProperty = this.property;
+    const initializePropertyValue = this.property.value;
     const initializePropertyType = this.propertyType?.clone();
     const args: arkts.Expression[] = [
         arkts.factory.create1StringLiteral(originalName),
         alias,
-        factory.generateInitializeValue(initializeProperty, initializePropertyType, originalName),
+        factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
         allowOverride,
     ];
     if (this.hasWatch) {
@@ -74,9 +74,8 @@ function initializeStructWithProvideProperty(
         factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
     );
     if (this.isMemoShouldUpdate) {
-        const initializePropertyValue = initializeProperty.value;
         if (!!initializePropertyValue) {
-            PropertyValueCache.getInstance().collect({ value: initializeProperty.value });
+            PropertyValueCache.getInstance().collect({ value: initializePropertyValue });
         }
         if (!!initializePropertyType) {
             PropertyValueCache.getInstance().collect({ value: initializePropertyType });

@@ -25,6 +25,7 @@ export interface PropertyCachedBody {
 
 export interface PropertyMemoCachedInfo {
     shouldMemoUpdateInitializeStruct?: boolean;
+    shouldMemoUpdateResetOnReuse?: boolean;
 }
 
 export class PropertyCache {
@@ -53,6 +54,10 @@ export class PropertyCache {
         return !!this._memoInfoCache.get(name)?.shouldMemoUpdateInitializeStruct;
     }
 
+    shouldMemoUpdateResetOnReuse(name: string): boolean {
+        return !!this._memoInfoCache.get(name)?.shouldMemoUpdateResetOnReuse;
+    }
+
     getInitializeBody(name: string): arkts.AstNode[] {
         return this._cache.get(name)?.initializeBody ?? [];
     }
@@ -72,6 +77,12 @@ export class PropertyCache {
     setShouldMemoUpdateInitializeStruct(name: string, value: boolean): void {
         const memoCachedInfo: PropertyMemoCachedInfo = this._memoInfoCache.get(name) ?? {};
         memoCachedInfo.shouldMemoUpdateInitializeStruct = !!memoCachedInfo.shouldMemoUpdateInitializeStruct || value;
+        this._memoInfoCache.set(name, memoCachedInfo);
+    }
+
+    setShouldMemoUpdateResetOnReuse(name: string, value: boolean): void {
+        const memoCachedInfo: PropertyMemoCachedInfo = this._memoInfoCache.get(name) ?? {};
+        memoCachedInfo.shouldMemoUpdateResetOnReuse = !!memoCachedInfo.shouldMemoUpdateResetOnReuse || value;
         this._memoInfoCache.set(name, memoCachedInfo);
     }
 
