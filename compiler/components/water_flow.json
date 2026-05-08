@@ -3,7 +3,8 @@
     "children": [
         "FlowItem",
         "LazyVGridLayout",
-        "LazyVWaterFlowLayout"
+        "LazyVWaterFlowLayout",
+        "LazyColumnLayout"
     ],
     "attrs": [
         "onReachEnd",

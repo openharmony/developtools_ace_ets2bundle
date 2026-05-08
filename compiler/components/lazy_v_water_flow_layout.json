@@ -1,6 +1,6 @@
 {
     "name": "LazyVWaterFlowLayout",
-    "parents": ["WaterFlow", "FlowItem", "Scroll", "List"],
+    "parents": ["WaterFlow", "FlowItem", "Scroll", "List", "LazyColumnLayout"],
     "attrs": [
       "rowsGap", "columnsGap", "columnsTemplate", "onVisibleIndexesChange"
     ]
