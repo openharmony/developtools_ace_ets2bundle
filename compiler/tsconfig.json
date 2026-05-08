@@ -184,7 +184,6 @@
         "ColorPickerDialog",
         "Column",
         "ColumnSplit",
-        "ContainerReader",
         "ContentSlot",
         "Counter",
         "DataPanel",
@@ -409,11 +408,6 @@
             "name": "ColumnSplit",
             "type": "ColumnSplitAttribute",
             "instance": "ColumnSplitInstance"
-          },
-          {
-            "name": "ContainerReader",
-            "type": "ContainerReaderAttribute",
-            "instance": "ContainerReaderInstance"
           },
           {
             "name": "Counter",
