@@ -839,13 +839,13 @@ export function serviceChecker(rootFileNames: string[], newLogger: Object = null
     MemoryMonitor.stopRecordStage(processBuildHaprrecordInfo);
   }
 
-  if (projectConfig.compileHar && projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
-    if (projectConfig.byteCodeHar && projectConfig.declaredFilesPath) {
+  if (projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+    if ((projectConfig.byteCodeHar || projectConfig.compileShared) && projectConfig.declaredFilesPath) {
       performDeclarationMerging(projectConfig.declaredFilesPath, true);
     } else if (projectConfig.cachePath && projectConfig.moduleName) {
       performDeclarationMerging(path.join(projectConfig.cachePath, projectConfig.moduleName), false);
     } else {
-      logger.warn('Missing required paths, skip declaration merging');
+      logger.debug('Missing required paths, skip declaration merging');
     }
   }
 
@@ -2245,7 +2245,7 @@ function performDeclarationMerging(inputDir: string, isByteCodeHar: boolean): vo
 
   if (projectConfig.ohExports && projectConfig.ohExports.length > 0) {
     if (!modulePath) {
-      logger.warn('modulePath is not set, skip declaration merging');
+      logger.debug('modulePath is not set, skip declaration merging');
       return;
     }
     projectConfig.ohExports.forEach(element => {
@@ -2254,26 +2254,26 @@ function performDeclarationMerging(inputDir: string, isByteCodeHar: boolean): vo
     });
   } else {
     if (!modulePath) {
-      logger.warn('modulePath is not set, skip declaration merging');
+      logger.debug('modulePath is not set, skip declaration merging');
       return;
     }
     const pkgJsonPath = path.join(modulePath, 'oh-package.json5');
     if (!fs.existsSync(pkgJsonPath)) {
-      logger.warn('oh-package.json5 not found, skip declaration merging');
+      logger.debug('oh-package.json5 not found, skip declaration merging');
       return;
     }
     try {
       const pkgContent = JSON5.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
       const mainField = pkgContent.main;
       if (!mainField) {
-        logger.warn('main field not found in oh-package.json5, skip declaration merging');
+        logger.debug('main field not found in oh-package.json5, skip declaration merging');
         return;
       }
       const entryFileName = mainField.replace(/\.(ets|ts)$/, '.d.$1');
       const entryFilePath = path.join(inputDir, entryFileName);
       entryDeclarationFiles.push(entryFilePath);
     } catch (error) {
-      logger.warn(`Failed to parse oh-package.json5: ${error.message}`);
+      logger.debug(`Failed to parse oh-package.json5: ${error.message}`);
       return;
     }
   }
@@ -2298,6 +2298,7 @@ function performDeclarationMerging(inputDir: string, isByteCodeHar: boolean): vo
       systemModules: systemModules
     });
   } catch (error) {
-    logger.error(`Failed to merge declaration files: ${error.message}`);
+    logger.debug(`Failed to merge declaration files: ${error.message}`);
+    throw error;
   }
 }

@@ -481,7 +481,7 @@ export function generateSourceFilesInHar(sourcePath: string, sourceContent: stri
         originalDeclarationContent: sourceContent
       };
       harFilesRecord.set(sourcePath, genFilesInHar);
-      if (projectConfig.compileHar && projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+      if (projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
         mkdirsSync(path.dirname(jsFilePath));
         fs.writeFileSync(jsFilePath, sourceContent);
       }

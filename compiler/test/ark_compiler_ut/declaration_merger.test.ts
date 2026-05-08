@@ -354,17 +354,16 @@ mocha.describe('test declaration file merging', function () {
       expect(merged).to.include("export { base } from '@ohos.base'");
     });
 
-    mocha.it('preserves direct system API import', function () {
+    mocha.it('does not preserve unused system API import', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include("import { router } from '@ohos.router'");
+      expect(merged).to.not.include("import { router } from '@ohos.router'");
     });
 
     mocha.it('resolves nested system API through intermediate', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
       expect(merged).to.include("export { nestedBase } from '@ohos.base'");
-      expect(merged).to.include("import { nestedRouter } from '@ohos.router'");
     });
 
     mocha.it('inlines local @Component dependency', function () {
@@ -483,6 +482,95 @@ mocha.describe('test declaration file merging', function () {
       const merged = performMerge(opts());
       expect(merged).to.not.include('constructor(?:');
       expectSelfContained(merged);
+    });
+  });
+
+  mocha.describe('sibling type: import reference (example 1)', function () {
+    const opts = () => makeOptions('siblingImportRef');
+
+    mocha.it('inlines imported type A used by exported B', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export declare class B');
+      expect(merged).to.include('a: A');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('sibling type: co-exported reference (example 2)', function () {
+    const opts = () => makeOptions('siblingExportRef');
+
+    mocha.it('inlines co-exported type A used by exported B', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export declare class B');
+      expect(merged).to.include('a: A');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('sibling type: local reference (example 3)', function () {
+    const opts = () => makeOptions('siblingLocalRef');
+
+    mocha.it('inlines non-exported type A used by exported B', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export declare class B');
+      expect(merged).to.include('a: A');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('alias rename with reference update', function () {
+    const opts = () => makeOptions('aliasRenameRef');
+
+    mocha.it('renames conflicting A and updates references in B', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export declare class A');
+      expect(merged).to.include('str: string');
+      expect(merged).to.include('declare class A_1');
+      expect(merged).to.include('a: A_1');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('export after dependency inline', function () {
+    const opts = () => makeOptions('exportAfterDependency');
+
+    mocha.it('preserves export for symbol first inlined as dependency', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export declare class B');
+      expect(merged).to.include('a: A');
+      const exportCount = (merged.match(/export\s+(?:declare\s+)?class A/g) || []).length;
+      expect(exportCount).to.be.at.least(1, 'A should have export modifier');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/\bfrom\b/);
     });
   });
 
