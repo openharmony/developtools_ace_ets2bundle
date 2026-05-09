@@ -18,6 +18,7 @@ import { BaseValidator } from './base';
 import { StructMethodInfo } from '../records';
 import {
     checkBuildRootNode,
+    checkComputedStateModification,
     checkComponentV2StateUsage,
     checkStructPropertyDecorator,
     checkTrackDecorator,
@@ -34,5 +35,6 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
         checkTrackDecorator.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
         checkBuildRootNode.bind(this)(node);
+        checkComputedStateModification.bind(this)(node);
     }
 }
