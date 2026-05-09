@@ -39,7 +39,7 @@
       },
       "remark": {
         "description": "一些用餐的备注，比如用餐人的喜好等。",
-        "type": "srting"
+        "type": "string"
       }
     }
   },
