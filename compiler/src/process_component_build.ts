@@ -147,7 +147,9 @@ import {
   APIVERSION,
   HDSNAVIGATION,
   HDSNAVDESTINATION,
-  _CONTAINER_READER
+  _CONTAINER_READER,
+  HOVERED,
+  HOVER
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -181,7 +183,8 @@ import {
   processCustomComponent,
   createConditionParent,
   isRecycle,
-  isReuseInV2
+  isReuseInV2,
+  isCompatibleVersionOverTarget
 } from './process_custom_component';
 import {
   LogType,
@@ -3216,7 +3219,8 @@ function generateFunctionPropertyAssignmentForExclamation(name: string, varExp: 
 function createViewStackProcessor(item, endViewStack: boolean): ts.ExpressionStatement {
   const argument: ts.StringLiteral[] = [];
   if (!endViewStack && item.name) {
-    argument.push(ts.factory.createStringLiteral(item.name.getText()));
+    const tempString: string = (item.name.getText() === HOVERED) ? HOVER : item.name.getText();
+    argument.push(ts.factory.createStringLiteral(tempString));
   }
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
@@ -3232,6 +3236,10 @@ function traverseStateStylesAttr(temp, statements: ts.Statement[],
   identifierNode: ts.Identifier, log: LogInfo[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false): void {
   temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
+    if (item.name && item.name.getText && item.name.getText() === HOVERED &&
+      !isCompatibleVersionOverTarget(26)) {
+      return;
+    }
     if (ts.isPropertyAccessExpression(item.initializer) &&
       item.initializer.expression.getText() === THIS &&
       INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {

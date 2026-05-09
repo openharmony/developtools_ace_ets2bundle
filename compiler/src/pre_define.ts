@@ -359,6 +359,8 @@ export const MODULE_VISUAL_PATH: string = 'src' + path.sep + 'main' + path.sep +
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';
+export const HOVERED: string = 'hovered';
+export const HOVER: string = 'hover';
 export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 
 export const BIND_POPUP: string = 'bindPopup';
