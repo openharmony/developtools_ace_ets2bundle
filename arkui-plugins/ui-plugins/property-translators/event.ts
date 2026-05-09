@@ -49,9 +49,10 @@ import { PropertyValueCache } from '../memo-collect-cache';
 function resetOnReuseWithEventTranslator(
     this: BasePropertyTranslator,
     newName: string, 
-    originalName: string
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
 ): arkts.ExpressionStatement {
-    const property = this.property;
+    const propertyValue = this.property.value?.clone();
     const propertyType = this.propertyType?.clone();
     const resetStateVars = arkts.factory.createAssignmentExpression(
         arkts.factory.createMemberExpression(
@@ -62,12 +63,12 @@ function resetOnReuseWithEventTranslator(
             false
         ),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateInitializeValue(property, propertyType, originalName)
+        factory.generateInitializeValue(propertyValue, propertyType, originalName)
     );
     if (this.isMemoShouldUpdate) {
-        const propertyValue = property.value;
         if (!!propertyValue) {
-            PropertyValueCache.getInstance().collect({ value: propertyValue });
+            const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+            PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
         }
         if (!!propertyType) {
             PropertyValueCache.getInstance().collect({ value: propertyType });
@@ -86,8 +87,8 @@ export class EventTranslator extends RegularPropertyTranslator {
     protected hasSetter: boolean = true;
     protected hasResetOnReuse: boolean = true;
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithEventTranslator.bind(this)(newName, originalName);
+    resetOnReuse(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ExpressionStatement {
+        return resetOnReuseWithEventTranslator.bind(this)(newName, originalName, metadata);
     }
 }
 
@@ -101,8 +102,8 @@ export class EventCachedTranslator extends RegularPropertyCachedTranslator {
     protected hasSetter: boolean = true;
     protected hasResetOnReuse: boolean = true;
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithEventTranslator.bind(this)(newName, originalName);
+    resetOnReuse(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ExpressionStatement {
+        return resetOnReuseWithEventTranslator.bind(this)(newName, originalName, metadata);
     }
 }
 

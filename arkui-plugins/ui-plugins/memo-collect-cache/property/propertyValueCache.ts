@@ -18,6 +18,8 @@ import { NodeCacheNames } from '../../../common/predefines';
 
 export interface PropertyValueInfo {
     value: arkts.AstNode;
+    shouldCache?: boolean;
+    metadata?: arkts.AstNodeCacheValueMetadata
 }
 
 export class PropertyValueCache {
@@ -31,11 +33,15 @@ export class PropertyValueCache {
         return this.instance;
     }
 
-    private _updateValue(value: arkts.AstNode): void {
-        let currParent: arkts.AstNode | undefined = value.parent;
-        while (!!currParent && !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
-            currParent = currParent.parent;
+    private _updateValue(value: arkts.AstNode, shouldCache?: boolean, metadata?: arkts.AstNodeCacheValueMetadata): void {
+        if (shouldCache) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(value, metadata);
+        } else {
+            let currParent: arkts.AstNode | undefined = value.parent;
+            while (!!currParent && !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer)) {
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
+                currParent = currParent.parent;
+            }
         }
     }
 
@@ -50,7 +56,7 @@ export class PropertyValueCache {
 
     updateAll(): this {
         this._infos.forEach((info) => {
-            this._updateValue(info.value);
+            this._updateValue(info.value, info.shouldCache, info.metadata);
         });
         return this;
     }

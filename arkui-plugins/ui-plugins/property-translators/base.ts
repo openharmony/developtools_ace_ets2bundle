@@ -48,7 +48,7 @@ import { PropertyCache } from './cache/propertyCache';
 import { annotation, backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { CustomDialogControllerPropertyCache } from './cache/customDialogControllerPropertyCache';
-import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collect-cache';
+import { PropertyFactoryCallTypeCache, PropertyValueCache, PropertyValueInfo } from '../memo-collect-cache';
 
 export interface BasePropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -157,11 +157,11 @@ export abstract class BasePropertyTranslator {
         if (!this.stateManagementType || !this.makeType) {
             return undefined;
         }
-        const initializeProperty = this.property;
+        const initializePropertyValue = this.property.value;
         const initializePropertyType = this.propertyType?.clone();
         const args: arkts.Expression[] = [
             arkts.factory.create1StringLiteral(originalName),
-            factory.generateInitializeValue(initializeProperty, initializePropertyType, originalName),
+            factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
         ];
         if (this.hasWatch) {
             factory.addWatchFunc(args, this.property);
@@ -174,9 +174,8 @@ export abstract class BasePropertyTranslator {
             factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
         );
         if (this.isMemoShouldUpdate) {
-            const propertyValue = initializeProperty.value;
-            if (!!propertyValue) {
-                PropertyValueCache.getInstance().collect({ value: propertyValue });
+            if (!!initializePropertyValue) {
+                PropertyValueCache.getInstance().collect({ value: initializePropertyValue });
             }
             if (!!initializePropertyType) {
                 PropertyValueCache.getInstance().collect({ value: initializePropertyType });
@@ -246,11 +245,16 @@ export abstract class BasePropertyTranslator {
         );
     }
     
-    resetOnReuse(newName: string, originalName?: string): arkts.ExpressionStatement {
+    resetOnReuse(
+        newName: string, 
+        originalName?: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
         const propertyValue = this.property.value?.clone();
         const arg = !!propertyValue ? propertyValue : arkts.factory.createUndefinedLiteral();
         if (this.isMemoShouldUpdate && !!propertyValue) {
-            PropertyValueCache.getInstance().collect({ value: propertyValue });
+            const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+            PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
         }
         return factory.createResetOnReuseStmt(newName, arg);
     }
@@ -307,8 +311,9 @@ export abstract class PropertyTranslator extends BasePropertyTranslator {
             PropertyCache.getInstance().collectToRecord(structName, [toRecord]);
         }
         if (this.hasResetOnReuse) {
-            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName);
+            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName, metadata);
             PropertyCache.getInstance().collectResetStateVars(this.structInfo.name, [resetStateVars]);
+            PropertyCache.getInstance().setShouldMemoUpdateResetOnReuse(structName, !!this.isMemoShouldUpdate);
         }
     }
 }
@@ -385,8 +390,9 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
             PropertyCache.getInstance().collectToRecord(structName, [toRecord]);
         }
         if (this.hasResetOnReuse) {
-            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName);
+            const resetStateVars: arkts.AstNode = this.resetOnReuse(newName, originalName, metadata);
             PropertyCache.getInstance().collectResetStateVars(structName, [resetStateVars]);
+            PropertyCache.getInstance().setShouldMemoUpdateResetOnReuse(structName, !!this.isMemoShouldUpdate);
         }
     }
 }
