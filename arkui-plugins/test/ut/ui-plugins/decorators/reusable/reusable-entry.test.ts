@@ -123,7 +123,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() @Reusable() export interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() @Reusable() interface __Options_Index {
   
 }
 

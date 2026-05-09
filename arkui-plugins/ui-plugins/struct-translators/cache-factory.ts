@@ -277,6 +277,11 @@ export class CacheFactory {
             modifiers,
             false
         );
+        if (!!body && PropertyCache.getInstance().shouldMemoUpdateResetOnReuse(metadata.name!)) {
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunction.peer);
+            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(resetMethod.peer);
+        }
         return resetMethod;
     }
 
