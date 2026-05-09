@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassMethodInfo } from '../records';
 import {
+    checkComputedStateModification,
     checkStructPropertyDecorator,
     checkTrackDecorator,
     checkComponentV2StateUsage,
@@ -32,5 +33,6 @@ export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefini
         checkTrackDecorator.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
         checkComponentV2StateUsage.bind(this)(node);
+        checkComputedStateModification.bind(this)(node);
     }
 }
