@@ -93,6 +93,11 @@ interface ArrayDimension {
     dimension: number;
 }
 
+interface ArraySubclassInfo {
+    isArraySubclass: boolean;
+    elementTypeName?: string;
+}
+
 class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     private collectNode: Map<string, arkts.AstNode> = new Map();
     private enumMemberValues: Map<string, string> = new Map();
@@ -665,17 +670,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         // No more segments, just check state variable
         if (rest.length === 0) {
-            if (!firstSegmentIsStateVariable) {
-                return { valid: false, reason: PathInvalidReason.NOT_STATE_VARIABLE, level: 'warn' };
-            }
-            const typeName = this.firstSegmentTypeName(firstSegment, context.node);
-            if (typeName) {
-                const typeNode = this.collectNode.get(typeName);
-                if (typeNode && arkts.isImportDeclaration(typeNode)) {
-                    return { valid: false, reason: PathInvalidReason.EXTERNAL_IMPORT, level: 'warn' };
-                }
-            }
-            return { valid: true };
+            return this.validateSingleSegment(firstSegment, firstSegmentIsStateVariable, context.node);
         }
 
         // Resolve first segment type
@@ -696,6 +691,21 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return arrayResult;
         }
 
+        // Check if first segment is an Array subclass (e.g., class extends Array<T>)
+        const subclassInfo = this.resolveArraySubclassInfo(typeName);
+        if (subclassInfo.isArraySubclass) {
+            const lengthResult = this.checkArrayLengthAccess(rest);
+            if (lengthResult) {
+                return lengthResult;
+            }
+            if (rest.length === 0 || !this.isArrayIndex(rest[0])) {
+                return { valid: false, reason: PathInvalidReason.ARRAY_INDEX_OUT_OF_BOUNDS, level: 'error' };
+            }
+            return this.validateArraySubclassAccess(
+                subclassInfo.elementTypeName, rest.slice(1), firstSegmentIsStateVariable
+            );
+        }
+
         // Dispatch by type
         if (this.isMapOrSetType(typeName)) {
             return this.validateMapSetAccess(
@@ -710,6 +720,25 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         return this.validateNestedSegments(typeName, rest, context, firstSegmentIsStateVariable);
+    }
+
+    // Validate single-segment path (e.g. @SyncMonitor(['name']))
+    private validateSingleSegment(
+        firstSegment: string,
+        firstSegmentIsStateVariable: boolean,
+        node: arkts.StructDeclaration | arkts.ClassDeclaration
+    ): PathValidationResult {
+        if (!firstSegmentIsStateVariable) {
+            return { valid: false, reason: PathInvalidReason.NOT_STATE_VARIABLE, level: 'warn' };
+        }
+        const typeName = this.firstSegmentTypeName(firstSegment, node);
+        if (typeName) {
+            const typeNode = this.collectNode.get(typeName);
+            if (typeNode && arkts.isImportDeclaration(typeNode)) {
+                return { valid: false, reason: PathInvalidReason.EXTERNAL_IMPORT, level: 'warn' };
+            }
+        }
+        return { valid: true };
     }
 
     // First Segment Check
@@ -741,19 +770,25 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         return context.hasRequiredDecorator ?? false;
     }
 
+    private checkArrayLengthAccess(segments: string[]): PathValidationResult | undefined {
+        if (segments.length === 1 && segments[0] === 'length') {
+            return { valid: false, reason: PathInvalidReason.ARRAY_LENGTH_ACCESS, level: 'warn' };
+        }
+        if (segments.length > 1 && segments[0] === 'length') {
+            return { valid: false, reason: PathInvalidReason.ARRAY_LENGTH_HAS_TAIL, level: 'error' };
+        }
+        return undefined;
+    }
+
     // Array Validation
     private validateArrayAccess(
         property: arkts.ClassProperty,
         segments: string[],
         firstSegmentIsStateVariable: boolean
     ): PathValidationResult {
-        // Length check must be first
-        if (segments.length === 1 && segments[0] === 'length') {
-            return { valid: false, reason: PathInvalidReason.ARRAY_LENGTH_ACCESS, level: 'warn' };
-        }
-
-        if (segments.length > 1 && segments[0] === 'length') {
-            return { valid: false, reason: PathInvalidReason.ARRAY_LENGTH_HAS_TAIL, level: 'error' };
+        const lengthResult = this.checkArrayLengthAccess(segments);
+        if (lengthResult) {
+            return lengthResult;
         }
 
         // Check first segment is array index
@@ -940,6 +975,75 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         return { maxDim, dimTypes };
+    }
+
+    // Array Subclass Validation
+    private extractElementTypeFromSuper(node: arkts.ClassDeclaration): string | undefined {
+        const superNode = node.definition?.super;
+        if (!superNode || !arkts.isETSTypeReference(superNode)) {
+            return undefined;
+        }
+        const typeParams = superNode.part?.typeParams;
+        if (!typeParams || !typeParams.params || typeParams.params.length === 0) {
+            return undefined;
+        }
+        const elementType = typeParams.params[0];
+        return this.getTypeFromPropertyAnnotation(elementType);
+    }
+
+    private resolveArraySubclassFromClass(node: arkts.ClassDeclaration): ArraySubclassInfo {
+        const superNode = node.definition?.super;
+        if (!superNode || !arkts.isETSTypeReference(superNode)) {
+            return { isArraySubclass: false };
+        }
+        const partName = superNode.part?.name;
+        if (partName !== undefined && arkts.isIdentifier(partName) && partName.name === ArrayTypes.Array) {
+            const elementTypeName = this.extractElementTypeFromSuper(node);
+            return { isArraySubclass: true, elementTypeName };
+        }
+        const parentName = partName && arkts.isIdentifier(partName) ? partName.name : undefined;
+        if (parentName) {
+            const parentNode = this.collectNode.get(parentName);
+            if (parentNode && arkts.isClassDeclaration(parentNode)) {
+                return this.resolveArraySubclassFromClass(parentNode);
+            }
+        }
+        return { isArraySubclass: false };
+    }
+
+    private resolveArraySubclassInfo(typeName: string): ArraySubclassInfo {
+        const typeNode = this.collectNode.get(typeName);
+        if (!typeNode || !arkts.isClassDeclaration(typeNode)) {
+            return { isArraySubclass: false };
+        }
+        return this.resolveArraySubclassFromClass(typeNode);
+    }
+
+    private validateArraySubclassAccess(
+        elementTypeName: string | undefined,
+        segments: string[],
+        firstSegmentIsStateVariable: boolean
+    ): PathValidationResult {
+        if (!firstSegmentIsStateVariable) {
+            return { valid: false, reason: PathInvalidReason.NOT_STATE_VARIABLE, level: 'warn' };
+        }
+        if (segments.length === 0) {
+            return { valid: false, reason: PathInvalidReason.ARRAY_INDEX_NO_PROPERTY, level: 'warn' };
+        }
+        if (!elementTypeName) {
+            return { valid: true };
+        }
+        const checkResult = this.checkNestedPathStateVariables(elementTypeName, segments);
+        if (checkResult.valid) {
+            return { valid: true };
+        }
+        if (checkResult.isExternalImport) {
+            return { valid: false, reason: PathInvalidReason.EXTERNAL_IMPORT, level: 'warn' };
+        }
+        if (checkResult.isPropertyNotExists) {
+            return { valid: false, reason: PathInvalidReason.PROPERTY_NOT_EXISTS, level: 'error' };
+        }
+        return { valid: false, reason: PathInvalidReason.NOT_STATE_VARIABLE, level: 'warn' };
     }
 
     // Map/Set Validation
@@ -1221,7 +1325,11 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                     result: { valid: false, isExternalImport: true },
                 };
             }
-            const isArray = typeNode && arkts.isTypeNode(typeNode) && this.isArrayType(typeNode);
+            const isArray = !!(typeNode && arkts.isTypeNode(typeNode) && this.isArrayType(typeNode));
+            const subclassResult = this.processArraySubclassIndex(typeNode, isArray, segments, currentIndex);
+            if (subclassResult) {
+                return subclassResult;
+            }
             if (!isArray && currentType.toLowerCase() !== TypeFlags.Array) {
                 return { shouldReturn: true, result: { valid: false, isPropertyNotExists: true } };
             }
@@ -1250,6 +1358,30 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         return { shouldReturn: false, newType: elementTypeName, newIndex: newIndex - 1 };
+    }
+
+    // Try to resolve array subclass element type for index access, return undefined if not applicable
+    private processArraySubclassIndex(
+        typeNode: arkts.AstNode | undefined,
+        isArray: boolean,
+        segments: string[],
+        currentIndex: number
+    ): ProcessArrayIndexReturn | undefined {
+        if (isArray || !typeNode || !arkts.isClassDeclaration(typeNode)) {
+            return undefined;
+        }
+        const subclassInfo = this.resolveArraySubclassFromClass(typeNode);
+        if (!subclassInfo.isArraySubclass) {
+            return undefined;
+        }
+        if (!subclassInfo.elementTypeName) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+        const remainingSegments = segments.slice(currentIndex + 1);
+        if (remainingSegments.length === 0) {
+            return { shouldReturn: true, result: { valid: false, isPropertyNotExists: false } };
+        }
+        return { shouldReturn: false, newType: subclassInfo.elementTypeName, newIndex: currentIndex };
     }
 
     private processPropertyAccessInPath(
