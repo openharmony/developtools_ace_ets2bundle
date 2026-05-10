@@ -329,11 +329,14 @@ export class factory {
             const subscribedWatches: arkts.ClassProperty = arkts.factory.createClassProperty(
                 arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
                 factory.generateStateMgmtFactoryCall(StateManagementTypes.MAKE_SUBSCRIBED_WATCHES, undefined, [], false),
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
-                        arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
-                    )
-                ),
+                arkts.factory.createUnionType([
+                    arkts.factory.createTypeReference(
+                        arkts.factory.createTypeReferencePart(
+                            arkts.factory.createIdentifier(StateManagementTypes.SUBSCRIBED_WATCHES)
+                        )
+                    ),
+                    arkts.factory.createETSUndefinedType()
+                ]),
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
                 false
             );
@@ -391,23 +394,46 @@ export class factory {
         let body: arkts.BlockStatement | undefined;
         let modifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         if (!isDecl) {
-            body = arkts.factory.createBlock([
-                isReturnStatement
-                    ? arkts.factory.createReturnStatement(
-                            arkts.factory.createCallExpression(
-                                factory.thisSubscribedWatchesMember(methodName),
-                                undefined,
-                                [arkts.factory.createIdentifier(paramName)]
-                            )
+            const subscribedWatchesAccess = arkts.factory.createMemberExpression(
+                arkts.factory.createThisExpression(),
+                arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            );
+            const undefinedCondition = arkts.factory.createBinaryExpression(
+                subscribedWatchesAccess,
+                arkts.factory.createUndefinedLiteral(),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
+            );
+            const innerStatement = isReturnStatement
+                ? arkts.factory.createReturnStatement(
+                        arkts.factory.createCallExpression(
+                            factory.thisSubscribedWatchesMember(methodName),
+                            undefined,
+                            [arkts.factory.createIdentifier(paramName)]
                         )
-                    : arkts.factory.createExpressionStatement(
-                            arkts.factory.createCallExpression(
-                                factory.thisSubscribedWatchesMember(methodName),
-                                undefined,
-                                [arkts.factory.createIdentifier(paramName)]
-                            )
-                        ),
-            ]);
+                    )
+                : arkts.factory.createExpressionStatement(
+                        arkts.factory.createCallExpression(
+                            factory.thisSubscribedWatchesMember(methodName),
+                            undefined,
+                            [arkts.factory.createIdentifier(paramName)]
+                        )
+                    );
+            const ifStatement = arkts.factory.createIfStatement(
+                undefinedCondition,
+                arkts.factory.createBlock([innerStatement])
+            );
+            const bodyStatements: arkts.Statement[] = [ifStatement];
+            if (isReturnStatement) {
+                bodyStatements.push(
+                    arkts.factory.createReturnStatement(
+                        arkts.factory.createBooleanLiteral(false)
+                    )
+                );
+            }
+            body = arkts.factory.createBlock(bodyStatements);
         } else {
             modifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
@@ -445,12 +471,14 @@ export class factory {
      */
     static thisSubscribedWatchesMember(member: string): arkts.MemberExpression {
         return arkts.factory.createMemberExpression(
-            arkts.factory.createMemberExpression(
-                arkts.factory.createThisExpression(),
-                arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
-                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                false,
-                false
+            arkts.factory.createTSNonNullExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    arkts.factory.createIdentifier(ObservedNames.SUBSCRIBED_WATCHES),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                )
             ),
             arkts.factory.createIdentifier(member),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
