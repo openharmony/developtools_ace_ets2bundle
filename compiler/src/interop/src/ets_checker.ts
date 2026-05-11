@@ -967,6 +967,34 @@ export function emitBuildInfo(): void {
   globalProgram.builderProgram.emitBuildInfo(buildInfoWriteFile);
 }
 
+function processHarSourceFiles(rootFileNames: string[]): void {
+  let emit: string | undefined = undefined;
+  let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean): void => {
+    emit = text;
+  };
+  [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
+    if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar) ||
+      projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+      try {
+        if ((/\.d\.e?ts$/).test(moduleFile)) {
+          generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
+            projectConfig, projectConfig.modulePathMap);
+        } else if ((/\.e?ts$/).test(moduleFile) && (!toUnixPath(moduleFile).includes('/oh_modules/') ||
+          projectConfig?.projectArkOption?.bundle?.bundledDeclare)) {
+          emit = undefined;
+          let sourcefile = globalProgram.program.getSourceFile(moduleFile);
+          if (sourcefile) {
+            globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true, true);
+          }
+          if (emit) {
+            generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, projectConfig.modulePathMap);
+          }
+        }
+      } catch (err) {}
+    }
+  });
+}
+
 function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent: CompileEvent,
   rollupShareObject: Object): void {
   ts.PerformanceDotting?.startAdvanced('diagnostic');
@@ -994,29 +1022,7 @@ function processBuildHap(cacheFile: string, rootFileNames: string[], parentEvent
     }, null, 2));
   }
   if (projectConfig.compileHar || projectConfig.compileShared) {
-    let emit: string | undefined = undefined;
-    let writeFile = (fileName: string, text: string, writeByteOrderMark: boolean): void => {
-      emit = text;
-    };
-    [...allResolvedModules, ...rootFileNames].forEach(moduleFile => {
-      if (!(moduleFile.match(new RegExp(projectConfig.packageDir)) && projectConfig.compileHar)) {
-        try {
-          if ((/\.d\.e?ts$/).test(moduleFile)) {
-            generateSourceFilesInHar(moduleFile, fs.readFileSync(moduleFile, 'utf-8'), path.extname(moduleFile),
-              projectConfig, projectConfig.modulePathMap);
-          } else if ((/\.e?ts$/).test(moduleFile) && !toUnixPath(moduleFile).includes('/oh_modules/')) {
-            emit = undefined;
-            let sourcefile = globalProgram.program.getSourceFile(moduleFile);
-            if (sourcefile) {
-              globalProgram.program.emit(sourcefile, writeFile, undefined, true, undefined, true, true);
-            }
-            if (emit) {
-              generateSourceFilesInHar(moduleFile, emit, '.d' + path.extname(moduleFile), projectConfig, projectConfig.modulePathMap);
-            }
-          }
-        } catch (err) { }
-      }
-    });
+    processHarSourceFiles(rootFileNames);
     printDeclarationDiagnostics(errorCodeLogger);
   }
 }
