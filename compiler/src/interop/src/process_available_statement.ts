@@ -36,29 +36,95 @@ export function processAvailableStatement(node: ts.CallExpression): ts.CallExpre
 }
 
 /**
- * Extract and validate the base expression from a call expression
- * Handles nested parenthesized expressions recursively
- * @param expression The expression to extract from
- * @return Extracted base expression (can be Identifier or PropertyAccessExpression), or null if invalid
+ * Transform expression by replacing 'available' method with version property
+ * This method recursively traverses the expression tree and creates new nodes
+ * @param expression The expression to transform
+ * @param apiVersionFunctionName The target version property name (sdkApiVersion or distributionOSApiVersion)
+ * @return Transformed expression
  */
-function extractBaseExpression(expression: ts.Expression): ts.Expression | null {
-  if (ts.isParenthesizedExpression(expression) ||
-    ts.isNonNullExpression(expression)) {
-    return extractBaseExpression(expression.expression);
+function transformExpression(
+  expression: ts.Expression,
+  apiVersionFunctionName: string
+): ts.Expression | null {
+  if (ts.isNonNullExpression(expression)) {
+    // Handle non-null assertion - preserve and apply to transformed expression
+    const transformed = transformExpression(expression.expression, apiVersionFunctionName);
+    if (!transformed) {
+      return null;
+    }
+    return ts.factory.createNonNullExpression(transformed);
+  } else if (ts.isParenthesizedExpression(expression)) {
+    // Handle parenthesized expression - preserve and apply to transformed expression
+    const transformed = transformExpression(expression.expression, apiVersionFunctionName);
+    if (!transformed) {
+      return null;
+    }
+    return ts.factory.createParenthesizedExpression(transformed);
+  } else if (ts.isPropertyAccessExpression(expression)) {
+    // Handle property access expression
+    return transformPropertyAccessExpression(expression, apiVersionFunctionName);
+  } else if (ts.isElementAccessExpression(expression)) {
+    // Handle element access expression
+    return transformElementAccessExpression(expression, apiVersionFunctionName);
+  } else {
+    // Other expression types are not handled
+    return null;
   }
+}
 
-  if (ts.isPropertyAccessExpression(expression) ||
-    ts.isElementAccessExpression(expression)) {
-    return expression.expression;
+/**
+ * Transform property access expression by replacing 'available' with version property name
+ * Supports both regular property access and optional chaining
+ * @param expression The property access expression to transform
+ * @param apiVersionFunctionName The target version property name
+ * @return Transformed property access expression or null if transformation fails
+ */
+function transformPropertyAccessExpression(
+  expression: ts.PropertyAccessExpression,
+  apiVersionFunctionName: string
+): ts.Expression | null {
+  if (ts.isPropertyAccessChain(expression)) {
+    return ts.factory.createPropertyAccessChain(
+      expression.expression,
+      expression.questionDotToken,
+      apiVersionFunctionName
+    );
   }
+  return ts.factory.createPropertyAccessExpression(
+    expression.expression,
+    apiVersionFunctionName
+  );
+}
 
-  return null;
+/**
+ * Transform element access expression by replacing 'available' with version property name
+ * Supports both regular element access and optional chaining
+ * @param expression The element access expression to transform
+ * @param apiVersionFunctionName The target version property name
+ * @return Transformed element access expression or null if transformation fails
+ */
+function transformElementAccessExpression(
+  expression: ts.ElementAccessExpression,
+  apiVersionFunctionName: string
+): ts.Expression | null {
+  if (ts.isElementAccessChain(expression)) {
+    return ts.factory.createElementAccessChain(
+      expression.expression,
+      expression.questionDotToken,
+      ts.factory.createStringLiteral(apiVersionFunctionName)
+    );
+  }
+  return ts.factory.createElementAccessExpression(
+    expression.expression,
+    ts.factory.createStringLiteral(apiVersionFunctionName)
+  );
 }
 
 /**
  * Validate numeric version value
+ *
  * @param text Numeric text to validate
- * @return true if valid, false otherwise
+ * @return true if valid (1-25), false otherwise
  */
 function isValidNumericVersion(text: string): boolean {
   if (!/^(?:[1-9]\d?)$/.test(text)) {
@@ -117,19 +183,19 @@ function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression
     return node;
   }
 
-  const baseExpr: ts.Expression | null = extractBaseExpression(node.expression);
-  if (!baseExpr) {
+  const transformedExpr: ts.Expression | null = transformExpression(node.expression, apiVersionFunctionName);
+  if (!transformedExpr) {
     return node;
   }
 
-  return ts.factory.createBinaryExpression(
-    ts.factory.createPropertyAccessExpression(
-      baseExpr,
-      ts.factory.createIdentifier(apiVersionFunctionName)
-    ),
+  // Create binary comparison expression
+  const binaryExpr = ts.factory.createBinaryExpression(
+    transformedExpr,
     ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
     processedArg
   );
+
+  return binaryExpr;
 }
 
 /**
@@ -150,6 +216,6 @@ function convertToDistributeVersion(version: string): string {
  * @return true if it's a point-based version, false otherwise
  */
 export function isPointVersion(version: string): boolean {
-  const REG_MSF = /^\'?(?:2[6-9]|[3-9][0-9]|[1-9][0-9]{2})\.(?:[0-9]|[1-9][0-9]?)\.(?:[0-9]|[1-9][0-9]?)(\(\d+\))?\'?$/;
+  const REG_MSF = /^\'?(?:2[6-9]|[3-9][0-9])\.(?:[0-9]|[1-9][0-9]?)\.(?:[0-9]|[1-9][0-9]?)(\(\d+\))?\'?$/;
   return REG_MSF.test(version);
 }
