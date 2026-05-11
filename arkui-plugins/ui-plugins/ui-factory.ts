@@ -431,25 +431,34 @@ export class factory {
      * @param method method definition node
      */
     static updateCustomDialogOptionsInterface(newNode: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-        if (!newNode.body?.body || newNode.body?.body.length <= 0) {
+        const interfaceBody = newNode.body?.body;
+        if (!interfaceBody || interfaceBody.length <= 0) {
             return newNode;
         }
-
-        return arkts.factory.updateInterfaceDeclaration(
-            newNode,
-            newNode.extends,
-            newNode.id,
-            newNode.typeParams,
-            arkts.factory.updateInterfaceBody(newNode.body!, [
-                ...newNode.body.body,
-                factory.createPropertyInInterface(
-                    CustomDialogNames.BASE_COMPONENT,
-                    factory.createTypeReferenceFromString(CustomDialogNames.EXTENDABLE_COMPONENT)
-                ),
-            ]),
-            newNode.isStatic,
-            newNode.isFromExternal
+        const foundDecl = interfaceBody.find((st) => 
+            arkts.isClassProperty(st) 
+                && st.key 
+                && arkts.isIdentifier(st.key) 
+                && st.key.name === CustomDialogNames.BASE_COMPONENT
         );
+        if (!foundDecl) {
+            return arkts.factory.updateInterfaceDeclaration(
+                newNode,
+                newNode.extends,
+                newNode.id,
+                newNode.typeParams,
+                arkts.factory.updateInterfaceBody(newNode.body!, [
+                    ...interfaceBody,
+                    factory.createPropertyInInterface(
+                        CustomDialogNames.BASE_COMPONENT,
+                        factory.createTypeReferenceFromString(CustomDialogNames.EXTENDABLE_COMPONENT)
+                    ),
+                ]),
+                newNode.isStatic,
+                newNode.isFromExternal
+            );
+        }
+        return newNode;
     }
 
     /**

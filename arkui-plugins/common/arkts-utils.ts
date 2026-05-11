@@ -25,6 +25,8 @@ import {
     LIB_UI_COMPONENTS_PATH,
     PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES,
     PREVIEWER_RESOURCE_PATH,
+    APIComparison,
+    APIVersions,
 } from './predefines';
 import {
     ApplicationMainPages,
@@ -35,6 +37,7 @@ import {
     ProjectConfig,
     UIComponents,
 } from './plugin-context';
+import { MetaDataCollector } from './metadata-collector';
 
 
 export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
@@ -232,6 +235,64 @@ export function forEachArgWithParam(
     const lastIndex = isTrailingCall ? argLen - 1 : maxLen - 1;
     const lastArg = args.at(lastIndex);
     callbackFn(lastArg, lastParam, maxLen - 1);
+}
+
+export interface APIVersionCondition {
+    /** The version to compare against */
+    version: APIVersions;
+    /** The comparison operator (default: 'eq') */
+    compare?: APIComparison;
+}
+
+export type APIVersionCallback = (sdkVersion: APIVersions) => void;
+
+/**
+ * Creates a version-gated callback wrapper.
+ * The callback will only execute if the SDK version matches the condition.
+ * 
+ * @param condition - The version condition to check
+ * @param callback - The callback to execute if condition is met
+ * @returns A wrapped function that checks the condition before executing
+ */
+export function withAPIVersion(
+  condition: APIVersionCondition,
+  callbackFn: APIVersionCallback
+): void {
+    const projectConfig = MetaDataCollector.getInstance().projectConfig;
+    const compatibleSdkVersion = projectConfig?.compatibleSdkVersion;
+    const sdkVersion: number = compatibleSdkVersion ?? APIVersions.API_20;
+    const { version, compare = APIComparison.EQUAL } = condition;
+    let shouldExecute = false;
+    switch (compare) {
+        case APIComparison.LESS_THAN: {
+            shouldExecute = sdkVersion < version;
+            break;
+        }
+        case APIComparison.LESS_THAN_OR_EQUAL: {
+            shouldExecute = sdkVersion <= version;
+            break;
+        }
+        case APIComparison.GREATER_THAN: {
+            shouldExecute = sdkVersion > version;
+            break;
+        }
+        case APIComparison.GREATER_THAN_OR_EQUAL: {
+            shouldExecute = sdkVersion >= version;
+            break;
+        }
+        case APIComparison.EQUAL: {
+            shouldExecute = sdkVersion === version;
+            break;
+        }
+        case APIComparison.NON_EQUAL: {
+            shouldExecute = sdkVersion !== version;
+            break;
+        }
+    }
+
+    if (shouldExecute) {
+        callbackFn(sdkVersion);
+    }
 }
 
 /**

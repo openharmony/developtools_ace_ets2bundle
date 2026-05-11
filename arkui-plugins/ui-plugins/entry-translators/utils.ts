@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import * as path from 'path';
 import { isAnnotation } from '../../common/arkts-utils';
-import { StructDecoratorNames, EntryParamNames, EntryWrapperNames } from '../../common/predefines';
+import { StructDecoratorNames, EntryParamNames, EntryWrapperNames, ARKUI_NAVIGATION_SOURCE_NAME, NavigationNames, ARKUI_NAV_DESTINATION_SOURCE_NAME } from '../../common/predefines';
 
 export function isEntryWrapperClass(node: arkts.AstNode): node is arkts.ClassDeclaration {
     if (!arkts.isClassDeclaration(node)) return false;
@@ -55,4 +55,26 @@ export function getRelativePagePath(from: string, to: string): string {
         .relative(from, to)
         .replace(/\\/g, '/')
         .replace(/\.ets$/, '');
+}
+
+/**
+ * Find if interface `NavigationModuleInfo` or `NavDestinationModuleInfo` is declared in statements
+ */
+export function findNavigationModuleInfo(
+    statements: readonly arkts.AstNode[], 
+    externalSourceName: string
+): boolean {
+    for (const statement of statements) {
+        if (!arkts.isTSInterfaceDeclaration(statement)) {
+            continue;
+        }
+        const interfaceName: string | undefined = statement.id?.name;
+        if (externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME && interfaceName === NavigationNames.NAVIGATION_MODULE_INFO) {
+            return true;
+        }
+        if (externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME && interfaceName === NavigationNames.NAV_DESTINATION_MODULE_INFO) {
+            return true;
+        }
+    }
+    return false;
 }

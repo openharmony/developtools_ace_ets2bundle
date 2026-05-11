@@ -27,6 +27,8 @@ import {
 } from '../../collectors/ui-collectors/records';
 import {
     AnimationNames,
+    APIComparison,
+    APIVersions,
     ARKUI_BUILDER_SOURCE_NAME,
     BuilderLambdaNames,
     CustomComponentNames,
@@ -39,7 +41,7 @@ import {
     StateManagementTypes,
     StructDecoratorNames,
 } from '../../common/predefines';
-import { collect, expectName } from '../../common/arkts-utils';
+import { collect, withAPIVersion, expectName } from '../../common/arkts-utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { isSdkVersionAtLeast } from '../builder-lambda-translators/utils';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
@@ -596,22 +598,24 @@ export class CacheFactory {
         node: arkts.ClassDeclaration,
         metadata: NormalClassInfo
     ): arkts.ClassDeclaration {
-        const definition = node.definition;
-        if (!definition) {
-            return node;
-        }
-        let newStatements: arkts.AstNode[] = [];
-        if (InnerComponentInfoCache.getInstance().isCollected()) {
-            const cache: InnerComponentInfoCache = InnerComponentInfoCache.getInstance();
-            const names = cache.getAllComponentNames();
-            const methods = BuilderLambdaCacheFactory.createAllUniqueDeclaredComponentFunctions(names, cache);
-            newStatements.push(...methods);
-        }
-        // if (MetaDataCollector.getInstance().externalSourceName === ARKUI_BUILDER_SOURCE_NAME) {
-        //     newStatements.push(...BuilderLambdaFactory.addConditionBuilderDecls());
-        // }
-        definition.setBody([...definition.body, ...newStatements]);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(definition);
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                const definition = node.definition;
+                if (!definition) {
+                    return;
+                }
+                let newStatements: arkts.AstNode[] = [];
+                if (InnerComponentInfoCache.getInstance().isCollected()) {
+                    const cache: InnerComponentInfoCache = InnerComponentInfoCache.getInstance();
+                    const names = cache.getAllComponentNames();
+                    const methods = BuilderLambdaCacheFactory.createAllUniqueDeclaredComponentFunctions(names, cache);
+                    newStatements.push(...methods);
+                }
+                definition.setBody([...definition.body, ...newStatements]);
+                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(definition);
+            }
+        );
         return node;
     }
 
@@ -900,14 +904,21 @@ export class CacheFactory {
         node: arkts.TSInterfaceDeclaration,
         metadata: NormalInterfaceInfo
     ): arkts.TSInterfaceDeclaration {
-        if (!InnerComponentInfoCache.getInstance().isCollected() || !metadata.name) {
-            return node;
-        }
-        const componentName = metadata.name.replace(/Attribute$/, '');
-        if (!InnerComponentInfoCache.getInstance().hasComponentName(componentName)) {
-            return node;
-        }
-        return BuilderLambdaCacheFactory.addDeclaredSetMethodsInAttributeInterface(node, componentName);
+        let _node: arkts.TSInterfaceDeclaration = node;
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                if (!InnerComponentInfoCache.getInstance().isCollected() || !metadata.name) {
+                    return;
+                }
+                const componentName = metadata.name.replace(/Attribute$/, '');
+                if (!InnerComponentInfoCache.getInstance().hasComponentName(componentName)) {
+                    return;
+                }
+                _node = BuilderLambdaCacheFactory.addDeclaredSetMethodsInAttributeInterface(node, componentName);
+            }
+        );
+        return _node;
     }
 
     static updateBuilderType(builderNode: arkts.MethodDefinition): arkts.MethodDefinition {
