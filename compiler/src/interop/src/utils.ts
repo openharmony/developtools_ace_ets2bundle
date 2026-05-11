@@ -1370,6 +1370,22 @@ export function getProjectRootPath(filePath: string, projectConfig: Object, root
   return projectConfig.projectRootPath;
 }
 
+function findLocalDependencyFromBundledDeclare(filePath: string): Object | null {
+  if (!projectConfig?.projectArkOption?.bundle?.bundledDeclare) {
+    return null;
+  }
+  for (const [moduleName, depInfo] of projectConfig.depName2DepInfo) {
+    if (toUnixPath(filePath).startsWith(toUnixPath(depInfo.pkgRootPath) + '/')) {
+      return {
+        isLocalDependency: true,
+        moduleName: moduleName,
+        belongModulePath: depInfo.pkgRootPath
+      };
+    }
+  }
+  return null;
+}
+
 export function getBelongModuleInfo(filePath: string, modulePathMap: Object, projectRootPath: string): Object {
   for (const moduleName of Object.keys(modulePathMap)) {
     if (toUnixPath(filePath).startsWith(toUnixPath(modulePathMap[moduleName]) + '/')) {
@@ -1379,6 +1395,10 @@ export function getBelongModuleInfo(filePath: string, modulePathMap: Object, pro
         belongModulePath: modulePathMap[moduleName]
       };
     }
+  }
+  const bundledDep: Object | null = findLocalDependencyFromBundledDeclare(filePath);
+  if (bundledDep) {
+    return bundledDep;
   }
   return {
     isLocalDependency: false,
