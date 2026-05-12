@@ -42,7 +42,6 @@ function invokeFunctionWithParam(
     node: arkts.AstNode
 ): arkts.Statement {
     let builderNode = getWrapValue(arkts.factory.createIdentifier(className));
-    builderNode.range = node.range;
     return arkts.factory.createVariableDeclaration(
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
@@ -135,7 +134,7 @@ function createBuilderInitializer(
         ...invokeComponent(),
         createInitReturn(className)
     ]);
-    return arkts.factory.createArrowFunction(
+    const newNode = arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             block,
             arkts.factory.createFunctionSignature(undefined, [], undefined, false),
@@ -143,6 +142,8 @@ function createBuilderInitializer(
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
     );
+    newNode.setNoDebugLineFlag();
+    return newNode;
 }
 
 /**
@@ -460,7 +461,7 @@ function getUpdateArgs(node: arkts.CallExpression | arkts.Property): arkts.State
 }
 
 function createBuilderUpdate(node: arkts.CallExpression | arkts.Property): arkts.ArrowFunctionExpression {
-    return arkts.factory.createArrowFunction(
+    const newNode = arkts.factory.createArrowFunction(
         arkts.factory.createScriptFunction(
             arkts.factory.createBlock([...getUpdateArgs(node)]),
             arkts.factory.createFunctionSignature(
@@ -485,6 +486,8 @@ function createBuilderUpdate(node: arkts.CallExpression | arkts.Property): arkts
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
         )
     );
+    newNode.setNoDebugLineFlag();
+    return newNode;
 }
 
 function getInitArgs(node: arkts.CallExpression | arkts.Property): builderParam {
@@ -560,6 +563,7 @@ export function generateBuilderCompatible<T extends arkts.CallExpression | arkts
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
             )
         );
+        newValue.setNoDebugLineFlag();
         result = arkts.factory.updateProperty(node, node.key, newValue) as T;
     } else {
         result = arkts.factory.updateCallExpression(
@@ -569,6 +573,7 @@ export function generateBuilderCompatible<T extends arkts.CallExpression | arkts
             [initializer, updater]
         ) as T;
     }
+    result.range = node.range;
     arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(result);
     return result;
 }
