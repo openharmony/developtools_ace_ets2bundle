@@ -204,7 +204,7 @@ export class factory {
                         arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME)
                     )
                 ),
-                [factory.generateEntryFunction(entryAnnoInfo.name), ctor],
+                [factory.generateEntryFunction(entryAnnoInfo.name), factory.generateEntryWrapperRegisterNamedRouter(), ctor],
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
                 arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
@@ -454,6 +454,48 @@ export class factory {
             arkts.factory.createIdentifier(name, uiFactory.createTypeReferenceFromString(type)),
             undefined
         );
+    }
+
+    /**
+     * generate RegisterNamedRouter method in __EntryWrapper that delegates to EntryPoint.RegisterNamedRouter
+     */
+    static generateEntryWrapperRegisterNamedRouter(): arkts.MethodDefinition {
+        const params = [
+            factory.registerRouteParam(EntryWrapperNames.ROUTER_NAME, 'string'),
+            factory.registerRouteParam(EntryWrapperNames.INSTANCE, EntryWrapperNames.ENTRY_POINT_CLASS_NAME),
+            factory.registerRouteParam(EntryWrapperNames.PARAM, NavigationNames.NAVINTERFACE),
+        ];
+        const delegateCall = arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier(EntryWrapperNames.ENTRY_POINT_CLASS_NAME),
+                    arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                undefined,
+                [
+                    arkts.factory.createIdentifier(EntryWrapperNames.ROUTER_NAME),
+                    arkts.factory.createIdentifier(EntryWrapperNames.INSTANCE),
+                    arkts.factory.createIdentifier(EntryWrapperNames.PARAM),
+                ]
+            )
+        );
+        return uiFactory.createMethodDefinition({
+            key: arkts.factory.createIdentifier(EntryWrapperNames.REGISTER_NAMED_ROUTER),
+            kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            function: {
+                body: arkts.factory.createBlock([delegateCall]),
+                params: params,
+                returnTypeAnnotation: arkts.factory.createPrimitiveType(
+                    arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID
+                ),
+                flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+            },
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
+        });
     }
 
     /**
