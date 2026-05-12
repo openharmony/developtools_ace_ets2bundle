@@ -460,10 +460,11 @@ function setIntentEntryPages(projectConfig) {
 
 function setAbilityPages(projectConfig) {
   let abilityPages = [];
+  let extensionAbilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    abilityPages = readAbilityEntrance(moduleJson);
-    setAbilityFile(projectConfig, abilityPages);
+    [abilityPages, extensionAbilityPages] = readAbilityEntrance(moduleJson);
+    setAbilityFile(projectConfig, abilityPages, extensionAbilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
@@ -530,8 +531,12 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages) {
+function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
+  const extensionAbilitySet = new Set(extensionAbilityPages);
   abilityPages.forEach(abilityPath => {
+    if (extensionAbilitySet.has(abilityPath) && abilityPath.endsWith('.so')) {
+      return;
+    }
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
     if (path.isAbsolute(abilityPath)) {
       abilityPath = '.' + abilityPath.slice(projectConfig.projectPath.length);
@@ -558,6 +563,7 @@ function setAbilityFile(projectConfig, abilityPages) {
 
 function readAbilityEntrance(moduleJson) {
   const abilityPages = [];
+  const extensionAbilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
@@ -576,10 +582,23 @@ function readAbilityEntrance(moduleJson) {
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
       setEntrance(moduleJson.module.extensionAbilities, abilityPages);
+      setExtension(moduleJson.module.extensionAbilities, extensionAbilityPages);
       setCardPages(moduleJson.module.extensionAbilities);
     }
   }
-  return abilityPages;
+  return [abilityPages, extensionAbilityPages];
+}
+
+function setExtension(abilityConfig, extensionPages) {
+  if (abilityConfig && abilityConfig.length > 0) {
+    abilityConfig.forEach(ability => {
+      if (ability.srcEntry) {
+        extensionPages.push(ability.srcEntry);
+      } else if (ability.srcEntrance) {
+        extensionPages.push(ability.srcEntrance);
+      }
+    });
+  }
 }
 
 function setEntrance(abilityConfig, abilityPages) {

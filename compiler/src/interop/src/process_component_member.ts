@@ -79,7 +79,13 @@ import {
   FALSE,
   MIN_OBSERVED,
   COMPONENT_OBSERVEDV2_DECORATOR,
-  COMPONENT_ENV_DECORATOR
+  COMPONENT_ENV_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR,
+  RESET_STATE_VARS_ON_REUSE,
+  OBJECT_KEYWORD,
+  RESET_SOURCE,
+  RESOURCE_NAME_PARAMS,
+  RE_INITIALIZE_CONSUME
 } from './pre_define';
 import {
   forbiddenUseStateType,
@@ -126,6 +132,7 @@ import {
 } from './component_map';
 import {
   isAllowedTypeForBasic,
+  isCompatibleVersionOverTarget,
   isFunctionType
 } from './process_custom_component';
 export type ControllerType = {
@@ -164,7 +171,9 @@ export const setUpdateParamsDecorators: Set<string> =
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
 export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR]);
+  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR,
+    COMPONENT_CUSTOM_ENV_DECORATOR
+  ]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -316,7 +325,7 @@ export class PropMapManager {
 export function processMemberVariableDecorators(parentName: ts.Identifier,
   item: ts.PropertyDeclaration, ctorNode: ts.ConstructorDeclaration, watchMap: Map<string, ts.Node>,
   checkController: ControllerType, log: LogInfo[], program: ts.Program, context: ts.TransformationContext,
-  hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration): UpdateResult {
+  hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1?: ts.Statement[]): UpdateResult {
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
@@ -341,7 +350,7 @@ export function processMemberVariableDecorators(parentName: ts.Identifier,
     updateResult.setUpdateParams(createUpdateParams(name, COMPONENT_CUSTOM_DECORATOR));
   } else {
     processPropertyNodeDecorator(parentName, item, updateResult, ctorNode, name, watchMap,
-      log, program, context, hasPreview, interfaceNode);
+      log, program, context, hasPreview, interfaceNode, addStatementsInResetOnReuseV1);
   }
   if (decorators && decorators.length && validatePropDecorator(decorators)) {
     updateResult.setStateVarsParams(createStateVarsBody(name));
@@ -364,6 +373,67 @@ function createStateVarsBody(name: ts.Identifier): ts.ExpressionStatement {
       name
     )]
   ));
+}
+
+export function createResetStateVarsOnReuseForV1(newMembers: ts.ClassElement[],
+  addStatementsInResetOnReuseV1: ts.Statement[],
+  currentLinkCollection: Set<string>
+): void {
+  if (currentLinkCollection && currentLinkCollection.size) {
+    currentLinkCollection.forEach((propertyName: string) => {
+      addStatementsInResetOnReuseV1.push(createReusePropertyDecl(propertyName));
+    });
+  }
+
+  const resetOnReuseNode: ts.MethodDeclaration = ts.factory.createMethodDeclaration(
+    [ts.factory.createToken(ts.SyntaxKind.PublicKeyword)],
+    undefined,
+    ts.factory.createIdentifier(RESET_STATE_VARS_ON_REUSE),
+    undefined,
+    undefined,
+    [ts.factory.createParameterDeclaration(
+      undefined,
+      undefined,
+      ts.factory.createIdentifier(COMPONENT_CONSTRUCTOR_PARAMS),
+      undefined,
+      ts.factory.createTypeReferenceNode(
+        ts.factory.createIdentifier(OBJECT_KEYWORD),
+        undefined
+      ),
+      undefined
+    )],
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+    ts.factory.createBlock(
+      addStatementsInResetOnReuseV1,
+      true
+    )
+  );
+  newMembers.push(resetOnReuseNode);
+}
+
+function createReusePropertyDecl(
+  propertyName: string
+): ts.Statement {
+  const resultStatement: ts.Statement =
+    ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(`__${propertyName}`)
+          ),
+          ts.factory.createIdentifier(RESET_SOURCE)
+        ),
+        undefined,
+        [
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(RESOURCE_NAME_PARAMS),
+            ts.factory.createIdentifier(propertyName)
+          )
+        ]
+      )
+    );
+  return resultStatement;
 }
 
 function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Identifier,
@@ -389,7 +459,8 @@ function createControllerSet(node: ts.PropertyDeclaration, componentName: ts.Ide
 function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.PropertyDeclaration,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, name: ts.Identifier,
   watchMap: Map<string, ts.Node>, log: LogInfo[], program: ts.Program,
-  context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration): void {
+  context: ts.TransformationContext, hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration,
+  addStatementsInResetOnReuseV1?: ts.Statement[]): void {
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const propertyDecorators: string[] = [];
   for (let i = 0; i < decorators.length; i++) {
@@ -419,7 +490,7 @@ function processPropertyNodeDecorator(parentName: ts.Identifier, node: ts.Proper
       propertyDecorators.push(decoratorName);
       if (decoratorName !== COMPONENT_REQUIRE_DECORATOR) {
         processStateDecorators(node, decoratorName, updateResult, ctorNode, log, program, context,
-          hasPreview, interfaceNode);
+          hasPreview, interfaceNode, addStatementsInResetOnReuseV1);
       }
     }
   }
@@ -505,19 +576,22 @@ function validateRequireDecorator(propertyDecorators: string[]): boolean {
 
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, log: LogInfo[],
-  program: ts.Program, context: ts.TransformationContext, hasPreview:boolean,
-  interfaceNode: ts.InterfaceDeclaration): void {
+  program: ts.Program, context: ts.TransformationContext, hasPreview: boolean,
+  interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1?: ts.Statement[]): void {
   const name: ts.Identifier = node.name as ts.Identifier;
   updateResult.setProperity(undefined);
   const updateState: ts.Statement[] = [];
   const variableInitStatement: ts.Statement =
-    createVariableInitStatement(node, decorator, log, program, context, hasPreview, interfaceNode);
+    createVariableInitStatement(node, decorator, log, program, context, hasPreview, interfaceNode,
+      addStatementsInResetOnReuseV1
+    );
   if (variableInitStatement) {
     updateState.push(variableInitStatement);
   }
   addAddProvidedVar(node, name, decorator, updateState);
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
-  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR].includes(decorator)) {
+  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR,
+    COMPONENT_CUSTOM_ENV_DECORATOR].includes(decorator)) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
   }
@@ -603,7 +677,7 @@ function getClassMethod(node: ts.PropertyDeclaration): Set<string> {
 
 function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: string,
   log: LogInfo[], program: ts.Program, context: ts.TransformationContext, hasPreview: boolean,
-  interfaceNode: ts.InterfaceDeclaration): ts.Statement {
+  interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1 ?: ts.Statement[]): ts.Statement {
   const name: ts.Identifier = node.name as ts.Identifier;
   let type: ts.TypeNode;
   let updateState: ts.ExpressionStatement;
@@ -630,7 +704,21 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
         updateSynchedPropertyOneWay(name, type, decorator, log, program) :
         updateSynchedPropertyOneWayPU(name, type, decorator, log, program);
       break;
+    case COMPONENT_LOCAL_STORAGE_PROP_DECORATOR:
+      if (addStatementsInResetOnReuseV1) {
+        addStatementsInResetOnReuseV1.push(
+          createStoragePropReuseDecl(name.getText())
+        );
+      }
+      break;
     case COMPONENT_STORAGE_PROP_DECORATOR:
+      if (addStatementsInResetOnReuseV1) {
+        addStatementsInResetOnReuseV1.push(
+          createStoragePropReuseDecl(name.getText())
+        );
+      }
+      updateState = updateStoragePropAndLinkProperty(node, name, decorator);
+      break;
     case COMPONENT_STORAGE_LINK_DECORATOR:
       updateState = updateStoragePropAndLinkProperty(node, name, decorator);
       break;
@@ -641,7 +729,7 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
       break;
     case COMPONENT_CONSUME_DECORATOR:
       wrongDecoratorInPreview(node, COMPONENT_CONSUME_DECORATOR, hasPreview, log);
-      updateState = updateConsumeProperty(node, name);
+      updateState = updateConsumeProperty(node, name, addStatementsInResetOnReuseV1);
       break;
     case COMPONENT_BUILDERPARAM_DECORATOR:
       updateState = updateBuilderParamProperty(node, name, log);
@@ -653,6 +741,24 @@ function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: st
     ts.getModifiers(interfaceNode), interfaceNode.name, interfaceNode.typeParameters,
     interfaceNode.heritageClauses, members);
   return updateState;
+}
+
+function createStoragePropReuseDecl(
+  name: string
+): ts.ExpressionStatement {
+  return ts.factory.createExpressionStatement(
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createThis(),
+          ts.factory.createIdentifier(`__${name}`)
+        ),
+        ts.factory.createIdentifier(RESET_SOURCE)
+      ),
+      undefined,
+      []
+    )
+  );
 }
 
 function wrongDecoratorInPreview(node: ts.PropertyDeclaration, decorator: string,
@@ -866,7 +972,8 @@ function updateSynchedPropertyNesedObject(nameIdentifier: ts.Identifier,
 }
 
 function updateConsumeProperty(node: ts.PropertyDeclaration,
-  nameIdentifier: ts.Identifier): ts.ExpressionStatement {
+  nameIdentifier: ts.Identifier,
+  addStatementsInResetOnReuseV1?: ts.Statement[]): ts.ExpressionStatement {
   const name: string = nameIdentifier.getText();
   let propertyOrAliasName: string;
   const propertyAndStringKey: [string?, boolean?, ts.Node?, boolean?] = [];
@@ -885,6 +992,20 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
       [
         propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
           propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)];
+  if (addStatementsInResetOnReuseV1 && isCompatibleVersionOverTarget(26)) {
+    addStatementsInResetOnReuseV1.push(
+      ts.factory.createExpressionStatement(
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createThis(),
+            ts.factory.createIdentifier(RE_INITIALIZE_CONSUME)
+          ),
+          undefined,
+          callExpressionArgs
+        )
+      )
+    );
+  }
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(`__${name}`),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
