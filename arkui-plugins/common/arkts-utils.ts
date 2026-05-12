@@ -290,7 +290,7 @@ export function withAPIVersion(
         }
     }
 
-    if (shouldExecute) {
+    if (MetaDataCollector.getInstance().enableInnerComponentRewrite || shouldExecute) {
         callbackFn(sdkVersion);
     }
 }
