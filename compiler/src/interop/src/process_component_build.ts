@@ -146,7 +146,10 @@ import {
   GLOBAL_THIS,
   APIVERSION,
   HDSNAVIGATION,
-  HDSNAVDESTINATION
+  HDSNAVDESTINATION,
+  _CONTAINER_READER,
+  HOVERED,
+  HOVER
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -183,7 +186,8 @@ import {
   processCustomComponent,
   createConditionParent,
   isRecycle,
-  isReuseInV2
+  isReuseInV2,
+  isCompatibleVersionOverTarget
 } from './process_custom_component';
 import {
   LogType,
@@ -943,7 +947,8 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
-  } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
+  } else if (partialUpdateConfig.partialUpdateMode && (TabContentAndNavDestination.has(nameResult.name) ||
+    (isCompatibleVersionOver20() && !!EXT_WHITE_LIST[1] && EXT_WHITE_LIST[1] === nameResult.name))) {
     processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
@@ -961,8 +966,10 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
   }
   const immutableStatements: ts.Statement[] = [];
   const res: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
-  newStatements.push(res.newNode);
-  processDebug(node, nameResult, newStatements);
+  if (nameResult.name !== _CONTAINER_READER) {
+    newStatements.push(res.newNode);
+    processDebug(node, nameResult, newStatements);
+  }
   const etsComponentResult: EtsComponentResult = parseEtsComponentExpression(node);
   const componentName: string = res.identifierNode.getText();
   let judgeIdStart: number;
@@ -970,27 +977,24 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     judgeIdStart = innerCompStatements.length;
   }
   if (etsComponentResult.etsComponentNode.body && ts.isBlock(etsComponentResult.etsComponentNode.body)) {
-    if (res.isButton) {
-      checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
-      if (projectConfig.isPreview || projectConfig.enableDebugLine) {
-        newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
-      } else {
-        newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
-      }
-    }
-    if (etsComponentResult.hasAttr) {
-      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
-    }
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
-    storedFileInfo.lazyForEachInfo.isDependItem = false;
-    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
-      {isAcceleratePreview: false, line: 0, column: 0, fileName: ''}, isBuilder, parent, undefined,
-      isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+    processNormalComponentBlock(
+      node, res, etsComponentResult, log, newStatements, componentName,
+      immutableStatements, innerCompStatements, isGlobalBuilder, isTransition,
+      builderParamsResult, isBuilder, parent, isInRepeatTemplate, nameResult
+    );
   } else {
-    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
-    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    if (componentName !== _CONTAINER_READER) {
+      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+      processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+        isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    } else {
+      const containerReaderRes: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
+      newStatements.push(containerReaderRes.newNode);
+      processDebug(node, nameResult, newStatements);
+      bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+      processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+        isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    }
   }
   if (res.isContainerComponent || res.needPop) {
     innerCompStatements.push(createComponent(node, COMPONENT_POP_FUNCTION).newNode);
@@ -999,6 +1003,59 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     innerCompStatements.splice(judgeIdStart, innerCompStatements.length - judgeIdStart,
       ifRetakeId(innerCompStatements.slice(judgeIdStart), idName));
   }
+}
+
+function processNormalComponentBlock(
+  node: ts.ExpressionStatement,
+  res: CreateResult,
+  etsComponentResult: EtsComponentResult,
+  log: LogInfo[],
+  newStatements: ts.Statement[],
+  componentName: string,
+  immutableStatements: ts.Statement[],
+  innerCompStatements: ts.Statement[],
+  isGlobalBuilder: boolean,
+  isTransition: boolean,
+  builderParamsResult: BuilderParamsResult,
+  isBuilder: boolean,
+  parent: string,
+  isInRepeatTemplate: boolean,
+  nameResult: NameResult
+): void {
+  if (res.isButton) {
+    checkButtonParamHasLabel(etsComponentResult.etsComponentNode, log);
+    if (projectConfig.isPreview || projectConfig.enableDebugLine) {
+      newStatements.splice(-2, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
+    } else {
+      newStatements.splice(-1, 1, createComponent(node, COMPONENT_CREATE_CHILD_FUNCTION).newNode);
+    }
+  }
+  if (etsComponentResult.hasAttr && componentName !== _CONTAINER_READER) {
+    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+  }
+  if (componentName !== _CONTAINER_READER) {
+    processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+    storedFileInfo.lazyForEachInfo.isDependItem = false;
+    processComponentChild(etsComponentResult.etsComponentNode.body, innerCompStatements, log,
+      { isAcceleratePreview: false, line: 0, column: 0, fileName: '' }, isBuilder, parent, undefined,
+      isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+    return;
+  }
+  const containerReaderStatements: ts.Statement[] = [];
+  processComponentChild(etsComponentResult.etsComponentNode.body, containerReaderStatements, log,
+    { isAcceleratePreview: false, line: 0, column: 0, fileName: '' }, isBuilder, parent, undefined,
+    isGlobalBuilder, false, builderParamsResult, isInRepeatTemplate);
+  const containerReaderRes: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION,
+    containerReaderStatements);
+  newStatements.push(containerReaderRes.newNode);
+  processDebug(node, nameResult, newStatements);
+  if (etsComponentResult.hasAttr) {
+    bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
+  }
+  processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
+    isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+  storedFileInfo.lazyForEachInfo.isDependItem = false;
 }
 
 export function ifRetakeId(blockContent: ts.Statement[], idName: ts.Expression): ts.IfStatement {
@@ -1908,6 +1965,9 @@ function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.Express
   if (argumentsArray.length >= 3 && argumentsArray[2]) {
     parameterList.push(ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC));
   }
+  if (argumentsArray.length >= 4 && ts.isObjectLiteralExpression(argumentsArray[3])) {
+    parameterList.push(argumentsArray[3]);
+  }
   if (projectConfig.optLazyForEach) {
     parameterList.push(ts.factory.createTrue());
   }
@@ -2169,7 +2229,9 @@ interface CreateResult {
   needPop: boolean;
 }
 
-function createComponent(node: ts.ExpressionStatement, type: string): CreateResult {
+function createComponent(node: ts.ExpressionStatement, type: string,
+  TrailingStatements?: ts.Statement[]
+): CreateResult {
   const res: CreateResult = {
     newNode: node,
     identifierNode: null,
@@ -2198,7 +2260,10 @@ function createComponent(node: ts.ExpressionStatement, type: string): CreateResu
     }
     res.newNode = type === COMPONENT_POP_FUNCTION ?
       ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null)) :
-      ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
+      (temp.getText() === _CONTAINER_READER) ?
+        ts.factory.createExpressionStatement(createTrailingFunction(temp, identifierNode,
+          checkArguments(temp, type), TrailingStatements)) :
+        ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
@@ -2269,6 +2334,7 @@ export interface ComponentAttrInfo {
   hasIdAttr: boolean,
   attrCount: number,
   reuse: string,
+  reuseAttribute?: ts.Expression
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
@@ -2381,38 +2447,57 @@ function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: b
 
 function parseRecycleId(node: ts.CallExpression, attr: ts.Identifier, componentAttrInfo: ComponentAttrInfo, log: LogInfo[],
   isReusableV2NodeAttr: boolean = false): void {
-  if (componentAttrInfo) {
+  if (componentAttrInfo && node.arguments.length > 0) {
+    const param: ts.Expression = node.arguments[0];
     const attrName: string = attr.escapedText.toString();
     if (attrName === RECYCLE_REUSE_ID) {
       logMessageCollection.checkUsageOfReuseIdAttribute(node, isReusableV2NodeAttr, log);
-      componentAttrInfo.reuseId = node.arguments[0];
+      componentAttrInfo.reuseId = param;
     } else if (attrName === ATTRIBUTE_ID) {
       componentAttrInfo.hasIdAttr = true;
     } else if (attrName === REUSE_ATTRIBUTE) {
       logMessageCollection.checkUsageOfReuseAttribute(node, isReusableV2NodeAttr, log);
-      if (ts.isObjectLiteralExpression(node.arguments[0]) && !!getReuseIdInReuse(node.arguments[0])) {
-        componentAttrInfo.reuse = getReuseIdInReuse(node.arguments[0]);
-      } else {
-        componentAttrInfo.reuse = '';
-      }
+      setReuseAttributeInfo(componentAttrInfo, param);
     }
     componentAttrInfo.attrCount++;
   }
 }
 
-function getReuseIdInReuse(node: ts.ObjectLiteralExpression): string {
-  let reuse: string = '';
-  if (node.properties && node.properties.length) {
-    node.properties.forEach((item: ts.ObjectLiteralElementLike) => {
-      if (ts.isPropertyAssignment(item) && item.name && ts.isIdentifier(item.name) &&
-        item.name.getText() === RECYCLE_REUSE_ID && item.initializer && 
-        ts.isArrowFunction(item.initializer) && item.initializer.body &&
-        ts.isStringLiteral(item.initializer.body)) {
-        reuse = item.initializer.body.text;
-      }
-    });
+function setReuseAttributeInfo(componentAttrInfo: ComponentAttrInfo, param: ts.Expression): void {
+  componentAttrInfo.reuse = '';
+  componentAttrInfo.reuseAttribute = undefined;
+  if (!ts.isObjectLiteralExpression(param)) {
+    return;
   }
-  return reuse;
+  const reuseIdProperty = getReuseIdProperty(param);
+  if (reuseIdProperty) {
+    componentAttrInfo.reuse = getReuseIdInReuse(reuseIdProperty);
+    componentAttrInfo.reuseAttribute = reuseIdProperty;
+  }
+}
+
+function getReuseIdProperty(
+  node: ts.ObjectLiteralExpression
+): ts.Expression | undefined {
+  if (!node.properties || node.properties.length <= 0) {
+    return undefined;
+  }
+  const reuseIdProperty: ts.PropertyAssignment | undefined =
+    node.properties.find(
+      (item: ts.ObjectLiteralElementLike) =>
+        ts.isPropertyAssignment(item) &&
+        item.name &&
+        ts.isIdentifier(item.name) &&
+        item.name.getText() === RECYCLE_REUSE_ID
+    ) as ts.PropertyAssignment | undefined;
+  return reuseIdProperty?.initializer;
+}
+
+function getReuseIdInReuse(node: ts.Expression): string {
+  if (ts.isArrowFunction(node) && node.body && ts.isStringLiteral(node.body)) {
+    return node.body.text;
+  }
+  return '';
 }
 
 function processCustomBuilderProperty(node: ts.CallExpression, identifierNode: ts.Identifier,
@@ -3236,7 +3321,8 @@ function generateFunctionPropertyAssignmentForExclamation(name: string, varExp: 
 function createViewStackProcessor(item, endViewStack: boolean): ts.ExpressionStatement {
   const argument: ts.StringLiteral[] = [];
   if (!endViewStack && item.name) {
-    argument.push(ts.factory.createStringLiteral(item.name.getText()));
+    const tempString: string = (item.name.getText() === HOVERED) ? HOVER : item.name.getText();
+    argument.push(ts.factory.createStringLiteral(tempString));
   }
   return ts.factory.createExpressionStatement(ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
@@ -3252,6 +3338,10 @@ function traverseStateStylesAttr(temp, statements: ts.Statement[],
   identifierNode: ts.Identifier, log: LogInfo[], updateStatements: ts.Statement[],
   newImmutableStatements: ts.Statement[] = null, isRecycleComponent: boolean = false): void {
   temp.arguments[0].properties.reverse().forEach((item: ts.PropertyAssignment) => {
+    if (item.name && item.name.getText && item.name.getText() === HOVERED &&
+      !isCompatibleVersionOverTarget(26)) {
+      return;
+    }
     if (ts.isPropertyAccessExpression(item.initializer) &&
       item.initializer.expression.getText() === THIS &&
       INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {
@@ -3723,11 +3813,59 @@ function processExclamationEtsComponent(argumentsArr: ts.NodeArray<ts.Expression
   return arr;
 }
 
+function createTrailingFunction(
+  node: ts.Identifier,
+  attrNode: ts.Identifier,
+  argumentsArr: ts.NodeArray<ts.Expression>,
+  arrowFunctionStatements?: ts.Statement[]
+): ts.CallExpression {
+  const compName: string = node.escapedText.toString();
+  const type: string = attrNode.escapedText.toString();
+  if (argumentsArr && argumentsArr.length) {
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
+      // @ts-ignore
+      argumentsArr = processDollarEtsComponent(argumentsArr, compName);
+    }
+    if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_EXCLAMATION.has(compName)) {
+      argumentsArr = processExclamationEtsComponent(argumentsArr, compName) as unknown as ts.NodeArray<ts.Expression>;
+    }
+    if (checkCreateArgumentBuilder(node, attrNode)) {
+      argumentsArr = transformBuilder(argumentsArr);
+    }
+  } else {
+    // @ts-ignore
+    argumentsArr = navigationCreateParam(compName, type);
+  }
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      node,
+      attrNode
+    ),
+    undefined,
+    [
+      ...argumentsArr,
+      arrowFunctionStatements ?
+        ts.factory.createArrowFunction(
+          undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock(
+            arrowFunctionStatements,
+            true
+          )
+        ) :
+        ts.factory.createIdentifier('undefined')
+    ]
+  );
+}
+
 export function createFunction(node: ts.Identifier, attrNode: ts.Identifier,
   argumentsArr: ts.NodeArray<ts.Expression>, isAttributeModifier: boolean = false): ts.CallExpression {
-    const compName: string = node.escapedText.toString();
-    const type: string = attrNode.escapedText.toString();
-    const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
+  const compName: string = node.escapedText.toString();
+  const type: string = attrNode.escapedText.toString();
+  const globalThisArr: string[] = [COMPONENT_GESTURE, GLOBAL_CONTEXT];
   if (argumentsArr && argumentsArr.length) {
     if (type === COMPONENT_CREATE_FUNCTION && PROPERTIES_ADD_DOUBLE_DOLLAR.has(compName)) {
       // @ts-ignore
@@ -3798,7 +3936,9 @@ function navigationCreateParam(compName: string, type: string,
       ));
     }
   }
-  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
+  if ((CREATE_ROUTER_COMPONENT_COLLECT.has(compName) ||
+    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName))) &&
+    isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       navigationOrNavDestinationCreateContent(compName, isHaveParam),
       false
@@ -3871,11 +4011,17 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
+  if (!isCompatibleVersionOver20()) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
+  if (!isCompatibleVersionOver20()) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
 }
 
 export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
@@ -3972,6 +4118,16 @@ function isMutableBuilderCallExpression(node: ts.CallExpression): boolean {
 function isMutableBuilderExpression(node: ts.ExpressionStatement): boolean {
   if (node.expression &&
     isMutableBuilderCallExpression(node.expression as ts.CallExpression)) {
+    return true;
+  }
+  return false;
+}
+
+function isCompatibleVersionOver20(): boolean {
+  const COMPATIBLE_SDK_VERSION = 20;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION) {
     return true;
   }
   return false;

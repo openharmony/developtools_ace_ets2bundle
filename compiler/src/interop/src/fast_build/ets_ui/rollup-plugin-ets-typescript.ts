@@ -325,7 +325,6 @@ export function etsTransform() {
       resetValidateUiSyntax();
       resetObfuscation();
       parseIntent.clear();
-      resetExtContent();
     }
   };
 }

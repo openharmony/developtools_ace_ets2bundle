@@ -50,7 +50,8 @@ import {
   validateBuildMethodCount,
   getEntryNameFunction,
   FreezeParamType,
-  decoratorAssignParams
+  decoratorAssignParams,
+  processComponentReusePool
 } from './process_component_class';
 import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
@@ -122,7 +123,8 @@ function getAliasStructInfo(node: ts.CallExpression): StructInfo {
 }
 
 function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
-  context: ts.TransformationContext, StateManagementV2: { hasReusableV2: boolean }): ts.ClassDeclaration {
+  context: ts.TransformationContext, StateManagementV2: { hasReusableV2: boolean },
+  ReusePool: { hasReusePool: boolean }): ts.ClassDeclaration {
   const isReusableV2: boolean = node.name && ts.isIdentifier(node.name) && isReuseInV2(node.name.getText());
   if (isReusableV2) {
     StateManagementV2.hasReusableV2 = true;
@@ -136,7 +138,7 @@ function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
     node.name,
     node.typeParameters, 
     updateHeritageClauses(node, log, true),
-    processStructMembersV2(node, context, log)
+    processStructMembersV2(node, context, log, ReusePool)
   );
 }
 
@@ -188,7 +190,7 @@ function createReusableV2ReflectFunction(): ts.FunctionDeclaration {
 }
 
 function processStructMembersV2(node: ts.StructDeclaration, context: ts.TransformationContext,
-  log: LogInfo[]): ts.ClassElement[] {
+  log: LogInfo[], ReusePool: { hasReusePool: boolean }): ts.ClassElement[] {
   const structName: string = node.name.getText();
   const newMembers: ts.ClassElement[] = [];
   const buildCount: BuildCount = { count: 0 };
@@ -225,6 +227,9 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   });
   validateBuildMethodCount(buildCount, node.name, log);
   updateStateVarsMethodNode(paramStatementsInStateVarsMethod, newMembers);
+  if (structDecorators && Array.isArray(structDecorators) && structDecorators.length) {
+    processComponentReusePool(newMembers, structDecorators, true, ReusePool, structName);
+  }
   newMembers.push(addRerenderFunc([]));
   if (componentCollection.entryComponent === structName) {
     newMembers.push(getEntryNameFunction(componentCollection.entryComponent));

@@ -76,7 +76,8 @@ import {
   COMPONENTV2_PARAM_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
   COMPONENTV2_CONSUMER_DECORATOR,
-  COMPONENTV2_ONCE_DECORATOR
+  COMPONENTV2_ONCE_DECORATOR,
+  ENABLEWILDCARD
 } from './pre_define';
 import {
   INNER_COMPONENT_NAMES,
@@ -213,6 +214,8 @@ const sizeInVPClass: string = 'SizeInVP';
 const sizeClass: string = 'Size';
 const uiEnvWindowAvoidAreaInfoPXClass: string = 'UIEnvWindowAvoidAreaInfoPX';
 const uiEnvWindowAvoidAreaInfoVPClass: string = 'UIEnvWindowAvoidAreaInfoVP';
+const envPrimitiveNumberType: string = 'number';
+const envPrimitiveBooleanType: string = 'boolean';
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
@@ -222,12 +225,19 @@ const envWindowAvoidAreaPx: string = 'SystemProperties.WINDOW_AVOID_AREA_PX';
 const envWindowSize: string = 'SystemProperties.WINDOW_SIZE';
 const envWindowSizePx: string = 'SystemProperties.WINDOW_SIZE_PX';
 
-const envAllowTypesAndArgs: Map<string, string> = new Map([
-  [envSupportClass, envSupportArg],
-  [uiEnvWindowAvoidAreaInfoVPClass, envWindowAvoidArea],
-  [uiEnvWindowAvoidAreaInfoPXClass, envWindowAvoidAreaPx],
-  [sizeInVPClass, envWindowSize],
-  [sizeClass, envWindowSizePx]
+const envIsFocused: string = 'SystemProperties.WINDOW_IS_FOCUSED';
+const envIsHighlighted: string = 'SystemProperties.WINDOW_IS_HIGHLIGHTED';
+const systemDensity: string = 'SystemProperties.WINDOW_SYSTEM_DENSITY';
+const systemDisplayId: string = 'SystemProperties.WINDOW_DISPLAY_ID';
+
+const envAllowTypesAndArgs: Map<string, Array<string>> = new Map([
+  [envSupportClass, [envSupportArg]],
+  [uiEnvWindowAvoidAreaInfoVPClass, [envWindowAvoidArea]],
+  [uiEnvWindowAvoidAreaInfoPXClass, [envWindowAvoidAreaPx]],
+  [sizeInVPClass, [envWindowSize]],
+  [sizeClass, [envWindowSizePx]],
+  [envPrimitiveNumberType, [systemDisplayId, systemDensity]],
+  [envPrimitiveBooleanType, [envIsFocused, envIsHighlighted]]
 ]);
 
 export function validateUISyntax(source: string, content: string, filePath: string,
@@ -1190,13 +1200,23 @@ function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceF
   if (!parentCallExpression.arguments || !parentCallExpression.arguments.length) {
     return;
   }
-  parentCallExpression.arguments.forEach(monitorArgument => {
-    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log, isMonitor);
+  let monitorCheckWild: boolean = false;
+  let shouldCheck: { needCheck: boolean } = {
+    needCheck: true
+  };
+  if (isMonitor) {
+    const firstMonitorArg: ts.Expression = parentCallExpression.arguments[0];
+    monitorCheckWild = shouldMonitorCheckWild(firstMonitorArg, shouldCheck);
+  }
+  parentCallExpression.arguments.forEach((monitorArgument, index) => {
+    checkMonitorDecoratorsArg(monitorArgument, sourceFileNode, log,
+      isMonitor, index, monitorCheckWild, shouldCheck);
     if (!ts.isStringLiteral(monitorArgument)) {
       return;
     }
     if (isMonitor) {
-      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
+      checkMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log,
+ 	         classNode, index, monitorCheckWild);
       return;
     }
     checkSyncMonitorDecoratorArgContent(monitorArgument, sourceFileNode, log, classNode);
@@ -1204,8 +1224,20 @@ function checkMonitorDecorators(parentCallExpression: ts.CallExpression, sourceF
 }
 
 function checkMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
+  sourceFileNode: ts.SourceFile, log: LogInfo[],
+  classNode: ts.ClassDeclaration | ts.StructDeclaration,
+  index: number, shouldCheckWild: boolean = false): void {
   const monitorArg: argWrapper = { value: monitorArgument.text };
+  let needCheckContent: boolean = true;
+  if (shouldCheckWild) {
+    if (index === 0) {
+      return;
+    }
+    needCheckContent = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg, true);
+  }
+  if (!needCheckContent) {
+    return;
+  }
   if (monitorArg.value.startsWith('.')) {
     validateMonitorArgExist(monitorArgument, log, sourceFileNode);
     return;
@@ -1316,7 +1348,7 @@ interface MonitorStatus {
 function checkSyncMonitorDecoratorArgContent(monitorArgument: ts.StringLiteral,
   sourceFileNode: ts.SourceFile, log: LogInfo[], classNode: ts.ClassDeclaration | ts.StructDeclaration): void {
   const monitorArg: argWrapper = { value: monitorArgument.text };
-  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg);
+  const needCheckContent: boolean = checkWildCard(monitorArgument, sourceFileNode, log, monitorArg, false);
   if (!needCheckContent) {
     return;
   }
@@ -1724,9 +1756,12 @@ function checkArrayType(
 }
 
 function checkWildCard(monitorArgument: ts.StringLiteral,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper): boolean {
+  sourceFileNode: ts.SourceFile, log: LogInfo[], monitorArg: argWrapper,
+  isMonitor: boolean): boolean {
   const argText: string = monitorArgument.text;
-  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`;
+  const currentDecoratorName: string = isMonitor ? '@Monitor' : '@SyncMonitor';
+  const wildCardMessage: string = `In wildcard-based monitoring scenarios with '${currentDecoratorName}',` +
+    ` the .* pattern must be placed at the end of the string.`;
   const wildCardRegex: RegExp = /\*/g;
   const matches = argText.match(wildCardRegex);
   if (!matches || !matches.length) {
@@ -1749,15 +1784,60 @@ function checkWildCard(monitorArgument: ts.StringLiteral,
 }
 
 function checkMonitorDecoratorsArg(monitorArgument: ts.Expression,
-  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean): void {
+  sourceFileNode: ts.SourceFile, log: LogInfo[], isMonitor: boolean,
+  index: number, shouldCheckWild: boolean,
+  shouldCheck: { needCheck: boolean }): void {
   const decoratorName: string = isMonitor ? constantDefine.MONITOR : constantDefine.SYNC_MONITOR;
   const typeMessage: string = `Only constant expressions are supported as parameters in '@${decoratorName}'. Variables are not allowed.`;
+  if (isMonitor && index === 0 && !shouldCheck.needCheck) {
+    return;
+  }
   if (!ts.isStringLiteral(monitorArgument)) {
     isMonitor ?
       addLog(LogType.WARN, typeMessage, monitorArgument.pos, log, sourceFileNode) :
       addLog(LogType.ERROR, typeMessage, monitorArgument.pos, log, sourceFileNode, { code: '10905365' });
     return;
   }
+}
+
+function shouldMonitorCheckWild(firstMonitorArg: ts.Expression,
+  shouldCheck: { needCheck: boolean }): boolean {
+  if (!firstMonitorArg) {
+    return false;
+  }
+  if (!ts.isObjectLiteralExpression(firstMonitorArg)) {
+    return false;
+  }
+  if (!firstMonitorArg.properties || !firstMonitorArg.properties.length) {
+    shouldCheck.needCheck = false;
+    return true;
+  }
+  if (firstMonitorArg.properties.length > 1) {
+    return false;
+  }
+  const assignmentOne: ts.ObjectLiteralElementLike = firstMonitorArg.properties[0];
+  if (!ts.isPropertyAssignment(assignmentOne) ||
+    !ts.isIdentifier(assignmentOne.name)) {
+    return false;
+  }
+  const assignmentName: string = assignmentOne.name.getText();
+  if (assignmentName !== ENABLEWILDCARD) {
+    return false;
+  }
+  shouldCheck.needCheck = false;
+  if (!assignmentOne.initializer?.kind ||
+    ![ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword].includes(assignmentOne.initializer.kind)) {
+    const typeMessage: string = `The value of 'enableWildcard' must be a Boolean keyword.`;
+    transformLog.errors.push({
+      type: LogType.ERROR,
+      code: '10905372',
+      message: typeMessage,
+      pos: firstMonitorArg.getStart()
+    });
+    return false;
+  }
+  const initializerExpression: ts.Expression = assignmentOne.initializer;
+  return initializerExpression.kind === ts.SyntaxKind.TrueKeyword;
 }
 
 function getOrCreateClassTraceVariables(className: string,
@@ -2660,17 +2740,21 @@ export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string
   if (!envAllowTypesAndArgs.has(currentTypeName)) {
     return;
   }
-  if (argText !== envAllowTypesAndArgs.get(currentTypeName)) {
+  if (!envAllowTypesAndArgs.get(currentTypeName)?.includes(argText)) {
     validateEnvDecoratorExp(envExp, currentTypeName);
   }
 }
 
 export function validateEnvDecoratorExp(node: ts.Expression, currentTypeName: string): void {
-  const trueArg: string = envAllowTypesAndArgs.get(currentTypeName);
+  const trueArgs: Array<string> | undefined = envAllowTypesAndArgs.get(currentTypeName);
+  if (trueArgs === undefined || trueArgs.length === 0) {
+    return;
+  }
+  const acceptArgStr: string = trueArgs.join(', ');
   transformLog.errors.push({
     type: LogType.ERROR,
     code: '10905368',
-    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${trueArg}.`,
+    message: `Invalid parameter. State variables decorated with '@Env' of type '${currentTypeName}' can only accept ${acceptArgStr}.`,
     pos: node.getStart()
   });
 }
@@ -2698,10 +2782,15 @@ export function checkEnvType(propertyType: ts.Type, envTypeName: EnvTypeName): b
   }
   const symbol = propertyType.getSymbol();
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
-  if (!symbol || !checker) {
+  if (!checker) {
     return false;
   }
-  if (['string', 'number', 'boolean'].includes(checker.typeToString(propertyType))) {
+  const typeName = checker.typeToString(propertyType);
+  if (envAllowTypesAndArgs.has(typeName)) {
+    envTypeName.currentTypeName = typeName;
+    return true;
+  }
+  if (['string', 'number', 'boolean'].includes(typeName)) {
     return false;
   }
   if (symbol.declarations && symbol.declarations.some(declaration => ts.isTypeAliasDeclaration(declaration))) {
@@ -3125,7 +3214,7 @@ function checkParamsMethod(
   }
   const paramsTypeNode: ts.TypeNode | undefined = node.parameters[0]?.type;
   if (!paramsTypeNode || !ts.isTypeReferenceNode(paramsTypeNode)) {
-    return false;
+    return paramsTypeNode?.kind === ts.SyntaxKind.ObjectKeyword;;
   }
   const paramsName: string = paramsTypeNode.typeName.getText();
   return ['Record', 'Object', 'ESObject', 'object'].includes(paramsName);
@@ -3145,7 +3234,7 @@ function handleLifecycleDecorator(decoratorName: string, structNode: ts.StructDe
   const structName: string = structNode.name.escapedText.toString();
   const structInfo: StructInfo = processStructComponentV2.getOrCreateStructInfo(structName);
   if (structInfo.isComponentV1 && checkComponentV1Reuse(node)) {
-    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>`;
+    const message: string = `In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>.`;
     addLog(LogType.ERROR, message, node.name.pos, log, sourceFileNode, { code: '10905369' });
     return;
   }
