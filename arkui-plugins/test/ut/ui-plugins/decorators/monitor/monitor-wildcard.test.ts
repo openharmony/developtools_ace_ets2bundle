@@ -101,17 +101,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface));
 @ObservedV2() class Per implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -163,17 +170,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @ObservedV2() class DD implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -209,17 +223,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @ObservedV2() class EE implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -271,17 +292,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @ObservedV2() class FF implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -317,17 +345,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 @ObservedV2() class GG implements IObservedObject, ISubscribedWatches, IObservedAnyProp {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}

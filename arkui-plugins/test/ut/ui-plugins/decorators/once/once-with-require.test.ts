@@ -182,18 +182,25 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 function main() {}
 
 @ObservedV2() class Info implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
 
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}

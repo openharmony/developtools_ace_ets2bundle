@@ -74,18 +74,25 @@ import { Observed as Observed, ObjectLink as ObjectLink } from "@ohos.arkui.stat
 function main() {}
 
 @Observed() class A implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
 
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -101,18 +108,25 @@ function main() {}
 }
 
 @Observed() class B implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
 
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.addWatchSubscriber(watchId);
+    }
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
 
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
