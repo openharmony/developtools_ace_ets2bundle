@@ -267,6 +267,10 @@ class __EntryWrapper extends EntryPoint {
     }
   }
   
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+
   public constructor() {}
   
 }
