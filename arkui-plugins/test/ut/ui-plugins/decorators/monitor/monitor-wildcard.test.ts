@@ -49,7 +49,7 @@ import { Memo as Memo } from "arkui.incremental.annotation";
 
 import { ColumnAttribute as ColumnAttribute } from "arkui.component.column";
 
-import { ColumnImpl as ColumnImpl } from "arkui.component.column";
+import { Column as Column } from "arkui.component.column";
 
 import { IMonitorDecoratedVariable as IMonitorDecoratedVariable } from "arkui.stateManagement.decorator";
 
@@ -498,7 +498,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   @Memo() 
   public build() {
-    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+    Column(@Memo() ((instance: ColumnAttribute): void => {
       instance.setColumnOptions(undefined);
       instance.applyAttributesFinish();
       return;

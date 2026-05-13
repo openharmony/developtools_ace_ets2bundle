@@ -29,6 +29,8 @@ import {
 } from '../../collectors/ui-collectors/utils';
 import {
     AnimationNames,
+    APIComparison,
+    APIVersions,
     BuilderLambdaNames,
     InnerComponentNames,
     NodeCacheNames,
@@ -38,6 +40,7 @@ import {
     annotation,
     backingField,
     collect,
+    withAPIVersion,
     filterDefined,
     forEachArgWithParam,
     removeAnnotationByName,
@@ -194,13 +197,18 @@ export class CacheFactory {
         if (!metadata.name) {
             return node;
         }
-        if (
-            !isFromStruct 
-                && checkIsFunctionMethodDeclFromInfo(metadata) 
-                && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
-        ) {
-            InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
-        }
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                if (
+                    !isFromStruct 
+                        && checkIsFunctionMethodDeclFromInfo(metadata) 
+                        && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
+                ) {
+                    InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
+                }
+            }
+        );
         const func: arkts.ScriptFunction = node.scriptFunction;
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, checkIsFunctionMethodDeclFromInfo(metadata));
         const newNode = BuilderLambdaFactory.updateBuilderLambdaMethodDecl(

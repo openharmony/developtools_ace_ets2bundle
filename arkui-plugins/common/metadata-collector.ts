@@ -18,6 +18,7 @@ import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents, Route
 import { ImportInfo, collectFileImportsByProgram } from './import-info';
 
 export class MetaDataCollector {
+    public enableInnerComponentRewrite: boolean = true;
     public shouldHandleInsightIntent: boolean = true;
     public resourceInfo: ResourceInfo | undefined;
     public projectConfig: ProjectConfig | undefined;

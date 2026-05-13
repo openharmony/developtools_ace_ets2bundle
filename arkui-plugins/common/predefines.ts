@@ -603,3 +603,18 @@ export enum ReuseNames {
 export enum EnvInternalProperty {
     ENV_VALUE = 'value'
 }
+
+export enum APIVersions {
+    API_20 = 20,
+    API_24 = 24,
+    API_26 = 26
+}
+
+export enum APIComparison {
+    LESS_THAN = 'lt',
+    LESS_THAN_OR_EQUAL = 'lte',
+    GREATER_THAN = 'gt',
+    GREATER_THAN_OR_EQUAL = 'gte',
+    EQUAL = 'eq',
+    NON_EQUAL = 'ne'
+}
