@@ -14,7 +14,6 @@
  */
 
 import path from 'path';
-import { EXT_WHITE_LIST } from './component_map';
 
 export const NATIVE_MODULE: Set<string> = new Set(
   ['system.app', 'ohos.app', 'system.router', 'system.curves', 'ohos.curves', 'system.matrix4', 'ohos.matrix4']);
@@ -59,6 +58,17 @@ export const COMPONENTV2_EVENT_DECORATOR: string = '@Event';
 export const COMPONENTV2_CONSUMER_DECORATOR: string = '@Consumer';
 export const COMPONENTV2_PROVIDER_DECORATOR: string = '@Provider';
 
+export const REUSEPOOL: string = 'reusePool';
+export const POOLACCEPTS: string = 'poolAccepts';
+export const ISPRERENDER: string = 'isPreRender';
+export const RECYCLEFLAG: string = 'recycFlag';
+export const RECYCLENODEELMTID: string = 'recycleNodeElmtId';
+export const CURRENTLY_RENDERED_ELMTIDSTACK: string = 'currentlyRenderedElmtIdStack_';
+export const PUSH_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___pushRecycleElmtIdToRenderStack';
+export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___popRecycleElmtIdToRenderStack';
+export const SHARED: string = 'shared';
+export const PERINSTANCE: string = 'perInstance';
+
 export const CLASS_TRACK_DECORATOR: string = 'Track';
 export const CLASS_MIN_TRACK_DECORATOR: string = 'Trace';
 export const COMPONENT_DECORATOR_COMPONENT_V2: string = '@ComponentV2';
@@ -66,6 +76,10 @@ export const COMPONENT_DECORATOR_REUSABLE_V2: string = '@ReusableV2';
 export const DECORATOR_REUSABLE_V2: string = 'ReusableV2';
 export const REUSABLE_V2_INNER_DECORATOR: string = '__ReusableV2_Inner_Decorator__';
 export const REUSE_ATTRIBUTE: string = 'reuse';
+export const GET_UI_NATIVE_MODULE = 'getUINativeModule';
+export const COMMON = 'common';
+export const GET_API_TARGET_VERSION = 'getApiTargetVersion';
+export const CUSTOM_ENV: string = 'CustomEnv';
 
 export const COMPONENT_USER_INTENTS_DECORATOR_PAGE: string = '@InsightIntentPage';
 export const COMPONENT_USER_INTENTS_DECORATOR_LINK: string = '@InsightIntentLink';
@@ -263,6 +277,12 @@ export const CREATE_PROP_METHOD: string = 'createProp';
 export const CREATE_LINK_METHOD: string = 'createLink';
 export const CREATE_OBSERVABLE_OBJECT_METHOD: string = 'createObservableObject';
 
+export const RESET_STATE_VARS_ON_REUSE: string = 'resetStateVarsOnReuse';
+export const RE_INITIALIZE_CONSUME: string = 'reInitializeConsume';
+export const OBJECT_KEYWORD: string = 'Object';
+export const RESET_SOURCE: string = 'resetSource';
+export const OWNER: string = 'owner';
+
 export const CUSTOM_COMPONENT_EARLIER_CREATE_CHILD: string = 'earlierCreatedChild_';
 export const CUSTOM_COMPONENT_FUNCTION_FIND_CHILD_BY_ID: string = 'findChildById';
 export const CUSTOM_COMPONENT_NEEDS_UPDATE_FUNCTION: string = 'needsUpdate';
@@ -338,6 +358,8 @@ export const MODULE_VISUAL_PATH: string = 'src' + path.sep + 'main' + path.sep +
 export const THIS: string = 'this';
 export const STYLES: string = 'Styles';
 export const VISUAL_STATE: string = 'visualState';
+export const HOVERED: string = 'hovered';
+export const HOVER: string = 'hover';
 export const VIEW_STACK_PROCESSOR: string = 'ViewStackProcessor';
 
 export const BIND_POPUP: string = 'bindPopup';
@@ -419,6 +441,10 @@ export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
 export const NAV_BAR_WIDTH: string = 'navBarWidth';
+export const CONTAINER_READER: string = 'ContainerReader';
+export const SIZE: string = 'size';
+export const WIDTH_BREAKPOINT: string = 'widthBreakpoint';
+export const HEIGHT_BREAKPOINT: string = 'heightBreakpoint';
 const SCROLL: string = 'Scroll';
 const ZOOM_SCALE: string = 'zoomScale';
 
@@ -486,7 +512,8 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
   [LIST_ITEM, new Set([SELECTED])],
-  [SCROLL, new Set([ZOOM_SCALE])]
+  [SCROLL, new Set([ZOOM_SCALE])],
+  [CONTAINER_READER, new Set([SIZE, WIDTH_BREAKPOINT, HEIGHT_BREAKPOINT])],
 ]);
 
 export const CREATE_BIND_COMPONENT: Set<string> = new Set(['ListItemGroup', REFRESH]);
@@ -638,14 +665,6 @@ export const CARD_ENABLE_COMPONENTS: Set<string> = new Set([
 ]);
 export const TabContentAndNavDestination: Set<string> = new Set(['TabContent',
   'NavDestination']);
-if (EXT_WHITE_LIST.length) {
-    for (const compName of EXT_WHITE_LIST) {
-        CREATE_ROUTER_COMPONENT_COLLECT.add(compName);
-    }
-}
-if (EXT_WHITE_LIST.length >= 2) {
-    TabContentAndNavDestination.add(EXT_WHITE_LIST[1]);
-}
 export const CARD_LOG_TYPE_DECORATORS = 1;
 export const CARD_LOG_TYPE_COMPONENTS = 2;
 export const CARD_LOG_TYPE_IMPORT = 3;
@@ -696,6 +715,7 @@ export const UPDATE_LAZY_FOREACH_ELEMENTS = 'UpdateLazyForEachElements';
 export const IS_INITIAL_ITEM = 'isInitialItem';
 export const MY_IDS = 'myIds';
 export const COMPONENT_CALL: string = 'componentCall';
+export const ENABLEWILDCARD: string = 'enableWildcard';
 
 export const TS_BUILD_INFO_SUFFIX = '.tsbuildinfo';
 export const ARKTS_LINTER_BUILD_INFO_SUFFIX = 'inversedArkTsLinter.tsbuildinfo';
@@ -709,6 +729,9 @@ export const ARKTS_MODULE_NAME: string = 'arkts';
 export const COLD_RELOAD_MODE: string = 'coldReload';
 export const INTEGRATED_HSP: string = 'integratedHsp';
 export const USE_NORMALIZED_OHMURL: string = 'useNormalizedOHMUrl';
+export const API_VERSION_26: number = 26;
+
+export const _CONTAINER_READER: string = 'ContainerReader';
 
 export const CREATESTATICCOMPONENT: string = '__Interop_CreateStaticComponent_Internal';
 export const UPDATESTATICCOMPONENT: string = '__Interop_UpdateStaticComponent_Internal';
