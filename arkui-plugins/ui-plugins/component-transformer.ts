@@ -37,6 +37,7 @@ import {
     createAndInsertImportDeclaration,
     isDecoratorAnnotation,
     withAPIVersion,
+    expectNameInTypeReference,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
 import { findNavigationModuleInfo, getEntryRouteParam } from './entry-translators/utils';
@@ -532,6 +533,25 @@ export class ComponentTransformer extends AbstractVisitor {
                 if (_newSt !== undefined) {
                     return _newSt;
                 }
+                withAPIVersion(
+                    { version: APIVersions.API_24, compare: APIComparison.GREATER_THAN },
+                    (sdkVersion: APIVersions) => {
+                        if (
+                            arkts.isFunctionDeclaration(st) 
+                                && arkts.hasModifierFlag(st, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE)
+                                && hasDecoratorName(st, DecoratorNames.BUILDER)
+                        ) {
+                            const functionName = st.name?.name;
+                            const returnType = st.scriptFunction.returnTypeAnnotation;
+                            const returnTypeName = expectNameInTypeReference(returnType);
+                            if (!!functionName && !!returnTypeName && returnTypeName.name === `${functionName}Attribute`) {
+                                st.scriptFunction.setReturnTypeAnnotation(
+                                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                                );
+                            }
+                        }
+                    }
+                );
             }
             return st;
         });
