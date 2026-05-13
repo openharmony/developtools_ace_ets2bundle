@@ -586,4 +586,118 @@ mocha.describe('test declaration file merging', function () {
       expect(true).to.be.true;
     });
   });
+
+  mocha.describe('cross-module fallback via harFilesRecord mapping (crossLibFallback)', function () {
+    const LIB_DIR = 'crossLibFallback';
+    const opts = () => makeOptions(LIB_DIR);
+    const intermediateDeclPath = path.join(TESTDATA_DIR, 'crossLibFallback1', 'Index.d.ets');
+    const deepestDeclPath = path.join(TESTDATA_DIR, 'crossLibFallback2', 'Index.d.ets');
+
+    mocha.beforeEach(function () {
+      const dirs = [
+        path.join(TESTDATA_DIR, 'crossLibFallback'),
+        path.join(TESTDATA_DIR, 'crossLibFallback1'),
+        path.join(TESTDATA_DIR, 'crossLibFallback2'),
+      ];
+      for (const dir of dirs) {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+      }
+      if (!fs.existsSync(opts().entryFile)) {
+        fs.writeFileSync(opts().entryFile, "export { A } from 'crossLibFallback1'\n");
+      }
+      if (!fs.existsSync(intermediateDeclPath)) {
+        fs.writeFileSync(intermediateDeclPath, "export { A } from 'crossLibFallback2'\n");
+      }
+      if (!fs.existsSync(deepestDeclPath)) {
+        fs.writeFileSync(deepestDeclPath, 'export declare const A: string = "aaaa";\n');
+      }
+    });
+
+    function createFallbackResolver(
+      testDataDir: string,
+      declToSourceMap: Map<string, string>
+    ): (moduleNames: string[], containingFile: string) => (ts.ResolvedModuleFull | null)[] {
+      const blockedDeclPaths: Set<string> = new Set();
+      for (const declPath of declToSourceMap.keys()) {
+        blockedDeclPaths.add(declPath);
+      }
+      return (moduleNames: string[], containingFile: string): (ts.ResolvedModuleFull | null)[] => {
+        return moduleNames.map(moduleName => {
+          const resolveFrom = (fromFile: string): ts.ResolvedModuleFull | null => {
+            const libCandidates = [
+              path.join(testDataDir, moduleName, 'Index.d.ets'),
+              path.join(testDataDir, moduleName, 'Index.d.ts'),
+            ];
+            for (const candidate of libCandidates) {
+              if (fs.existsSync(candidate)) {
+                const ext = candidate.endsWith('.d.ets') ? ts.Extension.Dets : ts.Extension.Dts;
+                return { resolvedFileName: candidate, extension: ext };
+              }
+            }
+            return null;
+          };
+          if (blockedDeclPaths.has(containingFile)) {
+            const sourcePath = declToSourceMap.get(containingFile);
+            if (sourcePath) {
+              return resolveFrom(sourcePath);
+            }
+            return null;
+          }
+          const resolved = resolveFrom(containingFile);
+          if (resolved) {
+            return resolved;
+          }
+          const sourcePath = declToSourceMap.get(containingFile);
+          if (sourcePath) {
+            return resolveFrom(sourcePath);
+          }
+          return null;
+        });
+      };
+    }
+
+    function setupAndMerge(entryFile: string): string {
+      const sourcePath = entryFile.replace(/\.d\.ets$/, '.ets');
+      const intermediateSourcePath = path.join(TESTDATA_DIR, 'crossLibFallback1', 'Index.ets');
+      const virtualCachePath = path.join(TESTDATA_DIR, '.cache', 'crossLibFallback1', 'Index.d.ets');
+
+      const declToSourceMap: Map<string, string> = new Map();
+      declToSourceMap.set(intermediateDeclPath, intermediateSourcePath);
+
+      harFilesRecord.set(sourcePath, {
+        sourcePath: sourcePath,
+        originalDeclarationCachePath: entryFile,
+        originalDeclarationContent: ''
+      });
+      harFilesRecord.set(virtualCachePath, {
+        sourcePath: intermediateSourcePath,
+        originalDeclarationCachePath: virtualCachePath,
+        originalDeclarationContent: ''
+      });
+
+      DeclarationMerger.mergeDeclarationFiles({
+        entryFile: entryFile,
+        projectPath: TESTDATA_DIR,
+        isByteCodeHar: true,
+        resolveModuleNames: createFallbackResolver(TESTDATA_DIR, declToSourceMap),
+      });
+
+      const entry = harFilesRecord.get(sourcePath);
+      return entry?.originalDeclarationContent ?? '';
+    }
+
+    mocha.it('resolves 3-hop re-export via declToSource fallback', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = setupAndMerge(opts().entryFile);
+      expect(merged).to.include('export declare const A');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = setupAndMerge(opts().entryFile);
+      expectSelfContained(merged);
+    });
+  });
 });
