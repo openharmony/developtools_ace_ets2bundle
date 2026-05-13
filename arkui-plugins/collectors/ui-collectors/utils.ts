@@ -385,6 +385,11 @@ export function checkIsFunctionMethodDeclFromInfo(metadata: StructMethodInfo | F
     );
 }
 
+export function checkIsCustomFunctionMethodDeclFromInfo(metadata: FunctionInfo): boolean {
+    return metadata.name === BuilderLambdaNames.INNER_METHOD_NAME 
+        || metadata.name === BuilderLambdaNames.TRANSFORM_INNER_METHOD_NAME;
+}
+
 export function checkIsMonitorMethodFromInfo(metadata: StructMethodInfo | NormalClassMethodInfo): boolean {
     return !!metadata.annotationInfo?.hasMonitor;
 }
