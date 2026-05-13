@@ -556,9 +556,9 @@ KBoolean impl_IsETSFunctionType(KNativePointer nodePtr)
 }
 KOALA_INTEROP_1(IsETSFunctionType, KBoolean, KNativePointer)
 
-KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KUInt fileNamesCount, KStringArray inputFiles,
-                                            KStringArray outputDeclEts, KStringArray outputEts, KBoolean exportAll,
-                                            KBoolean isolated, KStringPtr &recordFile, KBoolean genAnnotations)
+KNativePointer impl_CreateTsDeclgen(KNativePointer contextPtr, KUInt fileNamesCount, KStringArray inputFiles,
+                                     KStringArray outputDeclEts, KStringArray outputEts, KBoolean exportAll,
+                                     KBoolean isolated, KStringPtr &recordFile, KBoolean genAnnotations)
 {
     auto context = reinterpret_cast<es2panda_Context *>(contextPtr);
     const std::size_t headerLen = 4;
@@ -606,12 +606,40 @@ KInt impl_GenerateTsDeclarationsFromContext(KNativePointer contextPtr, KUInt fil
         outputEtsList[i] = outputEtsStr[i].c_str();
     }
 
-    return static_cast<KInt>(GetImpl()->GenerateTsDeclarationsFromContext(
-        context, fileNamesCount, inputFilesList.data(), outputDeclEtsList.data(), outputEtsList.data(), exportAll != 0,
-        isolated != 0, recordFile.data(), genAnnotations != 0));
+    return static_cast<KNativePointer>(GetImpl()->CreateTsDeclgen(
+        context, fileNamesCount, inputFilesList.data(), outputDeclEtsList.data(), outputEtsList.data(),
+        exportAll != 0, isolated != 0, recordFile.data(), genAnnotations != 0));
 }
-KOALA_INTEROP_9(GenerateTsDeclarationsFromContext, KInt, KNativePointer, KUInt, KStringArray,
+KOALA_INTEROP_9(CreateTsDeclgen, KNativePointer, KNativePointer, KUInt, KStringArray,
                 KStringArray, KStringArray, KBoolean, KBoolean, KStringPtr, KBoolean)
+
+KInt impl_GenerateTsDeclarationsAfterParsed(KNativePointer declgenPtr)
+{
+    auto declgen = reinterpret_cast<es2panda_TsDeclgen*>(declgenPtr);
+    return static_cast<KInt>(GetImpl()->GenerateTsDeclarationsAfterParsed(declgen));
+}
+KOALA_INTEROP_1(GenerateTsDeclarationsAfterParsed, KInt, KNativePointer)
+
+KInt impl_GenerateTsDeclarationsAfterCheck(KNativePointer declgenPtr)
+{
+    auto declgen = reinterpret_cast<es2panda_TsDeclgen*>(declgenPtr);
+    return static_cast<KInt>(GetImpl()->GenerateTsDeclarationsAfterCheck(declgen));
+}
+KOALA_INTEROP_1(GenerateTsDeclarationsAfterCheck, KInt, KNativePointer)
+
+KInt impl_WriteTsDeclarations(KNativePointer declgenPtr)
+{
+    auto declgen = reinterpret_cast<es2panda_TsDeclgen*>(declgenPtr);
+    return static_cast<KInt>(GetImpl()->WriteTsDeclarations(declgen));
+}
+KOALA_INTEROP_1(WriteTsDeclarations, KInt, KNativePointer)
+
+void impl_DestroyTsDeclgen(KNativePointer declgenPtr)
+{
+    auto declgen = reinterpret_cast<es2panda_TsDeclgen *>(declgenPtr);
+    GetImpl()->DestroyTsDeclgen(declgen);
+}
+KOALA_INTEROP_V1(DestroyTsDeclgen, KNativePointer)
 
 KInt impl_GenerateStaticDeclarationsFromContext(KNativePointer contextPtr, KStringPtr &outputPath)
 {
