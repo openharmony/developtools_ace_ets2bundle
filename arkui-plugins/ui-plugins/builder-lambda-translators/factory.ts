@@ -24,6 +24,7 @@ import {
     forEachArgWithParam,
     annotation,
     collect,
+    withAPIVersion,
 } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
@@ -74,6 +75,8 @@ import {
     TypeNames,
     NodeCacheNames,
     BuilderLambdaNames,
+    APIVersions,
+    APIComparison,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { GenSymGenerator } from '../../common/gensym-generator';
@@ -396,7 +399,14 @@ export class factory {
         }
         collectComponentAttributeImport(typeNode, moduleName);
         const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
-        return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute: isFromCommonMethod }, sourceNode);
+        let shouldApplyAttribute: boolean = true;
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                shouldApplyAttribute = !!isFromCommonMethod
+            }
+        );
+        return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute }, sourceNode);
     }
 
     /**
@@ -989,9 +999,14 @@ export class factory {
         const func: arkts.ScriptFunction = node.scriptFunction;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
         const isCustomFunctionCall: boolean = isCustomBuilderLambdaFunctionCall(nameNode);
-        if (isFunctionCall && !isCustomFunctionCall) {
-            ComponentAttributeCache.getInstance().collect(node);
-        }
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                if (isFunctionCall && !isCustomFunctionCall) {
+                    ComponentAttributeCache.getInstance().collect(node);
+                }
+            }
+        )
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,

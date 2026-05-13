@@ -14,13 +14,15 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { coerceToAstNode, expectNameInTypeReference, isAnnotation, isDecoratorAnnotation, matchPrefix } from '../../common/arkts-utils';
+import { coerceToAstNode, withAPIVersion, expectNameInTypeReference, isAnnotation, isDecoratorAnnotation, matchPrefix } from '../../common/arkts-utils';
 import {
     getValueInObjectAnnotation,
     isCustomComponentAnnotation,
 } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
+    APIComparison,
+    APIVersions,
     ARKUI_FOREACH_SOURCE_NAME,
     ARKUI_IMPORT_PREFIX_NAMES,
     ARKUI_NAV_DESTINATION_SOURCE_NAME,
@@ -729,7 +731,14 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         return undefined;
     }
     if (arkts.isIdentifier(node.expression)) {
-        return getTransformedComponentName(node.expression.name);
+        let _builderLambdaFunctionName: string = node.expression.name;
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                _builderLambdaFunctionName = getTransformedComponentName(_builderLambdaFunctionName);
+            }
+        );
+        return _builderLambdaFunctionName;
     }
     if (
         arkts.isMemberExpression(node.expression) &&

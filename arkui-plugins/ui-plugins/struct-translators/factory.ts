@@ -26,7 +26,7 @@ import {
     isKnownMethodDefinition,
     isStatic,
 } from '../utils';
-import { expectName } from '../../common/arkts-utils';
+import { withAPIVersion, expectName } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
@@ -93,6 +93,8 @@ import {
     BuilderLambdaNames,
     CustomDialogNames,
     ObservedNames,
+    APIVersions,
+    APIComparison,
 } from '../../common/predefines';
 import { BaseObservedPropertyTranslator } from '../property-translators/index';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
@@ -598,7 +600,7 @@ export class factory {
      * add following declared methods in `CommonMethod` interface:
      * - `animationStart` and `animationStop` for `Animation` component;
      * - `__createOrSetAnimatableProperty` for `@AnimatableExtend` function with receiver;
-     * - `applyAttributesFinish` for component's style set options method.
+     * - `applyAttributesFinish` for component's style set options method (deprecated at API 26).
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
         if (!node.body) {
@@ -607,14 +609,25 @@ export class factory {
         const animationStart = factory.createAnimationMethod(AnimationNames.ANIMATION_START);
         const animationStop = factory.createAnimationMethod(AnimationNames.ANIMATION_STOP);
         const createOrSetAniProperty = factory.createOrSetAniProperty();
-        const applyAttributesFinish = BuilderLambdaFactory.createDeclaredApplyAttributesFinish();
-        const updatedBody = arkts.factory.updateInterfaceBody(node.body!, [
-            applyAttributesFinish,
+        let applyAttributesFinish: arkts.AstNode[] = [];
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                const foundDecl = node.body?.body.find((st) => 
+                    arkts.isMethodDefinition(st) && st.name.name === BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD
+                );
+                if (!foundDecl) {
+                    applyAttributesFinish.push(BuilderLambdaFactory.createDeclaredApplyAttributesFinish());
+                }
+            }
+        );
+        const updatedBody = arkts.factory.updateInterfaceBody(node.body!, collect([
+            ...applyAttributesFinish,
             animationStart,
             animationStop,
             createOrSetAniProperty,
             ...node.body!.body,
-        ]);
+        ]));
         return arkts.factory.updateInterfaceDeclaration(
             node,
             node.extends,
@@ -1078,7 +1091,7 @@ export class factory {
         if (!node.id || !node.body) {
             return node;
         }
-        const newNode = factory.tranformInterfaceBuildMember(node);
+        let newNode = factory.tranformInterfaceBuildMember(node);
         if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && newNode.id!.name === 'CommonMethod') {
             return factory.modifyExternalComponentCommon(newNode);
         }
@@ -1088,17 +1101,22 @@ export class factory {
         if (isCustomComponentInterface(node)) {
             return factory.tranformCustomComponentInterfaceMembers(node);
         }
-        let attributeName: string | undefined;
-        if (
-            ComponentAttributeCache.getInstance().isCollected() &&
-            !!(attributeName = findComponentAttributeInInterface(node))
-        ) {
-            const componentName = attributeName.replace(/Attribute$/, '');
-            if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
-                return newNode;
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                let attributeName: string | undefined;
+                if (
+                    ComponentAttributeCache.getInstance().isCollected() &&
+                    !!(attributeName = findComponentAttributeInInterface(node))
+                ) {
+                    const componentName = attributeName.replace(/Attribute$/, '');
+                    if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
+                        return;
+                    }
+                    newNode = BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
+                }
             }
-            return BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
-        }
+        );
         return newNode;
     }
 
@@ -1157,12 +1175,18 @@ export class factory {
         const existingImplNames: Set<string> = new Set();
         const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
             if (arkts.isMethodDefinition(member)) {
-                PropertyFactory.addMemoToBuilderClassMethod(member);
-                const methodName = member.name?.name;
-                if (methodName && methodName.endsWith('Impl')) {
-                    const componentName = methodName.slice(0, -'Impl'.length);
-                    existingImplNames.add(componentName);
-                }
+                const _member = member;
+                PropertyFactory.addMemoToBuilderClassMethod(_member);
+                withAPIVersion(
+                    { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+                    (sdkVersion: APIVersions) => {
+                        const methodName = _member.name?.name;
+                        if (methodName && methodName.endsWith('Impl')) {
+                            const componentName = methodName.slice(0, -'Impl'.length);
+                            existingImplNames.add(componentName);
+                        }
+                    }
+                );
             }
             if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
                 member = arkts.factory.updateMethodDefinition(
@@ -1176,12 +1200,17 @@ export class factory {
             }
             return member;
         });
-        if (ComponentAttributeCache.getInstance().isCollected()) {
-            const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
-            const names = attributeCache.getAllComponentNames().filter(name => !existingImplNames.has(name));
-            const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
-            updatedBody.push(...methods);
-        }
+        withAPIVersion(
+            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+            (sdkVersion: APIVersions) => {
+                if (ComponentAttributeCache.getInstance().isCollected()) {
+                    const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
+                    const names = attributeCache.getAllComponentNames().filter(name => !existingImplNames.has(name));
+                    const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
+                    updatedBody.push(...methods);
+                }
+            }
+        );
         return arkts.factory.updateClassDeclaration(
             node,
             arkts.factory.updateClassDefinition(
