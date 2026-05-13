@@ -247,7 +247,7 @@ export function setAllParents(ast: AstNode): void {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);
 }
 
-export function generateTsDeclarationsFromContext(
+export function createTsDeclgen(
   inputFiles: string[],
   outputDeclEts: string[],
   outputEts: string[],
@@ -255,8 +255,8 @@ export function generateTsDeclarationsFromContext(
   isolated: boolean,
   recordFile: string,
   genAnnotations: boolean
-): KInt {
-  return global.es2panda._GenerateTsDeclarationsFromContext(
+): KNativePointer {
+  return global.es2panda._CreateTsDeclgen(
     global.context,
     outputDeclEts.length,
     passStringArray(inputFiles),
@@ -267,6 +267,22 @@ export function generateTsDeclarationsFromContext(
     passString(recordFile),
     genAnnotations
   );
+}
+
+export function generateTsDeclarationsAfterParsed(declgen: KNativePointer): KInt {
+    return global.es2panda._GenerateTsDeclarationsAfterParsed(declgen);
+}
+
+export function generateTsDeclarationsAfterCheck(declgen: KNativePointer): KInt {
+    return global.es2panda._GenerateTsDeclarationsAfterCheck(declgen);
+}
+
+export function writeTsDeclarations(declgen: KNativePointer): KInt {
+    return global.es2panda._WriteTsDeclarations(declgen);
+}
+
+export function destroyTsDeclgen(declgen: KNativePointer): void {
+    global.es2panda._DestroyTsDeclgen(declgen);
 }
 
 export function generateStaticDeclarationsFromContext(outputPath: string): KInt {
