@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,12 +29,12 @@ import {
 import { IntentLogger } from './intentLogger';
 import path from 'path';
 import { getNormalizedOhmUrlByFilepath } from '../ark_utils';
-import { globalModulePaths, projectConfig } from '../../main';
+import { globalModulePaths, projectConfig} from '../../main';
 import fs from 'fs';
 import json5 from 'json5';
 import { ProjectCollections } from 'arkguard';
 import {
-  COMPONENT_USER_INTENTS_DECORATOR,
+  COMPONENT_USER_INTENTS_DECORATOR_LINK,
   COMPONENT_USER_INTENTS_DECORATOR_ENTITY,
   COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
   COMPONENT_USER_INTENTS_DECORATOR_FUNCTION,
@@ -43,7 +43,9 @@ import {
   COMPONENT_USER_INTENTS_DECORATOR_FORM
 } from '../pre_define';
 import { CompileEvent, createAndStartEvent, stopEvent } from '../performance';
-import { LogInfo, LogType, CurrentProcessFile } from '../utils';
+import {emitLogInfo, getTransformLog, LogInfo, LogType, CurrentProcessFile} from '../utils';
+import {ABILITY_SUBSYSTEM_CODE} from '../hvigor_error_code/hvigor_error_info';
+import {resetLog, transformLog} from '../process_ui_syntax';
 
 type StaticValue = string | number | boolean | null | undefined | StaticValue[] | { [key: string]: StaticValue };
 
@@ -51,6 +53,11 @@ interface methodParametersInfo {
   functionName: string;
   parameters: Record<string, string>,
   args: ts.NodeArray<ts.Expression>;
+}
+
+interface schemaVerifyType {
+  type: string;
+  isEntity?: boolean;
 }
 
 class ParseIntent {
@@ -105,20 +112,21 @@ class ParseIntent {
     node: ts.ClassDeclaration, metaInfo: object, filePath: string, eventOrEventFactory: CompileEvent | undefined, transformLog: LogInfo[]): ts.Node {
     this.initInsightIntent(node, metaInfo, transformLog, filePath);
     const eventParseIntentTime: CompileEvent | undefined = createAndStartEvent(eventOrEventFactory, 'parseIntentTime');
-    const definedDecorators: string[] = [COMPONENT_USER_INTENTS_DECORATOR, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
+    const definedDecorators: string[] = [COMPONENT_USER_INTENTS_DECORATOR_LINK, COMPONENT_USER_INTENTS_DECORATOR_ENTRY,
       COMPONENT_USER_INTENTS_DECORATOR_FUNCTION, COMPONENT_USER_INTENTS_DECORATOR_PAGE, COMPONENT_USER_INTENTS_DECORATOR_ENTITY,
       COMPONENT_USER_INTENTS_DECORATOR_FORM];
     if (ts.isClassDeclaration(node) && !this.hasDecorator(node, [COMPONENT_USER_INTENTS_DECORATOR_FUNCTION])) {
       node.members.forEach((member) => {
         if (ts.isMethodDeclaration(member) && this.hasModifier(member, ts.SyntaxKind.StaticKeyword) &&
           this.hasDecorator(member, [COMPONENT_USER_INTENTS_DECORATOR_METHOD])) {
-          const errorMessage: string = '@InsightIntentFunctionMethod must be declared under the @InsightIntentFunction decorator';
+          const errorMessage: string = 'Methods decorated with @InsightIntentFunctionMethod must be in a class decorated with @InsightIntentFunction.';
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: node.getStart(),
-            code: '10105110',
-            description: 'ArkTs InsightIntent Error'
+            code: '10110013',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Either move the method or add @InsightIntentFunction to the class']
           });
           return;
         }
@@ -151,6 +159,9 @@ class ParseIntent {
         pkgName: metaInfo.pkgName,
         pkgPath: metaInfo.pkgPath
       };
+      if (!projectConfig.pkgContextInfo) {
+        return;
+      }
       const Logger: IntentLogger = IntentLogger.getInstance();
       const recordName: string = getNormalizedOhmUrlByFilepath(filePath, projectConfig, Logger, pkgParams, null);
       if (!this.updatePageIntentObj.has(`@normalized:${recordName}`)) {
@@ -163,13 +174,24 @@ class ParseIntent {
     this.checker = checker;
     this.currentFilePath = filepath;
     if (!filepath.endsWith('.ets')) {
-      const errorMessage: string = 'IntentDecorator needs to be in the .ets file';
+      const errorMessage: string = 'The intent decorator can only be used in .ets files.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101002',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110001',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Move it to an .ets file']
+      });
+      return;
+    }
+    if (!projectConfig.pkgContextInfo) {
+      const errorMessage: string = 'Failed to generate standard OHMUrl.';
+      this.transformLog.push({
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+        code: '10111027',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Set useNormalizedOHMUrl to true in build-profile.json5']
       });
       return;
     }
@@ -208,7 +230,7 @@ class ParseIntent {
       'decoratorClass': node.name.text
     };
     const originalDecorator: string = '@' + decorator.expression.expression.getText();
-    if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR) {
+    if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_LINK) {
       this.handleLinkDecorator(intentObj, node, decorator);
     } else if (originalDecorator === COMPONENT_USER_INTENTS_DECORATOR_ENTRY) {
       this.handleEntryDecorator(intentObj, node, decorator, pkgParams);
@@ -234,7 +256,7 @@ class ParseIntent {
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_FORM
       });
       this.analyzeDecoratorArgs(args, intentObj, intentFormInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, intentObj.intentName);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, intentObj.intentName, COMPONENT_USER_INTENTS_DECORATOR_FORM);
       this.processFormInfo(node, this.currentFilePath, pkgParams, intentObj);
       this.schemaValidateSync(properties, intentObj.parameters);
       this.createObfuscation(node);
@@ -243,13 +265,14 @@ class ParseIntent {
       }
       this.intentData.push(intentObj);
     } else {
-      const errorMessage: string = 'Decorator is not CallExpression';
+      const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
@@ -267,7 +290,7 @@ class ParseIntent {
       });
       delete intentObj.decoratorClass;
       this.analyzeDecoratorArgs(args, intentObj, IntentEntityInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, undefined);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, undefined, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       const entityId: string = this.getEntityId(node);
       const currentClassType = this.checker.getTypeAtLocation(node);
       const baseTypes = this.checker.getBaseTypes(currentClassType as ts.InterfaceType);
@@ -302,30 +325,29 @@ class ParseIntent {
       }
       this.analyzeBaseClass(node, pkgParams, intentObj, COMPONENT_USER_INTENTS_DECORATOR_ENTITY);
       this.createObfuscation(node);
-      if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
-      }
       if (this.entityMap.has(entityClassName)) {
-        const errorMessage: string = 'class can be decorated with at most one @InsightIntentEntity';
+       const errorMessage: string = 'Multiple @InsightIntentEntity decorators applied to the same class.';
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101004',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110020',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Remove duplicates']
         });
         return;
       } else {
         this.entityMap.set(entityClassName, intentObj);
       }
     } else {
-      const errorMessage: string = '10101003 ArkTs InsightIntent Error\n' +
-        'Decorator is not CallExpression';
+      const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
@@ -335,14 +357,14 @@ class ParseIntent {
     pkgParams: object): void {
     const expr: ts.Expression = decorator.expression;
     if (ts.isClassDeclaration(node)) {
-      const errorMessage: string = `@InsightIntentPage must be decorated on struct` +
-        `, className: ${node.name.getText()}`;
+      const errorMessage: string = `@InsightIntentPage must be applied to a struct page.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110016',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Decorate a struct page with @InsightIntentPage']
       });
       return;
     }
@@ -361,19 +383,33 @@ class ParseIntent {
       }
       this.intentData.push(intentObj);
     } else {
-      const errorMessage: string = 'Decorator is not CallExpression';
+       const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
   }
 
   private handleMethodDecorator(intentObj: object, node: ts.ClassDeclaration, decorator: ts.Decorator): void {
+    const isExported: boolean = node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword);
+    if (!isExported) {
+      const errorMessage: string = 'The class decorated with @InsightIntentFunction must be exported.';
+      this.transformLog.push({
+        type: LogType.ERROR,
+        message: errorMessage,
+        pos: this.currentNode.getStart(),
+        code: '10110014',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add an export statement']
+      });
+      return;
+    }
     const expr: ts.Expression = decorator.expression;
     if (ts.isCallExpression(expr)) {
       Object.assign(intentObj, {
@@ -381,22 +417,13 @@ class ParseIntent {
         'moduleName': projectConfig.moduleName,
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_METHOD
       });
-
-      interface methodParametersInfo {
-        functionName: string,
-        parameters: Record<string, string>,
-        args: ts.NodeArray<ts.Expression>,
-      }
-
-      const methodParameters: methodParametersInfo[] =
-        this.parseClassMethods(node, COMPONENT_USER_INTENTS_DECORATOR_METHOD);
-      methodParameters.forEach(methodDecorator => {
+      const methodParameters: methodParametersInfo[] = this.parseClassMethods(node, COMPONENT_USER_INTENTS_DECORATOR_METHOD);
+      methodParameters?.forEach(methodDecorator => {
         const functionName: string = methodDecorator.functionName;
         const methodArgs: ts.NodeArray<ts.Expression> = methodDecorator.args;
         const properties: Record<string, string> = methodDecorator.parameters;
         const functionParamList: Array<string> = Object.keys(properties);
-        const methodObj: object =
-          Object.assign({}, intentObj, { functionName, 'functionParamList': functionParamList });
+        const methodObj: object = Object.assign({}, intentObj, { functionName, 'functionParamList': functionParamList });
         this.analyzeDecoratorArgs(methodArgs, methodObj, intentMethodInfoChecker);
         if (this.isUpdateCompile) {
           this.updatePageIntentObj.get(methodObj.decoratorFile).push(methodObj);
@@ -405,13 +432,14 @@ class ParseIntent {
       });
       this.createObfuscation(node);
     } else {
-      const errorMessage: string = 'Decorator is not CallExpression';
+      const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
@@ -425,7 +453,7 @@ class ParseIntent {
       Object.assign(intentObj, {
         'bundleName': projectConfig.bundleName,
         'moduleName': projectConfig.moduleName,
-        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR
+        'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_LINK
       });
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
@@ -433,13 +461,14 @@ class ParseIntent {
       }
       this.intentData.push(intentObj);
     } else {
-      const errorMessage: string = 'Decorator is not CallExpression';
+      const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
@@ -447,6 +476,20 @@ class ParseIntent {
 
   private handleEntryDecorator(intentObj: object, node: ts.ClassDeclaration, decorator: ts.Decorator,
     pkgParams: object): void {
+      const isExported: boolean = node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword);
+    const isDefault: boolean = node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.DefaultKeyword);
+    if (!(isExported && isDefault)) {
+      const errorMessage: string = 'The class decorated with @InsightIntentEntry must be exported as default.';
+      this.transformLog.push({
+        type: LogType.ERROR,
+        message: errorMessage,
+        pos: this.currentNode.getStart(),
+        code: '10110019',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Use the \'export default\' syntax']
+      });
+      return;
+    }
     const expr: ts.Expression = decorator.expression;
     if (ts.isCallExpression(expr)) {
       const args: ts.NodeArray<ts.Expression> = expr.arguments;
@@ -456,7 +499,7 @@ class ParseIntent {
         'decoratorType': COMPONENT_USER_INTENTS_DECORATOR_ENTRY
       });
       this.analyzeDecoratorArgs<IntentEntryInfo>(args, intentObj, intentEntryInfoChecker);
-      const properties: Record<string, string> = this.parseClassNode(node, intentObj.intentName);
+      const properties: Record<string, schemaVerifyType> = this.parseClassNode(node, intentObj.intentName, COMPONENT_USER_INTENTS_DECORATOR_ENTRY);
       this.schemaValidateSync(properties, intentObj.parameters);
       this.analyzeBaseClass(node, pkgParams, intentObj, COMPONENT_USER_INTENTS_DECORATOR_ENTRY);
       this.createObfuscation(node);
@@ -466,13 +509,14 @@ class ParseIntent {
       }
       this.intentData.push(intentObj);
     } else {
-      const errorMessage: string = 'Decorator is not CallExpression';
+      const errorMessage: string = 'Decorators must be called as functions.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101003',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110002',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add parentheses after the decorator name']
       });
       return;
     }
@@ -492,13 +536,14 @@ class ParseIntent {
     const isExported: boolean = node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword);
     const isDefault: boolean = node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.DefaultKeyword);
     if (!(bindFormInfo && isExported && isDefault)) {
-      const errorMessage: string = '@InsightIntentForm must be decorated on a formExtensionAbility';
+      const errorMessage: string = '@InsightIntentForm must be applied to formExtensionAbility.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101006',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110022',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Decorate the formExtensionAbility class with @InsightIntentForm']
       });
       return;
     }
@@ -523,55 +568,58 @@ class ParseIntent {
       }
     });
     if (!formNameFound) {
-      const errorMessage: string = '@InsightIntentForm param formName must match the card name. ' +
-        `Provided name: ${intentObj.formName}`;
+      const errorMessage: string = 'formName in @InsightIntentForm must match the widget name registered in formExtensionAbility.';
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101006',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110023',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Update formName to match the registered widget name']
       });
       return;
     }
   }
 
   private readModuleJsonInfo(pkgParams: object): void {
-    const moduleJsonPath: string = path.join(pkgParams.pkgPath, 'src', 'main', 'module.json5');
-    if (fs.existsSync(moduleJsonPath)) {
-      const jsonStr: string = fs.readFileSync(moduleJsonPath, 'utf8');
-      const obj: object = json5.parse(jsonStr);
-      if (obj.module?.abilities) {
-        this.moduleJsonInfo.set('abilities', obj.module.abilities);
-      }
-      if (obj.module?.extensionAbilities) {
-        this.moduleJsonInfo.set('extensionAbilities', obj.module.extensionAbilities);
-      }
-    } else {
-      const errorMessage: string = ` module.json5 not found, expect moduleJsonPath: ${moduleJsonPath}`;
+    const moduleJsonPath: string = path.join(pkgParams.pkgPath, 'src/main', 'module.json5');
+    if (!fs.existsSync(moduleJsonPath)) {
+      const errorMessage: string = `The module.json5 file is missing.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101007',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110024',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Check the expected paths (typically entry/src/main/config.json or module.json5) and restore the file']
       });
       return;
+    }
+    if (!projectConfig.modulePathMap) {
+      return;
+    }
+    const jsonStr: string = fs.readFileSync(moduleJsonPath, 'utf8');
+    const obj: object = json5.parse(jsonStr);
+    if (obj.module?.abilities) {
+      this.moduleJsonInfo.set('abilities', obj.module.abilities);
+    }
+    if (obj.module?.extensionAbilities) {
+      this.moduleJsonInfo.set('extensionAbilities', obj.module.extensionAbilities);
     }
   }
 
   private validatePagePath(intentObj: object, pkgParams: object): void {
     if (pkgParams.pkgPath) {
-      const normalPagePath: string = path.join(pkgParams.pkgPath, 'src', 'main', intentObj.pagePath + '.ets');
+      const normalPagePath: string = path.join(pkgParams.pkgPath, 'src/main', intentObj.pagePath + '.ets');
       if (!fs.existsSync(normalPagePath)) {
-        const errorMessage: string = `@InsightIntentPage pagePath incorrect,` +
-          `${normalPagePath} does not exist, invalidDecoratorPath: ${this.currentFilePath}`;
+        const errorMessage: string = `PagePath in @InsightIntentPage does not match the actual page path.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101008',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110017',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Verify the file path']
         });
         return;
       } else {
@@ -610,14 +658,14 @@ class ParseIntent {
         const parentNode: ts.ExpressionWithTypeArguments = interfaces[0];
         this.analyzeClassHeritage(parentNode, node, pkgParams, intentObj);
       } else {
-        const errorMessage: string =
-          `decorated with @InsightIntentEntity must be ultimately inherited to insightIntent.IntentEntity`;
+       const errorMessage: string = `Classes decorated with @InsightIntentEntity must implement InsightIntent.IntentEntity.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101009',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110021',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the implementation or inherit from a base intent entity']
         });
         return;
       }
@@ -633,14 +681,14 @@ class ParseIntent {
       const parentFilePath: string = parentNodeSymbol.getDeclarations()?.[0].getSourceFile().fileName;
       const isGlobalPathFlag: boolean = this.isGlobalPath(parentFilePath);
       if (!(isGlobalPathFlag && parentClassName === 'InsightIntentEntryExecutor')) {
-        const errorMessage: string =
-          `decorated with @InsightIntentEntry must be inherited to InsightIntentEntryExecutor`;
+        const errorMessage: string = `Classes decorated with @InsightIntentEntry must inherit from InsightIntentEntryExecutor.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101010',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110018',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the inheritance']
         });
         return;
       }
@@ -650,13 +698,14 @@ class ParseIntent {
       const recordPath: string = isGlobalPathFlag ? `sdk` : `@normalized:${parentRecordName}`;
       this.collectClassInheritanceInfo(parentNode, intentObj, parentClassName, recordPath);
     } else {
-      const errorMessage: string = `decorated with @InsightIntentEntry must be inherited to InsightIntentEntryExecutor`;
+      const errorMessage: string = `Classes decorated with @InsightIntentEntry must inherit from InsightIntentEntryExecutor.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101010',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110018',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add the inheritance']
       });
       return;
     }
@@ -669,7 +718,7 @@ class ParseIntent {
   private parseClassMethods(classNode: ts.ClassDeclaration, decoratorType: string): methodParametersInfo[] {
     const methodsArr: methodParametersInfo[] = [];
     for (const member of classNode.members) {
-      if (!ts.isMethodDeclaration(member) || !this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
+      if (!ts.isMethodDeclaration(member)) {
         continue;
       }
       const decorator: ts.ModifierLike = member.modifiers?.find(modifier => {
@@ -683,6 +732,18 @@ class ParseIntent {
         return decoratorName === decoratorType;
       });
       if (decorator && ts.isCallExpression(decorator.expression)) {
+        if (!this.hasModifier(member, ts.SyntaxKind.StaticKeyword)) {
+          const errorMessage: string = `Methods decorated with @InsightIntentFunctionMethod must be static.`;
+          this.transformLog.push({
+            type: LogType.ERROR,
+            message: errorMessage,
+            pos: this.currentNode.getStart(),
+            code: '10110015',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Change the method to static']
+          });
+          return undefined;
+        }
         let parameters: Record<string, string> = {};
         member.parameters.forEach(param => {
           const paramName: string = param.name.getText();
@@ -746,14 +807,14 @@ class ParseIntent {
       getNormalizedOhmUrlByFilepath(parentFilePath, projectConfig, logger, pkgParams, null);
     if (isGlobalPathFlag) {
       if (!this.isInheritFromIntentEntity(parentSymbol, pkgParams)) {
-        const errorMessage: string =
-          `decorated with @InsightIntentEntity must be ultimately inherited to insightIntent.IntentEntity`;
+       const errorMessage: string = `Classes decorated with @InsightIntentEntity must implement InsightIntent.IntentEntity.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101009',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110021',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the implementation or inherit from a base intent entity']
         });
         return;
       }
@@ -794,12 +855,19 @@ class ParseIntent {
       genericName = genericSymbol.getName();
       genericSource = genericSymbol.declarations?.[0]?.getSourceFile().fileName;
       recordGenericSource = path.relative(projectConfig.moduleName, genericSource).replace(/\\/g, '/');
+      if (this.entityOwnerMap.has(intentObj.intentName)) {
+        const entityNames: string[] = this.entityOwnerMap.get(intentObj.intentName);
+        entityNames.push(genericName);
+        this.entityOwnerMap.set(intentObj.intentName, entityNames);
+      } else {
+        this.entityOwnerMap.set(intentObj.intentName, [genericName]);
+      }
     } else {
       genericName = this.checker.typeToString(genericType);
       const parentTypeNode: ts.Node = arg.parent;
       if (ts.isTypeReferenceNode(parentTypeNode)) {
-        const contextualType: ts.Type = this.checker.getContextualType(parentTypeNode);
-        const symbol: ts.Type = contextualType?.getSymbol();
+        const contextualType: ts.Type = this.checker.getTypeAtLocation(parentTypeNode);
+        const symbol: ts.Symbol = contextualType?.getSymbol();
         genericSource = symbol?.declarations?.[0]?.getSourceFile().fileName;
       }
       if (!genericSource && this.isPrimitiveType(genericType)) {
@@ -811,13 +879,6 @@ class ParseIntent {
         'typeName': genericName,
         'definitionFilePath': recordGenericSource
       });
-    if (this.entityOwnerMap.has(intentObj.intentName)) {
-      const entityNames: string[] = this.entityOwnerMap.get(intentObj.intentName);
-      entityNames.push(genericName);
-      this.entityOwnerMap.set(intentObj.intentName, entityNames);
-    } else {
-      this.entityOwnerMap.set(intentObj.intentName, [genericName]);
-    }
     ClassInheritanceInfo.generics.push(generic);
   }
 
@@ -829,12 +890,12 @@ class ParseIntent {
     ) !== 0;
   }
 
-  private parseClassNode(node: ts.ClassDeclaration, intentName: string): Record<string, string> {
-    const mergedObject: Record<string, string> = {};
+  private parseClassNode(node: ts.ClassDeclaration, intentName: string, decoratorType: string): Record<string, schemaVerifyType> {
+    const mergedObject: Record<string, schemaVerifyType> = {};
     const type: ts.Type = this.checker.getTypeAtLocation(node);
     const propertiesOfType: ts.Symbol[] = this.checker.getPropertiesOfType(type);
     propertiesOfType.forEach((prop) => {
-      const objItem: Record<string, string> = this.processProperty(prop, intentName);
+      const objItem: Record<string, schemaVerifyType> = this.processProperty(prop, intentName, decoratorType);
       Object.assign(mergedObject, objItem);
     });
     return mergedObject;
@@ -858,22 +919,38 @@ class ParseIntent {
     return entityId;
   }
 
-  private processProperty(prop: ts.Symbol, intentName: string): Record<string, string> {
+  private processProperty(prop: ts.Symbol, intentName: string, decoratorType: string): Record<string, schemaVerifyType> {
     const propType: ts.Type = this.checker.getNonNullableType(this.checker.getTypeOfSymbol(prop));
     const { category } = this.getTypeCategory(propType);
-    const obj: Record<string, string> = {};
+    const obj: Record<string, schemaVerifyType> = {};
     const propName: string = prop.getName();
+    const entryBlackList: string[] = ['executeMode', 'context', 'windowStage', 'uiExtensionSession', 'onExecute'];
+    const formBlackList: string[] = ['context'];
+    if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_ENTRY && entryBlackList.includes(propName)) {
+      return obj;
+    } else if (decoratorType === COMPONENT_USER_INTENTS_DECORATOR_FORM && formBlackList.includes(propName)) {
+      return obj;
+    }
+    const tempschemaVerifyType: schemaVerifyType = {
+      type: '',
+      isEntity: false
+    };
     if (category === 'object') {
+      tempschemaVerifyType.type = 'object';
       if (this.isEntity(propType, intentName)) {
-        obj[propName] = 'object';
+        tempschemaVerifyType.isEntity = true;
       }
     } else if (category === 'array') {
       if (this.isEntity(propType, intentName)) {
-        obj[propName] = 'array';
+        tempschemaVerifyType.type = 'array';
+        tempschemaVerifyType.isEntity = true;
       }
     } else {
-      obj[propName] = this.checker.typeToString(propType);
+      tempschemaVerifyType.type = this.checker.typeToString(propType);
     }
+    Object.assign(obj, {
+      [propName]: tempschemaVerifyType
+    });
     return obj;
   }
 
@@ -881,7 +958,6 @@ class ParseIntent {
     let propDeclaration: ts.Declaration;
     let elementType: ts.Type | undefined;
     const typeSymbol: ts.Symbol = propType.getSymbol();
-    const propertyClassName: string = typeSymbol.getName();
     if (this.isArrayType(propType)) {
       elementType = (propType as ts.TypeReference).typeArguments?.[0];
       propDeclaration = elementType.getSymbol()?.getDeclarations()[0];
@@ -1060,13 +1136,14 @@ class ParseIntent {
       });
     }
     if (!flag) {
-      const errorMessage: string = `Dynamic variable cannot be resolved`;
+      const errorMessage: string = `Decorator parameters must be compile-time constants.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101011',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110000',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Use a fixed value (such as a string literal) instead of a variable']
       });
       return false;
     }
@@ -1091,13 +1168,14 @@ class ParseIntent {
     }
     const missingFields: (keyof T)[] = requiredFields.filter(f => !existingParams.has(f));
     if (missingFields.length > 0) {
-      const errorMessage: string = `Decorator args missing required param, cause params: ${missingFields.join(', ')}`;
+      const errorMessage: string = `Required parameters are missing for the decorator.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101012',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110003',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Add the required parameters as specified in the error message']
       });
       return;
     }
@@ -1131,14 +1209,14 @@ class ParseIntent {
     const paramName: keyof T = prop.name.text;
     if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
       if (!allowedFields.has(paramName)) {
-        const errorMessage: string =
-          `Decorator args missing required param, cause undeclared param: ${paramName.toString()}`;
+        const errorMessage: string = `Unsupported parameters found in the decorator.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101012',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110005',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Remove any parameters that are not supported.']
         });
         return;
       }
@@ -1147,25 +1225,27 @@ class ParseIntent {
         const symbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(prop.initializer);
         const declaration: ts.Declaration = symbol?.valueDeclaration;
         if (validator && !validator(declaration?.initializer)) {
-          const errorMessage: string = `Param parsing occurs error param type, cause param: ${paramName.toString()}`;
+          const errorMessage: string = `The parameter type does not match the decorator's requirement.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10101013',
-            description: 'ArkTs InsightIntent Error'
+            code: '10110004',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Adjust the type to match the expected type.']
           });
           return;
         }
       } else {
         if (validator && !validator(prop.initializer)) {
-          const errorMessage: string = `Param parsing occurs error param type, cause param: ${paramName.toString()}`;
+          const errorMessage: string = `The parameter type does not match the decorator's requirement.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10101013',
-            description: 'ArkTs InsightIntent Error'
+            code: '10110004',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Adjust the type to match the expected type.']
           });
           return;
         }
@@ -1207,13 +1287,12 @@ class ParseIntent {
 
   private parseStaticObject(node: ts.Node, visited: Set<ts.Node> = new Set()): StaticValue | undefined {
     if (visited.has(node)) {
-      const errorMessage: string = `Circular reference detected in param`;
+     const errorMessage: string = `Circular dependencies detected in decorator parameters.`;
       this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
-        code: '10101023',
-        description: 'ArkTs InsightIntent Error'
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+        code: '10110006',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Refactor the data structure by extracting common variables or using ID references to avoid nesting']
       });
       return undefined;
     }
@@ -1246,13 +1325,12 @@ class ParseIntent {
     if (ts.isPropertyAccessExpression(node)) {
       return this.processEnumElement(node);
     }
-    const errorMessage: string = `Unsupported parameter type cannot be parsed, cause param: ${node.text}`;
+    const errorMessage: string = `Unsupported parameters found in the decorator.`;
     this.transformLog.push({
-      type: LogType.ERROR,
-      message: errorMessage,
-      pos: this.currentNode.getStart(),
-      code: '10101014',
-      description: 'ArkTs InsightIntent Error'
+      type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+      code: '10110005',
+      description: 'InsightIntent Compiler Error',
+      solutions: ['Remove any parameters that are not supported']
     });
     return undefined;
   }
@@ -1294,13 +1372,14 @@ class ParseIntent {
     } else if (paramCategoryEnum.has(enumValue)) {
       return paramCategoryEnum.get(enumValue);
     } else {
-      const errorMessage: string = `Unsupported parameter type cannot be parsed, cause param: ${node.text}`;
+     const errorMessage: string = `Unsupported parameters found in the decorator.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101014',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110005',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Remove any parameters that are not supported']
       });
       return '';
     }
@@ -1378,7 +1457,7 @@ class ParseIntent {
   private collectSchemaInfo(intentObj: object): void {
     if (intentObj.schema) {
       const schemaPath: string = path.join(
-        __dirname, 'schema',
+        __dirname, '../../insight_intents/schema',
         `${intentObj.schema}_${intentObj.intentVersion}.json`
       );
       if (fs.existsSync(schemaPath)) {
@@ -1389,7 +1468,7 @@ class ParseIntent {
         intentObj.keywords = schemaObj.keywords;
         intentObj.intentName = schemaObj.intentName;
         intentObj.result = schemaObj.result;
-        intentObj.example = schemaObj.example;
+        intentObj.domain = schemaObj.domain;
       }
     }
   }
@@ -1397,21 +1476,21 @@ class ParseIntent {
   private verifyInheritanceChain(): void {
     this.EntityHeritageClassSet.forEach(entityClassInfo => {
       if (!this.heritageClassSet.has(entityClassInfo)) {
-        const errorMessage: string =
-          `decorated with @InsightIntentEntity must be ultimately inherited to insightIntent.IntentEntity`;
+        const errorMessage: string = `Classes decorated with @InsightIntentEntity must implement InsightIntent.IntentEntity.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101009',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110021',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Add the implementation or inherit from a base intent entity']
         });
         return;
       }
     });
   }
 
-  private schemaValidationRequiredRule(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidationRequiredRule(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     const reqData: Map<string, boolean> = new Map();
     schemaObj.required.forEach(key => reqData.set(key, true));
     if (schemaObj.properties) {
@@ -1419,13 +1498,14 @@ class ParseIntent {
       const keyArr: string[] = Object.keys(paramsSchema);
       keyArr.forEach(key => {
         if (!schemaData[key] && reqData.get(key)) {
-          const errorMessage: string = `Schema verification required parameter does not exist`;
+          const errorMessage: string = `A required field in the class property is missing.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10101016',
-            description: 'ArkTs InsightIntent Error'
+            code: '10110008',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Add the required field as specified by the JSON Schema']
           });
           return;
         }
@@ -1433,17 +1513,19 @@ class ParseIntent {
     }
   }
 
-  private schemaPropertiesValidation(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaPropertiesValidation(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     if (schemaObj.properties) {
       Object.entries(schemaObj.properties).forEach(([key, value]) => {
-        if (schemaData[key] && value.type !== schemaData[key]) {
-          const errorMessage: string = `Schema verification parameter type error`;
+        if ((schemaData[key]?.type && value.type !== schemaData[key].type) ||
+          value.type === 'object' && schemaData[key]?.isEntity === false) {
+          const errorMessage: string = `The field type of the class property does not match the JSON Schema.`;
           this.transformLog.push({
             type: LogType.ERROR,
             message: errorMessage,
             pos: this.currentNode.getStart(),
-            code: '10101017',
-            description: 'ArkTs InsightIntent Error'
+            code: '10110009',
+            description: 'InsightIntent Compiler Error',
+            solutions: ['Correct the type to match the requirement']
           });
           return;
         }
@@ -1451,7 +1533,7 @@ class ParseIntent {
     }
   }
 
-  private schemaValidateRules(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidateRules(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     const schemaKeys: string[] = Object.keys(schemaData);
     if (schemaObj.oneOf) {
       let count: number = 0;
@@ -1465,13 +1547,14 @@ class ParseIntent {
         }
       });
       if (count !== 1) {
-        const errorMessage: string = `Not meeting the one of schema verification rules`;
+        const errorMessage: string = `The class property parameter violates the oneOf/anyOf validation rules in the JSON Schema.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101024',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110010',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Modify it to satisfy the rules']
         });
         return;
       }
@@ -1488,20 +1571,21 @@ class ParseIntent {
         }
       });
       if (count === 0) {
-        const errorMessage: string = `Not meeting the any of schema verification rules`;
+        const errorMessage: string = `The class property parameter violates the oneOf/anyOf validation rules in the JSON Schema.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101018',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110010',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Modify it to satisfy the rules']
         });
         return;
       }
     }
   }
 
-  private schemaValidateSync(schemaData: Record<string, string>, schemaObj: object): void {
+  private schemaValidateSync(schemaData: Record<string, schemaVerifyType>, schemaObj: object): void {
     if (!schemaObj) {
       return;
     }
@@ -1512,13 +1596,14 @@ class ParseIntent {
       this.schemaValidateSync(schemaData, schemaObj.items.items);
     }
     if (schemaObj.type !== 'object') {
-      const errorMessage: string = `Schema root type must be object`;
+      const errorMessage: string = `The root type of the JSON Schema for Parameters must be object.`;
       this.transformLog.push({
         type: LogType.ERROR,
         message: errorMessage,
         pos: this.currentNode.getStart(),
-        code: '10101019',
-        description: 'ArkTs InsightIntent Error'
+        code: '10110007',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Change the top-level definition to {"type":"object", ...}']
       });
       return;
     }
@@ -1577,16 +1662,17 @@ class ParseIntent {
     }
   }
 
-  private schemaAdditionalPropertiesValidation(schemaData, schemaProps): void {
+  private schemaAdditionalPropertiesValidation(schemaData: Record<string, schemaVerifyType>, schemaProps: object): void {
     for (const key of Object.keys(schemaData)) {
       if (!schemaProps[key]) {
-        const errorMessage: string = `Schema does not allow more parameters`;
+        const errorMessage: string = `The class property includes parameters not defined in the JSON Schema.`;
         this.transformLog.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101025',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110011',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Remove any extra parameters']
         });
         return;
       }
@@ -1618,19 +1704,19 @@ class ParseIntent {
       return;
     }
     this.processEntityOwnerMap();
-    const intentNameMappingMap = new Map();
+    const intentNameMappingMap: Map<string, object> = new Map();
     this.intentData.forEach(data => {
       intentNameMappingMap.set(data.intentName, data);
     });
-    for (const [intentName, entityIds] of this.entityOwnerMap.entries()) {
+    for (const [intentName, entityClassNames] of this.entityOwnerMap.entries()) {
       const targetIntent: object = intentNameMappingMap.get(intentName);
       if (!targetIntent) {
         continue;
       }
       const matchedEntities: object[] = [];
-      entityIds.forEach(id => {
-        if (this.entityMap.has(id)) {
-          matchedEntities.push(this.entityMap.get(id));
+      entityClassNames.forEach(entityClassName => {
+        if (this.entityMap.has(entityClassName)) {
+          matchedEntities.push(this.entityMap.get(entityClassName));
         }
       });
       if (matchedEntities.length !== 0) {
@@ -1640,20 +1726,26 @@ class ParseIntent {
   }
 
   // This method writes the parsed data to a file.
-  public writeUserIntentJsonFile(harIntentDataObj: object): void {
+  public writeUserIntentJsonFile(harIntentDataObj: object, share: object): void {
     const cachePath: string =
       path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
-    if (!(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
+    if (!projectConfig.aceProfilePath || !(fs.existsSync(cachePath) || this.intentData.length > 0 || Object.keys(harIntentDataObj).length !== 0)) {
       return;
     }
-    this.verifyInheritanceChain();
     const mergedData: object = this.processIntentData(harIntentDataObj);
-    const cacheSourceMapPath: string =
-      path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
+    const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     try {
-      if (this.intentData.length > 0) {
+      if (Object.keys(mergedData).length > 0) {
+        const cacheContent: object = {
+          'extractInsightIntents': this.intentData,
+          'entityOwnerMap': Object.fromEntries(this.entityOwnerMap.entries()),
+          'entityMap': Object.fromEntries(this.entityMap.entries()),
+          'heritageClassSet': Object.fromEntries(this.heritageClassSet.entries()),
+          'entityHeritageClassSet': Object.fromEntries(this.EntityHeritageClassSet.entries()),
+          'entityExtendsMap': Object.fromEntries(this.EntityExtendsMap.entries())
+        };
         fs.writeFileSync(cacheSourceMapPath, JSON.stringify(mergedData, null, 2), 'utf-8');
-        fs.writeFileSync(cachePath, JSON.stringify({ 'extractInsightIntents': this.intentData }, null, 2), 'utf-8');
+        fs.writeFileSync(cachePath, JSON.stringify(cacheContent, null, 2), 'utf-8');
       } else if (fs.existsSync(cacheSourceMapPath)) {
         fs.unlinkSync(cacheSourceMapPath);
       }
@@ -1663,37 +1755,86 @@ class ParseIntent {
         const rawData: string = fs.readFileSync(fullPath, 'utf8');
         const jsonData: object = JSON.parse(rawData);
         if (jsonData?.module) {
-          jsonData.module.hasInsightIntent = this.intentData.length > 0 ? true : undefined;
+          jsonData.module.hasInsightIntent = Object.keys(mergedData).length > 0 ? true : undefined;
         }
         const updatedJson: string = JSON.stringify(jsonData, null, 2);
         fs.writeFileSync(fullPath, updatedJson, 'utf8');
       }
     } catch (e) {
-      const errorMessage: string = `Internal error writeFile error`;
-      this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
-        code: '10101020',
-        description: 'ArkTs InsightIntent Error'
+      const errorMessage: string = `Failed to write to the intent configuration file.`;
+      transformLog.errors.push({
+        type: LogType.ERROR, message: errorMessage, pos: this.currentNode.getStart(),
+        code: '10110025',
+        description: 'InsightIntent Compiler Error',
+        solutions: ['Check file permissions, free disk space, or restart DevEco Studio']
       });
       return;
+    }
+    const logger = share.getLogger('etsTransform');
+    const hvigorLogger = share.getHvigorConsoleLogger?.(ABILITY_SUBSYSTEM_CODE);
+    if (transformLog && transformLog.errors.length && !projectConfig.ignoreWarning) {
+      emitLogInfo(logger, getTransformLog(transformLog), true, this.currentFilePath, hvigorLogger);
+      resetLog();
+    }
+  }
+
+  private processUpdateEntities(cacheDataObj: object): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+    if (cacheDataObj.entityOwnerMap && Object.keys(cacheDataObj.entityOwnerMap || {}).length > 0) {
+      const cacheEntityOwnerMap: Map<string, string[]> = cacheDataObj.entityOwnerMap as Map<string, string[]>;
+      for (const [intentName, entityClassNames] of Object.entries(cacheEntityOwnerMap)) {
+        if (!this.entityOwnerMap.has(intentName)) {
+          this.entityOwnerMap.set(intentName, entityClassNames);
+        }
+      }
+    }
+    if (cacheDataObj.entityMap && Object.keys(cacheDataObj.entityMap || {}).length > 0) {
+      const cacheEntityMap: Map<string, object> = cacheDataObj.entityMap as Map<string, object>;
+      for (const [className, entityObj] of Object.entries(cacheEntityMap)) {
+        if (!decoratorFileMapping.has(entityObj.decoratorFile)) {
+          this.entityMap.set(entityObj.className, entityObj);
+        }
+      }
+    }
+    this.processUpdateHeritageVerify(cacheDataObj);
+    this.intentData.map(userIntent => {
+      if (userIntent.entities) {
+        delete userIntent.entities;
+      }
+    });
+  }
+
+  private processUpdateHeritageVerify(cacheDataObj: object): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+    if (cacheDataObj.heritageClassSet && Object.keys(cacheDataObj.heritageClassSet || {}).length > 0) {
+      const cacheHeritageClassSet: Set<string> = cacheDataObj.heritageClassSet as Set<string>;
+      for (const entityPathInfo of Object.values(cacheHeritageClassSet)) {
+        const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (!decoratorFileMapping.has(decoratorFilePath)) {
+          this.heritageClassSet.add(entityPathInfo);
+        }
+      }
+    }
+    if (cacheDataObj.entityHeritageClassSet && Object.keys(cacheDataObj.entityHeritageClassSet || {}).length > 0) {
+      const cacheEntityExtendsMap: Set<string> = cacheDataObj.entityHeritageClassSet as Set<string>;
+      for (const entityPathInfo of Object.values(cacheEntityExtendsMap)) {
+        const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (decoratorFileMapping.has(decoratorFilePath)) {
+          this.EntityHeritageClassSet.add(entityPathInfo);
+        }
+      }
+    }
+    if (cacheDataObj.entityExtendsMap && Object.keys(cacheDataObj.entityExtendsMap || {}).length > 0) {
+      const cacheEntityExtendsMap: Map<string, string> = cacheDataObj.entityExtendsMap as Map<string, string>;
+      for (const [baseClassName, parentClassName] of Object.entries(cacheEntityExtendsMap)) {
+        if (!this.EntityExtendsMap.has(baseClassName)) {
+          this.EntityExtendsMap.set(baseClassName, parentClassName);
+        }
+      }
     }
   }
 
   private processIntentData(harIntentDataObj: object): object {
-    this.matchEntities();
-    if (!projectConfig.aceProfilePath) {
-      const errorMessage: string = `Internal error aceProfilePath not found`;
-      this.transformLog.push({
-        type: LogType.ERROR,
-        message: errorMessage,
-        pos: this.currentNode.getStart(),
-        code: '10101020',
-        description: 'ArkTs InsightIntent Error'
-      });
-      return null;
-    }
     const cacheSourceMapPath: string =
       path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     const cachePath: string = path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // Compiled cache file
@@ -1710,7 +1851,12 @@ class ParseIntent {
         insightIntents.push(...insightIntent);
       });
       this.intentData = insightIntents;
+      this.processUpdateEntities(cacheDataObj);
     }
+    this.verifyInheritanceChain();
+    this.matchEntities();
+    // Sort the extractInsightIntents array
+    this.intentData.sort((a, b) => a.decoratorFile.localeCompare(b.decoratorFile));
     let writeJsonData: object = {};
     if (fs.existsSync(cacheSourceMapPath)) {
       const originIntents: string = fs.readFileSync(cacheSourceMapPath, 'utf8');
@@ -1719,13 +1865,13 @@ class ParseIntent {
         'extractInsightIntents': this.intentData
       });
       writeJsonData = jsonData;
-    } else {
+    } else if (this.intentData.length > 0) {
       Object.assign(writeJsonData, {
         'extractInsightIntents': this.intentData
       });
     }
     const mergedData: object = this.mergeHarData(writeJsonData, harIntentDataObj);
-    this.validateIntentIntentName(writeJsonData);
+    this.validateIntentIntentName(mergedData);
     return mergedData;
   }
 
@@ -1763,9 +1909,11 @@ class ParseIntent {
         if (fs.existsSync(intentDataSourcePath)) {
           harIntentData = JSON.parse(fs.readFileSync(intentDataSourcePath, 'utf8')) as object;
         }
-        Object.assign(harIntentDataObj, {
-          harName: harIntentData
-        });
+        if (Object.keys(harIntentData).length !== 0) {
+          Object.assign(harIntentDataObj, {
+            harName: harIntentData
+          });
+        }
       });
     }
     return harIntentDataObj;
@@ -1776,15 +1924,16 @@ class ParseIntent {
     writeJsonData.insightIntents?.forEach(insightIntent => {
       duplicates.add(insightIntent.intentName);
     });
-    writeJsonData.extractInsightIntents.forEach(item => {
+    writeJsonData.extractInsightIntents?.forEach(item => {
       if (duplicates.has(item.intentName)) {
-        const errorMessage: string = `User intents has duplicate intentName param`;
-        this.transformLog.push({
+        const errorMessage: string = `Duplicate intentName definitions found.`;
+        transformLog.errors.push({
           type: LogType.ERROR,
           message: errorMessage,
           pos: this.currentNode.getStart(),
-          code: '10101021',
-          description: 'ArkTs InsightIntent Error'
+          code: '10110012',
+          description: 'InsightIntent Compiler Error',
+          solutions: ['Rename or remove duplicate entries']
         });
         return;
       } else if (item.intentName !== undefined) {
