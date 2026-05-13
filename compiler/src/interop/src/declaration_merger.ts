@@ -19,11 +19,47 @@ import path from 'path';
 import { logger } from './compile_info';
 import { harFilesRecord, GeneratedFileInHar, toUnixPath } from './utils';
 import { compilerOptions, resolveModuleNames as resolveModuleNamesOrig } from './ets_checker';
+import { projectConfig } from '../main';
 
 const SOURCE_TO_DECLARATION: Record<string, string> = {
   '.ets': '.d.ets',
   '.ts': '.d.ts',
 };
+
+function toSourceFilePath(
+  declPath: string,
+  projectPath: string,
+): string | null {
+  const isDets: boolean = declPath.endsWith('.d.ets');
+  const isDts: boolean = declPath.endsWith('.d.ts');
+  if (!isDets && !isDts) {
+    return null;
+  }
+  const relativePath: string = path.relative(projectPath, declPath);
+  if (relativePath.startsWith('..')) {
+    return null;
+  }
+  const sourceRelativePath: string = relativePath
+    .replace(/\.d\.ets$/, '.ets')
+    .replace(/\.d\.ts$/, '.ts');
+  return path.join(projectConfig.projectRootPath, sourceRelativePath);
+}
+
+function resolveWithFallback(
+  moduleName: string,
+  sourceContainingFile: string,
+  resolved: ts.ResolvedModuleFull | null
+): ts.ResolvedModuleFull | null {
+  if (resolved) {
+    return resolved;
+  }
+  if (!sourceContainingFile) {
+    return null;
+  }
+  const fallback: (ts.ResolvedModuleFull | null)[] =
+    resolveModuleNamesOrig([moduleName], sourceContainingFile);
+  return fallback[0] ?? null;
+}
 
 function createDeclarationModuleResolver(
   projectPath: string
@@ -34,6 +70,11 @@ function createDeclarationModuleResolver(
   ): (ts.ResolvedModuleFull | null)[] => {
     const resolved: (ts.ResolvedModuleFull | null)[] =
       resolveModuleNamesOrig(moduleNames, containingFile);
+    const sourceContainingFile: string | null =
+      toSourceFilePath(containingFile, projectPath);
+    for (let i = 0; i < resolved.length; i++) {
+      resolved[i] = resolveWithFallback(moduleNames[i], sourceContainingFile, resolved[i]);
+    }
     for (let i = 0; i < resolved.length; i++) {
       const mod = resolved[i];
       if (!mod || !mod.resolvedFileName || !mod.packageId) {
