@@ -197,18 +197,19 @@ export class CacheFactory {
         if (!metadata.name) {
             return node;
         }
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                if (
-                    !isFromStruct 
-                        && checkIsFunctionMethodDeclFromInfo(metadata) 
-                        && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
-                ) {
+        if (
+            !isFromStruct 
+                && checkIsFunctionMethodDeclFromInfo(metadata) 
+                && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
+        ) {
+            withAPIVersion(
+                { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
+                (sdkVersion: APIVersions) => {
                     InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
                 }
-            }
-        );
+            );
+            return node;
+        }
         const func: arkts.ScriptFunction = node.scriptFunction;
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, checkIsFunctionMethodDeclFromInfo(metadata));
         const newNode = BuilderLambdaFactory.updateBuilderLambdaMethodDecl(
