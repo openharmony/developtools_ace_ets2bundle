@@ -567,6 +567,8 @@ export enum CustomDialogNames {
  	 
 export enum BuilderLambdaNames {
     ANNOTATION_NAME = 'ComponentBuilder',
+    INNER_METHOD_NAME = '$_instantiate',
+    TRANSFORM_INNER_METHOD_NAME = '_instantiateImpl',
     ORIGIN_METHOD_NAME = '$_invoke',
     TRANSFORM_METHOD_NAME = '_invoke',
     CUSTOM_COMPONENT_INVOKE_NAME = '_invokeImpl',

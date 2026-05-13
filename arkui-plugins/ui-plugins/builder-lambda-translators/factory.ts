@@ -35,6 +35,7 @@ import {
     findBuilderLambdaDeclInfo,
     isBuilderLambda,
     isBuilderLambdaFunctionCall,
+    isCustomBuilderLambdaFunctionCall,
     isSafeType,
     replaceBuilderLambdaDeclMethodName,
     isDoubleDollarCall,
@@ -628,6 +629,50 @@ export class factory {
         return newNode;
     }
 
+    static generateCustomInnerComponentArgsInBuilderLambda(
+        leaf: arkts.CallExpression,
+        lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
+        declInfo: BuilderLambdaDeclInfo
+    ): (arkts.AstNode | undefined)[] {
+        const { params, moduleName, isFromCommonMethod } = declInfo;
+        let returnType: arkts.TypeNode | undefined;
+        const expression = leaf.expression;
+        if (arkts.isMemberExpression(expression) && !!expression.object && arkts.isIdentifier(expression.object)) {
+            returnType = UIFactory.createTypeReferenceFromString(expression.object.name);
+        }
+        const args: Array<arkts.AstNode | undefined> = [];
+        const modifiedArgs: (arkts.AstNode | undefined)[] = [];
+        const isTrailingCall = leaf.isTrailingCall;
+        const typeArguments = leaf.typeArguments;
+        const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
+        forEachArgWithParam(
+            leaf.arguments,
+            params,
+            (arg, param, index) => {
+                if (index === 0) {
+                    args.push(arg);
+                    return;
+                }
+                const fallback = arkts.factory.createUndefinedLiteral();
+                const updatedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
+                if (index === params.length - 1 && hasLastTrailingLambda) {
+                    args.push(updatedArg);
+                } else {
+                    modifiedArgs.push(updatedArg);
+                }
+            },
+            { isTrailingCall }
+        );
+        const lambdaBody = this.addOptionsArgsToLambdaBodyInStyleArg(
+            lambdaBodyInfo,
+            modifiedArgs,
+            typeArguments,
+        );
+        const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!, isFromCommonMethod, leaf);
+        args.unshift(styleArg);
+        return args;
+    }
+
     /**
      * transform arguments in a builder lambda call for custom components.
      */
@@ -795,6 +840,9 @@ export class factory {
         declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
         if (declInfo.isFunctionCall) {
+            if (declInfo.isCustomFunctionCall) {
+                return this.generateCustomInnerComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
+            }
             return this.generateComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
         }
         return this.generateCustomComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
@@ -923,7 +971,7 @@ export class factory {
         }
         if (arkts.isMemberExpression(node)) {
             return arkts.factory.createMemberExpression(
-                node.object,
+                declInfo.superName !== undefined ? arkts.factory.createIdentifier(declInfo.superName) : node.object,
                 arkts.factory.createIdentifier(funcName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 node.computed,
@@ -940,7 +988,8 @@ export class factory {
         const nameNode: arkts.Identifier | undefined = node.name;
         const func: arkts.ScriptFunction = node.scriptFunction;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
-        if (isFunctionCall) {
+        const isCustomFunctionCall: boolean = isCustomBuilderLambdaFunctionCall(nameNode);
+        if (isFunctionCall && !isCustomFunctionCall) {
             ComponentAttributeCache.getInstance().collect(node);
         }
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
@@ -1036,7 +1085,7 @@ export class factory {
             this.updateAnimation(instanceCalls);
             instanceCalls.forEach((callInfo) => {
                 if (isReuse) {
-                    reuseId = findReuseId(callInfo.call);
+                    reuseId = !declInfo.isFunctionCall ? findReuseId(callInfo.call) : undefined;
                 }
                 const isReuseIdCall = findReuseId(callInfo.call) !== undefined;
                 if (isReuseIdCall && !isReuse) {

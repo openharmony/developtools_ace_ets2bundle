@@ -35,7 +35,7 @@ import {
 import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
 import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
-import { checkIsBuilderLambdaFunctionCallFromInfo } from '../../collectors/ui-collectors/utils';
+import { checkIsBuilderLambdaFunctionCallFromInfo, checkIsCustomFunctionMethodDeclFromInfo } from '../../collectors/ui-collectors/utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
 const ENTRY_WRAPPER_NAME = '__EntryWrapper';
@@ -43,9 +43,11 @@ const ENTRY_WRAPPER_LAYER = 6;
 
 export type BuilderLambdaDeclInfo = {
     name: string;
-    isFunctionCall: boolean; // isFunctionCall means it is from $_invoke.
+    isFunctionCall: boolean; // isFunctionCall means it is NOT from $_invoke.
+    isCustomFunctionCall: boolean; // isCustomFunctionCall means it is from $_instantiate.
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
+    superName?: string; // exists ONLY in CustonFunctionCall, referring to the name of the super class.
     moduleName?: string;
     hasReceiver?: boolean;
     isFromCommonMethod?: boolean;
@@ -339,7 +341,10 @@ export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.As
     if (!nameNode || nameNode.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
         return undefined;
     }
-    const isBuilderLambda: boolean = !!node.name && isBuilderLambdaCall(node.name);
+    let isBuilderLambda: boolean = hasBuilderLambdaAnnotation(node.scriptFunction);
+    if (!isBuilderLambda) {
+        isBuilderLambda = !!node.name && isBuilderLambdaCall(node.name);
+    }
     const isMethodDecl: boolean =
         !!node.scriptFunction &&
         arkts.hasModifierFlag(node.scriptFunction, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
@@ -509,17 +514,28 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     const func = decl.scriptFunction;
     const nameNode = decl.name;
     const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
-    let moduleName: string | undefined;
-    if (isFunctionCall) {
-        moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
-    }
-    const originType = func.returnTypeAnnotation;
+    const isCustomFunctionCall = isFunctionCall && isCustomBuilderLambdaFunctionCall(nameNode);
     const params = func.params.map((p) => p.clone());
     const hasReceiver = func.hasReceiver;
-    const isFromCommonMethod = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
-    const returnType = originType?.clone();
-    const name = nameNode.name;
-    return { name, isFunctionCall, params, returnType, moduleName, hasReceiver, isFromCommonMethod };
+    let moduleName: string | undefined;
+    let returnType: arkts.TypeNode | undefined;
+    let originType: arkts.TypeNode | undefined = func.returnTypeAnnotation;
+    let name: string = nameNode.name;
+    let isFromCommonMethod: boolean = false;
+    if (isFunctionCall) {
+        moduleName = arkts.getProgramFromAstNode(decl)?.moduleName;
+        isFromCommonMethod = findComponentAttributeFromCommonMethod(originType);
+    }
+    if (isCustomFunctionCall) {
+        const constraintType = func.typeParams?.params?.at(0)?.constraint;
+        const constraintNameNode = expectNameInTypeReference(constraintType);
+        originType = constraintType;
+        name = findComponentNameFromExtendableTypeName(constraintNameNode) ?? name;
+        isFromCommonMethod = findComponentAttributeFromExtendableComponent(constraintNameNode);
+    } else {
+        returnType = originType?.clone();
+    }
+    return { name, isFunctionCall, isCustomFunctionCall, params, returnType, moduleName, hasReceiver, isFromCommonMethod };
 }
 
 export function collectDeclInfoFromInfo(
@@ -529,20 +545,48 @@ export function collectDeclInfoFromInfo(
 ): BuilderLambdaDeclInfo | undefined {
     if (!rootCallInfo?.isDeclFromMethod && !rootCallInfo?.isDeclFromFunction) {
         return undefined;
-    }
-    const name: string = rootCallInfo.declName!;
+    }    
     const rootCallee: arkts.CallExpression = coerceToAstNode<arkts.CallExpression>(node);
     const decl: arkts.MethodDefinition = coerceToAstNode<arkts.MethodDefinition>(findRootCalleeDecl(rootCallee)!);
     const func: arkts.ScriptFunction = decl.scriptFunction;
-    const originType = func.returnTypeAnnotation;
     const params: arkts.Expression[] = func.params.map((p) => p.clone());
-    const returnType: arkts.TypeNode | undefined = originType?.clone();
     const isFunctionCall: boolean = !rootCallInfo.structDeclInfo && !callInfo.structDeclInfo;
-    const moduleName: string = rootCallInfo.moduleName!;
+    const isCustomFunctionCall: boolean = rootCallInfo.declName === BuilderLambdaNames.INNER_METHOD_NAME 
+        || rootCallInfo.declName === BuilderLambdaNames.TRANSFORM_INNER_METHOD_NAME;
     const isTrailingCall: boolean | undefined = rootCallInfo.isTrailingCall;
     const hasReceiver: boolean | undefined = rootCallInfo.hasReceiver;
-    const isFromCommonMethod: boolean = isFunctionCall && findComponentAttributeFromCommonMethod(originType);
-    return { name, params, returnType, isFunctionCall, moduleName, isTrailingCall, hasReceiver, isFromCommonMethod };
+    let name: string = rootCallInfo.declName!;
+    let superName: string | undefined;
+    let moduleName: string | undefined;
+    let returnType: arkts.TypeNode | undefined;
+    let originType: arkts.TypeNode | undefined = func.returnTypeAnnotation;
+    let isFromCommonMethod: boolean = false;
+    if (isFunctionCall) {
+        moduleName = rootCallInfo.moduleName;
+        isFromCommonMethod = findComponentAttributeFromCommonMethod(originType);
+    }
+    if (isCustomFunctionCall) {
+        const constraintType = func.typeParams?.params?.at(0)?.constraint;
+        const constraintNameNode = expectNameInTypeReference(constraintType);
+        originType = constraintType;
+        name = findComponentNameFromExtendableTypeName(constraintNameNode) ?? name;
+        superName = constraintNameNode?.name;
+        isFromCommonMethod = findComponentAttributeFromExtendableComponent(constraintNameNode);
+    } else {
+        returnType = originType?.clone();
+    }
+    return { 
+        name, 
+        superName,
+        params, 
+        returnType, 
+        isFunctionCall, 
+        isCustomFunctionCall, 
+        moduleName, 
+        isTrailingCall, 
+        hasReceiver, 
+        isFromCommonMethod 
+    };
 }
 
 export function findRootCalleeDecl(rootCall: arkts.CallExpression | arkts.Identifier): arkts.AstNode | undefined {
@@ -583,12 +627,37 @@ export function findCommonMethodInterfaceInExtends(interfaceNode: arkts.AstNode 
     });
 }
 
+export function findComponentAttributeFromExtendableComponent(constraintNameNode: arkts.Identifier | undefined): boolean {
+    if (!constraintNameNode) {
+        return false;
+    }
+    const decl = arkts.getDecl(constraintNameNode);
+    if (!decl || !arkts.isClassDefinition(decl)) {
+        return false;
+    }
+    return decl.implements.some((impl) => {
+        const expression = impl.expr;
+        if (!expression || !arkts.isETSTypeReference(expression)) {
+            return false;
+        }
+        return findComponentAttributeFromCommonMethod(expression);
+    });
+}
+
 export function isBuilderLambdaFunctionCall(nameNode: arkts.Identifier | undefined): boolean {
     if (!nameNode) {
         return false;
     }
     const name = nameNode.name;
     return name !== BuilderLambdaNames.ORIGIN_METHOD_NAME && name !== BuilderLambdaNames.TRANSFORM_METHOD_NAME;
+}
+
+export function isCustomBuilderLambdaFunctionCall(nameNode: arkts.Identifier | undefined): boolean {
+    if (!nameNode) {
+        return false;
+    }
+    const name = nameNode.name;
+    return name === BuilderLambdaNames.INNER_METHOD_NAME || name === BuilderLambdaNames.TRANSFORM_INNER_METHOD_NAME;
 }
 
 export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
@@ -664,10 +733,14 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
     }
     if (
         arkts.isMemberExpression(node.expression) &&
-        arkts.isIdentifier(node.expression.property) &&
-        node.expression.property.name === BuilderLambdaNames.ORIGIN_METHOD_NAME
+        arkts.isIdentifier(node.expression.property)
     ) {
-        return BuilderLambdaNames.TRANSFORM_METHOD_NAME;
+        const propertyName: string = node.expression.property.name;
+        if (propertyName === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
+            return BuilderLambdaNames.TRANSFORM_METHOD_NAME;
+        } else if (propertyName === BuilderLambdaNames.INNER_METHOD_NAME) {
+            return BuilderLambdaNames.TRANSFORM_INNER_METHOD_NAME;
+        }
     }
     return undefined;
 }
@@ -760,6 +833,16 @@ export function getElementTypeFromArray(arrayType: arkts.TypeNode): arkts.TypeNo
         return arrayType.part.typeParams.params[0].clone();
     }
     return undefined;
+}
+
+function findComponentNameFromExtendableTypeName(typeName: arkts.Identifier | undefined): string | undefined {
+    if (!typeName) {
+        return;
+    }
+    const regex: RegExp = /Extendable(?<source>\w+)$/;
+    const match: RegExpExecArray | null = regex.exec(typeName.name);
+    const componentName: string | undefined = match?.groups?.source;
+    return componentName;
 }
 
 function findAttributeNameFromTypeName(typeName: arkts.Identifier | undefined): string | undefined {
