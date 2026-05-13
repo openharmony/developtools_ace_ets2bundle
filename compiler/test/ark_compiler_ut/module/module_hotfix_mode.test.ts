@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use rollupObject file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,7 @@ import {
   BUILD_NPM,
   MODULES_ABC,
   ENABLE_RELEASE_COLUMN,
+  ENABLE_CALLABLE_NAME,
   ENTRY_LIST,
   OUTPUT,
   FILE_THREADS,
@@ -47,7 +48,8 @@ function checkCmdArgs(cmdArgs: Array<object>, compatibleSdkVersion: string) : vo
   expect(cmdArgs[6] === `\"${fileThreads}\"`).to.be.true;
   expect(cmdArgs[7].indexOf(compatibleSdkVersion) > 0).to.be.true;
   expect(cmdArgs[8] === ENABLE_RELEASE_COLUMN).to.be.true;
-  expect(cmdArgs[9] === MERGE_ABC).to.be.true;
+  expect(cmdArgs[9] === ENABLE_CALLABLE_NAME).to.be.true;
+  expect(cmdArgs[10] === MERGE_ABC).to.be.true;
 }
 
 mocha.describe('test module_hotfix_mode file api', function () {
@@ -96,5 +98,21 @@ mocha.describe('test module_hotfix_mode file api', function () {
     const moduleMode = new ModuleHotfixMode(this.rollup);
     moduleMode.generateEs2AbcCmdForHotfix();
     expect(moduleMode.cmdArgs.includes('--enable-release-column')).to.be.false;
+  });
+
+  mocha.it('1-5: test generateEs2AbcCmdForHotfix enable callable name by default', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.enableCallableName = true;
+    const moduleMode = new ModuleHotfixMode(this.rollup);
+    moduleMode.generateEs2AbcCmdForHotfix();
+    expect(moduleMode.cmdArgs.includes('--enable-callable-name')).to.be.true;
+  });
+
+  mocha.it('1-6: test generateEs2AbcCmdForHotfix disable callable name', function () {
+    this.rollup.build(RELEASE);
+    this.rollup.share.projectConfig.enableCallableName = false;
+    const moduleMode = new ModuleHotfixMode(this.rollup);
+    moduleMode.generateEs2AbcCmdForHotfix();
+    expect(moduleMode.cmdArgs.includes('--enable-callable-name')).to.be.false;
   });
 });
