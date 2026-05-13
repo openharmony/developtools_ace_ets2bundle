@@ -23,6 +23,7 @@ import {
     StructMethodInfo,
 } from '../../collectors/ui-collectors/records';
 import {
+    checkIsCustomFunctionMethodDeclFromInfo,
     checkIsFunctionMethodDeclFromInfo,
     collectStructPropertyInfos,
 } from '../../collectors/ui-collectors/utils';
@@ -193,7 +194,11 @@ export class CacheFactory {
         if (!metadata.name) {
             return node;
         }
-        if (!isFromStruct && checkIsFunctionMethodDeclFromInfo(metadata)) {
+        if (
+            !isFromStruct 
+                && checkIsFunctionMethodDeclFromInfo(metadata) 
+                && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
+        ) {
             InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
         }
         const func: arkts.ScriptFunction = node.scriptFunction;
@@ -392,9 +397,66 @@ export class CacheFactory {
         declInfo: BuilderLambdaDeclInfo
     ): (arkts.AstNode | undefined)[] {
         if (declInfo.isFunctionCall) {
+            if (declInfo.isCustomFunctionCall) {
+                return this.generateCustomInnerComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
+            }
             return this.generateComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
         }
         return this.generateCustomComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
+    }
+
+    /**
+     * transform arguments in a builder lambda call for extenable components.
+     */
+    static generateCustomInnerComponentArgsInBuilderLambda(
+        leaf: arkts.CallExpression,
+        lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
+        declInfo: BuilderLambdaDeclInfo
+    ): (arkts.AstNode | undefined)[] {
+        const { params, moduleName, isTrailingCall, isFromCommonMethod } = declInfo;
+        let returnType: arkts.TypeNode | undefined;
+        const expression = leaf.expression;
+        if (arkts.isMemberExpression(expression) && !!expression.object && arkts.isIdentifier(expression.object)) {
+            returnType = UIFactory.createTypeReferenceFromString(expression.object.name);
+        }
+        const args: Array<arkts.AstNode | undefined> = [];
+        const modifiedArgs: (arkts.AstNode | undefined)[] = [];
+        const _isTrailingCall = isTrailingCall ?? leaf.isTrailingCall;
+        const typeArguments = leaf.typeArguments;
+        const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
+        forEachArgWithParam(
+            leaf.arguments,
+            params,
+            (arg, param, index) => {
+                if (index === 0) {
+                    args.push(arg);
+                    return;
+                }
+                const isLastTrailingLambda = index === params.length - 1 && hasLastTrailingLambda;
+                const fallback = arkts.factory.createUndefinedLiteral();
+                const updatedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, isLastTrailingLambda, declInfo);
+                if (index === params.length - 1 && hasLastTrailingLambda) {
+                    args.push(updatedArg);
+                } else {
+                    modifiedArgs.push(updatedArg);
+                }
+            },
+            { isTrailingCall: _isTrailingCall }
+        );
+        const lambdaBody = BuilderLambdaFactory.addOptionsArgsToLambdaBodyInStyleArg(
+            lambdaBodyInfo,
+            modifiedArgs,
+            typeArguments,
+        );
+        const styleArg = BuilderLambdaFactory.createComponentStyleArgInBuilderLambda(
+            lambdaBody, 
+            returnType, 
+            moduleName!, 
+            isFromCommonMethod, 
+            leaf
+        );
+        args.unshift(styleArg);
+        return args;
     }
 
     /**
