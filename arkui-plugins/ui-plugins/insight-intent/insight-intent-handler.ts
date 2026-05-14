@@ -942,6 +942,7 @@ export class InsightIntentHandler {
     private static _instance: InsightIntentHandler;
     private intentNameSet = new Set<string>();
     private projectConfig: ProjectConfig;
+    private moduleHarPath = '';
     private collector: InsightIntentCollector;
     private currentDecoratorFile = '';
     
@@ -1624,9 +1625,14 @@ export class InsightIntentHandler {
     }
 
     private resolveFormExtensionAbility(classNode: arkts.ClassDeclaration): FormExtensionAbilityInfo | null | undefined {
-        const projectConfig = this.projectConfig as ProjectConfig & { aceModuleJsonPath?: string };
-        const moduleJsonPath = projectConfig.aceModuleJsonPath ||
-            path.join(projectConfig.moduleRootPath, 'src', 'main', 'module.json5');
+        const projectConfig = this.projectConfig as ProjectConfig ;
+        const modulePathValue = this.moduleHarPath || projectConfig.moduleRootPath
+        let moduleJsonPath = "";
+        if (this.moduleHarPath) {
+            moduleJsonPath = path.join(modulePathValue, 'src', 'main', 'module.json5')
+        } else {
+            moduleJsonPath = projectConfig.aceModuleJsonPath
+        }
 
         if (!fs.existsSync(moduleJsonPath)) {
             LogCollector.getInstance().collectLogInfo({
@@ -1653,7 +1659,7 @@ export class InsightIntentHandler {
                     return false;
                 }
                 const formSrcEntryPath = normalizePathForCompare(
-                    path.join(projectConfig.moduleRootPath, 'src', 'main', extensionInfo.srcEntry)
+                    path.join(modulePathValue, 'src', 'main', extensionInfo.srcEntry)
                     , path
                 );
                 return formSrcEntryPath === currentFilePath;
@@ -1719,19 +1725,25 @@ export class InsightIntentHandler {
     }
     private extractPageIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
         const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentPage');
-        if (!baseData) return null;
+        if (!baseData) {
+            return null
+        };
 
         const data: InsightIntentPageData = { ...baseData, pagePath: '' };
         const properties = annotation.properties;
         
         for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
+            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) {
+                continue;
+            }
             const propName = prop.key.name;
             const propValue = prop.value;
-            if (!propValue) continue;
+            if (!propValue) {
+                continue;
+            }
             switch (propName) {
                 case 'pagePath':
-                    const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode);
+                    const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode, baseData.packageName as string);
                     if (validatedPath === null) {
                         return null; 
                     }
@@ -1805,8 +1817,8 @@ export class InsightIntentHandler {
 
         return true;
     }
-    private validatePagePath(filePath: string, classNode: arkts.ClassDeclaration): unknown {
-        const moduleName = this.projectConfig?.moduleName;
+    private validatePagePath(filePath: string, classNode: arkts.ClassDeclaration, pckName: string): unknown {
+        const moduleName = pckName || this.projectConfig?.moduleName;
         if (moduleName) {
             const normalPagePath: string = path.join(moduleName, 'src/main', filePath + '.ets');
             if (!fs.existsSync(normalPagePath)) {
@@ -1863,9 +1875,10 @@ export class InsightIntentHandler {
             return null;
         }
         const program = arkts.getProgramFromAstNode(classNode);
-        const data: InsightIntentEntityData & { supportedQueryProperties?: string[] } = {
+        const data: InsightIntentEntityData & { supportedQueryProperties?: string[] } & { packageName?: string } = {
             className: classNode.definition?.ident?.name || 'UnknownClass',
             decoratorFile: this.makeFilePath(program?.absName || ''),
+            packageName: this.makePackageName(program?.absName || ''),
             decoratorType: '@InsightIntentEntity',
             entityCategory: '',
         };
@@ -2092,6 +2105,7 @@ export class InsightIntentHandler {
 
         data.decoratorClass = className;
         data.decoratorFile = this.makeFilePath(filePath);
+        data.packageName = this.makePackageName(filePath);
         data.decoratorType = decoratorType;
         data.moduleName = this.projectConfig?.moduleName;
         data.bundleName = this.projectConfig?.bundleName;
@@ -2955,6 +2969,29 @@ export class InsightIntentHandler {
         }
         return undefined;
     }
+    private makePackageName(filePath: string): string {
+        if (!filePath) {
+            return '';
+        }
+        // 统一将反斜杠替换为正斜杠，方便后续处理
+        let normalizedPath = filePath.replace(/\\/g, '/');
+        // 查找 'src/main/' 的位置
+        const srcMainIndex = normalizedPath.indexOf('/src/main/');
+        let moduleRootPath = '';
+        let packageName = '';
+        if (srcMainIndex !== -1) {
+            // 截取 '/src/main/' 之前的所有内容
+            moduleRootPath = normalizedPath.substring(0, srcMainIndex);
+            moduleRootPath = moduleRootPath.replace(/\//g, '\\');
+            this.projectConfig?.dependentModuleList.forEach(moduleName => {
+                if (moduleName.modulePath == moduleRootPath) {
+                   this.moduleHarPath = moduleName.modulePath
+                   packageName = moduleName.packageName
+                }
+            });
+        }
+        return packageName;
+    }
     private makeFilePath(filePath: string): string {
         if (!filePath) {
             return '';
@@ -3103,6 +3140,7 @@ export class InsightIntentHandler {
                 .filter((name: string | undefined) => name !== undefined);
         }
         data.decoratorFile = this.makeFilePath(filePath);
+        data.packageName = this.makePackageName(filePath);
         data.decoratorType = '@InsightIntentFunctionMethod';
         data.moduleName = this.projectConfig?.moduleName || 'entry';
         data.bundleName = this.projectConfig?.bundleName || '';
