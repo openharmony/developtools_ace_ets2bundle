@@ -24,7 +24,9 @@ import {
     FunctionInfo,
     NormalClassMethodInfo,
     NormalClassInfo,
+    CustomComponentInterfacePropertyInfo,
 } from '../../records';
+import { AstNodePointer } from '../../../../common/safe-types';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
 import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
 import { getPerfName, performanceLog } from '../../../../common/debug';
@@ -125,17 +127,21 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
         return;
     }
     const structName = metadata.structDeclInfo.name;
-    const propertyInfos = metadata.structPropertyInfos ?? [];
-    // 检查自定义组件中的`@Local`属性和无装饰器属性是否尝试在外部初始化
+    const propertyInfos = metadata.rootCallInfo
+        ? (metadata.rootCallInfo.structPropertyInfos ?? [])
+        : (metadata.structPropertyInfos ?? []);
+    reportForbiddenExternalInit.bind(this)(propertyInfos, structName);
+}
+
+function reportForbiddenExternalInit<T extends arkts.AstNode = arkts.CallExpression>(
+    this: BaseValidator<T, CallInfo>,
+    propertyInfos: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][],
+    structName: string
+): void {
     for (const propInfo of propertyInfos) {
         const propPtr = propInfo[0];
         const propertyInfo = propInfo[1];
-        let reportDecoratorName: string | undefined;
-        if (propertyInfo?.annotationInfo?.hasLocal) {
-            reportDecoratorName = `@${DecoratorNames.LOCAL}`;
-        } else if (!propertyInfo?.annotationInfo || Object.keys(propertyInfo.annotationInfo).length === 0) {
-            reportDecoratorName = 'regular';
-        }
+        const reportDecoratorName = getReportDecoratorName(propertyInfo);
         if (!!reportDecoratorName && !!propertyInfo?.name) {
             const prop = arkts.classByPeer<arkts.Property>(propPtr);
             this.report({
@@ -146,6 +152,16 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
             });
         }
     }
+}
+
+function getReportDecoratorName(propertyInfo: CustomComponentInterfacePropertyInfo | undefined): string | undefined {
+    if (propertyInfo?.annotationInfo?.hasLocal) {
+        return `@${DecoratorNames.LOCAL}`;
+    }
+    if (!propertyInfo?.annotationInfo || Object.keys(propertyInfo.annotationInfo).length === 0) {
+        return 'regular';
+    }
+    return undefined;
 }
 
 function checkComponentV2StateUsageInMethodDefinition<T extends arkts.AstNode = arkts.MethodDefinition>(

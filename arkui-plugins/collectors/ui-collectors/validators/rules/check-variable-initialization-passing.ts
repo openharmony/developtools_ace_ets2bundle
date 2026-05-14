@@ -18,6 +18,9 @@ import { BaseValidator } from '../base';
 import { CallInfo, RecordBuilder, StructPropertyInfo, StructPropertyRecord } from '../../records';
 import { StructDecoratorNames, DecoratorNames, LogType } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
+import { AstNodePointer } from '../../../../common/safe-types';
+
+const validatedNodePtrs: Set<AstNodePointer> = new Set();
 
 export const checkVariableInitializationPassing = performanceLog(
     _checkVariableInitializationPassing,
@@ -51,14 +54,23 @@ function _checkVariableInitializationPassing(
     if (!metadata.structDeclInfo || !metadata.fromStructInfo?.name) {
         return;
     }
+    if (metadata.ptr) {
+        if (validatedNodePtrs.has(metadata.ptr)) {
+            return;
+        }
+        validatedNodePtrs.add(metadata.ptr);
+    }
     const structName = metadata.structDeclInfo?.name ?? struct.ident?.name ?? '';
     if (!structName) {
         return;
     }
     const hasTrailingClosure = !!metadata.isTrailingCall;
     const { requireInitProperty, mustInitProperty } = collectMustInitProperties(struct);
-    removeInitializedProperties(metadata, requireInitProperty, mustInitProperty);
-    reportCannotInitProperties.bind(this)(metadata, structName);
+    const structPropertyInfos = metadata.rootCallInfo
+        ? metadata.rootCallInfo.structPropertyInfos
+        : metadata.structPropertyInfos;
+    removeInitializedProperties(structPropertyInfos, requireInitProperty, mustInitProperty);
+    reportCannotInitProperties.bind(this)(structPropertyInfos, structName);
     reportMissingInitProperties.bind(this)(node, requireInitProperty, mustInitProperty, hasTrailingClosure);
 }
 
@@ -89,11 +101,11 @@ function collectMustInitProperties(
 }
 
 function removeInitializedProperties(
-    metadata: CallInfo,
+    structPropertyInfos: CallInfo['structPropertyInfos'],
     requireInitProperty: string[],
     mustInitProperty: string[]
 ): void {
-    metadata.structPropertyInfos?.forEach(([, propertyInfo]) => {
+    structPropertyInfos?.forEach(([, propertyInfo]) => {
         if (!propertyInfo?.name) {
             return;
         }
@@ -110,10 +122,10 @@ function removeInitializedProperties(
 
 function reportCannotInitProperties(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    metadata: CallInfo,
+    structPropertyInfos: CallInfo['structPropertyInfos'],
     structName: string
 ): void {
-    metadata.structPropertyInfos?.forEach(([propertyPtr, propertyInfo]) => {
+    structPropertyInfos?.forEach(([propertyPtr, propertyInfo]) => {
         if (!propertyPtr || !propertyInfo?.name) {
             return;
         }
