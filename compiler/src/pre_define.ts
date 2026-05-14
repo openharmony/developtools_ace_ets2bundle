@@ -436,6 +436,9 @@ export const IS_ON: string = 'isOn';
 export const DATE: string = 'date';
 export const GRID_ITEM: string = 'GridItem';
 export const LIST_ITEM: string = 'ListItem';
+export const GRID: string = 'Grid';
+export const LIST: string = 'List';
+export const ENABLE_EDIT_MODE: string = 'enableEditMode';
 export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
@@ -516,6 +519,8 @@ export const PROPERTIES_ADD_DOUBLE_EXCLAMATION: Map<string, Set<string>> = new M
   [CALENDAR, new Set([DATE])],
   [GRID_ITEM, new Set([SELECTED])],
   [LIST_ITEM, new Set([SELECTED])],
+  [GRID, new Set([ENABLE_EDIT_MODE])],
+  [LIST, new Set([ENABLE_EDIT_MODE])],
   [SCROLL, new Set([ZOOM_SCALE])],
   [CONTAINER_READER, new Set([SIZE, WIDTH_BREAKPOINT, HEIGHT_BREAKPOINT])],
 ]);
