@@ -59,8 +59,13 @@ function main() {}
   public executeOnSubscribingWatches(propertyName: string): void
   
   public setV1RenderId(renderId: RenderIdType): void
-  
-  @Trace() public hasTraceA: number;
+
+  @JSONRename({newName:"hasTraceA"}) public __backing_hasTraceA?: number;
+
+  public get hasTraceA(): number
+
+  public set hasTraceA(newValue: number)
+
   @Computed() 
   public get computedB(): number
   

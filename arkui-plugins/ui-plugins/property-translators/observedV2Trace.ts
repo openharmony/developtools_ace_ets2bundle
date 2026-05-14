@@ -69,10 +69,15 @@ function getterWithObservedV2TraceProperty(
     originalName: string,
     newName: string
 ): arkts.MethodDefinition {
-    const methodModifier = this.isStatic
+    let methodModifier = this.isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-    const body = getterBodyWithObservedV2TraceProperty.bind(this)(originalName, newName);
+    let body: arkts.BlockStatement | undefined;
+    if (!this.isDecl) {
+        body = getterBodyWithObservedV2TraceProperty.bind(this)(originalName, newName);
+    } else {
+        methodModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+    }
     return uiFactory.createMethodDefinition({
         kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         key: arkts.factory.createIdentifier(originalName),
@@ -91,14 +96,19 @@ function setterWithObservedV2TraceProperty(
     originalName: string,
     newName: string
 ): arkts.MethodDefinition {
-    const methodModifier = this.isStatic
+    let methodModifier = this.isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-    const ifEqualsNewValue: arkts.IfStatement = setterIfEqualsNewValueWithObservedV2TraceProperty.bind(this)(
-        originalName,
-        newName
-    );
-    const body = arkts.factory.createBlock([ifEqualsNewValue]);
+    let body: arkts.BlockStatement | undefined;
+    if (!this.isDecl) {
+        const ifEqualsNewValue: arkts.IfStatement = setterIfEqualsNewValueWithObservedV2TraceProperty.bind(this)(
+            originalName,
+            newName
+        );
+        body = arkts.factory.createBlock([ifEqualsNewValue]);
+    } else {
+        methodModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+    }
     const param = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
         undefined
@@ -195,6 +205,7 @@ export interface IObservedV2TraceTranslator extends IBaseObservedPropertyTransla
     traceDecorator: DecoratorNames.TRACE;
     isTraced?: boolean;
     isStatic?: boolean;
+    isDecl?: boolean;
 }
 
 export class ObservedV2TraceTranslator extends ObservedPropertyTranslator implements IObservedV2TraceTranslator {
@@ -202,6 +213,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator implem
     className: string;
     isTraced?: boolean;
     isStatic?: boolean;
+    isDecl?: boolean;
     propertyModifier: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
     protected hasBackingField: boolean = true;
     protected hasMetaField: boolean = true;
@@ -214,6 +226,7 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator implem
         this.hasImplement = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER);
         this.isTraced = hasDecorator(this.property, this.traceDecorator);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
+        this.isDecl = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         if (this.isStatic) {
             this.propertyModifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
         }
@@ -251,7 +264,8 @@ export class ObservedV2TraceCachedTranslator
     traceDecorator: DecoratorNames.TRACE = DecoratorNames.TRACE;
     className: string;
     isTraced?: boolean;
-    isStatic?: boolean;
+    isStatic: boolean = false;
+    isDecl: boolean = false;
     propertyModifier: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
     protected hasBackingField: boolean = true;
     protected hasMetaField: boolean = true;
@@ -262,10 +276,15 @@ export class ObservedV2TraceCachedTranslator
         super(options);
         this.className = this.propertyInfo.classInfo?.name!;
         this.isTraced = !!this.propertyInfo.annotationInfo?.hasTrace;
-        this.isStatic = !!this.propertyInfo.modifiers 
-            && (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        if (!!this.propertyInfo.modifiers) {
+            this.isStatic = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+            this.isDecl = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         if (this.isStatic) {
             this.propertyModifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        }
+        if (this.isDecl) {
+            this.propertyModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
     }
 
