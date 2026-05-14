@@ -378,7 +378,7 @@ export const BIND_OBJECT_PROPERTY: Map<string, Set<string>> = new Map([
   ['Radio', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Checkbox', new Set([COMPONENT_CREATE_FUNCTION])],
   ['Web', new Set(['bindSelectionMenu'])],
-  [ALL_COMPONENTS, new Set(['bindMenu', 'bindContextMenu', 'bindContextMenuWithResponse', 'bindSheet', 'dragPreview'])]
+  [ALL_COMPONENTS, new Set(['bindMenu', 'bindContextMenu', 'bindContextMenuByResponseType', 'bindContextMenuByIsShow', 'bindContextMenuWithResponse', 'bindSheet', 'dragPreview'])]
 ]);
 
 export const CHECKED: string = 'checked';
@@ -438,6 +438,8 @@ export const LIST_ITEM: string = 'ListItem';
 export const UPDATE_FUNC_BY_ELMT_ID: string = 'updateFuncByElmtId';
 export const BIND_MENU: string = 'bindMenu';
 export const BIND_CONTEXT_MENU: string = 'bindContextMenu';
+export const BIND_CONTEXT_MENU_BY_RESPONSE_TYPE: string = 'bindContextMenuByResponseType';
+export const BIND_CONTEXT_MENU_BY_IS_SHOW: string = 'bindContextMenuByIsShow';
 export const BIND_CONTEXT_MENU_WITH_RESPONSE: string = 'bindContextMenuWithResponse';
 export const ARC_LIST_ITEM: string = 'ArcListItem';
 export const NAV_BAR_WIDTH: string = 'navBarWidth';
