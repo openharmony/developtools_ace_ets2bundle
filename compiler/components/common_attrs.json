@@ -169,6 +169,8 @@
     "bindPopup",
     "bindMenu",
     "bindContextMenu",
+    "bindContextMenuByResponseType",
+    "bindContextMenuByIsShow",
     "bindContextMenuWithResponse",
     "bindContentCover",
     "bindSheet",
