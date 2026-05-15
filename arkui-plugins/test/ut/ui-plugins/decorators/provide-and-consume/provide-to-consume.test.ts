@@ -227,19 +227,19 @@ function main() {}
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_num = STATE_MGMT_FACTORY.makeProvide<number>(this, "num", "num", ((({let gensym___83257243 = initializers;
-    (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (10)), false);
-    this.__backing_str = STATE_MGMT_FACTORY.makeProvide<string>(this, "str", "ss", ((({let gensym___249074315 = initializers;
-    (((gensym___249074315) == (null)) ? undefined : gensym___249074315.str)})) ?? ("hello")), false);
+    this.__backing_num = STATE_MGMT_FACTORY.makeProvide<number>(this, "num", "num", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_num)}) ? (initializers!.num as number) : (10 as number)), false);
+    this.__backing_str = STATE_MGMT_FACTORY.makeProvide<string>(this, "str", "ss", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str)}) ? (initializers!.str as string) : ("hello" as string)), false);
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_num!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (10)));
-    this.__backing_str!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("hello")));
+    this.__backing_num!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (10)) as number));
+    this.__backing_str!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("hello")) as string));
   }
 
   @MemoIntrinsic() 

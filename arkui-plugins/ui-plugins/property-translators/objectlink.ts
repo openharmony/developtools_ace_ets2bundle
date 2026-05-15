@@ -66,19 +66,24 @@ function initializeStructWithObjectLinkProperty(
     if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
-    const stateManagementCallType = this.propertyType.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        this.property.value, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     if (this.isMemoShouldUpdate) {
         if (!!initializerPropertyType) {
             PropertyValueCache.getInstance().collect({ value: initializerPropertyType });
         }
-        if (!!stateManagementCallType) {
-            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
-            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         )
     );
@@ -102,7 +107,8 @@ export class ObjectLinkTranslator extends PropertyTranslator {
         super(options);
         const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: true
         };
     }
 
@@ -131,7 +137,8 @@ export class ObjectLinkCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: true
         };
     }
 

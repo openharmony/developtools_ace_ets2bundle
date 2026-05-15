@@ -278,9 +278,9 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeProvide<StateType>(this, "stateVar3", "stateVar3", (((({let gensym___120612294 = initializers;
     (((gensym___120612294) == (null)) ? undefined : gensym___120612294.stateVar3)})) ?? (StateType.TYPE3)) as StateType), false);
     this.__backing_stateVar8 = ((({let gensym___188075012 = initializers;
-    (((gensym___188075012) == (null)) ? undefined : gensym___188075012.stateVar8)})) ?? (((sr: string) => {})));
+    (((gensym___188075012) == (null)) ? undefined : gensym___188075012.stateVar8)})) ?? ((((sr: string) => {}) as ((sr: string)=> void))));
     this.__backing_stateVar9 = ((({let gensym___53672736 = initializers;
-    (((gensym___53672736) == (null)) ? undefined : gensym___53672736.stateVar9)})) ?? (new Date("2025-4-23")));
+    (((gensym___53672736) == (null)) ? undefined : gensym___53672736.stateVar9)})) ?? ((new Date("2025-4-23") as Date)));
     this.__backing_stateVar11113 = STATE_MGMT_FACTORY.makeProvide<Boolean>(this, "stateVar11113", "me0", (((({let gensym___105441066 = initializers;
     (((gensym___105441066) == (null)) ? undefined : gensym___105441066.stateVar11113)})) ?? (true)) as Boolean), false);
     this.__backing_stateVar11114 = STATE_MGMT_FACTORY.makeProvide<undefined>(this, "stateVar11114", "stateVar11114", (((({let gensym___141950305 = initializers;
@@ -389,9 +389,9 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
     this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeLocal<Array<Per>>(this, "stateVar6", new Array<Per>(new Per(7), new Per(11)));
     this.__backing_stateVar7 = ((({let gensym___57869708 = initializers;
-    (((gensym___57869708) == (null)) ? undefined : gensym___57869708.stateVar7)})) ?? ([new Per(7), new Per(11)]));
+    (((gensym___57869708) == (null)) ? undefined : gensym___57869708.stateVar7)})) ?? (([new Per(7), new Per(11)] as Array<Per>)));
     this.__backing_stateVar8 = ((({let gensym___248714217 = initializers;
-    (((gensym___248714217) == (null)) ? undefined : gensym___248714217.stateVar8)})) ?? (((sr: string) => {})));
+    (((gensym___248714217) == (null)) ? undefined : gensym___248714217.stateVar8)})) ?? ((((sr: string) => {}) as ((sr: string)=> void))));
     this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___78493121 = initializers;
     (((gensym___78493121) == (null)) ? undefined : gensym___78493121.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
     this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___142105696 = initializers;
@@ -540,9 +540,9 @@ final class StateType extends BaseEnum<int> {
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeLocal<Array<Boolean>>(this, "stateVar5", [true, false]);
     this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeLocal<Array<Per>>(this, "stateVar6", new Array<Per>(new Per(7), new Per(11)));
     this.__backing_stateVar7 = ((({let gensym___136470640 = initializers;
-    (((gensym___136470640) == (null)) ? undefined : gensym___136470640.stateVar7)})) ?? ([new Per(7), new Per(11)]));
+    (((gensym___136470640) == (null)) ? undefined : gensym___136470640.stateVar7)})) ?? (([new Per(7), new Per(11)] as Array<Per>)));
     this.__backing_stateVar8 = ((({let gensym___59026893 = initializers;
-    (((gensym___59026893) == (null)) ? undefined : gensym___59026893.stateVar8)})) ?? (((sr: string) => {})));
+    (((gensym___59026893) == (null)) ? undefined : gensym___59026893.stateVar8)})) ?? ((((sr: string) => {}) as ((sr: string)=> void))));
     this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "stateVar9", (((({let gensym___121624319 = initializers;
     (((gensym___121624319) == (null)) ? undefined : gensym___121624319.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
     this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeParam<Map<Double,Per>>(this, "stateVar10", (((({let gensym___40863473 = initializers;

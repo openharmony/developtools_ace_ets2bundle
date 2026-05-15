@@ -198,7 +198,8 @@ export class BuilderParamTranslator extends PropertyTranslator {
         super(options);
         const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
         this.initializeOptions = {
-            isRequired
+            isRequired,
+            shouldCheckNonNull: !isRequired
         };
     }
 
@@ -236,7 +237,8 @@ export class BuilderParamCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
         this.initializeOptions = {
-            isRequired
+            isRequired,
+            shouldCheckNonNull: !isRequired
         };
     }
 

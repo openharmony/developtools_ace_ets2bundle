@@ -69,8 +69,8 @@ function main() {}
 
 @Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_pathStack = ((({let gensym___1107384 = initializers;
-    (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
+    this.__backing_pathStack = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_pathStack)}) ? (initializers!.pathStack as NavPathStack) : (new NavPathStack() as NavPathStack));
   }
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}

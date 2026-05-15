@@ -27,6 +27,7 @@ import {
 } from '../../common/predefines';
 import { factory as UIFactory } from '../ui-factory';
 import {
+    canCastTypeFromValue,
     collectStateManagementTypeImport,
     generateThisBacking,
     getValueInAnnotation,
@@ -40,7 +41,7 @@ import {
 import { optionsHasField } from '../utils';
 import { addMemoAnnotation, findCanAddMemoFromTypeAnnotation } from '../../collectors/memo-collectors/utils';
 import { annotation, isNumeric } from '../../common/arkts-utils';
-import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
+import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collect-cache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 import { CustomComponentInnerClassPropertyInfo } from 'collectors/ui-collectors/records';
@@ -50,6 +51,28 @@ const MONITOR_WILDCARD_MIN_VERSION = 26;
 const MONITOR_WILDCARD_PROPERTY_NAME = 'enableWildcard';
 
 export class factory {
+    static createStateManagementFactoryGenericType(
+        propertyValue: arkts.Expression | undefined, 
+        propertyType: arkts.TypeNode | undefined,
+        initializeValueOptions?: InitializeValueOptions 
+    ): arkts.TypeNode | undefined {
+        if (!propertyType) {
+            return undefined;
+        }
+        if (
+            !propertyValue &&
+            !initializeValueOptions?.isRequired &&
+            !!initializeValueOptions?.shouldCheckNonNull 
+        ) {
+            if (arkts.isETSUnionType(propertyType)) {
+                propertyType.setTypes([...propertyType.types, arkts.factory.createETSUndefinedType()]);
+                return propertyType;
+            }
+            return arkts.factory.createETSUnionType([propertyType, arkts.factory.createETSUndefinedType()]);
+        }
+        return propertyType;
+    }
+
     /**
      * generate an substitution for optional expression ?., e.g. `{let _tmp = xxx; _tmp == null ? undefined : xxx}`.
      *
@@ -60,10 +83,31 @@ export class factory {
     static createBlockStatementForOptionalExpression(
         object: arkts.Expression,
         key: string,
-        info?: OptionalMemberInfo
+        info?: OptionalMemberInfo,
+        alternateFn?: (id: string, key: string) => arkts.Expression
     ): arkts.Expression {
         let id = GenSymGenerator.getInstance().id(key);
-        const alternate = this.generateConditionalAlternate(id, key, info);
+        const alternate = !!alternateFn ? alternateFn(id, key) : this.generateConditionalAlternate(id, key, info);
+        const statements: arkts.Statement[] = [
+            UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
+            UIFactory.generateTernaryExpression(id, alternate),
+        ];
+        return arkts.factory.createBlockExpression(statements);
+    }
+
+    /**
+     * generate an substitution for optional __options_has expression ?., e.g. `{let <id> = <object>; <id> == null ? undefined : <id>.__options_has_<key>}`.
+     *
+     * @param object item before ?..
+     * @param key item after ?..
+     * @param info optional member information
+     */
+    static createBlockStatementForOptionsHasMemberExpression(
+        object: arkts.Expression,
+        id: string,
+        key: string
+    ): arkts.Expression {
+        const alternate = UIFactory.generateMemberExpression(arkts.factory.createIdentifier(id), optionsHasField(key));
         const statements: arkts.Statement[] = [
             UIFactory.generateLetVariableDecl(arkts.factory.createIdentifier(id), object),
             UIFactory.generateTernaryExpression(id, alternate),
@@ -282,7 +326,7 @@ export class factory {
                 false,
                 true
             ),
-            type ? type.clone() : undefined,
+            type ?? undefined,
             false
         );
     }
@@ -294,7 +338,7 @@ export class factory {
         }
     }
 
-    static addWatchFuncProperty(propName: string, property: arkts.ClassProperty): arkts.property | undefined {
+    static addWatchFuncProperty(propName: string, property: arkts.ClassProperty): arkts.Property | undefined {
         const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
         if (watchStr) {
             return arkts.factory.createProperty(
@@ -311,14 +355,14 @@ export class factory {
     static createOptionalClassProperty(
         options: PropertyOptionalFieldOptions
     ): arkts.ClassProperty {
-        const { name, propertyType, modifiers, stateMangementType, needMemo, isRequired } = options;
-        const newType: arkts.TypeNode | undefined = !stateMangementType
+        const { name, propertyType, modifiers, stateManagementType, needMemo, isRequired } = options;
+        const newType: arkts.TypeNode | undefined = !stateManagementType
             ? (propertyType ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY))
             : propertyType;
         if (needMemo && !!newType && arkts.isETSFunctionType(newType) && findCanAddMemoFromTypeAnnotation(newType).canAddMemo) {
             addMemoAnnotation(newType);
         }
-        let newPropertyType = !!stateMangementType ? factory.createStageManagementType(stateMangementType, propertyType) : newType;
+        let newPropertyType = !!stateManagementType ? factory.createStageManagementType(stateManagementType, propertyType) : newType;
         if (!isRequired && !!newPropertyType && arkts.isETSFunctionType(newPropertyType)) {
             newPropertyType = arkts.factory.createETSUnionType([newPropertyType, arkts.factory.createETSUndefinedType()]);
         }
@@ -812,8 +856,41 @@ export class factory {
         propertyValue: arkts.Expression | undefined,
         propertyType: arkts.TypeNode | undefined,
         originalName: string,
-        options?: InitializeValueOptions
+        options?: InitializeValueOptions,
+        isMemoCached?: boolean,
+        metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Expression {
+        if (options?.shouldCheckNonNull) {
+            const id: string = GenSymGenerator.getInstance().id(originalName);
+            const optionsType: arkts.TypeNode | undefined = propertyType?.clone();
+            const optionsValue: arkts.Expression = factory.generateDefiniteInitializers(optionsType, originalName);
+            const canCastType: boolean = canCastTypeFromValue(propertyValue);
+            const defaultType: arkts.TypeNode | undefined = canCastType && !!propertyType ? propertyType.clone() : undefined;
+            const defaultRawValue: arkts.Expression = !!propertyValue ? propertyValue : arkts.factory.createUndefinedLiteral();
+            const defaultValue: arkts.Expression = !!defaultType
+                ? arkts.factory.createTSAsExpression(defaultRawValue, defaultType, false)
+                : defaultRawValue;
+            if (isMemoCached) {
+                if (!!optionsType) {
+                    PropertyValueCache.getInstance().collect({ value: optionsType, shouldCache: isMemoCached, metadata});
+                }
+                if (!!defaultType) {
+                    PropertyValueCache.getInstance().collect({ value: defaultType, shouldCache: isMemoCached, metadata });
+                }
+            }
+            return arkts.factory.createConditionalExpression(
+                factory.createBlockStatementForOptionsHasMemberExpression(
+                    arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                    id,
+                    originalName
+                ), 
+                optionsValue, 
+                defaultValue
+            );
+        }
+        if (!!options?.isRequired || !propertyValue) {
+            return factory.generateDefiniteInitializers(propertyType, originalName);
+        }
         const outInitialize: arkts.Expression = factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             originalName,
@@ -821,13 +898,14 @@ export class factory {
         );
         const binaryItem: arkts.Expression = arkts.factory.createBinaryExpression(
             outInitialize,
-            propertyValue ?? arkts.factory.createUndefinedLiteral(),
+            propertyValue,
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
         );
-        const finalBinary: arkts.Expression = propertyType
+        const canCastType: boolean = canCastTypeFromValue(propertyValue);
+        const finalBinary: arkts.Expression = !canCastType || !propertyType
             ? binaryItem
             : arkts.factory.createTSAsExpression(binaryItem, propertyType, false);
-        return propertyValue ? finalBinary : factory.generateDefiniteInitializers(propertyType, originalName);
+        return finalBinary;
     }
 
     /**

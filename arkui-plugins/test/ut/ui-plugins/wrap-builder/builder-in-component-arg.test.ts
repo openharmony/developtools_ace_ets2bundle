@@ -72,8 +72,8 @@ class TimeTable {
 
 @Component() final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
   public __initializeStruct(initializers: (__Options_ListItemGroupExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_timetable = ((({let gensym___122433430 = initializers;
-    (((gensym___122433430) == (null)) ? undefined : gensym___122433430.timetable)})) ?? (new TimeTable()));
+    this.__backing_timetable = (({let gensym___122433430 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_timetable)}) ? (initializers!.timetable as TimeTable) : (new TimeTable() as TimeTable));
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}
@@ -178,8 +178,8 @@ class TimeTable {
 
 @Component() final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
   public __initializeStruct(initializers: (__Options_ListItemGroupExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_timetable = ((({let gensym___122433430 = initializers;
-    (((gensym___122433430) == (null)) ? undefined : gensym___122433430.timetable)})) ?? (new TimeTable()));
+    this.__backing_timetable = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_timetable)}) ? (initializers!.timetable as TimeTable) : (new TimeTable() as TimeTable));
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}

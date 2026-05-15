@@ -88,15 +88,15 @@ function aBuilder(@MemoSkip() someState: number): void {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___100945899 = initializers;
-    (((gensym___100945899) == (null)) ? undefined : gensym___100945899.aNumber)})) ?? (1)));
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -131,7 +131,7 @@ function aBuilder(@MemoSkip() someState: number): void {
       ExportStructV1._invoke(undefined, undefined, undefined, undefined, undefined);
       ExportStructV1WithBody._invoke(undefined, (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);
@@ -357,15 +357,15 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___100945899 = initializers;
-    (((gensym___100945899) == (null)) ? undefined : gensym___100945899.aNumber)})) ?? (1)));
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -419,7 +419,7 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
       ExportStructV1._invoke(__memo_context, ((__memo_id) + (211301233)), undefined, undefined, undefined, undefined, undefined);
       ExportStructV1WithBody._invoke(__memo_context, ((__memo_id) + (213104625)), undefined, (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);

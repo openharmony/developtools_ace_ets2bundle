@@ -94,15 +94,15 @@ function animtableBuilder(): void {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", ((({let gensym___115611008 = initializers;
-    (((gensym___115611008) == (null)) ? undefined : gensym___115611008.stateVar)})) ?? (exportGetResource())));
+    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar)}) ? (initializers!.stateVar as Resource) : (exportGetResource() as Resource)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (exportGetResource())));
+    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (exportGetResource())) as Resource));
   }
   
   @MemoIntrinsic() 
@@ -310,15 +310,15 @@ function animtableBuilder(__memo_context: __memo_context_type, __memo_id: __memo
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", ((({let gensym___115611008 = initializers;
-    (((gensym___115611008) == (null)) ? undefined : gensym___115611008.stateVar)})) ?? (exportGetResource())));
+    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar)}) ? (initializers!.stateVar as Resource) : (exportGetResource() as Resource)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (exportGetResource())));
+    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (exportGetResource())) as Resource));
   }
   
   @MemoIntrinsic() 

@@ -50,7 +50,14 @@ function resetOnReuseWithParamProperty(
 ): arkts.ExpressionStatement {
     const propertyValue = this.property.value?.clone();
     const propertyType = this.propertyType?.clone();
-    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName, this.initializeOptions);
+    const arg = factory.generateInitializeValue(
+        propertyValue, 
+        propertyType, 
+        originalName, 
+        this.initializeOptions,
+        this.isMemoCached,
+        metadata
+    );
     if (this.isMemoShouldUpdate) {
         if (!!propertyValue) {
             const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
@@ -82,12 +89,17 @@ export class ParamTranslator extends PropertyTranslator {
         super(options);
         const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
         this.initializeOptions = {
-            isRequired
-        };
+            isRequired,
+            shouldCheckNonNull: !isRequired
+        }
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithParamProperty.bind(this)(newName, originalName);
+    resetOnReuse(
+        newName: string, 
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
+        return resetOnReuseWithParamProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
@@ -107,12 +119,17 @@ export class ParamCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
         this.initializeOptions = {
-            isRequired
-        };
+            isRequired,
+            shouldCheckNonNull: !isRequired
+        }
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithParamProperty.bind(this)(newName, originalName);
+    resetOnReuse(
+        newName: string, 
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
+        return resetOnReuseWithParamProperty.bind(this)(newName, originalName, metadata);
     }
 }
 

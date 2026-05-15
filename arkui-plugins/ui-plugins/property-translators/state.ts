@@ -52,8 +52,9 @@ export class StateTranslator extends PropertyTranslator {
         const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
         this.initializeOptions = {
             isWatched,
-            isRequired
-        };
+            isRequired,
+            shouldCheckNonNull: !isRequired
+        }
     }
 }
 
@@ -75,21 +76,26 @@ export class StateCachedTranslator extends PropertyCachedTranslator {
         const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
         this.initializeOptions = {
             isWatched,
-            isRequired
+            isRequired,
+            shouldCheckNonNull: !isRequired
         };
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+    resetOnReuse(
+        newName: string, 
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
         const propertyValue = this.property.value?.clone();
         const propertyType = this.propertyType?.clone();
         const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
         if (this.isMemoShouldUpdate) {
             if (!!propertyValue) {
                 const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
-                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue });
+                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
             }
             if (!!propertyType) {
-                PropertyValueCache.getInstance().collect({ value: propertyType });
+                PropertyValueCache.getInstance().collect({ value: propertyType, shouldCache: this.isMemoCached, metadata });
             }
         }
         return factory.createResetOnReuseStmt(newName, arg);

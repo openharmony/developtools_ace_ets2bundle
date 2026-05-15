@@ -32,7 +32,6 @@ module.exports = {
     testRegex: './test/ut/.+\\.test\\.ts$',
     testPathIgnorePatterns: [
         '/test/ut/ui-plugins/unit/',
-        '/test/ut/ui-plugins/insight-intent/',
         '/test/ut/ui-plugins/insight-intent/insight-intent-incremental.test.ts',
         '/test/ut/ui-plugins/component/all-components.test.ts'
     ],

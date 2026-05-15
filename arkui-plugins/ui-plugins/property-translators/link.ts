@@ -110,7 +110,8 @@ export class LinkTranslator extends PropertyTranslator {
         super(options);
         const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 
@@ -139,7 +140,8 @@ export class LinkCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 

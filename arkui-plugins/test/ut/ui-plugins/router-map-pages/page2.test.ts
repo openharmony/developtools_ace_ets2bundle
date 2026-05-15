@@ -68,8 +68,8 @@ function builderTwo() {
 
 @Component() final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
   public __initializeStruct(initializers: (__Options_Page2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_message = ((({let gensym___117212394 = initializers;
-    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World"));
+    this.__backing_message = (({let gensym___117212394 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_message)}) ? (initializers!.message as string) : ("Hello World" as string));
   }
   
   public __updateStruct(initializers: (__Options_Page2 | undefined)): void {}

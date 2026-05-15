@@ -83,8 +83,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 } as NavInterface));
 @Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", ((({let gensym___93787132 = initializers;
-    (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (({let gensym___203542966: Any;
+    this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() (() => {
         customDialogExample._invoke((() => {
@@ -102,13 +102,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}))));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null))));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    this.__backing_controller!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() (() => {
@@ -127,7 +127,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}))));
+    (gensym___<some_random_number> as CustomDialogController)}))) as (CustomDialogController | null)));
   }
   
   @MemoIntrinsic() 
@@ -314,8 +314,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 } as NavInterface));
 @Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", ((({let gensym___93787132 = initializers;
-    (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (({let gensym___203542966: Any;
+    this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (175145513)), 0);
@@ -342,13 +342,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}))));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null))));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    this.__backing_controller!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
@@ -376,7 +376,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}))));
+    (gensym___<some_random_number> as CustomDialogController)}))) as (CustomDialogController | null)));
   }
   
   @MemoIntrinsic() 

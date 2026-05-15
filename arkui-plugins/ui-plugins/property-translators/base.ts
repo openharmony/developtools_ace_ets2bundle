@@ -108,11 +108,17 @@ export abstract class BasePropertyTranslator {
     }
 
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
+        const stateMgmtCallDefaultType = this.property.typeAnnotation;
+        const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+            this.property.value, 
+            stateMgmtCallDefaultType,
+            this.initializeOptions
+        );
         const field: arkts.ClassProperty = factory.createOptionalClassProperty({
             name: newName,
-            propertyType: this.property.typeAnnotation,
+            propertyType: stateMgmtCallType,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
-            stateMangementType: this.stateManagementType
+            stateManagementType: this.stateManagementType
         });
         field.startPosition = this.property.startPosition;
         field.endPosition = this.property.endPosition;
@@ -122,9 +128,16 @@ export abstract class BasePropertyTranslator {
         return field;
     }
 
-    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
-        const thisValue: arkts.Expression = generateThisBacking(newName, false, true);
-        const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+        let thisValue: arkts.Expression = generateThisBacking(newName, false, true);
+        if (this.initializeOptions?.isRequired && !arkts.isTSNonNullExpression(thisValue)) {
+            thisValue = arkts.factory.createTSNonNullExpression(thisValue);
+        }
+        const thisGetCall: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+        let thisGet: arkts.Expression = thisGetCall;
+        if (!this.property.value && !this.initializeOptions?.isRequired && !!this.initializeOptions?.shouldCheckNonNull) {
+            thisGet = arkts.factory.createTSNonNullExpression(thisGet);
+        }
         const getter: arkts.MethodDefinition = createGetter(
             originalName,
             this.propertyType,
@@ -171,17 +184,24 @@ export abstract class BasePropertyTranslator {
                 initializePropertyValue, 
                 initializePropertyType, 
                 originalName, 
-                this.initializeOptions
+                this.initializeOptions,
+                this.isMemoCached,
+                metadata
             ),
         ];
         if (this.initializeOptions?.isWatched) {
             factory.addWatchFunc(args, this.property);
         }
         collectStateManagementTypeImport(this.stateManagementType);
-        const stateManagementCallType = this.propertyType?.clone();
+        const stateMgmtCallDefaultType = this.propertyType?.clone();
+        const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+            initializePropertyValue, 
+            stateMgmtCallDefaultType,
+            this.initializeOptions
+        );
         const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
-            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         );
         if (this.isMemoShouldUpdate) {
@@ -191,8 +211,8 @@ export abstract class BasePropertyTranslator {
             if (!!initializePropertyType) {
                 PropertyValueCache.getInstance().collect({ value: initializePropertyType });
             }
-            if (!!stateManagementCallType) {
-                PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+            if (!!stateMgmtCallDefaultType) {
+                PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
             }
         }
         return arkts.factory.createExpressionStatement(assign);

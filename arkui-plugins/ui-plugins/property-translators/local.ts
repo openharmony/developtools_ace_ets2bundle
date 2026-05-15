@@ -59,10 +59,15 @@ function factoryCallWithLocalProperty(
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
     collectStateManagementTypeImport(this.stateManagementType);
-    const propertyType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        defaultValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const factoryCall: arkts.CallExpression = factory.generateStateMgmtFactoryCall(
         this.makeType,
-        propertyType,
+        stateMgmtCallType,
         args,
         !isStatic,
         metadata
@@ -71,8 +76,8 @@ function factoryCallWithLocalProperty(
         if (!!defaultValue) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
         }
-        if (!!propertyType) {
-            PropertyValueCache.getInstance().collect({ value: propertyType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return factoryCall;
@@ -109,10 +114,16 @@ function fieldWithStaticLocalProperty(
     if (!factoryCall) {
         return undefined;
     }
+    const stateMgmtCallDefaultType = this.propertyType;
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        this.property.value, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const field = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(newName),
         factoryCall,
-        factory.createStageManagementType(this.stateManagementType, this.propertyType),
+        factory.createStageManagementType(this.stateManagementType, stateMgmtCallType),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
         false
     );
@@ -133,7 +144,11 @@ function getterWithStaticLocalProperty(
         arkts.factory.createIdentifier(structName),
         newName
     );
-    const thisGet: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    const thisGetCall: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
+    let thisGet: arkts.Expression = thisGetCall;
+    if (!this.property.value && !this.initializeOptions?.isRequired && !!this.initializeOptions?.shouldCheckNonNull) {
+        thisGet = arkts.factory.createTSNonNullExpression(thisGet);
+    }
     const getter: arkts.MethodDefinition = createGetter(
         originalName,
         this.propertyType,
@@ -193,6 +208,9 @@ export class LocalTranslator extends PropertyTranslator {
             this.hasInitializeStruct = false;
             this.makeType = StateManagementTypes.MAKE_STATIC_LOCAL;
         }
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
     }
 
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
@@ -252,6 +270,9 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
             this.hasInitializeStruct = false;
             this.makeType = StateManagementTypes.MAKE_STATIC_LOCAL;
         }
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
     }
 
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {

@@ -174,18 +174,19 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_hello = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hello)})) ?? ("hello"));
-    this.__backing_state1 = STATE_MGMT_FACTORY.makeState<boolean>(this, "state1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)));
-    this.__backing_select100 = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.select100)})) ?? (undefined));
+    this.__backing_hello = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_hello)}) ? (initializers!.hello as string) : ("hello" as string));
+    this.__backing_state1 = STATE_MGMT_FACTORY.makeState<boolean>(this, "state1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_state1)}) ? (initializers!.state1 as boolean) : (false as boolean)));
+    this.__backing_select100 = (initializers!.select100 as string);
     this.__backing_select0 = STATE_MGMT_FACTORY.makeState<number>(this, "select0", (initializers!.select0 as number));
     this.__backing_select3 = STATE_MGMT_FACTORY.makeState<(number | null)>(this, "select3", (initializers!.select3 as (number | null)));
     this.__backing_select4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "select4", (initializers!.select4 as undefined));
     this.__backing_select1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "select1", (initializers!.select1 as string));
-    this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (initializers!.select2 as Array<string>), false);
-    this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
+    this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_select2)}) ? (initializers!.select2 as Array<string>) : undefined), false);
+    this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_select6)}) ? (initializers!.select6 as (Array<string> | undefined | string)) : undefined), false);
     this.__backing_builder = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.builder)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.builder)})) ?? (undefined))));
@@ -199,8 +200,8 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_state1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)));
+    this.__backing_state1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)) as boolean));
     this.__backing_select0!.resetOnReuse((initializers!.select0 as number));
     this.__backing_select3!.resetOnReuse((initializers!.select3 as (number | null)));
     this.__backing_select4!.resetOnReuse((initializers!.select4 as undefined));
@@ -245,7 +246,7 @@ function main() {}
   private __backing_select100?: string;
 
   public get select100(): string {
-    return (this.__backing_select100 as string);
+    return (this.__backing_select100! as string);
   }
 
   public set select100(value: string) {

@@ -95,6 +95,7 @@ export class CustomEnvCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
+            shouldCheckNonNull: false,
             isWatched
         };
     }

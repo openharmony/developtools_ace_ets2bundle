@@ -156,12 +156,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")), ((_: string): void => {
+    this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_statevar)}) ? (initializers!.statevar as string) : ("Hello World" as string)), ((_: string): void => {
       this.stateOnChange(_);
     }));
-    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propvar)})) ?? ("Hello World")), ((_: string): void => {
+    this.__backing_propvar = STATE_MGMT_FACTORY.makePropRef<string>(this, "propvar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propvar)}) ? (initializers!.propvar as string) : ("Hello World" as string)), ((_: string): void => {
       this.propOnChange(_);
     }));
     if (({let gensym___<some_random_number> = initializers;
@@ -176,12 +176,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
       this.storagePropOnChange(_);
     }));
-    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___<some_random_number> = initializers;
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar", (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.objectlinkvar)}) as A), ((_: string): void => {
       this.objectLinkOnChange(_);
     }));
-    this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
+    this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_providevar)}) ? (initializers!.providevar as string) : ("Hello World" as string)), false, ((_: string): void => {
       this.ProvideOnChange(_);
     }));
   }
@@ -198,15 +198,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_statevar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")));
-    this.__backing_propvar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propvar)})) ?? ("Hello World")));
+    this.__backing_statevar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")) as string));
+    this.__backing_propvar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propvar)})) ?? ("Hello World")) as string));
     this.__backing_linkvar!.resetOnReuse(initializers!.__backing_linkvar!);
     this.__backing_storagepropvar!.resetOnReuse();
     this.__backing_objectlinkvar!.resetOnReuse((initializers!.objectlinkvar as A));
-    this.__backing_providevar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")));
+    this.__backing_providevar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")) as string));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -254,9 +254,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public set storagepropvar(value: string) {
     this.__backing_storagepropvar!.set(value);
   }
-  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<(A | undefined)>;
   public get objectlinkvar(): A {
-    return this.__backing_objectlinkvar!.get();
+    return this.__backing_objectlinkvar!.get()!;
   }
   private __backing_providevar?: IProvideDecoratedVariable<string>;
   public get providevar(): string {

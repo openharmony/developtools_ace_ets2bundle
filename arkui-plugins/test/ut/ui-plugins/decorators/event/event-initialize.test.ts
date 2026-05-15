@@ -162,16 +162,16 @@ function main() {}
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_index = STATE_MGMT_FACTORY.makeParam<number>(this, "index", ((({let gensym___23942905 = initializers;
-    (((gensym___23942905) == (null)) ? undefined : gensym___23942905.index)})) ?? (0)));
-    this.__backing_changeIndex = ((({let gensym___204042774 = initializers;
-    (((gensym___204042774) == (null)) ? undefined : gensym___204042774.changeIndex)})) ?? (undefined));
-    this.__backing_testEvent = ((({let gensym___124585092 = initializers;
-    (((gensym___124585092) == (null)) ? undefined : gensym___124585092.testEvent)})) ?? (undefined));
-    this.__backing_testEvent2 = ((({let gensym___189097286 = initializers;
-    (((gensym___189097286) == (null)) ? undefined : gensym___189097286.testEvent2)})) ?? (((val: number) => {
+    this.__backing_index = STATE_MGMT_FACTORY.makeParam<number>(this, "index", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_index)}) ? (initializers!.index as number) : (0 as number)));
+    this.__backing_changeIndex = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_changeIndex)}) ? (initializers!.changeIndex as ((val: number)=> void)) : undefined);
+    this.__backing_testEvent = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_testEvent)}) ? (initializers!.testEvent as ((val: number)=> number)) : undefined);
+    this.__backing_testEvent2 = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_testEvent2)}) ? (initializers!.testEvent2 as ((val: number)=> number)) : (((val: number) => {
       return val;
-    })));
+    }) as ((val: number)=> number)));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
@@ -182,14 +182,14 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_index!.resetOnReuse(((({let gensym___208581472 = initializers;
-    (((gensym___208581472) == (null)) ? undefined : gensym___208581472.index)})) ?? (0)));
+    this.__backing_index!.resetOnReuse((({let gensym___208581472 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_index)}) ? (initializers!.index as number) : (0 as number)));
     this.changeIndex = (initializers!.changeIndex as ((val: number)=> void));
     this.testEvent = (initializers!.testEvent as ((val: number)=> number));
-    this.testEvent2 = ((({let gensym___86685242 = initializers;
+    this.testEvent2 = (((({let gensym___<some_random_number> = initializers;
     (((gensym___86685242) == (null)) ? undefined : gensym___86685242.testEvent2)})) ?? (((val: number) => {
-    return val;
-    })));
+      return val;
+    }))) as ((val: number)=> number));
   }
 
   @MemoIntrinsic() 

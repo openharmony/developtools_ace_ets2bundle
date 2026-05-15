@@ -220,15 +220,15 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct ConstantStruct extends CustomComponent<ConstantStruct, __Options_ConstantStruct> {
   public __initializeStruct(initializers: (__Options_ConstantStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", ((({let gensym___115611008 = initializers;
-    (((gensym___115611008) == (null)) ? undefined : gensym___115611008.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)));
+    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar)}) ? (initializers!.stateVar as Resource) : (aNamespaceWithBody.EXPORT_RESOURCE as Resource)));
   }
   
   public __updateStruct(initializers: (__Options_ConstantStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_ConstantStruct | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse(((({let gensym___45886084 = initializers;
-    (((gensym___45886084) == (null)) ? undefined : gensym___45886084.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)));
+    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)) as Resource));
   }
   
   @MemoIntrinsic() 
@@ -267,29 +267,29 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct DialogStruct extends CustomComponent<DialogStruct, __Options_DialogStruct> {
   public __initializeStruct(initializers: (__Options_DialogStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___184351477 = initializers;
-    (((gensym___184351477) == (null)) ? undefined : gensym___184351477.aNumber)})) ?? (1)));
-    this.__backing_controller = ((({let gensym___161128929 = initializers;
-    (((gensym___161128929) == (null)) ? undefined : gensym___161128929.controller)})) ?? (({let gensym___192738000: Any;
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
+    this.__backing_controller = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___192738000 = new CustomDialogController({
       builder: @Memo() (() => {
         aNamespaceWithBody.ExportCustomDialog._invoke((() => {
           return {
-            __backing_someLink: this.__backing_aNumber,
+            __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
             __options_has_someLink: true,
           };
         }), undefined, (gensym___192738000 as CustomDialogController), undefined);
       }),
       baseComponent: this,
     })
-    (gensym___192738000 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
   
   public __updateStruct(initializers: (__Options_DialogStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_DialogStruct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___230477006 = initializers;
-    (((gensym___230477006) == (null)) ? undefined : gensym___230477006.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -332,7 +332,7 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
     }), @Memo() (() => {
       aNamespaceWithBody.ExportCustomDialog._invoke((() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);
@@ -396,15 +396,15 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct V1Struct extends CustomComponent<V1Struct, __Options_V1Struct> {
   public __initializeStruct(initializers: (__Options_V1Struct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___69261141 = initializers;
-    (((gensym___69261141) == (null)) ? undefined : gensym___69261141.aNumber)})) ?? (1)));
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
   }
   
   public __updateStruct(initializers: (__Options_V1Struct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_V1Struct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___139179865 = initializers;
-    (((gensym___139179865) == (null)) ? undefined : gensym___139179865.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -439,7 +439,7 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
       aNamespaceWithBody.ExportStructV1._invoke(undefined, undefined, undefined, undefined, undefined);
       aNamespaceWithBody.ExportStructV1WithBody._invoke(undefined, (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);
@@ -1763,15 +1763,15 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct ConstantStruct extends CustomComponent<ConstantStruct, __Options_ConstantStruct> {
   public __initializeStruct(initializers: (__Options_ConstantStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", ((({let gensym___115611008 = initializers;
-    (((gensym___115611008) == (null)) ? undefined : gensym___115611008.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)));
+    this.__backing_stateVar = STATE_MGMT_FACTORY.makeState<Resource>(this, "stateVar", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar)}) ? (initializers!.stateVar as Resource) : (aNamespaceWithBody.EXPORT_RESOURCE as Resource)));
   }
   
   public __updateStruct(initializers: (__Options_ConstantStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_ConstantStruct | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse(((({let gensym___45886084 = initializers;
-    (((gensym___45886084) == (null)) ? undefined : gensym___45886084.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)));
+    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (aNamespaceWithBody.EXPORT_RESOURCE)) as Resource));
   }
   
   @MemoIntrinsic() 
@@ -1820,10 +1820,10 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct DialogStruct extends CustomComponent<DialogStruct, __Options_DialogStruct> {
   public __initializeStruct(initializers: (__Options_DialogStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___184351477 = initializers;
-    (((gensym___184351477) == (null)) ? undefined : gensym___184351477.aNumber)})) ?? (1)));
-    this.__backing_controller = ((({let gensym___161128929 = initializers;
-    (((gensym___161128929) == (null)) ? undefined : gensym___161128929.controller)})) ?? (({let gensym___192738000: Any;
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
+    this.__backing_controller = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___192738000 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (262314519)), 0);
@@ -1833,7 +1833,7 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
         }
         aNamespaceWithBody.ExportCustomDialog._invoke(__memo_context, ((__memo_id) + (78055758)), (() => {
           return {
-            __backing_someLink: this.__backing_aNumber,
+            __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
             __options_has_someLink: true,
           };
         }), undefined, (gensym___192738000 as CustomDialogController), undefined);
@@ -1844,14 +1844,14 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
       }),
       baseComponent: this,
     })
-    (gensym___192738000 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
   
   public __updateStruct(initializers: (__Options_DialogStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_DialogStruct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___230477006 = initializers;
-    (((gensym___230477006) == (null)) ? undefined : gensym___230477006.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -1913,7 +1913,7 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
       }
       aNamespaceWithBody.ExportCustomDialog._invoke(__memo_context, ((__memo_id) + (151409217)), (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);
@@ -2012,15 +2012,15 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
 
 @Component() final struct V1Struct extends CustomComponent<V1Struct, __Options_V1Struct> {
   public __initializeStruct(initializers: (__Options_V1Struct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___69261141 = initializers;
-    (((gensym___69261141) == (null)) ? undefined : gensym___69261141.aNumber)})) ?? (1)));
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
   }
   
   public __updateStruct(initializers: (__Options_V1Struct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_V1Struct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___139179865 = initializers;
-    (((gensym___139179865) == (null)) ? undefined : gensym___139179865.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -2074,7 +2074,7 @@ class SomeObV2ClassImpl extends aNamespaceWithBody.ExportObservedV2Inherit {
       aNamespaceWithBody.ExportStructV1._invoke(__memo_context, ((__memo_id) + (225484108)), undefined, undefined, undefined, undefined, undefined);
       aNamespaceWithBody.ExportStructV1WithBody._invoke(__memo_context, ((__memo_id) + (136286509)), undefined, (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);

@@ -136,27 +136,27 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
 @ComponentV2() final struct Index2 extends CustomComponentV2<Index2, __Options_Index2> {
   public __initializeStruct(initializers: (__Options_Index2 | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_builderRegular = ((({let gensym___265903007 = initializers;
-    (((gensym___265903007) == (null)) ? undefined : gensym___265903007.builderRegular)})) ?? (MyBuilder));
-    this.__backing_builderRegular2 = ((({let gensym___143278645 = initializers;
-    (((gensym___143278645) == (null)) ? undefined : gensym___143278645.builderRegular2)})) ?? (wrapBuilder(MyBuilder)));
-    this.__backing_builderRegular3 = ((({let gensym___256590702 = initializers;
-    (((gensym___256590702) == (null)) ? undefined : gensym___256590702.builderRegular3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]));
+    this.__backing_builderRegular = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderRegular)})) ?? (MyBuilder));
+    this.__backing_builderRegular2 = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderRegular2)})) ?? (wrapBuilder(MyBuilder)));
+    this.__backing_builderRegular3 = ((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderRegular3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]));
     this.__backing_builderLocal = STATE_MGMT_FACTORY.makeLocal<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderLocal", MyBuilder);
     this.__backing_builderLocal2 = STATE_MGMT_FACTORY.makeLocal<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderLocal2", wrapBuilder(MyBuilder));
     this.__backing_builderLocal3 = STATE_MGMT_FACTORY.makeLocal<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderLocal3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
-    this.__backing_builderParam = STATE_MGMT_FACTORY.makeParam<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderParam", ((({let gensym___220333114 = initializers;
-    (((gensym___220333114) == (null)) ? undefined : gensym___220333114.builderParam)})) ?? (MyBuilder)));
-    this.__backing_builderParam2 = STATE_MGMT_FACTORY.makeParam<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderParam2", ((({let gensym___144445647 = initializers;
-    (((gensym___144445647) == (null)) ? undefined : gensym___144445647.builderParam2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderParam3 = STATE_MGMT_FACTORY.makeParam<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderParam3", ((({let gensym___185467224 = initializers;
-    (((gensym___185467224) == (null)) ? undefined : gensym___185467224.builderParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
-    this.__backing_builderOnceParam = STATE_MGMT_FACTORY.makeParamOnce<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderOnceParam", ((({let gensym___16822603 = initializers;
-    (((gensym___16822603) == (null)) ? undefined : gensym___16822603.builderOnceParam)})) ?? (MyBuilder)));
-    this.__backing_builderOnceParam2 = STATE_MGMT_FACTORY.makeParamOnce<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderOnceParam2", ((({let gensym___233047554 = initializers;
-    (((gensym___233047554) == (null)) ? undefined : gensym___233047554.builderOnceParam2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderOnceParam3 = STATE_MGMT_FACTORY.makeParamOnce<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderOnceParam3", ((({let gensym___140596890 = initializers;
-    (((gensym___140596890) == (null)) ? undefined : gensym___140596890.builderOnceParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderParam = STATE_MGMT_FACTORY.makeParam<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderParam", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam)}) ? (initializers!.builderParam as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderParam2 = STATE_MGMT_FACTORY.makeParam<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderParam2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam2)}) ? (initializers!.builderParam2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderParam3 = STATE_MGMT_FACTORY.makeParam<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderParam3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam3)}) ? (initializers!.builderParam3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
+    this.__backing_builderOnceParam = STATE_MGMT_FACTORY.makeParamOnce<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderOnceParam", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam)}) ? (initializers!.builderOnceParam as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderOnceParam2 = STATE_MGMT_FACTORY.makeParamOnce<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderOnceParam2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam2)}) ? (initializers!.builderOnceParam2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderOnceParam3 = STATE_MGMT_FACTORY.makeParamOnce<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderOnceParam3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam3)}) ? (initializers!.builderOnceParam3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
     this.__backing_builderProvider = STATE_MGMT_FACTORY.makeProvider<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderProvider", "builderProvider", MyBuilder);
     this.__backing_builderProvider2 = STATE_MGMT_FACTORY.makeProvider<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderProvider2", "builderProvider2", wrapBuilder(MyBuilder));
     this.__backing_builderProvider3 = STATE_MGMT_FACTORY.makeProvider<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderProvider3", "builderProvider3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
@@ -184,18 +184,18 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     this.__backing_builderLocal!.resetOnReuse(MyBuilder);
     this.__backing_builderLocal2!.resetOnReuse(wrapBuilder(MyBuilder));
     this.__backing_builderLocal3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
-    this.__backing_builderParam!.resetOnReuse(((({let gensym___169695253 = initializers;
-    (((gensym___169695253) == (null)) ? undefined : gensym___169695253.builderParam)})) ?? (MyBuilder)));
-    this.__backing_builderParam2!.resetOnReuse(((({let gensym___267972835 = initializers;
-    (((gensym___267972835) == (null)) ? undefined : gensym___267972835.builderParam2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderParam3!.resetOnReuse(((({let gensym___261799470 = initializers;
-    (((gensym___261799470) == (null)) ? undefined : gensym___261799470.builderParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
-    this.__backing_builderOnceParam!.resetOnReuse(((({let gensym___268070032 = initializers;
-    (((gensym___268070032) == (null)) ? undefined : gensym___268070032.builderOnceParam)})) ?? (MyBuilder)));
-    this.__backing_builderOnceParam2!.resetOnReuse(((({let gensym___65134112 = initializers;
-    (((gensym___65134112) == (null)) ? undefined : gensym___65134112.builderOnceParam2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderOnceParam3!.resetOnReuse(((({let gensym___167991091 = initializers;
-    (((gensym___167991091) == (null)) ? undefined : gensym___167991091.builderOnceParam3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderParam!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam)}) ? (initializers!.builderParam as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderParam2!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam2)}) ? (initializers!.builderParam2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderParam3!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderParam3)}) ? (initializers!.builderParam3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
+    this.__backing_builderOnceParam!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam)}) ? (initializers!.builderOnceParam as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderOnceParam2!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam2)}) ? (initializers!.builderOnceParam2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderOnceParam3!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderOnceParam3)}) ? (initializers!.builderOnceParam3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
     this.__backing_builderProvider!.resetOnReuse(MyBuilder);
     this.__backing_builderProvider2!.resetOnReuse(wrapBuilder(MyBuilder));
     this.__backing_builderProvider3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
@@ -471,42 +471,42 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
 @Component() final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_builderRegular = ((({let gensym___133415523 = initializers;
-    (((gensym___133415523) == (null)) ? undefined : gensym___133415523.builderRegular)})) ?? (MyBuilder));
-    this.__backing_builderRegular2 = ((({let gensym___182042467 = initializers;
-    (((gensym___182042467) == (null)) ? undefined : gensym___182042467.builderRegular2)})) ?? (wrapBuilder(MyBuilder)));
-    this.__backing_builderRegular3 = ((({let gensym___51433105 = initializers;
-    (((gensym___51433105) == (null)) ? undefined : gensym___51433105.builderRegular3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]));
-    this.__backing_builderState = STATE_MGMT_FACTORY.makeState<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderState", ((({let gensym___170402721 = initializers;
-    (((gensym___170402721) == (null)) ? undefined : gensym___170402721.builderState)})) ?? (MyBuilder)));
-    this.__backing_builderState2 = STATE_MGMT_FACTORY.makeState<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderState2", ((({let gensym___87370050 = initializers;
-    (((gensym___87370050) == (null)) ? undefined : gensym___87370050.builderState2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderState3 = STATE_MGMT_FACTORY.makeState<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderState3", ((({let gensym___106229799 = initializers;
-    (((gensym___106229799) == (null)) ? undefined : gensym___106229799.builderState3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
-    this.__backing_builderPropRef = STATE_MGMT_FACTORY.makePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderPropRef", ((({let gensym___44300518 = initializers;
-    (((gensym___44300518) == (null)) ? undefined : gensym___44300518.builderPropRef)})) ?? (MyBuilder)));
-    this.__backing_builderPropRef2 = STATE_MGMT_FACTORY.makePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderPropRef2", ((({let gensym___64338662 = initializers;
-    (((gensym___64338662) == (null)) ? undefined : gensym___64338662.builderPropRef2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderPropRef3 = STATE_MGMT_FACTORY.makePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderPropRef3", ((({let gensym___110179435 = initializers;
-    (((gensym___110179435) == (null)) ? undefined : gensym___110179435.builderPropRef3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
-    if (({let gensym___14830560 = initializers;
-    (((gensym___14830560) == (null)) ? undefined : gensym___14830560.__options_has_builderLink)})) {
+    this.__backing_builderRegular = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderRegular)}) ? (initializers!.builderRegular as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
+    this.__backing_builderRegular2 = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderRegular2)}) ? (initializers!.builderRegular2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
+    this.__backing_builderRegular3 = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderRegular3)}) ? (initializers!.builderRegular3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
+    this.__backing_builderState = STATE_MGMT_FACTORY.makeState<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderState", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderState)}) ? (initializers!.builderState as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderState2 = STATE_MGMT_FACTORY.makeState<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderState2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderState2)}) ? (initializers!.builderState2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderState3 = STATE_MGMT_FACTORY.makeState<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderState3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderState3)}) ? (initializers!.builderState3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
+    this.__backing_builderPropRef = STATE_MGMT_FACTORY.makePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderPropRef", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderPropRef)}) ? (initializers!.builderPropRef as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))));
+    this.__backing_builderPropRef2 = STATE_MGMT_FACTORY.makePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderPropRef2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderPropRef2)}) ? (initializers!.builderPropRef2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)));
+    this.__backing_builderPropRef3 = STATE_MGMT_FACTORY.makePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderPropRef3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderPropRef3)}) ? (initializers!.builderPropRef3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)));
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderLink)})) {
       this.__backing_builderLink = STATE_MGMT_FACTORY.makeLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderLink", initializers!.__backing_builderLink!);
     }
-    if (({let gensym___225609674 = initializers;
-    (((gensym___225609674) == (null)) ? undefined : gensym___225609674.__options_has_builderLink2)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderLink2)})) {
       this.__backing_builderLink2 = STATE_MGMT_FACTORY.makeLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderLink2", initializers!.__backing_builderLink2!);
     }
-    if (({let gensym___44855388 = initializers;
-    (((gensym___44855388) == (null)) ? undefined : gensym___44855388.__options_has_builderLink3)})) {
+    if (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderLink3)})) {
       this.__backing_builderLink3 = STATE_MGMT_FACTORY.makeLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderLink3", initializers!.__backing_builderLink3!);
     }
-    this.__backing_builderProvide = STATE_MGMT_FACTORY.makeProvide<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderProvide", "builderProvide", ((({let gensym___142246099 = initializers;
-    (((gensym___142246099) == (null)) ? undefined : gensym___142246099.builderProvide)})) ?? (MyBuilder)), false);
-    this.__backing_builderProvide2 = STATE_MGMT_FACTORY.makeProvide<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderProvide2", "builderProvide2", ((({let gensym___39863061 = initializers;
-    (((gensym___39863061) == (null)) ? undefined : gensym___39863061.builderProvide2)})) ?? (wrapBuilder(MyBuilder))), false);
-    this.__backing_builderProvide3 = STATE_MGMT_FACTORY.makeProvide<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderProvide3", "builderProvide3", ((({let gensym___192351625 = initializers;
-    (((gensym___192351625) == (null)) ? undefined : gensym___192351625.builderProvide3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])), false);
+    this.__backing_builderProvide = STATE_MGMT_FACTORY.makeProvide<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderProvide", "builderProvide", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderProvide)}) ? (initializers!.builderProvide as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) : (MyBuilder as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void))), false);
+    this.__backing_builderProvide2 = STATE_MGMT_FACTORY.makeProvide<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderProvide2", "builderProvide2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderProvide2)}) ? (initializers!.builderProvide2 as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) : (wrapBuilder(MyBuilder) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>)), false);
+    this.__backing_builderProvide3 = STATE_MGMT_FACTORY.makeProvide<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderProvide3", "builderProvide3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderProvide3)}) ? (initializers!.builderProvide3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>) : ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)] as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>)), false);
     this.__backing_builderConsume = STATE_MGMT_FACTORY.makeConsume<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderConsume", "builderConsume");
     this.__backing_builderConsume2 = STATE_MGMT_FACTORY.makeConsume<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderConsume2", "builderConsume2");
     this.__backing_builderConsume3 = STATE_MGMT_FACTORY.makeConsume<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderConsume3", "builderConsume3");
@@ -540,27 +540,27 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_builderState!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState)})) ?? (MyBuilder)));
-    this.__backing_builderState2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderState3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
-    this.__backing_builderPropRef!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef)})) ?? (MyBuilder)));
-    this.__backing_builderPropRef2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderPropRef3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderState!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
+    this.__backing_builderState2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState2)})) ?? (wrapBuilder(MyBuilder))) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
+    this.__backing_builderState3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])) as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
+    this.__backing_builderPropRef!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
+    this.__backing_builderPropRef2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef2)})) ?? (wrapBuilder(MyBuilder))) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
+    this.__backing_builderPropRef3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])) as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
     this.__backing_builderLink!.resetOnReuse(initializers!.__backing_builderLink!);
     this.__backing_builderLink2!.resetOnReuse(initializers!.__backing_builderLink2!);
     this.__backing_builderLink3!.resetOnReuse(initializers!.__backing_builderLink3!);
-    this.__backing_builderProvide!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide)})) ?? (MyBuilder)));
-    this.__backing_builderProvide2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide2)})) ?? (wrapBuilder(MyBuilder))));
-    this.__backing_builderProvide3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderProvide!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
+    this.__backing_builderProvide2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide2)})) ?? (wrapBuilder(MyBuilder))) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
+    this.__backing_builderProvide3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])) as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
     this.__backing_builderConsume!.resetOnReuse("builderConsume");
     this.__backing_builderConsume2!.resetOnReuse("builderConsume2");
     this.__backing_builderConsume3!.resetOnReuse("builderConsume3");

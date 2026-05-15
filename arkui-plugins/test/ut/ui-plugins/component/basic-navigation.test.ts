@@ -69,8 +69,8 @@ function main() {}
 
 @Component() final struct MyStateSample1 extends CustomComponent<MyStateSample1, __Options_MyStateSample1> {
   public __initializeStruct(initializers: (__Options_MyStateSample1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_pathStack = ((({let gensym___1107384 = initializers;
-    (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
+    this.__backing_pathStack = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_pathStack)}) ? (initializers!.pathStack as NavPathStack) : (new NavPathStack() as NavPathStack));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample1 | undefined)): void {}
@@ -131,8 +131,8 @@ function main() {}
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_pathStack = ((({let gensym___199081302 = initializers;
-    (((gensym___199081302) == (null)) ? undefined : gensym___199081302.pathStack)})) ?? (new NavPathStack()));
+    this.__backing_pathStack = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_pathStack)}) ? (initializers!.pathStack as NavPathStack) : (new NavPathStack() as NavPathStack));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {}

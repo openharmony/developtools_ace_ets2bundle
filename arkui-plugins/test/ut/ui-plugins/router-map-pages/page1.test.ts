@@ -72,8 +72,8 @@ function builderOne() {
 
 @Component() final struct Page1 extends CustomComponent<Page1, __Options_Page1> {
   public __initializeStruct(initializers: (__Options_Page1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_message = ((({let gensym___117212394 = initializers;
-    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World"));
+    this.__backing_message = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_message)}) ? (initializers!.message as string) : ("Hello World" as string));
   }
   
   public __updateStruct(initializers: (__Options_Page1 | undefined)): void {}

@@ -86,29 +86,29 @@ function aBuilder(): void {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___100945899 = initializers;
-    (((gensym___100945899) == (null)) ? undefined : gensym___100945899.aNumber)})) ?? (1)));
-    this.__backing_controller = ((({let gensym___75841949 = initializers;
-    (((gensym___75841949) == (null)) ? undefined : gensym___75841949.controller)})) ?? (({let gensym___149025070: Any;
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
+    this.__backing_controller = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___149025070 = new CustomDialogController({
       builder: @Memo() (() => {
         ExportCustomDialog._invoke((() => {
           return {
-            __backing_someLink: this.__backing_aNumber,
+            __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
             __options_has_someLink: true,
           };
         }), undefined, (gensym___149025070 as CustomDialogController), undefined);
       }),
       baseComponent: this,
     })
-    (gensym___149025070 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -151,7 +151,7 @@ function aBuilder(): void {
     }), @Memo() (() => {
       ExportCustomDialog._invoke((() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);
@@ -384,10 +384,10 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", ((({let gensym___100945899 = initializers;
-    (((gensym___100945899) == (null)) ? undefined : gensym___100945899.aNumber)})) ?? (1)));
-    this.__backing_controller = ((({let gensym___75841949 = initializers;
-    (((gensym___75841949) == (null)) ? undefined : gensym___75841949.controller)})) ?? (({let gensym___149025070: Any;
+    this.__backing_aNumber = STATE_MGMT_FACTORY.makeState<number>(this, "aNumber", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aNumber)}) ? (initializers!.aNumber as number) : (1 as number)));
+    this.__backing_controller = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_controller)}) ? (initializers!.controller as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___149025070 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 0);
@@ -397,7 +397,7 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
         }
         ExportCustomDialog._invoke(__memo_context, ((__memo_id) + (241913892)), (() => {
           return {
-            __backing_someLink: this.__backing_aNumber,
+            __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
             __options_has_someLink: true,
           };
         }), undefined, (gensym___149025070 as CustomDialogController), undefined);
@@ -408,14 +408,14 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
       }),
       baseComponent: this,
     })
-    (gensym___149025070 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)));
+    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
   }
   
   @MemoIntrinsic() 
@@ -477,7 +477,7 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
       }
       ExportCustomDialog._invoke(__memo_context, ((__memo_id) + (46726221)), (() => {
         return {
-          __backing_someLink: this.__backing_aNumber,
+          __backing_someLink: (this.__backing_aNumber as IStateDecoratedVariable<number>),
           __options_has_someLink: true,
         };
       }), undefined, undefined, undefined);

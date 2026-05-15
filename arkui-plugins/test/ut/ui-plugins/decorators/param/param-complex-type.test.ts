@@ -122,30 +122,30 @@ final class StateType extends BaseEnum<int> {
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeParam<Per>(this, "paramVar1", ((({let gensym___264789668 = initializers;
-    (((gensym___264789668) == (null)) ? undefined : gensym___264789668.paramVar1)})) ?? (new Per(6))));
-    this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeParam<Array<number>>(this, "paramVar2", ((({let gensym___171906071 = initializers;
-    (((gensym___171906071) == (null)) ? undefined : gensym___171906071.paramVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_paramVar3 = STATE_MGMT_FACTORY.makeParam<StateType>(this, "paramVar3", ((({let gensym___241535547 = initializers;
-    (((gensym___241535547) == (null)) ? undefined : gensym___241535547.paramVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_paramVar4 = STATE_MGMT_FACTORY.makeParam<Set<string>>(this, "paramVar4", ((({let gensym___49490075 = initializers;
-    (((gensym___49490075) == (null)) ? undefined : gensym___49490075.paramVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_paramVar5 = STATE_MGMT_FACTORY.makeParam<Array<boolean>>(this, "paramVar5", ((({let gensym___17164613 = initializers;
-    (((gensym___17164613) == (null)) ? undefined : gensym___17164613.paramVar5)})) ?? ([true, false])));
-    this.__backing_paramVar6 = STATE_MGMT_FACTORY.makeParam<Array<Per>>(this, "paramVar6", ((({let gensym___84871771 = initializers;
-    (((gensym___84871771) == (null)) ? undefined : gensym___84871771.paramVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_paramVar7 = STATE_MGMT_FACTORY.makeParam<Array<Per>>(this, "paramVar7", ((({let gensym___263986833 = initializers;
-    (((gensym___263986833) == (null)) ? undefined : gensym___263986833.paramVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_paramVar8 = STATE_MGMT_FACTORY.makeParam<((sr: string)=> void)>(this, "paramVar8", ((({let gensym___6968121 = initializers;
-    (((gensym___6968121) == (null)) ? undefined : gensym___6968121.paramVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_paramVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "paramVar9", ((({let gensym___63984493 = initializers;
-    (((gensym___63984493) == (null)) ? undefined : gensym___63984493.paramVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_paramVar10 = STATE_MGMT_FACTORY.makeParam<Map<number, Per>>(this, "paramVar10", ((({let gensym___260234648 = initializers;
-    (((gensym___260234648) == (null)) ? undefined : gensym___260234648.paramVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_paramVar11 = STATE_MGMT_FACTORY.makeParam<(string | number)>(this, "paramVar11", ((({let gensym___144998584 = initializers;
-    (((gensym___144998584) == (null)) ? undefined : gensym___144998584.paramVar11)})) ?? (0.0)));
-    this.__backing_paramVar12 = STATE_MGMT_FACTORY.makeParam<(Set<string> | Per)>(this, "paramVar12", ((({let gensym___237878674 = initializers;
-    (((gensym___237878674) == (null)) ? undefined : gensym___237878674.paramVar12)})) ?? (new Per(6))));
+    this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeParam<Per>(this, "paramVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar1)}) ? (initializers!.paramVar1 as Per) : (new Per(6) as Per)));
+    this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeParam<Array<number>>(this, "paramVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar2)}) ? (initializers!.paramVar2 as Array<number>) : (new Array<number>(3, 6, 8) as Array<number>)));
+    this.__backing_paramVar3 = STATE_MGMT_FACTORY.makeParam<StateType>(this, "paramVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar3)}) ? (initializers!.paramVar3 as StateType) : StateType.TYPE3));
+    this.__backing_paramVar4 = STATE_MGMT_FACTORY.makeParam<Set<string>>(this, "paramVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar4)}) ? (initializers!.paramVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
+    this.__backing_paramVar5 = STATE_MGMT_FACTORY.makeParam<Array<boolean>>(this, "paramVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar5)}) ? (initializers!.paramVar5 as Array<boolean>) : ([true, false] as Array<boolean>)));
+    this.__backing_paramVar6 = STATE_MGMT_FACTORY.makeParam<Array<Per>>(this, "paramVar6", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar6)}) ? (initializers!.paramVar6 as Array<Per>) : (new Array<Per>(new Per(7), new Per(11)) as Array<Per>)));
+    this.__backing_paramVar7 = STATE_MGMT_FACTORY.makeParam<Array<Per>>(this, "paramVar7", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar7)}) ? (initializers!.paramVar7 as Array<Per>) : ([new Per(7), new Per(11)] as Array<Per>)));
+    this.__backing_paramVar8 = STATE_MGMT_FACTORY.makeParam<((sr: string)=> void)>(this, "paramVar8", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar8)}) ? (initializers!.paramVar8 as ((sr: string)=> void)) : (((sr: string) => {}) as ((sr: string)=> void))));
+    this.__backing_paramVar9 = STATE_MGMT_FACTORY.makeParam<Date>(this, "paramVar9", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar9)}) ? (initializers!.paramVar9 as Date) : (new Date("2025-4-23") as Date)));
+    this.__backing_paramVar10 = STATE_MGMT_FACTORY.makeParam<Map<number, Per>>(this, "paramVar10", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar10)}) ? (initializers!.paramVar10 as Map<number, Per>) : (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]) as Map<number, Per>)));
+    this.__backing_paramVar11 = STATE_MGMT_FACTORY.makeParam<(string | number)>(this, "paramVar11", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar11)}) ? (initializers!.paramVar11 as (string | number)) : (0.0 as (string | number))));
+    this.__backing_paramVar12 = STATE_MGMT_FACTORY.makeParam<(Set<string> | Per)>(this, "paramVar12", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar12)}) ? (initializers!.paramVar12 as (Set<string> | Per)) : (new Per(6) as (Set<string> | Per))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
@@ -200,31 +200,31 @@ final class StateType extends BaseEnum<int> {
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_paramVar1!.resetOnReuse(((({let gensym___194858632 = initializers;
-    (((gensym___194858632) == (null)) ? undefined : gensym___194858632.paramVar1)})) ?? (new Per(6))));
-    this.__backing_paramVar2!.resetOnReuse(((({let gensym___21785150 = initializers;
-    (((gensym___21785150) == (null)) ? undefined : gensym___21785150.paramVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_paramVar3!.resetOnReuse(((({let gensym___200977069 = initializers;
-    (((gensym___200977069) == (null)) ? undefined : gensym___200977069.paramVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_paramVar4!.resetOnReuse(((({let gensym___39587884 = initializers;
-    (((gensym___39587884) == (null)) ? undefined : gensym___39587884.paramVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_paramVar5!.resetOnReuse(((({let gensym___164564592 = initializers;
-    (((gensym___164564592) == (null)) ? undefined : gensym___164564592.paramVar5)})) ?? ([true, false])));
-    this.__backing_paramVar6!.resetOnReuse(((({let gensym___28043884 = initializers;
-    (((gensym___28043884) == (null)) ? undefined : gensym___28043884.paramVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_paramVar7!.resetOnReuse(((({let gensym___36790954 = initializers;
-    (((gensym___36790954) == (null)) ? undefined : gensym___36790954.paramVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_paramVar8!.resetOnReuse(((({let gensym___178907063 = initializers;
-    (((gensym___178907063) == (null)) ? undefined : gensym___178907063.paramVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_paramVar9!.resetOnReuse(((({let gensym___14140567 = initializers;
-    (((gensym___14140567) == (null)) ? undefined : gensym___14140567.paramVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_paramVar10!.resetOnReuse(((({let gensym___30518641 = initializers;
-    (((gensym___30518641) == (null)) ? undefined : gensym___30518641.paramVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_paramVar11!.resetOnReuse(((({let gensym___11279134 = initializers;
-    (((gensym___11279134) == (null)) ? undefined : gensym___11279134.paramVar11)})) ?? (0.0)));
-    this.__backing_paramVar12!.resetOnReuse(((({let gensym___18847562 = initializers;
-    (((gensym___18847562) == (null)) ? undefined : gensym___18847562.paramVar12)})) ?? (new Per(6))));
-    }
+    this.__backing_paramVar1!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar1)}) ? (initializers!.paramVar1 as Per) : (new Per(6) as Per)));
+    this.__backing_paramVar2!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar2)}) ? (initializers!.paramVar2 as Array<number>) : (new Array<number>(3, 6, 8) as Array<number>)));
+    this.__backing_paramVar3!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar3)}) ? (initializers!.paramVar3 as StateType) : StateType.TYPE3));
+    this.__backing_paramVar4!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar4)}) ? (initializers!.paramVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
+    this.__backing_paramVar5!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar5)}) ? (initializers!.paramVar5 as Array<boolean>) : ([true, false] as Array<boolean>)));
+    this.__backing_paramVar6!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar6)}) ? (initializers!.paramVar6 as Array<Per>) : (new Array<Per>(new Per(7), new Per(11)) as Array<Per>)));
+    this.__backing_paramVar7!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar7)}) ? (initializers!.paramVar7 as Array<Per>) : ([new Per(7), new Per(11)] as Array<Per>)));
+    this.__backing_paramVar8!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar8)}) ? (initializers!.paramVar8 as ((sr: string)=> void)) : (((sr: string) => {}) as ((sr: string)=> void))));
+    this.__backing_paramVar9!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar9)}) ? (initializers!.paramVar9 as Date) : (new Date("2025-4-23") as Date)));
+    this.__backing_paramVar10!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar10)}) ? (initializers!.paramVar10 as Map<number, Per>) : (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]) as Map<number, Per>)));
+    this.__backing_paramVar11!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar11)}) ? (initializers!.paramVar11 as (string | number)) : (0.0 as (string | number))));
+    this.__backing_paramVar12!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar12)}) ? (initializers!.paramVar12 as (Set<string> | Per)) : (new Per(6) as (Set<string> | Per))));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {

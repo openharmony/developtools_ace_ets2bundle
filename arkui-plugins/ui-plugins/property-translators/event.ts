@@ -31,7 +31,9 @@ import {
     InnerClassPropertyTranslator,
     InnerClassPropertyTypes,
     PropertyCachedTranslator,
+    PropertyCachedTranslatorOptions,
     PropertyTranslator,
+    PropertyTranslatorOptions,
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -90,6 +92,13 @@ export class EventTranslator extends RegularPropertyTranslator {
     protected hasSetter: boolean = true;
     protected hasResetOnReuse: boolean = true;
 
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: true
+        };
+    }
+
     resetOnReuse(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ExpressionStatement {
         return resetOnReuseWithEventTranslator.bind(this)(newName, originalName, metadata);
     }
@@ -104,6 +113,13 @@ export class EventCachedTranslator extends RegularPropertyCachedTranslator {
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
     protected hasResetOnReuse: boolean = true;
+
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: true
+        };
+    }
 
     resetOnReuse(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ExpressionStatement {
         return resetOnReuseWithEventTranslator.bind(this)(newName, originalName, metadata);

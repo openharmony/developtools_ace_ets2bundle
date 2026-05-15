@@ -146,13 +146,14 @@ function main() {}
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText)})) {
       this.__backing_childText = STATE_MGMT_FACTORY.makeLink<string>(this, "childText", initializers!.__backing_childText!);
-      }
-    this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")));
-    this.__backing_childText3 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText3", (initializers!.childText3 as string));
-    this.__backing_childText4 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText4", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")));
     }
+    this.__backing_childText2 = STATE_MGMT_FACTORY.makeState<string>(this, "childText2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText2)}) ? (initializers!.childText2 as string) : ("sss" as string)));
+    this.__backing_childText3 = STATE_MGMT_FACTORY.makePropRef<(string | undefined)>(this, "childText3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText3)}) ? (initializers!.childText3 as string) : undefined));
+    this.__backing_childText4 = STATE_MGMT_FACTORY.makePropRef<string>(this, "childText4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText4)}) ? (initializers!.childText4 as string) : ("cc" as string)));
+  }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText3)})) {
@@ -165,11 +166,11 @@ function main() {}
     }
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
     this.__backing_childText!.resetOnReuse(initializers!.__backing_childText!);
-    this.__backing_childText2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")));
+    this.__backing_childText2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")) as string));
     this.__backing_childText3!.resetOnReuse((initializers!.childText3 as string));
-    this.__backing_childText4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")));
+    this.__backing_childText4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")) as string));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -196,9 +197,9 @@ function main() {}
   public set childText2(value: string) {
     this.__backing_childText2!.set(value);
     }
-  private __backing_childText3?: IPropRefDecoratedVariable<string>;
+  private __backing_childText3?: IPropRefDecoratedVariable<(string | undefined)>;
   public get childText3(): string {
-    return this.__backing_childText3!.get();
+    return this.__backing_childText3!.get()!;
     }
   public set childText3(value: string) {
     this.__backing_childText3!.set(value);

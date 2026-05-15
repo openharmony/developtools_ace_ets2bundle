@@ -82,33 +82,33 @@ function main() {}
     (((gensym___214357609) == (null)) ? undefined : gensym___214357609.__options_has_isPortrait)})) {
       this.__backing_isPortrait = STATE_MGMT_FACTORY.makeLink<boolean>(this, "isPortrait", initializers!.__backing_isPortrait!);
     }
-    this.__backing_displayMode = STATE_MGMT_FACTORY.makeState<number>(this, "displayMode", ((({let gensym___197056380 = initializers;
-    (((gensym___197056380) == (null)) ? undefined : gensym___197056380.displayMode)})) ?? (0)));
-    this.__backing_navDestination = ((((({let gensym___165803261 = initializers;
-    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (content))) ?? (((({let gensym___165803261 = initializers;
-    (((gensym___165803261) == (null)) ? undefined : gensym___165803261.navDestination)})) ?? (undefined))));
-    this.__backing_primaryWidth = STATE_MGMT_FACTORY.makeState<(number | string)>(this, "primaryWidth", ((({let gensym___158861871 = initializers;
-    (((gensym___158861871) == (null)) ? undefined : gensym___158861871.primaryWidth)})) ?? ("50%")));
-    this.__backing_onNavigationModeChange = ((({let gensym___114390532 = initializers;
-    (((gensym___114390532) == (null)) ? undefined : gensym___114390532.onNavigationModeChange)})) ?? (((mode: NavigationMode) => {})));
-    this.__backing_primaryStack = STATE_MGMT_FACTORY.makeState<MyNavPathStack>(this, "primaryStack", ((({let gensym___224425708 = initializers;
-    (((gensym___224425708) == (null)) ? undefined : gensym___224425708.primaryStack)})) ?? (new MyNavPathStack())));
-    this.__backing_secondaryStack = STATE_MGMT_FACTORY.makeState<MyNavPathStack>(this, "secondaryStack", ((({let gensym___57045085 = initializers;
-    (((gensym___57045085) == (null)) ? undefined : gensym___57045085.secondaryStack)})) ?? (new MyNavPathStack())));
+    this.__backing_displayMode = STATE_MGMT_FACTORY.makeState<number>(this, "displayMode", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_displayMode)}) ? (initializers!.displayMode as number) : (0 as number)));
+    this.__backing_navDestination = ((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.navDestination)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.navDestination)})) ?? (undefined))));
+    this.__backing_primaryWidth = STATE_MGMT_FACTORY.makeState<(number | string)>(this, "primaryWidth", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_primaryWidth)}) ? (initializers!.primaryWidth as (number | string)) : ("50%" as (number | string))));
+    this.__backing_onNavigationModeChange = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onNavigationModeChange)}) ? (initializers!.onNavigationModeChange as (OnNavigationModeChangeCallback | undefined)) : (((mode: NavigationMode) => {}) as (OnNavigationModeChangeCallback | undefined)));
+    this.__backing_primaryStack = STATE_MGMT_FACTORY.makeState<MyNavPathStack>(this, "primaryStack", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_primaryStack)}) ? (initializers!.primaryStack as MyNavPathStack) : (new MyNavPathStack() as MyNavPathStack)));
+    this.__backing_secondaryStack = STATE_MGMT_FACTORY.makeState<MyNavPathStack>(this, "secondaryStack", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_secondaryStack)}) ? (initializers!.secondaryStack as MyNavPathStack) : (new MyNavPathStack() as MyNavPathStack)));
   }
   
   public __updateStruct(initializers: (__Options_SubNavigation | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_SubNavigation | undefined)): void {
     this.__backing_isPortrait!.resetOnReuse(initializers!.__backing_isPortrait!);
-    this.__backing_displayMode!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.displayMode)})) ?? (0)));
-    this.__backing_primaryWidth!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryWidth)})) ?? ("50%")));
-    this.__backing_primaryStack!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryStack)})) ?? (new MyNavPathStack())));
-    this.__backing_secondaryStack!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.secondaryStack)})) ?? (new MyNavPathStack())));
+    this.__backing_displayMode!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.displayMode)})) ?? (0)) as number));
+    this.__backing_primaryWidth!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryWidth)})) ?? ("50%")) as (number | string)));
+    this.__backing_primaryStack!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryStack)})) ?? (new MyNavPathStack())) as MyNavPathStack));
+    this.__backing_secondaryStack!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.secondaryStack)})) ?? (new MyNavPathStack())) as MyNavPathStack));
   }
 
   @MemoIntrinsic() 
@@ -144,7 +144,7 @@ function main() {}
     this.__backing_displayMode!.set(value);
   }
 
-  private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
+  private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined | undefined);
 
   public get navDestination(): (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
     return this.__backing_navDestination;

@@ -80,15 +80,15 @@ class Per {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_parentVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "parentVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))));
+    this.__backing_parentVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "parentVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_parentVar1)}) ? (initializers!.parentVar1 as Per) : (new Per("hello") as Per)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_parentVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))));
+    this.__backing_parentVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))) as Per));
   }
 
   @MemoIntrinsic() 
@@ -139,15 +139,15 @@ class Per {
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_childVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "childVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))));
+    this.__backing_childVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "childVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childVar1)}) ? (initializers!.childVar1 as Per) : (new Per("ccc") as Per)));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_childVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))));
+    this.__backing_childVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))) as Per));
   }
 
   @MemoIntrinsic() 

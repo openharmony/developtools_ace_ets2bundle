@@ -35,14 +35,14 @@ import {
 import { getStructNameFromOptionsName, getValueInObjectAnnotation } from '../utils';
 import { ReturnTransformer } from './return-transformer';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
-import { StructPropertyAnnotationInfo, StructPropertyAnnotationRecord, StructPropertyAnnotations } from '../../collectors/ui-collectors/records';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotationRecord, StructPropertyAnnotations, StructPropertyRecord } from '../../collectors/ui-collectors/records';
 import { AnnotationRecord } from '../../collectors/ui-collectors/records/annotations/base';
 
 export interface PropertyOptionalFieldOptions {
     name: string;
-    propertyType: arkts.TypeNode | undefined,
-    modifiers: arkts.Es2pandaModifierFlags,
-    stateMangementType?: StateManagementTypes | undefined;
+    propertyType: arkts.TypeNode | undefined;
+    modifiers: arkts.Es2pandaModifierFlags;
+    stateManagementType?: StateManagementTypes | undefined;
     needMemo?: boolean;
     isRequired?: boolean;
 }
@@ -59,8 +59,72 @@ export interface OptionalMemberInfo {
 }
 
 export interface InitializeValueOptions {
+    shouldCheckNonNull?: boolean;
     isRequired?: boolean;
     isWatched?: boolean;
+}
+
+export function findStateManagementFactoryTypeFromPropertyName(
+    node: arkts.Identifier
+): StateManagementTypes | undefined {
+    const decl = arkts.getPeerIdentifierDecl(node.peer);
+    if (!decl || !arkts.isClassProperty(decl)) {
+        return undefined;
+    }
+    const record = new StructPropertyRecord({ shouldIgnoreDecl: false });
+    record.collect(decl);
+    const propertyInfo = record.toJSON();
+    if (propertyInfo?.annotationInfo?.hasState) {
+        return StateManagementTypes.STATE_DECORATED;
+    }
+    if (propertyInfo?.annotationInfo?.hasObjectLink) {
+        return StateManagementTypes.OBJECT_LINK_DECORATED;
+    }
+    return undefined;
+}
+
+export function findStateManagementFactoryGenericTypeFromProperty(
+    property: arkts.Property
+): arkts.TypeNode | undefined {
+    const decl = arkts.getPeerPropertyDecl(property.peer);
+    if (!decl) {
+        return undefined;
+    }
+    if (arkts.isClassProperty(decl)) {
+        return decl.typeAnnotation;
+    }
+    if (arkts.isMethodDefinition(decl)) {
+        const kind = decl.kind;
+        let type: arkts.TypeNode | undefined;
+        if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            type = decl.function.returnTypeAnnotation;
+        } else if (kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
+            const firstArg = decl.function.params.at(0);
+            if (!!firstArg && arkts.isETSParameterExpression(firstArg)) {
+                type = firstArg.typeAnnotation;
+            }
+        }
+    }
+    return undefined;
+}
+
+export function canCastTypeFromValue(value: arkts.AstNode | undefined): boolean {
+    if (!value || arkts.isUndefinedLiteral(value) || arkts.isNullLiteral(value)) {
+        return false;
+    }
+    if (arkts.isTSAsExpression(value)) {
+        return false;
+    }
+    // check if it is an Enum value (Enum value cannot accept cast type)
+    let decl: arkts.AstNode | undefined;
+    if (
+        arkts.isMemberExpression(value) && 
+        !!value.object && 
+        !!(decl = arkts.getPeerIdentifierDecl(value.object.peer))
+    ) {
+        return !(arkts.isClassDefinition(decl) && decl.isEnumTransformed);
+    }
+    return true;
 }
 
 export function removeDecorator(
@@ -469,10 +533,10 @@ export function getValueInEnvAnnotation(node: arkts.ClassProperty): EnvOptions |
     return undefined;
 }
 
-export function generateGetOrSetCall(beforCall: arkts.Expression, type: GetSetTypes) {
+export function generateGetOrSetCall(beforeCall: arkts.Expression, type: GetSetTypes) {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
-            beforCall,
+            beforeCall,
             arkts.factory.createIdentifier(type),
             arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
             false,

@@ -63,19 +63,19 @@ function main() {}
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
-    (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
-    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<string>>(this, "onceVar4", ((({let gensym___71001521 = initializers;
-    (((gensym___71001521) == (null)) ? undefined : gensym___71001521.onceVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamNum)}) ? (initializers!.onceParamNum as number) : (0 as number)));
+    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<Set<string>>(this, "onceVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar4)}) ? (initializers!.onceVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_onceParamNum!.resetOnReuse(((({let gensym___21785150 = initializers;
-    (((gensym___21785150) == (null)) ? undefined : gensym___21785150.onceParamNum)})) ?? (0)));
-    this.__backing_onceVar4!.resetOnReuse(((({let gensym___39587884 = initializers;
-    (((gensym___39587884) == (null)) ? undefined : gensym___39587884.onceVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_onceParamNum!.resetOnReuse((({let gensym___21785150 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamNum)}) ? (initializers!.onceParamNum as number) : (0 as number)));
+    this.__backing_onceVar4!.resetOnReuse((({let gensym___39587884 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar4)}) ? (initializers!.onceVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
   }
 
   @MemoIntrinsic() 
