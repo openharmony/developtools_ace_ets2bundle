@@ -557,16 +557,13 @@ export abstract class ObservedPropertyTranslator extends BaseObservedPropertyTra
     }
 
     translateMember(): arkts.AstNode[] {
-        if (this.isDecl) {
-            return [this.property];
-        }
         const originalName: string = expectName(this.property.key);
         const newName: string = backingField(originalName);
         const fields: arkts.AstNode[] = [];
         if (this.hasBackingField) {
             fields.push(this.backingField(originalName, newName));
         }
-        if (this.hasMetaField) {
+        if (this.hasMetaField && !this.isDecl) {
             fields.push(this.metaField(originalName, newName));
         }
         if (this.hasGetterSetter) {
@@ -623,12 +620,11 @@ export abstract class ObservedPropertyCachedTranslator extends BaseObservedPrope
         this.propertyInfo = options.propertyInfo;
         if (!!this.propertyInfo.modifiers) {
             this.hasImplement = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER;
-            this.isDecl = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
     }
 
     translateMember(): arkts.AstNode[] {
-        if (!this.propertyInfo || this.isDecl) {
+        if (!this.propertyInfo) {
             return [this.property];
         }
         const fields: arkts.AstNode[] = [];
@@ -638,7 +634,7 @@ export abstract class ObservedPropertyCachedTranslator extends BaseObservedPrope
         if (this.hasBackingField) {
             fields.push(this.backingField(originalName, newName));
         }
-        if (this.hasMetaField) {
+        if (this.hasMetaField && !this.isDecl) {
             fields.push(this.metaField(originalName, newName));
         }
         if (!this.hasImplement) {

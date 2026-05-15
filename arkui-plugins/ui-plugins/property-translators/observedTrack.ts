@@ -100,10 +100,15 @@ function getterWithObservedTrackProperty(
     originalName: string,
     newName: string
 ): arkts.MethodDefinition {
-    const methodModifier = this.isStatic
+    let methodModifier = this.isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-    const body = getterBodyWithObservedTrackProperty.bind(this)(originalName, newName);
+    let body: arkts.BlockStatement | undefined;
+    if (!this.isDecl) {
+        body = getterBodyWithObservedTrackProperty.bind(this)(originalName, newName);
+    } else {
+        methodModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+    }
     return uiFactory.createMethodDefinition({
         kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         key: arkts.factory.createIdentifier(originalName),
@@ -123,19 +128,23 @@ function setterWithObservedTrackProperty(
     originalName: string,
     newName: string
 ): arkts.MethodDefinition {
-    const methodModifier = this.isStatic
+    let methodModifier = this.isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
-    const ifEqualsNewValue: arkts.IfStatement = setterIfEqualsNewValueWithObservedTrackProperty.bind(this)(
-        originalName,
-        newName
-    );
-    const body = arkts.factory.createBlock([ifEqualsNewValue]);
+    let body: arkts.BlockStatement | undefined;
+    if (!this.isDecl) {
+        const ifEqualsNewValue: arkts.IfStatement = setterIfEqualsNewValueWithObservedTrackProperty.bind(this)(
+            originalName,
+            newName
+        );
+        body = arkts.factory.createBlock([ifEqualsNewValue]);
+    } else {
+        methodModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+    }
     const param = arkts.factory.createParameterDeclaration(
         arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
         undefined
     );
-
     return uiFactory.createMethodDefinition({
         kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         key: arkts.factory.createIdentifier(originalName),
@@ -208,6 +217,7 @@ export interface IObservedTrackTranslator extends IBaseObservedPropertyTranslato
     traceDecorator: DecoratorNames.TRACK;
     isTracked?: boolean;
     isStatic?: boolean;
+    isDecl?: boolean;
 }
 
 export class ObservedTrackTranslator extends ObservedPropertyTranslator implements IObservedTrackTranslator {
@@ -215,6 +225,7 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator implemen
     traceDecorator: DecoratorNames.TRACK = DecoratorNames.TRACK;
     isTracked?: boolean;
     isStatic: boolean;
+    isDecl: boolean;
     propertyModifier: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
     protected hasBackingField: boolean = true;
     protected hasMetaField: boolean = false;
@@ -224,9 +235,13 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator implemen
     constructor(options: ObservedPropertyTranslatorOptions) {
         super(options);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
+        this.isDecl = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         this.isTracked = hasDecorator(this.property, this.traceDecorator);
         this.className = this.classScopeInfo.className;
         this.hasMetaField = this.isTracked; // meta field is generated only if property is @Track
+        if (this.isDecl) {
+            this.propertyModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
     }
 
     translateMember(): arkts.AstNode[] {
@@ -272,6 +287,7 @@ export class ObservedTrackCachedTranslator
     traceDecorator: DecoratorNames.TRACK = DecoratorNames.TRACK;
     isTracked?: boolean;
     isStatic: boolean = false; // @Observed does not support static property.
+    isDecl: boolean = false;
     propertyModifier: arkts.Es2pandaModifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
     protected hasBackingField: boolean = true;
     protected hasMetaField: boolean = false;
@@ -280,11 +296,16 @@ export class ObservedTrackCachedTranslator
 
     constructor(options: ObservedPropertyCachedTranslatorOptions) {
         super(options);
-        this.isStatic = !!this.propertyInfo.modifiers 
-            && (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        if (!!this.propertyInfo.modifiers) {
+            this.isStatic = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+            this.isDecl = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         this.isTracked = !!this.propertyInfo.annotationInfo?.hasTrack;
         this.className = this.propertyInfo.classInfo?.name!;
         this.hasMetaField = this.isTracked; // meta field is generated only if property is @Track
+        if (this.isDecl) {
+            this.propertyModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
     }
 
     translateMember(): arkts.AstNode[] {
