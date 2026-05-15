@@ -706,6 +706,18 @@ export function isStaticBuilder(node: ts.Expression | ts.CallExpression): boolea
   return false;
 }
 
+function createCompatibleWrappedBuilder(expression: ts.Expression, isObjectLiteral: boolean): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier(
+      isObjectLiteral
+        ? '__Interop_TransferCompatibleUpdatableBuilder_Internal'
+        : '__Interop_TransferCompatibleBuilder_Internal'
+    ),
+    undefined,
+    [expression]
+  );
+}
+
 function createCompatibleBuilder(expression: ts.Expression, isObjectLiteral: boolean): ts.CallExpression {
   const block = ts.factory.createBlock([
     ts.factory.createExpressionStatement(
@@ -749,8 +761,12 @@ export function transferCompatibleBuilder(node: ts.Expression | ts.CallExpressio
       (ts.isObjectLiteralExpression(node.arguments[0]) ||
         isStaticObjectLiteral(node.arguments[0]))
     : isObjectLiteral;
+  if (isWrappedBuilder(builderExpression)) {
+    return createCompatibleWrappedBuilder(builderExpression, isObjectLiteralBuilder);
+  }
   return createCompatibleBuilder(builderExpression, isObjectLiteralBuilder);
 }
+
 function traverseBuilderParams(node: ts.ObjectLiteralExpression,
   isBuilder: boolean): ts.ObjectLiteralExpression {
   const properties: ts.ObjectLiteralElementLike[] = [];
