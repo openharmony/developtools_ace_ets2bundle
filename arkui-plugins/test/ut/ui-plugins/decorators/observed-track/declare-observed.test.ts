@@ -60,8 +60,18 @@ function main() {}
   
   public setV1RenderId(renderId: RenderIdType): void
   
-  public hasTrackA: number;
-  public noTrack: number;
+  @JSONRename({newName:"hasTrackA"}) public __backing_hasTrackA?: number;
+
+  public get hasTrackA(): number
+
+  public set hasTrackA(newValue: number)
+
+  @JSONRename({newName:"noTrack"}) public __backing_noTrack?: number;
+
+  public get noTrack(): number
+
+  public set noTrack(newValue: number)
+
   public constructor()
   
 }
@@ -75,7 +85,12 @@ export declare class B implements IObservedObject, ISubscribedWatches {
   
   public setV1RenderId(renderId: RenderIdType): void
   
-  @Track() public hasTrackB: number;
+  @JSONRename({newName:"hasTrackB"}) public __backing_hasTrackB?: number;
+
+  public get hasTrackB(): number
+
+  public set hasTrackB(newValue: number)
+
   public constructor()
   
 }
@@ -89,7 +104,12 @@ export declare class B implements IObservedObject, ISubscribedWatches {
   
   public setV1RenderId(renderId: RenderIdType): void
   
-  @Track() public hasTrackC: number;
+  @JSONRename({newName:"hasTrackC"}) public __backing_hasTrackC?: number;
+
+  public get hasTrackC(): number
+
+  public set hasTrackC(newValue: number)
+  
   public constructor(hasTrackC: number)
   
 }
