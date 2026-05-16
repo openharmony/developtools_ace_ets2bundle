@@ -20,7 +20,7 @@ import {
   LogInfo,
   LogType,
   addLog,
-  removeDecorator
+  removeDecorator,
 } from './utils';
 import {
   COMPONENT_CONSTRUCTOR_PARENT,
@@ -38,7 +38,6 @@ import {
   IS_REUSABLE_,
   GET_ATTRIBUTE,
   COMPONENT_ENV_DECORATOR,
-  COMPONENT_CUSTOM_ENV_DECORATOR,
   COMPONENT_REQUIRE_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
@@ -84,6 +83,7 @@ export class StructInfo {
   linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorMap: Map<string, ts.PropertyDeclaration> = new Map();
+  onceDecoratorSet: Set<string> = new Set();
   localDecoratorSet: Set<string> = new Set();
   providerDecoratorSet: Set<string> = new Set();
   consumerDecoratorSet: Set<string> = new Set();
@@ -129,14 +129,14 @@ function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
   if (isReusableV2) {
     StateManagementV2.hasReusableV2 = true;
   }
-  return ts.factory.createClassDeclaration(isReusableV2 ?
+  return ts.factory.createClassDeclaration(isReusableV2 ? 
     ts.concatenateDecoratorsAndModifiers(
-      [ts.factory.createDecorator(ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR))],
+      [ts.factory.createDecorator(ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR))], 
       ts.getModifiers(node)
-    ) :
-    ts.getModifiers(node),
+    ) : 
+    ts.getModifiers(node), 
     node.name,
-    node.typeParameters,
+    node.typeParameters, 
     updateHeritageClauses(node, log, true),
     processStructMembersV2(node, context, log, ReusePool)
   );
@@ -366,7 +366,9 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     }
   }
   if (structInfo.customEnvDecoratorSet.has(propName)) {
-    return transformCustomEnvProperty(member, decorators);
+    return ts.factory.updatePropertyDeclaration(member,
+      ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
+      member.name, member.questionToken, member.type, member.initializer);
   }
   if (structInfo.paramDecoratorMap.has(propName) && structInfo.builderParamDecoratorSet.has(propName)) {
     return processRequireBuilderParamProperty(member, decorators, initializer);
@@ -400,13 +402,6 @@ function checkEnvInitializerV2(member: ts.PropertyDeclaration, log: LogInfo[]): 
       code: '10905362'
     })
   }
-}
-
-function transformCustomEnvProperty(member: ts.PropertyDeclaration,
-  decorators: readonly ts.Decorator[]): ts.PropertyDeclaration {
-  return ts.factory.updatePropertyDeclaration(member,
-    ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
-    member.name, member.questionToken, member.type, member.initializer);
 }
 
 function processParamProperty(member: ts.PropertyDeclaration,

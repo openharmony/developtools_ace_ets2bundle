@@ -45,9 +45,20 @@ const {
   getLogger
 } = require('log4js');
 
+const {
+  setEntryFileLanguage,
+  isMixCompile,
+  processAbilityPagesFullPath,
+  transformAbilityPages
+} = require('./lib/fast_build/ark_compiler/interop/interop_manager');
+
+const {
+  ARKTS_MODE
+} = require('./lib/fast_build/ark_compiler/interop/pre_define');
+
 configure({
-  appenders: { 'ETS': { type: 'stderr', layout: { type: 'messagePassThrough' } } },
-  categories: { 'default': { appenders: ['ETS'], level: 'info' } }
+  appenders: { 'ETS': { type: 'stderr', layout: {type: 'messagePassThrough' } } },
+  categories: {'default': { appenders: ['ETS'], level: 'info' } }
 });
 const logger = getLogger('ETS');
 
@@ -127,6 +138,8 @@ function initProjectConfig(projectConfig) {
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
   projectConfig.strictCheckerOnly = false;
+  projectConfig.isolatedDeclarations = false;
+  projectConfig.noCheck = false;
   projectConfig.tsImportSoCheck = false;
 }
 
@@ -220,6 +233,9 @@ function loadEntryObj(projectConfig) {
           '. \u001b[39m').message;
       }
     }
+  }
+  if (isMixCompile()) {
+    processAbilityPagesFullPath(abilityPagesFullPath);
   }
 }
 
@@ -444,10 +460,11 @@ function setIntentEntryPages(projectConfig) {
 
 function setAbilityPages(projectConfig) {
   let abilityPages = [];
+  let extensionAbilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    abilityPages = readAbilityEntrance(moduleJson);
-    setAbilityFile(projectConfig, abilityPages);
+    [abilityPages, extensionAbilityPages] = readAbilityEntrance(moduleJson);
+    setAbilityFile(projectConfig, abilityPages, extensionAbilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
@@ -514,9 +531,10 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages) {
+function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
+  const extensionAbilitySet = new Set(extensionAbilityPages);
   abilityPages.forEach(abilityPath => {
-    if (abilityPath.endsWith('.so')) {
+    if (extensionAbilitySet.has(abilityPath) && abilityPath.endsWith('.so')) {
       return;
     }
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
@@ -533,6 +551,9 @@ function setAbilityFile(projectConfig, abilityPages) {
       if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
         return;
       }
+      if (isMixCompile() && transformAbilityPages(projectConfig, abilityPath)) {
+        return;
+      }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
@@ -542,35 +563,55 @@ function setAbilityFile(projectConfig, abilityPages) {
 
 function readAbilityEntrance(moduleJson) {
   const abilityPages = [];
+  const extensionAbilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
+    const isStatic = moduleJson.module?.arkTSMode === ARKTS_MODE.STATIC;
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
+      setEntryFileLanguage(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
+      setEntryFileLanguage(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
       setEntrance(moduleJson.module.extensionAbilities, abilityPages);
+      setExtension(moduleJson.module.extensionAbilities, extensionAbilityPages);
       setCardPages(moduleJson.module.extensionAbilities);
     }
   }
-  return abilityPages;
+  return [abilityPages, extensionAbilityPages];
+}
+
+function setExtension(abilityConfig, extensionPages) {
+  if (abilityConfig && abilityConfig.length > 0) {
+    abilityConfig.forEach(ability => {
+      if (ability.srcEntry) {
+        extensionPages.push(ability.srcEntry);
+      } else if (ability.srcEntrance) {
+        extensionPages.push(ability.srcEntrance);
+      }
+    });
+  }
 }
 
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
+      const isStatic = ability.arkTSMode === ARKTS_MODE.STATIC;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
+        setEntryFileLanguage(ability.srcEntry, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
+        setEntryFileLanguage(ability.srcEntrance, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
@@ -828,25 +869,6 @@ function filterWorker(workerPath) {
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })();
 
-/**
- * Plugin configuration object structure.
- * @typedef {Object} PluginConfig
- * @property {string} tag - Plugin tag (e.g., "since", "available")
- * @property {string} type - Plugin type (e.g., "CompatibilityCheck", "FormatValidation")
- * @property {string} path - Absolute path to plugin file
- * @property {string} functionName - Function name to load from plugin
- */
-
-/**
- * Collects external API check plugins from SDK config.
- * Loads plugins and stores them with keys: {osName}/{tag}/{type}
- * 
- * Plugin key format: {osName}/{tag}/{type}
- * Example: "since/CompatibilityCheck"
- * 
- * @param {Object} sdkConfig - SDK configuration object
- * @param {string} sdkPath - Base SDK path for resolving plugin paths
- */
 function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
   const osName = sdkConfig.osName;
   if (!osName) {
@@ -862,7 +884,6 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
 
     for (const config of pluginGroup) {
       let pluginKey = '';
-
       if (config.type) {
         // New format: has type field
         // Key: {osName}/{tag}/{type}

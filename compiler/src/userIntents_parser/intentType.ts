@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -226,18 +226,18 @@ intentEntryInfoChecker.paramValidators = {
   displayName: validateRequiredString,
   domain: validateRequiredString,
   executeMode(v: ts.Expression): boolean {
-    return v !== undefined && v !== null && ts.isArrayLiteralExpression(v) &&
-      v.elements.every(e => {
-        const enumValue: string = e?.getText().split('.').pop();
-        const validModes = [
-          'UI_ABILITY_FOREGROUND',
-          'UI_ABILITY_BACKGROUND',
-          'UI_EXTENSION_ABILITY',
-          'SERVICE_EXTENSION_ABILITY'
-        ];
-        return (ts.isNumericLiteral(e) && [0, 1, 2, 3].includes(Number(e.text))) || validModes.includes(enumValue);
-      });
-  },
+      return v !== undefined && v !== null && ts.isArrayLiteralExpression(v) &&
+        v.elements.every(e => {
+          const enumValue: string = e?.getText().split('.').pop();
+          const validModes = [
+            'UI_ABILITY_FOREGROUND',
+            'UI_ABILITY_BACKGROUND',
+            'UI_EXTENSION_ABILITY',
+            'SERVICE_EXTENSION_ABILITY'
+          ];
+          return (ts.isNumericLiteral(e) && [0, 1, 2, 3].includes(Number(e.text))) || validModes.includes(enumValue);
+        });
+    },
   intentName: validateRequiredString,
   intentVersion: validateRequiredString,
   llmDescription: validateOptionalString

@@ -29,7 +29,8 @@ import {
   COMPONENT_DECORATOR_ENTRY,
   COMPONENT_BUILDER_DECORATOR,
   DECORATOR_REUSEABLE,
-  DECORATOR_REUSABLE_V2
+  DECORATOR_REUSABLE_V2,
+  WRAPPEDBUILDER_CLASS
 } from './pre_define';
 import {
   propertyCollection,
@@ -80,7 +81,9 @@ import {
 import {
   CUSTOM_BUILDER_METHOD,
   INNER_COMPONENT_NAMES,
-  GLOBAL_CUSTOM_BUILDER_METHOD
+  GLOBAL_CUSTOM_BUILDER_METHOD,
+  STATIC_WRAPPED_BUILDER,
+  STATIC_BUILDER
 } from './component_map';
 import { 
   type ResolveModuleInfo,
@@ -91,6 +94,9 @@ import {
   validateModuleSpecifier
 } from './fast_build/system_api/api_check_utils';
 import processStructComponentV2, { StructInfo } from './process_struct_componentV2';
+import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
+import { FileManager } from './fast_build/ark_compiler/interop/interop_manager';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 const IMPORT_FILE_ASTCACHE: Map<string, ts.SourceFile> =
   process.env.watchMode === 'true' ? new Map() : (SOURCE_FILES || new Map());
@@ -683,9 +689,9 @@ function getFileResolvePath(fileResolvePath: string, pagesDir: string, filePath:
           fileResolvePath = path.join(fileResolvePath, INDEX_TS);
         }
       }
-    } else if (fs.existsSync(path.join(fileResolvePath, INDEX_ETS))) {
+    } else if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_ETS))) {
       fileResolvePath = path.join(fileResolvePath, INDEX_ETS);
-    } else if (fs.existsSync(path.join(fileResolvePath, INDEX_TS))) {
+    } else if (fileInfoCache.fileExists(path.join(fileResolvePath, INDEX_TS))) {
       fileResolvePath = path.join(fileResolvePath, INDEX_TS);
     }
     if (curPageDir === path.parse(curPageDir).root) {
@@ -764,7 +770,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
 
   // import xxx from 'xxx'
   if (node.importClause && node.importClause.name && ts.isIdentifier(node.importClause.name)) {
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageInfo, share);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.name, pageInfo, share,
+      node.moduleSpecifier.getText().replace(/'|"/g, ''));
   }
 
   // import {xxx} from 'xxx'
@@ -773,7 +780,8 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     node.importClause.namedBindings.elements) {
     node.importClause.namedBindings.elements.forEach((importSpecifier: ts.ImportSpecifier) => {
       if (ts.isImportSpecifier(importSpecifier) && importSpecifier.name && ts.isIdentifier(importSpecifier.name)) {
-        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo, share);
+        getDefinedNode(importSymbol, realSymbol, originNode, importSpecifier.name, pageInfo, share,
+          node.moduleSpecifier.getText().replace(/'|"/g, ''));
       }
     });
   }
@@ -783,12 +791,19 @@ export function processImportModule(node: ts.ImportDeclaration, pageFile: string
     ts.isNamespaceImport(node.importClause.namedBindings) && node.importClause.namedBindings.name &&
     ts.isIdentifier(node.importClause.namedBindings.name)) {
     storedFileInfo.isAsPageImport = true;
-    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageInfo, share);
+    getDefinedNode(importSymbol, realSymbol, originNode, node.importClause.namedBindings.name, pageInfo,
+      share, node.moduleSpecifier.getText().replace(/'|"/g, ''));
   }
 }
 
+function getFileVersion(originNode: ts.Node): string | undefined {
+  const fileName = originNode.getSourceFile().fileName;
+  const languageVersionversion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
+  return languageVersionversion?.languageVersion;
+}
+
 function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNode: ts.Node,
-  usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null): void {
+  usedNode: ts.Identifier, pageInfo: PageInfo, share: object = null, moduleSpecifier: string = ''): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   importSymbol = checker?.getSymbolAtLocation(usedNode);
   if (importSymbol) {
@@ -810,7 +825,8 @@ function getDefinedNode(importSymbol: ts.Symbol, realSymbol: ts.Symbol, originNo
         return;
       }
     }
-    processImportNode(originNode, usedNode, false, null, pageInfo, share);
+    const isArkoala = isMixCompile() && getFileVersion(originNode) === ARKTS_1_2;
+    processImportNode(originNode, usedNode, false, null, pageInfo, share, isArkoala, moduleSpecifier);
   }
 }
 
@@ -856,7 +872,8 @@ function exportAllManage(originNode: ts.Node, usedNode: ts.Identifier, pageInfo:
 }
 
 function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importIntegration: boolean,
-  usedPropName: string, pageInfo: PageInfo, share: object = null): void {
+  usedPropName: string, pageInfo: PageInfo, share: object = null, isArkoala: boolean = false,
+  moduleSpecifier: string = ''): void {
   const structDecorator: structDecoratorResult = { hasRecycle: false };
   let name: string;
   let asComponentName: string;
@@ -871,14 +888,20 @@ function processImportNode(originNode: ts.Node, usedNode: ts.Identifier, importI
   let needCollection: boolean = true;
   const originFile: string = originNode.getSourceFile() ? originNode.getSourceFile().fileName : undefined;
   if (ts.isStructDeclaration(originNode) && ts.isIdentifier(originNode.name)) {
-    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile);
+    parseComponentInImportNode(originNode, name, asComponentName, structDecorator, originFile, isArkoala,
+      moduleSpecifier);
   } else if (isObservedClass(originNode)) {
     observedClassCollection.add(name);
   } else if (ts.isFunctionDeclaration(originNode) && hasDecorator(originNode, COMPONENT_BUILDER_DECORATOR)) {
     CUSTOM_BUILDER_METHOD.add(name);
     GLOBAL_CUSTOM_BUILDER_METHOD.add(name);
+    if (isMixCompile() && isArkoala) {
+      STATIC_BUILDER.add(name);
+    }
   } else if (ts.isEnumDeclaration(originNode) && originNode.name) {
     enumCollection.add(name);
+  } else if (isMixCompile() && ts.isVariableDeclaration(originNode)) {
+    processStaticBuild(isArkoala, originNode.type, name);
   } else {
     needCollection = false;
   }
@@ -935,8 +958,13 @@ function setComponentCollectionInfo(name: string, componentSet: IComponentSet, i
 }
 
 function parseComponentInImportNode(originNode: ts.StructDeclaration, name: string,
-  asComponentName: string, structDecorator: structDecoratorResult, originFile: string): void {
+  asComponentName: string, structDecorator: structDecoratorResult, originFile: string,
+  isArkoala: boolean = false, moduleSpecifier: string = ''): void {
   componentCollection.customComponents.add(name);
+  if (isMixCompile() && isArkoala) {
+    const filePath = originNode.getSourceFile().fileName;
+    componentCollection.arkoalaComponents.set(name, [filePath, moduleSpecifier]);
+  }
   const structInfo: StructInfo = asComponentName ?
     processStructComponentV2.getOrCreateStructInfo(asComponentName) :
     processStructComponentV2.getOrCreateStructInfo(name);
@@ -989,4 +1017,10 @@ function isReusableV2(node: ts.StructDeclaration): boolean {
     const name: string = item.getText().replace(/\([^\(\)]*\)/, '').replace('@', '').trim();
     return name === DECORATOR_REUSABLE_V2;
   });
+}
+
+function processStaticBuild(isArkoala: boolean, type: ts.TypeNode | undefined, name: string): void {
+  if (isArkoala && type && ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName) && type.typeName.escapedText === WRAPPEDBUILDER_CLASS) {
+    STATIC_WRAPPED_BUILDER.add(name);
+  }
 }

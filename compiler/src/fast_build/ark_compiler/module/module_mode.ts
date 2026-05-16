@@ -55,6 +55,7 @@ import {
   TS,
   JS,
   PERFREPORT_JSON,
+  GEN_ABC_CMD
 } from '../common/ark_define';
 import {
   needAotCompiler,
@@ -123,6 +124,19 @@ import {
   stopEvent
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
+import {
+  addDeclFilesConfig,
+  ArkTSEvolutionModule,
+  getDeclgenBridgeCodePath,
+  pkgDeclFilesConfig,
+  arkTSModuleMap,
+  isArkTSEvolutionFile,
+  genCachePathForBridgeCode,
+} from '../interop/process_arkts_evolution';
+import {
+  FileManager,
+  isMixCompile
+} from '../interop/interop_manager';
 import { ModuleSourceFile } from './module_source_file';
 
 type BeforeObfuscateFn = (
@@ -270,10 +284,13 @@ export class ModuleMode extends CommonMode {
         );
         this.logger.printErrorAndExit(errInfo);
       }
-
+      let pkgPath: string = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolutionFile(moduleId, metaInfo)) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
+      }
       const pkgParams = {
         pkgName: metaInfo.pkgName,
-        pkgPath: metaInfo.pkgPath,
+        pkgPath,
         isRecordName: true,
       };
       let recordName: string = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
@@ -357,6 +374,17 @@ export class ModuleMode extends CommonMode {
     this.collectModuleFileList(rollupObject, rollupObject.getModuleIds());
     this.removeCacheInfo(rollupObject);
     stopEvent(eventPrepareForCompilation);
+  }
+
+  // Write the declaration file information of the 1.1 module file to the disk of the corresponding module
+  writeDeclFilesConfigJson(pkgName: string): void {
+    if (!arkTSModuleMap.size) {
+      return;
+    }
+    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = arkTSModuleMap.get(pkgName);
+    const declFilesConfigFile: string = toUnixPath(arkTSEvolutionModuleInfo.declFilesPath);
+    mkdirsSync(path.dirname(declFilesConfigFile));
+    fs.writeFileSync(declFilesConfigFile, JSON.stringify(pkgDeclFilesConfig[pkgName], null, 2), 'utf-8');
   }
 
   collectModuleFileList(module: Object, fileList: IterableIterator<string>): void {
@@ -552,15 +580,20 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = 
+    let cacheFilePath: string = (isMixCompile() && isArkTSEvolutionFile(filePath, metaInfo)) ?
+      genCachePathForBridgeCode(originalFilePath, metaInfo, this.projectConfig.cachePath) :
       this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
+      let pkgPath: string = metaInfo.pkgPath;
+      if (isMixCompile() && isArkTSEvolutionFile(filePath, metaInfo)) {
+        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
+      }
       const pkgParams = {
         pkgName: packageName,
-        pkgPath: metaInfo.pkgPath,
+        pkgPath,
         isRecordName: true,
       };
       recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);
@@ -593,6 +626,21 @@ export class ModuleMode extends CommonMode {
   }
 
   generateEs2AbcCmd() {
+    this.appendBaseCmdArgs();
+    this.appendApiVersionArgs();
+    this.appendBranchEliminationArgIfNeeded();
+    this.appendTransformLibArgsIfNeeded();
+    this.appendCompileContextInfoArgsIfNeeded();
+    this.appendAbcInputArgsIfNeeded();
+    this.appendOptTryCatchArgIfNeeded();
+    this.appendAnnotationArgIfNeeded();
+    this.appendReleaseColumnArgIfNeeded();
+    this.appendCallableNameArgIfNeeded();
+    this.appendPerfFileArgIfNeeded();
+    this.appendMixCompileArgIfNeeded();
+  }
+
+  private appendBaseCmdArgs(): void {
     const fileThreads = getEs2abcFileThreadNumber();
     this.cmdArgs.push(`"@${this.filesInfoPath}"`);
     if (!this.byteCodeHar) {
@@ -604,22 +652,36 @@ export class ModuleMode extends CommonMode {
     this.cmdArgs.push('--file-threads');
     this.cmdArgs.push(`"${fileThreads}"`);
     this.cmdArgs.push('--merge-abc');
+  }
+
+  private appendApiVersionArgs(): void {
     this.cmdArgs.push(`"--target-api-version=${this.projectConfig.compatibleSdkVersion}"`);
     if (this.projectConfig.compatibleSdkVersionStage) {
       this.cmdArgs.push(`"--target-api-sub-version=${this.projectConfig.compatibleSdkVersionStage}"`);
     }
-    // when enable branch elimination and bytecode obfuscation will crash
+  }
+
+  private appendBranchEliminationArgIfNeeded(): void {
     if (this.arkConfig.isBranchElimination && !BytecodeObfuscator.enable) {
       this.cmdArgs.push('--branch-elimination');
     }
+  }
+
+  private appendTransformLibArgsIfNeeded(): void {
     if (this.projectConfig.transformLib) {
       this.cmdArgs.push(`--transform-lib`);
       this.cmdArgs.push(`"${this.projectConfig.transformLib}"`);
     }
+  }
+
+  private appendCompileContextInfoArgsIfNeeded(): void {
     if (this.compileContextInfoPath !== undefined) {
       this.cmdArgs.push(`--compile-context-info`);
       this.cmdArgs.push(`"${this.compileContextInfoPath}"`);
     }
+  }
+
+  private appendAbcInputArgsIfNeeded(): void {
     if (this.abcPaths.length > 0 && (!this.byteCodeHar ||
       this.projectConfig.projectArkOption?.bundle?.bundledAllDependencies)) {
       this.cmdArgs.push('--enable-abc-input');
@@ -628,27 +690,46 @@ export class ModuleMode extends CommonMode {
     if (this.customizedHar) {
       this.cmdArgs.push('--enable-abc-input');
     }
+  }
+
+  private appendOptTryCatchArgIfNeeded(): void {
     if (!this.arkConfig.optTryCatchFunc) {
       this.cmdArgs.push('--opt-try-catch-func=false');
     }
+  }
+
+  private appendAnnotationArgIfNeeded(): void {
     if (this.projectConfig.allowEtsAnnotations) {
       this.cmdArgs.push('--enable-annotations');
     }
-    // Add column numbers for bytecode instructions in release mode
+  }
+
+  private appendReleaseColumnArgIfNeeded(): void {
     if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableColumnNum') ||
       this.projectConfig.enableColumnNum) {
       this.cmdArgs.push('--enable-release-column');
     }
-    // Include the function name in call instructions, only available for API24 and above
+  }
+
+  private appendCallableNameArgIfNeeded(): void {
     if (!Object.prototype.hasOwnProperty.call(this.projectConfig, 'enableCallableName') ||
       this.projectConfig.enableCallableName) {
       this.cmdArgs.push('--enable-callable-name');
     }
+  }
+
+  private appendPerfFileArgIfNeeded(): void {
     if (isNeedPerformanceDotting(this.projectConfig)) {
       this.cmdArgs.push(`--perf-file=${this.perfReportPath}`);
     }
   }
 
+  private appendMixCompileArgIfNeeded(): void {
+    if (this.projectConfig.mixCompile) {
+      this.cmdArgs.push('--enable-ets-implements');
+    }
+  }
+  
   addCacheFileArgs() {
     this.cmdArgs.push('--cache-file');
     this.cmdArgs.push(`"@${this.cacheFilePath}"`);
@@ -682,12 +763,16 @@ export class ModuleMode extends CommonMode {
         filesInfo += `${abcPath};;;;${pkgName};\n`;
       });
     }
+
+    for (const [pkgName, fileInfo] of FileManager.glueCodeFileInfos) {
+      filesInfo += `${fileInfo.abstractPath};${fileInfo.recordName};${ESM};${fileInfo.abstractPath};${this.projectConfig.entryPackageName};` +
+      `${false};ts\n`;
+    }
     if(this.customizedHar) {
       const basePackage: string = toUnixPath(this.projectConfig.customizedOptions.basePackage);
       const pkgName: string = this.projectConfig.entryPackageName;
       filesInfo += `${basePackage};;;;${pkgName};\n`;
     }
-
     fs.writeFileSync(this.filesInfoPath, filesInfo, 'utf-8');
   }
 
@@ -749,7 +834,6 @@ export class ModuleMode extends CommonMode {
     // collect data error from subprocess
     let logDataList: Object[] = [];
     let errMsg: string = '';
-
     const genAbcCmd: string = this.cmdArgs.join(' ');
     let eventGenAbc: CompileEvent;
     try {
@@ -762,7 +846,7 @@ export class ModuleMode extends CommonMode {
           stopEvent(eventGenAbc, true);
           this.processAotIfNeeded();
           processExternalEvents(this.projectConfig, ExternalEventType.ES2ABC, { parentEvent: eventGenAbc, filePath: this.perfReportPath });
-          
+
           if (this.beforeObfuscate) {
             await this.beforeObfuscate(this.moduleAbcPath , {isArkGuardEnabled: this.isArkguardEnabled});
           }
