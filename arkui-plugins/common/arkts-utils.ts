@@ -246,6 +246,10 @@ export interface APIVersionCondition {
 
 export type APIVersionCallback = (sdkVersion: APIVersions) => void;
 
+export interface WithAPIVersionOptions {
+    ignoreCompare?: boolean;
+}
+
 /**
  * Creates a version-gated callback wrapper.
  * The callback will only execute if the SDK version matches the condition.
@@ -256,7 +260,8 @@ export type APIVersionCallback = (sdkVersion: APIVersions) => void;
  */
 export function withAPIVersion(
   condition: APIVersionCondition,
-  callbackFn: APIVersionCallback
+  callbackFn: APIVersionCallback,
+  options?: WithAPIVersionOptions
 ): void {
     const projectConfig = MetaDataCollector.getInstance().projectConfig;
     const compatibleSdkVersion = projectConfig?.compatibleSdkVersion;
@@ -290,7 +295,7 @@ export function withAPIVersion(
         }
     }
 
-    if (MetaDataCollector.getInstance().enableInnerComponentRewrite || shouldExecute) {
+    if (options?.ignoreCompare || shouldExecute) {
         callbackFn(sdkVersion);
     }
 }
