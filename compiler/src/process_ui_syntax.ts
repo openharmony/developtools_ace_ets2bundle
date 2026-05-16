@@ -182,7 +182,9 @@ import {
   stopEvent
 } from './performance';
 import parseIntent from './userIntents_parser/parseUserIntents';
+import { insertGetOptionsAtTop } from './process_interop_component';
 import { isPointVersion, processAvailableStatement } from './process_available_statement';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
 export let contextGlobal: ts.TransformationContext;
@@ -235,6 +237,10 @@ export function processUISyntax(program: ts.Program, ut = false,
         }
         const id: number = ++componentInfo.id;
         node = ts.visitEachChild(node, processAllNodes, context);
+        // for interop
+        if (isMixCompile()) {
+          node = insertGetOptionsAtTop(node);
+        }
         if (context.getCompilerOptions().etsAnnotationsEnable) {
           node = ts.getAnnotationTransformer()(context)(node);
         }

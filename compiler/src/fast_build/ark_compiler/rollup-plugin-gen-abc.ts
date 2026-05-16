@@ -34,6 +34,11 @@ import {
 } from '../../performance';
 import { BytecodeObfuscator } from './bytecode_obfuscator';
 import { PreloadFileModules } from './module/module_preload_file_utils';
+import {
+  FileManager,
+  isMixCompile
+} from './interop/interop_manager';
+import { cleanUpProcessArkTSEvolutionObj } from './interop/process_arkts_evolution';
 
 export function genAbc() {
   return {
@@ -87,6 +92,8 @@ export function genAbc() {
       cleanUpAsyncEvents();
       BytecodeObfuscator.cleanBcObfuscatorObject();
       PreloadFileModules.cleanUpPreloadSoObjects();
+      isMixCompile() && cleanUpProcessArkTSEvolutionObj();
+      isMixCompile() && FileManager.cleanFileManagerObject();
     }
   };
 }

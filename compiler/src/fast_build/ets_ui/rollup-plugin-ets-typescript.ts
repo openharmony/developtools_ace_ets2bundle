@@ -113,12 +113,19 @@ import { shouldETSOrTSFileTransformToJSWithoutRemove } from '../ark_compiler/uti
 import { MemoryMonitor } from '../meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from '../meomry_monitor/memory_define';
 import { ModuleSourceFile } from '../ark_compiler/module/module_source_file';
-import { ARKUI_SUBSYSTEM_CODE } from '../../../lib/hvigor_error_code/hvigor_error_info';
+import { ARKUI_SUBSYSTEM_CODE } from '../../hvigor_error_code/hvigor_error_info';
 import { ProjectCollections } from 'arkguard';
 import parseIntent from '../../userIntents_parser/parseUserIntents';
 import { concatenateEtsOptions, getExternalComponentPaths } from '../../external_component_map';
 import { expandAllImportPaths } from '../../import_path_expand';
 import { fileInfoCache } from '../../file_info_cache';
+import {
+  interopTransformLog,
+  interopTransform,
+  resetInteropTransformLog
+} from '../ark_compiler/interop/process_arkts_evolution';
+import { FileManager, isMixCompile } from '../ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from '../ark_compiler/interop/pre_define';
 
 let switchTsAst: boolean = true;
 
@@ -157,9 +164,7 @@ export function etsTransform() {
     buildStart() {
       const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'buildStart');
       const eventEtsTransformBuildStart = createAndStartEvent(hookEventFactory, 'etsTransformBuildStart');
-      const judgeCacheShouldDisableInBS = createAndStartEvent(eventEtsTransformBuildStart, 'judgeCacheShouldDsiableInBS');
       judgeCacheShouldDisabled.call(this);
-      stopEvent(judgeCacheShouldDisableInBS);
       fileInfoCache.setShare(this.share);
       if (process.env.compileMode === 'moduleJson') {
         cacheFile = this.cache.get('transformCacheFiles');
@@ -175,15 +180,9 @@ export function etsTransform() {
           storedFileInfo.hasResourcesCache = false;
         }
         if (process.env.rawFileResource) {
-          const rawfileResourceProcess = createAndStartEvent(eventEtsTransformBuildStart, 'rawfileResourceProcess');
-          const collectRawfileResource = createAndStartEvent(rawfileResourceProcess, 'collectRawfileResource');
           resourcesRawfile(process.env.rawFileResource, storedFileInfo.resourcesArr);
-          stopEvent(collectRawfileResource);
-          const differenceRawfile = createAndStartEvent(rawfileResourceProcess, 'differenceRawfile'); 
           this.share.rawfilechanged = differenceResourcesRawfile(storedFileInfo.lastResourcesSet,
             storedFileInfo.resourcesArr, storedFileInfo.changedResourcesSet);
-          stopEvent(differenceRawfile);
-          stopEvent(rawfileResourceProcess);
         }
       }
       if (!!this.cache.get('enableDebugLine') !== projectConfig.enableDebugLine) {
@@ -192,9 +191,7 @@ export function etsTransform() {
       // Initialize the baseline of trggering GC by the maxMemory at the end of serviceChecker. 
       // In etsTransform plugin, if the memory after transforming a file exceeds the baseline,
       // trigger GC and update a new baseline.
-      const TSMemoryInitializeBaseMemory = createAndStartEvent(eventEtsTransformBuildStart, 'TS_MemoryInitializeBaseMemory');
       ts.MemoryUtils.initializeBaseMemory(maxMemoryInServiceChecker);
-      stopEvent(TSMemoryInitializeBaseMemory);
       stopEvent(eventEtsTransformBuildStart);
     },
     load(id: string) {
@@ -214,20 +211,14 @@ export function etsTransform() {
       stopEvent(eventEtsTransformLoad);
     },
     shouldInvalidCache(options) {
-      const hookEventFactory: CompileEvent = getHookEventFactory(this.share, 'etsTransform', 'shouldInvalidCache');
-      const eventEtsShouldInvalidCache = createAndStartEvent(hookEventFactory, 'etsTransformShouldInvalidCache');
       const fileName: string = path.resolve(options.id);
       let shouldDisable: boolean = shouldDisableCache || disableNonEntryFileCache(fileName) || ShouldEnableDebugLine.enableDebugLine;
       if (process.env.compileMode === 'moduleJson') {
-        const checkRawFileChangeEvent = createAndStartEvent(eventEtsShouldInvalidCache, 'checkRawFileChangeEvent');
         shouldDisable = shouldDisable || storedFileInfo.shouldInvalidFiles.has(fileName) || checkRawFileChange(fileName);
-        stopEvent(checkRawFileChangeEvent);
         if (cacheFile && cacheFile[fileName] && cacheFile[fileName].children.length) {
           for (let child of cacheFile[fileName].children) {
             const newTimeMs: number = fs.existsSync(child.fileName) ? fs.statSync(child.fileName).mtimeMs : -1;
-            const getFileHashInShouldInvalidCache = createAndStartEvent(eventEtsShouldInvalidCache, 'getFileHashInShouldInvalidCache');
             const fileHash: string = this.share?.getHashByFilePath ? this.share?.getHashByFilePath(child.fileName) : '';
-            stopEvent(getFileHashInShouldInvalidCache);
             if (this.share?.getHashByFilePath && (fileHash !== child.hash || fileHash === '')) {
               shouldDisable = true;
               break;
@@ -243,7 +234,6 @@ export function etsTransform() {
       if (!shouldDisable) {
         storedFileInfo.collectCachedFiles(fileName);
       }
-      stopEvent(eventEtsShouldInvalidCache);
       return shouldDisable;
     },
     buildEnd(): void {
@@ -267,7 +257,6 @@ export function etsTransform() {
       }
       // Copy the cache files in the compileArkTS directory to the loader_out directory
       if (projectConfig.compileHar && !projectConfig.byteCodeHar) {
-        const compileHarNotByteCodeHar = createAndStartEvent(eventEtsTransformAfterBuildEnd, 'compileHarNotByteCodeHar');
         for (let moduleInfoId of allModuleIds.keys()) {
           const moduleInfo: Object = this.getModuleInfo(moduleInfoId);
           if (!moduleInfo && !moduleInfoId.match(/\.d\.e?ts$/)) {
@@ -308,7 +297,6 @@ export function etsTransform() {
             writeFileSync(buildFilePath, sourceCode);
           }
         });
-        stopEvent(compileHarNotByteCodeHar);
       }
       shouldDisableCache = false;
       this.cache.set('disableCacheOptions', disableCacheOptions);
@@ -337,7 +325,6 @@ export function etsTransform() {
       resetValidateUiSyntax();
       resetObfuscation();
       parseIntent.clear();
-      resetExtContent();
     }
   };
 }
@@ -377,7 +364,7 @@ function judgeCacheShouldDisabled(): void {
 
 /**
  * Checks if a given file needs to be recompiled due to changes in raw resource files.
- * 
+ *
  * This function determines whether the specified file has dependencies on raw files
  * (resources) that have been modified since the last compilation. It checks against
  * a cache of stored file information and a set of changed resources.
@@ -450,13 +437,11 @@ async function transform(code: string, id: string) {
   if (!filter(id)) {
     return null;
   }
-  const preTransform = createAndStartEvent(hookEventFactory, 'preTransform');
   const recordInfo = MemoryMonitor.recordStage(MemoryDefine.STORED_FILE_INFO_TRANSFORM);
   storedFileInfo.collectTransformedFiles(path.resolve(id));
   MemoryMonitor.stopRecordStage(recordInfo);
   const logger = this.share.getLogger('etsTransform');
   const hvigorLogger = this.share.getHvigorConsoleLogger?.(ARKUI_SUBSYSTEM_CODE);
-  stopEvent(preTransform);
 
   if (projectConfig.compileMode !== 'esmodule') {
     const eventEtsTransformForJsbundle = createAndStartEvent(hookEventFactory, 'transform for jsbundle');
@@ -478,10 +463,11 @@ async function transform(code: string, id: string) {
     compilerOptions.module = 'es2020';
     const newContent: string = jsBundlePreProcess(code, id, this.getModuleInfo(id).isEntry, logger, hvigorLogger);
     const metaInfo: Object = this.getModuleInfo(id).metaInfo || {};
+    metaInfo.checker = globalProgram.program.getTypeChecker();
     const result: ts.TranspileOutput = ts.transpileModule(newContent, {
       compilerOptions: compilerOptions,
       fileName: id,
-      transformers: { before: [processUISyntax(null, false, undefined, id, null, metaInfo)] }
+      transformers: { before: [processUISyntax(null, false, null, id, metaInfo)] }
     });
 
     resetCollection();
@@ -506,31 +492,20 @@ async function transform(code: string, id: string) {
   // 1. .ets/.ts imported by .js file with tsc's `allowJS` option is false.
   // 2. .ets/.ts imported by .js file with same name '.d.ts' file which is prior to .js by tsc default resolving
   if (!targetSourceFile) {
-    const noSourceFileTask = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceFileTask', true);
     await processNoTargetSourceFile(id, code, eventEtsTransformForEsmodule);
-    stopEvent(noSourceFileTask);
 	const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
     // init TypeChecker to run binding
-
-    const noSourceGetChecker = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceGetChecker');
     globalProgram.checker = tsProgram.getTypeChecker();
     globalProgram.strictChecker = tsProgram.getLinterTypeChecker();
-    stopEvent(noSourceGetChecker);
-
     MemoryMonitor.stopRecordStage(recordInfo);
     targetSourceFile = tsProgram.getSourceFile(id)!;
     storedFileInfo.reUseProgram = false;
-
-    const noSourceCollectFiles = createAndStartEvent(eventEtsTransformForEsmodule, 'noSourceCollectFiles');
     collectAllFiles(tsProgram);
-    stopEvent(noSourceCollectFiles);
   } else {
     if (!storedFileInfo.reUseProgram) {
 	  const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_GET_CHECKER);
-    const noReuseProgramGetChecker = createAndStartEvent(eventEtsTransformForEsmodule, 'noReuseProgramGetChecker');
       globalProgram.checker = globalProgram.program.getTypeChecker();
       globalProgram.strictChecker = globalProgram.program.getLinterTypeChecker();
-    stopEvent(noReuseProgramGetChecker);
       MemoryMonitor.stopRecordStage(recordInfo);
     }
     storedFileInfo.reUseProgram = true;
@@ -556,6 +531,7 @@ async function transform(code: string, id: string) {
     reExportCheckMode: this.share.projectConfig?.reExportCheckMode ?? reExportNoCheckMode,
     autoLazyFilter: this.share.projectConfig?.autoLazyFilter ?? {}
   };
+  const mixCompile: boolean = this.share.projectConfig?.mixCompile ?? false;
   // use `try finally` to restore `noEmit` when error thrown by `processUISyntax` in preview mode
   const eventShouldEmitJs = createAndStartEvent(eventEtsTransformForEsmodule, 'shouldEmitJs');
   const shouldEmitJsFlag: boolean = getShouldEmitJs(projectConfig.shouldEmitJs, targetSourceFile, id);
@@ -566,6 +542,7 @@ async function transform(code: string, id: string) {
   try {
     const eventTsProgramEmit = createAndStartEvent(eventEtsTransformForEsmodule, 'tsProgramEmit');
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.GLOBAL_PROGRAM_UI_KIT);
+    metaInfo.checker = tsProgram.getTypeChecker();
     if (projectConfig.useArkoala) {
       tsProgram = getArkoalaTsProgram(tsProgram);
       targetSourceFile = tsProgram.getSourceFile(id);
@@ -576,6 +553,10 @@ async function transform(code: string, id: string) {
       tsProgram.emit(targetSourceFile, writeFile, undefined, undefined,
         {
           before: [
+            // interopTransform：The hybrid compilation scenario provides the following two capabilities:
+            // 1. Support for creating 1.2 type object literals in 1.1 modules
+            // 2. Support 1.1 classes to implement 1.2 interfaces
+            interopTransform(tsProgram, id, mixCompile),
             processUISyntax(null, false, eventEmit, id, this.share, metaInfo),
             expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventEmit),
             processKitImport(id, metaInfo, eventEmit, true, lazyImportOptions),
@@ -591,9 +572,14 @@ async function transform(code: string, id: string) {
       const eventTransformNodes = createAndStartEvent(eventTsProgramEmit, 'transformNodes');
       const emitResolver: ts.EmitResolver | undefined = CurrentProcessFile.getChecker()?.getEmitResolver(outFile(tsProgram.getCompilerOptions()) ?
         undefined : targetSourceFile, undefined);
+      metaInfo.checker = tsProgram.getTypeChecker();
       transformResult = ts.transformNodes(emitResolver, tsProgram.getEmitHost?.(), ts.factory,
         tsProgram.getCompilerOptions(), [targetSourceFile],
-        [processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
+        [// interopTransform：The hybrid compilation scenario provides the following two capabilities:
+        // 1. Support for creating 1.2 type object literals in 1.1 modules
+        // 2. Support 1.1 classes to implement 1.2 interfaces
+        interopTransform(tsProgram, id, mixCompile),
+        processUISyntax(null, false, eventTransformNodes, id, this.share, metaInfo),
         expandAllImportPaths(CurrentProcessFile.getChecker(), this, eventTransformNodes),
         processKitImport(id, metaInfo, eventTransformNodes, false, lazyImportOptions),
         collectReservedNameForObf(this.share.arkProjectConfig?.obfuscationMergedObConfig,
@@ -607,15 +593,16 @@ async function transform(code: string, id: string) {
     // restore `noEmit` to prevent tsc's watchService emitting automatically.
     tsProgram.getCompilerOptions().noEmit = true;
   }
-  const eventmemoryUtils = createAndStartEvent(eventEtsTransformForEsmodule, 'TSMemoryUtilsGC');
+
   ts.MemoryUtils.tryGC();
-  stopEvent(eventmemoryUtils);
   resetCollection();
   processStructComponentV2.resetStructMapInEts();
   if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
+    emitLogInfo(logger, getTransformLog(interopTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
+    resetInteropTransformLog();
     resetLog();
     resetKitImportLog();
   }
@@ -640,63 +627,34 @@ async function transform(code: string, id: string) {
 async function processNoTargetSourceFile(id: string, code: string, parentEvent?: CompileEvent): Promise<void> {
   const eventNoSourceFileRebuildProgram = createAndStartEvent(parentEvent, 'noSourceFileRebuildProgram');
   if (storedFileInfo.isFirstBuild && storedFileInfo.changeFiles.length) {
-    const eventFirstBuildCreateProgram = createAndStartEvent(eventNoSourceFileRebuildProgram, 'eventFirstBuildCreateProgram');
     storedFileInfo.newTsProgram = ts.createProgram(storedFileInfo.changeFiles, etsCheckerCompilerOptions, compilerHost);
-    stopEvent(eventFirstBuildCreateProgram);
-    const changeFilesNum: number = storedFileInfo.changeFiles?.length ?? 0;
-    const firstBuildChangeFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, `firstBuildChangeFilesEvent${changeFilesNum}`);
     storedFileInfo.isFirstBuild = false;
-    stopEvent(firstBuildChangeFilesEvent);
   }
-  const eventBlock = createAndStartEvent(eventNoSourceFileRebuildProgram, 'block', true);
-  await CreateProgramMoment.block(id, code, eventNoSourceFileRebuildProgram);
-  stopEvent(eventBlock);
-  const eventRelease = createAndStartEvent(eventNoSourceFileRebuildProgram, 'release');
+  await CreateProgramMoment.block(id, code);
   CreateProgramMoment.release(id);
-  stopEvent(eventRelease);
-
-  const initProcessingFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'initProcessingFiles');
   globalProgram.program.initProcessingFiles();
-  stopEvent(initProcessingFilesEvent);
-
   for (const root of CreateProgramMoment.getRoots(id, code)) {
     if (!globalProgram.program.getSourceFile(root.id)) {
-      const createRootSourceEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'createRootSourceEvent');
       const newSourceFile: ts.SourceFile = ts.createSourceFile(root.id, root.code, etsCheckerCompilerOptions.target,
         true, undefined, etsCheckerCompilerOptions);
-      stopEvent(createRootSourceEvent);
       newSourceFile.originalFileName = newSourceFile.fileName;
       newSourceFile.resolvedPath = root.id;
       newSourceFile.path = root.id;
-      const importModulesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'importModulesEvent');
       globalProgram.program.processImportedModules(newSourceFile, true);
-      stopEvent(importModulesEvent);
-      const setSourceFilesEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'setSourceFilesEvent');
       globalProgram.program.setProgramSourceFiles(newSourceFile);
-      stopEvent(setSourceFilesEvent);
       CreateProgramMoment.deleteFileCollect.add(newSourceFile.fileName);
     }
   }
-
   const processingFiles: ts.SourceFile[] = globalProgram.program.getProcessingFiles();
-  const processingFilesNum: number = processingFiles?.length ?? 0;
-  const processingFilesNumEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, `processingFilesNumEvent${processingFilesNum}`);
-  stopEvent(processingFilesNumEvent);
   if (processingFiles) {
     processingFiles.forEach(file => {
       if (!globalProgram.program.getSourceFiles().includes(file.fileName)) {
         CreateProgramMoment.deleteFileCollect.add(file.fileName);
       }
-      const setProcessingSourceFileEvent = createAndStartEvent(eventNoSourceFileRebuildProgram, 'setProcessingSourceFileEvent');
       globalProgram.program.setProgramSourceFiles(file);
-      stopEvent(setProcessingSourceFileEvent);
     });
   }
-
-  const TSRefreshTypeChecker = createAndStartEvent(eventNoSourceFileRebuildProgram, 'TSRefreshTypeChecker');
   globalProgram.program.refreshTypeChecker();
-  stopEvent(TSRefreshTypeChecker);
-
   stopEvent(eventNoSourceFileRebuildProgram);
 }
 
@@ -746,9 +704,11 @@ function setPkgNameForFile(moduleInfo: Object): void {
 
 function validateEts(code: string, id: string, isEntry: boolean, logger: Object, sourceFile: ts.SourceFile, 
   hvigorLogger: Object | undefined = undefined): void {
-  if (/\.ets$/.test(id)) {
+  const isArkTS1_2Declaration = isMixCompile() &&
+    FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2;
+  if (/\.ets$/.test(id) || isArkTS1_2Declaration) {
     clearCollection();
-    const fileQuery: string = isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
+    const fileQuery: string = !isArkTS1_2Declaration && isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, log, true, id, hvigorLogger);
@@ -916,15 +876,11 @@ class CreateProgramMoment {
     };
   }
 
-  static async block(id: string, code: string, parentEvent?: CompileEvent): Promise<void> {
-    const initInBlock = createAndStartEvent(parentEvent, 'initInBlock');
+  static async block(id: string, code: string): Promise<void> {
     CreateProgramMoment.init();
-    stopEvent(initInBlock);
     CreateProgramMoment.awaitFileCollect.add(id);
     CreateProgramMoment.roots.set(id, code);
-    const emitInBlock = createAndStartEvent(parentEvent, 'emitInBlock');
     CreateProgramMoment.emitter.emit('checkPrefCreateProgramId');
-    stopEvent(emitInBlock);
     return CreateProgramMoment.promise;
   }
 

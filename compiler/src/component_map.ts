@@ -134,6 +134,10 @@ export const INTERFACE_NODE_SET: Set<ts.InterfaceDeclaration> = new Set();
 export const INNER_CUSTOM_BUILDER_METHOD: Set<string> = new Set();
 export const GLOBAL_CUSTOM_BUILDER_METHOD: Set<string> = new Set();
 
+export const STATIC_WRAPPED_BUILDER: Set<string> = new Set();
+export const STATIC_BUILDER: Set<string> = new Set();
+export const INTEROP_TRAILING_LAMBDA: Map<string, ts.ArrowFunction> = new Map();
+
 export const JS_BIND_COMPONENTS: Set<string> = new Set([
   'ForEach', 'LazyForEach', ...GESTURE_TYPE_NAMES, 'Gesture',
   'PanGestureOption', 'CustomDialogController', 'Storage', 'Scroller', 'SwiperController',
