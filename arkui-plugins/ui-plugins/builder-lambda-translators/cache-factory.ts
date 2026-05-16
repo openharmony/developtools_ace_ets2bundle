@@ -32,6 +32,7 @@ import {
     APIComparison,
     APIVersions,
     BuilderLambdaNames,
+    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     InnerComponentNames,
     NodeCacheNames,
     StateManagementTypes,
@@ -206,7 +207,8 @@ export class CacheFactory {
                 { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
                 (sdkVersion: APIVersions) => {
                     InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
-                }
+                },
+                { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(metadata.name!) }
             );
             return node;
         }

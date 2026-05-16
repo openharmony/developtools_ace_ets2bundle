@@ -30,6 +30,7 @@ import {
     BuilderLambdaNames,
     DecoratorNames,
     Dollars,
+    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     InnerComponentAttributes,
     InnerComponentNames,
     StructDecoratorNames,
@@ -736,7 +737,8 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
             { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
             (sdkVersion: APIVersions) => {
                 _builderLambdaFunctionName = getTransformedComponentName(_builderLambdaFunctionName);
-            }
+            },
+            { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(_builderLambdaFunctionName) }
         );
         return _builderLambdaFunctionName;
     }
