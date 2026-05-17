@@ -242,7 +242,7 @@ class Info {
 
 }
 
-@ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_infoList = STATE_MGMT_FACTORY.makeLocal<Array<Info>>(this, "infoList", [new Info("Alice", 8, 0, 0), new Info("Barry", 10, 1, 20), new Info("Cindy", 18, 24, 40)]);
   }
@@ -314,7 +314,7 @@ class Info {
   }
 }
 
-@ComponentV2() final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MiddleComponent extends CustomComponentV2<MiddleComponent, __Options_MiddleComponent> {
   public __initializeStruct(initializers: (__Options_MiddleComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_info = STATE_MGMT_FACTORY.makeParam<Info>(this, "info", (initializers!.info as Info));
   }
@@ -380,7 +380,7 @@ class Info {
   }
 }
 
-@ComponentV2() final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct SubComponent extends CustomComponentV2<SubComponent, __Options_SubComponent> {
   public __initializeStruct(initializers: (__Options_SubComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_region = STATE_MGMT_FACTORY.makeParam<Region>(this, "region", (initializers!.region as Region));
   }
@@ -435,21 +435,21 @@ class Info {
   }
 }
 
-@ComponentV2() interface __Options_Index {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
   
 }
 
-@ComponentV2() interface __Options_MiddleComponent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MiddleComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
   
 }
 
-@ComponentV2() interface __Options_SubComponent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_SubComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}

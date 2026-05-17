@@ -334,6 +334,9 @@ export enum StateManagementTypes {
     REUSE_OBJECT = 'ReuseObject',
     I_MONITOR = 'IMonitor',
     REGISTER_ACTIVE_AND_INACTIVE_FUNC = 'registerActiveAndInactiveCallback',
+    IGLOBAL_REUSE_POOL_VARIABLE = 'IGlobalReusePoolVariable',
+    MAKE_GLOBAL_REUSE_POOL = 'makeGlobalReusePool',
+    REUSE_POOL_OWNERSHIP = 'ReusePoolOwnership',
 }
 
 export enum AnimationNames {
@@ -508,7 +511,9 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.COMPONENT_RECYCLE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_ACTIVE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_INACTIVE, [StateManagementTypes.UI_UTILS]],
-    [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
+    [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]],
+    [StructDecoratorNames.COMPONENT, [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, StateManagementTypes.REUSE_POOL_OWNERSHIP]],
+    [StructDecoratorNames.COMPONENT_V2, [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, StateManagementTypes.REUSE_POOL_OWNERSHIP]],
 ]);
 
 /**
@@ -520,6 +525,7 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [StateManagementTypes.STORAGE_LINK_STATE, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, 'arkui.stateManagement.decorator'],
     [StateManagementTypes.UI_UTILS, 'arkui.stateManagement.utils'],
     [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common'],
 ]);
@@ -600,6 +606,13 @@ export enum LANGUAGE_VERSION {
 export enum ReuseNames {
     REUSE_ID = 'reuseId',
     REUSE_OPTIONS = 'ReuseOptions'
+}
+
+export enum GlobalReusePoolNames {
+    REUSE_POOL = 'reusePool',
+    POOL_ACCEPTS = 'poolAccepts',
+    BACKING_REUSE_POOL = '__backing_reusePool',
+    REUSE_POOL_OWNERSHIP_OFF = 'OFF',
 }
 
 export enum EnvInternalProperty {

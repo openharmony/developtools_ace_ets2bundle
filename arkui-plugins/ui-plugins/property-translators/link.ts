@@ -126,6 +126,7 @@ export class LinkCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
@@ -138,6 +139,18 @@ export class LinkCachedTranslator extends PropertyCachedTranslator {
         metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithLinkProperty.bind(this)(newName, originalName, metadata);
+    }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const initializerAccess = arkts.factory.createTSNonNullExpression(
+            factory.createNonNullOrOptionalMemberExpression(
+                CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+                newName,
+                false,
+                true
+            )
+        );
+        return factory.createResetOnReuseStmt(newName, initializerAccess);
     }
 }
 

@@ -61,7 +61,7 @@ import { Consumer as Consumer } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_consumerVar1 = STATE_MGMT_FACTORY.makeConsumer<string>(this, "consumerVar1", "consumerVar1", "propVar1");
     this.__backing_consumerVar2 = STATE_MGMT_FACTORY.makeConsumer<number>(this, "consumerVar2", "consumerVar2", 50);
@@ -147,7 +147,7 @@ function main() {}
 
 }
 
-@ComponentV2() interface __Options_Parent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}

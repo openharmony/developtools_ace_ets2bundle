@@ -122,7 +122,7 @@ final class LinkType extends BaseEnum<int> {
 
 }
 
-@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
@@ -175,6 +175,20 @@ final class LinkType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_linkVar1!.resetOnReuse(initializers!.__backing_linkVar1!);
+    this.__backing_linkVar2!.resetOnReuse(initializers!.__backing_linkVar2!);
+    this.__backing_linkVar3!.resetOnReuse(initializers!.__backing_linkVar3!);
+    this.__backing_linkVar4!.resetOnReuse(initializers!.__backing_linkVar4!);
+    this.__backing_linkVar5!.resetOnReuse(initializers!.__backing_linkVar5!);
+    this.__backing_linkVar6!.resetOnReuse(initializers!.__backing_linkVar6!);
+    this.__backing_linkVar7!.resetOnReuse(initializers!.__backing_linkVar7!);
+    this.__backing_linkVar8!.resetOnReuse(initializers!.__backing_linkVar8!);
+    this.__backing_linkVar9!.resetOnReuse(initializers!.__backing_linkVar9!);
+    this.__backing_linkVar10!.resetOnReuse(initializers!.__backing_linkVar10!);
+    this.__backing_linkVar11!.resetOnReuse(initializers!.__backing_linkVar11!);
+    this.__backing_linkVar12!.resetOnReuse(initializers!.__backing_linkVar12!);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -317,7 +331,7 @@ final class LinkType extends BaseEnum<int> {
 
 }
 
-@Component() interface __Options_Parent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}

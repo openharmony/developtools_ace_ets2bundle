@@ -61,7 +61,7 @@ import { Local as Local } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localVar1 = STATE_MGMT_FACTORY.makeLocal<string>(this, "localVar1", "stateVar1");
     this.__backing_localVar2 = STATE_MGMT_FACTORY.makeLocal<number>(this, "localVar2", 50);
@@ -153,7 +153,7 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Parent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}

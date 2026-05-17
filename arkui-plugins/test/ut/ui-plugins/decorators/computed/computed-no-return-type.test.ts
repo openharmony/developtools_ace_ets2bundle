@@ -157,7 +157,7 @@ function main() {}
   }
 }
 
-@ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__computed_fullName.setOwner(this);
     this.__computed_num5.setOwner(this);
@@ -249,7 +249,7 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Index {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'firstName', '(string | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_firstName', '(ILocalDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_firstName', '(boolean | undefined)')}

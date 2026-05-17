@@ -120,7 +120,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))));
@@ -149,6 +149,20 @@ final class StateType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_stateVar1!.resetOnReuse(new Per(6));
+    this.__backing_stateVar2!.resetOnReuse(new Array<number>(3, 6, 8));
+    this.__backing_stateVar3!.resetOnReuse(StateType.TYPE3);
+    this.__backing_stateVar4!.resetOnReuse(new Set<string>(new Array<string>("aa", "bb")));
+    this.__backing_stateVar5!.resetOnReuse([true, false]);
+    this.__backing_stateVar6!.resetOnReuse(new Array<Per>(new Per(7), new Per(11)));
+    this.__backing_stateVar7!.resetOnReuse([new Per(7), new Per(11)]);
+    this.__backing_stateVar8!.resetOnReuse(((sr: string) => {}));
+    this.__backing_stateVar9!.resetOnReuse(new Date("2025-4-23"));
+    this.__backing_stateVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
+    this.__backing_stateVar11!.resetOnReuse(0.0);
+    this.__backing_stateVar12!.resetOnReuse(new Per(6));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -292,7 +306,7 @@ final class StateType extends BaseEnum<int> {
   }
 }
 
-@Component() interface __Options_Parent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Per | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}

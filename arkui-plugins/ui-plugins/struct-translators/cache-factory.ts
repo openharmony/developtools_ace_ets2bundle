@@ -36,6 +36,7 @@ import {
     DecoratorNames,
     Dollars,
     INNER_COMPONENT_NON_SKIP_DECL_NAMES,
+    GlobalReusePoolNames,
     NodeCacheNames,
     ObservedNames,
     RESOURCE_TYPE,
@@ -109,13 +110,19 @@ export function collectRewritedStructMethodInfo(
     };
 }
 
+type GlobalReusePoolInfo = {
+    reusePoolValue: arkts.Expression;
+    poolAcceptsValue: arkts.Expression;
+};
+
 export class CacheFactory {
     /**
      * create `__initializeStruct` method.
      */
     static createInitializeStruct(
         optionsTypeName: string,
-        metadata: CustomComponentRecordInfo
+        metadata: CustomComponentRecordInfo,
+        reusePoolInitStmt: arkts.ExpressionStatement | undefined
     ): arkts.MethodDefinition {
         const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_INITIALIZE_STRUCT
@@ -126,6 +133,7 @@ export class CacheFactory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!metadata.isDecl && !!metadata.name) {
             body = arkts.factory.createBlock([
+                ...(reusePoolInitStmt ? [reusePoolInitStmt] : []),
                 ...ComputedCache.getInstance().getCachedComputed(metadata.name),
                 ...PropertyCache.getInstance().getInitializeBody(metadata.name),
                 ...MonitorCache.getInstance().getCachedMonitors(metadata.name),
@@ -288,14 +296,53 @@ export class CacheFactory {
         return resetMethod;
     }
 
+    static extractGlobalReusePoolInfoFromMetadata(
+        definition: arkts.ClassDefinition | undefined,
+        metadata: CustomComponentRecordInfo
+    ): GlobalReusePoolInfo | undefined {
+        if (!definition || !metadata.annotationInfo?.hasComponent && !metadata.annotationInfo?.hasComponentV2) {
+            return undefined;
+        }
+        const anno = findDecoratorByName(definition, StructDecoratorNames.COMPONENT) ??
+            findDecoratorByName(definition, StructDecoratorNames.COMPONENT_V2);
+        if (!anno) {
+            return undefined;
+        }
+        const annoName = (anno.expr && arkts.isIdentifier(anno.expr)) ? anno.expr.name : undefined;
+        if (annoName === undefined) {
+            return undefined;
+        }
+        const reusePoolValue = getValueInObjectAnnotation(anno, annoName, GlobalReusePoolNames.REUSE_POOL);
+        const poolAcceptsValue = getValueInObjectAnnotation(anno, annoName, GlobalReusePoolNames.POOL_ACCEPTS);
+        if (!reusePoolValue || !poolAcceptsValue) {
+            return undefined;
+        }
+        if (
+            arkts.isMemberExpression(reusePoolValue) &&
+            arkts.isIdentifier(reusePoolValue.property) &&
+            reusePoolValue.property.name === GlobalReusePoolNames.REUSE_POOL_OWNERSHIP_OFF
+        ) {
+            return undefined;
+        }
+        return { reusePoolValue, poolAcceptsValue };
+    }
+
     static collectStructPropertyRewriteStatements(
         optionsTypeName: string,
         metadata: CustomComponentRecordInfo,
-        scope: RewritedStructMethodInfo
+        scope: RewritedStructMethodInfo,
+        globalReusePoolInfo? : GlobalReusePoolInfo | undefined
     ): arkts.AstNode[] {
         const collections = [];
+        if (globalReusePoolInfo) {
+            collections.push(StructFactory.createGlobalReusePoolBackingField());
+        }
         if (!scope.hasInitializeStruct) {
-            collections.push(this.createInitializeStruct(optionsTypeName, metadata));
+            const reusePoolInitStmt = globalReusePoolInfo ? StructFactory.createGlobalReusePoolInitStatement(
+                globalReusePoolInfo.reusePoolValue,
+                globalReusePoolInfo.poolAcceptsValue
+            ) : undefined;
+            collections.push(this.createInitializeStruct(optionsTypeName, metadata, reusePoolInitStmt));
         }
         if (!scope.hasUpdateStruct) {
             collections.push(this.createUpdateStruct(optionsTypeName, metadata));
@@ -303,7 +350,8 @@ export class CacheFactory {
         if (!scope.hasToRecord && !!metadata.annotationInfo?.hasReusable) {
             collections.push(this.createToRecord(optionsTypeName, metadata));
         }
-        if (!scope.hasResetStateVarsOnReuse && !!metadata.annotationInfo?.hasComponentV2) {
+        if (!scope.hasResetStateVarsOnReuse &&
+            (!!metadata.annotationInfo?.hasComponentV2 || !!metadata.annotationInfo?.hasComponent)) {
             collections.push(this.createResetStateVars(optionsTypeName, metadata));
         }
         BuilderParamClassPropertyValueCache.getInstance().updateAll().reset();
@@ -346,10 +394,14 @@ export class CacheFactory {
             const [_, classOptions] = getTypeParamsFromClassDecl(node);
             optionsTypeName = getTypeNameFromTypeParameter(classOptions);
         }
+        const globalReusePoolInfo = structType === StructType.STRUCT && !metadata.isDecl && !!metadata.name
+            ? this.extractGlobalReusePoolInfoFromMetadata(definition, metadata)
+            : undefined;
         const newStatements = this.collectStructPropertyRewriteStatements(
             optionsTypeName ?? getCustomComponentOptionsName(metadata.name),
             metadata,
-            scopeInfo
+            scopeInfo,
+            globalReusePoolInfo
         );
         if (structType === StructType.STRUCT) {
             const useSharedStorage = !!metadata.annotationInfo?.hasEntry

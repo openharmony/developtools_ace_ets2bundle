@@ -138,6 +138,7 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
@@ -150,6 +151,38 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
         metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
+    }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const alias: string = getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName;
+        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(alias)];
+        if (this.hasWatch) {
+            const watchStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.WATCH);
+            if (watchStr) {
+                args.push(factory.createWatchCallback(watchStr));
+            }
+        }
+        const defaultValue = this.property.value?.clone();
+        if (!!defaultValue) {
+            if (args.length === 1) {
+                args.push(arkts.factory.createUndefinedLiteral());
+            }
+            args.push(arkts.factory.createObjectExpression(
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                [arkts.factory.createProperty(
+                    arkts.factory.createIdentifier('defaultValue'),
+                    defaultValue
+                )],
+                true
+            ));
+        }
+        if (this.isMemoShouldUpdate) {
+            if (!!defaultValue) {
+                const isFunctionValue = arkts.isArrowFunctionExpression(defaultValue);
+                PropertyValueCache.getInstance().collect({ value: defaultValue, shouldCache: this.isMemoCached && isFunctionValue });
+            }
+        }
+        return factory.createResetOnReuseStmtWithArgs(newName, args);
     }
 }
 

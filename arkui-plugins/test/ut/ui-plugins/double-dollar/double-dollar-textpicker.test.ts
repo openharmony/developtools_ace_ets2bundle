@@ -77,7 +77,7 @@ import { State as State } from "@ohos.arkui.stateManagement";
 function main() {}
 
 
-@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_tt = STATE_MGMT_FACTORY.makeState<string>(this, "tt", ((({let gensym___111800258 = initializers;
     (((gensym___111800258) == (null)) ? undefined : gensym___111800258.tt)})) ?? ("state var")));
@@ -92,6 +92,12 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_tt!.resetOnReuse("state var");
+    this.__backing_index!.resetOnReuse(1);
+    this.__backing_select!.resetOnReuse(0);
+    this.__backing_selectArr!.resetOnReuse([0, 1, 2]);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -214,7 +220,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_tt', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_tt', '(boolean | undefined)')}

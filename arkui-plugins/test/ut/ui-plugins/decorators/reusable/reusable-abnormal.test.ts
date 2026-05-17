@@ -77,7 +77,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/reusable/reusable-abnormal",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -126,7 +126,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Component() final struct ComA extends CustomComponent<ComA, __Options_ComA> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ComA extends CustomComponent<ComA, __Options_ComA> {
   public __initializeStruct(initializers: (__Options_ComA | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ComA | undefined)): void {}
@@ -157,7 +157,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Reusable() @Component() final struct ComB extends CustomComponent<ComB, __Options_ComB> {
+@Reusable() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ComB extends CustomComponent<ComB, __Options_ComB> {
   public __initializeStruct(initializers: (__Options_ComB | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ComB | undefined)): void {}
@@ -193,7 +193,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@ReusableV2() @ComponentV2() final struct ComC extends CustomComponentV2<ComC, __Options_ComC> {
+@ReusableV2() @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ComC extends CustomComponentV2<ComC, __Options_ComC> {
   public __initializeStruct(initializers: (__Options_ComC | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ComC | undefined)): void {}
@@ -241,19 +241,19 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
   
 }
 
-@Component() interface __Options_ComA {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ComA {
   
 }
 
-@Reusable() @Component() interface __Options_ComB {
+@Reusable() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ComB {
   
 }
 
-@ReusableV2() @ComponentV2() interface __Options_ComC {
+@ReusableV2() @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ComC {
   
 }
 

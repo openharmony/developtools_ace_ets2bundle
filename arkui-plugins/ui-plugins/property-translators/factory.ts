@@ -975,6 +975,20 @@ export class factory {
         );
     }
 
+    static createResetOnReuseStmtWithArgs(newName: string, args: arkts.Expression[]): arkts.ExpressionStatement {
+        const callee = arkts.factory.createMemberExpression(
+            generateThisBacking(newName, false, true),
+            arkts.factory.createIdentifier(StateManagementTypes.RESET_ON_REUSE),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createCallExpression(callee, undefined, args)
+        );
+    }
+
     static generateSyncMonitorAssignment(
         monitorItem: string[] | undefined,
         originalName: string,

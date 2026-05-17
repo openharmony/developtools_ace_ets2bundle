@@ -58,13 +58,14 @@ import { Component as Component, Builder as Builder } from "@ohos.arkui.componen
 function main() {}
 
 
-@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderArr = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderArr)})) ?? (new Array<@Builder() ((p1: string, p2: number)=> void)>()));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -108,7 +109,7 @@ function main() {}
 
 }
 
-@Component() interface __Options_Child {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'builderArr', '(Array<@Builder() ((p1: string, p2: number)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderArr', '(boolean | undefined)')}
 }`;

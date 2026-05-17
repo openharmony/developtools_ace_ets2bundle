@@ -60,6 +60,7 @@ import {
     LogType,
     APIVersions,
     APIComparison,
+    StateManagementTypes,
 } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
 import { MetaDataCollector } from '../common/metadata-collector';
@@ -251,9 +252,11 @@ export class ComponentTransformer extends AbstractVisitor {
     insertComponentImport(): void {
         if (this.componentType.hasComponent) {
             this._collectImportFromCustomComponentSource(CustomComponentNames.COMPONENT_CLASS_NAME);
+            this._collectImportFromCustomComponentSource(StateManagementTypes.REUSE_POOL_OWNERSHIP);
         }
         if (this.componentType.hasComponentV2) {
             this._collectImportFromCustomComponentSource(CustomComponentNames.COMPONENT_V2_CLASS_NAME);
+            this._collectImportFromCustomComponentSource(StateManagementTypes.REUSE_POOL_OWNERSHIP);
         }
         if (this.componentType.hasCustomDialog) {
             this._collectImportFromCustomComponentSource(CustomComponentNames.BASE_CUSTOM_DIALOG_NAME);

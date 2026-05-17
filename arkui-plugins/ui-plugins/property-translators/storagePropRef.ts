@@ -121,6 +121,7 @@ export class StoragePropRefCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
@@ -133,6 +134,10 @@ export class StoragePropRefCachedTranslator extends PropertyCachedTranslator {
         metadata?: arkts.AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithStoragePropRefProperty.bind(this)(newName, originalName, metadata);
+    }
+
+    resetOnReuse(newName: string): arkts.ExpressionStatement {
+        return factory.createResetOnReuseStmt(newName);
     }
 }
 

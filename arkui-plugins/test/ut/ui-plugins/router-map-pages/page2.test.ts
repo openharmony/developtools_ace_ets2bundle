@@ -66,13 +66,14 @@ function builderTwo() {
   Page2._invoke(undefined, undefined, undefined, undefined, undefined);
 }
 
-@Component() final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Page2 extends CustomComponent<Page2, __Options_Page2> {
   public __initializeStruct(initializers: (__Options_Page2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = ((({let gensym___117212394 = initializers;
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World"));
   }
   
   public __updateStruct(initializers: (__Options_Page2 | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Page2 | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Page2)=> void) | undefined), initializers: ((()=> __Options_Page2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -123,7 +124,7 @@ class __NavigationBuilderRegisterClass {
   }
 }
 
-@Component() interface __Options_Page2 {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Page2 {
   get message(): (string | undefined) {
   return undefined;
   }

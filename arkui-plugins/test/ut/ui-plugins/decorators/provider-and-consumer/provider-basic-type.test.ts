@@ -61,7 +61,7 @@ import { Provider as Provider } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_providerVar1 = STATE_MGMT_FACTORY.makeProvider<string>(this, "providerVar1", "providerVar1", "propVar1");
     this.__backing_providerVar2 = STATE_MGMT_FACTORY.makeProvider<number>(this, "providerVar2", "providerVar2", 50);
@@ -146,7 +146,7 @@ function main() {}
     }
   }
 
-@ComponentV2() interface __Options_Parent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar1', '(IProviderDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar1', '(boolean | undefined)')}

@@ -186,7 +186,7 @@ import { Consume as Consume } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<string>(this, "conVar1", "conVar1");
     this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<number>(this, "conVar2", "conVar2");
@@ -228,6 +228,45 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
+    this.__backing_conVar1!.resetOnReuse("conVar1");
+    this.__backing_conVar2!.resetOnReuse("conVar2");
+    this.__backing_conVar3!.resetOnReuse("conVar3");
+    this.__backing_conVar4!.resetOnReuse("conVar4");
+    this.__backing_conVar5!.resetOnReuse("conVar5");
+    this.__backing_conVar6!.resetOnReuse("conVar6");
+    this.__backing_conVar7!.resetOnReuse("conVar7");
+    this.__backing_conVar8!.resetOnReuse("conVar8", undefined, {
+defaultValue: undefined,
+    });
+    this.__backing_conVar9!.resetOnReuse("conVar9", undefined, {
+defaultValue: null,
+    });
+    this.__backing_conVar10!.resetOnReuse("conVar10", undefined, {
+defaultValue: null,
+    });
+    this.__backing_conVar11!.resetOnReuse("conVar11", undefined, {
+defaultValue: undefined,
+    });
+    this.__backing_conVar12!.resetOnReuse("a", undefined, {
+defaultValue: undefined,
+    });
+    this.__backing_conVar13!.resetOnReuse("b", undefined, {
+defaultValue: "hello",
+    });
+    this.__backing_conVar14!.resetOnReuse("c", undefined, {
+defaultValue: true,
+    });
+    this.__backing_conVar15!.resetOnReuse("d", undefined, {
+defaultValue: null,
+    });
+    this.__backing_conVar16!.resetOnReuse("e", undefined, {
+defaultValue: undefined,
+    });
+    this.__backing_conVar17!.resetOnReuse("f", undefined, {
+defaultValue: 20,
+    });
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -404,7 +443,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_PropParent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}

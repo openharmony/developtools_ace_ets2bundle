@@ -80,7 +80,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/style-optimization",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_StyleOptimization | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_StyleOptimization | undefined)): void {}
@@ -131,7 +131,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_StyleOptimization {
   
 }
 `;
@@ -177,7 +177,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/style-optimization",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_StyleOptimization | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_StyleOptimization | undefined)): void {}
@@ -273,7 +273,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_StyleOptimization {
   
 }
 `;

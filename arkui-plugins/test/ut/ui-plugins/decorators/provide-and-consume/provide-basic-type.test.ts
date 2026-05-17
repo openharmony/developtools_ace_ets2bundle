@@ -61,7 +61,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
@@ -100,6 +100,25 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
+    this.__backing_provideVar1!.resetOnReuse("propVar1");
+    this.__backing_provideVar2!.resetOnReuse(50);
+    this.__backing_provideVar3!.resetOnReuse(true);
+    this.__backing_provideVar4!.resetOnReuse(undefined);
+    this.__backing_provideVar5!.resetOnReuse(null);
+    this.__backing_provideVar6!.resetOnReuse("hello");
+    this.__backing_provideVar7!.resetOnReuse(null);
+    this.__backing_provideVar8!.resetOnReuse(10);
+    this.__backing_provideVar9!.resetOnReuse("hello");
+    this.__backing_provideVar10!.resetOnReuse(10);
+    this.__backing_provideVar11!.resetOnReuse(undefined);
+    this.__backing_provideVar12!.resetOnReuse(15);
+    this.__backing_provideVar13!.resetOnReuse("prop13");
+    this.__backing_provideVar14!.resetOnReuse(false);
+    this.__backing_provideVar15!.resetOnReuse(undefined);
+    this.__backing_provideVar16!.resetOnReuse(20);
+    this.__backing_provideVar17!.resetOnReuse(true);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
@@ -291,7 +310,7 @@ function main() {}
 
 }
 
-@Component() interface __Options_PropParent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)', [dumpAnnotation('Provide', { alias: "provideVar1", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}
