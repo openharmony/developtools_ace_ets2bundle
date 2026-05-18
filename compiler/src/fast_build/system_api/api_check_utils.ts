@@ -100,6 +100,7 @@ import {
   SINCE_LEVEL_CONFIG,
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
+  APIAVAILABLE_TS_FILE_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
   ApiAvailableResult,
@@ -2521,12 +2522,6 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
-  const apiAvailableRegex = /\b\.apiAvailable\b/g;
-  let nodeText: string = node.getText() || node.getFullText();
-
-  if (!apiAvailableRegex.test(nodeText)) {
-    return result;
-  }
 
   if (!ts.isCallExpression(node)) {
     return result;
@@ -2535,12 +2530,29 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   if (!node.expression || (ts.isPropertyAccessExpression(node.expression) && node.expression.name?.getText() !== SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO)) {
     return result;
   }
+  
+  if (!node.arguments || node.arguments.length !== 1) {
+    return result;
+  }
 
   if (!isApiAvailableStatement(node)) {
     return result;
   }
-  
-  if (!node.arguments || node.arguments.length !== 1) {
+
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  if (sourceFile && sourceFile.fileName) {
+    const fileName: string = sourceFile.fileName;
+    if (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) {
+      result.valid = false;
+      result.message = APIAVAILABLE_TS_FILE_ERROR;
+      return result;
+    }
+  }
+
+  const apiAvailableRegex = /\.apiAvailable\b/g;
+  let nodeText: string = node.getText() || node.getFullText();
+  if (!apiAvailableRegex.test(nodeText)) {
+    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
     return result;
   }
