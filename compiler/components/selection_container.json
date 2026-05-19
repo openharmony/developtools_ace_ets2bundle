@@ -1,0 +1,15 @@
+{
+  "name": "SelectionContainer",
+  "attrs": [
+    "copyOption",
+    "caretColor",
+    "selectedBackgroundColor",
+    "enableHapticFeedback",
+    "textJoinStyle",
+    "bindSelectionMenu",
+    "editMenuOptions",
+    "onTextSelectionChange",
+    "onWillCopy",
+    "onCopy"
+  ]
+}

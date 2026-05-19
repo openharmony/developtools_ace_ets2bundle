@@ -300,7 +300,8 @@
         "UnionEffectContainer",
         "UIPickerComponent",
         "DistortionComponent",
-        "LazyColumnLayout"
+        "LazyColumnLayout",
+        "SelectionContainer"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -980,6 +981,11 @@
             "type": "LazyColumnLayoutAttribute",
             "instance": "LazyColumnLayoutInstance"
           },
+          {
+ 	          "name": "SelectionContainer",
+ 	          "type": "SelectionContainerAttribute",
+ 	          "instance": "SelectionContainerInstance"
+ 	        },
         ]
       },
       "styles": {
