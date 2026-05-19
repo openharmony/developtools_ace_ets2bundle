@@ -35,6 +35,7 @@ import {
     CustomDialogNames,
     DecoratorNames,
     Dollars,
+    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     NodeCacheNames,
     ObservedNames,
     RESOURCE_TYPE,
@@ -614,7 +615,14 @@ export class CacheFactory {
                 }
                 definition.setBody([...definition.body, ...newStatements]);
                 arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(definition);
-            }
+            },
+            { 
+                ignoreCompare: 
+                    InnerComponentInfoCache.getInstance().isCollected() && 
+                    InnerComponentInfoCache.getInstance().getAllComponentNames().filter(
+                        name => INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(name)
+                    ).length > 0
+                }
         );
         return node;
     }
@@ -916,7 +924,8 @@ export class CacheFactory {
                     return;
                 }
                 _node = BuilderLambdaCacheFactory.addDeclaredSetMethodsInAttributeInterface(node, componentName);
-            }
+            },
+            { ignoreCompare: InnerComponentInfoCache.getInstance().isCollected() }
         );
         return _node;
     }

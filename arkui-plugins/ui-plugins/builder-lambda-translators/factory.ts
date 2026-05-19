@@ -77,6 +77,7 @@ import {
     BuilderLambdaNames,
     APIVersions,
     APIComparison,
+    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { GenSymGenerator } from '../../common/gensym-generator';
@@ -404,7 +405,8 @@ export class factory {
             { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
             (sdkVersion: APIVersions) => {
                 shouldApplyAttribute = !!isFromCommonMethod
-            }
+            },
+            { ignoreCompare: true }
         );
         return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute }, sourceNode);
     }
@@ -1005,7 +1007,8 @@ export class factory {
                 if (isFunctionCall && !isCustomFunctionCall) {
                     ComponentAttributeCache.getInstance().collect(node);
                 }
-            }
+            },
+            { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(nameNode.name) }
         )
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
