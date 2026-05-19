@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents, RouterInfo } from './plugin-context';
+import { ConsistentResourceMap, ProjectConfig, ResourceInfo, UIComponents, RouterInfo, LoaderJson } from './plugin-context';
 import { ImportInfo, collectFileImportsByProgram } from './import-info';
 
 export class MetaDataCollector {
@@ -24,6 +24,7 @@ export class MetaDataCollector {
     public fileAbsName: string | undefined;
     public externalSourceName: string | undefined;
     public routerInfo: Map<string, RouterInfo[]> = new Map<string, RouterInfo[]>();
+    public loaderInfo: Partial<LoaderJson> | undefined;
     public componentsInfo: UIComponents | undefined;
     public consistentResourceMap: ConsistentResourceMap | undefined;
     public mainPageNames: string[] | undefined;
@@ -59,6 +60,10 @@ export class MetaDataCollector {
 
     setRouterInfo(routerInfo: Map<string, RouterInfo[]>): this {
         this.routerInfo = routerInfo;
+        return this;
+    }
+    setLoaderInfo(aceBuildJson: Partial<LoaderJson>): this {
+        this.loaderInfo = aceBuildJson;
         return this;
     }
 

@@ -1273,6 +1273,38 @@ export class InsightIntentHandler {
             this.processMethodAnnotations(node.definition.body, node);
         }
     }
+    private mergeHarData(harIntentDataObj: object): object {
+        let mergedData: object = {
+            extractInsightIntents: []
+        };
+        Object.keys(harIntentDataObj || {})?.forEach(harName => {
+        if (harIntentDataObj[harName].extractInsightIntents) {
+            harIntentDataObj[harName].extractInsightIntents.forEach(intentObj => {
+                intentObj.moduleName = this.projectConfig?.moduleName;
+                intentObj.bundleName = this.projectConfig?.bundleName;
+                mergedData.extractInsightIntents?.push(intentObj);
+            });
+        }
+        });
+        return mergedData;
+    }
+    private getHarData(): object | undefined {
+        const harIntentDataObj: object = {};
+        const { byteCodeHarInfo } = MetaDataCollector.getInstance().loaderInfo!;
+        Object.keys(byteCodeHarInfo || {})?.forEach((harName) => {
+            let intentDataSourcePath: string = byteCodeHarInfo[harName].insightIntent as string;
+            let harIntentData: object = {};
+            if (fs.existsSync(intentDataSourcePath)) {
+                harIntentData = JSON.parse(fs.readFileSync(intentDataSourcePath, 'utf8')) as object;
+            }
+            if (Object.keys(harIntentData).length !== 0) {
+                Object.assign(harIntentDataObj, {
+                    [harName]: harIntentData
+                });
+            }
+        });
+        return harIntentDataObj;
+    }
     /**
      * 处理类级别的装饰器
      */
@@ -1283,6 +1315,8 @@ export class InsightIntentHandler {
             arkts.isIdentifier(anno.expr) && 
             anno.expr.name.startsWith('InsightIntent')
         );
+        // 获取har 数据
+        this.getFinalHarData()
         if (!hasInsightDecorator) {
             return;
         }
@@ -1300,6 +1334,10 @@ export class InsightIntentHandler {
 
             try {
                 const intentData = handler(anno, classNode);
+                const intentDataAll = this.collector.getAllIntents()
+                intentDataAll.forEach(item => {
+                    this.intentNames.add(item.intentName)
+                })
                 if (intentData) {
                     // 检查 intentName 唯一性
                     if ('intentName' in intentData && intentData.intentName) {
@@ -1330,6 +1368,8 @@ export class InsightIntentHandler {
      * 处理方法级别的装饰器（如 @InsightIntentFunctionMethod）
      */
     private processMethodAnnotations(body: readonly arkts.AstNode[], classNode: arkts.ClassDeclaration): void {
+        // 获取har 数据
+        this.getFinalHarData()
         for (const member of body) {
             // 获取当前成员的装饰器列表
             // 注意：不同成员类型的装饰器存放位置可能不同，这里主要关注 MethodDefinition 和 ClassProperty
@@ -1381,6 +1421,10 @@ export class InsightIntentHandler {
                     }
                     try {
                         const intentData = this.extractFunctionMethodIntentDataFromMethod(anno, methodDef, classNode);
+                        const intentDataAll = this.collector.getAllIntents()
+                        intentDataAll.forEach(item => {
+                            this.intentNames.add(item.intentName)
+                        })
                         if (intentData) {
                             // 检查 intentName 唯一性
                             if ('intentName' in intentData && intentData.intentName) {
@@ -1719,19 +1763,25 @@ export class InsightIntentHandler {
     }
     private extractPageIntentData(annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration): InsightIntentData | null {
         const baseData = this.extractBaseIntentData(annotation, classNode, '@InsightIntentPage');
-        if (!baseData) return null;
+        if (!baseData) {
+            return null
+        };
 
         const data: InsightIntentPageData = { ...baseData, pagePath: '' };
         const properties = annotation.properties;
         
         for (const prop of properties) {
-            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) continue;
+            if (!arkts.isClassProperty(prop) || !arkts.isIdentifier(prop.key)) {
+                continue;
+            }
             const propName = prop.key.name;
             const propValue = prop.value;
-            if (!propValue) continue;
+            if (!propValue) {
+                continue;
+            }
             switch (propName) {
                 case 'pagePath':
-                    const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode);
+                    const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode, baseData.packageName as string);
                     if (validatedPath === null) {
                         return null; 
                     }
@@ -3193,6 +3243,51 @@ export class InsightIntentHandler {
                 return anno.expr.name === INSIGHT_INTENT_FUNCTION_DECORATOR;
             }
             return false;
+        });
+    }
+    /**
+     * 获取har里面的数据
+     */
+    private getFinalHarData() {
+        const harData = this.getHarData() as object;
+        if (!harData || Object.keys(harData).length === 0) {
+            return;
+        }
+        let exData = this.mergeHarData(harData as object);
+        if (!exData || !Array.isArray(exData.extractInsightIntents)) {
+            return;
+        }
+        exData.extractInsightIntents.forEach(item => {
+            // 1. 提取 entities
+            if (item.entities && Array.isArray(item.entities) && item.entities.length > 0) {
+                const entities = item.entities;
+                delete item.entities;
+                
+                // 注册 Entity，并手动建立 Owner 关系
+                entities.forEach(entity => {
+                    if (!entity.decoratorType) {
+                        entity.decoratorType = '@InsightIntentEntity';
+                    }
+                    // 注册 Entity
+                    this.collector.addIntent(entity);
+                    // 建立 Intent 和 Entity 的归属关系
+                    if (item.intentName && entity.className) {
+                        this.collector.addEntityOwner(
+                            item.intentName, 
+                            entity.className, 
+                            item.decoratorFile
+                        );
+                    }
+                    if (entity.className && entity.parentClassName) {
+                        this.collector.addEntityInheritance(
+                            entity.className,
+                            entity.parentClassName,
+                            entity.decoratorFile
+                        );
+                    }
+                });
+            }
+            this.collector.addIntent(item);
         });
     }
 }
