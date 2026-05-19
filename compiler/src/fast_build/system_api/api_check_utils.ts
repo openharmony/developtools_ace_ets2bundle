@@ -28,6 +28,7 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
+  fileApiAvailableCheckPlugin,
   externalApiCheckerMap,
   crossplatformExternalModule,
   crossplatformDepsConfig
@@ -2512,6 +2513,30 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
+  }
+
+  if (!node) {
+    return result;
+  }
+
+  const sourceFileName = node.getSourceFile()?.fileName;
+  const sourceFileText = node.getSourceFile()?.text;
+  // Check apiAvailable info cache
+  if (fileApiAvailableCheckPlugin.has(sourceFileName)) {
+    const hasAvailale = fileApiAvailableCheckPlugin.get(sourceFileName)!;
+    if (!hasAvailale) {
+      return result;
+    }
+  } else {
+    try {
+      const availableContentChecker = /\.apiAvailable/g.test(sourceFileText);
+      fileApiAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
+      if (!availableContentChecker) {
+        return result;
+      }
+    } catch (error) {
+      return result;
+    }
   }
 
   if (!ts.isCallExpression(node)) {
