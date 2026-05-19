@@ -16,7 +16,7 @@
 import ts from 'typescript';
 import { BaseWarningSuppressor } from './base_warning_suppressor';
 import { SYSCAP_TAG_CHECK_NAME } from '../api_check_define';
-import { CanIUseValidator } from '../api_validator/api_validate_node';
+import { CanIUseValidator } from './api_validate_node';
 
 
 /**

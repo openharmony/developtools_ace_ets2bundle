@@ -83,9 +83,6 @@ def do_build(build_cmd, uglify_cmd, copy_json_cmd, build_declarations_file_cmd, 
 
 def main():
     options = parse_args()
-    if options.sdk_build_arkts == 'true':
-        options.ets_loader_src_dir = os.path.join(options.ets_loader_src_dir, 'interop/src')
-        options.copy_src_dir = os.path.join(options.copy_src_dir, 'interop/src')
     
     build_cmd = [
         options.node, options.babel_js, options.ets_loader_src_dir
@@ -101,9 +98,6 @@ def main():
 
     copy_json_cmd = [options.node, options.copy_json_files_js, options.copy_src_dir, options.copy_dest_dir]
     depfile_deps.append(options.copy_json_files_js)
-    if options.sdk_build_arkts == 'false':
-        build_cmd.extend(['--ignore', os.path.join(options.ets_loader_src_dir, 'interop')])
-        copy_json_cmd.extend(['--ignore', os.path.join(options.copy_src_dir, 'interop')])
 
     build_declarations_file_cmd = [
         options.node,

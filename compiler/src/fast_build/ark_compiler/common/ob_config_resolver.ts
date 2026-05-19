@@ -68,7 +68,7 @@ import {
   EXTNAME_TS,
  } from './ark_define';
 import { logger } from '../../../compile_info';
-import { MergedConfig } from '../common/ob_config_resolver';
+import { MergedConfig } from './ob_config_resolver';
 import { ModuleSourceFile } from '../module/module_source_file';
 import { readProjectAndLibsSource } from './process_ark_config';
 import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor';
@@ -126,7 +126,7 @@ export const OBF_ERR_CODE = '108';
  */
 export let obfLogger: Object = undefined;
 
-enum LoggerLevel {
+export enum LoggerLevel {
   WARN = 'warn',
   ERROR = 'error'
 }

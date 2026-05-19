@@ -49,6 +49,11 @@ import {
   ABOUT_TO_REUSE,
   COMPONENT_RERENDER_FUNCTION,
   OBSERVE_RECYCLE_COMPONENT_CREATION,
+  RECYCLEFLAG,
+  ISPRERENDER,
+  PUSH_RECYCLE_ELMTID_TO_RENDERSTACK,
+  ABOUT_TO_BE_DELETE_FUNCTION_ID__,
+  POP_RECYCLE_ELMTID_TO_RENDERSTACK,
   FUNCTION,
   COMPONENT_IF_UNDEFINED,
   COMPONENT_PARAMS_LAMBDA_FUNCTION,
@@ -64,14 +69,9 @@ import {
   COMPONENTV2_CONSUMER_DECORATOR,
   COMPONENTV2_PROVIDER_DECORATOR,
   COMPONENT_ENV_DECORATOR,
-  MAX_LINK_SOURCE_DATA_NESTING_LEVEL,
-  API_VERSION_26,
   COMPONENT_BUILDER_DECORATOR,
-  RECYCLEFLAG,
-  ISPRERENDER,
-  PUSH_RECYCLE_ELMTID_TO_RENDERSTACK,
-  ABOUT_TO_BE_DELETE_FUNCTION_ID__,
-  POP_RECYCLE_ELMTID_TO_RENDERSTACK
+  MAX_LINK_SOURCE_DATA_NESTING_LEVEL,
+  API_VERSION_26
 } from './pre_define';
 import {
   stateCollection,
@@ -145,13 +145,15 @@ import processStructComponentV2, { StructInfo, ParamDecoratorInfo } from './proc
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
 import logMessageCollection from './log_message_collection';
+import { createStaticTuple, createStaticArrowBlock, validateInteropProperty } from './process_interop_component';
+import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 let decoractorMap: Map<string, Map<string, Set<string>>>;
 
 export function processCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Statement[],
   log: LogInfo[], name: string, isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   idName: ts.Expression = undefined, builderParamsResult: BuilderParamsResult = null,
-  isInRepeatTemplate: boolean = false): void {
+  isInRepeatTemplate: boolean = false, isArkoala: boolean = false): void {
   decoractorMap = new Map(
     [[COMPONENT_STATE_DECORATOR, stateCollection],
       [COMPONENT_LINK_DECORATOR, linkCollection],
@@ -226,7 +228,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       newStatements.push(createRecycleComponent(isGlobalBuilder));
     }
     addCustomComponent(node, newStatements, customComponentNewExpression, log, name, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, isReuseComponentInV2);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, isReuseComponentInV2, isArkoala);
     if (hasChainCall && (!partialUpdateConfig.partialUpdateMode || needCommon)) {
       newStatements.push(ts.factory.createExpressionStatement(
         createFunction(ts.factory.createIdentifier(COMPONENT_COMMON),
@@ -331,12 +333,12 @@ function addCustomComponent(node: ts.ExpressionStatement, newStatements: ts.Stat
   newNode: ts.NewExpression, log: LogInfo[], name: string, componentNode: ts.CallExpression,
   isBuilder: boolean, isGlobalBuilder: boolean, isRecycleComponent: boolean,
   componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult,
-  isReuseComponentInV2: boolean): void {
+  isReuseComponentInV2: boolean, isArkoala: boolean = false): void {
   if (ts.isNewExpression(newNode)) {
     const propertyArray: ts.ObjectLiteralElementLike[] = [];
     validateCustomComponentPrams(componentNode, name, propertyArray, log, isBuilder);
     addCustomComponentStatements(node, newStatements, newNode, name, propertyArray, componentNode,
-      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2);
+      isBuilder, isGlobalBuilder, isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2, isArkoala);
   }
 }
 
@@ -344,7 +346,8 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
   newNode: ts.NewExpression, name: string, props: ts.ObjectLiteralElementLike[],
   componentNode: ts.CallExpression, isBuilder: boolean, isGlobalBuilder: boolean,
   isRecycleComponent: boolean, componentAttrInfo: ComponentAttrInfo,
-  builderParamsResult: BuilderParamsResult, log: LogInfo[], isReuseComponentInV2: boolean): void {
+  builderParamsResult: BuilderParamsResult, log: LogInfo[], isReuseComponentInV2: boolean,
+  isArkoala: boolean = false): void {
   if (!partialUpdateConfig.partialUpdateMode) {
     const id: string = componentInfo.id.toString();
     newStatements.push(createFindChildById(id, name, isBuilder), createCustomComponentIfStatement(id,
@@ -352,11 +355,12 @@ function addCustomComponentStatements(node: ts.ExpressionStatement, newStatement
       ts.factory.createObjectLiteralExpression(props, true), name));
   } else {
     newStatements.push(createCustomComponent(newNode, name, componentNode, isGlobalBuilder, isBuilder,
-      isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2));
+      isRecycleComponent, componentAttrInfo, builderParamsResult, log, isReuseComponentInV2, isArkoala));
   }
 }
 
-function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]): ts.PropertyAssignment[] {
+function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[],
+  isArkoala: boolean = false): ts.PropertyAssignment[] {
   const childParam: ts.PropertyAssignment[] = [];
   const propsAndObjectLinks: string[] = [];
   if (propCollection.get(name)) {
@@ -368,11 +372,11 @@ function createChildElmtId(node: ts.CallExpression, name: string, log: LogInfo[]
   if (projectConfig.optLazyForEach && storedFileInfo.processLazyForEach && stateCollection.get(name)) {
     propsAndObjectLinks.push(...stateCollection.get(name));
   }
-  parseChildProperties(name, node, childParam, propsAndObjectLinks, log);
+  parseChildProperties(name, node, childParam, propsAndObjectLinks, log, isArkoala);
   return childParam;
 }
 
-class ChildAndParentComponentInfo {
+export class ChildAndParentComponentInfo {
   childStructInfo: StructInfo;
   parentStructInfo: StructInfo;
   paramDecoratorMap: Map<string, ParamDecoratorInfo>;
@@ -424,10 +428,14 @@ function getUpdatePropsForV1Parent(): string[] {
 }
 
 function parseChildProperties(childName: string, node: ts.CallExpression,
-  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[]): void {
+  childParam: ts.PropertyAssignment[], propsAndObjectLinks: string[], log: LogInfo[],
+  isArkoala: boolean = false): void {
   const childAndParentComponentInfo: ChildAndParentComponentInfo =
     new ChildAndParentComponentInfo(childName, node, propsAndObjectLinks);
-  if (node.arguments[0].properties) {
+  if (isMixCompile() && validateInteropProperty(node, log, childAndParentComponentInfo, isArkoala)) {
+    return;
+  }
+  if (node.arguments[0] && ts.isObjectLiteralExpression(node.arguments[0]) && node.arguments[0].properties) {
     node.arguments[0].properties.forEach((item: ts.PropertyAssignment) => {
       if (ts.isIdentifier(item.name)) {
         const itemName: string = item.name.escapedText.toString();
@@ -450,7 +458,8 @@ function checkAssignBuilderParam(isChildV2: boolean, info: ChildAndParentCompone
   const childBuilderParamSet: Set<string> = isChildV2 ? info.childStructInfo.builderParamDecoratorSet :
     builderParamObjectCollection.get(info.childStructInfo.structName);
   if (!childBuilderParamSet || !childBuilderParamSet.has(itemName) || !item.initializer ||
-    ts.isArrowFunction(item.initializer) || checkAssignBuilderParamInBuilder(item)) {
+    ts.isArrowFunction(item.initializer) ||
+    checkAssignBuilderParamInBuilder(item)) {
     return;
   }
   if (!checkBuilderParamInitializer(item.initializer)) {
@@ -747,12 +756,15 @@ function validateInitParam(childName: string, curChildProps: Set<string>,
 function createCustomComponent(newNode: ts.NewExpression, name: string, componentNode: ts.CallExpression,
   isGlobalBuilder: boolean, isBuilder: boolean, isRecycleComponent: boolean,
   componentAttrInfo: ComponentAttrInfo, builderParamsResult: BuilderParamsResult, log: LogInfo[], 
-  isReuseComponentInV2:boolean): ts.Block {
+  isReuseComponentInV2:boolean, isArkoala = false): ts.Block {
   let componentParameter: ts.ObjectLiteralExpression;
   if (componentNode.arguments && componentNode.arguments.length) {
-    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log), true);
+    componentParameter = ts.factory.createObjectLiteralExpression(createChildElmtId(componentNode, name, log, isArkoala), true);
   } else {
     componentParameter = ts.factory.createObjectLiteralExpression([], false);
+    if (isMixCompile()) {
+      createChildElmtId(componentNode, name, log, isArkoala);
+    }
   }
   const arrowArgArr: ts.ParameterDeclaration[] = [
     ts.factory.createParameterDeclaration(undefined, undefined,
@@ -762,11 +774,13 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
       ts.factory.createIdentifier(ISINITIALRENDER)
     )
   ];
-  const arrowBolck: ts.Statement[] = [
-    projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
-    createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
-      isBuilder, isRecycleComponent, componentAttrInfo, log)
-  ];
+  const arrowBlock: ts.Statement[] = isMixCompile() && isArkoala ?
+    createStaticArrowBlock(newNode, componentParameter, name, componentNode) :
+    [
+      projectConfig.optLazyForEach && storedFileInfo.processLazyForEach ? createCollectElmtIdNode() : undefined,
+      createIfCustomComponent(newNode, componentNode, componentParameter, name, isGlobalBuilder,
+        isBuilder, isRecycleComponent, componentAttrInfo, log)
+    ];
   if (isRecycleComponent) {
     arrowArgArr.push(ts.factory.createParameterDeclaration(
       undefined, undefined, ts.factory.createIdentifier(RECYCLE_NODE),
@@ -786,18 +800,18 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     ));
   }
   if (isRecycleComponent || !partialUpdateConfig.optimizeComponent) {
-    arrowBolck.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
-    arrowBolck.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
+    arrowBlock.unshift(createViewStackProcessorStatement(STARTGETACCESSRECORDINGFOR, ELMTID));
+    arrowBlock.push(createViewStackProcessorStatement(STOPGETACCESSRECORDING));
   }
   const observeArgArr: ts.Node[] = [
     ts.factory.createArrowFunction(undefined, undefined, arrowArgArr, undefined,
       ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-      ts.factory.createBlock(arrowBolck, true))
+      ts.factory.createBlock(arrowBlock, true))
   ];
   if (isRecycleComponent) {
     componentAttrInfo.reuseId ? observeArgArr.unshift(componentAttrInfo.reuseId) :
       observeArgArr.unshift(ts.factory.createStringLiteral(name));
-    isCompatibleVersionOverTarget(26) && observeArgArr.push(ts.factory.createIdentifier(name));
+      isCompatibleVersionOverTarget(26) && observeArgArr.push(ts.factory.createIdentifier(name));
   } else if (partialUpdateConfig.optimizeComponent) {
     observeArgArr.push(componentPop(name));
   }
@@ -805,6 +819,7 @@ function createCustomComponent(newNode: ts.NewExpression, name: string, componen
     generateReuseOrCreateArgArr(componentNode, componentAttrInfo, name, newNode), true)];
   return ts.factory.createBlock(
     [
+      isMixCompile() && isArkoala ? createStaticTuple(name) : undefined,
       // reuse_2
       (isCompatibleVersionOverTarget(26) && isRecycleComponent) ?
         ts.factory.createExpressionStatement(
@@ -923,8 +938,7 @@ function componentPop(name: string): ts.ObjectLiteralExpression {
 }
 
 export function assignComponentParams(componentNode: ts.CallExpression,
-  isBuilder: boolean = false,
-  needDoubleUnderline: boolean = false,
+  isBuilder: boolean = false, needDoubleUnderline: boolean = false,
   parentName?: string,
   currentName?: string): ts.VariableStatement {
   const isParamsLambda: boolean = true;
@@ -972,8 +986,9 @@ function paramsLambdaCallBack(componentNode: ts.CallExpression): ts.Expression {
 function reWriteComponentParams(keyArray: ts.Node[], valueArray: ts.Node[],
   needDoubleUnderline: boolean = false,
   parentName?: string,
-  currentName?: string): (ts.PropertyAssignment |
-    ts.ShorthandPropertyAssignment)[] {
+  currentName?: string
+): (ts.PropertyAssignment |
+  ts.ShorthandPropertyAssignment)[] {
   const returnProperties: (ts.PropertyAssignment | ts.ShorthandPropertyAssignment)[] = [];
   keyArray.forEach((item: ts.Identifier, index: number) => {
     if (!valueArray[index]) {
@@ -1066,7 +1081,7 @@ function createIfCustomComponent(newNode: ts.NewExpression, componentNode: ts.Ca
       [ts.factory.createExpressionStatement(ts.factory.createCallExpression(
         ts.factory.createPropertyAccessExpression(isGlobalBuilder ?
           ts.factory.createParenthesizedExpression(parentConditionalExpression()) : ts.factory.createThis(),
-          ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
+        ts.factory.createIdentifier(UPDATE_STATE_VARS_OF_CHIND_BY_ELMTID)
         ), undefined,
         [ts.factory.createIdentifier(ELMTID), componentParameter]))], true)
   );

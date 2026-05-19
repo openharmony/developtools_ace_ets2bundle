@@ -171,7 +171,10 @@ import {
   STYLES_ATTRIBUTE,
   INNER_CUSTOM_LOCALBUILDER_METHOD,
   COMMON_ATTRS,
-  EXT_WHITE_LIST
+  EXT_WHITE_LIST,
+  STATIC_WRAPPED_BUILDER,
+  STATIC_BUILDER,
+  INTEROP_TRAILING_LAMBDA
 } from './component_map';
 import {
   componentCollection,
@@ -214,6 +217,9 @@ import {
   concatenateEtsOptions,
   getExternalComponentPaths
 } from './external_component_map';
+import { isStaticObjectLiteral, updateInteropObjectLiteralxpression } from './process_interop_builder';
+
+ import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 export function processComponentBuild(node: ts.MethodDeclaration,
   log: LogInfo[]): ts.MethodDeclaration {
@@ -525,6 +531,22 @@ export function processComponentChild(node: ts.Block | ts.SourceFile, newStateme
             }
             break;
           }
+          case ComponentType.arkoalaComponent: {
+            const idName: ts.Expression = checkIdInIf(item, savedParent);
+            parent = undefined;
+            if (!newsupplement.isAcceleratePreview) {
+              if (item.expression && ts.isEtsComponentExpression(item.expression) && item.expression.body) {
+                const expressionResult: ts.ExpressionStatement =
+                  processExpressionStatementChange(item, item.expression.body, log);
+                if (expressionResult) {
+                  item = expressionResult;
+                }
+              }
+              processCustomComponent(item as ts.ExpressionStatement, newStatements, log, name,
+                isBuilder, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate, true);
+            }
+            break;
+          }
           case ComponentType.forEachComponent:
             parent = undefined;
             if (!partialUpdateConfig.partialUpdateMode) {
@@ -613,30 +635,33 @@ export function transferBuilderCall(node: ts.ExpressionStatement, name: string,
   if (node.expression && ts.isCallExpression(node.expression)) {
     let newNode: ts.Expression = builderCallNode(node.expression);
     newNode.expression.questionDotToken = node.expression.questionDotToken;
-    if (node.expression.arguments && node.expression.arguments.length === 1 && ts.isObjectLiteralExpression(node.expression.arguments[0])) {
-      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
-        node.expression,
-        newNode,
-        undefined,
-        [ts.factory.createCallExpression(
-          ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+    if (node.expression.arguments && node.expression.arguments.length === 1) {
+      if (ts.isObjectLiteralExpression(node.expression.arguments[0])) {
+        return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+          node.expression,
+          newNode,
           undefined,
-          [
-            ts.factory.createStringLiteral(name),
-            traverseBuilderParams(node.expression.arguments[0], isBuilder)
-          ]
-        )]
-      ));
-    } else {
-      return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
-        node.expression,
-        newNode,
-        undefined,
-        !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
-          storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
-          [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
-      ));
+          [ts.factory.createCallExpression(
+            ts.factory.createIdentifier(BUILDER_PARAM_PROXY),
+            undefined,
+            [
+              ts.factory.createStringLiteral(name),
+              traverseBuilderParams(node.expression.arguments[0], isBuilder)
+            ]
+          )]
+        ));
+      } else if (isMixCompile() && isStaticObjectLiteral(node.expression.arguments[0])) {
+        return updateInteropObjectLiteralxpression(node.expression, newNode, name);
+      }
     }
+    return ts.factory.createExpressionStatement(ts.factory.updateCallExpression(
+      node.expression,
+      newNode,
+      undefined,
+      !(projectConfig.optLazyForEach && (storedFileInfo.processLazyForEach &&
+        storedFileInfo.lazyForEachInfo.forEachParameters || isBuilder)) ? node.expression.arguments :
+        [...node.expression.arguments, ts.factory.createNull(), ts.factory.createIdentifier(MY_IDS)]
+    ));
   }
   return undefined;
 }
@@ -647,7 +672,7 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
     node.expression.questionDotToken && node.expression.questionDotToken.kind === ts.SyntaxKind.QuestionDotToken) {
     newNode = ts.factory.createCallChain(
       ts.factory.createPropertyAccessChain(
-        node.expression,
+        isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
         node.questionDotToken,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
@@ -658,7 +683,7 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
   } else {
     newNode = ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        node.expression,
+        isStaticBuilder(node) ? transferCompatibleBuilder(node) : node.expression,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
@@ -668,6 +693,64 @@ function builderCallNode(node: ts.CallExpression): ts.Expression {
   return newNode;
 }
 
+export function isStaticBuilder(node: ts.Expression | ts.CallExpression): boolean {
+  if (!isMixCompile()) {
+    return false;
+  }
+  const builderExpression: ts.Expression = ts.isCallExpression(node) ? node.expression : node;
+  if (ts.isIdentifier(builderExpression)) {
+    return STATIC_BUILDER.has(builderExpression.escapedText.toString());
+  } else if (ts.isPropertyAccessExpression(builderExpression) && ts.isIdentifier(builderExpression.expression)) {
+    return STATIC_WRAPPED_BUILDER.has(builderExpression.expression.escapedText.toString());
+  }
+  return false;
+}
+
+function createCompatibleBuilder(expression: ts.Expression, isObjectLiteral: boolean): ts.CallExpression {
+  const block = ts.factory.createBlock([
+    ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(
+        expression,
+        undefined,
+        [ts.factory.createSpreadElement(ts.factory.createIdentifier('args'))]
+      )
+    )
+  ]);
+  const arrowFunc = ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [
+      ts.factory.createParameterDeclaration(
+        undefined,
+        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
+        ts.factory.createIdentifier('args')
+      )
+    ],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    block
+  );
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier(
+      isObjectLiteral
+        ? '__Interop_TransferCompatibleUpdatableBuilder_Internal'
+        : '__Interop_TransferCompatibleBuilder_Internal'
+    ),
+    undefined,
+    [arrowFunc]
+  );
+}
+
+export function transferCompatibleBuilder(node: ts.Expression | ts.CallExpression,
+  isObjectLiteral: boolean = false): ts.CallExpression {
+  const builderExpression: ts.Expression = ts.isCallExpression(node) ? node.expression : node;
+  const isObjectLiteralBuilder: boolean = ts.isCallExpression(node)
+    ? node.arguments.length === 1 &&
+      (ts.isObjectLiteralExpression(node.arguments[0]) ||
+        isStaticObjectLiteral(node.arguments[0]))
+    : isObjectLiteral;
+  return createCompatibleBuilder(builderExpression, isObjectLiteralBuilder);
+}
 function traverseBuilderParams(node: ts.ObjectLiteralExpression,
   isBuilder: boolean): ts.ObjectLiteralExpression {
   const properties: ts.ObjectLiteralElementLike[] = [];
@@ -789,6 +872,9 @@ function processBlockToExpression(node: ts.ExpressionStatement, nextNode: ts.Blo
     [], undefined, ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken), newBlock);
   const newPropertyAssignment:ts.PropertyAssignment = ts.factory.createPropertyAssignment(
     ts.factory.createIdentifier(childParam), arrowNode);
+  if (isMixCompile()) {
+    INTEROP_TRAILING_LAMBDA.set(childParam, arrowNode);
+  }
   // @ts-ignore
   let argumentsArray: ts.ObjectLiteralExpression[] = node.expression.arguments;
   if (argumentsArray && !argumentsArray.length) {
@@ -861,7 +947,8 @@ function processInnerComponent(node: ts.ExpressionStatement, innerCompStatements
   }
   if (partialUpdateConfig.partialUpdateMode && ItemComponents.includes(nameResult.name)) {
     processItemComponent(node, nameResult, innerCompStatements, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
-  } else if (partialUpdateConfig.partialUpdateMode && TabContentAndNavDestination.has(nameResult.name)) {
+  } else if (partialUpdateConfig.partialUpdateMode && (TabContentAndNavDestination.has(nameResult.name) ||
+    (isCompatibleVersionOver20() && !!EXT_WHITE_LIST[1] && EXT_WHITE_LIST[1] === nameResult.name))) {
     processTabAndNav(node, innerCompStatements, nameResult, log, parent, isGlobalBuilder, idName, builderParamsResult, isInRepeatTemplate);
   } else {
     processNormalComponent(node, nameResult, innerCompStatements, log, parent, isBuilder, isGlobalBuilder,
@@ -899,14 +986,14 @@ function processNormalComponent(node: ts.ExpressionStatement, nameResult: NameRe
     if (componentName !== _CONTAINER_READER) {
       bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
       processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+        isTransition, undefined, immutableStatements, componentName, builderParamsResult);
     } else {
       const containerReaderRes: CreateResult = createComponent(node, COMPONENT_CREATE_FUNCTION);
       newStatements.push(containerReaderRes.newNode);
       processDebug(node, nameResult, newStatements);
       bindComponentAttr(node, res.identifierNode, newStatements, log, true, false, immutableStatements);
       processInnerCompStatements(innerCompStatements, newStatements, node, isGlobalBuilder,
-      isTransition, undefined, immutableStatements, componentName, builderParamsResult);
+        isTransition, undefined, immutableStatements, componentName, builderParamsResult);
     }
   }
   if (res.isContainerComponent || res.needPop) {
@@ -1877,9 +1964,9 @@ function createLazyForEachStatement(argumentsArray: ts.Expression[]): ts.Express
   ];
   if (argumentsArray.length >= 3 && argumentsArray[2]) {
     parameterList.push(ts.factory.createIdentifier(__LAZYFOREACHITEMIDFUNC));
-    if (argumentsArray.length >= 4 && ts.isObjectLiteralExpression(argumentsArray[3])) {
-      parameterList.push(argumentsArray[3]);
-    }
+  }
+  if (argumentsArray.length >= 4 && ts.isObjectLiteralExpression(argumentsArray[3])) {
+    parameterList.push(argumentsArray[3]);
   }
   if (projectConfig.optLazyForEach) {
     parameterList.push(ts.factory.createTrue());
@@ -2143,7 +2230,8 @@ interface CreateResult {
 }
 
 function createComponent(node: ts.ExpressionStatement, type: string,
-  TrailingStatements?: ts.Statement[]): CreateResult {
+  TrailingStatements?: ts.Statement[]
+): CreateResult {
   const res: CreateResult = {
     newNode: node,
     identifierNode: null,
@@ -2173,9 +2261,9 @@ function createComponent(node: ts.ExpressionStatement, type: string,
     res.newNode = type === COMPONENT_POP_FUNCTION ?
       ts.factory.createExpressionStatement(createFunction(temp, identifierNode, null)) :
       (temp.getText() === _CONTAINER_READER) ?
-      ts.factory.createExpressionStatement(createTrailingFunction(temp, identifierNode,
-        checkArguments(temp, type), TrailingStatements)) :
-      ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
+        ts.factory.createExpressionStatement(createTrailingFunction(temp, identifierNode,
+          checkArguments(temp, type), TrailingStatements)) :
+        ts.factory.createExpressionStatement(createFunction(temp, identifierNode, checkArguments(temp, type)));
     res.identifierNode = temp;
   }
   return res;
@@ -2246,7 +2334,7 @@ export interface ComponentAttrInfo {
   hasIdAttr: boolean,
   attrCount: number,
   reuse: string,
-  reuseAttribute?: ts.Expression,
+  reuseAttribute?: ts.Expression
 }
 
 export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: ts.Identifier,
@@ -2316,6 +2404,9 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
           isStylesAttr, immutableStatements, updateStatements, newImmutableStatements,
           isRecycleComponent, isReuseComponentInV2, isStyleFunction);
       }
+      if (isMixCompile()) {
+        processInteropComponent(temp.expression.getText(), node, log);
+      }
       break;
     }
     if (!flag) {
@@ -2338,6 +2429,17 @@ export function bindComponentAttr(node: ts.ExpressionStatement, identifierNode: 
     }
   }
 }  
+
+function processInteropComponent(compName: string, node: ts.ExpressionStatement, log: LogInfo[]): void {
+  if (componentCollection.arkoalaComponents.has(compName)) {
+    log.push({
+      type: LogType.ERROR,
+      message: `'${node.getText()}' does not meet UI component syntax.`,
+      pos: node.getStart(),
+      code: '10905206'
+    });
+  }
+}
 
 function validateStylesUIComponent(node: ts.ExpressionStatement, isStylesAttr: boolean): boolean {
   return (ts.isIfStatement(node) || ts.isSwitchStatement(node)) && isStylesAttr;
@@ -2552,7 +2654,7 @@ function transformBuilderCallExpression(property: ts.PropertyAssignment): ts.Pro
   return ts.factory.updatePropertyAssignment(property, property.name,
     ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        property.initializer.expression,
+        isStaticBuilder(property.initializer) ? transferCompatibleBuilder(property.initializer): property.initializer.expression,
         ts.factory.createIdentifier(BUILDER_ATTR_BIND)
       ),
       undefined,
@@ -3405,10 +3507,18 @@ export function getName(node: ts.ExpressionStatement | ts.Expression): string {
 }
 
 function isCustomAttributes(temp: ts.PropertyAccessExpression): boolean {
-  if (temp.expression && temp.expression.getText() === THIS) {
+  let exprText: string | undefined;
+  if (temp.expression) {
+    try {
+      exprText = temp.expression.getText();
+    } catch (err) {
+      exprText = undefined;
+    }
+  }
+  if (temp.expression && exprText === THIS) {
     return true;
-  } else if (temp.expression && ts.isIdentifier(temp.expression) && temp.expression.getText() === $$ &&
-    builderTypeParameter.params.includes(temp.expression.getText())) {
+  } else if (temp.expression && ts.isIdentifier(temp.expression) && exprText === $$ &&
+    builderTypeParameter.params.includes(exprText)) {
     return true;
   } else {
     return !BUILDIN_STYLE_NAMES.has(temp.name.escapedText.toString());
@@ -3437,6 +3547,7 @@ enum ComponentType {
   function,
   builderTypeFunction,
   repeatComponent,
+  arkoalaComponent,
   mutableBuilderMethod
 }
 
@@ -3473,12 +3584,16 @@ function getComponentType(node: ts.ExpressionStatement, log: LogInfo[], name: st
     isLocalBuilderName = false;
   }
   if (isEtsComponent(node)) {
-    if (componentCollection.customComponents.has(name)) {
+    if (isMixCompile() && componentCollection.arkoalaComponents.has(name)) {
+      return ComponentType.arkoalaComponent;
+    } else if (componentCollection.customComponents.has(name)) {
       isCustomComponentAttributes(node, log);
       return ComponentType.customComponent;
     } else {
       return ComponentType.innerComponent;
     }
+  } else if (isMixCompile() && !isPartMethod(node) && componentCollection.arkoalaComponents.has(name)) {
+    return ComponentType.arkoalaComponent;
   } else if (!isPartMethod(node) && componentCollection.customComponents.has(name)) {
     isCustomComponentAttributes(node, log);
     return ComponentType.customComponent;
@@ -3821,7 +3936,9 @@ function navigationCreateParam(compName: string, type: string,
       ));
     }
   }
-  if (CREATE_ROUTER_COMPONENT_COLLECT.has(compName) && isCreate && partialUpdateMode) {
+  if ((CREATE_ROUTER_COMPONENT_COLLECT.has(compName) ||
+    (isCompatibleVersionOver20() && EXT_WHITE_LIST.length >= 2 && EXT_WHITE_LIST.includes(compName))) &&
+    isCreate && partialUpdateMode) {
     navigationOrNavDestination.push(ts.factory.createObjectLiteralExpression(
       navigationOrNavDestinationCreateContent(compName, isHaveParam),
       false
@@ -3894,11 +4011,17 @@ function checkNonspecificParents(node: ts.ExpressionStatement, name: string, sav
 }
 
 function equalToHiddenNav(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]) || (componentName === HDSNAVIGATION);
+  if (!isCompatibleVersionOver20()) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[0]);
 }
 
 function equalToHiddenNavDes(componentName: string): boolean {
-  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]) || (componentName === HDSNAVDESTINATION);
+  if (!isCompatibleVersionOver20()) {
+    return false;
+  }
+  return (EXT_WHITE_LIST.length >= 2) && (componentName === EXT_WHITE_LIST[1]);
 }
 
 export function transferMutableBuilderCall(node: ts.ExpressionStatement, name: string): ts.ExpressionStatement {
@@ -3995,6 +4118,16 @@ function isMutableBuilderCallExpression(node: ts.CallExpression): boolean {
 function isMutableBuilderExpression(node: ts.ExpressionStatement): boolean {
   if (node.expression &&
     isMutableBuilderCallExpression(node.expression as ts.CallExpression)) {
+    return true;
+  }
+  return false;
+}
+
+function isCompatibleVersionOver20(): boolean {
+  const COMPATIBLE_SDK_VERSION = 20;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION) {
     return true;
   }
   return false;
