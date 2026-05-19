@@ -102,6 +102,15 @@ import * as ts from 'typescript';
 import {
   PreloadFileModules
 } from './fast_build/ark_compiler/module/module_preload_file_utils';
+import {
+  arkTSEvolutionModuleMap,
+  arkTSHybridModuleMap
+} from './fast_build/ark_compiler/interop/process_arkts_evolution';
+import {
+  FileManager, 
+  isMixCompile
+} from './fast_build/ark_compiler/interop/interop_manager';
+import { ARKTS_1_2 } from './fast_build/ark_compiler/interop/pre_define';
 
 export const SRC_MAIN: string = 'src/main';
 
@@ -421,6 +430,25 @@ function removeSuffix(filePath: string): string {
   return filePath.split(path.sep).join('/').replace(SUFFIX_REG, '');
 }
 
+function adjustModuleNameIfArkTSEvolution(pkgName: string, normalizedPath: string, pkgInfo: Object, projectConfig: Object): string {
+  if (arkTSEvolutionModuleMap.get(pkgName) || arkTSHybridModuleMap.get(pkgName)) {
+    const moduleRootPath: string = projectConfig.modulePathMap[pkgInfo.moduleName];
+    const filePath: string = normalizedPath.replace(pkgName, moduleRootPath);
+
+    const extensions: string[] = ['.ets', '.d.ets'];
+    for (const ext of extensions) {
+      const fullPath: string = filePath + ext;
+      if (fs.existsSync(fullPath)) {
+        const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fullPath);
+        if (languageVersion?.languageVersion === ARKTS_1_2) {
+          return '';
+        }
+      }
+    }
+  }
+  return pkgInfo.moduleName;
+}
+
 export function getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest: Object, projectConfig: Object,
   logger?: Object): string {
   const normalizedPath = moduleInfoByModuleRequest.normalizedPath;
@@ -437,7 +465,8 @@ export function getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest: Ob
     return normalizedPath;
   }
   const isSo = pkgInfo.isSO ? 'Y' : 'N';
-  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${toUnixPath(normalizedPath)}&${pkgInfo.version}`;
+  const moduleName = isMixCompile() ? adjustModuleNameIfArkTSEvolution(pkgName, normalizedPath, pkgInfo, projectConfig) : pkgInfo.moduleName;
+  return `@normalized:${isSo}&${moduleName}&${pkgInfo.bundleName}&${toUnixPath(normalizedPath)}&${pkgInfo.version}`;
 }
 
 export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig: Object,
@@ -475,25 +504,36 @@ export function getNormalizedOhmUrlByAliasName(aliasName: string, projectConfig:
     normalizedPath = `${pkgName}${relativePath}`;
   }
   const isSo = pkgInfo.isSO ? 'Y' : 'N';
-  return `@normalized:${isSo}&${pkgInfo.moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
+  const moduleName = isMixCompile() ? adjustModuleNameIfArkTSEvolution(pkgName, normalizedPath, pkgInfo, projectConfig) : pkgInfo.moduleName;
+  return `@normalized:${isSo}&${moduleName}&${pkgInfo.bundleName}&${normalizedPath}&${pkgInfo.version}`;
 }
 
 export function getOhmUrlByByteCodeHar(moduleRequest: string, projectConfig: Object, rollupObject: Object, logger?: Object):
   string | undefined {
   if (projectConfig.useNormalizedOHMUrl &&
     projectConfig.byteCodeHarInfo && Object.keys(projectConfig.byteCodeHarInfo).length > 0) {
-    const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
-    if (moduleInfoByModuleRequest) {
-       return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
-    }
-    let aliasName: string = getAliasNameFromPackageMap(projectConfig.byteCodeHarInfo, moduleRequest);
-    if (aliasName) {
-      return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
-    }
-    for (const byteCodeHarName in projectConfig.byteCodeHarInfo) {
-      if (moduleRequest.startsWith(byteCodeHarName + '/')) {
-        return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
-      }
+    return getOhmUrlByByteCodeHarInfo(rollupObject, projectConfig, moduleRequest, projectConfig.byteCodeHarInfo, logger);
+  }
+  if (isMixCompile() &&
+    projectConfig.staticByteCodeHarInfo && Object.keys(projectConfig.staticByteCodeHarInfo).length > 0) {
+    return getOhmUrlByByteCodeHarInfo(rollupObject, projectConfig, moduleRequest, projectConfig.staticByteCodeHarInfo, logger);
+  }
+  return undefined;
+}
+
+function getOhmUrlByByteCodeHarInfo(rollupObject: Object, projectConfig: Object, moduleRequest: string,
+  byteCodeHarInfo: Object, logger?: Object): string | undefined {
+  const moduleInfoByModuleRequest: Object = rollupObject.share?.importResolver?.(moduleRequest);
+  if (moduleInfoByModuleRequest) {
+      return getNormalizedOhmUrlByModuleRequest(moduleInfoByModuleRequest, projectConfig, logger);
+  }
+  let aliasName: string = getAliasNameFromPackageMap(byteCodeHarInfo, moduleRequest);
+  if (aliasName) {
+    return getNormalizedOhmUrlByAliasName(aliasName, projectConfig, logger);
+  }
+  for (const byteCodeHarName in byteCodeHarInfo) {
+    if (moduleRequest.startsWith(byteCodeHarName + '/')) {
+      return getNormalizedOhmUrlByAliasName(byteCodeHarName, projectConfig, logger, moduleRequest);
     }
   }
   return undefined;

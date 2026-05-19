@@ -178,15 +178,10 @@ action("build_ets_sysResource") {
   ]
 }
 
-main_sources = "compiler/main.js"
-if (sdk_build_arkts) {
-  main_sources = "compiler/src/interop/main.js"
-}
-
 ets_loader_sources = [
   "compiler/compile_plugin.js",
   "compiler/config/obfuscateWhiteList.json5",
-  main_sources,
+  "compiler/main.js",
   "compiler/node_modules",
   "compiler/npm-install.js",
   "compiler/package-lock.json",

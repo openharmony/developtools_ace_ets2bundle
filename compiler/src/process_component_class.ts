@@ -168,14 +168,13 @@ import {
   transformLog
 } from './process_ui_syntax';
 import constantDefine from './constant_define';
-import processStructComponentV2, { getDecoratorName, StructInfo } from './process_struct_componentV2';
+import processStructComponentV2, { getDecoratorName ,StructInfo } from './process_struct_componentV2';
 
 export function processComponentClass(node: ts.StructDeclaration, context: ts.TransformationContext,
   log: LogInfo[], program: ts.Program, ReusePool: { hasReusePool: boolean }): ts.ClassDeclaration {
   const decoratorNode: readonly ts.Decorator[] = ts.getAllDecorators(node);
   const memberNode: ts.ClassElement[] =
-    processMembers(node.members, node.name, context, decoratorNode, log,
-      program, checkPreview(node), ReusePool);
+    processMembers(node.members, node.name, context, decoratorNode, log, program, checkPreview(node), ReusePool);
   return ts.factory.createClassDeclaration(
     ts.getModifiers(node), 
     node.name,
@@ -237,8 +236,8 @@ function processMembers(members: ts.NodeArray<ts.ClassElement>, parentComponentN
       } else {
         addPropertyMember(item, newMembers, program, parentComponentName.getText(), log);
         const result: UpdateResult = processMemberVariableDecorators(parentComponentName, item,
-          ctorNode, watchMap, checkController, log, program, context, hasPreview, interfaceNode,
-          addStatementsInResetOnReuseV1);
+          ctorNode, watchMap, checkController, log, program, context, hasPreview,
+          interfaceNode, addStatementsInResetOnReuseV1);
         if (result.isItemUpdate()) {
           updateItem = result.getProperity();
         } else {
