@@ -212,7 +212,8 @@ export class ComponentTransformer extends AbstractVisitor {
                         ]);
                     }
                 }
-            }
+            },
+            { ignoreCompare: true }
         );
         if (_newNode !== undefined) {
             return _newNode;
@@ -528,7 +529,8 @@ export class ComponentTransformer extends AbstractVisitor {
                         ) {
                             _newSt = UIFactory.updateCustomDialogOptionsInterface(st);
                         }
-                    }
+                    },
+                    { ignoreCompare: true }
                 );
                 if (_newSt !== undefined) {
                     return _newSt;

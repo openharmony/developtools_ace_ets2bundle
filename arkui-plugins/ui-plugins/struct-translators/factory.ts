@@ -95,6 +95,7 @@ import {
     ObservedNames,
     APIVersions,
     APIComparison,
+    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
 } from '../../common/predefines';
 import { BaseObservedPropertyTranslator } from '../property-translators/index';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
@@ -1115,7 +1116,8 @@ export class factory {
                     }
                     newNode = BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
                 }
-            }
+            },
+            { ignoreCompare: ComponentAttributeCache.getInstance().isCollected() }
         );
         return newNode;
     }
@@ -1185,7 +1187,8 @@ export class factory {
                             const componentName = methodName.slice(0, -'Impl'.length);
                             existingImplNames.add(componentName);
                         }
-                    }
+                    },
+                    { ignoreCompare: ComponentAttributeCache.getInstance().isCollected() }
                 );
             }
             if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
@@ -1209,6 +1212,13 @@ export class factory {
                     const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
                     updatedBody.push(...methods);
                 }
+            },
+            { 
+                ignoreCompare: 
+                    ComponentAttributeCache.getInstance().isCollected() && 
+                    ComponentAttributeCache.getInstance().getAllComponentNames().filter(
+                        name => !existingImplNames.has(name) && INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(name)
+                    ).length > 0
             }
         );
         return arkts.factory.updateClassDeclaration(
