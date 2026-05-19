@@ -276,9 +276,9 @@ mocha.describe('test interop_manager file api', function () {
     expect(moduleInfo?.languageVersion).to.equal(ARKTS_1_2);
   });
 
-  mocha.it('2-4-1: test matchModulePathByDeclenPath api with remote har module', function() {
+  mocha.it('2-4-1: test matchModulePathByDeclgenPath api with remote har module', function() {
     const filePath = '/MyApplication16/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
-    const moduleInfo = FileManager.matchModulePathByDeclenPath(filePath);
+    const moduleInfo = FileManager.matchModulePathByDeclgenPath(filePath);
     expect(moduleInfo?.language).to.equal(ARKTS_1_2);
     expect(moduleInfo?.packageName).to.equal('remoteHar');
   });
@@ -1218,11 +1218,11 @@ mocha.describe('test getLanguageVersionByFilePath edge cases', function () {
   });
 });
 
-mocha.describe('test matchModulePathByDeclenPath edge cases', function () {
+mocha.describe('test matchModulePathByDeclgenPath edge cases', function () {
   mocha.it('12-1: should return undefined when interopConfig is not set', function () {
     FileManager.cleanFileManagerObject();
     // getInstance creates new instance without interopConfig
-    const result = FileManager.matchModulePathByDeclenPath('/some/path');
+    const result = FileManager.matchModulePathByDeclgenPath('/some/path');
     expect(result).to.be.undefined;
     FileManager.cleanFileManagerObject();
   });
@@ -1250,7 +1250,7 @@ mocha.describe('test matchModulePathByDeclenPath edge cases', function () {
     );
 
     // Path is not under /project/build/declgen
-    const result = FileManager.matchModulePathByDeclenPath('/other/path/file.ets');
+    const result = FileManager.matchModulePathByDeclgenPath('/other/path/file.ets');
     expect(result).to.be.undefined;
     FileManager.cleanFileManagerObject();
   });
@@ -1278,7 +1278,7 @@ mocha.describe('test matchModulePathByDeclenPath edge cases', function () {
     );
 
     // Path under /project/build/declgen but with unknown package name
-    const result = FileManager.matchModulePathByDeclenPath('/project/build/declgen/unknownPkg/declgenV1/file.ets');
+    const result = FileManager.matchModulePathByDeclgenPath('/project/build/declgen/unknownPkg/declgenV1/file.ets');
     expect(result).to.be.undefined;
     FileManager.cleanFileManagerObject();
   });

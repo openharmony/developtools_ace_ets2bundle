@@ -20,10 +20,11 @@ import {
   ArkTSEvolutionModule,
   BuildType,
   DeclFilesConfig,
+  DeclgenParams,
+  TaskInfo,
   Params,
   ProjectConfig,
-  RunnerParms,
-  AliasConfig
+  RunnerParms
 } from './type';
 import { DECLGEN_CACHE_FILE } from './pre_define';
 import fs from 'fs';
@@ -31,17 +32,18 @@ import path from 'path';
 import * as ts from 'typescript';
 import { EXTNAME_D_ETS, EXTNAME_D_TS, EXTNAME_JS } from '../common/ark_define';
 import { getRealModulePath } from '../../system_api/api_check_utils';
-import { Declgen, logger } from 'declgen';
-import { stages } from 'declgen';
+import * as declgenTs2Ets from 'declgen';
 import { calculateFileHash } from '../utils';
 import { HandleUIImports } from '../../../process_interop_ui';
+import { run as runInteropContext } from './run_interop_context';
+import { logger } from '../../../compile_info';
 
-class UITraverser extends stages.Traverser<undefined, undefined> {
+class UITraverser extends declgenTs2Ets.stages.Traverser<undefined, undefined> {
   uiHandler: HandleUIImports;
   constructor(
     context: ts.TransformationContext,
     typeChecker: ts.TypeChecker,
-    state: stages.TraverserState<undefined, undefined>
+    state: declgenTs2Ets.stages.TraverserState<undefined, undefined>
   ) {
     super(context, typeChecker, state);
     this.uiHandler = new HandleUIImports(typeChecker, context);
@@ -52,7 +54,8 @@ class UITraverser extends stages.Traverser<undefined, undefined> {
   }
 }
 
-class UIStage extends stages.TransformationStage<undefined, undefined, undefined> {
+class UIStage extends declgenTs2Ets.stages.TransformationStage<undefined, undefined, undefined> {
+  override get name(): string { return 'ui-imports'; }
   constructor() {
     super(
       [UITraverser],
@@ -63,6 +66,18 @@ class UIStage extends stages.TransformationStage<undefined, undefined, undefined
   }
 }
 
+const uiPlugin: declgenTs2Ets.DeclgenPlugin = {
+  name: 'ui-imports',
+  stages: (): declgenTs2Ets.PluginStageSpec[] => [{
+    id: 'com.huawei.ui-imports',
+    version: '0.0.0', // After the plugin update, please update the version.
+    stage: new UIStage(),
+    dependencyKind: 'local-write',
+    anchor: 'after-declaration',
+    requiresFreshChecker: false
+  }]
+};
+
 interface FileUnit {
   moduleName: string,
   srcPath: string,
@@ -71,15 +86,15 @@ interface FileUnit {
 
 type FileUnitMap = Map<string, FileUnit>;
 
-function extractFileUnits(modules: ArkTSEvolutionModule[]): FileUnitMap {
+function buildFullFileMap(dependentModuleMap: Map<string, ArkTSEvolutionModule>): FileUnitMap {
   const fileMap = new Map<string, FileUnit>();
-  modules.forEach((moduleInfo) => {
+  dependentModuleMap.forEach((moduleInfo) => {
     if (moduleInfo.dynamicFiles.length <= 0) {
       return;
     }
     moduleInfo.dynamicFiles.forEach((file) => {
-      const unixFilePath = toUnixPath(file);
-      const outputPath = toUnixPath(removeExtension(path.join(moduleInfo.declgenV2OutPath || '', path.relative(moduleInfo.modulePath, file))) + EXTNAME_D_ETS);
+      const unixFilePath = toUnixPath(path.resolve(file));
+      const outputPath = toUnixPath(removeExtension(path.resolve(moduleInfo.declgenV2OutPath || '', path.relative(moduleInfo.modulePath, file))) + EXTNAME_D_ETS);
       fileMap.set(unixFilePath, {
         moduleName: moduleInfo.moduleName,
         srcPath: unixFilePath,
@@ -87,31 +102,29 @@ function extractFileUnits(modules: ArkTSEvolutionModule[]): FileUnitMap {
       });
     });
   });
-
   return fileMap;
 }
 
-export function run(param: Params): boolean {
+type MaybeDeclgenParams = DeclgenParams & {
+  tasks?: TaskInfo[];
+}
+
+function isInteropContextTask(param: MaybeDeclgenParams): boolean {
+  if (param.tasks) {
+    return param.tasks.some(task => task.buildTask === BuildType.INTEROP_CONTEXT);
+  }
+  return false;
+}
+
+export function run(param: MaybeDeclgenParams): boolean {
+  if (isInteropContextTask(param)) {
+    logger.warn('Please note that declgen is separated from the compile process now, please update the hvigor.');
+    return runInteropContext(param as Params);
+  }
+
   FileManager.init(param.dependentModuleMap, param.projectConfig.sdkAliasMap);
   DeclfileProductor.init(param);
-  const declgenModules: ArkTSEvolutionModule[] = [];
-  param.tasks.forEach((task) => {
-    const moduleInfo = FileManager.arkTSModuleMap.get(task.packageName);
-    if (moduleInfo === undefined || moduleInfo.dynamicFiles.length <= 0) {
-      return;
-    }
-    if (task.buildTask === BuildType.DECLGEN) {
-      declgenModules.push(moduleInfo);
-    } else if (task.buildTask === BuildType.INTEROP_CONTEXT && task.mainModuleName) {
-      DeclfileProductor.getInstance().writeDeclFileInfo(moduleInfo, task.mainModuleName);
-    } else if (task.buildTask === BuildType.BYTE_CODE_HAR) {
-      //todo
-    }
-  });
-  if (declgenModules.length > 0) {
-    const fileUnitsMap = extractFileUnits(declgenModules);
-    DeclfileProductor.getInstance().runDeclgen(fileUnitsMap);
-  }
+  DeclfileProductor.getInstance().runDeclgen(param);
   FileManager.cleanFileManagerObject();
   return true;
 }
@@ -131,20 +144,6 @@ function removeExtension(filePath: string): string {
   }
 }
 
-function isFileInPath(targetPath: string, paths: string[]): boolean {
-  if (paths.length === 0) {
-    return true;
-  }
-
-  const filePath = path.resolve(targetPath);
-  return paths.some((allowedPath) => {
-    const base = path.normalize(path.resolve(allowedPath));
-    const baseWithSep = base.endsWith(path.sep) ? base : base + path.sep;
-    const target = path.normalize(filePath);
-    return target.startsWith(baseWithSep);
-  });
-}
-
 export class DeclfileProductor {
   private static declFileProductor: DeclfileProductor;
 
@@ -158,7 +157,7 @@ export class DeclfileProductor {
   private projectConfig;
   private pkgDeclFilesConfig: { [pkgName: string]: DeclFilesConfig } = {};
 
-  static init(param: Params): void {
+  static init(param: DeclgenParams): void {
     DeclfileProductor.declFileProductor = new DeclfileProductor(param);
     DeclfileProductor.compilerOptions = ts.readConfigFile(
       path.join(__dirname, '../../../../tsconfig.json'),
@@ -203,7 +202,7 @@ export class DeclfileProductor {
     DeclfileProductor.compilerOptions.ets!.customComponent = undefined;
     DeclfileProductor.projectPath = param.projectConfig.projectRootPath;
   }
-  static getInstance(param?: Params): DeclfileProductor {
+  static getInstance(param?: DeclgenParams): DeclfileProductor {
     if (!this.declFileProductor && param) {
       this.declFileProductor = new DeclfileProductor(param);
     } else if (!this.declFileProductor && !param) {
@@ -214,35 +213,20 @@ export class DeclfileProductor {
     return this.declFileProductor;
   }
 
-  private constructor(param: Params) {
+  private constructor(param: DeclgenParams) {
     this.projectConfig = param.projectConfig as ProjectConfig;
   }
 
-  runDeclgen(fileUnitsMap: FileUnitMap): void {
-    logger.Logger.init(new logger.SilentLogger());
-    const cacheDir = path.join(DeclfileProductor.projectPath, 'build', 'declgen');
-    const cachePath = path.join(cacheDir, DECLGEN_CACHE_FILE);
-    const tsCachePath = path.join(cacheDir, '.tsbuildinfo');
-    let existingCache: { [key: string]: string } = {};
+  runDeclgen(param: DeclgenParams): void {
+    const fileUnitsMap = buildFullFileMap(param.dependentModuleMap);
+    declgenTs2Ets.logger.Logger.init(new declgenTs2Ets.logger.SilentLogger());
+    const cacheDir = path.join(DeclfileProductor.projectPath, 'build', '.declgen-cache');
     const filesToProcess: string[] = [];
-    let shouldSkip = true;
 
-    if (fs.existsSync(cachePath)) {
-      existingCache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
-    }
-
-    let hashMap: { [key: string]: string } = {};
     fileUnitsMap.forEach((fileUnit, path) => {
       filesToProcess.push(path); 
-      const fileHash = calculateFileHash(path);
-      if (!existingCache[path] || existingCache[path] !== fileHash) {
-        hashMap[path] = fileHash;
-        shouldSkip = false;
-      }
     });
-    if (shouldSkip) {
-      return;
-    }
+
     const libFiles: string[] = [];
     readDeaclareFiles().forEach((path) => {
       libFiles.push(toUnixPath(path));
@@ -263,7 +247,7 @@ export class DeclfileProductor {
       fs.mkdirSync(config.outDir, { recursive: true });
     }
 
-    const declgen = new Declgen(
+    const declgen = new declgenTs2Ets.Declgen(
       {
         outDir: config.outDir,
         libFiles: libFiles,
@@ -273,18 +257,18 @@ export class DeclfileProductor {
           enableInteropTypesFix: true
         },
         incremental: true,
-        tsBuildInfoFile: tsCachePath
+        cacheDir: cacheDir,
+        verifyOutputs: false,
+        plugins: [uiPlugin],
       },
       config.customCompilerOptions,
       config.customResolveModuleNames
     );
-
-    declgen.addStage.after(0, new UIStage());
-    declgen.run();
-    declgen.emit((fileName, content) => {
+    const result = declgen.run();
+    result.emit((fileName, content, meta) => {
       const fileUnit = fileUnitsMap.get(toUnixPath(fileName));
       if (!fileUnit) {
-        return;
+        return undefined;
       }
       const outputPath = fileUnit.outputPath;
       const outDir = path.dirname(outputPath);
@@ -292,81 +276,8 @@ export class DeclfileProductor {
         fs.mkdirSync(outDir, { recursive: true });
       }
       fs.writeFileSync(outputPath, content, 'utf-8');
+      return { artifactPath: outputPath };
     });
-
-    const newCache = {
-      ...existingCache,
-      ...hashMap
-    };
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir, { recursive: true });
-    }
-    fs.writeFileSync(cachePath, JSON.stringify(newCache, null, 2));
-  }
-
-  writeDeclFileInfo(moduleInfo: ArkTSEvolutionModule, mainModuleName: string): void {
-    moduleInfo.isNative = moduleInfo.isNative ?? moduleInfo.packageName.endsWith('.so');
-    moduleInfo.dynamicFiles.forEach((file) => {
-      this.addDeclFilesConfig(file, moduleInfo);
-    });
-
-    if (!moduleInfo.declFilesPath) {
-      throw new Error(`Decl files path is not defined for module ${moduleInfo.packageName}`);
-    }
-
-    const declFilesConfigFile: string = toUnixPath(moduleInfo.declFilesPath);
-    mkdirsSync(path.dirname(declFilesConfigFile));
-    if (this.pkgDeclFilesConfig[moduleInfo.packageName]) {
-      fs.writeFileSync(
-        declFilesConfigFile,
-        JSON.stringify(this.pkgDeclFilesConfig[moduleInfo.packageName], null, 2),
-        'utf-8'
-      );
-    }
-  }
-
-  addDeclFilesConfig(filePath: string, moduleInfo: ArkTSEvolutionModule): void {
-    const projectFilePath = getRelativePath(filePath, moduleInfo.modulePath);
-
-    const declgenV2OutPath: string = this.getDeclgenV2OutPath(moduleInfo.packageName);
-    if (!declgenV2OutPath) {
-      return;
-    }
-    if (!this.pkgDeclFilesConfig[moduleInfo.packageName]) {
-      this.pkgDeclFilesConfig[moduleInfo.packageName] = {
-        packageName: moduleInfo.packageName,
-        files: {}
-      };
-    }
-    if (this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath]) {
-      return;
-    }
-    // The module name of the entry module of the project during the current compilation process.
-    const normalizedFilePath: string = moduleInfo.isNative
-      ? moduleInfo.moduleName
-      : `${moduleInfo.packageName}/${projectFilePath}`;
-    const declPath: string = path.join(toUnixPath(declgenV2OutPath), projectFilePath) + EXTNAME_D_ETS;
-    const isNativeFlag = moduleInfo.isNative ? 'Y' : 'N';
-    const ohmUrl: string = `${isNativeFlag}&&&${normalizedFilePath}&`;
-    this.pkgDeclFilesConfig[moduleInfo.packageName].files[projectFilePath] = {
-      declPath,
-      filePath,
-      ohmUrl: `@normalized:${ohmUrl}`
-    };
-  }
-
-  getDeclgenV2OutPath(pkgName: string): string {
-    if (FileManager.arkTSModuleMap.size && FileManager.arkTSModuleMap.get(pkgName)) {
-      const arkTsModuleInfo: ArkTSEvolutionModule | undefined = FileManager.arkTSModuleMap.get(pkgName);
-      if (!arkTsModuleInfo) {
-        throw new Error(`Module info not found for package ${pkgName}`);
-      }
-      if (!arkTsModuleInfo.declgenV2OutPath) {
-        throw new Error(`Declgen V2 output path is not defined for module ${pkgName}`);
-      }
-      return arkTsModuleInfo.declgenV2OutPath;
-    }
-    return '';
   }
 
   static initInteropSdkConfig(): void {
