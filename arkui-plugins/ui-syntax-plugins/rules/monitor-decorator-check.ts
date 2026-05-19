@@ -67,6 +67,16 @@ type ProcessPropertyAccessReturn =
 const CONTEXT_TYPE_CLASS = 'class';
 const CONTEXT_TYPE_STRUCT = 'struct';
 
+const LIFECYCLE_DECORATORS: Set<string> = new Set([
+    PresetDecorators.COMPONENTINIT,
+    PresetDecorators.COMPONENTAPPEAR,
+    PresetDecorators.COMPONENTBUILT,
+    PresetDecorators.COMPONENTRECYCLE,
+    PresetDecorators.COMPONENTDISAPPEAR,
+    PresetDecorators.COMPONENTACTIVE,
+    PresetDecorators.COMPONENTINACTIVE
+]);
+
 const STRUCT_REQUIRED_DECORATORS = [
     PresetDecorators.LOCAL,
     PresetDecorators.PARAM,
@@ -900,6 +910,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         const typeNode = this.collectNode.get(typeName);
         return typeNode ? this.getPropTypeName(typeNode, element) : undefined;
     }
+
     private handleNestedPathArray(
         monitorDecorator: arkts.AnnotationUsage,
         firstSegmentTypeName: string,
@@ -915,7 +926,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const arrayProperty = this.getPropertyInDeclByName(typeNode, firstMemberSegment);
         if (!arrayProperty) {
-            return false;
+            return this.handleExtendsArrayIndexAccess(
+                typeNode, firstMemberSegment, remainingSegments,
+                monitorDecorator, firstSegmentIsStateVariable
+            );
         }
 
         if (arrayProperty.typeAnnotation && arkts.isETSUnionType(arrayProperty.typeAnnotation)) {
@@ -929,6 +943,77 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
         const result = !arrayValid;
         return result;
+    }
+
+    private handleExtendsArrayIndexAccess(
+        typeNode: arkts.ClassDeclaration | arkts.StructDeclaration,
+        firstMemberSegment: string,
+        remainingSegments: string[],
+        monitorDecorator: arkts.AnnotationUsage,
+        firstSegmentIsStateVariable: boolean
+    ): boolean {
+        if (
+            !arkts.isClassDeclaration(typeNode) ||
+            !this.isArrayIndex(firstMemberSegment) ||
+            !this.isExtendsArray(typeNode)
+        ) {
+            return false;
+        }
+
+        const elementTypeName = this.getArrayElementTypeName(typeNode);
+        if (!elementTypeName) {
+            return false;
+        }
+
+        if (remainingSegments.length === 0) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return true;
+        }
+
+        const checkResult = this.checkNestedPathStateVariables(
+            elementTypeName, remainingSegments, firstSegmentIsStateVariable
+        );
+        if (!checkResult.valid) {
+            this.reportPathValidationResult(monitorDecorator, checkResult);
+        }
+        return true;
+    }
+
+    private reportPathValidationResult(
+        monitorDecorator: arkts.AnnotationUsage,
+        checkResult: PathValidationResult
+    ): void {
+        if (checkResult.isExternalImport) {
+            this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level: 'warn' });
+            return;
+        }
+        const level = checkResult.isPropertyNotExists ? 'error' : 'warn';
+        this.report({ node: monitorDecorator, message: this.messages.monitorTargetInvalid, level });
+    }
+
+    private isExtendsArray(node: arkts.ClassDeclaration): boolean {
+        if (!node.definition?.super || !arkts.isETSTypeReference(node.definition.super)) {
+            return false;
+        }
+        const superName = node.definition.super.part?.name;
+        return !!(superName && arkts.isIdentifier(superName) && superName.name === ArrayTypes.Array);
+    }
+
+    private getArrayElementTypeName(node: arkts.ClassDeclaration): string | undefined {
+        if (!node.definition?.super || !arkts.isETSTypeReference(node.definition.super)) {
+            return undefined;
+        }
+        const typeParams = node.definition.super.part?.typeParams;
+        if (typeParams && typeParams.params && typeParams.params.length > 0) {
+            const elementType = typeParams.params[0];
+            if (arkts.isETSTypeReference(elementType)) {
+                const name = elementType.part?.name;
+                if (name && arkts.isIdentifier(name)) {
+                    return name.name;
+                }
+            }
+        }
+        return undefined;
     }
 
     private handleNestedPathUnionType(
@@ -2641,7 +2726,8 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     private checkConflictingDecorators(body: arkts.MethodDefinition, localMonitorUsed: arkts.AnnotationUsage): boolean {
         const conflictingDecorators = body.scriptFunction.annotations?.filter(
             annotation => annotation.expr && arkts.isIdentifier(annotation.expr) &&
-                annotation.expr.name !== PresetDecorators.MONITOR
+                annotation.expr.name !== PresetDecorators.MONITOR &&
+                !LIFECYCLE_DECORATORS.has(annotation.expr.name)
         );
         if (conflictingDecorators?.length > 0) {
             this.reportConflictingDecorators(localMonitorUsed, conflictingDecorators);
