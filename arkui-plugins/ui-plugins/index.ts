@@ -154,6 +154,7 @@ function checkedProgramVisit(
         MetaDataCollector.getInstance()
             .setProjectConfig(projectConfig)
             .setRouterInfo(initRouterInfo(aceBuildJson))
+            .setLoaderInfo(aceBuildJson)
             .setResourceInfo(resourceInfo)
             .setShouldHandleInsightIntent(true);
         const visitors: AbstractVisitor[] = [];
