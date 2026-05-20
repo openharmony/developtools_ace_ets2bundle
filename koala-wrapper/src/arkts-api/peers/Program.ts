@@ -96,6 +96,22 @@ export class Program extends ArktsObject {
             return false;
         }
     }
+
+    get relativeFilePath(): string {
+        return unpackString(global.es2panda._ProgramRelativeFilePathConst(global.context, this.peer))
+    }
+
+    get modulePrefix(): string {
+        return unpackString(global.es2panda._ProgramModulePrefixConst(global.context, this.peer))
+    }
+
+    get isDeclForDynamicStaticInterop(): boolean {
+        return global.es2panda._ProgramIsDeclForDynamicStaticInteropConst(global.context, this.peer)
+    }
+
+    get isDeclarationModule(): boolean {
+        return global.es2panda._ProgramIsDeclarationModuleConst(global.context, this.peer)
+    }
 }
 
 export class ExternalSource extends ArktsObject {

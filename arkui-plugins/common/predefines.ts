@@ -69,6 +69,8 @@ export const PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES: string[] = ['ohos_id', 'ohos_
 export const APPLICATION_MAIN_BASE_RESOURCE_PATH = 'src/main/resources/base';
 export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
 
+export const ARKTS_FILE_EXTENSION_LIST: string[] = ['.d.ets', '.ets'];
+
 export const INSIGHT_INTENT_FILE_NAME = 'insight_intent.json';
 
 export const ETSGLOBAL = 'ETSGLOBAL';

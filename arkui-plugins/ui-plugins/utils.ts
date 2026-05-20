@@ -32,6 +32,12 @@ export type EntryAnnoInfo = {
     name: string;
 };
 
+export type LocalImportInfo = {
+    symbolName: string;
+    localSource: string;
+    localTypeName: string;
+}
+
 export function getSystemResourcePath(): string {
     return path.resolve(__dirname, './sysResource.js');
 }
