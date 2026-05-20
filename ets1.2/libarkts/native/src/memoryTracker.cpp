@@ -164,7 +164,7 @@ MemoryStats MemoryTracker::MeasureMemory(Func&& func)
     };
 }
 
-void MemoryTracker::Report(MemoryStats stats)
+void MemoryTracker::Report(MemoryStats stats) const
 {
     auto formatBytes = [](size_t bytes) -> std::string {
         const double kb = BYTES_PER_KB;

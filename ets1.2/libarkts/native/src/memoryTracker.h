@@ -41,7 +41,7 @@ public:
     template<typename Func>
     MemoryStats MeasureMemory(Func&& func);
 
-    void Report(MemoryStats stats);
+    void Report(MemoryStats stats) const;
 
 private:
     MemoryStats baseline;
