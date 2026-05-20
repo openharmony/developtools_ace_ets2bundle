@@ -18,6 +18,7 @@ import {
     CustomComponentAnontations,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
+    LocalImportInfo,
     optionsHasField,
 } from './utils';
 import { GenSymGenerator } from '../common/gensym-generator';
@@ -27,6 +28,7 @@ import { MetaDataCollector } from '../common/metadata-collector';
 import { ImportCollector } from '../common/import-collector';
 import { needDefiniteOrOptionalModifier, hasDecoratorName } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
+import { removeRelativePathSuffix } from '../common/arkts-utils';
 
 export interface ScriptFunctionConfiguration {
     key: arkts.Identifier | undefined;
@@ -585,29 +587,134 @@ export class factory {
     /**
      * find arkts.ObjectExpression type from its declaration.
      */
-    static findObjectType(obj: arkts.ObjectExpression): arkts.TypeNode | undefined {
+    static findObjectType(obj: arkts.ObjectExpression, localImportInfos: LocalImportInfo[]): arkts.TypeNode | undefined {
         const decl = arkts.getPeerObjectDecl(obj.peer);
         if (!decl) {
             return undefined;
         }
+        const localType = this.findSafeLocalTypeFromTypeRefDecl(decl, localImportInfos);
+        if (!localType) {
+            return undefined;
+        }
+        return localType;
+    }
+
+    /**
+     * Find local type that can be imported from the ETSTypeReference's declaration ASTNode in declaration file.
+     * 
+     * @param decl The ETSTypeReference's declaration ASTNode in declaration file.
+     * @param localImportInfos The array for collecting the local imports.
+     * @param typeParams The local TSTypeParameterInstantiation ASTNode.
+     * @returns The local type ASTNode.
+     */
+    static findSafeLocalTypeFromTypeRefDecl(
+        decl: arkts.AstNode | undefined, 
+        localImportInfos: LocalImportInfo[],
+        typeParams?: arkts.TSTypeParameterInstantiation
+    ): arkts.TypeNode | undefined {
+        if (decl === undefined) {
+            return undefined;
+        }
         let typeName: string | undefined;
-        if (arkts.isClassDefinition(decl)) {
+        if (arkts.isClassDefinition(decl) && decl.typeParams === undefined) {
             typeName = decl.ident?.name;
-        } else if (arkts.isTSInterfaceDeclaration(decl)) {
+        } else if (arkts.isTSInterfaceDeclaration(decl) && decl.typeParams === undefined) {
             typeName = decl.id?.name;
-        } else if (arkts.isTSTypeAliasDeclaration(decl)) {
+        } else if (arkts.isTSTypeAliasDeclaration(decl) && decl.typeParams === undefined) {
             typeName = decl.id?.name;
         }
         if (!typeName) {
             return undefined;
         }
-        const declModuleName = arkts.getProgramFromAstNode(decl)?.moduleName;
-        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        if (!!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
-            const localTypeName = `${typeName}_${GenSymGenerator.getInstance().id(typeName)}`;
-            ImportCollector.getInstance().collectLocalImport(typeName, declModuleName, localTypeName);
-            return this.createTypeReferenceFromString(localTypeName);
+        const localName = this.addSymbolToLocalImport(decl, typeName, localImportInfos);
+        return this.createTypeReferenceFromString(localName, typeParams);
+    }
+
+    /**
+     * Find local type that can be imported from the current type in declaration file.
+     * 
+     * @param type The given type ASTNode in declaration file.
+     * @param localImportInfos The array for collecting the local imports.
+     * @returns The local type ASTNode.
+     */
+    static findSafeLocalType(type: arkts.TypeNode | undefined, localImportInfos: LocalImportInfo[]): arkts.TypeNode | undefined {
+        if (!type) {
+            return undefined;
         }
-        return this.createTypeReferenceFromString(typeName);
+        if (arkts.isTSArrayType(type)) {
+            const safeLocalType = this.findSafeLocalType(type.elementType, localImportInfos);
+            if (safeLocalType === undefined) {
+                return undefined;
+            }
+            return arkts.factory.createTSArrayType(safeLocalType);
+        }
+        if (arkts.isETSTuple(type)) {
+            const tupleTypeList: arkts.TypeNode[] = [];
+            for (const tupleType of type.getTupleTypeAnnotationsList) {
+                const safeLocalType = this.findSafeLocalType(tupleType, localImportInfos);
+                if (safeLocalType === undefined) {
+                    return undefined;
+                }
+                tupleTypeList.push(safeLocalType);
+            }
+            return arkts.factory.createETSTuple(tupleTypeList);
+        }
+        if (arkts.isETSUnionType(type)) {
+            const unionTypeList: arkts.TypeNode[] = [];
+            for (const unionType of type.types) {
+                const safeLocalType = this.findSafeLocalType(unionType, localImportInfos);
+                if (safeLocalType === undefined) {
+                    return undefined;
+                }
+                unionTypeList.push(safeLocalType);
+            }
+            return arkts.factory.createUnionType(unionTypeList);
+        }
+        if (arkts.isETSTypeReference(type) && !!type.part && arkts.isETSTypeReferencePart(type.part)) {
+            const part = type.part;
+            let typeParams = part.typeParams;
+            if (typeParams !== undefined) {
+                const params: arkts.TypeNode[] = [];
+                for (const paramType of typeParams.params) {
+                    const safeLocalType = this.findSafeLocalType(paramType, localImportInfos);
+                    if (safeLocalType === undefined) {
+                        return undefined;
+                    }
+                    params.push(safeLocalType);
+                }
+                typeParams = arkts.factory.createTSTypeParameterInstantiation(params);
+            }
+            const nameNode = part.name;
+            if (!nameNode || !arkts.isIdentifier(nameNode)) {
+                return undefined;
+            }
+            const decl = arkts.getPeerIdentifierDecl(nameNode.peer);
+            return this.findSafeLocalTypeFromTypeRefDecl(decl, localImportInfos, typeParams);
+        }
+        return type.clone();
+    }
+
+    /**
+     * Add symbol to import from the corresponding declaration file.
+     * 
+     * @param symbol Declaration ASTNode in declaration file.
+     * @param symbolName symbol name that should be imported.
+     * @param localImportInfos The array for collecting the local imports.
+     * @returns local name used in the current file.
+     */
+    static addSymbolToLocalImport(symbol: arkts.AstNode, symbolName: string, localImportInfos: LocalImportInfo[]): string {
+        const declModuleName = arkts.getProgramFromAstNode(symbol)?.moduleName;
+        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
+        const sourceName = ImportCollector.getInstance().getLocalSource(symbolName) 
+            ?? arkts.getProgramFromAstNode(symbol)?.relativeFilePath;
+        if (!!sourceName && !!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
+            const localTypeName = ImportCollector.getInstance().getLocal(symbolName) 
+                ?? `${symbolName}_${GenSymGenerator.getInstance().id(symbolName)}`;
+            const localSource = removeRelativePathSuffix(sourceName);
+            ImportCollector.getInstance().addToLocal(symbolName, localSource, localTypeName);
+            localImportInfos.push({ symbolName, localSource, localTypeName });
+            return localTypeName;
+        }
+        return symbolName;
     }
 }

@@ -27,6 +27,7 @@ import {
     PREVIEWER_RESOURCE_PATH,
     APIComparison,
     APIVersions,
+    ARKTS_FILE_EXTENSION_LIST,
 } from './predefines';
 import {
     ApplicationMainPages,
@@ -39,6 +40,14 @@ import {
 } from './plugin-context';
 import { MetaDataCollector } from './metadata-collector';
 
+export function removeRelativePathSuffix(str: string, suffixes: string[] = ARKTS_FILE_EXTENSION_LIST): string {
+    for (const suffix of suffixes) {
+        if (str.endsWith(suffix)) {
+            return str.slice(0, -suffix.length);
+        }
+    }
+    return str;
+}
 
 export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
     if (!node || !arkts.isETSTypeReference(node)) {

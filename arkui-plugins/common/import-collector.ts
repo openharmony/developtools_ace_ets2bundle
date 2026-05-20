@@ -38,6 +38,7 @@ export class ImportCollector {
     public importInfos: ImportInfo[];
     public localMap: Map<string, string>;
     public sourceMap: Map<string, string>;
+    public localSourceMap: Map<string, string>;
     private static instance: ImportCollector;
 
     /** this set is used for keeping the import sentence unique */
@@ -48,6 +49,7 @@ export class ImportCollector {
         this.imported = new Set();
         this.localMap = new Map();
         this.sourceMap = new Map();
+        this.localSourceMap = new Map();
     }
 
     static getInstance(): ImportCollector {
@@ -58,14 +60,21 @@ export class ImportCollector {
     }
 
     reset(): void {
-        this.localMap.clear();
         this.sourceMap.clear();
-        this.clearImports();
+        this.clearImports()
+            .clearLocals();
     }
 
-    clearImports(): void {
+    clearImports(): this {
         this.importInfos = [];
         this.imported.clear();
+        return this;
+    }
+
+    clearLocals(): this {
+        this.localMap.clear();
+        this.localSourceMap.clear();
+        return this;
     }
 
     collectSource(imported: string, source: string): void {
@@ -103,6 +112,9 @@ export class ImportCollector {
         local?: string,
         kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
     ): void {
+        if (this.imported.has(imported)) {
+            return;
+        }
         const _local: string = local ?? imported;
         this.importInfos.push({
             source,
@@ -110,10 +122,22 @@ export class ImportCollector {
             local: _local,
             kind,
         });
+        this.localMap.set(imported, _local);
+        this.localSourceMap.set(imported, source);
+        this.imported.add(imported);
+    }
+
+    addToLocal(imported: string, localSource: string, local: string): void {
+        this.localMap.set(imported, local);
+        this.localSourceMap.set(imported, localSource);
     }
 
     getLocal(imported: string): string | undefined {
         return this.localMap.get(imported);
+    }
+
+    getLocalSource(imported: string): string | undefined {
+        return this.localSourceMap.get(imported);
     }
 
     insertCurrentImports(program?: arkts.Program): void {

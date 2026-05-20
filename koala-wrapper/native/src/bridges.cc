@@ -1194,3 +1194,39 @@ void impl_AstNodeSetNoDebugLineFlag(KNativePointer context, KNativePointer node)
     GetImpl()->AstNodeSetNoDebugLineFlag(_context, _node);
 }
 KOALA_INTEROP_V2(AstNodeSetNoDebugLineFlag, KNativePointer, KNativePointer);
+
+KNativePointer impl_ProgramRelativeFilePathConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Program*>(receiver);
+    auto result = GetImpl()->ProgramRelativeFilePathConst(_context, _receiver);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramRelativeFilePathConst, KNativePointer, KNativePointer, KNativePointer);
+
+KBoolean impl_ProgramIsDeclForDynamicStaticInteropConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Program*>(receiver);
+    auto result = GetImpl()->ProgramIsDeclForDynamicStaticInteropConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ProgramIsDeclForDynamicStaticInteropConst, KBoolean, KNativePointer, KNativePointer);
+
+KBoolean impl_ProgramIsDeclarationModuleConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Program*>(receiver);
+    auto result = GetImpl()->ProgramIsDeclarationModuleConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ProgramIsDeclarationModuleConst, KBoolean, KNativePointer, KNativePointer);
+
+KNativePointer impl_ProgramModulePrefixConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Program*>(receiver);
+    auto result = GetImpl()->ProgramModulePrefixConst(_context, _receiver);
+    return new std::string(result);
+}
+KOALA_INTEROP_2(ProgramModulePrefixConst, KNativePointer, KNativePointer, KNativePointer);
