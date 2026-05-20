@@ -38,7 +38,8 @@ import {
   IS_REUSABLE_,
   GET_ATTRIBUTE,
   COMPONENT_ENV_DECORATOR,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -62,7 +63,13 @@ import {
   checkEnvType,
   validateEnvType,
   checkEnvDecoratorExp,
-  EnvTypeName
+  EnvTypeName,
+  ENV_ARG_STATUS,
+  preCheckEnvDecoratorArg,
+  checkWritableEnvDecoratorExp,
+  CustomEnvTypeName,
+  checkCustomEnvType,
+  checkCustomEnvDecoratorExp
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
 import { globalProgram } from '../main';
@@ -358,14 +365,24 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     checkEnvInitializerV2(member, log);
     const envDecorator: ts.Decorator | undefined = decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_ENV_DECORATOR);
     const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
-    const envTypeName: EnvTypeName = { currentTypeName: '' };
-    if (propertyType && !checkEnvType(propertyType, envTypeName)) {
+    const envTypeName: EnvTypeName = { currentTypeName: '', envArgStatus: ENV_ARG_STATUS.SYSTEM_PROPERTIES };
+    envDecorator && preCheckEnvDecoratorArg(envDecorator, envTypeName);
+    if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV) {
+      checkWritableEnvDecoratorExp(envDecorator, member.type);
+    } else if (propertyType && !checkEnvType(propertyType, envTypeName)) {
       validateEnvType(member);
     } else if (propertyType && envDecorator) {
       checkEnvDecoratorExp(envDecorator, envTypeName.currentTypeName);
     }
   }
   if (structInfo.customEnvDecoratorSet.has(propName)) {
+    const customEnvDecorator: ts.Decorator | undefined =
+      decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_CUSTOM_ENV_DECORATOR);
+    const customEnvTypeNames: CustomEnvTypeName = { currentTypeNames: [] };
+    checkCustomEnvType(member.type, customEnvTypeNames);
+    if (customEnvDecorator) {
+      checkCustomEnvDecoratorExp(customEnvDecorator, customEnvTypeNames.currentTypeNames);
+    }
     return ts.factory.updatePropertyDeclaration(member,
       ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
       member.name, member.questionToken, member.type, member.initializer);
