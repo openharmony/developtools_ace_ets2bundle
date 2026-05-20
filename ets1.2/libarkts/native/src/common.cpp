@@ -63,12 +63,12 @@ StageArena::~StageArena()
     Cleanup();
 }
 
-char* StageArena::Strdup(const char* string)
+char* StageArena::Strdup(const char* original)
 {
     auto* arena = StageArena::Instance();
-    auto size = strlen(string) + 1;
+    auto size = strlen(original) + 1;
     char* memory = (char*)arena->Alloc(size);
-    interop_memory_copy(memory, size, string, size);
+    interop_memory_copy(memory, size, original, size);
     return memory;
 }
 
