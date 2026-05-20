@@ -14,6 +14,7 @@
  */
 
 #include "memoryTracker.h"
+#include "interop-logging.h"
 
 #include <cstdint>
 #include <fstream>
@@ -103,18 +104,25 @@ MemoryStats GetMemoryStats()
     std::string line;
     std::smatch matches;
     while (std::getline(statusFile, line)) {
-        if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentRss *= BYTES_PER_KB;
+        try
+        {
+            if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+                stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+                std::string unit = matches[MATCH_GROUP_UNIT].str();
+                if (unit == UNIT_K) {
+                    stats.currentRss *= BYTES_PER_KB;
+                }
+            } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+                stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+                std::string unit = matches[MATCH_GROUP_UNIT].str();
+                if (unit == UNIT_K) {
+                    stats.currentVss *= BYTES_PER_KB;
+                }
             }
-        } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentVss *= BYTES_PER_KB;
-            }
+        }
+        catch(const std::exception& e)
+        {
+            LOGE("Cannot Get Memory Stats");
         }
     }
     return stats;
