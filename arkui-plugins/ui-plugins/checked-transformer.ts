@@ -93,7 +93,7 @@ export class CheckedTransformer extends AbstractVisitor {
         ActiveInactiveCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
         InnerComponentInfoCache.getInstance().reset();
-        ImportCollector.getInstance().clearImports();
+        ImportCollector.getInstance().clearImports().clearLocals();
     }
 
     enter(node: arkts.AstNode): void {

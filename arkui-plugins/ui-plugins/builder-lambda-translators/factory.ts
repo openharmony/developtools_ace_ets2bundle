@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import path from 'path';
-import { optionsHasField } from '../utils';
+import { LocalImportInfo, optionsHasField } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -55,6 +55,7 @@ import {
     StructCalleeInfo,
     isInEntryWrapper,
     isDebugLineEnabled,
+    getObjectInstanceDeclTypeMap,
 } from './utils';
 // import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { checkIsNameStartWithBackingField, hasDecorator } from '../property-translators/utils';
@@ -1228,15 +1229,17 @@ export class factory {
      */
     static createBuilderParameterProxyCall(
         node: arkts.ObjectExpression,
+        decl: arkts.ClassDefinition | arkts.TSInterfaceDeclaration,
         typeRef: arkts.TypeNode,
         isFromClass: boolean
     ): arkts.CallExpression {
+        const typeMap = getObjectInstanceDeclTypeMap(decl);
         const entries = flatObjectExpressionToEntries(node);
         const objectArg = isFromClass
             ? arkts.factory.createObjectExpression(arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, [], false)
             : node;
-        const newMapArg = this.createInitMapArgInBuilderParameterProxyCall(entries);
-        const updateArg = this.createUpdateArgInBuilderParameterProxyCall(typeRef.clone(), entries, isFromClass);
+        const newMapArg = this.createInitMapArgInBuilderParameterProxyCall(entries, typeMap);
+        const updateArg = this.createUpdateArgInBuilderParameterProxyCall(typeRef.clone(), entries, typeMap, isFromClass);
         ImportCollector.getInstance().collectSource(
             StateManagementTypes.MAKE_BUILDER_PARAM_PROXY,
             ARKUI_BUILDER_SOURCE_NAME
@@ -1266,21 +1269,24 @@ export class factory {
             nameNode = decl.ident!;
         }
         const typeName = nameNode.name;
-        const declModuleName = arkts.getProgramFromAstNode(decl)?.moduleName;
-        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        if (!!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
-            const localTypeName = `${typeName}_${GenSymGenerator.getInstance().id(typeName)}`;
-            ImportCollector.getInstance().collectLocalImport(typeName, declModuleName, localTypeName);
-            return UIFactory.createTypeReferenceFromString(localTypeName);
+        const localImportInfos: LocalImportInfo[] = [];
+        const localName = UIFactory.addSymbolToLocalImport(decl, typeName, localImportInfos);
+        for (const localImportInfo of localImportInfos) {
+            ImportCollector.getInstance().collectLocalImport(
+                localImportInfo.symbolName, 
+                localImportInfo.localSource, 
+                localImportInfo.localTypeName
+            );
         }
-        return UIFactory.createTypeReferenceFromString(typeName);
+        return UIFactory.createTypeReferenceFromString(localName);
     }
 
     /**
      * create `new Map<string, () => Any>([...])` as the second argument in `makeBuilderParameterProxy` function call.
      */
     static createInitMapArgInBuilderParameterProxyCall(
-        entries: [arkts.Identifier, arkts.Expression | undefined][]
+        entries: [arkts.Identifier, arkts.Expression | undefined][],
+        typeMap: Map<string, arkts.TypeNode>
     ): arkts.ETSNewClassInstanceExpression {
         const newMapName = arkts.factory.createTypeReference(
             arkts.factory.createTypeReferencePart(
@@ -1306,7 +1312,7 @@ export class factory {
                     entries.map(([k, v]) => {
                         const name = k.name;
                         const key = arkts.factory.createStringLiteral(name);
-                        const value = this.prepareBuilderParameterPropertyValue(v);
+                        const value = this.prepareBuilderParameterPropertyValue(v, typeMap.get(name));
                         const arrowFunc = arkts.factory.createArrowFunction(
                             UIFactory.createScriptFunction({
                                 body: arkts.factory.createBlock([arkts.factory.createReturnStatement(value)]),
@@ -1330,6 +1336,7 @@ export class factory {
     static createUpdateArgInBuilderParameterProxyCall(
         typeRef: arkts.TypeNode,
         entries: [arkts.Identifier, arkts.Expression | undefined][],
+        typeMap: Map<string, arkts.TypeNode>,
         isFromClass: boolean
     ): arkts.ArrowFunctionExpression {
         const genSymName: string = GenSymGenerator.getInstance().id();
@@ -1346,7 +1353,7 @@ export class factory {
                       false,
                       false
                   );
-                  const right = this.prepareBuilderParameterPropertyValue(v);
+                  const right = this.prepareBuilderParameterPropertyValue(v, typeMap.get(k.name));
                   return arkts.factory.createExpressionStatement(
                       arkts.factory.createAssignmentExpression(
                           left,
@@ -1364,14 +1371,34 @@ export class factory {
     /**
      * Wrap correct type and value to each property in `@Builder` function ONLY parameter.
      */
-    static prepareBuilderParameterPropertyValue(value: arkts.Expression | undefined): arkts.Expression {
+    static prepareBuilderParameterPropertyValue(
+        value: arkts.Expression | undefined, 
+        declType: arkts.TypeNode | undefined
+    ): arkts.Expression {
         if (!value) {
             return arkts.factory.createUndefinedLiteral();
         }
-        if (arkts.isObjectExpression(value)) {
-            const type: arkts.TypeNode | undefined = 
-                UIFactory.findObjectType(value) ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY);
-            return arkts.factory.createTSAsExpression(value.clone(), type, false);
+        if (arkts.isArrayExpression(value) || arkts.isObjectExpression(value)) {
+            let localImportInfos: LocalImportInfo[] = [];
+            let localType: arkts.TypeNode | undefined = UIFactory.findSafeLocalType(declType, localImportInfos);
+            if (localType === undefined) {
+                localImportInfos = [];
+                if (arkts.isObjectExpression(value)) {
+                    localType = UIFactory.findObjectType(value, localImportInfos);
+                }
+            }
+            if (localType !== undefined) {
+                for (const localImportInfo of localImportInfos) {
+                    ImportCollector.getInstance().collectLocalImport(
+                        localImportInfo.symbolName, 
+                        localImportInfo.localSource, 
+                        localImportInfo.localTypeName
+                    );
+                }
+            } else {
+                localType = UIFactory.createTypeReferenceFromString(TypeNames.ANY);
+            }
+            return arkts.factory.createTSAsExpression(value.clone(), localType, false);
         }
         return value.clone();
     }

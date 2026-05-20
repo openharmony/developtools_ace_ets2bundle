@@ -91,6 +91,7 @@ import {
     ThrowStatement,
     UnaryExpression,
     IfStatement,
+    ETSTuple,
 } from '../../generated';
 import { updateIdentifier } from '../node-utilities/Identifier';
 import { updateAwaitExpression } from '../node-utilities/AwaitExpression';
@@ -164,6 +165,7 @@ import { updateThrowStatement } from '../node-utilities/ThrowStatement';
 import { updateUnaryExpression } from '../node-utilities/UnaryExpression';
 import { updateETSStringLiteralType } from '../node-utilities/ETSStringLiteralType';
 import { updateBooleanLiteral } from '../node-utilities/BooleanLiteral';
+import { updateETSTuple } from '../node-utilities/ETSTuple';
 
 export const factory = {
     get createIdentifier(): (...args: Parameters<typeof Identifier.create2Identifier>) => Identifier {
@@ -710,6 +712,12 @@ export const factory = {
     },
     get updateThrowStatement(): (...args: Parameters<typeof updateThrowStatement>) => ThrowStatement {
         return updateThrowStatement;
+    },
+    get createETSTuple(): (...args: Parameters<typeof ETSTuple.create2ETSTuple>) => ETSTuple {
+        return ETSTuple.create2ETSTuple;
+    },
+    get updateETSTuple(): (...args: Parameters<typeof updateETSTuple>) => ETSTuple {
+        return updateETSTuple;
     },
     /** @deprecated */
     createTypeParameter1_(name: Identifier, constraint?: TypeNode, defaultType?: TypeNode) {
