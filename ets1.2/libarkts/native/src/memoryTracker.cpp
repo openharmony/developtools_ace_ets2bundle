@@ -94,8 +94,8 @@ MemoryStats GetMemoryStats()
     struct rusage ru;
     if (getrusage(RUSAGE_SELF, &ru) == 0) {
         stats.peakRss = static_cast<size_t>(ru.ru_maxrss) * BYTES_PER_KB; // KB -> 字节
-        stats.pageFaultsMinor = ru.ru_minflt;
-        stats.pageFaultsMajor = ru.ru_majflt;
+        stats.pageFaultsMinor = static_cast<size_t>(ru.ru_minflt);
+        stats.pageFaultsMajor = static_cast<size_t>(ru.ru_majflt);
     }
     std::ifstream statusFile(MEMORY_STATUS_FILE);
     if (!statusFile) {
