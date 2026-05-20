@@ -139,12 +139,12 @@ export class BuilderFactory {
             const objectExpr = arg.expr as arkts.ObjectExpression;
             newArgument = arkts.factory.updateTSAsExpression(
                 arg,
-                BuilderLambdaFactory.createBuilderParameterProxyCall(objectExpr, typeRef, isFromClass),
+                BuilderLambdaFactory.createBuilderParameterProxyCall(objectExpr, decl, typeRef, isFromClass),
                 arg.typeAnnotation,
                 arg.isConst
             );
         } else {
-            newArgument = BuilderLambdaFactory.createBuilderParameterProxyCall(arg, typeRef, isFromClass);
+            newArgument = BuilderLambdaFactory.createBuilderParameterProxyCall(arg, decl, typeRef, isFromClass);
         }
         return arkts.factory.updateCallExpression(_node, _node.expression, _node.typeArguments, [newArgument]);
     }

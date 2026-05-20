@@ -953,6 +953,28 @@ export function flatObjectExpressionToEntries(
     return entries;
 }
 
+export function getObjectInstanceDeclTypeMap(
+    objInstance: arkts.TSInterfaceDeclaration | arkts.ClassDefinition
+): Map<string, arkts.TypeNode> {
+    const typeMap: Map<string, arkts.TypeNode> = new Map<string, arkts.TypeNode>();
+    const body = arkts.isTSInterfaceDeclaration(objInstance) ? objInstance.body?.body : objInstance.body;
+    body?.forEach((st) => {
+        let key: string | undefined;
+        let typeAnnotation: arkts.TypeNode | undefined;
+        if (arkts.isMethodDefinition(st) && st.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            key = st.name.name;
+            typeAnnotation = st.scriptFunction.returnTypeAnnotation;
+        } else if (arkts.isClassProperty(st) && !!st.key && arkts.isIdentifier(st.key)) {
+            key = st.key.name;
+            typeAnnotation = st.typeAnnotation;
+        }
+        if (!!key && !!typeAnnotation) {
+            typeMap.set(key, typeAnnotation);
+        }
+    });
+    return typeMap;
+}
+
 /**
  * find `XXXAttribute` interface name from the component's attribute interface.
  */

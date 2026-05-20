@@ -1194,6 +1194,22 @@ export class Es2pandaNativeModule {
     _AstNodeSetNoDebugLineFlag(context: KNativePointer, node: KNativePointer): void {
         throw new Error('AstNodeSetNoDebugLineFlag was not overloaded by native module initialization');
     }
+
+    _ProgramRelativeFilePathConst(context: KNativePointer, receiver: KNativePointer): KStringPtr {
+        throw new Error("ProgramRelativeFilePathConst was not overloaded by native module initialization")
+    }
+
+    _ProgramModulePrefixConst(context: KNativePointer, receiver: KNativePointer): KStringPtr {
+        throw new Error("ProgramModulePrefixConst was not overloaded by native module initialization")
+    }
+
+    _ProgramIsDeclForDynamicStaticInteropConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("ProgramIsDeclForDynamicStaticInteropConst was not overloaded by native module initialization")
+    }
+
+    _ProgramIsDeclarationModuleConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("ProgramIsDeclarationModuleConst was not overloaded by native module initialization")
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
