@@ -115,8 +115,9 @@ KStringPtr getString(napi_env env, napi_value value)
 
     size_t length = 0;
     napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &length);
-    if (status != 0)
+    if (status != 0) {
         return result;
+    }
     result.resize(length);
     status = napi_get_value_string_utf8(env, value, result.data(), length + 1, nullptr);
     return result;
