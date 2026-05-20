@@ -461,8 +461,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     isSourceRetentionAnnotationContentValid: (annotation: ts.Annotation) => {
       return isSourceRetentionAnnotationContentValid(annotation);
     },
-    isApiAvailableVersionSpecifications: (apiAvailable: ts.CallExpression) => {
-      return isApiAvailableVersionSpecifications(apiAvailable);
+    isApiAvailableVersionSpecifications: (apiAvailable: ts.CallExpression, typeOfNodeFunc: Function) => {
+      return isApiAvailableVersionSpecifications(apiAvailable, typeOfNodeFunc);
     },
     uiProps: new Set(),
     clearProps: function () {
