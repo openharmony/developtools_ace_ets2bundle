@@ -119,8 +119,7 @@ MemoryStats GetMemoryStats()
                     stats.currentVss *= BYTES_PER_KB;
                 }
             }
-        }
-        catch(const std::exception& e)
+        } catch(const std::exception& e)
         {
             LOGE("Cannot Get Memory Stats");
         }
@@ -128,7 +127,6 @@ MemoryStats GetMemoryStats()
     return stats;
 }
 #endif
-
 void MemoryTracker::Reset()
 {
     baseline = GetMemoryStats();
