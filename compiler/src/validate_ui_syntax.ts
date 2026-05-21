@@ -109,7 +109,9 @@ import {
   storedFileInfo,
   ExtendResult,
   CurrentProcessFile,
-  getOriginPropertyType
+  getOriginPropertyType,
+  isIdentifierConst,
+  isArrayEqualIgnoreOrder
 } from './utils';
 import { globalProgram, projectConfig, abilityPagesFullPath } from '../main';
 import {
@@ -219,6 +221,10 @@ const envPrimitiveBooleanType: string = 'boolean';
 
 export let stmgmtWhiteList: Set<string> = new Set();
 
+const SYSTEM_PROPERTIES: string = 'SystemProperties';
+const WRITABLE_SYSTEMENV: string = 'WritableEnvKey';
+const READONLY_SYSTEMENV: string = 'ReadonlyEnvKey';
+
 const envSupportArg: string = 'SystemProperties.BREAK_POINT';
 const envWindowAvoidArea: string = 'SystemProperties.WINDOW_AVOID_AREA';
 const envWindowAvoidAreaPx: string = 'SystemProperties.WINDOW_AVOID_AREA_PX';
@@ -239,6 +245,9 @@ const envAllowTypesAndArgs: Map<string, Array<string>> = new Map([
   [envPrimitiveNumberType, [systemDisplayId, systemDensity]],
   [envPrimitiveBooleanType, [envIsFocused, envIsHighlighted]]
 ]);
+
+const CUSTOM_ENV_KEY: string = 'CustomEnvKey';
+const CREATE: string = 'create';
 
 export function validateUISyntax(source: string, content: string, filePath: string,
   fileQuery: string, sourceFile: ts.SourceFile = null): LogInfo[] {
@@ -2697,7 +2706,12 @@ function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequ
   if (!propertyType) {
     return;
   }
-  const envTypeName: EnvTypeName = { currentTypeName: '' };
+  const envTypeName: EnvTypeName = { currentTypeName: '', envArgStatus: ENV_ARG_STATUS.SYSTEM_PROPERTIES };
+  recordRequire.envDecorator && preCheckEnvDecoratorArg(recordRequire.envDecorator, envTypeName);
+  if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV) {
+    checkWritableEnvDecoratorExp(recordRequire.envDecorator, item.type);
+    return;
+  }
   if (!checkEnvType(propertyType, envTypeName)) {
     validateEnvType(item);
   } else if (recordRequire.envDecorator) {
@@ -2720,7 +2734,252 @@ function checkCustomEnvDecoratorInterop(node: ts.StructDeclaration, recordRequir
       pos: item.getStart()
     });
   }
+  const customEnvTypeNames: CustomEnvTypeName = { currentTypeNames: [] };
+  checkCustomEnvType(item.type, customEnvTypeNames);
+  if (recordRequire.customEnvDecorator) {
+    checkCustomEnvDecoratorExp(recordRequire.customEnvDecorator, customEnvTypeNames.currentTypeNames);
+  }
 }
+
+export interface CustomEnvTypeName {
+  currentTypeNames: string[]
+}
+
+export function checkCustomEnvType(
+  propertyTypeNode: ts.TypeNode | undefined,
+  customEnvTypeName: CustomEnvTypeName
+): void {
+  if (!propertyTypeNode) {
+    return;
+  }
+  const result: string[] = [];
+  if (!ts.isUnionTypeNode(propertyTypeNode)) {
+    result.push(propertyTypeNode.getText());
+    customEnvTypeName.currentTypeNames = result;
+    return;
+  }
+  result.push(...collectUnionTypes(propertyTypeNode));
+  customEnvTypeName.currentTypeNames = result;
+}
+
+export function checkCustomEnvDecoratorExp(
+  node: ts.Decorator,
+  currentTypeNames: string[]
+): void {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!checker || !node.expression || !ts.isCallExpression(node.expression) ||
+    !node.expression.arguments || !node.expression.arguments.length) {
+    return;
+  }
+  const customEnvArg: ts.Expression = node.expression.arguments[0];
+  if (ts.isIdentifier(customEnvArg)) {
+    checkCustomEnvIdentifierType(
+      customEnvArg,
+      checker,
+      currentTypeNames
+    );
+    return;
+  }
+  if (!ts.isCallExpression(customEnvArg) ||
+    !ts.isPropertyAccessExpression(customEnvArg.expression)) {
+    validateInvalidCustomEnvCreation(customEnvArg);
+    return;
+  }
+  const TEMP_PROPERTYACCESS: ts.PropertyAccessExpression = customEnvArg.expression;
+  const shouldContinue: boolean = validateCustomEnvPropertyAccess(TEMP_PROPERTYACCESS, customEnvArg);
+  if (!shouldContinue) {
+    return;
+  }
+  if (!customEnvArg.typeArguments ||
+    !customEnvArg.typeArguments.length) {
+    validateInvalidCustomEnvCreation(customEnvArg);
+    return;
+  }
+  const TEMP_REFERENCE_NODE: ts.TypeNode = customEnvArg.typeArguments[0];
+  const TYPE_NAMES: string[] = [];
+  if (!ts.isUnionTypeNode(TEMP_REFERENCE_NODE)) {
+    TYPE_NAMES.push(TEMP_REFERENCE_NODE.getText());
+  } else {
+    TYPE_NAMES.push(...collectUnionTypes(TEMP_REFERENCE_NODE));
+  }
+  (!isArrayEqualIgnoreOrder(TYPE_NAMES, currentTypeNames)) &&
+    validateCustomEnvArgType(customEnvArg);
+}
+
+function checkCustomEnvInitializer(
+  initializer: ts.Expression,
+  currentTypeNames: string[],
+  customEnvArg: ts.Identifier
+): void {
+  let shouldContinue: boolean = true;
+  if (!ts.isCallExpression(initializer) ||
+    !ts.isPropertyAccessExpression(initializer.expression) ||
+    !initializer.typeArguments ||
+    !initializer.typeArguments.length) {
+    validateInvalidCustomEnvCreation(customEnvArg);
+    return;
+  }
+  const TEMP_PROPERTYACCESS: ts.PropertyAccessExpression = initializer.expression;
+  shouldContinue = validateCustomEnvPropertyAccess(TEMP_PROPERTYACCESS, customEnvArg);
+  if (!shouldContinue) {
+    return;
+  }
+  const TEMP_REFERENCE_NODE: ts.TypeNode = initializer.typeArguments[0];
+  const TYPE_NAMES: string[] = [];
+  if (!ts.isUnionTypeNode(TEMP_REFERENCE_NODE)) {
+    TYPE_NAMES.push(TEMP_REFERENCE_NODE.getText());
+  } else {
+    TYPE_NAMES.push(...collectUnionTypes(TEMP_REFERENCE_NODE));
+  }
+  (!isArrayEqualIgnoreOrder(TYPE_NAMES, currentTypeNames)) &&
+    validateCustomEnvArgType(customEnvArg);
+}
+
+function validateCustomEnvPropertyAccess(
+  tempPropertyAccess: ts.PropertyAccessExpression,
+  customEnvArg: ts.Expression
+): boolean {
+  if (!ts.isIdentifier(tempPropertyAccess.expression) || !ts.isIdentifier(tempPropertyAccess.name) ||
+tempPropertyAccess.expression.escapedText.toString() !== CUSTOM_ENV_KEY ||
+tempPropertyAccess.name.escapedText.toString() !== CREATE) {
+  validateInvalidCustomEnvCreation(customEnvArg);
+  return false;
+}
+return true;
+}
+
+function checkCustomEnvIdentifierType(
+  customEnvArg: ts.Identifier,
+  checker: ts.TypeChecker,
+  currentTypeNames: string[]
+): void {
+  const symbol: ts.Symbol | undefined = checker.getSymbolAtLocation(customEnvArg);
+  if (!symbol) {
+    validateInvalidCustomEnvCreation(customEnvArg);
+    return;
+  }
+  const variableDecl: ts.VariableDeclaration | undefined =
+    isIdentifierConst(customEnvArg, checker);
+  if (!variableDecl || !variableDecl.initializer) {
+    validateInvalidCustomEnvCreation(customEnvArg);
+    return;
+  }
+  const variableInitializer: ts.Expression = variableDecl.initializer;
+  checkCustomEnvInitializer(variableInitializer, currentTypeNames, customEnvArg);
+}
+
+function validateCustomEnvArgType(
+  customEnvArg: ts.Expression,
+  isEnv: boolean = false
+): void {
+  const CURRENT_DECORATORNAME: string = isEnv ? COMPONENT_ENV_DECORATOR : COMPONENT_CUSTOM_ENV_DECORATOR;
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905381',
+    message: `The type of the property decorated with '${CURRENT_DECORATORNAME}' must be consistent with the generic type of the key.`,
+    pos: customEnvArg.getStart()
+  });
+}
+
+function validateInvalidCustomEnvCreation(
+  customEnvArg: ts.Expression
+): void {
+  transformLog.errors.push({
+    type: LogType.ERROR,
+    code: '10905382',
+    message: `Invalid key for '@CustomEnv', '@CustomEnv' key must be global const and created from CustomEnvKey.create<T>().`,
+    pos: customEnvArg.getStart()
+  });
+}
+
+export function preCheckEnvDecoratorArg(
+  node: ts.Decorator,
+  envTypeName: EnvTypeName
+): void {
+  if (!node.expression || !ts.isCallExpression(node.expression) ||
+    !node.expression.arguments || !node.expression.arguments.length) {
+    return;
+  }
+  const envExp: ts.Expression = node.expression.arguments[0];
+  if (!ts.isPropertyAccessExpression(envExp) ||
+    !ts.isIdentifier(envExp.expression) ||
+    !ts.isIdentifier(envExp.name)) {
+    return;
+  }
+  const EXPRESSION_NAME: string = envExp.expression.text;
+  if (EXPRESSION_NAME === SYSTEM_PROPERTIES) {
+    envTypeName.envArgStatus = ENV_ARG_STATUS.SYSTEM_PROPERTIES;
+  } else if (EXPRESSION_NAME === WRITABLE_SYSTEMENV) {
+    envTypeName.envArgStatus = ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV;
+  }
+}
+
+export function checkWritableEnvDecoratorExp(
+  node: ts.Decorator,
+  propertyTypeNode: ts.TypeNode | undefined
+): void {
+  const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
+  if (!propertyTypeNode || !checker || !node.expression ||
+    !ts.isCallExpression(node.expression) ||
+    !node.expression.arguments || !node.expression.arguments.length) {
+    return;
+  }
+  const envExp: ts.Expression = node.expression.arguments[0];
+  if (!ts.isPropertyAccessExpression(envExp) ||
+    !ts.isIdentifier(envExp.expression) ||
+    !ts.isIdentifier(envExp.name)) {
+    return;
+  }
+  const NAME_SYMBOL: ts.Symbol | undefined = checker.getSymbolAtLocation(envExp.name);
+  if (!NAME_SYMBOL) {
+    validateCustomEnvArgType(envExp, true);
+    return;
+  }
+  const ARG_TYPES: string[] = findPropertyDeclTypeArg(NAME_SYMBOL);
+  const PROPERTY_TYPES: string[] = [];
+  if (!ts.isUnionTypeNode(propertyTypeNode)) {
+    PROPERTY_TYPES.push(propertyTypeNode.getText());
+  } else {
+    PROPERTY_TYPES.push(...collectUnionTypes(propertyTypeNode));
+  }
+  if (isArrayEqualIgnoreOrder(ARG_TYPES, PROPERTY_TYPES)) {
+    return;
+  }
+  validateCustomEnvArgType(envExp, true);
+}
+
+function findPropertyDeclTypeArg(
+  symbol: ts.Symbol
+): string[] {
+  const decls: ts.Declaration[] | undefined = symbol.getDeclarations();
+  if (!decls || !decls.length || !ts.isPropertyDeclaration(decls[0]) ||
+    !ts.isTypeReferenceNode(decls[0].type)) {
+    return [];
+  }
+  const CURRENT_TYPE: ts.TypeReferenceNode = decls[0].type;
+  if (!CURRENT_TYPE.typeArguments || !CURRENT_TYPE.typeArguments.length) {
+    return [];
+  }
+  if (!ts.isUnionTypeNode(CURRENT_TYPE.typeArguments[0])) {
+    return [CURRENT_TYPE.typeArguments[0].getText()];
+  }
+  return collectUnionTypes(CURRENT_TYPE.typeArguments[0]);
+}
+
+function collectUnionTypes(
+  unionType: ts.UnionTypeNode
+): string[] {
+  const result: string[] = [];
+  unionType.types.forEach(typeNode => {
+    result.push(typeNode.getText());
+  });
+  return result;
+}
+
+export const enum ENV_ARG_STATUS {
+  SYSTEM_PROPERTIES,
+  WRITABLE_SYSTEM_ENV
+};
 
 export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string): void {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
@@ -2774,6 +3033,7 @@ function isIdentifierHasEnumDecl(
 
 export interface EnvTypeName {
   currentTypeName: string;
+  envArgStatus: ENV_ARG_STATUS;
 }
 
 export function checkEnvType(propertyType: ts.Type, envTypeName: EnvTypeName): boolean {

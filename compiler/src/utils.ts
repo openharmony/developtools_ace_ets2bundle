@@ -1431,21 +1431,22 @@ export function findNonNullType(type: ts.Type): ts.Type | ts.Type[] {
 
 export function isIdentifierConst(
   identifier: ts.Identifier,
-  checker: ts.TypeChecker,
-  log: LogInfo[]
-): boolean {
+  checker: ts.TypeChecker
+): ts.VariableDeclaration | undefined {
   const symbol = checker.getSymbolAtLocation(identifier);
   if (!symbol) {
-    return false;
+    return undefined;
   }
-  const declarations = symbol.getDeclarations() || [];
-  for (const decl of declarations) {
-    if (ts.isVariableDeclaration(decl) && decl.parent) {
-      const hasConstModifier: boolean = decl.parent.getText().includes('const');
-      return hasConstModifier;
-    }
+  const declarations: ts.Declaration[] | undefined = symbol.getDeclarations();
+  if (!declarations || !declarations.length) {
+    return undefined;
   }
-  return false;
+  const decl: ts.Declaration = declarations[0];
+  if (ts.isVariableDeclaration(decl) && decl.parent &&
+    decl.parent.getText().includes('const')) {
+    return decl;
+  }
+  return undefined;
 }
 
 export function isIdentifierEnum(
@@ -1563,4 +1564,16 @@ export function createApiVersionCheck(apiVersion: number): ts.BinaryExpression {
     ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
     ts.factory.createNumericLiteral(apiVersion)
   );
+}
+
+export function isArrayEqualIgnoreOrder<T extends string | number>(
+  a: T[],
+  b: T[]
+): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const sortA = [...a].sort();
+  const sortB = [...b].sort();
+  return sortA.every((v, i) => v === sortB[i]);
 }
