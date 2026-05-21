@@ -15,7 +15,6 @@
 
 #include "memoryTracker.h"
 #include "interop-logging.h"
-
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -104,8 +103,7 @@ MemoryStats GetMemoryStats()
     std::string line;
     std::smatch matches;
     while (std::getline(statusFile, line)) {
-        try
-        {
+        try {
             if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
                 stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
                 std::string unit = matches[MATCH_GROUP_UNIT].str();
@@ -119,8 +117,7 @@ MemoryStats GetMemoryStats()
                     stats.currentVss *= BYTES_PER_KB;
                 }
             }
-        } catch(const std::exception& e)
-        {
+        } catch(const std::exception& e) {
             LOGE("Cannot Get Memory Stats");
         }
     }
