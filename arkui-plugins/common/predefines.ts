@@ -724,5 +724,20 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     // 'RowSplit',
     // 'Shape',
     // 'Stack',
-    // 'Video'
+    // 'Video',
+    'MovingPhotoView',
+    'DynamicLayout',
+    'Component3D',
+    'DepthComponent',
+    'DistortionComponent',
+    'DynamicComponent',
+    'FormComponent',
+    'MediaCachedImage',
+    'PasteButton',
+    'RemoteWindow',
+    'RootScene',
+    'SaveButton',
+    'Screen',
+    'SecurityUIExtensionComponent',
+    'WindowScene'
 ]
