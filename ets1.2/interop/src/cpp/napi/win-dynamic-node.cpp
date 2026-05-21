@@ -87,14 +87,14 @@ bool LoadNapiFunctions()
     p_##fn_name = (decltype(p_##fn_name))(fnAddr)
 #define GET_NAPI_IMPL_WRAP(fn_name) GET_NAPI_IMPL(fn_name, fn_addr, nodeModule, apiLoadFailed)
     // Assign the addresses of the needed functions to the "p*" named pointers.
-    NAPI_FUNCTIONS(GET_NAPI_IMPL_WRAP;);
-
+    NAPI_FUNCTIONS(
+        GET_NAPI_IMPL_WRAP;
+    );
     // If any required APIs failed to load, return false
     if (apiLoadFailed)
         return false;
 
     isLoaded = true;
-
     return true;
 }
 
