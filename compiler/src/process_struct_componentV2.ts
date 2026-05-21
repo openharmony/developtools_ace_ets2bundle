@@ -51,7 +51,10 @@ import {
   getEntryNameFunction,
   FreezeParamType,
   decoratorAssignParams,
-  processComponentReusePool
+  processComponentReusePool,
+  decoratorAssignParamsForReusable,
+  decoratorComponentParamForReusable,
+  ComponentParamType
 } from './process_component_class';
 import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
@@ -65,7 +68,7 @@ import {
   EnvTypeName
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
-import { globalProgram } from '../main';
+import { globalProgram, partialUpdateConfig } from '../main';
 
 export class ParamDecoratorInfo {
   initializer: ts.Expression;
@@ -199,9 +202,12 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   const addStatementsInResetOnReuse: ts.Statement[] = [];
   const paramStatementsInStateVarsMethod: ts.Statement[] = [];
   const structDecorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  const freezeParam: FreezeParamType = { componentFreezeParam: undefined };
-  decoratorAssignParams(structDecorators, context, freezeParam);
+  const componentParamType: ComponentParamType = { componentFreezeParam: undefined, memOptParam: undefined };
+  decoratorAssignParams(structDecorators, context, componentParamType);
   traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod, addStatementsInResetOnReuse);
+  if (partialUpdateConfig.partialUpdateMode && decoratorAssignParamsForReusable(structDecorators, context, componentParamType)) {
+    addStatementsInConstructor.push(...decoratorComponentParamForReusable(componentParamType));
+  }
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isGetAccessor(member) && member.modifiers?.some(isComputedDecorator) && member.name &&
       ts.isIdentifier(member.name)) {
@@ -210,7 +216,7 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
       validateComputedGetter(symbol, log);
     }
     if (ts.isConstructorDeclaration(member)) {
-      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, freezeParam);
+      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, componentParamType);
       createResetStateVarsOnReuse(structInfo, newMembers, addStatementsInResetOnReuse);
       return;
     } else if (ts.isPropertyDeclaration(member)) {
