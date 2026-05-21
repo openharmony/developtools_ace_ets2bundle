@@ -31,6 +31,7 @@ export * from './check-decorated-property-type';
 export * from './check-env-decorator';
 export * from './check-entry-localstorage';
 export * from './check-entry-struct-no-export';
+export * from './check-global-reuse';
 export * from './check-old-new-decorator-mix-use';
 export * from './check-once-decorator';
 export * from './check-main-pages-entry-check';

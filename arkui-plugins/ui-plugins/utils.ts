@@ -23,6 +23,7 @@ import {
     CustomDialogNames,
     DecoratorNames,
     StructDecoratorNames,
+    GlobalReusePoolNames,
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { hasDecorator } from './property-translators/utils';
@@ -117,13 +118,17 @@ export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkt
 
 // ANNOTATION
 export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
-    return !!annotation.properties.find(
+    return !!getPropertyInAnnotation(annotation, propertyName);
+}
+
+export function getPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): arkts.ClassProperty | undefined {
+    return annotation.properties.find(
         (annoProp: arkts.AstNode) =>
             arkts.isClassProperty(annoProp) &&
             annoProp.key &&
             arkts.isIdentifier(annoProp.key) &&
             annoProp.key.name === propertyName
-    );
+    ) as arkts.ClassProperty | undefined;
 }
 
 // CUSTOM COMPONENT
@@ -232,6 +237,7 @@ export function collectCustomComponentScopeInfo(
         if (!isCustomComponent) {
             return undefined;
         }
+        checkGlobalReuseAnnotation(annotations);
     }
     return {
         name: definition.ident.name,
@@ -239,6 +245,81 @@ export function collectCustomComponentScopeInfo(
         isCustomComponentClass,
         annotations: annotations as CustomComponentAnontations,
     };
+}
+
+function checkGlobalReuseAnnotation(annotations: CustomComponentAnontations): void {
+    const componentAnno = annotations.component ?? annotations.componentV2;
+    if (!componentAnno || componentAnno.properties.length === 0) {
+        return;
+    }
+    const hasReusePool = hasPropertyInAnnotation(componentAnno, GlobalReusePoolNames.REUSE_POOL);
+    const hasPoolAccepts = hasPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+    checkReusePoolAndPoolAcceptsBothSet(componentAnno, hasReusePool, hasPoolAccepts);
+    checkPoolAcceptsNotEmpty(componentAnno, hasReusePool, hasPoolAccepts);
+}
+
+function checkReusePoolAndPoolAcceptsBothSet(
+    componentAnno: arkts.AnnotationUsage,
+    hasReusePool: boolean,
+    hasPoolAccepts: boolean
+): void {
+    if (hasReusePool === hasPoolAccepts) {
+        return;
+    }
+    const message = `'reusePool' and 'poolAccepts' must be both set. Neither can be omitted when using the global reuse pool.`;
+    const diagnosticKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    const diagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind, arkts.getStartPosition(componentAnno));
+    if (!hasReusePool && hasPoolAccepts) {
+        const poolAcceptsProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+        if (!poolAcceptsProp || !poolAcceptsProp.value) {
+            return;
+        }
+        const annoName = (componentAnno.expr as arkts.Identifier).name;
+        const fixCode = `@${annoName}({ reusePool: ReusePoolOwnership.SHARED, poolAccepts: ${poolAcceptsProp.value.dumpSrc()} })`;
+        const startPos = arkts.SourcePosition.create(componentAnno.startPosition.index() - 1, componentAnno.startPosition.line());
+        const annoRange = arkts.SourceRange.create(startPos, componentAnno.endPosition);
+        const suggestionKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
+        const suggestionInfo = arkts.SuggestionInfo.create(suggestionKind, fixCode, `Add 'reusePool' property`, annoRange);
+        arkts.Diagnostic.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
+    } else {
+        arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(componentAnno));
+    }
+}
+
+function checkPoolAcceptsNotEmpty(
+    componentAnno: arkts.AnnotationUsage,
+    hasReusePool: boolean,
+    hasPoolAccepts: boolean
+): void {
+    if (!hasPoolAccepts || !hasReusePool) {
+        return;
+    }
+    const poolAcceptsProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+    if (
+        !poolAcceptsProp ||
+        !arkts.isClassProperty(poolAcceptsProp) ||
+        !poolAcceptsProp.value ||
+        !arkts.isArrayExpression(poolAcceptsProp.value)
+    ) {
+        return;
+    }
+    const poolAcceptsValue = poolAcceptsProp.value;
+    if (poolAcceptsValue.elements.length !== 0) {
+        return;
+    }
+    const reusePoolProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.REUSE_POOL);
+    if (
+        !reusePoolProp ||
+        !reusePoolProp.value ||
+        !arkts.isMemberExpression(reusePoolProp.value) ||
+        !arkts.isIdentifier(reusePoolProp.value.property) ||
+        reusePoolProp.value.property.name === GlobalReusePoolNames.REUSE_POOL_OWNERSHIP_OFF
+    ) {
+        return;
+    }
+    const message = `'poolAccepts' cannot be an empty array. Provide at least one '@Reusable' or '@ReusableV2' component.`;
+    const diagnosticKind = arkts.DiagnosticKind.create(message, arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(componentAnno));
 }
 
 export function getAnnotationInfoForStruct(
