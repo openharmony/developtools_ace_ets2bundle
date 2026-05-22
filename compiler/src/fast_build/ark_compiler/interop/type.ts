@@ -29,6 +29,7 @@ export interface ArkTSEvolutionModule {
   cachePath: string;
   byteCodeHarInfo?: Object;
   packageVersion: string;
+  isNative?: boolean;
   moduleType: string;
 }
 
@@ -75,7 +76,7 @@ export interface RunnerParms {
   inputFiles: string[];
   outDir: string;
   rootDir: string;
-  customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
+  customResolveModuleNames?: (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[];
   customCompilerOptions?: ts.CompilerOptions;
   includePaths?: string[];
   uiInteropTransformer?: Function;
