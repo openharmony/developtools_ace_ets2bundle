@@ -59,6 +59,7 @@ export const ARKUI_INTEROP_SOURCE_NAME: string = 'arkui.component.interop';
 export const ARKUI_NAVIGATION_SOURCE_NAME: string = 'arkui.component.navigation';
 export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDestination';
 export const ARKUI_LOCAL_STORAGE_SOURCE_NAME: string = 'arkui.stateManagement.storage.localStorage';
+export const ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME: string = 'arkui.stateManagement.decorator';
 
 export const LIB_UI_COMPONENTS_PATH: string = path.resolve(__dirname, '../components');
 export const PREVIEWER_RESOURCE_PATH: string = path.resolve(
