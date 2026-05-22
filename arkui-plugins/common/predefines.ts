@@ -739,5 +739,6 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     'SaveButton',
     'Screen',
     'SecurityUIExtensionComponent',
-    'WindowScene'
+    'WindowScene',
+    'Web'
 ]
