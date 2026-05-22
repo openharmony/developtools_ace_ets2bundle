@@ -399,6 +399,9 @@
       "@ohos.arkui.advanced.Counter": [
         "workspace/out/sdk/ohos-sdk/linux/ets/static/api/@ohos.arkui.advanced.Counter"
       ],
+      "@ohos.arkui.advanced.DatePickerComponent": [
+        "workspace/out/sdk/ohos-sdk/linux/ets/static/api/@ohos.arkui.advanced.DatePickerComponent"
+      ],
       "@ohos.arkui.advanced.Dialog": [
         "workspace/out/sdk/ohos-sdk/linux/ets/static/api/@ohos.arkui.advanced.Dialog"
       ],
