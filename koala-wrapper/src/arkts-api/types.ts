@@ -363,7 +363,7 @@ export class NumberLiteral extends Literal {
     constructor(peer: KPtr) {
         assertValidPeer(peer, Es2pandaAstNodeType.AST_NODE_TYPE_NUMBER_LITERAL);
         super(peer);
-        this.value = 0.0;
+        this.value = +this.dumpSrc(); //修复数字初始化后数值为0的问题
     }
 
     override get nodeType(): Es2pandaAstNodeType {

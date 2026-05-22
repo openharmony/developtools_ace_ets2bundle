@@ -18,6 +18,12 @@
 #include <set>
 #include <string>
 #include <mutex>
+#include <regex>
+#include <sstream>
+#include <bitset>
+#include <iostream>
+#include <cstdio>
+#include <cstdint>
 #include "memoryTracker.h"
 
 KInt impl_ClassDefinitionLanguageConst(KNativePointer context, KNativePointer receiver)
@@ -1279,3 +1285,166 @@ KNativePointer impl_GetAnnotationDeclarationProperties(KNativePointer contextPtr
     return mergedProperties;
 }
 KOALA_INTEROP_2(GetAnnotationDeclarationProperties, KNativePointer, KNativePointer, KNativePointer);
+/*
+ * FilterNodesX series implementation
+ * Reference: ets1.2/libarkts/native/src/common.cpp
+*/
+
+constexpr int AST_NODE_TYPE_LIMIT = 256;
+
+struct FilterArgs {
+    es2panda_Impl *impl;
+    es2panda_Context *context;
+    std::bitset<AST_NODE_TYPE_LIMIT> *typesMask;
+    std::vector<es2panda_AstNode *> *result;
+};
+
+void filterByType(es2panda_AstNode *node, void *argsPointer)
+{
+    FilterArgs *args = reinterpret_cast<FilterArgs *>(argsPointer);
+    auto type = args->impl->AstNodeTypeConst(args->context, node);
+    if ((*args->typesMask)[type]) {
+        args->result->push_back(node);
+    }
+}
+
+KNativePointer impl_FilterNodes2(KNativePointer context, KNativePointer node, KInt type)
+{
+    auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    auto _context = reinterpret_cast<es2panda_Context*>(context);
+    std::bitset<AST_NODE_TYPE_LIMIT> typesMask;
+    typesMask.set(type);
+    std::vector<es2panda_AstNode *> result;
+    FilterArgs args = { GetImpl(), _context, &typesMask, &result };
+    GetImpl()->AstNodeForEach(_node, filterByType, &args);
+    return new std::vector<void*>(result.begin(), result.end());
+}
+KOALA_INTEROP_3(FilterNodes2, KNativePointer, KNativePointer, KNativePointer, KInt)
+
+KNativePointer impl_FilterNodes3(KNativePointer context, KNativePointer node, KInt* types, KInt typesSize)
+{
+    auto _node = reinterpret_cast<es2panda_AstNode*>(node);
+    auto _context = reinterpret_cast<es2panda_Context*>(context);
+    std::bitset<AST_NODE_TYPE_LIMIT> typesMask;
+    for (int i = 0; i < typesSize; i++) {
+        typesMask.set(types[i]);
+    }
+    std::vector<es2panda_AstNode *> result;
+    FilterArgs args = { GetImpl(), _context, &typesMask, &result };
+    GetImpl()->AstNodeForEach(_node, filterByType, &args);
+    return new std::vector<void*>(result.begin(), result.end());
+}
+KOALA_INTEROP_4(FilterNodes3, KNativePointer, KNativePointer, KNativePointer, KInt*, KInt)
+
+struct CallbackRefGuard {
+    napi_env env;
+    napi_ref& ref;  // 引用全局变量
+
+    CallbackRefGuard(napi_env e, napi_ref& r) : env(e), ref(r) {
+        // 构造时清理旧引用（防止上次调用失败残留）
+        if (ref != nullptr) {
+            napi_delete_reference(env, ref);
+            ref = nullptr;
+        }
+    }
+
+    ~CallbackRefGuard() {
+        // 析构时清理引用
+        if (ref != nullptr) {
+            napi_delete_reference(env, ref);
+            ref = nullptr;
+        }
+    }
+};
+
+static thread_local napi_env g_callbackEnv = nullptr;
+static thread_local napi_ref g_callbackRef = nullptr;
+
+static es2panda_AstNode* transformCallbackWrapper(es2panda_AstNode* node)
+{
+    if (!g_callbackEnv || !g_callbackRef) {
+        return node;
+    }
+
+    napi_env env = g_callbackEnv;
+
+    napi_value callbackFunc;
+    napi_status status = napi_get_reference_value(env, g_callbackRef, &callbackFunc);
+    if (status != napi_ok) {
+        return node;
+    }
+
+    napi_value argv[1];
+    uintptr_t nodePtr = reinterpret_cast<uintptr_t>(node);
+
+    status = napi_create_bigint_uint64(env, nodePtr, &argv[0]);
+    if (status != napi_ok) {
+        return node;
+    }
+
+    napi_value global;
+    status = napi_get_global(env, &global);
+    if (status != napi_ok) {
+        return node;
+    }
+
+    napi_value result;
+    status = napi_call_function(env, global, callbackFunc, 1, argv, &result);
+    if (status != napi_ok) {
+        return node;
+    }
+
+    uint64_t resultPtrValue = 0;
+    bool lossless = false;
+    status = napi_get_value_bigint_uint64(env, result, &resultPtrValue, &lossless);
+    if (status == napi_ok && resultPtrValue != 0) {
+        return reinterpret_cast<es2panda_AstNode*>(resultPtrValue);
+    }
+
+    return node;
+}
+
+napi_value Node_AstNodeTransformChildrenRecursively(napi_env env, napi_callback_info cbinfo)
+{
+    CallbackInfo info(env, cbinfo);
+    KNativePointer context = getArgument<KNativePointer>(info, 0);
+    KNativePointer rootNode = getArgument<KNativePointer>(info, 1);
+
+    // IMPORTANT: Parameter 2 is now a JavaScript function, not an integer
+    napi_value jsCallback = info[2];  // Get raw napi_value
+
+    // Validate it's a function
+    napi_valuetype callbackType;
+    napi_status status = napi_typeof(env, jsCallback, &callbackType);
+    if (status != napi_ok || callbackType != napi_function) {
+        return nullptr;
+    }
+
+    // RAII guard: 自动管理引用生命周期，防止泄漏
+    CallbackRefGuard guard(env, g_callbackRef);
+
+    // Store NAPI environment for callback use
+    g_callbackEnv = env;
+
+    // Create persistent reference to the JavaScript function
+    status = napi_create_reference(env, jsCallback, 1, &g_callbackRef);
+    if (status != napi_ok) {
+        return nullptr;  // guard析构会自动清理
+    }
+
+    // Convert to actual types
+    auto* _context = reinterpret_cast<es2panda_Context*>(context);
+    auto* _root = reinterpret_cast<es2panda_AstNode*>(rootNode);
+
+    GetImpl()->AstNodeTransformChildrenRecursively(
+        _context,
+        _root,
+        transformCallbackWrapper,
+        const_cast<char*>("AstNodeTransformChildrenRecursively")
+    );
+
+    g_callbackEnv = nullptr;
+    return makeResult<KNativePointer>(info, _root);
+}
+
+MAKE_NODE_EXPORT(NativeModule, AstNodeTransformChildrenRecursively)
