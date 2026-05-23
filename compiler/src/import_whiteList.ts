@@ -641,6 +641,8 @@ export const whiteList: Set<string> = new Set([
   'LazyVGridLayoutAttribute',
   'LazyVWaterFlowLayout',
   'LazyVWaterFlowLayoutAttribute',
+  'LazyDynamicLayout',
+  'LazyDynamicLayoutAttribute',
   'LazyWaterFlowLayoutAttribute',
   'LeadingMarginPlaceholder',
   'Length',

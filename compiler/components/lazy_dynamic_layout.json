@@ -1,0 +1,7 @@
+{
+    "name": "LazyDynamicLayout",
+    "parents": ["WaterFlow", "FlowItem", "Scroll", "List", "LazyColumnLayout"],
+    "attrs": [
+        "onVisibleIndexesChange"
+    ]
+}
