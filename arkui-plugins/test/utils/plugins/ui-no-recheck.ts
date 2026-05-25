@@ -53,7 +53,9 @@ export const uiNoRecheck: Plugins = {
                 skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
                 pluginContext: this,
             });
+            arkts.NodeCacheFactory.currentCacheKey = NodeCacheNames.MEMO;
             program = programVisitor.programVisitor(program);
+            arkts.NodeCacheFactory.currentCacheKey = undefined;
             script = program.astNode;
             MetaDataCollector.getInstance().reset();
             ImportCollector.getInstance().reset();

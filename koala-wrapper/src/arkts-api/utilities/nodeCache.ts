@@ -52,7 +52,7 @@ export function copyCacheToClonedNode(original: AstNode, cloned: AstNode, should
         if (shouldUpdateMemo) {
             cache.addNodeToUpdateByPeer(_cloned.peer);
         }
-        return cache.shouldUpdateByPeer(_original.peer);
+        return !cache.shouldUpdateByPeer(_original.peer);
     };
     traverseASTSync(original, cloned, traverseCallbackFn);
 }

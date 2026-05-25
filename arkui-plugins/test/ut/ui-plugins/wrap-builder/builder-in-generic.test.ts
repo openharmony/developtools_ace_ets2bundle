@@ -129,7 +129,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
       ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions((() => {
           return builderArr;
-        }), ((@Memo() item: @Builder() ((value: string, size: number)=> void)) => {
+        }), @Memo() ((@Memo() item: @Builder() ((value: string, size: number)=> void)) => {
           item("Hello World", 30);
         }), undefined);
         return;
@@ -321,7 +321,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
             }
             __memo_parameter_instance.value.setForEachOptions((() => {
               return builderArr;
-            }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
+            }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() item: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)) => {
               const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (223657391)), 1);
               const __memo_parameter_item = __memo_scope.param(0, item);
               if (__memo_scope.unchanged) {

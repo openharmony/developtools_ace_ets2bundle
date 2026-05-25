@@ -171,7 +171,6 @@ export class CacheFactory {
             modifiers,
             false
         );
-        CustomDialogControllerCache.getInstance().updateAll().reset();
         arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(contentParam);
         return newMethod;
     }

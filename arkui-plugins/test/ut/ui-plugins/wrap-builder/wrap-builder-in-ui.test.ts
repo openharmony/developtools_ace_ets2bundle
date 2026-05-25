@@ -102,7 +102,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
-      }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
         item.builder(\"hello world\", 39);
       }), undefined);
       return;
@@ -247,7 +247,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       }
       __memo_parameter_instance.value.setForEachOptions((() => {
         return globalBuilderArr;
-      }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {

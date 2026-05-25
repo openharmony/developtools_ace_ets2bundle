@@ -179,7 +179,9 @@ function checkedProgramVisit(
             skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
             pluginContext: context,
         });
+        arkts.NodeCacheFactory.currentCacheKey = NodeCacheNames.MEMO;
         program = programVisitor.programVisitor(program);
+        arkts.NodeCacheFactory.currentCacheKey = undefined;
         ResourceSourceCache.getInstance().clear();
         MetaDataCollector.getInstance().reset();
         ImportCollector.getInstance().reset();
