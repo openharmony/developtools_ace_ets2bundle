@@ -85,7 +85,7 @@ export class ImportCollector {
     collectImport(
         imported: string,
         local?: string,
-        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
     ): void {
         if (!this.sourceMap.has(imported)) {
             throw new Error(`ImportCollector: import ${imported}'s source haven't been collected yet.`);
@@ -109,7 +109,7 @@ export class ImportCollector {
         imported: string,
         source: string,
         local?: string,
-        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
     ): void {
         if (this.imported.has(imported)) {
             return;

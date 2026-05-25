@@ -1998,7 +1998,11 @@ export class factory {
      */
     static createContentParamInInvoke(): arkts.ETSParameterExpression {
         ImportCollector.getInstance().collectSource(DecoratorNames.BUILDER, ARKUI_BUILDER_SOURCE_NAME);
-        ImportCollector.getInstance().collectImport(DecoratorNames.BUILDER);
+        ImportCollector.getInstance().collectImport(
+            DecoratorNames.BUILDER,
+            undefined,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
+        );
         const builderAnno = annotation(DecoratorNames.BUILDER);
         const contentParam = UIFactory.createParameterWithType(
             BuilderLambdaNames.CONTENT_PARAM_NAME,
@@ -2014,7 +2018,11 @@ export class factory {
      */
     static createInvokeMethod(structName: string, isDecl: boolean): arkts.MethodDefinition {
         ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, ARKUI_BUILDER_SOURCE_NAME);
-        ImportCollector.getInstance().collectImport(BuilderLambdaNames.ANNOTATION_NAME);
+        ImportCollector.getInstance().collectImport(
+            BuilderLambdaNames.ANNOTATION_NAME,
+            undefined,
+            arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
+        );
         const componentBuilderAnno = annotation(BuilderLambdaNames.ANNOTATION_NAME);
         const initializerParam = this.createInitializerParamInInvoke(structName);
         const storageParam = this.createStorageParamInInvoke();
@@ -2304,4 +2312,3 @@ export class factory {
         );
     }
 }
-
