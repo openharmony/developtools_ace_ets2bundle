@@ -94,6 +94,10 @@ export class HandleUIImports {
     const result = ts.visitEachChild(node, this.visitNode.bind(this), this.context);
 
     if (ts.isIdentifier(result) && !this.shouldSkipIdentifier(result)) {
+      const component = ['Component', 'Reusable', 'ComponentV2', 'ReusableV2'];
+      if (component.includes(result.text)) {
+        this.interfacesNeedToImport.add('LocalStorage');
+      }
       this.interfacesNeedToImport.add(result.text);
     } else if (ts.isSourceFile(result)) {
       return this.addUIImports(result);
@@ -139,7 +143,6 @@ export class HandleUIImports {
     const dynamicImportSpecifiers: ts.ImportSpecifier[] = [];
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
     const stateImportSpecifiers: ts.ImportSpecifier[] = [];
-    this.interfacesNeedToImport.add('LocalStorage');
     this.interfacesNeedToImport.forEach((interfaceName) => {
       if (this.importedInterfaces.has(interfaceName)) {
         return;
