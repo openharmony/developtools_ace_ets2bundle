@@ -90,22 +90,18 @@ MemoryStats GetMemoryStats()
 static void ParseMemoryStatusLine(const std::string& line, MemoryStats& stats)
 {
     std::smatch matches;
-    try {
-        if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentRss *= BYTES_PER_KB;
-            }
-        } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentVss *= BYTES_PER_KB;
-            }
+    if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+        stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        std::string unit = matches[MATCH_GROUP_UNIT].str();
+        if (unit == UNIT_K) {
+            stats.currentRss *= BYTES_PER_KB;
         }
-    } catch(const std::exception& e) {
-        LOGE("Cannot Get Memory Stats");
+    } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+        stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        std::string unit = matches[MATCH_GROUP_UNIT].str();
+        if (unit == UNIT_K) {
+            stats.currentVss *= BYTES_PER_KB;
+        }
     }
 }
 
