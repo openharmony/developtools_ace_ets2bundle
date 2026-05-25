@@ -141,7 +141,7 @@ function main() {}
   }
 }
 
-@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
     (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)}) as A))
@@ -152,6 +152,9 @@ function main() {}
     (((gensym___71090848) == (null)) ? undefined : gensym___71090848.__options_has_objectlinkvar)})) {
       this.__backing_objectlinkvar!.update((initializers!.objectlinkvar as A));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_objectlinkvar!.resetOnReuse((initializers!.objectlinkvar as A));
   }
 
 
@@ -182,7 +185,7 @@ function main() {}
   }
 }
 
-@Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
     (((gensym___219806589) == (null)) ? undefined : gensym___219806589.objectlinkvar1)}) as (A | undefined)))
@@ -205,6 +208,11 @@ function main() {}
     (((gensym___49815838) == (null)) ? undefined : gensym___49815838.__options_has_objectlinkvar3)})) {
       this.__backing_objectlinkvar3!.update((initializers!.objectlinkvar3 as (A | B | null)));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample2 | undefined)): void {
+    this.__backing_objectlinkvar1!.resetOnReuse((initializers!.objectlinkvar1 as (A | undefined)));
+    this.__backing_objectlinkvar2!.resetOnReuse((initializers!.objectlinkvar2 as (A | B)));
+    this.__backing_objectlinkvar3!.resetOnReuse((initializers!.objectlinkvar3 as (A | B | null)));
   }
 
 
@@ -247,14 +255,14 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
   
 }
 
-@Component() interface __Options_MyStateSample2 {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [dumpAnnotation('ObjectLink')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}

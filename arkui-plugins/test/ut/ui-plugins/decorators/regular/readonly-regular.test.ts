@@ -40,7 +40,7 @@ const pluginTester = new PluginTester('test readonly regular variables transform
 
 const expectedScript: string = `
 function main() {}
-@ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponentV2<Child, __Options_Child> {
     public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
         this.__backing_readOnlyParam = ((({let gensym___<some_random_number> = initializers;
             (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.readOnlyParam)})) ?? (0));
@@ -82,7 +82,7 @@ function main() {}
 
     }
 }
-@ComponentV2() interface __Options_Child {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'readOnlyParam', '(number | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_readOnlyParam', '(boolean | undefined)')}
 }

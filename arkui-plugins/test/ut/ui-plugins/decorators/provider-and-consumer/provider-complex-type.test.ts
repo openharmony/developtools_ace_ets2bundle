@@ -120,7 +120,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeProvider<Per>(this, "paramVar1", "paramVar1", new Per(6));
     this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeProvider<Array<number>>(this, "paramVar2", "paramVar2", new Array<number>(3, 6, 8));
@@ -276,7 +276,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2() interface __Options_Parent {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IProviderDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}

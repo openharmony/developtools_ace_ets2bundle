@@ -135,7 +135,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));
     this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<(number | undefined)>(this, "propVar2", (initializers!.propVar2 as (number | undefined)));
@@ -175,6 +175,15 @@ function main() {}
     (((gensym___198355044) == (null)) ? undefined : gensym___198355044.__options_has_propVar7)})) {
       this.__backing_propVar7!.update((initializers!.propVar7 as (Map<string, number> | undefined)));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
+    this.__backing_propVar1!.resetOnReuse((initializers!.propVar1 as string));
+    this.__backing_propVar2!.resetOnReuse((initializers!.propVar2 as (number | undefined)));
+    this.__backing_propVar3!.resetOnReuse((initializers!.propVar3 as boolean));
+    this.__backing_propVar4!.resetOnReuse((initializers!.propVar4 as undefined));
+    this.__backing_propVar5!.resetOnReuse((initializers!.propVar5 as null));
+    this.__backing_propVar6!.resetOnReuse((initializers!.propVar6 as (Array<number> | null)));
+    this.__backing_propVar7!.resetOnReuse((initializers!.propVar7 as (Map<string, number> | undefined)));
   }
 
   @MemoIntrinsic() 
@@ -272,7 +281,7 @@ function main() {}
 
 }
 
-@Component() interface __Options_PropParent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}

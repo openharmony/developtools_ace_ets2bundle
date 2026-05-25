@@ -81,10 +81,11 @@ function style22(this: TextAttribute): TextAttribute {
 }
 
 
-@Component() final struct MM extends CustomComponent<MM, __Options_MM> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MM extends CustomComponent<MM, __Options_MM> {
   public __initializeStruct(initializers: (__Options_MM | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MM | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MM)=> void) | undefined), initializers: ((()=> __Options_MM) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -123,7 +124,7 @@ function style22(this: TextAttribute): TextAttribute {
   }
 }
 
-@Component() interface __Options_MM {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MM {
   
 }
 `;

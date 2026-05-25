@@ -67,13 +67,14 @@ import { Component as Component, Column as Column, NavDestination as NavDestinat
 
 function main() {}
 
-@Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___1107384 = initializers;
     (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
   }
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_NavDestinationStruct | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: NavDestinationStruct)=> void) | undefined), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -137,7 +138,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_NavDestinationStruct {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_NavDestinationStruct {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }

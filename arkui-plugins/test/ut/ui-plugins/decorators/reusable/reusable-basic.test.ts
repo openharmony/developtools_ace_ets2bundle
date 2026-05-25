@@ -63,10 +63,11 @@ import { State as State, PropRef as PropRef } from "@ohos.arkui.stateManagement"
 
 function main() {}
 
-@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -97,7 +98,7 @@ function main() {}
   }
 }
 
-@Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
@@ -118,6 +119,12 @@ function main() {}
       "num": ((paramsCasted.num) ?? (new Object())),
       "num1": ((paramsCasted.num1) ?? (new Object())),
     };
+  }
+
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_num!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
+    this.__backing_num1!.resetOnReuse(2);
   }
 
   @MemoIntrinsic() 
@@ -162,11 +169,11 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
   
 }
 
-@Component() @Reusable() interface __Options_Child {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) @Reusable() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}

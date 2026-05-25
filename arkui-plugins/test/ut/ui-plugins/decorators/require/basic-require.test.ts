@@ -174,7 +174,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 function main() {}
 
-@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_hello = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hello)})) ?? ("hello"));
@@ -198,6 +198,15 @@ function main() {}
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_select1)})) {
       this.__backing_select1!.update((initializers!.select1 as string));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_state1!.resetOnReuse(false);
+    this.__backing_select0!.resetOnReuse(undefined);
+    this.__backing_select3!.resetOnReuse(undefined);
+    this.__backing_select4!.resetOnReuse(undefined);
+    this.__backing_select1!.resetOnReuse((initializers!.select1 as string));
+    this.__backing_select2!.resetOnReuse(undefined);
+    this.__backing_select6!.resetOnReuse(undefined);
   }
 
   @MemoIntrinsic() 
@@ -323,7 +332,7 @@ function main() {}
 
 }
 
-@ComponentV2() final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
   public __initializeStruct(initializers: (__Options_V2222 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_select1 = STATE_MGMT_FACTORY.makeParam<string>(this, "select1", (initializers!.select1 as string));
   }
@@ -369,7 +378,7 @@ function main() {}
 
 }
 
-@Component() interface __Options_MyStateSample {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
 
@@ -409,7 +418,7 @@ function main() {}
   
 }
 
-@ComponentV2() interface __Options_V2222 {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_V2222 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', 'string', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}

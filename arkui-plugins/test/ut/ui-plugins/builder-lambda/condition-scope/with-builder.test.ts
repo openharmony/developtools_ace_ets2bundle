@@ -95,10 +95,11 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 }
 
 
-@Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
   public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStruct | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -164,7 +165,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 
 }
 
-@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
@@ -180,6 +181,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -221,10 +223,10 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 
 }
 
-@Component() interface __Options_MyStruct {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStruct {
   
 }
-@Component() interface __Options_Child {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }
@@ -338,10 +340,11 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 }
 
 
-@Component() final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStruct extends CustomComponent<MyStruct, __Options_MyStruct> {
   public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStruct | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStruct)=> void) | undefined), initializers: ((()=> __Options_MyStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -488,7 +491,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 
 }
 
-@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_myBuilderParam = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.myBuilderParam)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
@@ -513,15 +516,16 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
             return;
           }
         }), undefined);
-      }
-      {
-        __memo_scope.recache();
-        return;
-      }
-    })))))
+  }
+  {
+    __memo_scope.recache();
+    return;
+  }
+  })))))
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -579,11 +583,11 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 
 }
 
-@Component() interface __Options_MyStruct {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStruct {
   
 }
 
-@Component() interface __Options_Child {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
 }

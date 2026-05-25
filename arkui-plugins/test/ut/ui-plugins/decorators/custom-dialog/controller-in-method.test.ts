@@ -112,7 +112,7 @@ function main() {}
   }
 }
 
-@Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___95501822 = initializers;
     (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___46528967: Any;
@@ -128,6 +128,7 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -198,7 +199,7 @@ function main() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomDialogUser {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   

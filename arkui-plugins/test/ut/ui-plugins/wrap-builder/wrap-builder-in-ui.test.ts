@@ -78,10 +78,11 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }), undefined);
 }
 @Memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
-@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -124,7 +125,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
 }
 `;
 
@@ -211,10 +212,11 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
 @Memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 
-@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -312,7 +314,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
 }
 `;
 

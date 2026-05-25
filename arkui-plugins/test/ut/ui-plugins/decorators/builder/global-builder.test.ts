@@ -113,10 +113,11 @@ interface Person {
   }
 }
 
-@Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: BuilderDemo)=> void) | undefined), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -158,7 +159,7 @@ interface Person {
   }
 }
 
-@Component() interface __Options_BuilderDemo {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_BuilderDemo {
   
 }
 `;

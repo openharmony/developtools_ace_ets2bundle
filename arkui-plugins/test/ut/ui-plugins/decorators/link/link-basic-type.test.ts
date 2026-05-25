@@ -63,7 +63,7 @@ import { Link as Link } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
   public __initializeStruct(initializers: (__Options_LinkParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
@@ -88,6 +88,13 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_LinkParent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_LinkParent | undefined)): void {
+    this.__backing_linkVar1!.resetOnReuse(initializers!.__backing_linkVar1!);
+    this.__backing_linkVar2!.resetOnReuse(initializers!.__backing_linkVar2!);
+    this.__backing_linkVar3!.resetOnReuse(initializers!.__backing_linkVar3!);
+    this.__backing_linkVar4!.resetOnReuse(initializers!.__backing_linkVar4!);
+    this.__backing_linkVar5!.resetOnReuse(initializers!.__backing_linkVar5!);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: LinkParent)=> void) | undefined), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<LinkParent, __Options_LinkParent>(style, ((): LinkParent => {
@@ -158,7 +165,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_LinkParent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_LinkParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}

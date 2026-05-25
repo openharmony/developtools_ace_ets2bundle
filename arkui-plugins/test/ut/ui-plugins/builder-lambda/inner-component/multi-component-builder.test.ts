@@ -83,9 +83,10 @@ function main() {}
     integratedHsp: \"false\",
 } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {}
     @MemoIntrinsic() 
     public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
@@ -129,7 +130,7 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() interface __Options_A {
+@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_A {
 }
 `;
 

@@ -61,7 +61,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
   public __initializeStruct(initializers: (__Options_Ancestors | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count", "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? ("Child0")), false);
@@ -82,6 +82,16 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Ancestors | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Ancestors | undefined)): void {
+    this.__backing_count!.resetOnReuse("Child0");
+    this.__backing_count1!.resetOnReuse("Child1");
+    this.__backing_count2!.resetOnReuse("Child2");
+    this.__backing_count3!.resetOnReuse("Child3");
+    this.__backing_count4!.resetOnReuse("Child4");
+    this.__backing_count5!.resetOnReuse("Child5");
+    this.__backing_count6!.resetOnReuse("Child6");
+    this.__backing_count7!.resetOnReuse("Child7");
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Ancestors)=> void) | undefined), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -186,7 +196,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Ancestors {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Ancestors {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}

@@ -76,7 +76,7 @@ import { Link as Link, State as State, PropRef as PropRef } from "@ohos.arkui.st
 function main() {}
 
 
-@Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parant extends CustomComponent<Parant, __Options_Parant> {
   public __initializeStruct(initializers: (__Options_Parant | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text1)})) {
@@ -84,6 +84,9 @@ function main() {}
     };
     }
   public __updateStruct(initializers: (__Options_Parant | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parant | undefined)): void {
+    this.__backing_text1!.resetOnReuse(initializers!.__backing_text1!);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parant)=> void) | undefined), initializers: ((()=> __Options_Parant) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parant, __Options_Parant>(style, ((): Parant => {
@@ -138,7 +141,7 @@ function main() {}
     }
   }
 
-@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText)})) {
@@ -154,12 +157,19 @@ function main() {}
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText3)})) {
       this.__backing_childText3!.update((initializers!.childText3 as string));
-      }
+    }
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText4)})) {
       this.__backing_childText4!.update((initializers!.childText4 as string));
-      }
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_childText!.resetOnReuse(initializers!.__backing_childText!);
+    this.__backing_childText2!.resetOnReuse("sss");
+    this.__backing_childText3!.resetOnReuse((initializers!.childText3 as string));
+    this.__backing_childText4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
@@ -217,13 +227,13 @@ function main() {}
     }
   }
 
-@Component() interface __Options_Parant {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parant {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
   }
 
-@Component() interface __Options_Child {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}

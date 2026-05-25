@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-// import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -40,6 +39,7 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
+import { PropertyValueCache } from '../memo-collect-cache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 
 export class PropRefTranslator extends PropertyTranslator {
@@ -69,10 +69,27 @@ export class PropRefCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
         this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+    }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const propertyValue = this.property.value?.clone();
+        const propertyType = this.propertyType?.clone();
+        const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+        if (this.isMemoShouldUpdate) {
+            if (!!propertyValue) {
+                const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue });
+            }
+            if (!!propertyType) {
+                PropertyValueCache.getInstance().collect({ value: propertyType });
+            }
+        }
+        return factory.createResetOnReuseStmt(newName, arg);
     }
 }
 

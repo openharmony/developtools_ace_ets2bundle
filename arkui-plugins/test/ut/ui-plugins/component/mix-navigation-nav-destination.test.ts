@@ -76,7 +76,7 @@ import { State as State, Observed as Observed, ObjectLink as ObjectLink, Link as
 function main() {}
 
 
-@Component() export final struct SubNavigation extends CustomComponent<SubNavigation, __Options_SubNavigation> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export final struct SubNavigation extends CustomComponent<SubNavigation, __Options_SubNavigation> {
   public __initializeStruct(initializers: (__Options_SubNavigation | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___214357609 = initializers;
     (((gensym___214357609) == (null)) ? undefined : gensym___214357609.__options_has_isPortrait)})) {
@@ -98,6 +98,13 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_SubNavigation | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_SubNavigation | undefined)): void {
+    this.__backing_isPortrait!.resetOnReuse(initializers!.__backing_isPortrait!);
+    this.__backing_displayMode!.resetOnReuse(0);
+    this.__backing_primaryWidth!.resetOnReuse("50%");
+    this.__backing_primaryStack!.resetOnReuse(new MyNavPathStack());
+    this.__backing_secondaryStack!.resetOnReuse(new MyNavPathStack());
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: SubNavigation)=> void) | undefined), initializers: ((()=> __Options_SubNavigation) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -364,7 +371,7 @@ type OnNavigationModeChangeCallback = ((mode: NavigationMode)=> void);
 
 type OnHomeShowOnTopCallback = ((name: string)=> void);
 
-@Component() export interface __Options_SubNavigation {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export interface __Options_SubNavigation {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'isPortrait', '(boolean | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isPortrait', '(LinkSourceType<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isPortrait', '(boolean | undefined)')}

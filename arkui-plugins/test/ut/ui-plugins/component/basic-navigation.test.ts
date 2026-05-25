@@ -67,13 +67,14 @@ import { Component as Component, Navigation as Navigation, NavPathStack as NavPa
 
 function main() {}
 
-@Component() final struct MyStateSample1 extends CustomComponent<MyStateSample1, __Options_MyStateSample1> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample1 extends CustomComponent<MyStateSample1, __Options_MyStateSample1> {
   public __initializeStruct(initializers: (__Options_MyStateSample1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___1107384 = initializers;
     (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample1 | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample1 | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample1)=> void) | undefined), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -127,13 +128,14 @@ function main() {}
   }
 }
 
-@Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___199081302 = initializers;
     (((gensym___199081302) == (null)) ? undefined : gensym___199081302.pathStack)})) ?? (new NavPathStack()));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample2 | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -187,7 +189,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample1 {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample1 {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }
@@ -205,7 +207,7 @@ function main() {}
   
 }
 
-@Component() interface __Options_MyStateSample2 {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample2 {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }

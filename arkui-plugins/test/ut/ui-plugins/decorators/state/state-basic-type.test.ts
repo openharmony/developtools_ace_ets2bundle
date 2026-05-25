@@ -61,7 +61,7 @@ import { State as State } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<string>(this, "stateVar1", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? ("stateVar1")));
@@ -76,6 +76,13 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_stateVar1!.resetOnReuse("stateVar1");
+    this.__backing_stateVar2!.resetOnReuse(50);
+    this.__backing_stateVar3!.resetOnReuse(true);
+    this.__backing_stateVar4!.resetOnReuse(undefined);
+    this.__backing_stateVar5!.resetOnReuse(null);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -147,7 +154,7 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Parent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}

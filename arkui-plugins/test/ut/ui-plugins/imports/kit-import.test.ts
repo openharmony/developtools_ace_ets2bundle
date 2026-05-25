@@ -182,7 +182,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
@@ -194,6 +194,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     (((gensym___146630597) == (null)) ? undefined : gensym___146630597.__options_has_b)})) {
       this.__backing_b!.update((initializers!.b as string));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {
+    this.__backing_a!.resetOnReuse("str");
+    this.__backing_b!.resetOnReuse((initializers!.b as string));
   }
 
   @MemoIntrinsic() 
@@ -268,7 +272,7 @@ class __EntryWrapper extends EntryPoint {
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_A {
+@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_A {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}

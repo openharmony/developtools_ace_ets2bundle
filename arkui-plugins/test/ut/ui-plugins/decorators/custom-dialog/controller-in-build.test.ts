@@ -154,9 +154,10 @@ function main() {}
     this.__backing_aaController = controller;
   }
   }
-  @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+  @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
@@ -253,7 +254,7 @@ function main() {}
     throw new InvalidStoreAccessError();
   }
   }
-  @Component() interface __Options_CustomDialogUser {
+  @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomDialogUser {
   }
 `;
 
@@ -391,10 +392,11 @@ function main() {}
   }
   }
 
-  @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+  @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -502,7 +504,7 @@ function main() {}
 
   }
 
-  @Component() interface __Options_CustomDialogUser {
+  @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomDialogUser {
 
   }
 `;

@@ -80,10 +80,11 @@ function main() {}
 function aBuilder(@MemoSkip() obj: IA): void {}
 
 
-@Component() final struct TestBuilder extends CustomComponent<TestBuilder, __Options_TestBuilder> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct TestBuilder extends CustomComponent<TestBuilder, __Options_TestBuilder> {
   public __initializeStruct(initializers: (__Options_TestBuilder | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_TestBuilder | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_TestBuilder | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: TestBuilder)=> void) | undefined), initializers: ((()=> __Options_TestBuilder) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -130,7 +131,7 @@ function aBuilder(@MemoSkip() obj: IA): void {}
   }
 }
 
-@Component() interface __Options_TestBuilder {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_TestBuilder {
   
 }
 `;

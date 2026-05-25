@@ -275,7 +275,7 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<Per>(this, "conVar1", "conVar1");
     this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<Array<number>>(this, "conVar2", "conVar2");
@@ -314,6 +314,42 @@ final class PropType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_conVar1!.resetOnReuse("conVar1");
+    this.__backing_conVar2!.resetOnReuse("conVar2");
+    this.__backing_conVar3!.resetOnReuse("conVar3");
+    this.__backing_conVar4!.resetOnReuse("conVar4");
+    this.__backing_conVar5!.resetOnReuse("conVar5");
+    this.__backing_conVar6!.resetOnReuse("conVar6");
+    this.__backing_conVar7!.resetOnReuse("conVar7");
+    this.__backing_conVar8!.resetOnReuse("conVar8");
+    this.__backing_conVar9!.resetOnReuse("conVar9");
+    this.__backing_conVar10!.resetOnReuse("conVar10");
+    this.__backing_conVar11!.resetOnReuse("conVar11");
+    this.__backing_conVar12!.resetOnReuse("conVar12");
+    this.__backing_conVar13!.resetOnReuse("conVar13");
+    this.__backing_conVar14!.resetOnReuse("a", undefined, {
+defaultValue: new Array<number>(1, 2, 3),
+    });
+    this.__backing_conVar15!.resetOnReuse("b", undefined, {
+defaultValue: new Set<string>(new Array<string>("a", "b", "c")),
+    });
+    this.__backing_conVar16!.resetOnReuse("c", undefined, {
+defaultValue: [new Per(1), new Per(2), new Per(3)],
+    });
+    this.__backing_conVar17!.resetOnReuse("d", undefined, {
+defaultValue: new Date("2026-02-09"),
+    });
+    this.__backing_conVar18!.resetOnReuse("e", undefined, {
+defaultValue: new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]),
+    });
+    this.__backing_conVar19!.resetOnReuse("f", undefined, {
+defaultValue: new Per(10),
+    });
+    this.__backing_conVar20!.resetOnReuse("g", undefined, {
+defaultValue: [true, false],
+    });
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -513,7 +549,7 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component() interface __Options_Parent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(Per | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}

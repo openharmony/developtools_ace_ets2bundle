@@ -134,7 +134,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 }
 
 
-@ComponentV2() final struct Index2 extends CustomComponentV2<Index2, __Options_Index2> {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index2 extends CustomComponentV2<Index2, __Options_Index2> {
   public __initializeStruct(initializers: (__Options_Index2 | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderRegular = ((({let gensym___265903007 = initializers;
     (((gensym___265903007) == (null)) ? undefined : gensym___265903007.builderRegular)})) ?? (MyBuilder));
@@ -469,7 +469,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() final struct Index extends CustomComponent<Index, __Options_Index> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderRegular = ((({let gensym___133415523 = initializers;
     (((gensym___133415523) == (null)) ? undefined : gensym___133415523.builderRegular)})) ?? (MyBuilder));
@@ -537,6 +537,32 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     (((gensym___31031044) == (null)) ? undefined : gensym___31031044.__options_has_builderPropRef3)})) {
       this.__backing_builderPropRef3!.update((initializers!.builderPropRef3 as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
     }
+  }
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_builderState!.resetOnReuse(MyBuilder);
+    this.__backing_builderState2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderState3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderPropRef!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef)})) ?? (MyBuilder)));
+    this.__backing_builderPropRef2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderPropRef3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderLink!.resetOnReuse(initializers!.__backing_builderLink!);
+    this.__backing_builderLink2!.resetOnReuse(initializers!.__backing_builderLink2!);
+    this.__backing_builderLink3!.resetOnReuse(initializers!.__backing_builderLink3!);
+    this.__backing_builderProvide!.resetOnReuse(MyBuilder);
+    this.__backing_builderProvide2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderProvide3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderConsume!.resetOnReuse("builderConsume");
+    this.__backing_builderConsume2!.resetOnReuse("builderConsume2");
+    this.__backing_builderConsume3!.resetOnReuse("builderConsume3");
+    this.__backing_builderStoragePropRef!.resetOnReuse();
+    this.__backing_builderStoragePropRef2!.resetOnReuse();
+    this.__backing_builderStoragePropRef3!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef2!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef3!.resetOnReuse();
   }
 
   @MemoIntrinsic() 
@@ -922,7 +948,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@ComponentV2() interface __Options_Index2 {
+@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index2 {
   ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}
@@ -992,7 +1018,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsumer3', '(boolean | undefined)')}
 }
 
-@Component() interface __Options_Index {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}

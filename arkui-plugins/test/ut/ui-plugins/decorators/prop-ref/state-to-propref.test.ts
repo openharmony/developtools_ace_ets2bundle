@@ -75,7 +75,7 @@ import { PropRef as PropRef, State as State } from "@ohos.arkui.stateManagement"
 
 function main() {}
 
-@Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
   public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)));
@@ -88,6 +88,10 @@ function main() {}
       this.__backing_count!.update((initializers!.count as number));
       }
     }
+  public resetStateVarsOnReuse(initializers: (__Options_CountDownComponent | undefined)): void {
+    this.__backing_count!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CountDownComponent)=> void) | undefined), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CountDownComponent, __Options_CountDownComponent>(style, ((): CountDownComponent => {
@@ -147,12 +151,15 @@ function main() {}
     }
   }
 
-@Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)));
     }
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
+    this.__backing_countDownStartValue!.resetOnReuse(10);
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ParentComponent, __Options_ParentComponent>(style, ((): ParentComponent => {
@@ -212,7 +219,7 @@ function main() {}
     }
   }
 
-@Component() interface __Options_CountDownComponent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CountDownComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IPropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
@@ -222,7 +229,7 @@ function main() {}
   
 }
 
-@Component() interface __Options_ParentComponent {
+@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ParentComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_countDownStartValue', '(IStateDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_countDownStartValue', '(boolean | undefined)')}

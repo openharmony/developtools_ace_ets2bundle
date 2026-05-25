@@ -96,6 +96,7 @@ import {
     APIVersions,
     APIComparison,
     INNER_COMPONENT_NON_SKIP_DECL_NAMES,
+    GlobalReusePoolNames,
 } from '../../common/predefines';
 import { BaseObservedPropertyTranslator } from '../property-translators/index';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
@@ -733,6 +734,70 @@ export class factory {
             aniFunc,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
+        );
+    }
+
+    static createGlobalReusePoolBackingField(): arkts.ClassProperty {
+        collectStateManagementTypeImport(StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE);
+        const type = arkts.factory.createTypeReference(
+            arkts.factory.createTypeReferencePart(
+                arkts.factory.createIdentifier(StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE)
+            )
+        );
+        const property = arkts.factory.createClassProperty(
+            arkts.factory.createIdentifier(GlobalReusePoolNames.BACKING_REUSE_POOL),
+            undefined,
+            type,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            false
+        );
+        return arkts.classPropertySetOptional(property, true);
+    }
+
+    static createGlobalReusePoolInitStatement(
+        reusePoolValue: arkts.Expression,
+        poolAcceptsValue: arkts.Expression
+    ): arkts.ExpressionStatement {
+        collectStateManagementTypeImport(StateManagementTypes.STATE_MANAGEMENT_FACTORY);
+        const poolAcceptsElements = factory.transformPoolAccepts(poolAcceptsValue);
+        const makeCall = PropertyFactory.generateStateMgmtFactoryCall(
+            StateManagementTypes.MAKE_GLOBAL_REUSE_POOL,
+            undefined,
+            [reusePoolValue, poolAcceptsElements, arkts.factory.createThisExpression()],
+            false
+        );
+        return arkts.factory.createExpressionStatement(
+            arkts.factory.createAssignmentExpression(
+                generateThisBacking(GlobalReusePoolNames.BACKING_REUSE_POOL),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
+                makeCall
+            )
+        );
+    }
+
+    static transformPoolAccepts(poolAcceptsValue: arkts.Expression): arkts.ArrayExpression {
+        const elements: arkts.Expression[] = [];
+        if (arkts.isArrayExpression(poolAcceptsValue)) {
+            for (const elem of poolAcceptsValue.elements) {
+                if (arkts.isStringLiteral(elem)) {
+                    elements.push(factory.createTypeFromExpression(elem.str));
+                }
+            }
+        }
+        return arkts.factory.createArrayExpression(elements);
+    }
+
+    static createTypeFromExpression(className: string): arkts.CallExpression {
+        return arkts.factory.createCallExpression(
+            arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier('Class'),
+                arkts.factory.createIdentifier('from'),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            ),
+            [UIFactory.createTypeReferenceFromString(className)],
+            []
         );
     }
 
