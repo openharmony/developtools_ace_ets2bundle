@@ -14,7 +14,7 @@
  */
 
 #include "memoryTracker.h"
-
+#include "interop-logging.h"
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -87,40 +87,44 @@ MemoryStats GetMemoryStats()
 }
 
 #elif defined(__linux__)
+static void ParseMemoryStatusLine(const std::string& line, MemoryStats& stats)
+{
+    std::smatch matches;
+    if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+        stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        std::string unit = matches[MATCH_GROUP_UNIT].str();
+        if (unit == UNIT_K) {
+            stats.currentRss *= BYTES_PER_KB;
+        }
+    } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
+        stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        std::string unit = matches[MATCH_GROUP_UNIT].str();
+        if (unit == UNIT_K) {
+            stats.currentVss *= BYTES_PER_KB;
+        }
+    }
+}
+
 MemoryStats GetMemoryStats()
 {
     MemoryStats stats = {0, 0, 0, 0, 0};
     struct rusage ru;
     if (getrusage(RUSAGE_SELF, &ru) == 0) {
-        stats.peakRss = static_cast<size_t>(ru.ru_maxrss) * BYTES_PER_KB; // KB -> 字节
-        stats.pageFaultsMinor = ru.ru_minflt;
-        stats.pageFaultsMajor = ru.ru_majflt;
+        stats.peakRss = static_cast<size_t>(ru.ru_maxrss) * BYTES_PER_KB;
+        stats.pageFaultsMinor = static_cast<size_t>(ru.ru_minflt);
+        stats.pageFaultsMajor = static_cast<size_t>(ru.ru_majflt);
     }
     std::ifstream statusFile(MEMORY_STATUS_FILE);
     if (!statusFile) {
         return stats;
     }
     std::string line;
-    std::smatch matches;
     while (std::getline(statusFile, line)) {
-        if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentRss *= BYTES_PER_KB;
-            }
-        } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-            stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
-            std::string unit = matches[MATCH_GROUP_UNIT].str();
-            if (unit == UNIT_K) {
-                stats.currentVss *= BYTES_PER_KB;
-            }
-        }
+        ParseMemoryStatusLine(line, stats);
     }
     return stats;
 }
 #endif
-
 void MemoryTracker::Reset()
 {
     baseline = GetMemoryStats();
@@ -156,7 +160,7 @@ MemoryStats MemoryTracker::MeasureMemory(Func&& func)
     };
 }
 
-void MemoryTracker::Report(MemoryStats stats)
+void MemoryTracker::Report(MemoryStats stats) const
 {
     auto formatBytes = [](size_t bytes) -> std::string {
         const double kb = BYTES_PER_KB;

@@ -76,7 +76,7 @@ KNativePointer impl_ConfigGetOptions(KNativePointer config)
 {
     const auto _config = reinterpret_cast<es2panda_Config*>(config);
     auto result = GetImpl()->ConfigGetOptions(_config);
-    return (void*)result;
+    return reinterpret_cast<void*>(const_cast<es2panda_Options*>(result));
 }
 KOALA_INTEROP_1(ConfigGetOptions, KNativePointer, KNativePointer)
 
