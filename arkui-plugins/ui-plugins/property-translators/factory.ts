@@ -1079,4 +1079,21 @@ export class factory {
             false
         );
     }
+
+    static stringLiteralToMemberExpression(node: arkts.Expression): arkts.Expression {
+        if (!arkts.isStringLiteral(node)) {
+            return node;
+        }
+        const parts: string[] = node.str.split('.');
+        if (parts.length !== 2) {
+            return node;
+        }
+        return arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier(parts[0]),
+            arkts.factory.createIdentifier(parts[1]),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+            false,
+            false
+        );
+    }
 }
