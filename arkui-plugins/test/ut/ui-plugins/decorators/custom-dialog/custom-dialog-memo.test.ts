@@ -81,7 +81,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/custom-dialog/custom-dialog-memo",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", ((({let gensym___93787132 = initializers;
     (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (({let gensym___203542966: Any;
@@ -163,7 +163,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@CustomDialog() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct customDialogExample extends BaseCustomDialog<customDialogExample, __Options_customDialogExample> {
+@CustomDialog() @Component() final struct customDialogExample extends BaseCustomDialog<customDialogExample, __Options_customDialogExample> {
   public __initializeStruct(initializers: (__Options_customDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___249436970 = initializers;
     (((gensym___249436970) == (null)) ? undefined : gensym___249436970.__options_has_controller)})) {
@@ -249,7 +249,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Entry() @Component() interface __Options_MyStateSample {
   @State() 
   get controller(): ((CustomDialogController | null) | undefined) {
     return undefined;
@@ -273,7 +273,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@CustomDialog() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_customDialogExample {
+@CustomDialog() @Component() interface __Options_customDialogExample {
   get controller(): (CustomDialogController | undefined) {
     return undefined;
   }
@@ -336,7 +336,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/custom-dialog/custom-dialog-memo",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_controller = STATE_MGMT_FACTORY.makeState<(CustomDialogController | null)>(this, "controller", ((({let gensym___93787132 = initializers;
     (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (({let gensym___203542966: Any;
@@ -446,7 +446,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@CustomDialog() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct customDialogExample extends BaseCustomDialog<customDialogExample, __Options_customDialogExample> {
+@CustomDialog() @Component() final struct customDialogExample extends BaseCustomDialog<customDialogExample, __Options_customDialogExample> {
   public __initializeStruct(initializers: (__Options_customDialogExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     if (({let gensym___249436970 = initializers;
     (((gensym___249436970) == (null)) ? undefined : gensym___249436970.__options_has_controller)})) {
@@ -561,7 +561,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Entry() @Component() interface __Options_MyStateSample {
   @State() 
   get controller(): ((CustomDialogController | null) | undefined) {
     return undefined;
@@ -585,7 +585,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@CustomDialog() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_customDialogExample {
+@CustomDialog() @Component() interface __Options_customDialogExample {
   get controller(): (CustomDialogController | undefined) {
     return undefined;
   }

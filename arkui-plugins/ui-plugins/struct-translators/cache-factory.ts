@@ -381,6 +381,11 @@ export class CacheFactory {
             if (structType === StructType.CUSTOM_COMPONENT_DECL) {
                 return [child];
             }
+            if (arkts.isMethodDefinition(child) &&
+                child.name.name === CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD &&
+                arkts.hasModifierFlag(child, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC)) {
+                return [];
+            }
             hasStaticBlock = arkts.isClassStaticBlock(child);
             const nodes = PropertyRewriteCache.getInstance().getRewriteNodes(child.peer);
             if (nodes.length > 0) {

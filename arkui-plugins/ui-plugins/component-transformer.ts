@@ -27,6 +27,7 @@ import {
     getComponentExtendsName,
     ComponentType,
     EntryAnnoInfo,
+    getValueInObjectAnnotation,
 } from './utils';
 import {
     backingField,
@@ -61,6 +62,7 @@ import {
     APIVersions,
     APIComparison,
     StateManagementTypes,
+    ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME,
 } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
 import { MetaDataCollector } from '../common/metadata-collector';
@@ -377,6 +379,181 @@ export class ComponentTransformer extends AbstractVisitor {
         }
     }
 
+    getSystemEnvKeyType(envKeyClass: string): string | undefined {
+        if (envKeyClass === StateManagementTypes.WRITABLE_ENV_KEY) {
+            return StateManagementTypes.WRITABLE_SYSTEM_ENV_KEY;
+        }
+        if (envKeyClass === StateManagementTypes.READONLY_ENV_KEY) {
+            return StateManagementTypes.READONLY_SYSTEM_ENV_KEY;
+        }
+        return undefined;
+    }
+
+    generateEnvTypeCheckStatements(
+        definition: arkts.ClassDefinition
+    ): arkts.Statement[] {
+        const statements: arkts.Statement[] = [];
+        for (const member of definition.body) {
+            if (!arkts.isClassProperty(member) || !hasDecoratorName(member, DecoratorNames.ENV)) {
+                continue;
+            }
+            const propertyName: string = expectName(member.key);
+            const typeAnnotation = member.typeAnnotation;
+            let envValueExpr: arkts.Expression | undefined;
+            for (const anno of member.annotations) {
+                if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.ENV) {
+                    envValueExpr = getValueInObjectAnnotation(anno, DecoratorNames.ENV, 'value');
+                    break;
+                }
+            }
+            if (!envValueExpr || !arkts.isStringLiteral(envValueExpr)) {
+                continue;
+            }
+            const envPattern = /^(WritableEnvKey|ReadonlyEnvKey)\.(\w+)$/;
+            const match = envPattern.exec(envValueExpr.str);
+            if (!match) {
+                continue;
+            }
+            const envKeyClass = match[1];
+            const envKeyMember = match[2];
+            const systemEnvKeyType = this.getSystemEnvKeyType(envKeyClass);
+            if (!systemEnvKeyType) {
+                continue;
+            }
+
+            this.importCollector.collectSource(envKeyClass, ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME);
+            this.importCollector.collectImport(envKeyClass);
+            this.importCollector.collectSource(systemEnvKeyType, ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME);
+            this.importCollector.collectImport(systemEnvKeyType);
+
+            const memberExpr = arkts.factory.createMemberExpression(
+                arkts.factory.createIdentifier(envKeyClass),
+                arkts.factory.createIdentifier(envKeyMember),
+                arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                false,
+                false
+            );
+            if (envValueExpr.range) {
+                memberExpr.range = envValueExpr.range;
+            }
+
+            const systemEnvKeyRef = arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(systemEnvKeyType),
+                    typeAnnotation
+                        ? arkts.factory.createTSTypeParameterInstantiation([typeAnnotation.clone()])
+                        : undefined
+                )
+            );
+            const varDeclarator = arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                arkts.factory.createIdentifier(`__env_${propertyName}`, systemEnvKeyRef),
+                memberExpr
+            );
+            const varDecl = arkts.factory.createVariableDeclaration(
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+                [varDeclarator]
+            );
+            if (envValueExpr.range) {
+                varDecl.range = envValueExpr.range;
+            }
+            statements.push(varDecl);
+        }
+        return statements;
+    }
+
+    generateCustomEnvTypeCheckStatements(
+        definition: arkts.ClassDefinition
+    ): arkts.Statement[] {
+        const statements: arkts.Statement[] = [];
+        for (const member of definition.body) {
+            if (!arkts.isClassProperty(member) || !hasDecoratorName(member, DecoratorNames.CUSTOM_ENV)) {
+                continue;
+            }
+            const propertyName: string = expectName(member.key);
+            const typeAnnotation = member.typeAnnotation;
+            let envKeyExpr: arkts.Expression | undefined;
+            for (const anno of member.annotations) {
+                if (anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === DecoratorNames.CUSTOM_ENV) {
+                    envKeyExpr = getValueInObjectAnnotation(anno, DecoratorNames.CUSTOM_ENV, 'value');
+                    break;
+                }
+            }
+            if (!envKeyExpr || !arkts.isStringLiteral(envKeyExpr)) {
+                continue;
+            }
+            const envKeyId = arkts.factory.createIdentifier(envKeyExpr.str);
+            if (envKeyExpr.range) {
+                envKeyId.range = envKeyExpr.range;
+            }
+            const customEnvKeyType = arkts.factory.createTypeReference(
+                arkts.factory.createTypeReferencePart(
+                    arkts.factory.createIdentifier(StateManagementTypes.CUSTOM_ENV_KEY),
+                    typeAnnotation
+                        ? arkts.factory.createTSTypeParameterInstantiation([typeAnnotation.clone()])
+                        : undefined
+                )
+            );
+            const varDeclarator = arkts.factory.createVariableDeclarator(
+                arkts.Es2pandaVariableDeclaratorFlag.VARIABLE_DECLARATOR_FLAG_CONST,
+                arkts.factory.createIdentifier(`__customEnv_${propertyName}`, customEnvKeyType),
+                envKeyId
+            );
+            const varDecl = arkts.factory.createVariableDeclaration(
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+                arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
+                [varDeclarator]
+            );
+            if (envKeyExpr.range) {
+                varDecl.range = envKeyExpr.range;
+            }
+            statements.push(varDecl);
+        }
+        return statements;
+    }
+
+    generateResolveDecoratorSymbolsMethod(
+        definition: arkts.ClassDefinition
+    ): arkts.MethodDefinition | undefined {
+        const bodyStatements: arkts.Statement[] = [
+            ...this.generateEnvTypeCheckStatements(definition),
+            ...this.generateCustomEnvTypeCheckStatements(definition),
+        ];
+        if (bodyStatements.length === 0) {
+            return undefined;
+        }
+
+        const body = arkts.factory.createBlock(bodyStatements);
+        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const key = arkts.factory.createIdentifier(CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD);
+        const modifiers =
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+
+        const scriptFunction = arkts.factory
+            .createScriptFunction(
+                body,
+                arkts.FunctionSignature.createFunctionSignature(
+                    undefined,
+                    [],
+                    returnTypeAnnotation,
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            )
+            .setIdent(key);
+
+        return arkts.factory.createMethodDefinition(
+            arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
+            key,
+            scriptFunction,
+            modifiers,
+            false
+        );
+    }
+
     createNewDefinition(
         node: arkts.ClassDeclaration | arkts.StructDeclaration,
         className: string,
@@ -389,6 +566,10 @@ export class ComponentTransformer extends AbstractVisitor {
             if (!!buildCompatibleNode) {
                 staticMethodBody.push(buildCompatibleNode);
             }
+        }
+        const resolveMethod = this.generateResolveDecoratorSymbolsMethod(definition);
+        if (resolveMethod) {
+            staticMethodBody.push(resolveMethod);
         }
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         const isDecl = scopeInfo.isDecl;

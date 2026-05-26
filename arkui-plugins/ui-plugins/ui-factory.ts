@@ -373,7 +373,7 @@ export class factory {
             } else {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
             }
-            if (st.typeAnnotation && hasDecoratorName(st, DecoratorNames.ENV)) {
+            if (st.typeAnnotation && (hasDecoratorName(st, DecoratorNames.ENV) || hasDecoratorName(st, DecoratorNames.CUSTOM_ENV))) {
                 st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
             }
         }
