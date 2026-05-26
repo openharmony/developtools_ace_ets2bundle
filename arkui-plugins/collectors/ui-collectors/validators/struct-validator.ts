@@ -20,6 +20,7 @@ import {
     checkComponentV2Mix,
     checkCustomDialogMissingController,
     checkEntryStructNoExport,
+    checkGlobalReuse,
     checkMainPagesEntry,
     checkNoDuplicatePreview,
     checkNoSameAsBuiltInAttribute,
@@ -41,6 +42,7 @@ export class StructValidator extends BaseValidator<arkts.ClassDeclaration, Custo
         checkCustomDialogMissingController.bind(this)(node);
         checkNoSameAsBuiltInAttribute.bind(this)(node);
         checkEntryStructNoExport.bind(this)(node);
+        checkGlobalReuse.bind(this)(node);
         checkMainPagesEntry.bind(this)(node);
         checkNoDuplicatePreview.bind(this)(node);
     }
