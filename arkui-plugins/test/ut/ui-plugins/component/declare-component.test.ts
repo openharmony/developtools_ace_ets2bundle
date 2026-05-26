@@ -189,7 +189,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/component/declare-component",
   integratedHsp: "false",
 } as NavInterface));
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
+@Component() export declare final struct SwipeRefresher extends CustomComponent<SwipeRefresher, __Options_SwipeRefresher> {
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_SwipeRefresher, storage?: LocalStorage, @Builder() content?: (()=> void)): SwipeRefresher
   
@@ -207,7 +207,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export declare final struct DeclaredComponentV2 extends CustomComponentV2<DeclaredComponentV2, __Options_DeclaredComponentV2> implements PageLifeCycle {
+@Entry() @ComponentV2() export declare final struct DeclaredComponentV2 extends CustomComponentV2<DeclaredComponentV2, __Options_DeclaredComponentV2> implements PageLifeCycle {
   @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_DeclaredComponentV2, storage?: LocalStorage, @Builder() content?: (()=> void)): DeclaredComponentV2
   
@@ -251,7 +251,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export declare interface __Options_SwipeRefresher {
+@Component() export declare interface __Options_SwipeRefresher {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)', [dumpAnnotation('PropRef')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}
@@ -262,7 +262,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export declare interface __Options_DeclaredComponentV2 {
+@Entry() @ComponentV2() export declare interface __Options_DeclaredComponentV2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '(number | undefined)', [dumpAnnotation('Local')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(ILocalDecoratedVariable<number> | undefined)', [], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}

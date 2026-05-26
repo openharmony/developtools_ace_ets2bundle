@@ -448,9 +448,9 @@ export class ComponentTransformer extends AbstractVisitor {
         const members = filterDefined(
             collect(
                 ...node.definition.body.filter(arkts.isClassProperty).map((it) => {
-                    if (hasDecoratorName(it, DecoratorNames.PROVIDE)) {
-                        UIFactory.processNoAliasProvideVariable(it);
-                    }
+                    // if (hasDecoratorName(it, DecoratorNames.PROVIDE)) {
+                    //     UIFactory.processNoAliasProvideVariable(it);
+                    // }
                     return this.createInterfaceInnerMember(it);
                 })
             )

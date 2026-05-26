@@ -174,7 +174,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_hello = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hello)})) ?? ("hello"));
@@ -332,7 +332,7 @@ function main() {}
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
+@ComponentV2() final struct V2222 extends CustomComponentV2<V2222, __Options_V2222> {
   public __initializeStruct(initializers: (__Options_V2222 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_select1 = STATE_MGMT_FACTORY.makeParam<string>(this, "select1", (initializers!.select1 as string));
   }
@@ -378,7 +378,7 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
 
@@ -405,11 +405,11 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', 'Array<string>', [dumpAnnotation('Provide', { alias: "15", allowOverride: false }), dumpAnnotation('Require')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', 'Array<string>', [dumpAnnotation('Provide', { alias: "15" }), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select2', '(IProvideDecoratedVariable<Array<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '(Array<string> | undefined | string)', [dumpAnnotation('Provide', { alias: "t", allowOverride: false }), dumpAnnotation('Require')], [], false)}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '(Array<string> | undefined | string)', [dumpAnnotation('Provide', { alias: "t" }), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select6', '(boolean | undefined)')}
 
@@ -418,7 +418,7 @@ function main() {}
   
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_V2222 {
+@ComponentV2() interface __Options_V2222 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', 'string', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}

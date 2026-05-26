@@ -199,6 +199,10 @@ export function importDeclarationInsert(node: ETSImportDeclaration, program: Pro
     global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer);
 }
 
+export function getAnnotationDeclarationProperties(node: AnnotationUsage): ClassProperty[] {
+    return unpackNodeArray(global.es2panda._GetAnnotationDeclarationProperties(global.context, node.peer));
+}
+
 export function getProgramFromAstNode(node: AstNode): Program | undefined {
     const programPeer = global.es2panda._AstNodeProgram(global.context, node.peer);
     if (programPeer === nullptr) {

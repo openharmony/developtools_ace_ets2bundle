@@ -70,7 +70,7 @@ function builderOne() {
   }), undefined);
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Page1 extends CustomComponent<Page1, __Options_Page1> {
+@Component() final struct Page1 extends CustomComponent<Page1, __Options_Page1> {
   public __initializeStruct(initializers: (__Options_Page1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = ((({let gensym___117212394 = initializers;
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World"));
@@ -128,7 +128,7 @@ class __NavigationBuilderRegisterClass {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Page1 {
+@Component() interface __Options_Page1 {
   get message(): (string | undefined) {
   return undefined;
   }

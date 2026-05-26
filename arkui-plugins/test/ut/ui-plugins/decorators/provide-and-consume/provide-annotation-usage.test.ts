@@ -61,7 +61,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
+@Component() final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
   public __initializeStruct(initializers: (__Options_Ancestors | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_count = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count", "count", ((({let gensym___58710805 = initializers;
     (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? ("Child0")), false);
@@ -196,12 +196,12 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Ancestors {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
+@Component() interface __Options_Ancestors {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov1", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count1', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count1', '(boolean | undefined)')}
 
@@ -213,11 +213,11 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count3', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "count4" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride:false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count4', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "count5" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride:true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count5', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count5', '(boolean | undefined)')}
 
@@ -225,7 +225,7 @@ function main() {}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count7', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count7', '(boolean | undefined)')}
   

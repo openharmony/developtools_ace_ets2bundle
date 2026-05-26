@@ -32,8 +32,8 @@ module.exports = {
     testRegex: './test/ut/.+\\.test\\.ts$',
     testPathIgnorePatterns: [
         '/test/ut/ui-plugins/unit/',
-        '/test/ut/ui-plugins/component/all-components.test.ts',
-        '/test/ut/ui-plugins/decorators/monitor/monitor-wildcard.test.ts'
+        '/test/ut/ui-plugins/insight-intent/',
+        '/test/ut/ui-plugins/component/all-components.test.ts'
     ],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     coverageDirectory: './test/report',

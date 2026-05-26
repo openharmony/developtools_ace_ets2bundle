@@ -61,7 +61,7 @@ import { Provider as Provider } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_providerVar1 = STATE_MGMT_FACTORY.makeProvider<string>(this, "providerVar1", "providerVar1", "propVar1");
     this.__backing_providerVar2 = STATE_MGMT_FACTORY.makeProvider<number>(this, "providerVar2", "providerVar2", 50);
@@ -146,24 +146,24 @@ function main() {}
     }
   }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
+@ComponentV2() interface __Options_Parent {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)', [dumpAnnotation('Provider')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar1', '(IProviderDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar2', '(number | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar2', '(number | undefined)', [dumpAnnotation('Provider')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar2', '(IProviderDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar3', '(boolean | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar3', '(boolean | undefined)', [dumpAnnotation('Provider')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar3', '(IProviderDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar4', '(undefined | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar4', '(undefined | undefined)', [dumpAnnotation('Provider')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar4', '(IProviderDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar5', '(null | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar5', '(null | undefined)', [dumpAnnotation('Provider')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar5', '(IProviderDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar5', '(boolean | undefined)')}
 

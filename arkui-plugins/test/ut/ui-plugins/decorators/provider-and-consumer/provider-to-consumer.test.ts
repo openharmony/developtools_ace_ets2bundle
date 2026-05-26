@@ -168,7 +168,7 @@ function main() {}
   }
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_users = STATE_MGMT_FACTORY.makeProvider<Array<User>>(this, "users", "data", data);
   }
@@ -240,7 +240,7 @@ function main() {}
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponentV2<Child, __Options_Child> {
+@ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_users = STATE_MGMT_FACTORY.makeConsumer<Array<User>>(this, "users", "data", []);
   }
@@ -318,14 +318,14 @@ function main() {}
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Provider', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
   
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Consumer', { value: "data" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}

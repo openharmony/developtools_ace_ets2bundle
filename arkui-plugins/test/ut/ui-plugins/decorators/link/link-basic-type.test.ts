@@ -63,7 +63,7 @@ import { Link as Link } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
+@Component() final struct LinkParent extends CustomComponent<LinkParent, __Options_LinkParent> {
   public __initializeStruct(initializers: (__Options_LinkParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
@@ -165,7 +165,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_LinkParent {
+@Component() interface __Options_LinkParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}

@@ -466,7 +466,7 @@ class ANodeController extends NodeController {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_controller = ((({let gensym___93787132 = initializers;
     (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (new RichEditorController()));
@@ -1039,7 +1039,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Entry() @Component() interface __Options_MyStateSample {
   get controller(): (RichEditorController | undefined) {
     return undefined;
   }

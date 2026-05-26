@@ -88,7 +88,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/debug-line",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct DebugLineComponent extends CustomComponent<DebugLineComponent, __Options_DebugLineComponent> implements PageLifeCycle {
+@Entry() @Component() final struct DebugLineComponent extends CustomComponent<DebugLineComponent, __Options_DebugLineComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_DebugLineComponent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_DebugLineComponent | undefined)): void {}
@@ -177,7 +177,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyComponent extends CustomComponent<MyComponent, __Options_MyComponent> {
+@Component() final struct MyComponent extends CustomComponent<MyComponent, __Options_MyComponent> {
   public __initializeStruct(initializers: (__Options_MyComponent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyComponent | undefined)): void {}
@@ -275,11 +275,11 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_DebugLineComponent {
+@Entry() @Component() interface __Options_DebugLineComponent {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyComponent {
+@Component() interface __Options_MyComponent {
   
 }
 

@@ -80,7 +80,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     throw new Error("Declare interface");
   }
   
-  @Provide({alias:"num"}) public num: number = 10;
+  @Provide() public num: number = 10;
 
   @Provide({alias:"ss"}) public str: string = "hello";
 
@@ -112,8 +112,8 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 @Component() interface __Options_Parent {
   ${ignoreNewLines(`
-  @Provide({alias:"num"}) num?: number;
-  @Provide({alias:"num"}) __backing_num?: number;
+  @Provide() num?: number;
+  @Provide() __backing_num?: number;
   __options_has_num?: boolean;
   @Provide({alias:"ss"}) str?: string;
   @Provide({alias:"ss"}) __backing_str?: string;
@@ -156,7 +156,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = STATE_MGMT_FACTORY.makeConsume<number>(this, "num", "num");
     this.__backing_str = STATE_MGMT_FACTORY.makeConsume<string>(this, "str", "ss");
@@ -226,7 +226,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_num = STATE_MGMT_FACTORY.makeProvide<number>(this, "num", "num", ((({let gensym___83257243 = initializers;
     (((gensym___83257243) == (null)) ? undefined : gensym___83257243.num)})) ?? (10)), false);
@@ -299,8 +299,8 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+@Component() interface __Options_Child {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IConsumeDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
@@ -310,12 +310,12 @@ function main() {}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Provide', { alias: "num", allowOverride: false })])}
+@Component() interface __Options_Parent {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Provide', { alias: "ss", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Provide', { alias: "ss" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
   

@@ -60,7 +60,7 @@ import { ns as ns } from "./export-namespace";
 function main() {}
 
 ns.ns_num;
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponent<Index, __Options_Index> {
+@Component() final struct Index extends CustomComponent<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -93,7 +93,7 @@ ns.ns_num;
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Component() interface __Options_Index {
   
 }
 `;

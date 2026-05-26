@@ -81,7 +81,7 @@ function style22(this: TextAttribute): TextAttribute {
 }
 
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MM extends CustomComponent<MM, __Options_MM> {
+@Component() final struct MM extends CustomComponent<MM, __Options_MM> {
   public __initializeStruct(initializers: (__Options_MM | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
@@ -124,7 +124,7 @@ function style22(this: TextAttribute): TextAttribute {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MM {
+@Component() interface __Options_MM {
   
 }
 `;

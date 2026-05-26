@@ -120,7 +120,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localVar1 = STATE_MGMT_FACTORY.makeLocal<Per>(this, "localVar1", new Per(6));
     this.__backing_localVar2 = STATE_MGMT_FACTORY.makeLocal<Array<number>>(this, "localVar2", new Array<number>(3, 6, 8));
@@ -279,7 +279,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(Per | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}

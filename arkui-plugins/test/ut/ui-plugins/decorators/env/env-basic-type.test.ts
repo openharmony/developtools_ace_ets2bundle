@@ -196,7 +196,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/env/env-basic-type",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_breakpoint = STATE_MGMT_FACTORY.makeEnv<uiObserver.WindowSizeLayoutBreakpointInfo>(this, SystemProperties.BREAK_POINT, "breakpoint");
     this.__backing_sizeInVP = STATE_MGMT_FACTORY.makeEnv<window.SizeInVP>(this, SystemProperties.WINDOW_SIZE, "sizeInVP");
@@ -398,7 +398,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Entry() @ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'breakpoint', '(uiObserver.WindowSizeLayoutBreakpointInfo | undefined)', ['@Env({value:SystemProperties.BREAK_POINT})'])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_breakpoint', '(IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_breakpoint', '(boolean | undefined)')}

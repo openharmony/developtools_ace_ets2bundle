@@ -148,7 +148,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   private __backing_reusePool?: IGlobalReusePoolVariable;
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_reusePool = STATE_MGMT_FACTORY.makeGlobalReusePool(ReusePoolOwnership.SHARED, [Class.from<ComA>(), Class.from<ComB>()], this);
@@ -189,7 +189,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Reusable() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ComA extends CustomComponent<ComA, __Options_ComA> {
+@Reusable() @Component() final struct ComA extends CustomComponent<ComA, __Options_ComA> {
   public __initializeStruct(initializers: (__Options_ComA | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___133282677 = initializers;
     (((gensym___133282677) == (null)) ? undefined : gensym___133282677.__options_has_linkVar)})) {
@@ -426,7 +426,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@ReusableV2() @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ComB extends CustomComponentV2<ComB, __Options_ComB> {
+@ReusableV2() @ComponentV2() final struct ComB extends CustomComponentV2<ComB, __Options_ComB> {
   public __initializeStruct(initializers: (__Options_ComB | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ComB | undefined)): void {}
@@ -477,11 +477,11 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) interface __Options_Index {
+@Entry() @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) interface __Options_Index {
   
 }
 
-@Reusable() @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ComA {
+@Reusable() @Component() interface __Options_ComA {
   @Link() 
   get linkVar(): (number | undefined) {
     return undefined;
@@ -578,11 +578,11 @@ class __EntryWrapper extends EntryPoint {
   set __options_has_objLinkVar(__options_has_objLinkVar: (boolean | undefined)) {
     throw new InvalidStoreAccessError();
   }
-  @Provide({alias:"alias",allowOverride:false}) 
+  @Provide({alias:"alias"}) 
   get provideVar(): (string | undefined) {
     return undefined;
   }
-  @Provide({alias:"alias",allowOverride:false}) 
+  @Provide({alias:"alias"}) 
   set provideVar(provideVar: (string | undefined)) {
     throw new InvalidStoreAccessError();
   }
@@ -638,11 +638,11 @@ class __EntryWrapper extends EntryPoint {
   set __options_has_propVar2(__options_has_propVar2: (boolean | undefined)) {
     throw new InvalidStoreAccessError();
   }
-  @Consume({alias:""}) 
+  @Consume() 
   get consumeVar1(): (string | undefined) {
     return undefined;
   }
-  @Consume({alias:""}) 
+  @Consume() 
   set consumeVar1(consumeVar1: (string | undefined)) {
     throw new InvalidStoreAccessError();
   }
@@ -745,7 +745,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@ReusableV2() @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ComB {
+@ReusableV2() @ComponentV2() interface __Options_ComB {
   
 }
 

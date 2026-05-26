@@ -80,7 +80,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     integratedHsp: \"false\",
 } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
     public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {}
@@ -127,7 +127,7 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_A {
+@Entry() @Component() interface __Options_A {
 }
 `;
 

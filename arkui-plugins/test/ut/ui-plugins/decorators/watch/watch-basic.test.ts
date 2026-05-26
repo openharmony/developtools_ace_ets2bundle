@@ -153,7 +153,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_statevar = STATE_MGMT_FACTORY.makeState<string>(this, "statevar", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")), ((_: string): void => {
@@ -286,7 +286,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_providevar = STATE_MGMT_FACTORY.makeConsume<string>(this, "providevar", "providevar", ((_: string): void => {
       this.ConsumeOnChange(_);
@@ -338,7 +338,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Entry() @Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'statevar', '(string | undefined)', [dumpAnnotation('State'), dumpAnnotation('Watch', { value: 'stateOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_statevar', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_statevar', '(boolean | undefined)')}
@@ -363,14 +363,14 @@ class __EntryWrapper extends EntryPoint {
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Provide', { alias: "providevar", allowOverride: false }), dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Provide'), dumpAnnotation('Watch', { value: 'ProvideOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Consume', { alias: "" }), dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
+@Component() interface __Options_Child {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'providevar', '(string | undefined)', [dumpAnnotation('Consume'), dumpAnnotation('Watch', { value: 'ConsumeOnChange' })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providevar', '(IConsumeDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providevar', '(boolean | undefined)')}
   
