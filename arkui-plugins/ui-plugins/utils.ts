@@ -117,12 +117,16 @@ export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkt
 }
 
 // ANNOTATION
-export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
-    return !!getPropertyInAnnotation(annotation, propertyName);
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string, allowDefault?: boolean): boolean {
+    return !!getPropertyInAnnotation(annotation, propertyName, allowDefault);
 }
 
-export function getPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): arkts.ClassProperty | undefined {
-    return annotation.properties.find(
+export function getPropertyInAnnotation(
+    annotation: arkts.AnnotationUsage, 
+    propertyName: string, 
+    allowDefault?: boolean
+): arkts.ClassProperty | undefined {
+    return (allowDefault ? arkts.getAnnotationDeclarationProperties(annotation) : annotation.properties).find(
         (annoProp: arkts.AstNode) =>
             arkts.isClassProperty(annoProp) &&
             annoProp.key &&
@@ -489,7 +493,8 @@ export function expectNameInTypeReference(node: arkts.TypeNode | undefined): ark
 export function getValueInObjectAnnotation(
     anno: arkts.AnnotationUsage | undefined,
     decoratorName: string,
-    key: string
+    key: string,
+    allowDefault?: boolean
 ): arkts.Expression | undefined {
     if (!anno) {
         return undefined;
@@ -499,7 +504,10 @@ export function getValueInObjectAnnotation(
     if (!isSuitableAnnotation) {
         return undefined;
     }
-    const keyItem: arkts.AstNode | undefined = anno.properties.find(
+    const keyItem: arkts.AstNode | undefined = (allowDefault 
+        ? arkts.getAnnotationDeclarationProperties(anno) 
+        : anno.properties
+    ).find(
         (annoProp: arkts.AstNode) =>
             arkts.isClassProperty(annoProp) &&
             annoProp.key &&

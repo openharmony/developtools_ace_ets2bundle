@@ -61,7 +61,7 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? ("propVar1")));
@@ -180,7 +180,7 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PropParent {
+@Component() interface __Options_PropParent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)', [dumpAnnotation('PropRef')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}

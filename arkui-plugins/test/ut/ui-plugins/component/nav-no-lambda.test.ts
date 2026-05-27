@@ -67,7 +67,7 @@ import { Component as Component, Column as Column, NavDestination as NavDestinat
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
+@Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_pathStack = ((({let gensym___1107384 = initializers;
     (((gensym___1107384) == (null)) ? undefined : gensym___1107384.pathStack)})) ?? (new NavPathStack()));
@@ -138,7 +138,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_NavDestinationStruct {
+@Component() interface __Options_NavDestinationStruct {
   get pathStack(): (NavPathStack | undefined) {
   return undefined;
   }

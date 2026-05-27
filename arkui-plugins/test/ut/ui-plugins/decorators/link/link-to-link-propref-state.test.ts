@@ -76,7 +76,7 @@ import { Link as Link, State as State, PropRef as PropRef } from "@ohos.arkui.st
 function main() {}
 
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parant extends CustomComponent<Parant, __Options_Parant> {
+@Component() final struct Parant extends CustomComponent<Parant, __Options_Parant> {
   public __initializeStruct(initializers: (__Options_Parant | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text1)})) {
@@ -141,7 +141,7 @@ function main() {}
     }
   }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText)})) {
@@ -227,13 +227,13 @@ function main() {}
     }
   }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parant {
+@Component() interface __Options_Parant {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
   }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}

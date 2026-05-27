@@ -78,7 +78,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }), undefined);
 }
 @Memo() type MyBuilderFuncType = @Builder() ((value: string, size: number)=> void);
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
@@ -125,7 +125,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 
@@ -212,7 +212,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
 @Memo() type MyBuilderFuncType = @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
@@ -314,7 +314,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 }
 `;
 

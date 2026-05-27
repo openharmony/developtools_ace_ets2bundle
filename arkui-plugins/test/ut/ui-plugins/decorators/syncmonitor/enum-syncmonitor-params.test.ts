@@ -235,7 +235,7 @@ final class MonitorNames extends BaseEnum<String> {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_varF = STATE_MGMT_FACTORY.makeLocal<FFF>(this, "varF", new FFF());
     this.__SyncMonitor_changeEEE = STATE_MGMT_FACTORY.makeSyncMonitor([{
@@ -307,7 +307,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Entry() @ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}

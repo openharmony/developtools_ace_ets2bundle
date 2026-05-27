@@ -191,7 +191,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/custom-component/custom-component-attribute",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct IDataSourcePrefetchingMethods extends CustomComponent<IDataSourcePrefetchingMethods, __Options_IDataSourcePrefetchingMethods> implements PageLifeCycle {
+@Entry() @Component() final struct IDataSourcePrefetchingMethods extends CustomComponent<IDataSourcePrefetchingMethods, __Options_IDataSourcePrefetchingMethods> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_IDataSourcePrefetchingMethods | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_loadedCount = STATE_MGMT_FACTORY.makeState<string>(this, "loadedCount", ((({let gensym___153122796 = initializers;
     (((gensym___153122796) == (null)) ? undefined : gensym___153122796.loadedCount)})) ?? ("0")));
@@ -251,7 +251,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PictureItemComponent extends CustomComponent<PictureItemComponent, __Options_PictureItemComponent> {
+@Component() final struct PictureItemComponent extends CustomComponent<PictureItemComponent, __Options_PictureItemComponent> {
   public __initializeStruct(initializers: (__Options_PictureItemComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___257892811 = initializers;
     (((gensym___257892811) == (null)) ? undefined : gensym___257892811.__options_has_loadedCount)})) {
@@ -324,14 +324,14 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_IDataSourcePrefetchingMethods {
+@Entry() @Component() interface __Options_IDataSourcePrefetchingMethods {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'loadedCount', '(string | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_loadedCount', '(IStateDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_loadedCount', '(boolean | undefined)')}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PictureItemComponent {
+@Component() interface __Options_PictureItemComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'loadedCount', '(string | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_loadedCount', '(LinkSourceType<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_loadedCount', '(boolean | undefined)')}

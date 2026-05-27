@@ -91,7 +91,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface));
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
+@Component() final struct DateComponent extends CustomComponent<DateComponent, __Options_DateComponent> {
   public __initializeStruct(initializers: (__Options_DateComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___27735436 = initializers;
     (((gensym___27735436) == (null)) ? undefined : gensym___27735436.__options_has_selectedDate)})) {
@@ -167,7 +167,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
+@Entry() @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
@@ -262,14 +262,14 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_DateComponent {
+@Component() interface __Options_DateComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ParentComponent {
+@Entry() @Component() interface __Options_ParentComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}

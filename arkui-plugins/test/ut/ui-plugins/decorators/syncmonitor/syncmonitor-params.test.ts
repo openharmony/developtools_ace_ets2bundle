@@ -270,7 +270,7 @@ class GGG {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<EEE>(this, "per", new EEE());
     this.__backing_v1 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "v1", true);
@@ -376,7 +376,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Entry() @ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}

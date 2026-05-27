@@ -149,7 +149,7 @@ function builder1(@MemoSkip() str: string) {}
 @Memo() 
 function builder2() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
+@Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
@@ -199,7 +199,7 @@ function builder2() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
+@Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
@@ -247,13 +247,13 @@ function builder2() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomDialogUser {
+@Component() interface __Options_CustomDialogUser {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomDialogUser2 {
+@Component() interface __Options_CustomDialogUser2 {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
   

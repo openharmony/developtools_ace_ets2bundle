@@ -231,7 +231,7 @@ function main() {}
   }
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponentV2<Child, __Options_Child> {
+@ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
     (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
@@ -311,7 +311,7 @@ function main() {}
   }
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponentV2<Index, __Options_Index> {
+@ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_localNum = STATE_MGMT_FACTORY.makeLocal<number>(this, "localNum", 10);
     this.__backing_localInfo = STATE_MGMT_FACTORY.makeLocal<Info>(this, "localInfo", new Info());
@@ -390,7 +390,7 @@ function main() {}
   }
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@ComponentV2() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
@@ -401,7 +401,7 @@ function main() {}
   
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@ComponentV2() interface __Options_Index {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)', [dumpAnnotation('Local')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}

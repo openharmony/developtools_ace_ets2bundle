@@ -275,7 +275,7 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_conVar1 = STATE_MGMT_FACTORY.makeConsume<Per>(this, "conVar1", "conVar1");
     this.__backing_conVar2 = STATE_MGMT_FACTORY.makeConsume<Array<number>>(this, "conVar2", "conVar2");
@@ -549,56 +549,56 @@ defaultValue: [true, false],
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(Per | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+@Component() interface __Options_Parent {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar1', '(Per | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar1', '(IConsumeDecoratedVariable<Per> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(Array<number> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar2', '(Array<number> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar2', '(IConsumeDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(PropType | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar3', '(PropType | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar3', '(IConsumeDecoratedVariable<PropType> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(Set<string> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar4', '(Set<string> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar4', '(IConsumeDecoratedVariable<Set<string>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar5', '(IConsumeDecoratedVariable<Array<boolean>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar6', '(Array<Per> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar6', '(Array<Per> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar6', '(IConsumeDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar7', '(Array<Per> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar7', '(Array<Per> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar7', '(IConsumeDecoratedVariable<Array<Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar8', '(IConsumeDecoratedVariable<((sr: string)=> void)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar9', '(Date | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar9', '(Date | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar9', '(IConsumeDecoratedVariable<Date> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar10', '(IConsumeDecoratedVariable<Map<number, Per>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar11', '((string | number) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar11', '((string | number) | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar11', '(IConsumeDecoratedVariable<(string | number)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar12', '(IConsumeDecoratedVariable<(Set<string> | Per)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar12', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '((Set<string> | null) | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'conVar13', '((Set<string> | null) | undefined)', [dumpAnnotation('Consume')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_conVar13', '(IConsumeDecoratedVariable<(Set<string> | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_conVar13', '(boolean | undefined)')}
 

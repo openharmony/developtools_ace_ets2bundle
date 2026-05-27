@@ -63,7 +63,7 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
@@ -110,7 +110,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
@@ -168,7 +168,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() (()=> void) | undefined)')}
@@ -176,7 +176,7 @@ function main() {}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;
@@ -197,7 +197,7 @@ import { Component as Component, Entry as Entry, Builder as Builder, BuilderPara
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
@@ -263,7 +263,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
@@ -393,7 +393,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
@@ -401,7 +401,7 @@ function main() {}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;

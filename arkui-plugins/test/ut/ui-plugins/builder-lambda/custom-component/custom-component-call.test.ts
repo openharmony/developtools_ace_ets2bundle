@@ -145,7 +145,7 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 function main() {}
 
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
+@Component() final struct CustomContainer extends CustomComponent<CustomContainer, __Options_CustomContainer> {
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
@@ -190,7 +190,7 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
+@Component() final struct CustomContainerUser extends CustomComponent<CustomContainerUser, __Options_CustomContainerUser> {
   public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
@@ -249,13 +249,13 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomContainer {
+@Component() interface __Options_CustomContainer {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_CustomContainerUser {
+@Component() interface __Options_CustomContainerUser {
 
 }
 `;

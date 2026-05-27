@@ -47,7 +47,6 @@ function goo(a: A, @Memo arg?: () => void): void {}
     let f2: F2 = goo;
 
     let a = new A();
-    a.f1(() => {});
     f1(a, () => {});
 
     f2(a, () => {});

@@ -64,7 +64,7 @@ function showTextBuilder() {
   }), undefined);
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined))
@@ -130,7 +130,7 @@ function showTextBuilder() {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
@@ -181,7 +181,7 @@ function showTextBuilder() {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(((()=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
@@ -190,7 +190,7 @@ function showTextBuilder() {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;
@@ -240,7 +240,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam2 = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam2)})) ?? (undefined))
@@ -333,7 +333,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> {
+@Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
@@ -438,7 +438,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
 
@@ -447,7 +447,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@Component() interface __Options_Parent {
 
 }
 `;

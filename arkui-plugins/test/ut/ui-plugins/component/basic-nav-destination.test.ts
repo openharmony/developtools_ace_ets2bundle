@@ -67,7 +67,7 @@ import { Component as Component, Column as Column, Button as Button, NavDestinat
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
+@Component() final struct NavDestinationStruct extends CustomComponent<NavDestinationStruct, __Options_NavDestinationStruct> {
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
@@ -113,7 +113,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_NavDestinationStruct {
+@Component() interface __Options_NavDestinationStruct {
   
 }
 `;

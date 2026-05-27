@@ -227,9 +227,10 @@ function isEnvVariableTypeValid(
 }
 
 function extractEnvKey(decorator: arkts.AnnotationUsage): string | undefined {
-    if (decorator.properties.length !== 1 || !arkts.isClassProperty(decorator.properties[0])) {
+    const properties = decorator.properties;
+    if (properties.length !== 1 || !arkts.isClassProperty(properties[0])) {
         return undefined;
     }
-    const value = decorator.properties[0].value;
+    const value = properties[0].value;
     return value?.dumpSrc();
 }

@@ -61,7 +61,7 @@ import { StoragePropRef as StoragePropRef } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_numB = STATE_MGMT_FACTORY.makeStoragePropRef<number>(this, "Prop1", "numB", 43)
     this.__backing_stringB = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "Prop2", "stringB", "BB")
@@ -145,7 +145,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numB', '(IStoragePropRefDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numB', '(boolean | undefined)')}

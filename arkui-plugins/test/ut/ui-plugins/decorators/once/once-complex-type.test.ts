@@ -120,7 +120,7 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
+@ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<Per>(this, "onceVar1", ((({let gensym___126233468 = initializers;
     (((gensym___126233468) == (null)) ? undefined : gensym___126233468.onceVar1)})) ?? (new Per(6))));
@@ -319,7 +319,7 @@ final class StateType extends BaseEnum<int> {
   }
 }
 
-@ComponentV2({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@ComponentV2() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(Per | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<Per> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}

@@ -49,7 +49,7 @@ import { ComponentBuilder as ComponentBuilder } from "arkui.component.builder";
 import { Component as Component, Builder as Builder, BuilderParam as BuilderParam } from "@ohos.arkui.component";
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.doNothingBuilder))
@@ -98,7 +98,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((str: string)=> void) | undefined)')}
@@ -119,7 +119,7 @@ import { Component as Component, Builder as Builder, BuilderParam as BuilderPara
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.doNothingBuilder))
@@ -197,7 +197,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)')}

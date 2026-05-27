@@ -73,7 +73,7 @@ const i: Resource = _r(16777216, 10003, "com.example.mock", "entry");
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
+@Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_str = ((({let gensym___42103502 = initializers;
     (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
@@ -160,7 +160,7 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ResourceComponent {
+@Component() interface __Options_ResourceComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(Resource | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
 

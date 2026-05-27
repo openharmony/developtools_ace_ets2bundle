@@ -76,7 +76,7 @@ import { State as State, Observed as Observed, ObjectLink as ObjectLink, Link as
 function main() {}
 
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export final struct SubNavigation extends CustomComponent<SubNavigation, __Options_SubNavigation> {
+@Component() export final struct SubNavigation extends CustomComponent<SubNavigation, __Options_SubNavigation> {
   public __initializeStruct(initializers: (__Options_SubNavigation | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___214357609 = initializers;
     (((gensym___214357609) == (null)) ? undefined : gensym___214357609.__options_has_isPortrait)})) {
@@ -371,7 +371,7 @@ type OnNavigationModeChangeCallback = ((mode: NavigationMode)=> void);
 
 type OnHomeShowOnTopCallback = ((name: string)=> void);
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) export interface __Options_SubNavigation {
+@Component() export interface __Options_SubNavigation {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'isPortrait', '(boolean | undefined)', [dumpAnnotation('Link')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isPortrait', '(LinkSourceType<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isPortrait', '(boolean | undefined)')}

@@ -86,7 +86,7 @@ class AB {
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_arr = ((({let gensym___244068973 = initializers;
     (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
@@ -209,7 +209,7 @@ class AB {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'arr', '(Array<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arr', '(boolean | undefined)')}
   

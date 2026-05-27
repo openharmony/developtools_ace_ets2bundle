@@ -184,7 +184,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Child extends CustomComponent<Child, __Options_Child> {
+@Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_label = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? ("date"));
@@ -254,7 +254,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
+@Entry() @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
@@ -340,7 +340,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Child {
+@Component() interface __Options_Child {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
 
@@ -350,7 +350,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Parent {
+@Entry() @Component() interface __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)', [dumpAnnotation('State')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}

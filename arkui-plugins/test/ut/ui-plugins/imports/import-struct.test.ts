@@ -103,7 +103,7 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
+@Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
@@ -145,7 +145,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ImportStruct {
+@Component() interface __Options_ImportStruct {
 
 }
 `;

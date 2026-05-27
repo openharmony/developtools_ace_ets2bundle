@@ -1210,6 +1210,10 @@ export class Es2pandaNativeModule {
     _ProgramIsDeclarationModuleConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("ProgramIsDeclarationModuleConst was not overloaded by native module initialization")
     }
+
+    _GetAnnotationDeclarationProperties(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("GetAnnotationDeclarationProperties was not overloaded by native module initialization")
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

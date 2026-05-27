@@ -63,7 +63,7 @@ import { Component as Component, Column as Column, Builder as Builder, Text as T
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
+@Component() final struct BuilderDemo extends CustomComponent<BuilderDemo, __Options_BuilderDemo> {
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
@@ -117,7 +117,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_BuilderDemo {
+@Component() interface __Options_BuilderDemo {
   
 }
 `;

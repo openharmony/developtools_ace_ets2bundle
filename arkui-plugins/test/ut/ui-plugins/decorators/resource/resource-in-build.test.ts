@@ -83,7 +83,7 @@ import { Component as Component, $r as $r, $rawfile as $rawfile, Column as Colum
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
+@Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_str1 = ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
@@ -231,7 +231,7 @@ function main() {}
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ResourceComponent {
+@Component() interface __Options_ResourceComponent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'str1', '(string | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str1', '(boolean | undefined)')}
 

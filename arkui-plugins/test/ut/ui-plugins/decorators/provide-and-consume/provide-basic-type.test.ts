@@ -61,7 +61,7 @@ import { Provide as Provide } from "@ohos.arkui.stateManagement";
 
 function main() {}
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
+@Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_provideVar1 = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar1", "provideVar1", ((({let gensym___181030638 = initializers;
     (((gensym___181030638) == (null)) ? undefined : gensym___181030638.provideVar1)})) ?? ("propVar1")), false);
@@ -310,56 +310,56 @@ function main() {}
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)', [dumpAnnotation('Provide', { alias: "provideVar1", allowOverride: false })])}
+@Component() interface __Options_PropParent {
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<string> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar2', '(number | undefined)', [dumpAnnotation('Provide', { alias: "provideVar2", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar2', '(number | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar2', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar2', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar3', '(boolean | undefined)', [dumpAnnotation('Provide', { alias: "provideVar3", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar3', '(boolean | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar3', '(IProvideDecoratedVariable<boolean> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar3', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar4', '(undefined | undefined)', [dumpAnnotation('Provide', { alias: "provideVar4", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar4', '(undefined | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar4', '(IProvideDecoratedVariable<undefined> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar4', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(null | undefined)', [dumpAnnotation('Provide', { alias: "provideVar5", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(null | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar5', '(IProvideDecoratedVariable<null> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar5', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar6', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "provideVar6", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar6', '((string | undefined) | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar6', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar7', '((string | null) | undefined)', [dumpAnnotation('Provide', { alias: "provideVar7", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar7', '((string | null) | undefined)', [dumpAnnotation('Provide')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar7', '(IProvideDecoratedVariable<(string | null)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar7', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar8', '(number | undefined)', [dumpAnnotation('Provide', { alias: "a", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar8', '(number | undefined)', [dumpAnnotation('Provide', { alias: "a" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar8', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar8', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar9', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "b", allowOverride: false })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar9', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "b" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar9', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar9', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar10', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "provideVar10" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar10', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar10', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar10', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar11', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "provideVar11" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar11', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar11', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar11', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar12', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "provideVar12" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar12', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar12', '(IProvideDecoratedVariable<number> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar12', '(boolean | undefined)')}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar13', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "provideVar13" })])}
+  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar13', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar13', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar13', '(boolean | undefined)')}
 

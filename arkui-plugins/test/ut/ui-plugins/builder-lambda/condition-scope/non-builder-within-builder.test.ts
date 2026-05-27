@@ -70,7 +70,7 @@ type TestInitCallback = (()=> void);
 
 type TestUpdateCallback = (()=> void);
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
@@ -108,7 +108,7 @@ type TestUpdateCallback = (()=> void);
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
 
 }
 `;

@@ -118,7 +118,7 @@ final class Status extends BaseEnum<int> {
 
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
+@Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_arrayB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<number>>(this, "Prop1", "arrayB", [1, 2, 3])
     this.__backing_objectB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Object>(this, "Prop2", "objectB", {})
@@ -230,7 +230,7 @@ final class Status extends BaseEnum<int> {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_MyStateSample {
+@Component() interface __Options_MyStateSample {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop1" })])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayB', '(ILocalStoragePropRefDecoratedVariable<Array<number>> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayB', '(boolean | undefined)')}

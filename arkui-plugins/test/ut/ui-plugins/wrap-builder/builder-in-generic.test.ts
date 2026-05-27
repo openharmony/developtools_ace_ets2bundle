@@ -88,7 +88,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
     integratedHsp: \"false\",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
     (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
@@ -153,7 +153,7 @@ class __EntryWrapper extends EntryPoint {
   public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Entry() @Component() interface __Options_Index {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
@@ -252,7 +252,7 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     pageFullPath: \"test/demo/mock/wrap-builder/builder-in-generic\",
     integratedHsp: \"false\",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
         this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
         (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
@@ -377,7 +377,7 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_Index {
+@Entry() @Component() interface __Options_Index {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}

@@ -70,7 +70,7 @@ class TimeTable {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
+@Component() final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
   public __initializeStruct(initializers: (__Options_ListItemGroupExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_timetable = ((({let gensym___122433430 = initializers;
     (((gensym___122433430) == (null)) ? undefined : gensym___122433430.timetable)})) ?? (new TimeTable()));
@@ -130,7 +130,7 @@ class TimeTable {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ListItemGroupExample {
+@Component() interface __Options_ListItemGroupExample {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
 
@@ -175,7 +175,7 @@ class TimeTable {
   
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
+@Component() final struct ListItemGroupExample extends CustomComponent<ListItemGroupExample, __Options_ListItemGroupExample> {
   public __initializeStruct(initializers: (__Options_ListItemGroupExample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_timetable = ((({let gensym___122433430 = initializers;
     (((gensym___122433430) == (null)) ? undefined : gensym___122433430.timetable)})) ?? (new TimeTable()));
@@ -291,7 +291,7 @@ class TimeTable {
   }
 }
 
-@Component({poolAccepts:[],reusePool:ReusePoolOwnership.OFF}) interface __Options_ListItemGroupExample {
+@Component() interface __Options_ListItemGroupExample {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
     ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
   
