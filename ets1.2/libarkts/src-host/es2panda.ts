@@ -248,7 +248,7 @@ function loadPlugins(configDir: string, plugins: Object) {
     return result
 }
 
-export function main(): void {
+export function main() {
     resolveSDK();
     checkSDK();
     const performance = Performance.getInstance();

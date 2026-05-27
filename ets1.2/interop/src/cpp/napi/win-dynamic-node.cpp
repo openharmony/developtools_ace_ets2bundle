@@ -80,21 +80,21 @@ bool LoadNapiFunctions()
     }
     bool apiLoadFailed = false;
 
-#define GET_NAPI_IMPL(fn_name, fnAddr, nodeMod, loadFailed) \
-    fnAddr = GetProcAddress(nodeMod, #fn_name);            \
-    if ((fnAddr) == NULL)                                    \
-        (loadFailed) = true;                                 \
-    p_##fn_name = (decltype(p_##fn_name))(fnAddr)
-#define GET_NAPI_IMPL_WRAP(fn_name) GET_NAPI_IMPL(fn_name, fn_addr, nodeModule, apiLoadFailed)
+#define GET_NAPI_IMPL(fn_name)                      \
+    fn_addr = GetProcAddress(nodeModule, #fn_name); \
+    if (fn_addr == NULL)                            \
+        apiLoadFailed = true;                       \
+    p_##fn_name = (decltype(p_##fn_name))fn_addr;
+
     // Assign the addresses of the needed functions to the "p*" named pointers.
-    NAPI_FUNCTIONS(
-        GET_NAPI_IMPL_WRAP;
-    );
+    NAPI_FUNCTIONS(GET_NAPI_IMPL);
+
     // If any required APIs failed to load, return false
     if (apiLoadFailed)
         return false;
 
     isLoaded = true;
+
     return true;
 }
 
