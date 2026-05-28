@@ -2525,7 +2525,7 @@ function validateNonFunctionTypeWithDecorator(
       transformLog.errors.push({
         type: LogType.ERROR,
         code: '10905363',
-        message: `The V1 decorator '${decoratorName}' cannot be applied to a Function-type variable '${propertyName}'.`,
+        message: `The V1 decorator '${decoratorName}' cannot be applied to a Function-type variable '${propertyName}'.(From Api Version 23)`,
         pos: node.getStart(),
       });
     }
