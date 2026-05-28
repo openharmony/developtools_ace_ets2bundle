@@ -1685,8 +1685,9 @@ export class factory {
             : newObj;
         const typeRef = node.getTypeRef as arkts.ETSTypeReference;
         const controller = arkts.factory.updateETSNewClassInstanceExpression(node, typeRef, [newOptions]);
-        CustomDialogControllerCache.getInstance().collect({ controller });
-        return factory.createBlockStatementForOptionalExpression(controller, gensymName);
+        const block = factory.createBlockStatementForOptionalExpression(controller, gensymName);
+        CustomDialogControllerCache.getInstance().collect({ controller }).updateAll().reset();
+        return block;
     }
 
     static createDialogBuilderArrow(value: arkts.Expression, gensymName: string): arkts.Expression {
