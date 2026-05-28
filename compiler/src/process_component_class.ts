@@ -386,7 +386,7 @@ export function processComponentReusePool(
     transformLog.errors.push({
       type: LogType.ERROR,
       code: '10905378',
-      message: 'Elements of poolAccepts and reusePool can only accept string literal.',
+      message: 'ReusePool can only accept string literal.',
       pos: reusePoolProperty.initializer.pos
     });
     return;
@@ -434,16 +434,10 @@ function checkPoolAcceptsArg(
   }
 
   initializer.elements.forEach(element => {
-    if (!ts.isStringLiteral(element)) {
-      transformLog.errors.push({
-        type: LogType.ERROR,
-        code: '10905378',
-        message: 'Elements of poolAccepts and reusePool can only accept string literal.',
-        pos: element.pos
-      });
+    if (!ts.isIdentifier(element)) {
       return;
     }
-    const compName: string = element.text;
+    const compName: string = element.getText();
     if (compName === parentName) {
       transformLog.errors.push({
         type: LogType.ERROR,
@@ -483,7 +477,7 @@ function createReusePoolPropertyDecl(
       ),
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier(POOLACCEPTS),
-        createPoolAcceptsArrayLiteral(poolAccepts)
+        poolAccepts
       ),
       ts.factory.createPropertyAssignment(
         ts.factory.createIdentifier(OWNER),
