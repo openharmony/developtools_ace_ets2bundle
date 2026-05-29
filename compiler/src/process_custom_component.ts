@@ -1017,10 +1017,11 @@ function parseValueArrayIndex(keyArray: ts.Node[],
   if (!currentName) {
     return;
   }
-  if (!ts.isIdentifier(keyArray[index])) {
+  const currentNode: ts.Node | undefined = keyArray[index];
+  if (!currentNode || !ts.isIdentifier(currentNode)) {
     return;
   }
-  const keyName: string = keyArray[index].getText();
+  const keyName: string = currentNode.escapedText.toString();
   const currentLinkCollection: Set<string> | undefined = linkCollection.get(currentName);
   if (!currentLinkCollection || !currentLinkCollection.has(keyName)) {
     return;
@@ -1112,7 +1113,9 @@ function parseIfCustomComponentBlock(
     componentParamDetachment(newNode, isRecycleComponent, name, log, componentNode),
     isRecycleComponent ? createNewRecycleComponent(newNode, componentNode, name, componentAttrInfo) :
       createNewComponent(COMPONENT_CALL, name, componentNode),
-    assignComponentParams(componentNode, isBuilder),
+    isCompatibleVersionOverTarget(26) ?
+      assignComponentParams(componentNode, isBuilder, true, parentName, name) :
+      assignComponentParams(componentNode, isBuilder),
     assignmentFunction(COMPONENT_CALL)
   ]
 }
