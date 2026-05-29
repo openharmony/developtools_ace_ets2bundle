@@ -63,22 +63,55 @@ class UIStage extends stages.TransformationStage<undefined, undefined, undefined
   }
 }
 
+interface FileUnit {
+  moduleName: string,
+  srcPath: string,
+  outputPath: string
+}
+
+type FileUnitMap = Map<string, FileUnit>;
+
+function extractFileUnits(modules: ArkTSEvolutionModule[]): FileUnitMap {
+  const fileMap = new Map<string, FileUnit>();
+  modules.forEach((moduleInfo) => {
+    if (moduleInfo.dynamicFiles.length <= 0) {
+      return;
+    }
+    moduleInfo.dynamicFiles.forEach((file) => {
+      const unixFilePath = toUnixPath(file);
+      const outputPath = toUnixPath(removeExtension(path.join(moduleInfo.declgenV2OutPath || '', path.relative(moduleInfo.modulePath, file))) + EXTNAME_D_ETS);
+      fileMap.set(unixFilePath, {
+        moduleName: moduleInfo.moduleName,
+        srcPath: unixFilePath,
+        outputPath: outputPath
+      });
+    });
+  });
+
+  return fileMap;
+}
+
 export function run(param: Params): boolean {
   FileManager.init(param.dependentModuleMap, param.projectConfig.sdkAliasMap);
   DeclfileProductor.init(param);
+  const declgenModules: ArkTSEvolutionModule[] = [];
   param.tasks.forEach((task) => {
     const moduleInfo = FileManager.arkTSModuleMap.get(task.packageName);
     if (moduleInfo === undefined || moduleInfo.dynamicFiles.length <= 0) {
       return;
     }
     if (task.buildTask === BuildType.DECLGEN) {
-      DeclfileProductor.getInstance().runDeclgen(moduleInfo);
+      declgenModules.push(moduleInfo);
     } else if (task.buildTask === BuildType.INTEROP_CONTEXT && task.mainModuleName) {
       DeclfileProductor.getInstance().writeDeclFileInfo(moduleInfo, task.mainModuleName);
     } else if (task.buildTask === BuildType.BYTE_CODE_HAR) {
       //todo
     }
   });
+  if (declgenModules.length > 0) {
+    const fileUnitsMap = extractFileUnits(declgenModules);
+    DeclfileProductor.getInstance().runDeclgen(fileUnitsMap);
+  }
   FileManager.cleanFileManagerObject();
   return true;
 }
@@ -185,44 +218,44 @@ export class DeclfileProductor {
     this.projectConfig = param.projectConfig as ProjectConfig;
   }
 
-  runDeclgen(moduleInfo: ArkTSEvolutionModule): void {
+  runDeclgen(fileUnitsMap: FileUnitMap): void {
     logger.Logger.init(new logger.SilentLogger());
-    const cachePath = `${moduleInfo.declgenV2OutPath}/.${DECLGEN_CACHE_FILE}`;
+    const cacheDir = path.join(DeclfileProductor.projectPath, 'build', 'declgen');
+    const cachePath = path.join(cacheDir, DECLGEN_CACHE_FILE);
+    const tsCachePath = path.join(cacheDir, '.tsbuildinfo');
     let existingCache: { [key: string]: string } = {};
-    let filesToProcess: string[] = [];
+    const filesToProcess: string[] = [];
+    let shouldSkip = true;
 
     if (fs.existsSync(cachePath)) {
       existingCache = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
     }
 
     let hashMap: { [key: string]: string } = {};
-    moduleInfo.dynamicFiles.forEach((path) => {
-      let unixPath = toUnixPath(path);
+    fileUnitsMap.forEach((fileUnit, path) => {
+      filesToProcess.push(path); 
       const fileHash = calculateFileHash(path);
-      if (!existingCache[unixPath] || existingCache[unixPath] !== fileHash) {
-        filesToProcess.push(unixPath);
-        hashMap[unixPath] = fileHash;
+      if (!existingCache[path] || existingCache[path] !== fileHash) {
+        hashMap[path] = fileHash;
+        shouldSkip = false;
       }
     });
-    if (filesToProcess.length === 0) {
+    if (shouldSkip) {
       return;
     }
+    const libFiles: string[] = [];
     readDeaclareFiles().forEach((path) => {
-      filesToProcess.push(toUnixPath(path));
+      libFiles.push(toUnixPath(path));
     });
 
-    const moduleNamesResolver = this.getModuleNamesResolver(moduleInfo.packageName);
-
-    if (!moduleInfo.declgenV2OutPath) {
-      throw new Error(`Declgen output path is not defined for module ${moduleInfo.packageName}`);
-    }
+    const moduleNamesResolver = this.getModuleNamesResolver(fileUnitsMap);
 
     const config: RunnerParms = {
       inputDirs: [],
       inputFiles: filesToProcess,
-      outDir: moduleInfo.declgenV2OutPath,
+      outDir: DeclfileProductor.projectPath,
       // use package name as folder name
-      rootDir: moduleInfo.modulePath,
+      rootDir: DeclfileProductor.projectPath,
       customResolveModuleNames: moduleNamesResolver,
       customCompilerOptions: DeclfileProductor.compilerOptions
     };
@@ -233,11 +266,14 @@ export class DeclfileProductor {
     const declgen = new Declgen(
       {
         outDir: config.outDir,
+        libFiles: libFiles,
         inputFiles: config.inputFiles,
         rootDir: config.rootDir,
         features: {
           enableInteropTypesFix: true
-        }
+        },
+        incremental: true,
+        tsBuildInfoFile: tsCachePath
       },
       config.customCompilerOptions,
       config.customResolveModuleNames
@@ -246,11 +282,11 @@ export class DeclfileProductor {
     declgen.addStage.after(0, new UIStage());
     declgen.run();
     declgen.emit((fileName, content) => {
-      if (!isFileInPath(fileName, [moduleInfo.modulePath])) {
+      const fileUnit = fileUnitsMap.get(toUnixPath(fileName));
+      if (!fileUnit) {
         return;
       }
-      const relativePath = path.relative(config.rootDir, fileName);
-      const outputPath = removeExtension(path.join(config.outDir, relativePath)) + EXTNAME_D_ETS;
+      const outputPath = fileUnit.outputPath;
       const outDir = path.dirname(outputPath);
       if (!fs.existsSync(outDir)) {
         fs.mkdirSync(outDir, { recursive: true });
@@ -262,6 +298,9 @@ export class DeclfileProductor {
       ...existingCache,
       ...hashMap
     };
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
     fs.writeFileSync(cachePath, JSON.stringify(newCache, null, 2));
   }
 
@@ -420,7 +459,11 @@ export class DeclfileProductor {
     DeclfileProductor.sdkConfigs = [...DeclfileProductor.defaultSdkConfigs];
   }
 
-  resolveSdkAliasModule(packageName: string, moduleName: string): ts.ResolvedModuleFull | null {
+  resolveSdkAliasModule(moduleName: string, containingFile: string, fileUnitMap: FileUnitMap): ts.ResolvedModuleFull | null {
+    const packageName = fileUnitMap.get(toUnixPath(containingFile))?.moduleName;
+    if (!packageName) {
+      return null;
+    }
     const alias = FileManager.aliasConfig.get(packageName);
     if (!alias) {
       return null;
@@ -436,9 +479,7 @@ export class DeclfileProductor {
     return resolveInteropSdkModule(originalModuleName);
   }
 
-  getModuleNamesResolver(
-    packageName: string
-  ): (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[] {
+  getModuleNamesResolver(fileMap: FileUnitMap): (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[] {
     const self = this;
 
     function resolveModuleNames(moduleNames: string[], containingFile: string): (ts.ResolvedModuleFull | undefined)[] {
@@ -459,7 +500,7 @@ export class DeclfileProductor {
           continue;
         }
 
-        resolvedModule = self.resolveSdkAliasModule(packageName, moduleName);
+        resolvedModule = self.resolveSdkAliasModule(moduleName, containingFile, fileMap);
 
         if (resolvedModule) {
           resolvedModules.push(resolvedModule);
