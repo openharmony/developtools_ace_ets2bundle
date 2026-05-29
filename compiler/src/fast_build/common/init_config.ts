@@ -30,7 +30,7 @@ export function initConfig() {
   }
   return {
     entryObj: Object.assign({}, projectConfig.entryObj, projectConfig.otherCompileFiles),
-    cardEntryObj: Object.assign({}, projectConfig.cardEntryObj, projectConfig.otherCompileFiles),
+    cardEntryObj: projectConfig.cardEntryObj,
     workerFile: workerFile,
     globalModulePaths: globalModulePaths
   };
