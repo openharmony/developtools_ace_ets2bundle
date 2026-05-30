@@ -621,6 +621,86 @@ mocha.describe('test declaration file merging', function () {
     });
   });
 
+  mocha.describe('enum value reference in const initializer', function () {
+    const opts = () => makeOptions('enumValueRef');
+
+    mocha.it('inlines enum used by exported const initializer', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare enum Color');
+      expect(merged).to.include('export declare const DEFAULT_COLOR = Color.Red');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('any and unknown type replacement for ArkTS declarations', function () {
+    const opts = () => makeOptions('anyTypeRef');
+
+    mocha.it('replaces any and unknown from .d.ts dependency with ESObject in .d.ets output', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export type AnyAlias = ESObject');
+      expect(merged).to.include('export type UnknownAlias = ESObject');
+      expect(merged).to.include('export declare function useAny(value: ESObject): ESObject');
+      expect(merged).to.include('export declare function useUnknown(value: ESObject): ESObject');
+      expect(merged).to.not.match(/\bany\b/);
+      expect(merged).to.not.match(/\bunknown\b/);
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('explicit re-export shadows export star conflicts', function () {
+    const opts = () => makeOptions('exportConflict');
+
+    mocha.it('keeps named-export namespace implementation and drops export-star body', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace SharedNamespace');
+      expect(merged).to.include('export const namedOnlyConst: number');
+      expect(merged).to.include('export function namedOnlyFn(): void');
+      expect(merged).to.not.include('starOnlyConst');
+      expect(merged).to.not.include('starOnlyFn');
+    });
+
+    mocha.it('keeps named-export class implementation and drops export-star body', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare class SharedClass');
+      expect(merged).to.include('namedOnlyField: string');
+      expect(merged).to.include('namedOnlyMethod(): void');
+      expect(merged).to.not.include('starOnlyField');
+      expect(merged).to.not.include('starOnlyMethod');
+    });
+
+    mocha.it('keeps named-export function implementation and drops export-star signature', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare function sharedFunction(value: string): string');
+      expect(merged).to.not.include('declare function sharedFunction(value: number): number');
+    });
+  });
+
+  mocha.describe('aliased re-export keeps export star namespace with same local name', function () {
+    const opts = () => makeOptions('exportAliasConflict');
+
+    mocha.it('keeps both aliased namespace and export-star namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('namespace b');
+      expect(merged).to.include('fromNamedAlias');
+      expect(merged).to.include('namespace a');
+      expect(merged).to.include('fromExportStar');
+    });
+  });
+
   mocha.describe('error handling', function () {
     mocha.it('handles non-existent entry file gracefully', function () {
       const entryFile = path.join(TESTDATA_DIR, 'nonexistent', 'Index.d.ets');
