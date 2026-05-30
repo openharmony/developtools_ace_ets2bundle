@@ -359,9 +359,10 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
     return name === scopeInfo.name;
 }
 
-export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
-    const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
-    const checkComponent = node.annotations.some(
+export function isCustomComponentInnerClass(node: arkts.ClassDeclaration): boolean {
+    const classDef = node.definition;
+    const checkPrefix = !!classDef?.ident?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
+    const checkComponent = !!classDef?.annotations.some(
         (anno) =>
             isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT) ||
             isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2) ||
@@ -372,6 +373,10 @@ export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): 
 
 export function getCustomComponentOptionsName(className: string): string {
     return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
+}
+
+export function getStructNameFromOptionsName(optionsName: string): string {
+    return optionsName.slice(CustomComponentNames.COMPONENT_INTERFACE_PREFIX.length);
 }
 
 /**

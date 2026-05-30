@@ -88,6 +88,7 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_LinkParent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_LinkParent | undefined)): void {
     this.__backing_linkVar1!.resetOnReuse(initializers!.__backing_linkVar1!);
     this.__backing_linkVar2!.resetOnReuse(initializers!.__backing_linkVar2!);
@@ -95,6 +96,7 @@ function main() {}
     this.__backing_linkVar4!.resetOnReuse(initializers!.__backing_linkVar4!);
     this.__backing_linkVar5!.resetOnReuse(initializers!.__backing_linkVar5!);
   }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: LinkParent)=> void) | undefined), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<LinkParent, __Options_LinkParent>(style, ((): LinkParent => {
@@ -165,27 +167,24 @@ function main() {}
   }
 }
 
-@Component() interface __Options_LinkParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(string | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
+@Component() class __Options_LinkParent {
+  @Link() public linkVar1: string;
+  public __backing_linkVar1?: LinkSourceType<string>;
+  public __options_has_linkVar1?: boolean;
+  @Link() public linkVar2: number;
+  public __backing_linkVar2?: LinkSourceType<number>;
+  public __options_has_linkVar2?: boolean;
+  @Link() public linkVar3: boolean;
+  public __backing_linkVar3?: LinkSourceType<boolean>;
+  public __options_has_linkVar3?: boolean;
+  @Link() public linkVar4: undefined;
+  public __backing_linkVar4?: LinkSourceType<undefined>;
+  public __options_has_linkVar4?: boolean;
+  @Link() public linkVar5: null;
+  public __backing_linkVar5?: LinkSourceType<null>;
+  public __options_has_linkVar5?: boolean;
+  public constructor() {}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(number | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(boolean | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(undefined | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(null | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
-  
 }
 `;
 

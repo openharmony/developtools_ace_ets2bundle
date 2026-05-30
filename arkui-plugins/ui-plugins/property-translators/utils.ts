@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ImportCollector } from '../../common/import-collector';
-import { isDecoratorAnnotation } from '../../common/arkts-utils';
+import { filterDefined, isDecoratorAnnotation } from '../../common/arkts-utils';
 import {
     DecoratorNames,
     StateManagementTypes,
@@ -24,15 +24,28 @@ import {
     EnvInternalProperty,
     NodeCacheNames,
     CustomDialogNames,
+    REQUIRED_ANNOTATIONS,
+    DECORATOR_TYPE_MAP,
 } from '../../common/predefines';
 import {
     addMemoAnnotation,
     findCanAddMemoFromParameter,
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
-import { getValueInObjectAnnotation } from '../utils';
+import { getStructNameFromOptionsName, getValueInObjectAnnotation } from '../utils';
 import { ReturnTransformer } from './return-transformer';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotationRecord, StructPropertyAnnotations } from '../../collectors/ui-collectors/records';
+import { AnnotationRecord } from '../../collectors/ui-collectors/records/annotations/base';
+
+export interface PropertyOptionalFieldOptions {
+    name: string;
+    propertyType: arkts.TypeNode | undefined,
+    modifiers: arkts.Es2pandaModifierFlags,
+    stateMangementType?: StateManagementTypes | undefined;
+    needMemo?: boolean;
+    isRequired?: boolean;
+}
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -42,6 +55,12 @@ export interface DecoratorInfo {
 export interface OptionalMemberInfo {
     isCall?: boolean;
     isNumeric?: boolean;
+    isNonNull?: boolean;
+}
+
+export interface InitializeValueOptions {
+    isRequired?: boolean;
+    isWatched?: boolean;
 }
 
 export function removeDecorator(
@@ -115,6 +134,7 @@ export function hasDecorator(
  * Determine whether the node `<st>` is decorated by decorators that need initializing without assignment.
  *
  * @param st class property node
+ * @deprecated
  */
 export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean {
     return (
@@ -129,6 +149,93 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         (hasDecoratorName(st, DecoratorNames.ENV)) ||
         (hasDecoratorName(st, DecoratorNames.CUSTOM_ENV))
     );
+}
+
+/**
+ * Determine whether the node `<st>` is decorated by decorators that need initializing without assignment.
+ *
+ * @param st class property node
+ * @param annotationRecord annotation collection record
+ */
+export function needInitializeWithoutAssignmentFromInfo(
+    st: arkts.ClassProperty, 
+    annotationRecord: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): boolean {
+    const annotationInfo = annotationRecord?.annotationInfo;
+    if (
+        !annotationInfo ||
+        Object.keys(annotationInfo).length === 0 ||
+        annotationInfo.hasPropRef ||
+        annotationInfo.hasParam ||
+        annotationInfo.hasEvent ||
+        annotationInfo.hasRequire ||
+        annotationInfo.hasBuilderParam
+    ) {
+        return !st.value;
+    }
+    if (
+        annotationInfo.hasLink || 
+        annotationInfo.hasConsume || 
+        annotationInfo.hasObjectLink || 
+        annotationInfo.hasEnv
+    ) {
+        return true;
+    }
+    return false;
+}
+
+export function parseStructPropertyAnnotations(
+    property: arkts.ClassProperty
+): AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined {
+    const record = new StructPropertyAnnotationRecord({ shouldIgnoreDecl: true });
+    property.annotations.forEach((anno) => {
+        record.collect(anno);
+    });
+    return record.toRecord();
+}
+
+export function checkIsRequiredPropertyFromAnnotationInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): boolean {
+    if (!info || !info.annotationInfo) {
+        return false;
+    }
+    const annotationInfo = info.annotationInfo;
+    return Object.keys(annotationInfo).length === 0 || REQUIRED_ANNOTATIONS.some(
+        (decoratorName: string) => annotationInfo[`has${decoratorName}`]
+    );
+}
+
+export function collectAnnotationsFromInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): arkts.AnnotationUsage[] {
+    if (!info || !info.annotations) {
+        return [];
+    }
+    const annotations: arkts.AnnotationUsage[] = [];
+    Object.keys(info.annotations).forEach((key: string) => {
+        const annotation = info.annotations?.[key];
+        if (annotation !== undefined) {
+            annotations.push(annotation.clone())
+        }
+    });
+    return annotations;
+}
+
+export function collectAnnotationForBackingFromInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): arkts.AnnotationUsage[] {
+    if (!info || !info.annotations) {
+        return [];
+    }
+    const annotations: arkts.AnnotationUsage[] = [];
+    Object.keys(info.annotations).forEach((key: string) => {
+        const annotation = info.annotations?.[key];
+        if (DECORATOR_TYPE_MAP.has(key as DecoratorNames) && annotation !== undefined) {
+            annotations.push(annotation.clone())
+        }
+    });
+    return annotations;
 }
 
 export function findDecoratorByName(
@@ -151,6 +258,9 @@ export function findDecorator(
     return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
 
+/**
+ * @deprecated
+ */
 export function findDecoratorInfos(
     property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition
 ): DecoratorInfo[] {

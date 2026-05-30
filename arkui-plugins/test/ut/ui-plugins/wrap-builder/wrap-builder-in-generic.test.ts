@@ -106,8 +106,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_message!.resetOnReuse("Hello World");
+    this.__backing_message!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")));
   }
   
   @MemoIntrinsic() 
@@ -161,15 +163,15 @@ class __EntryWrapper extends EntryPoint {
         Index._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
-    EntryPoint.RegisterNamedRouter(routerName, instance, param);
-  }
-
-  public constructor() {}
+        EntryPoint.RegisterNamedRouter(routerName, instance, param);
+    }
+    public constructor() {}
 }
-@Entry() @Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Index {
+    @State() public message?: string;
+    public __backing_message?: IStateDecoratedVariable<string>;
+    public __options_has_message?: boolean;
+    public constructor() {}
   
 }
 `;
@@ -284,8 +286,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
 
     public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
     public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-      this.__backing_message!.resetOnReuse("Hello World");
+        this.__backing_message!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")));
     }
 
     @MemoIntrinsic() 
@@ -396,15 +400,15 @@ class __EntryWrapper extends EntryPoint {
         }
     }
     public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
-    EntryPoint.RegisterNamedRouter(routerName, instance, param);
-  }
-
-  public constructor() {}
+        EntryPoint.RegisterNamedRouter(routerName, instance, param);
+    }
+    public constructor() {}
 }
-@Entry() @Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Index {
+    @State() public message?: string;
+    public __backing_message?: IStateDecoratedVariable<string>;
+    public __options_has_message?: boolean;
+    public constructor() {}
   
 }
 `;

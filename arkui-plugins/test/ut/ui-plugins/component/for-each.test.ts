@@ -93,6 +93,7 @@ class AB {
   }
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -209,9 +210,10 @@ class AB {
   }
 }
 
-@Component() interface __Options_ImportStruct {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arr', '(Array<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arr', '(boolean | undefined)')}
+@Component() class __Options_ImportStruct {
+  public arr?: Array<string>;
+  public __options_has_arr?: boolean;
+  public constructor() {}
   
 }
 `;

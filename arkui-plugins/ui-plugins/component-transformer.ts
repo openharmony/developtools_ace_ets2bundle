@@ -35,11 +35,12 @@ import {
     isDecoratorAnnotation,
     withAPIVersion,
     expectNameInTypeReference,
+    isExported,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
 import { findNavigationModuleInfo, getEntryRouteParam } from './entry-translators/utils';
 import { factory as EntryFactory } from './entry-translators/factory';
-import { hasDecoratorName, findDecoratorInfos, DecoratorInfo } from './property-translators/utils';
+import { hasDecoratorName, findDecoratorInfos, DecoratorInfo, parseStructPropertyAnnotations, checkIsRequiredPropertyFromAnnotationInfo, collectAnnotationsFromInfo, collectAnnotationForBackingFromInfo } from './property-translators/utils';
 import { factory as UIFactory } from './ui-factory';
 import { factory as PropertyFactory } from './property-translators/factory';
 import { factory as StructFactory } from './struct-translators/factory';
@@ -64,14 +65,15 @@ import { ImportCollector } from '../common/import-collector';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { LogCollector } from '../common/log-collector';
 import { NamespaceProcessor } from './namespace-processor';
+import { AstNodePointer } from '../common/safe-types';
+import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotations } from '../collectors/ui-collectors/records';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
 }
 
 type ScopeInfo = CustomComponentInfo;
-
-const isRequiredDecorators = [DecoratorNames.OBJECT_LINK, DecoratorNames.REQUIRE];
 
 export interface InteropContext {
     className: string;
@@ -177,7 +179,7 @@ export class ComponentTransformer extends AbstractVisitor {
     processRootETSModule(node: arkts.ETSModule): arkts.ETSModule {
         if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = EntryFactory.createNavInterface();
-            navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+            navInterface.modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateETSModule(node, [...node.statements, navInterface]);
         }
         let _newNode: arkts.ETSModule | undefined;
@@ -206,7 +208,7 @@ export class ComponentTransformer extends AbstractVisitor {
         if (
             this.isExternal &&
             this.entryAnnoInfo.length === 0 &&
-            NamespaceProcessor.getInstance().totalInterfacesCnt === 0
+            NamespaceProcessor.getInstance().totalInnerClassesCnt === 0
         ) {
             return node;
         }
@@ -328,24 +330,35 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!className || scopeInfo?.name !== className) {
             return node;
         }
+        const structPropAnnoMap = new Map();
+        const definition: arkts.ClassDefinition = node.definition!;
         if (arkts.isETSStructDeclaration(node)) {
-            if (node.definition.super || node.definition.implements.length !== 0) {
+            if (definition.super || definition.implements.length !== 0) {
                 LogCollector.getInstance().collectLogInfo({
-                    node: node.definition?.ident ?? node,
+                    node: definition?.ident ?? node,
                     message: `Structs are not allowed to inherit from classes or implement interfaces.`,
                     level: LogType.ERROR,
                 });
                 return node;
             }
-            this.collectComponentMembers(node, className);
+            const innerClassFields: arkts.AstNode[] = [];
+            definition.body.forEach((it) => {
+                if (!arkts.isClassProperty(it)) {
+                    return;
+                }
+                const structPropAnnoRecord = parseStructPropertyAnnotations(it);
+                structPropAnnoMap.set(it.peer, structPropAnnoRecord);
+                innerClassFields.push(...this.createInterfaceInnerMember(it, structPropAnnoRecord));
+            })
+            this.structMembersMap.set(className, innerClassFields);
         }
-        const customComponentInterface = this.generateComponentInterface(
+        const customComponentInnerClass = this.generateComponentInnerClass(
             className,
-            StructFactory.copyStructModifierFlagsToOptionsInterface(node.modifiers),
+            StructFactory.copyStructModifierFlagsToOptionsInnerClass(node.modifierFlags, isExported(node)),
             Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
         );
-        NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
-        const definition: arkts.ClassDefinition = node.definition!;
+        NamespaceProcessor.getInstance().addInnerClassToCurrentNamespace(customComponentInnerClass);
+
         if (!!scopeInfo.annotations?.entry) {
             this.entryAnnoInfo.push({
                 name: className,
@@ -357,7 +370,12 @@ export class ComponentTransformer extends AbstractVisitor {
                 this.entryRouteName = routeName.value;
             }
         }
-        const newDefinition: arkts.ClassDefinition = this.createNewDefinition(node, className, definition);
+        const newDefinition: arkts.ClassDefinition = this.createNewDefinition(
+            node, 
+            className, 
+            definition, 
+            structPropAnnoMap
+        );
 
         if (arkts.isETSStructDeclaration(node)) {
             newDefinition.setFromStructModifier()
@@ -548,7 +566,8 @@ export class ComponentTransformer extends AbstractVisitor {
     createNewDefinition(
         node: arkts.ClassDeclaration | arkts.ETSStructDeclaration,
         className: string,
-        definition: arkts.ClassDefinition
+        definition: arkts.ClassDefinition,
+        structPropAnnoMap: Map<AstNodePointer, AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined>
     ): arkts.ClassDefinition {
         const staticMethodBody: arkts.AstNode[] = [];
         const isExportClass = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT);
@@ -586,7 +605,9 @@ export class ComponentTransformer extends AbstractVisitor {
                 [
                     StructFactory.createInvokeMethod(className, isDecl),
                     ...definition.body.map((st: arkts.AstNode) => {
-                        UIFactory.preprocessClassPropertyModifier(st, scopeInfo.isDecl);
+                        if (!scopeInfo.isDecl && arkts.isClassProperty(st)) {
+                            UIFactory.preprocessClassPropertyModifier(st, structPropAnnoMap.get(st.peer));
+                        }
                         return StructFactory.updateStructConstructor(st, scopeInfo);
                     }),
                     ...staticMethodBody,
@@ -597,73 +618,61 @@ export class ComponentTransformer extends AbstractVisitor {
             );
     }
 
-    generateComponentInterface(
+    generateComponentInnerClass(
         name: string,
-        modifiers: number,
+        modifiers: arkts.Es2pandaModifierFlags,
         annotations?: readonly arkts.AnnotationUsage[]
-    ): arkts.TSInterfaceDeclaration {
-        const interfaceNode = arkts.factory
-            .createInterfaceDeclaration(
-                [],
+    ): arkts.ClassDeclaration {
+        const ctor = EntryFactory.generateConstructor();
+        const definition: arkts.ClassDefinition = arkts.factory
+            .createClassDefinition(
                 arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
                 undefined,
-                arkts.factory.createTSInterfaceBody([...(this.structMembersMap.get(name) || [])]),
-                false,
-                false
-            )
-            .setAnnotations(annotations ?? []);
-        interfaceNode.modifiers = modifiers;
-        return interfaceNode;
-    }
-
-    collectComponentMembers(node: arkts.ETSStructDeclaration, className: string): void {
-        const members = filterDefined(
-            collect(
-                ...node.definition!.body.filter(arkts.isClassProperty).map((it) => {
-                    // if (hasDecoratorName(it, DecoratorNames.PROVIDE)) {
-                    //     UIFactory.processNoAliasProvideVariable(it);
-                    // }
-                    return this.createInterfaceInnerMember(it);
-                })
-            )
-        );
-        this.structMembersMap.set(className, members);
-    }
-
-    createInterfaceInnerMember(member: arkts.ClassProperty): arkts.ClassProperty[] {
-        const infos: DecoratorInfo[] = findDecoratorInfos(member);
-        const annotations = infos.map((it) => it.annotation.clone());
-        const originalName: string = expectName(member.key);
-        const isRequired = isRequiredDecorators.some((decoratorName) => {
-            return hasDecoratorName(member, decoratorName);
-        });
-        const originMember: arkts.ClassProperty = PropertyFactory
-            .createOptionalClassProperty(
-                originalName,
-                member,
                 undefined,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
-                false,
-                isRequired
+                [],
+                undefined,
+                undefined,
+                [...(this.structMembersMap.get(name) || []), ctor],
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
+                modifiers
             )
-            .setAnnotations(annotations);
+            .setCtor(ctor)
+            .setAnnotations(annotations ?? []);
+        const newClass = arkts.factory.createClassDeclaration(definition);
+        newClass.modifierFlags = modifiers;
+        return newClass;
+    }
+
+    createInterfaceInnerMember(
+        member: arkts.ClassProperty, 
+        annotationRecord: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+    ): arkts.AstNode[] {
+        const annotations: arkts.AnnotationUsage[] = collectAnnotationsFromInfo(annotationRecord);
+        const isRequired: boolean = checkIsRequiredPropertyFromAnnotationInfo(annotationRecord);
+        const originalName: string = expectName(member.key);
+        const originalMember: arkts.ClassProperty = PropertyFactory.createOptionalClassProperty({
+            name: originalName,
+            propertyType: member.typeAnnotation?.clone(),
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            isRequired
+        })
+        .setAnnotations(annotations);
         const optionsHasMember = UIFactory.createOptionsHasMember(originalName);
-        const typedAnnotations = infos
-            .filter((it) => DECORATOR_TYPE_MAP.has(it.name))
-            .map((it) => it.annotation.clone());
+        const typedAnnotations = collectAnnotationForBackingFromInfo(annotationRecord);
         if (typedAnnotations.length > 0) {
             const newName: string = backingField(originalName);
             const newMember: arkts.ClassProperty = PropertyFactory
-                .createOptionalClassProperty(
-                    newName,
-                    member,
-                    undefined,
-                    arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
-                )
+                .createOptionalClassProperty({
+                    name: newName,
+                    propertyType: member.typeAnnotation?.clone(),
+                    modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+                })
                 .setAnnotations(typedAnnotations);
-            return [originMember, newMember, optionsHasMember];
+            return [originalMember, newMember, optionsHasMember];
         }
-        return [originMember, optionsHasMember];
+        return [originalMember, optionsHasMember];
     }
 
     visitStruct(node: arkts.ETSStructDeclaration): arkts.ETSStructDeclaration | arkts.ClassDeclaration {

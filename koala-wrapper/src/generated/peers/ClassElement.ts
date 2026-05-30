@@ -26,7 +26,8 @@ import {
     KNativePointer,
     nodeByType,
     ArktsObject,
-    unpackString
+    unpackString,
+    Type
 } from "../../reexport-for-generated"
 
 import { TypedStatement } from "./TypedStatement"
@@ -52,6 +53,9 @@ export class ClassElement extends TypedStatement {
     }
     get isComputed(): boolean {
         return global.generatedEs2panda._ClassElementIsComputedConst(global.context, this.peer)
+    }
+    get tsType(): Type | undefined {
+        return new Type(global.es2panda._ClassElementTsType(global.context, this.peer))
     }
 }
 export function isClassElement(node: AstNode): node is ClassElement {

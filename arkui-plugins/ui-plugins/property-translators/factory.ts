@@ -31,7 +31,9 @@ import {
     generateThisBacking,
     getValueInAnnotation,
     hasDecorator,
+    InitializeValueOptions,
     OptionalMemberInfo,
+    PropertyOptionalFieldOptions,
     removeDecorator,
     findCachedMemoMetadata,
 } from './utils';
@@ -41,6 +43,7 @@ import { annotation, isNumeric } from '../../common/arkts-utils';
 import { PropertyFactoryCallTypeCache } from '../memo-collect-cache';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
+import { CustomComponentInnerClassPropertyInfo } from 'collectors/ui-collectors/records';
 
 const MONITOR_WILDCARD_SUFFIX = '.*';
 const MONITOR_WILDCARD_MIN_VERSION = 26;
@@ -71,7 +74,7 @@ export class factory {
     static generateConditionalAlternate(testLeft: string, key: string, info?: OptionalMemberInfo): arkts.Expression {
         const leftIdent: arkts.Identifier = arkts.factory.createIdentifier(testLeft);
         const alternate: arkts.MemberExpression = UIFactory.generateMemberExpression(
-            leftIdent,
+            info?.isNonNull ? arkts.factory.createTSNonNullExpression(leftIdent) : leftIdent,
             info?.isNumeric ? '$_get' : key
         );
         return info?.isCall
@@ -292,28 +295,32 @@ export class factory {
     }
 
     static createOptionalClassProperty(
-        name: string,
-        property: arkts.ClassProperty,
-        stageManagementType: StateManagementTypes | undefined,
-        modifiers: arkts.Es2pandaModifierFlags,
-        needMemo: boolean = false,
-        isRequired: boolean = false
+        options: PropertyOptionalFieldOptions
     ): arkts.ClassProperty {
-        const originType = property.typeAnnotation;
-        const newType: arkts.TypeNode | undefined = !stageManagementType
-            ? (property.typeAnnotation ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY))
-            : originType;
+        const { name, propertyType, modifiers, stateMangementType, needMemo, isRequired } = options;
+        const newType: arkts.TypeNode | undefined = !stateMangementType
+            ? (propertyType ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY))
+            : propertyType;
         if (needMemo && !!newType && arkts.isETSFunctionType(newType) && findCanAddMemoFromTypeAnnotation(newType).canAddMemo) {
             addMemoAnnotation(newType);
+        }
+        let newPropertyType = !!stateMangementType ? factory.createStageManagementType(stateMangementType, propertyType) : newType;
+        if (!isRequired && !!newPropertyType && arkts.isETSFunctionType(newPropertyType)) {
+            newPropertyType = arkts.factory.createETSUnionType([newPropertyType, arkts.factory.createETSUndefinedType()]);
         }
         const newProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(name),
             undefined,
-            !!stageManagementType ? factory.createStageManagementType(stageManagementType, originType) : newType,
+            newPropertyType,
             modifiers,
             false
         );
-        return arkts.classPropertySetOptional(newProperty, !isRequired);
+        if (isRequired) {
+            newProperty.setIsImmediateInit();
+        } else {
+            newProperty.modifierFlags |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
+        }
+        return newProperty;
     }
 
     static createStageManagementType(
@@ -651,25 +658,39 @@ export class factory {
     /**
      * wrap interface non-undefined property type `T` to `<wrapTypeName><T>`.
      */
-    static wrapInterfacePropertyType(type: arkts.TypeNode, wrapTypeName: StateManagementTypes): arkts.TypeNode {
+    static wrapInnerClassPropertyTypeInMethod(type: arkts.TypeNode, wrapTypeName: StateManagementTypes): arkts.TypeNode {
         if (arkts.isETSUnionType(type)) {
-            return arkts.factory.createETSUnionType([
-                arkts.factory.createETSTypeReference(
-                    arkts.factory.createETSTypeReferencePart(
-                        arkts.factory.createIdentifier(wrapTypeName),
-                        arkts.factory.createTSTypeParameterInstantiation([type.types[0]])
-                    )
-                ),
-                ...type.types.slice(1),
+            return arkts.factory.createETSUnionType([	 
+                arkts.factory.createETSTypeReference( 
+                    arkts.factory.createETSTypeReferencePart( 
+                        arkts.factory.createIdentifier(wrapTypeName), 
+                        arkts.factory.createTSTypeParameterInstantiation([type.types[0]]) 
+                    ) 
+                ), 
+                ...type.types.slice(1), 
             ]);
         }
-        return type;
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
+                arkts.factory.createIdentifier(wrapTypeName),
+                arkts.factory.createTSTypeParameterInstantiation([type])
+            )
+        );
+    }
+
+    static wrapInnerClassPropertyTypeInProperty(type: arkts.TypeNode, wrapTypeName: StateManagementTypes): arkts.TypeNode {
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
+                arkts.factory.createIdentifier(wrapTypeName),
+                arkts.factory.createTSTypeParameterInstantiation([type])
+            )
+        );
     }
 
     /**
      * wrap interface property parameter that has non-undefined type `T` to `<wrapTypeName><T>`.
      */
-    static wrapInterfacePropertyParamExpr(
+    static wrapInnerClassPropertyParamExpr(
         param: arkts.Expression,
         wrapTypeName: StateManagementTypes
     ): arkts.Expression {
@@ -682,7 +703,7 @@ export class factory {
         return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 param.ident!.name,
-                factory.wrapInterfacePropertyType(param.typeAnnotation!, wrapTypeName)
+                factory.wrapInnerClassPropertyTypeInMethod(param.typeAnnotation!, wrapTypeName)
             ),
             param.isOptional,
             param.initializer,
@@ -692,12 +713,13 @@ export class factory {
 
     static wrapStateManagementTypeToType(
         type: arkts.TypeNode | undefined,
-        decoratorName: DecoratorNames
+        decoratorName: DecoratorNames,
+        wrapFn: (type: arkts.TypeNode, wrapTypeName: StateManagementTypes) => arkts.TypeNode
     ): arkts.TypeNode | undefined {
         let newType: arkts.TypeNode | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
         if (!!type && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
-            newType = factory.wrapInterfacePropertyType(type, wrapTypeName);
+            newType = wrapFn(type, wrapTypeName);
             collectStateManagementTypeImport(wrapTypeName);
         }
         return newType;
@@ -711,9 +733,9 @@ export class factory {
         let newParam: arkts.Expression | undefined;
         let wrapTypeName: StateManagementTypes | undefined;
         if (!!param && !!(wrapTypeName = DECORATOR_TYPE_MAP.get(decoratorName))) {
-            newParam = factory.wrapInterfacePropertyParamExpr(param, wrapTypeName);
-            const currentMetadata = findCachedMemoMetadata(param)
-            if (!!metadata || !!currentMetadata) {
+            newParam = factory.wrapInnerClassPropertyParamExpr(param, wrapTypeName);
+            const currentMetadata = findCachedMemoMetadata(param);
+            if (!!metadata) {
                 NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newParam, currentMetadata || metadata);
             }
             collectStateManagementTypeImport(wrapTypeName);
@@ -727,7 +749,7 @@ export class factory {
      *
      * @param method expecting getter with decorator annotation and a setter with decorator annotation in the overloads.
      */
-    static wrapStateManagementTypeToMethodInInterface(
+    static wrapStateManagementTypeToMethodInInnerClass(
         method: arkts.MethodDefinition,
         decorator: DecoratorNames,
         metadata?: AstNodeCacheValueMetadata,
@@ -736,7 +758,8 @@ export class factory {
             const func = method.function!;
             const newType: arkts.TypeNode | undefined = factory.wrapStateManagementTypeToType(
                 func.returnTypeAnnotation,
-                decorator
+                decorator,
+                factory.wrapInnerClassPropertyTypeInMethod
             );
             removeDecorator(method, decorator);
             if (!!newType) {
@@ -774,11 +797,13 @@ export class factory {
     static generateInitializeValue(
         propertyValue: arkts.Expression | undefined,
         propertyType: arkts.TypeNode | undefined,
-        originalName: string
+        originalName: string,
+        options?: InitializeValueOptions
     ): arkts.Expression {
         const outInitialize: arkts.Expression = factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName
+            originalName,
+            { isNonNull: options?.isRequired }
         );
         const binaryItem: arkts.Expression = arkts.factory.createBinaryExpression(
             outInitialize,
@@ -797,13 +822,14 @@ export class factory {
      *
      * @param property expecting property with decorator annotation.
      */
-    static wrapStateManagementTypeToPropertyInInterface(
+    static wrapStateManagementTypeToPropertyInInnerClass(
         property: arkts.ClassProperty,
         decorator: DecoratorNames
     ): arkts.ClassProperty {
         const newType: arkts.TypeNode | undefined = factory.wrapStateManagementTypeToType(
             property.typeAnnotation,
-            decorator
+            decorator,
+            factory.wrapInnerClassPropertyTypeInProperty
         );
         removeDecorator(property, decorator);
         if (!!newType) {

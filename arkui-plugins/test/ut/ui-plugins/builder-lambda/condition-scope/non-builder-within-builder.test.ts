@@ -74,6 +74,7 @@ type TestUpdateCallback = (()=> void);
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -108,8 +109,8 @@ type TestUpdateCallback = (()=> void);
 
 }
 
-@Component() interface __Options_MyStateSample {
-
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

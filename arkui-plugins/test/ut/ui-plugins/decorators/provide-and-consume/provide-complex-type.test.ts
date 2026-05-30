@@ -165,27 +165,48 @@ final class PropType extends BaseEnum<int> {
     }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_provideVar1!.resetOnReuse(new Per(6));
-    this.__backing_provideVar2!.resetOnReuse(new Array<number>(3, 6, 8));
-    this.__backing_provideVar3!.resetOnReuse(PropType.TYPE3);
-    this.__backing_provideVar4!.resetOnReuse(new Set<string>(new Array<string>("aa", "bb")));
-    this.__backing_provideVar5!.resetOnReuse([true, false]);
-    this.__backing_provideVar6!.resetOnReuse(new Array<Per>(new Per(7), new Per(11)));
-    this.__backing_provideVar7!.resetOnReuse([new Per(7), new Per(11)]);
-    this.__backing_provideVar8!.resetOnReuse(((sr: string) => {}));
-    this.__backing_provideVar9!.resetOnReuse(new Date("2025-4-23"));
-    this.__backing_provideVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
-    this.__backing_provideVar11!.resetOnReuse(0.0);
-    this.__backing_provideVar12!.resetOnReuse(new Per(6));
-    this.__backing_provideVar13!.resetOnReuse(new Array<string>("1", "1", "2"));
-    this.__backing_provideVar14!.resetOnReuse(new Per(6));
-    this.__backing_provideVar15!.resetOnReuse(new Date("2026-02-09"));
-    this.__backing_provideVar16!.resetOnReuse(new Set<string>(new Array<string>("a", "b", "c")));
-    this.__backing_provideVar17!.resetOnReuse([new Per(1), new Per(2)]);
-    this.__backing_provideVar18!.resetOnReuse(new Array<Per>(new Per(3), new Per(4)));
-    this.__backing_provideVar19!.resetOnReuse(new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]));
-    this.__backing_provideVar20!.resetOnReuse([true, false, true, true]);
+    this.__backing_provideVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar1)})) ?? (new Per(6))));
+    this.__backing_provideVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_provideVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar3)})) ?? (PropType.TYPE3)));
+    this.__backing_provideVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_provideVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar5)})) ?? ([true, false])));
+    this.__backing_provideVar6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
+    this.__backing_provideVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar7)})) ?? ([new Per(7), new Per(11)])));
+    this.__backing_provideVar8!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar8)})) ?? (((sr: string) => {}))));
+    this.__backing_provideVar9!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar9)})) ?? (new Date("2025-4-23"))));
+    this.__backing_provideVar10!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
+    this.__backing_provideVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar11)})) ?? (0.0)));
+    this.__backing_provideVar12!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar12)})) ?? (new Per(6))));
+    this.__backing_provideVar13!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar13)})) ?? (new Array<string>("1", "1", "2"))));
+    this.__backing_provideVar14!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar14)})) ?? (new Per(6))));
+    this.__backing_provideVar15!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar15)})) ?? (new Date("2026-02-09"))));
+    this.__backing_provideVar16!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar16)})) ?? (new Set<string>(new Array<string>("a", "b", "c")))));
+    this.__backing_provideVar17!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar17)})) ?? ([new Per(1), new Per(2)])));
+    this.__backing_provideVar18!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar18)})) ?? (new Array<Per>(new Per(3), new Per(4)))));
+    this.__backing_provideVar19!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar19)})) ?? (new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]))));
+    this.__backing_provideVar20!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar20)})) ?? ([true, false, true, true])));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -407,86 +428,68 @@ final class PropType extends BaseEnum<int> {
   }
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(Per | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar2', '(Array<number> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar2', '(IProvideDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar3', '(PropType | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar3', '(IProvideDecoratedVariable<PropType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar4', '(Set<string> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar4', '(IProvideDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar5', '(IProvideDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar6', '(Array<Per> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar6', '(IProvideDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar7', '(Array<Per> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar7', '(IProvideDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar8', '(IProvideDecoratedVariable<((sr: string)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar9', '(Date | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar9', '(IProvideDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar10', '(IProvideDecoratedVariable<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar11', '((string | number) | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar11', '(IProvideDecoratedVariable<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar12', '(IProvideDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar12', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar13', '((Array<string> | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "a" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar13', '(IProvideDecoratedVariable<(Array<string> | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar13', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar14', '((Set<string> | Per) | undefined)', [dumpAnnotation('Provide', { alias: "b" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar14', '(IProvideDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar14', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar15', '(Date | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar15', '(IProvideDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar15', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar16', '((Set<string> | null) | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar16', '(IProvideDecoratedVariable<(Set<string> | null)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar16', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar17', '(Array<Per> | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar17', '(IProvideDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar17', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar18', '(Array<Per> | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar18', '(IProvideDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar18', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar19', '(Map<string, Per> | undefined)', [dumpAnnotation('Provide', { alias: "c", allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar19', '(IProvideDecoratedVariable<Map<string, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar19', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar20', '(Array<boolean> | undefined)', [dumpAnnotation('Provide', { alias: "d", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar20', '(IProvideDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar20', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @Provide() public provideVar1?: Per;
+  public __backing_provideVar1?: IProvideDecoratedVariable<Per>;
+  public __options_has_provideVar1?: boolean;
+  @Provide() public provideVar2?: Array<number>;
+  public __backing_provideVar2?: IProvideDecoratedVariable<Array<number>>;
+  public __options_has_provideVar2?: boolean;
+  @Provide() public provideVar3?: PropType;
+  public __backing_provideVar3?: IProvideDecoratedVariable<PropType>;
+  public __options_has_provideVar3?: boolean;
+  @Provide() public provideVar4?: Set<string>;
+  public __backing_provideVar4?: IProvideDecoratedVariable<Set<string>>;
+  public __options_has_provideVar4?: boolean;
+  @Provide() public provideVar5?: Array<boolean>;
+  public __backing_provideVar5?: IProvideDecoratedVariable<Array<boolean>>;
+  public __options_has_provideVar5?: boolean;
+  @Provide() public provideVar6?: Array<Per>;
+  public __backing_provideVar6?: IProvideDecoratedVariable<Array<Per>>;
+  public __options_has_provideVar6?: boolean;
+  @Provide() public provideVar7?: Array<Per>;
+  public __backing_provideVar7?: IProvideDecoratedVariable<Array<Per>>;
+  public __options_has_provideVar7?: boolean;
+  @Provide() public provideVar8?: (((sr: string)=> void) | undefined);
+  public __backing_provideVar8?: IProvideDecoratedVariable<(((sr: string)=> void) | undefined)>;
+  public __options_has_provideVar8?: boolean;
+  @Provide() public provideVar9?: Date;
+  public __backing_provideVar9?: IProvideDecoratedVariable<Date>;
+  public __options_has_provideVar9?: boolean;
+  @Provide() public provideVar10?: Map<number, Per>;
+  public __backing_provideVar10?: IProvideDecoratedVariable<Map<number, Per>>;
+  public __options_has_provideVar10?: boolean;
+  @Provide() public provideVar11?: (string | number);
+  public __backing_provideVar11?: IProvideDecoratedVariable<(string | number)>;
+  public __options_has_provideVar11?: boolean;
+  @Provide() public provideVar12?: (Set<string> | Per);
+  public __backing_provideVar12?: IProvideDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_provideVar12?: boolean;
+  @Provide({alias:"a"}) public provideVar13?: (Array<string> | undefined);
+  public __backing_provideVar13?: IProvideDecoratedVariable<(Array<string> | undefined)>;
+  public __options_has_provideVar13?: boolean;
+  @Provide({alias:"b"}) public provideVar14?: (Set<string> | Per);
+  public __backing_provideVar14?: IProvideDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_provideVar14?: boolean;
+  @Provide({allowOverride:true}) public provideVar15?: Date;
+  public __backing_provideVar15?: IProvideDecoratedVariable<Date>;
+  public __options_has_provideVar15?: boolean;
+  @Provide({allowOverride:true}) public provideVar16?: (Set<string> | null);
+  public __backing_provideVar16?: IProvideDecoratedVariable<(Set<string> | null)>;
+  public __options_has_provideVar16?: boolean;
+  @Provide({allowOverride:false}) public provideVar17?: Array<Per>;
+  public __backing_provideVar17?: IProvideDecoratedVariable<Array<Per>>;
+  public __options_has_provideVar17?: boolean;
+  @Provide({allowOverride:false}) public provideVar18?: Array<Per>;
+  public __backing_provideVar18?: IProvideDecoratedVariable<Array<Per>>;
+  public __options_has_provideVar18?: boolean;
+  @Provide({alias:"c",allowOverride:true}) public provideVar19?: Map<string, Per>;
+  public __backing_provideVar19?: IProvideDecoratedVariable<Map<string, Per>>;
+  public __options_has_provideVar19?: boolean;
+  @Provide({alias:"d",allowOverride:false}) public provideVar20?: Array<boolean>;
+  public __backing_provideVar20?: IProvideDecoratedVariable<Array<boolean>>;
+  public __options_has_provideVar20?: boolean;
+  public constructor() {}
 }
 `;
 

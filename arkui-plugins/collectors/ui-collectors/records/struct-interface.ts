@@ -19,13 +19,16 @@ import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 import { RecordCache } from './cache';
 
-export type CustomComponentInterfaceInfo = AnnotationRecord<CustomComponentAnnotations, StructAnnotationInfo> & {
+export type CustomComponentInnerClassInfo = AnnotationRecord<CustomComponentAnnotations, StructAnnotationInfo> & {
     name?: string;
 };
 
-export class CustomComponentInterfaceRecord extends BaseRecord<
-    arkts.TSInterfaceDeclaration,
-    CustomComponentInterfaceInfo
+/**
+ * Struct `__Options_` inner class
+ */
+export class CustomComponentInnerClassRecord extends BaseRecord<
+    arkts.ClassDeclaration,
+    CustomComponentInnerClassInfo
 > {
     private _annotationRecord: CustomComponentAnnotationRecord;
 
@@ -36,13 +39,21 @@ export class CustomComponentInterfaceRecord extends BaseRecord<
         this._annotationRecord = new CustomComponentAnnotationRecord(options);
     }
 
-    collectFromNode(node: arkts.TSInterfaceDeclaration): void {
-        const interfaceBody: arkts.TSInterfaceBody | undefined = node.body;
-        if (!interfaceBody || !node.id?.name) {
+    release(node: arkts.ClassDeclaration): void {
+        RecordCache.getInstance().delete(node.peer);
+    }
+
+    collectFromNode(node: arkts.ClassDeclaration): void {
+        const innerClassDef: arkts.ClassDefinition | undefined = node.definition;
+        if (!innerClassDef) {
             return;
         }
-        this.name = node.id.name;
-        for (const anno of node.annotations) {
+        const name = innerClassDef.ident?.name;
+        if (!name) {
+            return;
+        }
+        this.name = name;
+        for (const anno of innerClassDef.annotations) {
             this._annotationRecord.collect(anno);
         }
         RecordCache.getInstance().set(node.peer, this);
@@ -59,7 +70,7 @@ export class CustomComponentInterfaceRecord extends BaseRecord<
         this.info = currInfo;
     }
 
-    toJSON(): CustomComponentInterfaceInfo {
+    toJSON(): CustomComponentInnerClassInfo {
         this.refresh();
         return {
             ...(this.info?.name && { name: this.info.name }),

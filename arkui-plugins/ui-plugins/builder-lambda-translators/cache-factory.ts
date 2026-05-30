@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import {
     CallInfo,
     checkIsTrailingLambdaInLastParam,
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassPropertyInfo,
     FunctionInfo,
     InnerComponentFunctionInfo,
     StructMethodInfo,
@@ -51,6 +51,7 @@ import {
     MemoNames,
 } from '../../collectors/memo-collectors/utils';
 // import { ConditionScopeCacheVisitor } from '../condition-scope-translators/condition-scope-visitor';
+import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as TypeFactory } from '../type-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as BuilderLambdaFactory } from './factory';
@@ -66,6 +67,7 @@ import {
     buildSecondLastArgInfo,
     collectDeclInfoFromInfo,
     findReuseId,
+    findThisMemberValueInExpression,
     getDeclaredSetAttribtueMethodName,
     getStructCalleeInfoFromCallInfo,
     InstanceCallInfo,
@@ -626,7 +628,7 @@ export class CacheFactory {
         param: arkts.Expression,
         hasBuilder?: boolean,
         declInfo?: BuilderLambdaDeclInfo,
-        structPropertyInfos?: CustomComponentInterfacePropertyInfo[]
+        structPropertyInfos?: CustomComponentInnerClassPropertyInfo[]
     ): arkts.Expression {
         if (!arg) {
             return fallback;
@@ -671,7 +673,7 @@ export class CacheFactory {
     static processOptionsArg<T extends arkts.TSAsExpression | arkts.ObjectExpression>(
         arg: T,
         declInfo?: BuilderLambdaDeclInfo,
-        structPropertyInfos?: CustomComponentInterfacePropertyInfo[]
+        structPropertyInfos?: CustomComponentInnerClassPropertyInfo[]
     ): T {
         let expr: arkts.ObjectExpression | undefined;
         if (arkts.isTSAsExpression(arg) && !!arg.expr && arkts.isObjectExpression(arg.expr)) {
@@ -700,7 +702,7 @@ export class CacheFactory {
     static updatePropertiesInOptions(
         prop: arkts.Property,
         declInfo?: BuilderLambdaDeclInfo,
-        propertyInfo?: CustomComponentInterfacePropertyInfo
+        propertyInfo?: CustomComponentInnerClassPropertyInfo
     ): arkts.Property[] {
         const key: arkts.AstNode | undefined = prop.key;
         const value: arkts.Expression | undefined = prop.value;
@@ -727,27 +729,39 @@ export class CacheFactory {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(prop) ||
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(value)
         );
-        // if (isDoubleDollarCall(value)) {
-        //     newProperty = BindableFactory.updateBindableProperty(prop, value);
-        // } else 
         if (isBuilder && arkts.isArrowFunctionExpression(value)) {
             newProperty = prop.setValue(this.updateBuilderArrowFunction(value));
             BuilderParamPropertyCache.getInstance().collect({ node: newProperty });
-        } else if (
-            propertyInfo.isLink &&
-            propertyInfo.isNotBacking &&
-            arkts.isMemberExpression(value) &&
-            arkts.isThisExpression(value.object) &&
-            arkts.isIdentifier(value.property)
-        ) {
-            newProperty = arkts.factory.updateProperty(
-                prop,
-                prop.kind,
-                arkts.factory.createIdentifier(backingField(keyName)),
-                BuilderLambdaFactory.updateBackingMember(value, value.property.name),
-                false,
-                false
-            );
+        } else if (propertyInfo.isLink && propertyInfo.isNotBacking) {
+            let value: arkts.Expression | undefined = prop.value;
+            let valueType: arkts.TypeNode | undefined;
+            let memberValue: arkts.MemberExpression | undefined;
+            if (!!value) {
+                if (arkts.isTSAsExpression(value)) {
+                    valueType = value.typeAnnotation;
+                    memberValue = findThisMemberValueInExpression(value.expr);
+                } else {
+                    memberValue = findThisMemberValueInExpression(value);
+                }
+            }
+            if (!!memberValue && arkts.isIdentifier(memberValue.property)) {
+                const propertyName = memberValue.property.name;
+                memberValue = BuilderLambdaFactory.updateBackingMember(memberValue, propertyName);
+                if (valueType !== undefined) {
+                    valueType = PropertyFactory.wrapInnerClassPropertyTypeInProperty(valueType, StateManagementTypes.STATE_DECORATED);
+                    value = arkts.factory.updateTSAsExpression(value as arkts.TSAsExpression, memberValue, valueType, false);
+                } else {
+                    value = memberValue;
+                }
+                newProperty = arkts.factory.updateProperty(
+                    prop,
+                    prop.kind,
+                    arkts.factory.createIdentifier(backingField(keyName)),
+                    value,
+                    false,
+                    false
+                );
+            }
         }
         return declInfo?.isFunctionCall
             ? [newProperty]

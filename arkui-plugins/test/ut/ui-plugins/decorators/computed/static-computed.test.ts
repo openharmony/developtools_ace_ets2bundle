@@ -247,8 +247,8 @@ function main() {}
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -284,19 +284,19 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(string | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(number | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar2', '(ILocalDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar2', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Local() public localVar1?: string;
+  public __backing_localVar1?: ILocalDecoratedVariable<string>;
+  public __options_has_localVar1?: boolean;
+  @Local() public localVar2?: number;
+  public __backing_localVar2?: ILocalDecoratedVariable<number>;
+  public __options_has_localVar2?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Parent2 {
-
+@ComponentV2() class __Options_Parent2 {
+  public constructor() {}
 }
 `;
 

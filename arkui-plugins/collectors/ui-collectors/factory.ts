@@ -26,7 +26,7 @@ import {
 } from './utils';
 import {
     ArrowFunctionRecord,
-    CustomComponentInterfaceRecord,
+    CustomComponentInnerClassRecord,
     CustomComponentRecord,
     InsightIntentClassRecord,
     NewClassInstanceRecord,
@@ -39,7 +39,7 @@ import {
 import { StructCollector } from './struct-collector';
 import { GlobalClassCollector } from './global-class-collector';
 import { NormalClassCollector } from './normal-class-collector';
-import { StructInterfaceCollector } from './struct-interface-collector';
+import { StructInnerClassCollector } from './struct-interface-collector';
 import { NormalInterfaceCollector } from './normal-interface-collector';
 import { CallRecordCollector } from './call-record-collector';
 import { UICollectMetadata } from './shared-types';
@@ -92,7 +92,7 @@ export class CollectFactory {
         const structRecord = new CustomComponentRecord(metadata);
         structRecord.withIsFromArkUI(isFromArkUI).collect(node);
 
-        let classInfo = structRecord.toRecord();
+        const classInfo = structRecord.toRecord();
         if (!!classInfo && checkIsCustomComponentFromInfo(classInfo)) {
             ValidatorBuilder.build(StructValidator).checkIsViolated(node, classInfo);
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, structRecord.toJSON());
@@ -108,33 +108,46 @@ export class CollectFactory {
             structCollector.reset();
             return node;
         }
+        structRecord.release(node);
 
         if (metadata.shouldHandleInsightIntent) {
             const insightIntentClassRecord = new InsightIntentClassRecord(metadata);
             insightIntentClassRecord.collect(node);
 
-            classInfo = insightIntentClassRecord.toRecord();
-            if (!classInfo) {
+            const insightIntentClassInfo = insightIntentClassRecord.toRecord();
+            if (!insightIntentClassInfo) {
                 return node;
             }
-            if (checkIsInsightIntentClassFromInfo(classInfo)) {
+            if (checkIsInsightIntentClassFromInfo(insightIntentClassInfo)) {
                 NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, insightIntentClassRecord.toJSON());
                 return node;
             }
         }
 
+        const innerClassRecord = new CustomComponentInnerClassRecord(metadata);
+        innerClassRecord.collect(node);
+
+        const innerClassInfo = innerClassRecord.toRecord();
+        if (!!innerClassInfo && checkIsCustomComponentFromInfo(innerClassInfo)) {
+            const interfaceCollector = new StructInnerClassCollector({ ...metadata, innerClassRecord });
+            interfaceCollector.visitor(node);
+            interfaceCollector.reset();
+            return node;
+        }
+        innerClassRecord.release(node);
+
         const classRecord = new NormalClassRecord(metadata);
         classRecord.collect(node);
 
-        classInfo = classRecord.toRecord();
-        if (!classInfo) {
+        const normalClassInfo = classRecord.toRecord();
+        if (!normalClassInfo) {
             return node;
         }
-        ValidatorBuilder.build(NormalClassValidator).checkIsViolated(node, classInfo);
-        if (checkCanCollectNormalClassFromInfo(classInfo)) {
+        ValidatorBuilder.build(NormalClassValidator).checkIsViolated(node, normalClassInfo);
+        if (checkCanCollectNormalClassFromInfo(normalClassInfo)) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, classRecord.toJSON());
         }
-        if (checkIsETSGlobalClassFromInfo(classInfo)) {
+        if (checkIsETSGlobalClassFromInfo(normalClassInfo)) {
             const globalClassCollector = new GlobalClassCollector(metadata);
             globalClassCollector.visitor(node);
             if (metadata.shouldHandleInsightIntent || globalClassCollector.shouldCollectGlobalClass) {
@@ -150,21 +163,10 @@ export class CollectFactory {
     }
 
     static findAndCollectInterface(node: arkts.TSInterfaceDeclaration, metadata: UICollectMetadata): arkts.AstNode {
-        const interfaceRecord = new CustomComponentInterfaceRecord(metadata);
-        interfaceRecord.collect(node);
-
-        let interfaceInfo = interfaceRecord.toRecord();
-        if (!!interfaceInfo && checkIsCustomComponentFromInfo(interfaceInfo)) {
-            const interfaceCollector = new StructInterfaceCollector({ ...metadata, interfaceRecord });
-            interfaceCollector.visitor(node);
-            interfaceCollector.reset();
-            return node;
-        }
-
         const normalInterfaceRecord = new NormalInterfaceRecord(metadata);
         normalInterfaceRecord.collect(node);
 
-        interfaceInfo = normalInterfaceRecord.toRecord();
+        const interfaceInfo = normalInterfaceRecord.toRecord();
         ValidatorBuilder.build(NormalInterfaceValidator).checkIsViolated(node, interfaceInfo);
         if (checkIsComponentAttributeInterfaceFromInfo(interfaceInfo)) {
             NodeCacheFactory.getInstance()
@@ -227,6 +229,8 @@ export class CollectFactory {
         const propertyInfo = propertyRecord.toRecord();
         if (propertyInfo?.annotationInfo?.hasBuilder) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
+        } else {
+            propertyRecord.release(node);
         }
         return node;
     }

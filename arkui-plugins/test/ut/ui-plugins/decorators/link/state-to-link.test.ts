@@ -100,6 +100,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_DateComponent | undefined)): void {
     this.__backing_selectedDate!.resetOnReuse(initializers!.__backing_selectedDate!);
   }
@@ -174,8 +175,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_parentSelectedDate!.resetOnReuse(new Date("2021-08-08"));
+    this.__backing_parentSelectedDate!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
 
   @MemoIntrinsic() 
@@ -253,26 +256,26 @@ class __EntryWrapper extends EntryPoint {
     ParentComponent._invoke(undefined, undefined, undefined, undefined, undefined);
 
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Component() interface __Options_DateComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
+@Component() class __Options_DateComponent {
+  @Link() public selectedDate: Date;
+  public __backing_selectedDate?: LinkSourceType<Date>;
+  public __options_has_selectedDate?: boolean;
+  public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_ParentComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}
+@Entry() @Component() class __Options_ParentComponent {
+  @State() public parentSelectedDate?: Date;
+  public __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
+  public __options_has_parentSelectedDate?: boolean;
+  public constructor() {}
   
 }
 `;

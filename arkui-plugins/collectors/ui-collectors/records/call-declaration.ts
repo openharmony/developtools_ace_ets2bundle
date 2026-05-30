@@ -94,14 +94,14 @@ export class CallDeclRecord extends BaseRecord<arkts.AstNode, CallDeclInfo> {
         }
         this.collectAnnotations(node.annotations);
         this.declName = node.key.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         this.isDeclFromClassProperty = true;
     }
 
     private collectFromMethod(node: arkts.MethodDefinition, isFromLegacy?: boolean): void {
         this.collectAnnotations(node.function.annotations, isFromLegacy);
         this.declName = node.id?.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         this.hasReceiver = node.function.hasReceiver;
         const classDef = node.findOuterParent<arkts.ClassDefinition>(arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DEFINITION);
         if (!!classDef && classDef.ident?.name === ETSGLOBAL) {

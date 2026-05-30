@@ -199,63 +199,21 @@ function main() {}
   }
   static {
   }
-  }
-  @CustomDialog() interface __Options_CustomDialogExample {
-  get aaController(): ((CustomDialogController | undefined) | undefined) {
-    return undefined;
-  }
-  set aaController(aaController: ((CustomDialogController | undefined) | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_aaController(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_aaController(__options_has_aaController: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @State() 
-  get text(): (string | undefined) {
-    return undefined;
-  }
-  @State() 
-  set text(text: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_text(): (IStateDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_text(__backing_text: (IStateDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_text(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_text(__options_has_text: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @State() 
-  get hh(): (string | undefined) {
-    return undefined;
-  }
-  @State() 
-  set hh(hh: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_hh(): (IStateDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_hh(__backing_hh: (IStateDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_hh(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_hh(__options_has_hh: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  }
-  @Component() interface __Options_CustomDialogUser {
-  }
+}
+@CustomDialog() class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  @State() public text?: string;
+  public __backing_text?: IStateDecoratedVariable<string>;
+  public __options_has_text?: boolean;
+  @State() public hh?: string;
+  public __backing_hh?: IStateDecoratedVariable<string>;
+  public __options_has_hh?: boolean;
+  public constructor() {}
+}
+@Component() class __Options_CustomDialogUser {
+  public constructor() {}
+}
 `;
 
 function testUICheckedTransformer(this: PluginTestContext): void {
@@ -396,6 +354,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -488,25 +447,24 @@ function main() {}
 
   static {
   }
-  }
+}
 
-  @CustomDialog() interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
+@CustomDialog() class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  @State() public text?: string;
+  public __backing_text?: IStateDecoratedVariable<string>;
+  public __options_has_text?: boolean;
+  @State() public hh?: string;
+  public __backing_hh?: IStateDecoratedVariable<string>;
+  public __options_has_hh?: boolean;
+  public constructor() {}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)')}
+}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_hh', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)')}
-
-  }
-
-  @Component() interface __Options_CustomDialogUser {
-
-  }
+@Component() class __Options_CustomDialogUser {
+  public constructor() {}
+}
 `;
 
 function testMemoCheckedTransformer(this: PluginTestContext): void {

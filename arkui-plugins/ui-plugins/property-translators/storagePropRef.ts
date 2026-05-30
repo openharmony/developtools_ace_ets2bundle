@@ -19,9 +19,9 @@ import { backingField, expectName, flatVisitMethodWithOverloads } from '../../co
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -41,7 +41,7 @@ import {
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
 import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
@@ -67,7 +67,7 @@ function initializeStructWithStoragePropRefProperty(
         arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
@@ -89,6 +89,9 @@ function initializeStructWithStoragePropRefProperty(
     );
 }
 
+/**
+ * @deprecated
+ */
 export class StoragePropRefTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.STORAGE_PROP_REF_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_STORAGE_PROP_REF;
@@ -102,7 +105,10 @@ export class StoragePropRefTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -128,7 +134,10 @@ export class StoragePropRefCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -144,15 +153,18 @@ export class StoragePropRefCachedTranslator extends PropertyCachedTranslator {
     }
 }
 
-export class StoragePropRefInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class StoragePropRefInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_PROP_REF;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
             return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.STORAGE_PROP_REF);
         } else if (arkts.isClassProperty(node)) {
@@ -162,18 +174,15 @@ export class StoragePropRefInterfaceTranslator<
     }
 }
 
-export class StoragePropRefCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class StoragePropRefCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_PROP_REF;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return (
             !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasStoragePropRef
         );

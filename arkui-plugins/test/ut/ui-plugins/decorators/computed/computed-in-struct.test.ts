@@ -201,17 +201,16 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'firstName', '(string | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_firstName', '(ILocalDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_firstName', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'lastName', '(string | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_lastName', '(ILocalDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_lastName', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'age', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_age', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index {
+  @Local() public firstName?: string;
+  public __backing_firstName?: ILocalDecoratedVariable<string>;
+  public __options_has_firstName?: boolean;
+  @Local() public lastName?: string;
+  public __backing_lastName?: ILocalDecoratedVariable<string>;
+  public __options_has_lastName?: boolean;
+  public age?: number;
+  public __options_has_age?: boolean;
+  public constructor() {}
   
 }
 `;

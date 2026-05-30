@@ -60,7 +60,7 @@ export class NormalClassMethodRecord extends BaseRecord<arkts.MethodDefinition, 
 
     collectFromNode(node: arkts.MethodDefinition): void {
         this.name = node.id?.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         this.kind = node.kind;
         this.isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         for (const anno of node.function.annotations) {

@@ -120,14 +120,14 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(Set<string> | undefined)', [dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
+@ComponentV2() class __Options_Child {
+  @Once() public onceParamNum?: number;
+  public __backing_onceParamNum?: IParamOnceDecoratedVariable<number>;
+  public __options_has_onceParamNum?: boolean;
+  @Once() public onceVar4?: Set<string>;
+  public __backing_onceVar4?: IParamOnceDecoratedVariable<Set<string>>;
+  public __options_has_onceVar4?: boolean;
+  public constructor() {}
   
 }
 `;

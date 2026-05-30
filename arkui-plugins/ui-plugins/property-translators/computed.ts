@@ -98,6 +98,9 @@ export interface IComputedTranslator {
     resetOnReuse(newName: string): arkts.ExpressionStatement;
 }
 
+/**
+ * @deprecated
+ */
 export class ComputedTranslator extends MethodTranslator implements IComputedTranslator {
     private isStatic: boolean;
 
@@ -107,7 +110,7 @@ export class ComputedTranslator extends MethodTranslator implements IComputedTra
     }
 
     field(newName: string, originalName: string, isStatic: boolean): arkts.ClassProperty {
-        const modifiers = isStatic ? this.method.modifiers : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
+        const modifiers = isStatic ? this.method.modifierFlags : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE;
         return fieldWithComputedMethod.bind(this)(newName, originalName, modifiers);
     }
 

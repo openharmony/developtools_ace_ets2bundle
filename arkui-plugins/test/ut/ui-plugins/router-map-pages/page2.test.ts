@@ -73,6 +73,7 @@ function builderTwo() {
   }
   
   public __updateStruct(initializers: (__Options_Page2 | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Page2 | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -124,19 +125,10 @@ class __NavigationBuilderRegisterClass {
   }
 }
 
-@Component() interface __Options_Page2 {
-  get message(): (string | undefined) {
-  return undefined;
-  }
-  set message(message: (string | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_message(): (boolean | undefined) {
-  return undefined;
-  }
-  set __options_has_message(__options_has_message: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_Page2 {
+  public message?: string;
+  public __options_has_message?: boolean;
+  public constructor() {}
 }
 `;
 

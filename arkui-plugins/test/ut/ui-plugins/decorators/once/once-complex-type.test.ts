@@ -319,54 +319,44 @@ final class StateType extends BaseEnum<int> {
   }
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(Per | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<Per> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(Array<number> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar2', '(IParamOnceDecoratedVariable<Array<number>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(StateType | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar3', '(IParamOnceDecoratedVariable<StateType> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(Set<string> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<Set<string>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar5', '(IParamOnceDecoratedVariable<Array<boolean>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar6', '(Array<Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar6', '(IParamOnceDecoratedVariable<Array<Per>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar7', '(Array<Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar7', '(IParamOnceDecoratedVariable<Array<Per>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar8', '(IParamOnceDecoratedVariable<((sr: string)=> void)> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar9', '(Date | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar9', '(IParamOnceDecoratedVariable<Date> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar10', '(IParamOnceDecoratedVariable<Map<number, Per>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar11', '((string | number) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar11', '(IParamOnceDecoratedVariable<(string | number)> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar12', '(IParamOnceDecoratedVariable<(Set<string> | Per)> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar12', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Once() @Param() public onceVar1?: Per;
+  @Param() public __backing_onceVar1?: IParamOnceDecoratedVariable<Per>;
+  public __options_has_onceVar1?: boolean;
+  @Once() @Param() public onceVar2?: Array<number>;
+  @Param() public __backing_onceVar2?: IParamOnceDecoratedVariable<Array<number>>;
+  public __options_has_onceVar2?: boolean;
+  @Once() @Param() public onceVar3?: StateType;
+  @Param() public __backing_onceVar3?: IParamOnceDecoratedVariable<StateType>;
+  public __options_has_onceVar3?: boolean;
+  @Once() @Param() public onceVar4?: Set<string>;
+  @Param() public __backing_onceVar4?: IParamOnceDecoratedVariable<Set<string>>;
+  public __options_has_onceVar4?: boolean;
+  @Once() @Param() public onceVar5?: Array<boolean>;
+  @Param() public __backing_onceVar5?: IParamOnceDecoratedVariable<Array<boolean>>;
+  public __options_has_onceVar5?: boolean;
+  @Once() @Param() public onceVar6?: Array<Per>;
+  @Param() public __backing_onceVar6?: IParamOnceDecoratedVariable<Array<Per>>;
+  public __options_has_onceVar6?: boolean;
+  @Once() @Param() public onceVar7?: Array<Per>;
+  @Param() public __backing_onceVar7?: IParamOnceDecoratedVariable<Array<Per>>;
+  public __options_has_onceVar7?: boolean;
+  @Once() @Param() public onceVar8?: (((sr: string)=> void) | undefined);
+  @Param() public __backing_onceVar8?: IParamOnceDecoratedVariable<(((sr: string)=> void) | undefined)>;
+  public __options_has_onceVar8?: boolean;
+  @Once() @Param() public onceVar9?: Date;
+  @Param() public __backing_onceVar9?: IParamOnceDecoratedVariable<Date>;
+  public __options_has_onceVar9?: boolean;
+  @Once() @Param() public onceVar10?: Map<number, Per>;
+  @Param() public __backing_onceVar10?: IParamOnceDecoratedVariable<Map<number, Per>>;
+  public __options_has_onceVar10?: boolean;
+  @Once() @Param() public onceVar11?: (string | number);
+  @Param() public __backing_onceVar11?: IParamOnceDecoratedVariable<(string | number)>;
+  public __options_has_onceVar11?: boolean;
+  @Once() @Param() public onceVar12?: (Set<string> | Per);
+  @Param() public __backing_onceVar12?: IParamOnceDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_onceVar12?: boolean;
+  public constructor() {}
   
 }
 `;

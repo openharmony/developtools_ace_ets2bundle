@@ -276,51 +276,42 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IProviderDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Provider() public paramVar1?: Per;
+  public __backing_paramVar1?: IProviderDecoratedVariable<Per>;
+  public __options_has_paramVar1?: boolean;
+  @Provider() public paramVar2?: Array<number>;
+  public __backing_paramVar2?: IProviderDecoratedVariable<Array<number>>;
+  public __options_has_paramVar2?: boolean;
+  @Provider() public paramVar3?: StateType;
+  public __backing_paramVar3?: IProviderDecoratedVariable<StateType>;
+  public __options_has_paramVar3?: boolean;
+  @Provider() public paramVar4?: Set<string>;
+  public __backing_paramVar4?: IProviderDecoratedVariable<Set<string>>;
+  public __options_has_paramVar4?: boolean;
+  @Provider() public paramVar5?: Array<boolean>;
+  public __backing_paramVar5?: IProviderDecoratedVariable<Array<boolean>>;
+  public __options_has_paramVar5?: boolean;
+  @Provider() public paramVar6?: Array<Per>;
+  public __backing_paramVar6?: IProviderDecoratedVariable<Array<Per>>;
+  public __options_has_paramVar6?: boolean;
+  @Provider() public paramVar7?: Array<Per>;
+  public __backing_paramVar7?: IProviderDecoratedVariable<Array<Per>>;
+  public __options_has_paramVar7?: boolean;
+  @Provider() public paramVar9?: Date;
+  public __backing_paramVar9?: IProviderDecoratedVariable<Date>;
+  public __options_has_paramVar9?: boolean;
+  @Provider() public paramVar10?: Map<number, Per>;
+  public __backing_paramVar10?: IProviderDecoratedVariable<Map<number, Per>>;
+  public __options_has_paramVar10?: boolean;
+  @Provider() public paramVar11?: (string | number);
+  public __backing_paramVar11?: IProviderDecoratedVariable<(string | number)>;
+  public __options_has_paramVar11?: boolean;
+  @Provider() public paramVar12?: (Set<string> | Per);
+  public __backing_paramVar12?: IProviderDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_paramVar12?: boolean;
+  public constructor() {}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(Array<number> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IProviderDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(StateType | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IProviderDecoratedVariable<StateType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(Set<string> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IProviderDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IProviderDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar6', '(Array<Per> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar6', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar7', '(Array<Per> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar7', '(IProviderDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar9', '(Date | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar9', '(IProviderDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar10', '(IProviderDecoratedVariable<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar11', '((string | number) | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar11', '(IProviderDecoratedVariable<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar12', '(IProviderDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar12', '(boolean | undefined)')}
-  
 }
 `;
 

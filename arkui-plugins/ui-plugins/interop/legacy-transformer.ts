@@ -93,7 +93,7 @@ export class LegacyTransformer extends AbstractVisitor {
             false,
             false
         );
-        interfaceNode.modifiers = modifiers;
+        interfaceNode.modifierFlags = modifiers;
         return interfaceNode;
     }
 
@@ -155,7 +155,7 @@ export class LegacyTransformer extends AbstractVisitor {
         const definition: arkts.ClassDefinition = node.definition!;
         const ident = definition.ident!;
         const hasExportFlag =
-            (node.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
+            (node.modifierFlags & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
         if (hasExportFlag) {
             this.structList.push(ident.name);
@@ -180,7 +180,7 @@ export class LegacyTransformer extends AbstractVisitor {
 
         if (arkts.isETSStructDeclaration(node)) {
             const _node = arkts.factory.createClassDeclaration(newDefinition);
-            _node.modifiers = node.modifiers;
+            _node.modifierFlags = node.modifierFlags;
             return _node;
         } else {
             return arkts.factory.updateClassDeclaration(node, newDefinition);
@@ -232,7 +232,7 @@ export class LegacyTransformer extends AbstractVisitor {
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         });
         const scriptExpr = arkts.factory.createFunctionExpression(node.id?.clone(), script)
-        return arkts.factory.updateMethodDefinition(node, node.kind, node.id, scriptExpr, node.modifiers, false);
+        return arkts.factory.updateMethodDefinition(node, node.kind, node.id, scriptExpr, node.modifierFlags, false);
     }
 
     collectComponentMembers(node: arkts.ETSStructDeclaration, className: string): Map<string, arkts.TypeNode> {
@@ -354,7 +354,7 @@ export class LegacyTransformer extends AbstractVisitor {
                 const className = newNode.definition?.ident?.name!;
                 const memberMap = this.collectComponentMembers(newNode as arkts.ETSStructDeclaration, className);
                 this.componentInterfaceCollection.push(
-                    this.generateComponentInterface(className, node.modifiers, memberMap)
+                    this.generateComponentInterface(className, node.modifierFlags, memberMap)
                 );
                 const updateNode = this.processComponent(newNode);
                 this.exit(newNode);

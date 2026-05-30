@@ -23,6 +23,9 @@ import { DecoratorNames } from '../../common/predefines';
 import { StructPropertyInfo } from '../../collectors/ui-collectors/records';
 import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
+/**
+ * @deprecated
+ */
 export class StaticPropertyTranslator extends PropertyTranslator {
     protected hasInitializeStruct: boolean = false;
     protected hasUpdateStruct: boolean = false;

@@ -86,7 +86,7 @@ function main() {}
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
-  public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {}
+    public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {}
     @MemoIntrinsic() 
     public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
@@ -124,13 +124,13 @@ class __EntryWrapper extends EntryPoint {
         A._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
-    EntryPoint.RegisterNamedRouter(routerName, instance, param);
-  }
-
-  public constructor() {}
+        EntryPoint.RegisterNamedRouter(routerName, instance, param);
+    }
+    public constructor() {}
 }
 
-@Entry() @Component() interface __Options_A {
+@Entry() @Component() class __Options_A {
+    public constructor() {}
 }
 `;
 
@@ -158,7 +158,7 @@ export declare function FakeComponentBImpl(style: (@Memo() ((instance: FakeCompo
 @Memo() 
 export declare function FakeComponentCImpl(style: (@Memo() ((instance: FakeComponentCAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
-interface FakeOptions {
+export interface FakeOptions {
     get str(): (string | undefined) {
     return undefined;
     }
@@ -167,15 +167,15 @@ interface FakeOptions {
     }
 }
 
-interface FakeComponentAAttribute {
+export interface FakeComponentAAttribute {
     setFakeComponentAOptions(str: string): this
 }
 
-interface FakeComponentBAttribute {
+export interface FakeComponentBAttribute {
     setFakeComponentBOptions(options?: FakeOptions): this
 }
 
-interface FakeComponentCAttribute {
+export interface FakeComponentCAttribute {
     setFakeComponentCOptions(): this
 }
 `;

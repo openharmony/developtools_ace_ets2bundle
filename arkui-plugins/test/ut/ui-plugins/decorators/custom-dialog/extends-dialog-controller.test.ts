@@ -208,15 +208,17 @@ class DialogControllerV3 extends DialogControllerV2 {
 
 }
 
-@CustomDialog() interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
-  }
+@CustomDialog() class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  public constructor() {}
+}
 
-@Component() interface __Options_CustomDialogUser {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
-  }
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
+}
 `;
 
 function testCheckedTransformer(this: PluginTestContext): void {

@@ -146,26 +146,23 @@ function main() {}
     }
   }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar1', '(string | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar1', '(IProviderDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar2', '(number | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar2', '(IProviderDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar3', '(boolean | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar3', '(IProviderDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar4', '(undefined | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar4', '(IProviderDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'providerVar5', '(null | undefined)', [dumpAnnotation('Provider')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_providerVar5', '(IProviderDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_providerVar5', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Provider() public providerVar1?: string;
+  public __backing_providerVar1?: IProviderDecoratedVariable<string>;
+  public __options_has_providerVar1?: boolean;
+  @Provider() public providerVar2?: number;
+  public __backing_providerVar2?: IProviderDecoratedVariable<number>;
+  public __options_has_providerVar2?: boolean;
+  @Provider() public providerVar3?: boolean;
+  public __backing_providerVar3?: IProviderDecoratedVariable<boolean>;
+  public __options_has_providerVar3?: boolean;
+  @Provider() public providerVar4?: undefined;
+  public __backing_providerVar4?: IProviderDecoratedVariable<undefined>;
+  public __options_has_providerVar4?: boolean;
+  @Provider() public providerVar5?: null;
+  public __backing_providerVar5?: IProviderDecoratedVariable<null>;
+  public __options_has_providerVar5?: boolean;
+  public constructor() {}
 
   }
 `;

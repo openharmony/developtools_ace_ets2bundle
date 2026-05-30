@@ -17,12 +17,12 @@ import * as arkts from '@koalaui/libarkts';
 
 export class NamespaceProcessor {
     private static instance_: NamespaceProcessor | undefined = undefined;
-    private componentInterfacesStack_: arkts.TSInterfaceDeclaration[][];
-    private totalInterfacesCnt_: number;
+    private componentInnerClassesStack_: arkts.ClassDeclaration[][];
+    private totalInnerClassesCnt_: number;
 
     private constructor() {
-        this.componentInterfacesStack_ = [];
-        this.totalInterfacesCnt_ = 0;
+        this.componentInnerClassesStack_ = [];
+        this.totalInnerClassesCnt_ = 0;
     }
 
     public static getInstance(): NamespaceProcessor {
@@ -33,32 +33,32 @@ export class NamespaceProcessor {
     }
 
     public reset(): void {
-        this.componentInterfacesStack_ = [];
-        this.totalInterfacesCnt_ = 0;
+        this.componentInnerClassesStack_ = [];
+        this.totalInnerClassesCnt_ = 0;
     }
 
-    public get totalInterfacesCnt(): number {
-        return this.totalInterfacesCnt_;
+    public get totalInnerClassesCnt(): number {
+        return this.totalInnerClassesCnt_;
     }
 
     public enter(): void {
-        this.componentInterfacesStack_.push([]);
+        this.componentInnerClassesStack_.push([]);
     }
 
     public exit(): void {
-        this.componentInterfacesStack_.pop();
+        this.componentInnerClassesStack_.pop();
     }
 
-    public get currentNamepaceInterfaces(): arkts.TSInterfaceDeclaration[] {
-        return this.componentInterfacesStack_[this.componentInterfacesStack_.length - 1];
+    public get currentNamepaceInnerClasses(): arkts.ClassDeclaration[] {
+        return this.componentInnerClassesStack_[this.componentInnerClassesStack_.length - 1];
     }
 
-    public addInterfaceToCurrentNamespace(interf: arkts.TSInterfaceDeclaration): void {
-        this.currentNamepaceInterfaces.push(interf);
-        ++this.totalInterfacesCnt_;
+    public addInnerClassToCurrentNamespace(cls: arkts.ClassDeclaration): void {
+        this.currentNamepaceInnerClasses.push(cls);
+        ++this.totalInnerClassesCnt_;
     }
 
     public updateCurrentNamespace(node: arkts.ETSModule): arkts.ETSModule {
-        return arkts.factory.updateETSModule(node, [...node.statements, ...this.currentNamepaceInterfaces]);
+        return arkts.factory.updateETSModule(node, [...node.statements, ...this.currentNamepaceInnerClasses]);
     }
 }

@@ -57,10 +57,10 @@ function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type)
     }));
 }
 @Memo() type ItemBuilder<T> = ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>)=> void);
-interface Item<T> {
+export interface Item<T> {
     ${dumpGetterSetter(GetSetDumper.BOTH, 'item', 'T', [], [], false)}
 }
-interface Attribute<T> {
+export interface Attribute<T> {
     @Memo() 
     each<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type, @Memo() itemGenerator: ItemBuilder<T>): Attribute<T>
 }

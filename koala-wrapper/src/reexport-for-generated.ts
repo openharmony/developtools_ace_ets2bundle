@@ -15,6 +15,7 @@
 export { KNativePointer } from "@koalaui/interop"
 export { AstNode } from "./arkts-api/peers/AstNode"
 export { ArktsObject } from "./arkts-api/peers/ArktsObject"
+export { Type } from "./arkts-api/peers/Type"
 export { Es2pandaAstNodeType } from "./Es2pandaEnums"
 export {
     passNode,

@@ -98,12 +98,17 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_SubNavigation | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_SubNavigation | undefined)): void {
     this.__backing_isPortrait!.resetOnReuse(initializers!.__backing_isPortrait!);
-    this.__backing_displayMode!.resetOnReuse(0);
-    this.__backing_primaryWidth!.resetOnReuse("50%");
-    this.__backing_primaryStack!.resetOnReuse(new MyNavPathStack());
-    this.__backing_secondaryStack!.resetOnReuse(new MyNavPathStack());
+    this.__backing_displayMode!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.displayMode)})) ?? (0)));
+    this.__backing_primaryWidth!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryWidth)})) ?? ("50%")));
+    this.__backing_primaryStack!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryStack)})) ?? (new MyNavPathStack())));
+    this.__backing_secondaryStack!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.secondaryStack)})) ?? (new MyNavPathStack())));
   }
 
   @MemoIntrinsic() 
@@ -289,7 +294,7 @@ export final class SplitPolicy extends BaseEnum<int> {
 
 }
 
-class MultiNavPolicyInfo {
+export class MultiNavPolicyInfo {
   public policy: SplitPolicy = SplitPolicy.DETAIL_PAGE;
   
   public navInfo: (NavPathInfo | undefined) = undefined;
@@ -349,14 +354,14 @@ export class MyNavPathStack extends NavPathStack {
   
 }
 
-interface NavPathStackOperate {
+export interface NavPathStackOperate {
   get onSystemPop(): (()=> void)
 
   set onSystemPop(onSystemPop: (()=> void))
   
 }
 
-interface MultiNavPathStackOperate {
+export interface MultiNavPathStackOperate {
   get onPrimaryPop(): (()=> void)
 
   set onPrimaryPop(onPrimaryPop: (()=> void))
@@ -371,26 +376,27 @@ type OnNavigationModeChangeCallback = ((mode: NavigationMode)=> void);
 
 type OnHomeShowOnTopCallback = ((name: string)=> void);
 
-@Component() export interface __Options_SubNavigation {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'isPortrait', '(boolean | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isPortrait', '(LinkSourceType<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isPortrait', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'displayMode', '(number | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_displayMode', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_displayMode', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'navDestination', '((((name: String, param: (Object | undefined))=> void) | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_navDestination', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'primaryWidth', '((number | string) | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_primaryWidth', '(IStateDecoratedVariable<(number | string)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_primaryWidth', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onNavigationModeChange', '((OnNavigationModeChangeCallback | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onNavigationModeChange', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'primaryStack', '(MyNavPathStack | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_primaryStack', '(IStateDecoratedVariable<MyNavPathStack> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_primaryStack', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'secondaryStack', '(MyNavPathStack | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_secondaryStack', '(IStateDecoratedVariable<MyNavPathStack> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_secondaryStack', '(boolean | undefined)')}
+@Component() export class __Options_SubNavigation {
+  @Link() public isPortrait: boolean;
+  public __backing_isPortrait?: LinkSourceType<boolean>;
+  public __options_has_isPortrait?: boolean;
+  @State() public displayMode?: number;
+  public __backing_displayMode?: IStateDecoratedVariable<number>;
+  public __options_has_displayMode?: boolean;
+  public navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
+  public __options_has_navDestination?: boolean;
+  @State() public primaryWidth?: (number | string);
+  public __backing_primaryWidth?: IStateDecoratedVariable<(number | string)>;
+  public __options_has_primaryWidth?: boolean;
+  public onNavigationModeChange?: (OnNavigationModeChangeCallback | undefined);
+  public __options_has_onNavigationModeChange?: boolean;
+  @State() public primaryStack?: MyNavPathStack;
+  public __backing_primaryStack?: IStateDecoratedVariable<MyNavPathStack>;
+  public __options_has_primaryStack?: boolean;
+  @State() public secondaryStack?: MyNavPathStack;
+  public __backing_secondaryStack?: IStateDecoratedVariable<MyNavPathStack>;
+  public __options_has_secondaryStack?: boolean;
+  public constructor() {}
 }
 `;
 

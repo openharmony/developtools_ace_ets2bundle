@@ -64,6 +64,7 @@ ns.ns_num;
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -93,8 +94,8 @@ ns.ns_num;
   }
 }
 
-@Component() interface __Options_Index {
-  
+@Component() class __Options_Index {
+  public constructor() {}
 }
 `;
 

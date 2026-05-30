@@ -45,7 +45,7 @@ export class GLobalPropertyRecord extends BaseRecord<arkts.ClassProperty, GLobal
             return;
         }
         this.name = key.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         for (const anno of node.annotations) {
             this._annotationRecord.collect(anno);
         }

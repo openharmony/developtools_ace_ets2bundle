@@ -108,7 +108,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse(({let gensym___203542966: Any;
+    this.__backing_controller!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() (() => {
         customDialogExample._invoke((() => {
@@ -126,7 +127,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}));
+    (gensym___203542966 as CustomDialogController)}))));
   }
   
   @MemoIntrinsic() 
@@ -249,43 +250,18 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() interface __Options_MyStateSample {
-  @State() 
-  get controller(): ((CustomDialogController | null) | undefined) {
-    return undefined;
-  }
-  @State() 
-  set controller(controller: ((CustomDialogController | null) | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_controller(): (IStateDecoratedVariable<(CustomDialogController | null)> | undefined) {
-    return undefined;
-  }
-  set __backing_controller(__backing_controller: (IStateDecoratedVariable<(CustomDialogController | null)> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_controller(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_controller(__options_has_controller: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@Entry() @Component() class __Options_MyStateSample {
+  @State() public controller?: (CustomDialogController | null);
+  public __backing_controller?: IStateDecoratedVariable<(CustomDialogController | null)>;
+  public __options_has_controller?: boolean;
+  public constructor() {}
   
 }
 
-@CustomDialog() @Component() interface __Options_customDialogExample {
-  get controller(): (CustomDialogController | undefined) {
-    return undefined;
-  }
-  set controller(controller: (CustomDialogController | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_controller(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_controller(__options_has_controller: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@CustomDialog() @Component() class __Options_customDialogExample {
+  public controller?: CustomDialogController;
+  public __options_has_controller?: boolean;
+  public constructor() {}
   
 }
 
@@ -372,7 +348,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse(({let gensym___203542966: Any;
+    this.__backing_controller!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 0);
@@ -399,7 +376,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___203542966 as CustomDialogController)}));
+    (gensym___203542966 as CustomDialogController)}))));
   }
   
   @MemoIntrinsic() 
@@ -561,43 +538,18 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() interface __Options_MyStateSample {
-  @State() 
-  get controller(): ((CustomDialogController | null) | undefined) {
-    return undefined;
-  }
-  @State() 
-  set controller(controller: ((CustomDialogController | null) | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_controller(): (IStateDecoratedVariable<(CustomDialogController | null)> | undefined) {
-    return undefined;
-  }
-  set __backing_controller(__backing_controller: (IStateDecoratedVariable<(CustomDialogController | null)> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_controller(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_controller(__options_has_controller: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@Entry() @Component() class __Options_MyStateSample {
+  @State() public controller?: (CustomDialogController | null);
+  public __backing_controller?: IStateDecoratedVariable<(CustomDialogController | null)>;
+  public __options_has_controller?: boolean;
+  public constructor() {}
   
 }
 
-@CustomDialog() @Component() interface __Options_customDialogExample {
-  get controller(): (CustomDialogController | undefined) {
-    return undefined;
-  }
-  set controller(controller: (CustomDialogController | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_controller(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_controller(__options_has_controller: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@CustomDialog() @Component() class __Options_customDialogExample {
+  public controller?: CustomDialogController;
+  public __options_has_controller?: boolean;
+  public constructor() {}
   
 }
 

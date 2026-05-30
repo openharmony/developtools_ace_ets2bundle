@@ -81,11 +81,9 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index();
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
@@ -97,8 +95,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/lifecycle/lifecycle-with-several-decorators",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() interface __Options_Index {
-  
+@Entry() @Component() class __Options_Index {
+  public constructor() {}
 }
 `;
 
@@ -159,6 +157,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -195,17 +194,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_Index {
-  
+@Entry() @Component() class __Options_Index {
+  public constructor() {}
 }
 `;
 

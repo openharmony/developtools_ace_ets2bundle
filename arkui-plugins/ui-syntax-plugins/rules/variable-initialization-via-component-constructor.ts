@@ -22,7 +22,8 @@ import {
     getIdentifierName,
     getClassPropertyAnnotationNames,
     PresetDecorators,
-    $_INVOKE, COMPONENT_BUILDER
+    $_INVOKE, COMPONENT_BUILDER,
+    isStructClassDeclaration
 } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
@@ -128,7 +129,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
             structName = getIdentifierName(node.callee);
             structDecl = arkts.getDecl(node.callee);
         }
-        if (!structDecl) {
+        if (!structDecl || !structDecl.parent || !isStructClassDeclaration(structDecl.parent)) {
             return;
         }
         const props: string[] = this.getChildKeyNameArray(node);

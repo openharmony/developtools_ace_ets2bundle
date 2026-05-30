@@ -121,26 +121,24 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/component/declare-component",
   integratedHsp: "false",
 } as NavInterface))
-@Component() export declare interface __Options_SwipeRefresher {
-  ${ignoreNewLines(`
-    @PropRef() content?: (ResourceStr | undefined);
-    @PropRef() __backing_content?: (ResourceStr | undefined);
-    __options_has_content?: boolean;
-    @PropRef() isLoading?: boolean;
-    @PropRef() __backing_isLoading?: boolean;
-    __options_has_isLoading?: boolean;
-`)}
+@Component() export declare class __Options_SwipeRefresher {
+  @PropRef() public content?: (ResourceStr | undefined);
+  @PropRef() public __backing_content?: (ResourceStr | undefined);
+  public __options_has_content?: boolean;
+  @PropRef() public isLoading?: boolean;
+  @PropRef() public __backing_isLoading?: boolean;
+  public __options_has_isLoading?: boolean;
+  public constructor() {}
   
 }
 
-@Entry() @ComponentV2() export declare interface __Options_DeclaredComponentV2 {
-  ${ignoreNewLines(`
-    @Local() content?: number;
-    @Local() __backing_content?: number;
-    __options_has_content?: boolean;
-    @BuilderParam() builderParamContent?: (()=> void);
-    __options_has_builderParamContent?: boolean;
-`)}
+@Entry() @ComponentV2() export declare class __Options_DeclaredComponentV2 {
+  @Local() public content?: number;
+  @Local() public __backing_content?: number;
+  public __options_has_content?: boolean;
+  @BuilderParam() public builderParamContent?: ((()=> void) | undefined);
+  public __options_has_builderParamContent?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -212,7 +210,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public static $_invoke(initializers?: __Options_DeclaredComponentV2, storage?: LocalStorage, @Builder() content?: (()=> void)): DeclaredComponentV2
   
   @Local() public content: number;
-  @BuilderParam() public builderParamContent: @Memo() (()=> void);
+  @BuilderParam() public builderParamContent: (()=> void);
   @Monitor({value:["content"]}) 
   public onContentChange(): void
   
@@ -251,24 +249,24 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Component() export declare interface __Options_SwipeRefresher {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '((ResourceStr | undefined) | undefined)', [dumpAnnotation('PropRef')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(IPropRefDecoratedVariable<(ResourceStr | undefined)> | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'isLoading', '(boolean | undefined)', [dumpAnnotation('PropRef')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_isLoading', '(IPropRefDecoratedVariable<boolean> | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_isLoading', '(boolean | undefined)', [], [], false)}
+@Component() export declare class __Options_SwipeRefresher {
+  @PropRef() public content?: (ResourceStr | undefined);
+  public __backing_content?: IPropRefDecoratedVariable<(ResourceStr | undefined)>;
+  public __options_has_content?: boolean;
+  @PropRef() public isLoading?: boolean;
+  public __backing_isLoading?: IPropRefDecoratedVariable<boolean>;
+  public __options_has_isLoading?: boolean;
+  public constructor() {}
   
 }
 
-@Entry() @ComponentV2() export declare interface __Options_DeclaredComponentV2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'content', '(number | undefined)', [dumpAnnotation('Local')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_content', '(ILocalDecoratedVariable<number> | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_content', '(boolean | undefined)', [], [], false)}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderParamContent', '(@Memo() (()=> void) | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderParamContent', '(boolean | undefined)', [], [], false)}
+@Entry() @ComponentV2() export declare class __Options_DeclaredComponentV2 {
+  @Local() public content?: number;
+  public __backing_content?: ILocalDecoratedVariable<number>;
+  public __options_has_content?: boolean;
+  public builderParamContent?: ((()=> void) | undefined);
+  public __options_has_builderParamContent?: boolean;
+  public constructor() {}
 
 }
 `;

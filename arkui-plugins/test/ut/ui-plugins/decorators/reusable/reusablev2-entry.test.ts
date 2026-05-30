@@ -123,8 +123,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @ComponentV2() @ReusableV2() interface __Options_Index {
-  
+@Entry() @ComponentV2() @ReusableV2() class __Options_Index {
+  public constructor() {}
 }
 
 `;

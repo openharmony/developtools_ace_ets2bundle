@@ -26,6 +26,7 @@ import { CallRecordCollector } from './ui-collectors/call-record-collector';
 import { UICollectMetadata } from './ui-collectors/shared-types';
 import { collectUINodeByTypeInPostOrder, collectUINodeByTypeInPreOrder } from './ui-collectors/factory';
 import { collectMemoableNodeByTypeInPostOrder } from './memo-collectors/factory';
+import { RecordBuilder } from './ui-collectors/records';
 
 export interface CollectorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
@@ -90,6 +91,7 @@ export class Collector extends AbstractVisitor {
         super.reset();
         if (this.shouldCollectUI) {
             CallRecordCollector.getInstance(this.getMetadata()).reset();
+            RecordBuilder.reset();
         }
         if (this.shouldCheckUISyntax) {
             ValidatorBuilder.reset();

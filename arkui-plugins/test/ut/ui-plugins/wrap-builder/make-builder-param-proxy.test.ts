@@ -131,8 +131,9 @@ function aBuilder(@MemoSkip() obj: IA): void {}
   }
 }
 
-@Component() interface __Options_TestBuilder {
-  
+@Component() class __Options_TestBuilder {
+  public constructor() {}
+
 }
 `;
 

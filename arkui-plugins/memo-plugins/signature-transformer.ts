@@ -60,7 +60,7 @@ export class SignatureTransformer extends AbstractVisitor {
                     : undefined,
                 node.hasReceiver,
                 node.flags,
-                node.modifiers,
+                node.modifierFlags,
                 node.id ?? undefined,
                 node.annotations ?? undefined,
                 node.getSignaturePointer?.() ?? undefined,

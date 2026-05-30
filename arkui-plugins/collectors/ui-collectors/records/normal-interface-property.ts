@@ -53,7 +53,7 @@ export class NormalInterfacePropertyRecord extends BaseRecord<arkts.MethodDefini
 
     collectFromNode(node: arkts.MethodDefinition): void {
         this.name = node.id?.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         this.kind = node.kind;
         for (const anno of node.function.annotations) {
             this._annotationRecord.collect(anno);

@@ -396,6 +396,12 @@ export const RESOURCE_TYPE: Record<string, number> = {
     symbol: 40000,
 };
 
+export const REQUIRED_ANNOTATIONS = [
+    DecoratorNames.LINK, 
+    DecoratorNames.OBJECT_LINK, 
+    DecoratorNames.REQUIRE
+];
+
 export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>([
     [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
     [DecoratorNames.LINK, StateManagementTypes.LINK_SOURCE_TYPE],

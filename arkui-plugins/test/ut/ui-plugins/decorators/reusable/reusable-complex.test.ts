@@ -105,8 +105,10 @@ class Message {
   }
 
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_display!.resetOnReuse(true);
+    this.__backing_display!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.display)})) ?? (true)));
   }
 
   @MemoIntrinsic() 
@@ -189,7 +191,8 @@ class Message {
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_message!.resetOnReuse(new Message("AboutToReuse"));
+    this.__backing_message!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (new Message("AboutToReuse"))));
   }
 
   @MemoIntrinsic() 
@@ -243,26 +246,26 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'display', '(boolean | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_display', '(IStateDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_display', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Index {
+  @State() public display?: boolean;
+  public __backing_display?: IStateDecoratedVariable<boolean>;
+  public __options_has_display?: boolean;
+  public constructor() {}
   
 }
 
-@Reusable() @Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(Message | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(IStateDecoratedVariable<Message> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
+@Reusable() @Component() class __Options_Child {
+  @State() public message?: Message;
+  public __backing_message?: IStateDecoratedVariable<Message>;
+  public __options_has_message?: boolean;
+  public constructor() {}
   
 }
 `;

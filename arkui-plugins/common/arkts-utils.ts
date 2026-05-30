@@ -40,6 +40,10 @@ import {
 } from './plugin-context';
 import { MetaDataCollector } from './metadata-collector';
 
+export function isExported(node: arkts.AstNode): boolean {
+    return node.isExport || node.isDefaultExport || node.hasExportAlias;
+}
+
 export function removeRelativePathSuffix(str: string, suffixes: string[] = ARKTS_FILE_EXTENSION_LIST): string {
     for (const suffix of suffixes) {
         if (str.endsWith(suffix)) {
@@ -97,7 +101,7 @@ export function annotation(name: string): arkts.AnnotationUsage {
     const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();
     const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident, []);
 
-    annotation.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
+    annotation.modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
     ident.parent = annotation;
 
     return annotation;

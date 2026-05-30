@@ -110,17 +110,15 @@ class __EntryWrapper extends EntryPoint {
       return myStorage();
     }), undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() interface __Options_MyStateSample {
-  
+@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

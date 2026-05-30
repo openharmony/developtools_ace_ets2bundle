@@ -74,7 +74,6 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
 
     constructor(options: RecordOptions) {
         super(options);
-        this.shouldIgnoreDecl = false;
         this.annotationNames = [
             DecoratorNames.STATE,
             DecoratorNames.STORAGE_LINK,
@@ -104,8 +103,10 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
         info: StructPropertyAnnotationInfo,
         name: string | undefined
     ): StructPropertyAnnotationInfo {
-        if (!!name && this.annotationNames.includes(name)) {
-            info[`has${name}`] = true;
+        if (!!name) {
+            if (this.annotationNames.includes(name)) {
+                info[`has${name}`] = true;
+            }
         }
         return info;
     }

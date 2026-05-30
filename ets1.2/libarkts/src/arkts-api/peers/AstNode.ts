@@ -173,6 +173,10 @@ export abstract class AstNode extends ArktsObject {
         return global.generatedEs2panda._AstNodeIsDefaultExportedConst(global.context, this.peer);
     }
 
+    public get hasExportAlias(): boolean {
+        return global.generatedEs2panda._AstNodeHasExportAliasConst(global.context, this.peer);
+    }
+
     public get isStatic(): boolean {
         return global.generatedEs2panda._AstNodeIsStaticConst(global.context, this.peer);
     }

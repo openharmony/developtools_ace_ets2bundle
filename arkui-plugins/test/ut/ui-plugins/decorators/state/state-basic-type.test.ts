@@ -76,12 +76,18 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_stateVar1!.resetOnReuse("stateVar1");
-    this.__backing_stateVar2!.resetOnReuse(50);
-    this.__backing_stateVar3!.resetOnReuse(true);
-    this.__backing_stateVar4!.resetOnReuse(undefined);
-    this.__backing_stateVar5!.resetOnReuse(null);
+    this.__backing_stateVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? ("stateVar1")));
+    this.__backing_stateVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (50)));
+    this.__backing_stateVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (true)));
+    this.__backing_stateVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (undefined)));
+    this.__backing_stateVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? (null)));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -154,26 +160,23 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar2', '(number | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar2', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar3', '(boolean | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar3', '(IStateDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(undefined | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IStateDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar5', '(null | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar5', '(IStateDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar5', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @State() public stateVar1?: string;
+  public __backing_stateVar1?: IStateDecoratedVariable<string>;
+  public __options_has_stateVar1?: boolean;
+  @State() public stateVar2?: number;
+  public __backing_stateVar2?: IStateDecoratedVariable<number>;
+  public __options_has_stateVar2?: boolean;
+  @State() public stateVar3?: boolean;
+  public __backing_stateVar3?: IStateDecoratedVariable<boolean>;
+  public __options_has_stateVar3?: boolean;
+  @State() public stateVar4?: undefined;
+  public __backing_stateVar4?: IStateDecoratedVariable<undefined>;
+  public __options_has_stateVar4?: boolean;
+  @State() public stateVar5?: null;
+  public __backing_stateVar5?: IStateDecoratedVariable<null>;
+  public __options_has_stateVar5?: boolean;
+  public constructor() {}
   
 }
 `;

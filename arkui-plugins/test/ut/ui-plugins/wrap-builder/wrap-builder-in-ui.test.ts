@@ -82,6 +82,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -125,7 +126,8 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component() class __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 
@@ -216,6 +218,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -314,7 +317,8 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component() class __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 

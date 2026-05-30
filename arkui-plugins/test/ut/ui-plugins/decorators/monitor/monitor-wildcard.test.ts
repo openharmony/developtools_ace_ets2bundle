@@ -524,27 +524,11 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @ComponentV2() interface __Options_Index {
-  @Local() 
-  get per(): (Per | undefined) {
-    return undefined;
-  }
-  @Local() 
-  set per(per: (Per | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_per(): (ILocalDecoratedVariable<Per> | undefined) {
-    return undefined;
-  }
-  set __backing_per(__backing_per: (ILocalDecoratedVariable<Per> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_per(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_per(__options_has_per: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@Entry() @ComponentV2() class __Options_Index {
+  @Local() public per?: Per;
+  public __backing_per?: ILocalDecoratedVariable<Per>;
+  public __options_has_per?: boolean;
+  public constructor() {}
   
 }
 

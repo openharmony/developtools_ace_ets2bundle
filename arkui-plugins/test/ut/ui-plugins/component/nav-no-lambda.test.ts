@@ -74,6 +74,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_NavDestinationStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -138,21 +139,10 @@ function main() {}
   }
 }
 
-@Component() interface __Options_NavDestinationStruct {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_NavDestinationStruct {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 `;

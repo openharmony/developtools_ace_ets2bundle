@@ -77,6 +77,7 @@ class TimeTable {
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ListItemGroupExample | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -130,10 +131,10 @@ class TimeTable {
   }
 }
 
-@Component() interface __Options_ListItemGroupExample {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
-
+@Component() class __Options_ListItemGroupExample {
+  public timetable?: TimeTable;
+  public __options_has_timetable?: boolean;
+  public constructor() {}
 }
 `;
 
@@ -182,6 +183,7 @@ class TimeTable {
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ListItemGroupExample | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -291,10 +293,10 @@ class TimeTable {
   }
 }
 
-@Component() interface __Options_ListItemGroupExample {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
-  
+@Component() class __Options_ListItemGroupExample {
+  public timetable?: TimeTable;
+  public __options_has_timetable?: boolean;
+  public constructor() {}
 }
 `;
 

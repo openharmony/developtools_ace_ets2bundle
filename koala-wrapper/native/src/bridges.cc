@@ -1448,3 +1448,74 @@ napi_value Node_AstNodeTransformChildrenRecursively(napi_env env, napi_callback_
 }
 
 MAKE_NODE_EXPORT(NativeModule, AstNodeTransformChildrenRecursively)
+
+KNativePointer impl_TypeClone(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Type*>(receiver);
+    auto result = GetImpl()->TypeClone(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(TypeClone, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ClassElementTsType(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto result = GetImpl()->ClassElementTsType(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ClassElementTsType, KNativePointer, KNativePointer, KNativePointer);
+
+KBoolean impl_TypePossiblyETSNullishConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Type*>(receiver);
+    auto result = GetImpl()->TypePossiblyETSNullishConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(TypePossiblyETSNullishConst, KBoolean, KNativePointer, KNativePointer);
+
+KBoolean impl_TypeDefinitelyETSNullishConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Type*>(receiver);
+    auto result = GetImpl()->TypeDefinitelyETSNullishConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(TypeDefinitelyETSNullishConst, KBoolean, KNativePointer, KNativePointer);
+
+KBoolean impl_TypeDefinitelyNotETSNullishConst(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_Type*>(receiver);
+    auto result = GetImpl()->TypeDefinitelyNotETSNullishConst(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(TypeDefinitelyNotETSNullishConst, KBoolean, KNativePointer, KNativePointer);
+
+KNativePointer impl_ExpressionTsType(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    auto result = GetImpl()->ExpressionTsType(_context, _receiver);
+    return result;
+}
+KOALA_INTEROP_2(ExpressionTsType, KNativePointer, KNativePointer, KNativePointer);
+
+void impl_ClassPropertySetIsImmediateInit(KNativePointer context, KNativePointer receiver)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _receiver = reinterpret_cast<es2panda_AstNode*>(receiver);
+    GetImpl()->ClassPropertySetIsImmediateInit(_context, _receiver);
+    return ;
+}
+KOALA_INTEROP_V2(ClassPropertySetIsImmediateInit, KNativePointer, KNativePointer);
+
+KNativePointer impl_DestroyConfigWithoutLog(KNativePointer configPtr)
+{
+    auto config = reinterpret_cast<es2panda_Config*>(configPtr);
+    GetImpl()->DestroyConfigWithoutLog(config);
+    return nullptr;
+}
+KOALA_INTEROP_1(DestroyConfigWithoutLog, KNativePointer, KNativePointer)

@@ -37,7 +37,7 @@ import {
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
-import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CallInfo, CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { checkIsBuilderLambdaFunctionCallFromInfo, checkIsCustomFunctionMethodDeclFromInfo } from '../../collectors/ui-collectors/utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
@@ -63,7 +63,7 @@ export type BuilderLambdaStyleBodyInfo = {
     reuseId: arkts.Expression | undefined;
     defaultReuseId: arkts.Expression | undefined;
     structEntryStroage: string | undefined;
-    structPropertyInfos?: CustomComponentInterfacePropertyInfo[];
+    structPropertyInfos?: CustomComponentInnerClassPropertyInfo[];
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -442,6 +442,13 @@ export function hasBuilderLambdaAnnotation(node: BuilderLambdaAstNode): boolean 
 
 export function isBuilderLambdaAnnotation(node: arkts.AnnotationUsage): boolean {
     return isAnnotation(node, BuilderLambdaNames.ANNOTATION_NAME);
+}
+
+export function findThisMemberValueInExpression(node: arkts.Expression | undefined): arkts.MemberExpression | undefined {
+    if (!!node && arkts.isMemberExpression(node) && arkts.isThisExpression(node.object)) {
+        return node;
+    }
+    return undefined;
 }
 
 export function findBuilderLambdaAnnotation(

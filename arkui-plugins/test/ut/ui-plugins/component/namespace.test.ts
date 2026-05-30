@@ -113,26 +113,24 @@ export namespace NS1 {
       }
     }
     
-    @Component() interface __Options_NS2_struct {
-      
+    @Component() class __Options_NS2_struct {
+      public constructor() {}
     }
     
   }
   export namespace NS3 {
     let s2 = "world"
   }
-  @Component() export interface __Options_Child {
-    ${ignoreNewLines(`
-    @State() propVar?: string;
-    @State() __backing_propVar?: string;
-    __options_has_propVar?: boolean;
-
-    `)}
+  @Component() export class __Options_Child {
+    @State() public propVar?: string;
+    @State() public __backing_propVar?: string;
+    public __options_has_propVar?: boolean;
+    public constructor() {}
   }
   
 }
-@Component() interface __Options_Main {
-  
+@Component() class __Options_Main {
+  public constructor() {}
 }
 `;
 

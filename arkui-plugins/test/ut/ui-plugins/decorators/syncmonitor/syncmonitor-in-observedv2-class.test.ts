@@ -106,7 +106,6 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
     }
   }
-  
   public setV1RenderId(renderId: RenderIdType): void {}
   
   protected conditionalAddRef(meta: IMutableStateMeta): void {
@@ -247,17 +246,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @ComponentV2() interface __Options_Index {
-  
+@Entry() @ComponentV2() class __Options_Index {
+  public constructor() {}
 }
 
 `;

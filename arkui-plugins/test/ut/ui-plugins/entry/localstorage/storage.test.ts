@@ -76,6 +76,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -107,17 +108,15 @@ class __EntryWrapper extends EntryPoint {
       return myStorage();
     }), undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({storage:"myStorage"}) @Component() interface __Options_MyStateSample {
-  
+@Entry({storage:"myStorage"}) @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

@@ -42,6 +42,7 @@ const notAllowInitDecorators: string[] = [
  * 2. `@Link`、`@ObjectLink`修饰的属性在组件构造时，必须赋值。
  * 3. 特定装饰器修饰的属性在组件构造时，禁止赋值。
  * 4. interop模式下，禁止`@Component`与`@ComponentV2`组件互相嵌套。
+ * 5. 常规属性当属性类型为Non-null时，必须赋值。
  *
  * 校验等级：error
  */
@@ -96,6 +97,11 @@ function collectMustInitProperties(
             mustInitProperty.push(propertyInfo.name);
         } else if (checkPropertyRequireInitFromInfo(propertyInfo)) {
             requireInitProperty.push(propertyInfo.name);
+        } else if (
+            !arkts.hasModifierFlag(struct, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) && 
+            checkRegularPropertyInitFromInfo(item, propertyInfo)
+        ) {
+            mustInitProperty.push(propertyInfo.name);
         }
     });
     return { requireInitProperty, mustInitProperty };
@@ -175,9 +181,15 @@ function checkPropertyRequireInitFromInfo(metadata: StructPropertyInfo | undefin
         return false;
     }
     const anno = metadata.annotationInfo;
-    return Object.keys(anno).length === 1 ||
-        !!anno.hasState || !!anno.hasProvide || !!anno.hasPropRef ||
+    return Object.keys(anno).length === 1 || !!anno.hasState || !!anno.hasProvide || !!anno.hasPropRef ||
         !!anno.hasBuilderParam || !!anno.hasParam;
+}
+
+function checkRegularPropertyInitFromInfo(property: arkts.ClassProperty, metadata: StructPropertyInfo | undefined): boolean {
+    if (!!metadata?.annotationInfo && Object.keys(metadata.annotationInfo).length > 0) {
+        return false;
+    }
+    return !property.value && !!property.typeAnnotation?.tsType?.definitelyNotETSNullish;
 }
 
 function checkPropertyMustInitFromInfo(metadata: StructPropertyInfo | undefined): boolean {

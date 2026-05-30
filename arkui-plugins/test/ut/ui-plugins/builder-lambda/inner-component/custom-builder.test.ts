@@ -51,6 +51,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -112,7 +113,8 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 
@@ -157,6 +159,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -318,8 +321,8 @@ function main() {}
 
 }
 
-@Component() interface __Options_MyStateSample {
-  
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

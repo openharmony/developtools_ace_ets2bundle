@@ -122,17 +122,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     StyleOptimization._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_StyleOptimization {
-  
+@Entry() @Component() class __Options_StyleOptimization {
+  public constructor() {}
 }
 `;
 
@@ -264,17 +262,15 @@ class __EntryWrapper extends EntryPoint {
       return;
     }
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_StyleOptimization {
-  
+@Entry() @Component() class __Options_StyleOptimization {
+  public constructor() {}
 }
 `;
 

@@ -121,13 +121,13 @@ class __EntryWrapper extends EntryPoint {
         A._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
-    EntryPoint.RegisterNamedRouter(routerName, instance, param);
-  }
-
-  public constructor() {}
+        EntryPoint.RegisterNamedRouter(routerName, instance, param);
+    }
+    public constructor() {}
 }
 
-@Entry() @Component() interface __Options_A {
+@Entry() @Component() class __Options_A {
+    public constructor() {}
 }
 `;
 

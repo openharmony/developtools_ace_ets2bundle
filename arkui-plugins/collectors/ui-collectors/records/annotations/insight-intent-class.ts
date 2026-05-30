@@ -44,7 +44,6 @@ export class InsightIntentClassAnnotationRecord extends BaseAnnotationRecord<
 
     constructor(options: RecordOptions) {
         super(options);
-        this.shouldIgnoreDecl = false;
         this.annotationNames = [
             InsightIntentDecoratorNames.LINK, 
             InsightIntentDecoratorNames.PAGE,
