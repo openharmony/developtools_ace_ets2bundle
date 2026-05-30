@@ -141,6 +141,7 @@ import {
 } from './event';
 import { RequireCachedTranslator } from './require';
 import { EnvTranslator, EnvInterfaceTranslator, EnvCachedTranslator, EnvCachedInterfaceTranslator } from './env';
+import { CustomEnvCachedTranslator, CustomEnvCachedInterfaceTranslator } from './customEnv';
 import { ComponentLifecycleTranslator } from './componentLifecycle';
 import { SyncMonitorTranslator } from './syncMonitor';
 
@@ -454,6 +455,9 @@ export function classifyV1PropertyFromInfo(
     if (annotationInfo.hasEnv) {
         return new EnvCachedTranslator({ property, propertyInfo });
     }
+    if (annotationInfo.hasCustomEnv) {
+        return new CustomEnvCachedTranslator({ property, propertyInfo });
+    }
     return undefined;
 }
 
@@ -548,6 +552,9 @@ export function classifyV1PropertyInInterfaceFromInfo<T extends InterfacePropert
     }
     if (EnvCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
         return new EnvCachedInterfaceTranslator({ property, propertyInfo });
+    }
+    if (CustomEnvCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
+        return new CustomEnvCachedInterfaceTranslator({ property, propertyInfo });
     }
     return undefined;
 }

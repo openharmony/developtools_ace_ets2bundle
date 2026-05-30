@@ -39,6 +39,7 @@ export interface StructPropertyAnnotationInfo extends AnnotationInfo {
     hasConsumer?: boolean;
     hasProvider?: boolean;
     hasEnv?: boolean;
+    hasCustomEnv?: boolean;
 }
 
 export interface StructPropertyAnnotations extends Annotations {
@@ -62,6 +63,7 @@ export interface StructPropertyAnnotations extends Annotations {
     [DecoratorNames.CONSUMER]?: arkts.AnnotationUsage;
     [DecoratorNames.PROVIDER]?: arkts.AnnotationUsage;
     [DecoratorNames.ENV]?: arkts.AnnotationUsage;
+    [DecoratorNames.CUSTOM_ENV]?: arkts.AnnotationUsage;
 }
 
 export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
@@ -94,6 +96,7 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
             DecoratorNames.CONSUMER,
             DecoratorNames.PROVIDER,
             DecoratorNames.ENV,
+            DecoratorNames.CUSTOM_ENV,
         ];
     }
 

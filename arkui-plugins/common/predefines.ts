@@ -249,6 +249,7 @@ export enum DecoratorNames {
     STORAGE_PROP = 'StorageProp',
     REGULAR = 'Regular',
     VARIABLE = 'Variable',
+    CUSTOM_ENV = 'CustomEnv',
 }
 
 export enum DeprecatedDecoratorNames {
@@ -331,6 +332,13 @@ export enum StateManagementTypes {
     BACKING = '__backing',
     RESET_ON_REUSE = 'resetOnReuse',
     MAKE_ENV = 'makeEnv',
+    CUSTOM_ENV_DECORATED = 'ICustomEnvDecoratedVariable',
+    MAKE_CUSTOM_ENV = 'makeCustomEnv',
+    CUSTOM_ENV_KEY = 'CustomEnvKey',
+    WRITABLE_ENV_KEY = 'WritableEnvKey',
+    WRITABLE_SYSTEM_ENV_KEY = 'WritableSystemEnvKey',
+    READONLY_ENV_KEY = 'ReadonlyEnvKey',
+    READONLY_SYSTEM_ENV_KEY = 'ReadonlySystemEnvKey',
     CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
     REUSE_OBJECT = 'ReuseObject',
     I_MONITOR = 'IMonitor',
@@ -404,7 +412,8 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
     [DecoratorNames.ONCE, StateManagementTypes.ONCE_DECORATED],
     [DecoratorNames.PROVIDER, StateManagementTypes.PROVIDER_DECORATED],
     [DecoratorNames.CONSUMER, StateManagementTypes.CONSUMER_DECORATED],
-    [DecoratorNames.ENV, StateManagementTypes.ENV_DECORATED]
+    [DecoratorNames.ENV, StateManagementTypes.ENV_DECORATED],
+    [DecoratorNames.CUSTOM_ENV, StateManagementTypes.CUSTOM_ENV_DECORATED]
 ]);
 
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
@@ -468,6 +477,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
         ]
     ],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.CUSTOM_ENV, [StateManagementTypes.CUSTOM_ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
         [
@@ -559,7 +569,8 @@ export enum CustomComponentNames {
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
     LAYOUT_CALLBACKS = 'LayoutCallbacks',
-    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse'
+    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse',
+    RESOLVE_DECORATOR_SYMBOLS_METHOD = '__resolveDecoratorSymbols',
 }
  	 
 export enum CustomDialogNames {
