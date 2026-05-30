@@ -48,6 +48,7 @@ const ComponentMemberDecorators: Set<string> = new Set([
     PresetDecorators.LOCAL,
     PresetDecorators.PARAM,
     PresetDecorators.ENV,
+    PresetDecorators.CUSTOM_ENV,
 ]);
 
 const LifecycleDecorators: Set<string> = new Set([

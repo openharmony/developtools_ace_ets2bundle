@@ -541,6 +541,8 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common'],
 ]);
 
+export const ENV_KEY_STRING_PATTERN = /^(WritableEnvKey|ReadonlyEnvKey)\.(\w+)$/;
+
 export enum GetSetTypes {
     GET = 'get',
     SET = 'set',

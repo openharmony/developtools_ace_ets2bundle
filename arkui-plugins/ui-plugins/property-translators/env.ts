@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes, NodeCacheNames, ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes, NodeCacheNames, ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME, ENV_KEY_STRING_PATTERN } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
@@ -60,12 +60,13 @@ function initializeStructWithEnvProperty(
     }
     let envValue = options.envValue;
     if (envValue && arkts.isStringLiteral(envValue)) {
+        if (!ENV_KEY_STRING_PATTERN.test(envValue.str)) {
+            return undefined;
+        }
         const parts: string[] = envValue.str.split('.');
         envValue = factory.stringLiteralToMemberExpression(envValue);
-        if (parts.length > 0) {
-            ImportCollector.getInstance().collectSource(parts[0], ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME);
-            ImportCollector.getInstance().collectImport(parts[0]);
-        }
+        ImportCollector.getInstance().collectSource(parts[0], ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(parts[0]);
     }
     const args: arkts.Expression[] = [
         envValue!,
