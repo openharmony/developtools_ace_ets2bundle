@@ -12,5 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { A } from './1';
-export * from './2';
+import { A } from './2';
+export { A as B };

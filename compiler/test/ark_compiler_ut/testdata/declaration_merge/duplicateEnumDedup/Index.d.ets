@@ -12,6 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export namespace A {
-  export let a = 1;
-}
+export { A, foo } from './1';
+export { Bar } from './2';

@@ -12,6 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export namespace A {
-  export let b = 1;
-}
+import * as config from './1'
+export let a: config.Status;

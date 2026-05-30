@@ -12,6 +12,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export namespace A {
-  export let b = 1;
-}
+export * as types from './1'

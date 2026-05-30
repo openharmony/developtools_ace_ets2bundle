@@ -637,6 +637,11 @@ export class DeclarationMerger {
       return;
     }
 
+    const moduleDecl: ts.SourceFile | undefined =
+      moduleSymbol.declarations?.[0] && ts.isSourceFile(moduleSymbol.declarations[0])
+        ? moduleSymbol.declarations[0]
+        : undefined;
+
     const nsEntity: CollectorEntity = {
       type: EntityType.NamespaceExport,
       symbol: exportSymbol,
@@ -659,6 +664,13 @@ export class DeclarationMerger {
       }
 
       const memberDecl: ts.Declaration = resolved.declarations[0];
+      if (ts.isSourceFile(memberDecl)) {
+        if (memberDecl === moduleDecl) {
+          continue;
+        }
+        this.collectNamespaceReexport(memberSymbol, resolved, visited);
+        continue;
+      }
       const sysApiDecl = this.isSystemApiDeclaration(memberDecl);
       if (sysApiDecl) {
         continue;
