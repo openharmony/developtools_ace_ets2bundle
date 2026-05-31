@@ -12,6 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-declare enum A {
-}
-export { A as B };
+import List from '@ohos.util.List';
+export let a: List<number>;

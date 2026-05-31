@@ -12,6 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-declare enum A {
+@Component
+export struct MainPage {
+  @State message: string = '1';
+  @Prop
+  callSzie: `${SIZE.a}` | `${SIZE.b}`
+  build() {
+  }
 }
-export { A as B };
+
+enum SIZE {
+  a = '1',
+  b = '2'
+}

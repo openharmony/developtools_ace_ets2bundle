@@ -1262,13 +1262,126 @@ mocha.describe('test declaration file merging', function () {
     });
   });
 
+  mocha.describe('enum members not emitted as separate entities (enumExtraMembers)', function () {
+    const opts = () => makeOptions('enumExtraMembers');
+
+    mocha.it('does not emit individual enum members', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('enum SIZE');
+      expect(merged).to.include("a = '1'");
+      expect(merged).to.include("b = '2'");
+      expect(merged).to.not.match(/\bdeclare\s+(const\s+)?a\s*[=:]/);
+      expect(merged).to.not.match(/\bdeclare\s+(const\s+)?b\s*[=:]/);
+    });
+  });
+
+  mocha.describe('namespace/class member dedup (nsClassMemberDup)', function () {
+    const opts = () => makeOptions('nsClassMemberDup');
+
+    mocha.it('does not emit namespace type members as standalone entities', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('namespace Scalar');
+      expect(merged).to.include('class Scalar');
+
+      const lines = merged.split('\n');
+      let insideBlock = 0;
+      let standaloneBlockFolded = 0;
+      for (const line of lines) {
+        if (line.includes('{')) insideBlock++;
+        if (line.includes('}')) insideBlock--;
+        if (insideBlock === 0 && /^\s*type\s+BLOCK_FOLDED/.test(line)) {
+          standaloneBlockFolded++;
+        }
+      }
+      expect(standaloneBlockFolded).to.equal(0,
+        'BLOCK_FOLDED type alias should not appear at top level');
+    });
+
+    mocha.it('does not emit class static properties as standalone entities', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      const lines = merged.split('\n');
+      let insideBlock = 0;
+      let standaloneStatic = 0;
+      for (const line of lines) {
+        if (line.includes('{')) insideBlock++;
+        if (line.includes('}')) insideBlock--;
+        if (insideBlock === 0 && /^\s*static\s+readonly/.test(line)) {
+          standaloneStatic++;
+        }
+      }
+      expect(standaloneStatic).to.equal(0,
+        'static readonly properties should not appear at top level');
+    });
+  });
+
+  mocha.describe('namespace-only export (nsOnlyExport)', function () {
+    const opts = () => makeOptions('nsOnlyExport');
+
+    mocha.it('does not export namespace members at top level', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      console.log('=== nsOnlyExport ===\n', merged);
+
+      expect(merged).to.include('namespace NS');
+      expect(merged).to.include('declare let a');
+
+      const lines = merged.split('\n');
+      let insideBlock = 0;
+      let foundTopLevelExport: string | null = null;
+      for (const line of lines) {
+        if (line.includes('{')) insideBlock++;
+        if (line.includes('}')) insideBlock--;
+        if (insideBlock === 0) {
+          const m = line.match(/^export\s*\{([^}]+)\}/);
+          if (m) foundTopLevelExport = m[1];
+        }
+      }
+      expect(foundTopLevelExport).to.not.be.null;
+      expect(foundTopLevelExport!).to.include('NS');
+      expect(foundTopLevelExport!).to.not.match(/\ba\b/);
+    });
+  });
+
+  mocha.describe('namespace + direct export (nsAndDirectExport)', function () {
+    const opts = () => makeOptions('nsAndDirectExport');
+
+    mocha.it('exports member at both namespace and top level', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      console.log('=== nsAndDirectExport ===\n', merged);
+
+      expect(merged).to.include('namespace NS');
+      expect(merged).to.include('declare let a');
+
+      const lines = merged.split('\n');
+      let insideBlock = 0;
+      let foundTopLevelExport: string | null = null;
+      for (const line of lines) {
+        if (line.includes('{')) insideBlock++;
+        if (line.includes('}')) insideBlock--;
+        if (insideBlock === 0) {
+          const m = line.match(/^export\s*\{([^}]+)\}/);
+          if (m) foundTopLevelExport = m[1];
+        }
+      }
+      expect(foundTopLevelExport).to.not.be.null;
+      expect(foundTopLevelExport!).to.include('NS');
+      expect(foundTopLevelExport!).to.match(/\ba\b/);
+    });
+  });
+
   mocha.describe('import type reference resolution (importTypeRef)', function () {
     const opts = () => makeOptions('importTypeRef');
 
     mocha.it('replaces import type with resolved type text', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      console.log('=== importTypeRef ===\n', merged);
 
       expect(merged).to.include('export type name = string');
       expect(merged).to.not.include('import(');

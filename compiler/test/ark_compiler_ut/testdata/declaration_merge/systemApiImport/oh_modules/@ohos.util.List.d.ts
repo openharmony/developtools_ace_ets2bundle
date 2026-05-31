@@ -12,6 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-declare enum A {
+declare module '@ohos.util.List' {
+  interface List<T> {
+    add(item: T): boolean;
+    get(index: number): T;
+  }
+  export default List;
 }
-export { A as B };

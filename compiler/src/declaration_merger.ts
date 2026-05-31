@@ -114,6 +114,7 @@ interface CollectorEntity {
   isDefaultSystemApi?: boolean;
   namespaceName?: string;
   stripExport: boolean;
+  hasDirectExport?: boolean;
 }
 
 class NameResolver {
@@ -132,6 +133,9 @@ class NameResolver {
     this.mergeExportNames(existing, entity.exportNames);
     if (entity.isDefaultExport) {
       existing.isDefaultExport = true;
+    }
+    if (entity.hasDirectExport) {
+      existing.hasDirectExport = true;
     }
     this.mergeDeclarations(existing, entity.declarations);
     return existing;
@@ -348,6 +352,8 @@ export class DeclarationMerger {
 
   private dissolvedNamespaceNames: Set<string> = new Set();
 
+  private collectedContainerSymbols: Set<ts.Symbol> = new Set();
+
   private printer: ts.Printer;
 
   private constructor(options: DeclarationMergeOptions, rootFiles: string[]) {
@@ -433,25 +439,25 @@ export class DeclarationMerger {
     }
     let found = false;
     const check = (node: ts.Node): void => {
-      if (found) return;
-      if (ts.isExportAssignment(node)) {
-        found = true;
+      if (found) {
         return;
       }
-      if (ts.isExportDeclaration(node) && node.exportClause) {
-        if (ts.isNamespaceExport(node.exportClause)) {
-          return;
-        }
-        for (const element of node.exportClause.elements) {
-          if (element.name.text === 'default') {
-            found = true;
-            return;
-          }
-        }
-      }
+      found = this.isDefaultExportNode(node);
     };
     ts.forEachChild(this.entrySourceFile, check);
     return found;
+  }
+
+  private isDefaultExportNode(node: ts.Node): boolean {
+    if (ts.isExportAssignment(node)) {
+      return true;
+    }
+    if (ts.isExportDeclaration(node) && node.exportClause && !ts.isNamespaceExport(node.exportClause)) {
+      return node.exportClause.elements.some(
+        (element: ts.ExportSpecifier): boolean => element.name.text === 'default'
+      );
+    }
+    return false;
   }
 
   private collectEntities(): void {
@@ -592,6 +598,7 @@ export class DeclarationMerger {
       hasExportModifier,
       stripExport: false,
       namespaceName,
+      hasDirectExport: !namespaceName,
     };
 
     const merged: CollectorEntity | null = this.nameResolver.register(entity);
@@ -599,6 +606,7 @@ export class DeclarationMerger {
 
     if (!visited.has(resolved)) {
       visited.add(resolved);
+      this.registerContainerIfNeeded(resolved);
       for (const decl of target.declarations) {
         this.collectTypeDeps(decl, visited);
       }
@@ -805,6 +813,10 @@ export class DeclarationMerger {
           rightResolved, name.right.text, visited, depth
         );
       } else {
+        const rightSym = this.checker.getSymbolAtLocation(name.right);
+        if (rightSym && this.isEnumMemberSymbol(rightSym)) {
+          return;
+        }
         this.collectEntityNameIdentifiers(name.right, visited, depth);
       }
     }
@@ -946,6 +958,10 @@ export class DeclarationMerger {
     }
     visited.add(resolved);
 
+    if (this.isMemberOfCollectedContainer(resolved)) {
+      return;
+    }
+
     const sysApiDecl = this.isSystemApiDeclaration(refDecl);
     if (sysApiDecl) {
       this.collectSystemApiEntity(resolved, refDecl, localName, sysApiDecl, resolved, true);
@@ -967,6 +983,7 @@ export class DeclarationMerger {
     };
     this.nameResolver.register(entity);
 
+    this.registerContainerIfNeeded(resolved);
     for (const decl of resolved.declarations) {
       this.collectTypeDeps(decl, visited, depth + 1);
     }
@@ -1011,6 +1028,10 @@ export class DeclarationMerger {
     }
     visited.add(resolved);
 
+    if (this.isMemberOfCollectedContainer(resolved)) {
+      return;
+    }
+
     const sysApiDecl = this.isSystemApiDeclaration(refDecl);
     if (sysApiDecl) {
       this.collectSystemApiEntity(resolved, refDecl, identifier.text, sysApiDecl, refSymbol, true);
@@ -1034,6 +1055,7 @@ export class DeclarationMerger {
     };
     this.nameResolver.register(entity);
 
+    this.registerContainerIfNeeded(resolved);
     for (const decl of resolved.declarations) {
       this.collectTypeDeps(decl, visited, depth + 1);
     }
@@ -1130,8 +1152,7 @@ export class DeclarationMerger {
     if (entity.isDefaultExport) {
       return;
     }
-    if (!(entity.hasExportModifier && !entity.namespaceName) &&
-      (entity.exportNames.length > 0 || entity.namespaceName)) {
+    if (entity.hasDirectExport && !(entity.hasExportModifier && !entity.namespaceName)) {
       if (!exportNameSet.has(entity.nameForEmit)) {
         exportNames.push(entity.nameForEmit);
         exportNameSet.add(entity.nameForEmit);
@@ -1272,7 +1293,7 @@ export class DeclarationMerger {
       ts.NodeFlags.None
     );
     const result = ts.transform(syntheticFile, [
-      (context: ts.TransformationContext) => {
+      (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
         const visitor = (n: ts.Node): ts.Node => {
           if (n.kind === ts.SyntaxKind.AnyKeyword || n.kind === ts.SyntaxKind.UnknownKeyword) {
             return ts.factory.createTypeReferenceNode(
@@ -1384,13 +1405,15 @@ export class DeclarationMerger {
 
   private textHasAutoGeneratedExtends(text: string): boolean {
     const { body } = this.splitLeadingTrivia(text);
-    if (!/\b(?:struct|class)\b/.test(body)) {
+    const keywordMatch: RegExpMatchArray | null = body.match(/\b(?:struct|class)\b/);
+    if (!keywordMatch) {
       return false;
     }
+    const fromKeyword: string = body.slice(keywordMatch.index! + keywordMatch[0].length);
     let angleDepth: number = 0;
     let bracePos: number = -1;
-    for (let i: number = 0; i < body.length; i++) {
-      const ch: string = body[i];
+    for (let i: number = 0; i < fromKeyword.length; i++) {
+      const ch: string = fromKeyword[i];
       if (ch === '<') { angleDepth++; continue; }
       if (ch === '>') { angleDepth--; continue; }
       if (ch === '{' && angleDepth === 0) {
@@ -1401,7 +1424,7 @@ export class DeclarationMerger {
     if (bracePos === -1) {
       return false;
     }
-    const header: string = body.slice(0, bracePos + 1);
+    const header: string = fromKeyword.slice(0, bracePos + 1);
     angleDepth = 0;
     for (let i: number = 0; i < header.length; i++) {
       const ch: string = header[i];
@@ -1763,6 +1786,60 @@ export class DeclarationMerger {
 
   private isTypeParameterSymbol(symbol: ts.Symbol): boolean {
     return (symbol.flags & ts.SymbolFlags.TypeParameter) !== 0;
+  }
+
+  private isEnumMemberSymbol(symbol: ts.Symbol): boolean {
+    return (symbol.flags & ts.SymbolFlags.EnumMember) !== 0;
+  }
+
+  private registerContainerIfNeeded(symbol: ts.Symbol): void {
+    const isContainer: boolean = symbol.declarations.some(
+      (d: ts.Declaration): boolean =>
+        ts.isModuleDeclaration(d) ||
+        ts.isClassDeclaration(d) ||
+        ts.isEnumDeclaration(d) ||
+        ts.isInterfaceDeclaration(d)
+    );
+    if (isContainer) {
+      this.collectedContainerSymbols.add(symbol);
+    }
+  }
+
+  private isMemberOfCollectedContainer(symbol: ts.Symbol): boolean {
+    return symbol.declarations.some(
+      (decl: ts.Declaration): boolean => this.hasCollectedContainerAncestor(decl)
+    );
+  }
+
+  private hasCollectedContainerAncestor(node: ts.Node): boolean {
+    let current: ts.Node | undefined = node.parent;
+    while (current) {
+      if (this.isCollectedContainer(current)) {
+        return true;
+      }
+      current = current.parent;
+    }
+    return false;
+  }
+
+  private isCollectedContainer(node: ts.Node): boolean {
+    if (
+      !ts.isModuleDeclaration(node) &&
+      !ts.isClassDeclaration(node) &&
+      !ts.isEnumDeclaration(node) &&
+      !ts.isInterfaceDeclaration(node)
+    ) {
+      return false;
+    }
+    if (!node.name) {
+      return false;
+    }
+    const parentSym: ts.Symbol | undefined = this.checker.getSymbolAtLocation(node.name);
+    if (!parentSym) {
+      return false;
+    }
+    const resolved: ts.Symbol | null = this.resolveToActualDeclaration(parentSym);
+    return resolved !== null && this.collectedContainerSymbols.has(resolved);
   }
 
   private isDefaultLibraryDeclaration(decl: ts.Declaration): boolean {
