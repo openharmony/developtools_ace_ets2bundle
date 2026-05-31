@@ -166,6 +166,9 @@ export class ProgramVisitor extends AbstractVisitor {
             if (visited.has(currProgram.peer) || currProgram.isASTLowered) {
                 continue;
             }
+            if (matchPrefix(this.skipPrefixNames, currProgram.moduleName)) {
+                continue;
+            }
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
                 const cachePath: string | undefined = this.pluginContext?.getProjectConfig()?.cachePath;
@@ -189,9 +192,6 @@ export class ProgramVisitor extends AbstractVisitor {
             }
             visited.add(currProgram.peer);
             for (const externalSource of currProgram.getExternalSources()) {
-                if (matchPrefix(this.skipPrefixNames, externalSource.getName())) {
-                    continue;
-                }
                 this.visitNextProgramInQueue(queue, visited, externalSource);
             }
         }
@@ -199,6 +199,12 @@ export class ProgramVisitor extends AbstractVisitor {
 
     programVisitor(program: arkts.Program): arkts.Program {
         if (this.shouldVisitExternal) {
+            if (!this.isFrameworkMode && this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
+                ProgramSkipper.initialize(
+                    program,
+                    program.getExternalSources().flatMap((external) => external.programs)
+                );
+            }
             this.visitExternalSources(program, [program]);
         }
 
@@ -246,7 +252,7 @@ export class ProgramVisitor extends AbstractVisitor {
     }
 
     visitor(node: arkts.AstNode, program?: arkts.Program, externalSourceName?: string): arkts.ETSModule {
-        if (!this.isFrameworkMode && ProgramSkipper.canSkipProgram(program)) {
+        if (ProgramSkipper.canSkipProgram(program)) {
             debugLog('can skip file: ', program?.absoluteName);
             return node as arkts.ETSModule;
         }

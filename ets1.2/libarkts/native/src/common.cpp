@@ -254,7 +254,6 @@ void impl_DestroyConfig(KNativePointer config)
     // so keep arena alive until this moment.
     GetImpl()->DestroyConfig(_config);
     StageArena::Instance()->Cleanup();
-    printf("[libarkts native] Arena cleaned up!\n");
 }
 KOALA_INTEROP_V1(DestroyConfig, KNativePointer)
 
