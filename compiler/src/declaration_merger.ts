@@ -741,11 +741,53 @@ export class DeclarationMerger {
         }
       } else if (ts.isPropertyAccessExpression(node)) {
         this.collectEnumValueReference(node, visited, depth);
+      } else if (ts.isImportTypeNode(node)) {
+        this.collectImportTypeReference(node, visited, depth);
       }
       ts.forEachChild(node, visit);
     };
 
     ts.forEachChild(declaration, visit);
+  }
+
+  private collectImportTypeReference(
+    node: ts.ImportTypeNode,
+    visited: Set<ts.Symbol>,
+    depth: number
+  ): void {
+    const qualifier = node.qualifier;
+    if (!qualifier || !ts.isIdentifier(qualifier)) {
+      return;
+    }
+    const qualifierSymbol = this.checker.getSymbolAtLocation(qualifier);
+    if (!qualifierSymbol) {
+      return;
+    }
+    const resolved = this.resolveToActualDeclaration(qualifierSymbol);
+    if (!resolved || !resolved.declarations || resolved.declarations.length === 0) {
+      return;
+    }
+    if (this.isDefaultLibraryDeclaration(resolved.declarations[0])) {
+      return;
+    }
+    for (const decl of resolved.declarations) {
+      this.collectTypeDeps(decl, visited, depth + 1);
+    }
+  }
+
+  private resolveImportTypeSymbol(node: ts.ImportTypeNode): ts.Symbol | null {
+    const qualifier = node.qualifier;
+    if (!qualifier) {
+      return null;
+    }
+    const qualifierSymbol = this.checker.getSymbolAtLocation(qualifier);
+    if (qualifierSymbol) {
+      const resolved = this.resolveToActualDeclaration(qualifierSymbol);
+      if (resolved && resolved.declarations && resolved.declarations.length > 0) {
+        return resolved;
+      }
+    }
+    return null;
   }
 
   private collectEntityNameIdentifiers(
@@ -1155,6 +1197,7 @@ export class DeclarationMerger {
       }
 
       text = this.applyRenamesToText(text, printNode);
+      text = this.replaceImportTypeReferences(text, printNode);
       text = text.replace(/  +/g, ' ');
       text = text.trim();
       if (text) {
@@ -1392,6 +1435,8 @@ export class DeclarationMerger {
     const visit = (n: ts.Node): void => {
       if (ts.isIdentifier(n)) {
         this.collectRenameForIdentifier(n, renames);
+      } else if (ts.isImportTypeNode(n)) {
+        this.collectImportTypeRename(n, renames);
       }
       ts.forEachChild(n, visit);
     };
@@ -1402,6 +1447,76 @@ export class DeclarationMerger {
     }
 
     return this.applyRenamesWithPlaceholders(text, renames);
+  }
+
+  private replaceImportTypeReferences(text: string, node: ts.Node): string {
+    const replacements: Array<{ pattern: RegExp; replacement: string }> = [];
+    const visit = (n: ts.Node): void => {
+      if (ts.isImportTypeNode(n) && n.qualifier && ts.isIdentifier(n.qualifier)) {
+        const qualifier = n.qualifier.text;
+        const replacement = this.resolveImportTypeText(n, qualifier);
+        if (replacement) {
+          const pattern = new RegExp(
+            `import\\s*\\(\\s*['"][^'"]*['"]\\s*\\)\\s*\\.\\s*${DeclarationMerger.escapeRegExp(qualifier)}`
+          );
+          replacements.push({ pattern, replacement });
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    ts.forEachChild(node, visit);
+
+    for (const { pattern, replacement } of replacements) {
+      text = text.replace(pattern, replacement);
+    }
+    return text;
+  }
+
+  private resolveImportTypeText(node: ts.ImportTypeNode, qualifier: string): string | null {
+    const qualifierSymbol = this.checker.getSymbolAtLocation(node.qualifier);
+    if (!qualifierSymbol) {
+      return null;
+    }
+    const resolved = this.resolveToActualDeclaration(qualifierSymbol);
+    if (!resolved || !resolved.declarations || resolved.declarations.length === 0) {
+      return null;
+    }
+    const firstDecl = resolved.declarations[0];
+    if (ts.isTypeAliasDeclaration(firstDecl)) {
+      return firstDecl.type.getText(firstDecl.getSourceFile());
+    }
+    if (this.isDefaultLibraryDeclaration(firstDecl)) {
+      const resolvedType = this.checker.getTypeFromTypeNode(node);
+      const typeText = resolvedType ? this.checker.typeToString(resolvedType) : null;
+      return typeText ?? null;
+    }
+    const emitName = this.nameResolver.getNameForSymbol(resolved);
+    return emitName ?? null;
+  }
+
+  private collectImportTypeRename(
+    node: ts.ImportTypeNode,
+    renames: Map<string, string>
+  ): void {
+    const qualifier = node.qualifier;
+    if (!qualifier || !ts.isIdentifier(qualifier)) {
+      return;
+    }
+    const resolvedSymbol = this.resolveImportTypeSymbol(node);
+    if (!resolvedSymbol) {
+      return;
+    }
+    const resolved = this.resolveToActualDeclaration(resolvedSymbol);
+    if (!resolved) {
+      return;
+    }
+    const emitName = this.nameResolver.getNameForSymbol(resolved);
+    if (!emitName) {
+      return;
+    }
+    const sourceFile = node.getSourceFile();
+    const importText = node.getText(sourceFile);
+    renames.set(importText, emitName);
   }
 
   private collectRenameForIdentifier(
@@ -1693,6 +1808,11 @@ export class DeclarationMerger {
       }
       visited.add(current);
       if (current.name === 'default') {
+        return true;
+      }
+      if (current.declarations?.some(
+        (d: ts.Declaration): boolean => ts.isImportClause(d) && !!d.name
+      )) {
         return true;
       }
       if (!(current.flags & ts.SymbolFlags.Alias)) {

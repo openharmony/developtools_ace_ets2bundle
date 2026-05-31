@@ -1261,4 +1261,19 @@ mocha.describe('test declaration file merging', function () {
       expectSelfContained(performMerge(opts()));
     });
   });
+
+  mocha.describe('import type reference resolution (importTypeRef)', function () {
+    const opts = () => makeOptions('importTypeRef');
+
+    mocha.it('replaces import type with resolved type text', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      console.log('=== importTypeRef ===\n', merged);
+
+      expect(merged).to.include('export type name = string');
+      expect(merged).to.not.include('import(');
+      expect(merged).to.not.include('name_1');
+      expectSelfContained(merged);
+    });
+  });
 });
