@@ -27,6 +27,7 @@ export * from './check-construct-parameter';
 export * from './check-construct-private-parameter';
 export * from './check-consumer-provider-decorator';
 export * from './check-custom-dialog-missing-controller';
+export * from './check-custom-env-decorator';
 export * from './check-decorated-property-type';
 export * from './check-env-decorator';
 export * from './check-entry-localstorage';

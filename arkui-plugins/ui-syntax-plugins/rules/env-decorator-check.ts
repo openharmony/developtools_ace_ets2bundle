@@ -75,6 +75,7 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             envMultipleAnnotationsV2: `The member property or method can not be decorated by multiple built-in annotations.`,
             envOnlyInitParamInV2: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
             envOnlyInitRegularInV1: `Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.`,
+            customEnvOnlyInComponentOrComponentV2: `The '@CustomEnv' annotation can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
         };
     }
 
@@ -83,7 +84,6 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             const hasComponent = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
             const hasComponentV2 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V2);
             this.checkEnvUsagePositionInStruct(node, hasComponent, hasComponentV2);
-            this.checkDecoratorCombination(node, hasComponentV2);
             return;
         }
 
@@ -108,6 +108,14 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
                 this.report({
                     node: envDecorator,
                     message: this.messages.envOnlyInComponentOrComponentV2,
+                });
+            }
+
+            const customEnvDecorator = findDecorator(member, PresetDecorators.CUSTOM_ENV);
+            if (customEnvDecorator) {
+                this.report({
+                    node: customEnvDecorator,
+                    message: this.messages.customEnvOnlyInComponentOrComponentV2,
                 });
             }
         }

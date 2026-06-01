@@ -20,6 +20,7 @@ import {
     checkBuildRootNode,
     checkComputedStateModification,
     checkComponentV2StateUsage,
+    checkCustomEnvDecorator,
     checkStructPropertyDecorator,
     checkTrackDecorator,
 } from './rules';
@@ -32,6 +33,7 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
         }
 
         checkComponentV2StateUsage.bind(this)(node);
+        checkCustomEnvDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
         checkBuildRootNode.bind(this)(node);

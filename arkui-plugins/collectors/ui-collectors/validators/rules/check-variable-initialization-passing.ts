@@ -33,6 +33,7 @@ const notAllowInitDecorators: string[] = [
     DecoratorNames.CONSUME,
     DecoratorNames.LOCAL_STORAGE_LINK,
     DecoratorNames.LOCAL_STORAGE_PROP_REF,
+    DecoratorNames.CUSTOM_ENV,
 ];
 
 /**

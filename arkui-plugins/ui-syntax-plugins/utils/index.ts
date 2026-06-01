@@ -145,6 +145,7 @@ export const PresetDecorators = {
     COMPONENTDISAPPEAR: 'ComponentDisappear',
     COMPONENTACTIVE: 'ComponentActive',
     COMPONENTINACTIVE: 'ComponentInactive',
+    CUSTOM_ENV: 'CustomEnv',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
