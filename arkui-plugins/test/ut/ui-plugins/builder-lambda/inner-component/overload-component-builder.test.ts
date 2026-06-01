@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -151,7 +151,7 @@ export declare function FakeComponent(@Memo() content_?: (()=> void)): FakeCompo
 @Memo() 
 export declare function FakeComponentImpl(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
-interface FakeOptions {
+export interface FakeOptions {
     get str(): (string | undefined) {
     return undefined;
     }
@@ -160,7 +160,7 @@ interface FakeOptions {
     }
 }
 
-interface FakeComponentAttribute {
+export interface FakeComponentAttribute {
   setFakeComponentOptions(options?: FakeOptions): this
   setFakeComponentOptions(): this
   setFakeComponentOptions(str: string): this
