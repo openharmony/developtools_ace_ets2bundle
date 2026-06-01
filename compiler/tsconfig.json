@@ -208,6 +208,7 @@
         "IndicatorComponent",
         "LazyVGridLayout",
         "LazyVWaterFlowLayout",
+        "LazyDynamicLayout",
         "Line",
         "List",
         "ListItem",
@@ -301,6 +302,7 @@
         "UIPickerComponent",
         "DistortionComponent",
         "LazyColumnLayout",
+        "LazyDynamicLayout",
         "SelectionContainer"
       ],
       "extend": {
@@ -525,6 +527,11 @@
             "name": "LazyVWaterFlowLayout",
             "type": "LazyVWaterFlowLayoutAttribute",
             "instance": "LazyVWaterFlowLayoutInstance"
+          },
+          {
+            "name": "LazyDynamicLayout",
+            "type": "LazyDynamicLayoutAttribute",
+            "instance": "LazyDynamicLayoutInstance"
           },
           {
             "name": "Line",

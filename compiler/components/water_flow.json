@@ -4,7 +4,8 @@
         "FlowItem",
         "LazyVGridLayout",
         "LazyVWaterFlowLayout",
-        "LazyColumnLayout"
+        "LazyColumnLayout",
+        "LazyDynamicLayout"
     ],
     "attrs": [
         "onReachEnd",
