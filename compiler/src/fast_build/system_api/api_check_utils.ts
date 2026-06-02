@@ -28,6 +28,7 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
+  fileApiAvailableCheckPlugin,
   externalApiCheckerMap,
   crossplatformExternalModule,
   crossplatformDepsConfig
@@ -100,6 +101,7 @@ import {
   SINCE_LEVEL_CONFIG,
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
+  APIAVAILABLE_TS_FILE_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
   ApiAvailableResult,
@@ -2515,17 +2517,35 @@ function checkParentVersionHierarchy(
  * @param node  - current node
  * @returns Return the result of whether it meets the specifications
  */
-export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts.ConditionCheckResult {
+export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typeOfNodeFunc: Function): ts.ConditionCheckResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
-  const apiAvailableRegex = /\b\.apiAvailable\b/g;
-  let nodeText: string = node.getText() || node.getFullText();
 
-  if (!apiAvailableRegex.test(nodeText)) {
+  if (!node) {
     return result;
+  }
+
+  const sourceFileName = node.getSourceFile()?.fileName;
+  const sourceFileText = node.getSourceFile()?.text;
+  // Check apiAvailable info cache
+  if (fileApiAvailableCheckPlugin.has(sourceFileName)) {
+    const hasAvailale = fileApiAvailableCheckPlugin.get(sourceFileName)!;
+    if (!hasAvailale) {
+      return result;
+    }
+  } else {
+    try {
+      const availableContentChecker = /\.apiAvailable/g.test(sourceFileText);
+      fileApiAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
+      if (!availableContentChecker) {
+        return result;
+      }
+    } catch (error) {
+      return result;
+    }
   }
 
   if (!ts.isCallExpression(node)) {
@@ -2535,12 +2555,29 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
   if (!node.expression || (ts.isPropertyAccessExpression(node.expression) && node.expression.name?.getText() !== SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO)) {
     return result;
   }
-
-  if (!isApiAvailableStatement(node)) {
-    return result;
-  }
   
   if (!node.arguments || node.arguments.length !== 1) {
+    return result;
+  }
+
+  if (!isApiAvailableGetTypeOfNodeStatement(node, typeOfNodeFunc)) {
+    return result;
+  }
+
+  const sourceFile: ts.SourceFile = node.getSourceFile();
+  if (sourceFile && sourceFile.fileName) {
+    const fileName: string = sourceFile.fileName;
+    if (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) {
+      result.valid = false;
+      result.message = APIAVAILABLE_TS_FILE_ERROR;
+      return result;
+    }
+  }
+
+  const apiAvailableRegex = /\.apiAvailable\b/g;
+  let nodeText: string = node.getText() || node.getFullText();
+  if (!apiAvailableRegex.test(nodeText)) {
+    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
     result.valid = false;
     return result;
   }
@@ -2804,6 +2841,29 @@ export function isApiAvailableStatement(node: ts.CallExpression): boolean {
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (checker) {
     const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(node.expression));
+    if (Array.isArray(type)) {
+      return false;
+    }
+    if (type.symbol && type.symbol.valueDeclaration?.name?.escapedText) {
+      const symbolFileName: string = type.symbol.valueDeclaration.getSourceFile().fileName;
+      const symbolName: string = type.symbol.valueDeclaration.name.escapedText.toString();
+      if (symbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) && symbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+
+/**
+ * Check if the call expression is an apiAvailable statement
+ * @param node Call expression node
+ * @returns true if it's an apiAvailable statement, false otherwise
+ */
+export function isApiAvailableGetTypeOfNodeStatement(node: ts.CallExpression, typeOfNodeFunc: Function): boolean {
+  if (typeOfNodeFunc) {
+    const type: ts.Type | ts.Type[] = findNonNullType(typeOfNodeFunc(node.expression));
     if (Array.isArray(type)) {
       return false;
     }
