@@ -12,8 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+declare module '@ohos.util.List' {
+  interface List<T> {
+    add(item: T): boolean;
+    get(index: number): T;
+  }
+  export default List;
 }

@@ -12,8 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+@Component
+export declare struct MainPage extends {} {
+    @State
+    message: string;
+    build(): void;
 }
