@@ -12,6 +12,6 @@
     "clipContent", "backToTop", "focusWrapMode", "onWillStopDragging", "syncLoad", "onWillStartDragging",
     "onDidStopDragging", "onWillStartFling", "onDidStopFling", "contentStartOffset", "contentEndOffset",
     "supportEmptyBranchInLazyLoading", "autoAdjustScrollBarMargin", "enableScrollWithMouse", "enableEditMode",
-    "onEditModeChange"
+    "onEditModeChange", "scrollBarHeight"
   ]
 }

@@ -12,6 +12,6 @@
     "stackFromEnd", "focusWrapMode", "onWillStopDragging", "syncLoad", "onWillStartDragging",
     "onDidStopDragging", "onWillStartFling", "onDidStopFling", "supportEmptyBranchInLazyLoading",
     "SetBackPressBehavior", "autoAdjustScrollBarMargin", "enableScrollWithMouse", "enableEditMode",
-    "onEditModeChange"
+    "onEditModeChange", "scrollBarHeight"
   ]
 }

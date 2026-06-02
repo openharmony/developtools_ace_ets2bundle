@@ -45,6 +45,7 @@
         "contentEndOffset",
         "supportEmptyBranchInLazyLoading",
         "autoAdjustScrollBarMargin",
-        "enableScrollWithMouse"
+        "enableScrollWithMouse",
+        "scrollBarHeight"
     ]
 }
