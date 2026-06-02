@@ -1218,6 +1218,20 @@ export class ProcessExtendIfStatement {
     componentName: string,
     log: LogInfo[]
   ): ts.Block {
+    if (currentBlock.statements && currentBlock.statements.length &&
+      currentBlock.statements.length === 1) {
+      const tempStatement: ts.Statement = currentBlock.statements[0];
+      if (ts.isIfStatement(tempStatement)) {
+        return ts.factory.createBlock(
+          [this.transformIfStatement(tempStatement,
+            componentName,
+            log
+          )]
+        );
+      }
+    }
+    this.checkExtendBody(currentBlock, componentName, log);
+
     const statementArray: ts.Statement[] = [];
     let bodynode: ts.Block;
 
@@ -1253,6 +1267,29 @@ export class ProcessExtendIfStatement {
     }
     return ts.visitEachChild(node, ProcessExtendIfStatement.traverseExtendExpression,
       contextGlobal);
+  }
+
+  static checkExtendBody(
+    bodyNode: ts.Block,
+    componentName: string,
+    log: LogInfo[]
+  ): void {
+    const componentInstance: string = `${componentName}Instance`;
+    if (!bodyNode.statements || !bodyNode.statements.length) {
+      return;
+    }
+    if (bodyNode.statements.length !== 1) {
+      validateUIFunctionFormat(log, bodyNode);
+      return;
+    }
+    if (ts.isExpressionStatement(bodyNode.statements[0])) {
+      !validateComponentInstance(bodyNode.statements[0], componentInstance) &&
+        validateUIFunctionFormat(log, bodyNode.statements[0]);
+      return;
+    }
+    (!isCompatibleVersionOverTarget(26) ||
+      !ts.isIfStatement(bodyNode.statements[0])) &&
+      validateUIFunctionFormat(log, bodyNode.statements[0]);
   }
 }
 
@@ -1573,7 +1610,9 @@ function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
   }
 }
 
-function validateComponentInstance(node: ts.ExpressionStatement, targetInstanceName: string): boolean {
+export function validateComponentInstance(
+  node: ts.ExpressionStatement,
+  targetInstanceName: string): boolean {
   if (!ts.isCallExpression(node.expression)) {
     return false;
   }
@@ -1596,11 +1635,11 @@ function findInstanceIdentifier(node: ts.CallExpression): string {
   return instanceName;
 }
 
-function validateUIFunctionFormat(log: LogInfo[], block: ts.Statement): void {
+export function validateUIFunctionFormat(log: LogInfo[], stmt: ts.Statement): void {
   log.push({
     message: `Only UI component syntax can be written here.`,
     type: LogType.WARN,
-    pos: block.getStart()
+    pos: stmt.getStart()
   });
 }
 
