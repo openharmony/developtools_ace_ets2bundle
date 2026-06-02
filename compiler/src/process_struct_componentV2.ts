@@ -69,7 +69,7 @@ import {
   EnvTypeName,
   ENV_ARG_STATUS,
   preCheckEnvDecoratorArg,
-  checkWritableEnvDecoratorExp,
+  checkNonSystemEnvDecoratorExp,
   CustomEnvTypeName,
   checkCustomEnvType,
   checkCustomEnvDecoratorExp
@@ -373,8 +373,9 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
     const envTypeName: EnvTypeName = { currentTypeName: '', envArgStatus: ENV_ARG_STATUS.SYSTEM_PROPERTIES };
     envDecorator && preCheckEnvDecoratorArg(envDecorator, envTypeName);
-    if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV) {
-      checkWritableEnvDecoratorExp(envDecorator, member.type);
+    if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV ||
+      envTypeName.envArgStatus === ENV_ARG_STATUS.READONLY_SYSTEM_ENV) {
+      checkNonSystemEnvDecoratorExp(envDecorator, member.type);
     } else if (propertyType && !checkEnvType(propertyType, envTypeName)) {
       validateEnvType(member);
     } else if (propertyType && envDecorator) {
