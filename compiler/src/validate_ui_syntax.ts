@@ -2708,8 +2708,10 @@ function checkEnvDecorator(node: ts.StructDeclaration, recordRequire: RecordRequ
   }
   const envTypeName: EnvTypeName = { currentTypeName: '', envArgStatus: ENV_ARG_STATUS.SYSTEM_PROPERTIES };
   recordRequire.envDecorator && preCheckEnvDecoratorArg(recordRequire.envDecorator, envTypeName);
-  if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV) {
-    checkWritableEnvDecoratorExp(recordRequire.envDecorator, item.type);
+  if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV ||
+    envTypeName.envArgStatus === ENV_ARG_STATUS.READONLY_SYSTEM_ENV
+  ) {
+    checkNonSystemEnvDecoratorExp(recordRequire.envDecorator, item.type);
     return;
   }
   if (!checkEnvType(propertyType, envTypeName)) {
@@ -2911,10 +2913,12 @@ export function preCheckEnvDecoratorArg(
     envTypeName.envArgStatus = ENV_ARG_STATUS.SYSTEM_PROPERTIES;
   } else if (EXPRESSION_NAME === WRITABLE_SYSTEMENV) {
     envTypeName.envArgStatus = ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV;
+  } else if (EXPRESSION_NAME === READONLY_SYSTEMENV) {
+    envTypeName.envArgStatus = ENV_ARG_STATUS.READONLY_SYSTEM_ENV;
   }
 }
 
-export function checkWritableEnvDecoratorExp(
+export function checkNonSystemEnvDecoratorExp(
   node: ts.Decorator,
   propertyTypeNode: ts.TypeNode | undefined
 ): void {
@@ -2978,7 +2982,8 @@ function collectUnionTypes(
 
 export const enum ENV_ARG_STATUS {
   SYSTEM_PROPERTIES,
-  WRITABLE_SYSTEM_ENV
+  WRITABLE_SYSTEM_ENV,
+  READONLY_SYSTEM_ENV
 };
 
 export function checkEnvDecoratorExp(node: ts.Decorator, currentTypeName: string): void {
