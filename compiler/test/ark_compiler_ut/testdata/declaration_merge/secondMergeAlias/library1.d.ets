@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+export declare namespace _MapEnum {
+  export enum MapType {
+    STANDARD = 0,
+    SATELLITE = 1
+  }
+  export { MapType as MapTypeEnum };
 }
-export declare type Callback<T> = (err: Error, data: T) => void;

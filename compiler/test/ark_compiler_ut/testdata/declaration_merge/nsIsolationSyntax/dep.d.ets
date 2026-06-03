@@ -12,9 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+declare namespace _inner {
+  export class A {
+    x: number;
+  }
 }
-export declare type Callback<T> = (err: Error, data: T) => void;
+export default class DefaultClass {
+  y: string;
+}
+export declare let b: _inner.A;
+export { b };
+export declare let c: DefaultClass;
+export { c };

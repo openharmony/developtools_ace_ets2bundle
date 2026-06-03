@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+import {A, aliasA} from './test2'
+export class C {
+  foo(a:A): void;
+  foo1(a:aliasA): void;
 }
-export declare type Callback<T> = (err: Error, data: T) => void;

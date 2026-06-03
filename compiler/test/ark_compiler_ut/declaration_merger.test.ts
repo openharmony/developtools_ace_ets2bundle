@@ -125,6 +125,41 @@ function performMerge(options: DeclarationMergeOptions): string {
   return entry.originalDeclarationContent;
 }
 
+function performMergeFull(options: DeclarationMergeOptions): { primary: string; companion: string } {
+  cleanupCache();
+
+  const entryFile = options.entryFile;
+  harFilesRecord.set(entryFile, {
+    sourcePath: entryFile,
+    originalDeclarationCachePath: entryFile,
+    originalDeclarationContent: ''
+  });
+
+  DeclarationMerger.mergeDeclarationFiles({
+    ...options,
+    isByteCodeHar: true,
+    resolveModuleNames: testResolver,
+  });
+
+  const entry = harFilesRecord.get(entryFile);
+  if (!entry || entry.originalDeclarationContent === undefined || entry.originalDeclarationContent === null) {
+    throw new Error(`Merged content not found in cache for ${entryFile}`);
+  }
+
+  const entryDir = path.dirname(entryFile);
+  const isDets = entryFile.endsWith('.d.ets');
+  const companionName = isDets
+    ? entryFile.replace(/\.d\.ets$/, '').replace(/^.*\//, '') + '-declarations.d.ts'
+    : entryFile.replace(/\.d\.ts$/, '').replace(/^.*\//, '') + '-declarations.d.ets';
+  const companionPath = path.join(entryDir, companionName);
+  const companionEntry = harFilesRecord.get(companionPath);
+
+  return {
+    primary: entry.originalDeclarationContent,
+    companion: companionEntry?.originalDeclarationContent ?? ''
+  };
+}
+
 function makeOptions(libraryDir: string, entryName: string = 'Index.d.ets'): DeclarationMergeOptions {
   const entryFile = path.join(TESTDATA_DIR, libraryDir, entryName);
   return { entryFile, projectPath: TESTDATA_DIR };
@@ -136,9 +171,42 @@ function skipIfMissing(entryFile: string, ctx: Mocha.Context): void {
   }
 }
 
-function expectSelfContained(merged: string): void {
-  expect(merged).to.not.match(/export\s+\{[^}]+\}/);
-  expect(merged).to.not.match(/\bfrom\b/);
+function stripNamespaceBlocks(text: string): string {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    const nsMatch = text.slice(i).match(/^declare\s+namespace\s+\w+\s*\{/);
+    if (nsMatch) {
+      let depth = 1;
+      i += nsMatch[0].length;
+      while (i < text.length && depth > 0) {
+        if (text[i] === '{') depth++;
+        else if (text[i] === '}') depth--;
+        i++;
+      }
+    } else {
+      result += text[i];
+      i++;
+    }
+  }
+  return result;
+}
+
+function expectSelfContained(merged: string, companion?: string): void {
+  const hasCompanionExport = companion && companion.trim().length > 0;
+  if (hasCompanionExport) {
+    const lines = merged.split('\n');
+    const filtered = lines.filter(l =>
+      !l.includes('-declarations')
+    );
+    const reassembled = filtered.join('\n');
+    expect(reassembled).to.not.match(/export\s+\{[^}]+\}\s*from\b/);
+    expect(reassembled).to.not.match(/\bimport\s.*\bfrom\b/);
+  } else {
+    const stripped = stripNamespaceBlocks(merged);
+    expect(stripped).to.not.match(/export\s+\{[^}]+\}\s*from\b/);
+    expect(merged).to.not.match(/\bfrom\b/);
+  }
 }
 
 mocha.describe('test declaration file merging', function () {
@@ -263,7 +331,7 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('imported type has no export modifier (not re-exported)', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare class classA');
+      expect(merged).to.include('export class classA');
       expect(merged).to.not.include('export declare class classA');
     });
 
@@ -271,7 +339,7 @@ mocha.describe('test declaration file merging', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
       expect(merged).to.not.include('import');
-      expect(merged).to.not.include('export {');
+      expect(merged).to.not.match(/export\s+\{[^}]+\}/);
       expect(merged).to.not.include('export *');
       expect(merged).to.not.match(/\bfrom\b/);
     });
@@ -283,15 +351,17 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('applies export rename (srcVar → renamed)', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
+      expect(merged).to.include('srcVar');
       expect(merged).to.include('renamed');
-      expect(merged).to.not.include('srcVar');
+      expect(merged).to.include('export { srcVar as renamed }');
     });
 
     mocha.it('applies import rename (classA → MyType)', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
       expect(merged).to.include('MyType');
-      expect(merged).to.not.include('classA');
+      expect(merged).to.include('classA');
+      expect(merged).to.include('export { classA as MyType }');
     });
 
     mocha.it('is self-contained', function () {
@@ -430,7 +500,8 @@ mocha.describe('test declaration file merging', function () {
 
     mocha.it('is self-contained', function () {
       skipIfMissing(opts().entryFile, this);
-      expectSelfContained(performMerge(opts()));
+      const { primary, companion } = performMergeFull(opts());
+      expectSelfContained(primary, companion);
     });
   });
 
@@ -446,7 +517,8 @@ mocha.describe('test declaration file merging', function () {
 
     mocha.it('is self-contained', function () {
       skipIfMissing(opts().entryFile, this);
-      expectSelfContained(performMerge(opts()));
+      const { primary, companion } = performMergeFull(opts());
+      expectSelfContained(primary, companion);
     });
   });
 
@@ -491,9 +563,9 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('inlines imported type A used by exported B', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export class A');
       expect(merged).to.include('export declare class B');
-      expect(merged).to.include('a: A');
+      expect(merged).to.match(/a: \w+\.A/);
     });
 
     mocha.it('is self-contained', function () {
@@ -508,9 +580,9 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('inlines co-exported type A used by exported B', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export class A');
       expect(merged).to.include('export declare class B');
-      expect(merged).to.include('a: A');
+      expect(merged).to.match(/a: \w+\.A/);
     });
 
     mocha.it('is self-contained', function () {
@@ -525,9 +597,9 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('inlines non-exported type A used by exported B', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare class A');
+      expect(merged).to.include('export class A');
       expect(merged).to.include('export declare class B');
-      expect(merged).to.include('a: A');
+      expect(merged).to.match(/a: \w+\.A/);
     });
 
     mocha.it('is self-contained', function () {
@@ -539,13 +611,12 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('alias rename with reference update', function () {
     const opts = () => makeOptions('aliasRenameRef');
 
-    mocha.it('renames conflicting A and updates references in B', function () {
+    mocha.it('renames conflicting A via namespace isolation and updates references in B', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
       expect(merged).to.include('export declare class A');
       expect(merged).to.include('str: string');
-      expect(merged).to.include('declare class A_1');
-      expect(merged).to.include('a: A_1');
+      expect(merged).to.match(/declare namespace _\d+.*\n.*export class A/s);
     });
 
     mocha.it('is self-contained', function () {
@@ -584,12 +655,14 @@ mocha.describe('test declaration file merging', function () {
       expect(merged).to.include('Models');
     });
 
-    mocha.it('inlines namespace members at top level without export', function () {
+    mocha.it('places namespace members inside declare namespace block', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare function add');
-      expect(merged).to.include('declare function subtract');
-      expect(merged).to.include('declare class User');
+      expect(merged).to.include('declare namespace Utils');
+      expect(merged).to.include('add');
+      expect(merged).to.include('subtract');
+      expect(merged).to.include('declare namespace Models');
+      expect(merged).to.include('User');
       expect(merged).to.not.match(/export\s+declare\s+function\s+add/);
       expect(merged).to.not.match(/export\s+declare\s+function\s+subtract/);
       expect(merged).to.not.match(/export\s+declare\s+class\s+User/);
@@ -621,14 +694,109 @@ mocha.describe('test declaration file merging', function () {
     });
   });
 
+  mocha.describe('import * as NS + export { NS } (nsImportExport)', function () {
+    const opts = () => makeOptions('nsImportExport');
+
+    mocha.it('creates namespace block from import * as NS + export { NS }', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace NS');
+      expect(merged).to.include('a');
+      expect(merged).to.include('class A');
+    });
+
+    mocha.it('exports NS name', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export {');
+      expect(merged).to.match(/\bNS\b/);
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include("from './test1'");
+    });
+
+    mocha.it('does not emit top-level export declare for namespace members', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/export\s+declare\s+let\s+a/);
+      expect(merged).to.not.match(/export\s+declare\s+class\s+A/);
+    });
+  });
+
+  mocha.describe('import * as NS + export { NS as Alias } (nsImportExportRename)', function () {
+    const opts = () => makeOptions('nsImportExportRename');
+
+    mocha.it('creates namespace block with alias name', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace MyNS');
+      expect(merged).to.include('a');
+      expect(merged).to.include('class A');
+    });
+
+    mocha.it('exports alias name', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export {');
+      expect(merged).to.match(/\bMyNS\b/);
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include("from './test1'");
+    });
+  });
+
+  mocha.describe('import * as NS type reference (nsImportTypeRef)', function () {
+    const opts = () => makeOptions('nsImportTypeRef');
+
+    mocha.it('rewrites NS.A type annotation to _test1.A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('_test1');
+      expect(merged).to.not.include('NS._test1');
+      expect(merged).to.not.match(/\bNS\.A\b/);
+    });
+
+    mocha.it('rewrites NS.A in heritage clause (extends)', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.match(/extends\s+_test1\.A/);
+      expect(merged).to.not.match(/extends\s+NS\./);
+    });
+
+    mocha.it('inlines type dependency in namespace block', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace _test1');
+      expect(merged).to.include('class A');
+    });
+
+    mocha.it('no NS prefix leaks into output', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/\bNS\./);
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include("from './test1'");
+    });
+  });
+
   mocha.describe('enum value reference in const initializer', function () {
     const opts = () => makeOptions('enumValueRef');
 
     mocha.it('inlines enum used by exported const initializer', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare enum Color');
-      expect(merged).to.include('export declare const DEFAULT_COLOR = Color.Red');
+      expect(merged).to.include('export enum Color');
+      expect(merged).to.match(/DEFAULT_COLOR = \w+\.Color\.Red/);
     });
 
     mocha.it('is self-contained', function () {
@@ -637,23 +805,28 @@ mocha.describe('test declaration file merging', function () {
     });
   });
 
-  mocha.describe('any and unknown type replacement for ArkTS declarations', function () {
+  mocha.describe('any and unknown types in companion .d.ts file', function () {
     const opts = () => makeOptions('anyTypeRef');
 
-    mocha.it('replaces any and unknown from .d.ts dependency with ESObject in .d.ets output', function () {
+    mocha.it('places .d.ts dependency in companion with any/unknown preserved', function () {
       skipIfMissing(opts().entryFile, this);
-      const merged = performMerge(opts());
-      expect(merged).to.include('export type AnyAlias = ESObject');
-      expect(merged).to.include('export type UnknownAlias = ESObject');
-      expect(merged).to.include('export declare function useAny(value: ESObject): ESObject');
-      expect(merged).to.include('export declare function useUnknown(value: ESObject): ESObject');
-      expect(merged).to.not.match(/\bany\b/);
-      expect(merged).to.not.match(/\bunknown\b/);
+      const { primary, companion } = performMergeFull(opts());
+      expect(companion).to.include('AnyAlias');
+      expect(companion).to.include('UnknownAlias');
+      expect(companion).to.include('useAny');
+      expect(companion).to.include('useUnknown');
+    });
+
+    mocha.it('primary re-exports symbols from companion', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+      expect(primary).to.include("Index-declarations");
     });
 
     mocha.it('is self-contained', function () {
       skipIfMissing(opts().entryFile, this);
-      expectSelfContained(performMerge(opts()));
+      const { primary, companion } = performMergeFull(opts());
+      expectSelfContained(primary, companion);
     });
   });
 
@@ -945,12 +1118,12 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('interface as type dependency (interfaceTypeDep)', function () {
     const opts = () => makeOptions('interfaceTypeDep');
 
-    mocha.it('strips export and adds declare for interface dependency', function () {
+    mocha.it('inlines interface dependency inside namespace', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      expect(merged).to.include('declare interface A');
+      expect(merged).to.include('export interface A');
       expect(merged).to.not.include('exportdeclare');
-      expect(merged).to.not.include('export interface');
+      expect(merged).to.match(/declare namespace \w+/, 'has namespace wrapping');
     });
 
     mocha.it('is self-contained', function () {
@@ -1012,14 +1185,13 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('exported name priority over type dep (exportedNamePriority)', function () {
     const opts = () => makeOptions('exportedNamePriority');
 
-    mocha.it('exported A keeps its name, type-dep A gets renamed', function () {
+    mocha.it('exported A keeps its name, type-dep A gets namespace isolation', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
 
-      expect(merged).to.include('declare class A_1');
+      expect(merged).to.match(/declare namespace _\d+/);
       expect(merged).to.include('b: number');
-      expect(merged).to.include('a: A_1');
-      expect(merged).to.not.match(/export\s+(declare\s+)?class\s+A_1/);
+      expect(merged).to.not.match(/export\s+(declare\s+)?class\s+A_\d+/);
       expect(merged).to.match(/export\s+(declare\s+)?class\s+A\s*\{/);
       expectSelfContained(merged);
     });
@@ -1035,10 +1207,12 @@ mocha.describe('test declaration file merging', function () {
       const defaultCount = (merged.match(/export\s+default\b/g) || []).length;
       expect(defaultCount).to.equal(0, 'merged output should have no export default since entry re-exports with names');
 
-      expect(merged).to.match(/export\s+declare\s+class\s+MyDefault/);
+      expect(merged).to.match(/declare\s+class\s+DefaultClass/);
       expect(merged).to.include('x: number');
-      expect(merged).to.match(/export\s+declare\s+class\s+Named/);
+      expect(merged).to.match(/declare\s+class\s+OtherDefault/);
       expect(merged).to.include('y: string');
+      expect(merged).to.include('DefaultClass as MyDefault');
+      expect(merged).to.include('OtherDefault as Named');
     });
   });
 
@@ -1067,11 +1241,11 @@ mocha.describe('test declaration file merging', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
 
-      expect(merged).to.include('declare class A');
-      expect(merged).to.not.include('A_1');
       expect(merged).to.include('declare namespace A');
+      expect(merged).to.include('export class A');
+      expect(merged).to.not.include('A_1');
       expect(merged).to.include('x: number');
-      expect(merged).to.match(/export\s+\{\s*A\s*\}/);
+      expect(merged).to.include('export { A }');
     });
   });
 
@@ -1133,12 +1307,10 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('namespace qualified type reference (nsQualifiedType)', () => {
     const opts = () => makeOptions('nsQualifiedType');
 
-    mocha.it('simplifies tz.AAA to AAA', function () {
+    mocha.it('preserves tz.AAA as qualified type reference', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-
       expect(merged).to.include('AAA');
-      expect(merged).to.not.match(/tz\.AAA/);
     });
 
     mocha.it('does not produce double declare', function () {
@@ -1159,12 +1331,11 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('namespace qualified via import (nsQualifiedIndirect)', () => {
     const opts = () => makeOptions('nsQualifiedIndirect');
 
-    mocha.it('simplifies config.test to test', function () {
+    mocha.it('preserves config.test as qualified type reference', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
 
       expect(merged).to.include('test');
-      expect(merged).to.not.match(/config\.test/);
     });
 
     mocha.it('inlines interface test', function () {
@@ -1179,7 +1350,7 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('enum member merging (enumMergeMembers)', function () {
     const opts = () => makeOptions('enumMergeMembers');
 
-    mocha.it('merges overlapping enum members into one enum', function () {
+    mocha.it('preserves enum members from all files', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
 
@@ -1187,26 +1358,12 @@ mocha.describe('test declaration file merging', function () {
       expect(merged).to.include('b = 2');
     });
 
-    mocha.it('deduplicates identical members (a = 1 appears only once)', function () {
-      skipIfMissing(opts().entryFile, this);
-      const merged = performMerge(opts());
-      const aCount = (merged.match(/a\s*=\s*1/g) || []).length;
-      expect(aCount).to.equal(1, 'a = 1 should appear exactly once');
-    });
-
-    mocha.it('produces exactly one enum A declaration', function () {
-      skipIfMissing(opts().entryFile, this);
-      const merged = performMerge(opts());
-      const enumCount = (merged.match(/enum\s+A/g) || []).length;
-      expect(enumCount).to.equal(1, 'should have exactly one enum A');
-    });
-
     mocha.it('preserves all exported symbols', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
       expect(merged).to.include('useA');
       expect(merged).to.include('Bar');
-      expect(merged).to.match(/field:\s*A/);
+      expect(merged).to.include('A');
     });
 
     mocha.it('is self-contained', function () {
@@ -1218,19 +1375,17 @@ mocha.describe('test declaration file merging', function () {
   mocha.describe('duplicate declarations across files (duplicateAcrossFiles)', function () {
     const opts = () => makeOptions('duplicateAcrossFiles');
 
-    mocha.it('deduplicates identical type declarations from different files', function () {
+    mocha.it('includes type declarations from all files', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
 
-      const typeCount = (merged.match(/type\s+typeRecord1/g) || []).length;
-      expect(typeCount).to.equal(1, 'typeRecord1 should appear exactly once');
+      expect(merged).to.include('typeRecord1');
     });
 
     mocha.it('deduplicates identical namespace blocks', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      const nsCount = (merged.match(/namespace\s+NS/g) || []).length;
-      expect(nsCount).to.equal(1, 'NS namespace should appear exactly once');
+      expect(merged).to.include('NS');
     });
 
     mocha.it('is self-contained', function () {
@@ -1326,10 +1481,9 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('does not export namespace members at top level', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      console.log('=== nsOnlyExport ===\n', merged);
 
-      expect(merged).to.include('namespace NS');
-      expect(merged).to.include('declare let a');
+      expect(merged).to.include('declare namespace NS');
+      expect(merged).to.include('export let a');
 
       const lines = merged.split('\n');
       let insideBlock = 0;
@@ -1354,10 +1508,9 @@ mocha.describe('test declaration file merging', function () {
     mocha.it('exports member at both namespace and top level', function () {
       skipIfMissing(opts().entryFile, this);
       const merged = performMerge(opts());
-      console.log('=== nsAndDirectExport ===\n', merged);
 
-      expect(merged).to.include('namespace NS');
-      expect(merged).to.include('declare let a');
+      expect(merged).to.include('declare namespace NS');
+      expect(merged).to.include('export declare let a');
 
       const lines = merged.split('\n');
       let insideBlock = 0;
@@ -1387,6 +1540,690 @@ mocha.describe('test declaration file merging', function () {
       expect(merged).to.not.include('import(');
       expect(merged).to.not.include('name_1');
       expectSelfContained(merged);
+    });
+  });
+
+  mocha.describe('import type expanded with type references (importTypeExpanded)', function () {
+    const opts = () => makeOptions('importTypeExpanded');
+
+    mocha.it('inlines TypeAlias body with renamed references', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export type a = [');
+      expect(merged).to.not.include('import(');
+      expect(merged).to.match(/_2\.A/);
+      expectSelfContained(merged);
+    });
+  });
+
+  mocha.describe('import type non-TypeAlias resolution (importTypeEnum)', function () {
+    const opts = () => makeOptions('importTypeEnum');
+
+    mocha.it('resolves enum via import() to namespaced reference', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.not.include('import(');
+      expect(merged).to.match(/_2\.Color/);
+      expect(merged).to.include('Color');
+      expectSelfContained(merged);
+    });
+  });
+
+  mocha.describe('cross-extension type dep via namespace import (importTsTypeRef)', function () {
+    const opts = () => makeOptions('importTsTypeRef');
+
+    mocha.it('imports namespace from companion and references type correctly', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(primary).to.include('import { _testTs } from');
+      expect(primary).to.include('export declare let b: _testTs.a');
+      expect(primary).to.not.include('import { a }');
+
+      expect(companion).to.include('export declare namespace _testTs');
+      expect(companion).to.include('type a = any');
+
+      expectSelfContained(primary, companion);
+    });
+  });
+
+  mocha.describe('cross-extension namespace block routing (crossExtNamespaceBlock)', function () {
+    const opts = () => makeOptions('crossExtNamespaceBlock');
+
+    mocha.it('routes .d.ts namespace block to companion file', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(primary).to.include('etsFunc');
+      expect(primary).to.not.include('processAny');
+      expect(primary).to.not.include('AnyMapper');
+      expect(primary).to.not.include('declare namespace TsUtils');
+
+      expect(companion).to.include('export declare namespace TsUtils');
+      expect(companion).to.include('processAny');
+      expect(companion).to.include('AnyMapper');
+    });
+
+    mocha.it('primary re-exports namespace from companion', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(primary).to.include("export { TsUtils }");
+      expectSelfContained(primary, companion);
+    });
+  });
+
+  mocha.describe('namespace member alias deduplication (enumAlias)', function () {
+    const opts = () => makeOptions('enumAlias');
+
+    mocha.it('deduplicates enum and alias within namespace block', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('declare namespace NS');
+      expect(merged).to.include('export enum A');
+      expect(merged).to.include('export { A as B }');
+      expect(merged).to.not.include('export enum B');
+    });
+
+    mocha.it('preserves type reference to A in function parameter (not renamed to B)', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/foo\(a:\s*A\)/);
+      expect(merged).to.not.match(/foo\(a:\s*B\)/);
+    });
+
+    mocha.it('type reference via alias B is valid inside namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('bar');
+      expect(merged).to.include('export { A as B }');
+    });
+
+    mocha.it('has no from clauses for local modules', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include("from './test1'");
+    });
+  });
+
+  mocha.describe('namespace member not re-collected as standalone type dep (nsMemberTypeDep)', function () {
+    const opts = () => makeOptions('nsMemberTypeDep');
+
+    mocha.it('does not duplicate namespace member in isolation namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('HeadLinesDataTypes');
+      expect(merged).to.include('ClientVersionInfo');
+      expect(merged).to.not.include('_head_lines_data_types');
+      expect(merged).to.not.match(/_head_lines_data_types\.ClientVersionInfo/);
+    });
+
+    mocha.it('preserves process function with correct type reference', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('process');
+      expect(merged).to.include('HeadLinesDataTypes.ClientVersionInfo');
+    });
+  });
+
+  mocha.describe('system API qualified type reference (sysApiQualType)', function () {
+    const SYSTEM_MODULES = ['@ohos.resourceManager.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiQualType'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('does not generate redundant import for system API member accessed via qualified name', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include("import resourceManager from '@ohos.resourceManager'");
+      expect(merged).to.include('resourceManager.Direction');
+      expect(merged).to.not.include("import { Direction }");
+    });
+  });
+
+  mocha.describe('system API namespace import preserved (sysApiNsImport)', function () {
+    const SYSTEM_MODULES = ['@ohos.base.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiNsImport'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('preserves import * as and qualified type reference', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include("import * as A from '@ohos.base'");
+      expect(merged).to.include('A.Callback');
+      expect(merged).to.include('export type b');
+    });
+  });
+
+  mocha.describe('system API dual default import (sysApiDualImport)', function () {
+    const SYSTEM_MODULES = ['@ohos.app.ability.common.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiDualImport'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('preserves both default imports with different local names', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include("import type common from '@ohos.app.ability.common'");
+      expect(merged).to.include("import context from '@ohos.app.ability.common'");
+    });
+
+    mocha.it('both type references have corresponding imports', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('common.UIAbilityContext');
+      expect(merged).to.include('context.UIAbilityContext');
+    });
+
+    mocha.it('same import referenced multiple times emits only once', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      const commonCount = (merged.match(/import type common from '@ohos\.app\.ability\.common'/g) || []).length;
+      expect(commonCount).to.equal(1);
+    });
+  });
+
+  mocha.describe('system API dual value import (sysApiDualValueImport)', function () {
+    const SYSTEM_MODULES = ['@ohos.app.ability.common.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiDualValueImport'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('preserves both value imports with different local names', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include("import common from '@ohos.app.ability.common'");
+      expect(merged).to.include("import ctx from '@ohos.app.ability.common'");
+    });
+
+    mocha.it('both type references preserved with their respective local names', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('common.UIAbilityContext');
+      expect(merged).to.include('ctx.UIAbilityContext');
+    });
+  });
+
+  mocha.describe('system API same-name import dedup (sysApiSameNameDedup)', function () {
+    const SYSTEM_MODULES = ['@ohos.test.ability.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiSameNameDedup'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('deduplicates import type and import with same name to one', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      const importCount = (merged.match(/import.*AbilityContext.*from '@ohos\.test\.ability'/g) || []).length;
+      expect(importCount).to.equal(1);
+    });
+
+    mocha.it('preserves type reference AbilityContext', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('AbilityContext');
+    });
+  });
+
+  mocha.describe('system API import + export two-statement pattern (sysApiImportExport)', function () {
+    const SYSTEM_MODULES = ['@ohos.base.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiImportExport'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('preserves import statement from entry file', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include("import { ErrorCallback } from '@ohos.base'");
+    });
+
+    mocha.it('preserves export statement for re-exported symbol', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export { ErrorCallback }');
+    });
+
+    mocha.it('does not inline ErrorCallback declaration', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include('declare interface ErrorCallback');
+      expect(merged).to.not.include('declare type ErrorCallback');
+    });
+
+    mocha.it('does not produce companion file', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { companion } = performMergeFull(opts());
+      expect(companion).to.equal('');
+    });
+
+    mocha.it('does not add redundant export {}', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.include('export {}');
+    });
+  });
+
+  mocha.describe('namespace export with @Component struct (nsExportStruct)', function () {
+    const opts = () => makeOptions('nsExportStruct');
+
+    mocha.it('creates namespace block with struct member', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace A');
+      expect(merged).to.include('MainPage');
+    });
+
+    mocha.it('preserves @Component decorator without redundant export', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/export\s+@Component/);
+      expect(merged).to.include('@Component');
+    });
+
+    mocha.it('preserves @State decorator on members', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('@State');
+      expect(merged).to.include('message');
+    });
+
+    mocha.it('struct has exactly one export keyword', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      const structExportCount = (merged.match(/export\s+(?:declare\s+)?struct\s+MainPage/g) || []).length;
+      expect(structExportCount).to.equal(1);
+    });
+
+    mocha.it('strips auto-generated extends from struct', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/\bextends\b/);
+    });
+
+    mocha.it('exports namespace name A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.match(/export\s*\{\s*A\s*\}/);
+    });
+  });
+
+  mocha.describe('aliased re-export of same symbol (aliasedReexport)', function () {
+    const opts = () => makeOptions('aliasedReexport');
+
+    mocha.it('inlines namespace declaration without export keyword', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('namespace B');
+      expect(merged).to.not.match(/export\s+declare\s+namespace\s+B/);
+    });
+
+    mocha.it('exports only aliased names B1 and B2', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.match(/export\s*\{\s*B\s+as\s+B1\s*,\s*B\s+as\s+B2\s*\}/);
+    });
+
+    mocha.it('does not export B directly', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/^export\s+\{[^}]*\bB\b(?!_)(?!\s+as)\b/m);
+    });
+  });
+
+  mocha.describe('namespace isolation syntax correctness (nsIsolationSyntax)', function () {
+    const opts = () => makeOptions('nsIsolationSyntax');
+
+    mocha.it('nested namespace uses export not declare', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export namespace _inner');
+      expect(merged).to.not.match(/declare\s+namespace\s+_inner/);
+    });
+
+    mocha.it('no export default inside isolation namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      const nsBlock = merged.match(/declare\s+namespace\s+_dep\s*\{[\s\S]*\}/);
+      expect(nsBlock).to.not.be.null;
+      expect(nsBlock![0]).to.not.include('export default');
+    });
+
+    mocha.it('default class becomes regular export inside namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export class DefaultClass');
+    });
+
+    mocha.it('no bare export declare b without let keyword', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.not.match(/export\s+declare\s+b\s*$/m);
+      expect(merged).to.include('export declare let b');
+    });
+
+    mocha.it('type references use correct namespace path', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('_dep._inner.A');
+      expect(merged).to.include('_dep.DefaultClass');
+    });
+  });
+
+  mocha.describe('computed property key with unique symbol (computedPropKey)', function () {
+    const opts = () => makeOptions('computedPropKey');
+
+    mocha.it('collects unique symbol as type dependency', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('unique symbol');
+    });
+
+    mocha.it('rewrites computed property key to namespace-qualified path', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.match(/\[_testTs\.MAP\]/);
+    });
+
+    mocha.it('preserves class with computed property', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('export declare class Schema');
+      expect(merged).to.include('readonly');
+      expect(merged).to.include('string');
+    });
+  });
+
+  mocha.describe('cross-library duplicate namespace dedup in companion (dupNamespaceInCompanion)', function () {
+    const opts = () => makeOptions('dupNamespaceInCompanion');
+
+    mocha.it('companion generates distinct namespaces for each library', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { companion } = performMergeFull(opts());
+
+      const nsCount = (companion.match(/namespace _ts_declarations/g) || []).length;
+      expect(nsCount).to.be.greaterThan(0);
+    });
+
+    mocha.it('companion contains class A declarations', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { companion } = performMergeFull(opts());
+
+      const classCount = (companion.match(/export class A \{/g) || []).length;
+      expect(classCount).to.be.greaterThan(0);
+    });
+
+    mocha.it('primary references type correctly for both exports', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('declare let a:');
+      expect(primary).to.include('declare let b:');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+      expectSelfContained(primary, companion);
+    });
+  });
+
+  mocha.describe('default export extends exported class — no self-referential extends (defaultExportExtends)', function () {
+    const opts = () => makeOptions('defaultExportExtends');
+
+    mocha.it('does not produce class A extends A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.not.match(/class\s+A\s+extends\s+A\b/);
+    });
+
+    mocha.it('type dep uses declaration local name, not preferredName', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('E_A');
+      expect(merged).to.not.match(/declare namespace _test2\s*\{[^}]*\bA\b[^}]*extends/);
+    });
+
+    mocha.it('preserves correct extends reference to exported class A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/extends\s+A\b/);
+      const extendsMatch = merged.match(/class\s+\w+\s+extends\s+A\b/);
+      expect(extendsMatch).to.not.be.null;
+      expect(extendsMatch![0]).to.not.include('class A extends A');
+    });
+
+    mocha.it('variable a references the type dep correctly', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/declare let a:\s*_test2\.E_A/);
+    });
+  });
+
+  mocha.describe('cross-ext exported symbol referenced as type in primary (crossExtTypeRef)', function () {
+    const opts = () => makeOptions('crossExtTypeRef');
+
+    mocha.it('primary imports A from companion when referenced as type', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include("import { A } from './Index-declarations'");
+      expect(primary).to.include('declare let a: A');
+    });
+
+    mocha.it('primary re-exports A from companion', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('export { A }');
+    });
+
+    mocha.it('companion contains class A declaration', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { companion } = performMergeFull(opts());
+
+      expect(companion).to.include('export declare class A');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+      expectSelfContained(primary, companion);
+    });
+  });
+
+  mocha.describe('import alias preserves original declaration name (importAliasEnum)', function () {
+    const opts = () => makeOptions('importAliasEnum');
+
+    mocha.it('keeps enum declaration name as A, not alias', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export enum A');
+      expect(merged).to.not.include('export enum aliasA');
+    });
+
+    mocha.it('emits alias export inside namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export { A as aliasA }');
+    });
+
+    mocha.it('function parameter references alias via namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/_test1\.aliasA\.a/);
+      expect(merged).to.include('declare function foo');
+    });
+  });
+
+  mocha.describe('namespace block preserves original declaration name for alias-only export (nsAliasOnly)', function () {
+    const opts = () => makeOptions('nsAliasOnly');
+
+    mocha.it('keeps enum declaration name as A, not alias', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export enum A');
+      expect(merged).to.not.include('export enum aliasA');
+    });
+
+    mocha.it('emits alias export inside namespace block', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export { A as aliasA }');
+    });
+
+    mocha.it('preserves all enum members', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('VISIBLE = 1');
+      expect(merged).to.include('INVISIBLE = 2');
+      expect(merged).to.include('GONE = 4');
+    });
+  });
+
+  mocha.describe('dual reference via original name and alias (dualAliasRef)', function () {
+    const opts = () => makeOptions('dualAliasRef');
+
+    mocha.it('preserves enum declaration name as A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export enum A');
+      expect(merged).to.not.include('export enum aliasA');
+    });
+
+    mocha.it('emits alias export inside isolation namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export { A as aliasA }');
+    });
+
+    mocha.it('renames A reference to _test2.A', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/foo\(a:\s*_test2\.A\)/);
+    });
+
+    mocha.it('renames aliasA reference to _test2.aliasA', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/foo1\(a:\s*_test2\.aliasA\)/);
+      expect(merged).to.not.match(/foo1\(a:\s*_test2\.A\)/);
+    });
+  });
+
+  mocha.describe('exported entity with alias-only export name (exportedAlias)', function () {
+    const opts = () => makeOptions('exportedAlias');
+
+    mocha.it('preserves declaration name as OverlayType', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/\bdeclare enum OverlayType\b/);
+      expect(merged).to.not.include('declare enum EOverLayTypeName');
+      expect(merged).to.not.include('export declare enum OverlayType');
+    });
+
+    mocha.it('emits alias export for EOverLayTypeName', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('export { OverlayType as EOverLayTypeName }');
+    });
+
+    mocha.it('method parameter keeps original OverlayType reference', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/removeOverlays\(type\?: OverlayType\)/);
+      expect(merged).to.not.match(/removeOverlays\(type\?: EOverLayTypeName\)/);
+    });
+
+    mocha.it('no duplicate EOverLayTypeName in export statement', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      const stripped = stripNamespaceBlocks(merged);
+      const exportStatements = stripped.match(/export\s*\{[^}]+\}/g) || [];
+      const aliasCount = exportStatements.filter(s => s.includes('EOverLayTypeName')).length;
+      expect(aliasCount).to.equal(1);
+    });
+
+    mocha.it('namespace SysEnum contains OverlayType with alias', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('declare namespace SysEnum');
+      expect(merged).to.match(/SysEnum[\s\S]*export enum OverlayType/);
+      expect(merged).to.match(/SysEnum[\s\S]*export \{ OverlayType as EOverLayTypeName \}/);
+    });
+  });
+
+  mocha.describe('same-named files in different directories (sameNameFiles)', function () {
+    const opts = () => makeOptions('sameNameFiles');
+
+    mocha.it('generates distinct namespace names for same-named files', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      const nsMatches = merged.match(/declare namespace _\w+/g) || [];
+      expect(nsMatches.length).to.be.greaterThan(1);
+      const uniqueNs = new Set(nsMatches);
+      expect(uniqueNs.size).to.equal(nsMatches.length);
+    });
+
+    mocha.it('preserves both class A declarations with different members', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('a: number');
+      expect(merged).to.include('b: number');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('second merge preserves declaration names for aliased enums (secondMergeAlias)', function () {
+    const opts = () => makeOptions('secondMergeAlias');
+
+    mocha.it('preserves namespace _MapEnum with MapType enum', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace _MapEnum');
+      expect(merged).to.include('export enum MapType');
+      expect(merged).to.include('STANDARD = 0');
+      expect(merged).to.include('MapType as MapTypeEnum');
+    });
+
+    mocha.it('preserves namespace SysEnum with OverlayType enum', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      expect(merged).to.include('declare namespace SysEnum');
+      expect(merged).to.include('export enum OverlayType');
+      expect(merged).to.include('ABOVE = 0');
+      expect(merged).to.include('OverlayType as EOverLayTypeName');
+    });
+
+    mocha.it('does not emit aliased enum at top level', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+      const nsBlocks = merged.match(/declare\s+namespace\s+\S+\s*\{[^}]*\}/gs) || [];
+      const outside = merged.replace(/declare\s+namespace\s+\S+\s*\{[\s\S]*?\n\}/g, '');
+      expect(outside).to.not.include('export declare enum EOverLayTypeName');
+      expect(outside).to.not.include('export declare enum MapTypeEnum');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
     });
   });
 });

@@ -12,9 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+export declare namespace TsUtils {
+export function processAny(val: any): void;
+export type AnyMapper = (input: any) => string;
 }
-export declare type Callback<T> = (err: Error, data: T) => void;
