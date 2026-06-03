@@ -79,6 +79,7 @@ let externalApiCheckPlugin = new Map();
 let externalApiMethodPlugin = new Map();
 let fileDeviceCheckPlugin = new Map();
 let fileAvailableCheckPlugin = new Map();
+let fileApiAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
@@ -1299,6 +1300,7 @@ function resetMain() {
   externalApiMethodPlugin = new Map();
   fileDeviceCheckPlugin = new Map();
   fileAvailableCheckPlugin = new Map();
+  fileApiAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
   externalApiCheckerMap = new Map();
   crossplatformDepsConfig = new Map();
@@ -1400,6 +1402,7 @@ exports.externalApiCheckPlugin = externalApiCheckPlugin;
 exports.externalApiMethodPlugin = externalApiMethodPlugin;
 exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
+exports.fileApiAvailableCheckPlugin = fileApiAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
 exports.crossplatformDepsConfig = crossplatformDepsConfig;

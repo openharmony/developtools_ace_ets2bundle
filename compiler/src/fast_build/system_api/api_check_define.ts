@@ -56,9 +56,10 @@ export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation 
 export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version must be an integer between 1 and 999,
  and when the OpenHarmony version is greater than or equal to 26, the version number format also supports the M.S.F format.`;
 export const APIAVAILABLE_CHECK_ERROR: string = 'Invalid parameters for apiAvailable.';
-export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The OpenHarmony api version must be an integer between 1 and 25.
- The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be between 0 and 99.`;
+export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The OpenHarmony api version must be a decimal integer between 1 and 25.
+ The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be decimal integers between 0 and 99.`;
 export const APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR: string = 'Invalid $RUNTIMEOS version.';
+export const APIAVAILABLE_TS_FILE_ERROR: string = 'apiAvailable cannot be used in .ts files. Please use .ets files instead.';
 export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
   ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']],
   ['@ohos.deviceInfo.d.ts', ['apiAvailable']]
@@ -263,7 +264,8 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [SINCE_TAG_CHECK_ERROR, { code: '11706011', description: 'The API requires version $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }]
+  [APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [APIAVAILABLE_TS_FILE_ERROR, { code: '11706015', description: 'apiAvailable cannot be used in .ts files.', solutions: ['Use .ets files instead of .ts files for apiAvailable calls.'] }]
 ])
 
 export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
