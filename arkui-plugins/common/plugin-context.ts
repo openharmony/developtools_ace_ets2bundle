@@ -420,9 +420,15 @@ export interface ResourceInfo {
     rawfile: Set<string>;
 }
 
+export interface ByteCodeHarInfoItem {
+    insightIntent?: string;
+    [key: string]: any;
+}
+
 export interface LoaderJson {
     hspResourcesMap: Record<string, string>;
     routerMap: RouterMap;
+    byteCodeHarInfo?: Record<string, ByteCodeHarInfoItem>;
 }
 
 export type RouterMap = RouterInfo & {
