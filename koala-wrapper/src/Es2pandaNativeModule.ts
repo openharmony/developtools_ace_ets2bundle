@@ -1214,6 +1214,26 @@ export class Es2pandaNativeModule {
     _GetAnnotationDeclarationProperties(context: KNativePointer, receiver: KNativePointer): KBoolean {
         throw new Error("GetAnnotationDeclarationProperties was not overloaded by native module initialization")
     }
+    
+ 	_FilterNodes(context: KNativePointer, node: KNativePointer, filters: string, deeperAfterMatch: boolean): KNativePointer {
+ 	    throw new Error('FilterNodes was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_FilterNodes2(context: KNativePointer, node: KNativePointer, type: KInt): KNativePointer {
+ 	    throw new Error('FilterNodes2 was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_FilterNodes3(context: KNativePointer, node: KNativePointer, types: Int32Array, typesSize: KInt): KNativePointer {
+ 	    throw new Error('FilterNodes3 was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_AstNodeTransformChildrenRecursively(context: KNativePointer, rootNode: KNativePointer, callback: (nodePtr: bigint) => bigint): KNativePointer {
+ 	    throw new Error('AstNodeTransformChildrenRecursively was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_MaybeOptionalExpressionIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+ 	    throw new Error("This methods was not overloaded by native module initialization")
+ 	}
 }
 
 export function initEs2panda(): Es2pandaNativeModule {
