@@ -146,9 +146,9 @@ export declare interface StateManager extends StateContext {
   controlledScope(id: int, invalidate: (()=> void)): ControlledScope
 }
 
-@Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
+@Retention({policy:"SOURCE"}) export @interface memo_intrinsic {}
 
-@Retention({policy:"SOURCE"}) @interface memo_entry {}
+@Retention({policy:"SOURCE"}) export @interface memo_entry {}
 
 export class MemoCallbackContext {
   private readonly context: __memo_context_type;
