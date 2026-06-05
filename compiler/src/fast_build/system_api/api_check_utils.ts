@@ -2194,13 +2194,6 @@ const PLACEHOLDER_HANDLERS: PlaceholderConfig[] = [
       const match = cause.match(/version\s+([\S+.]+(?=\. However,))/i);
       return match ? match[1].trim() : null;
     }
-  },
-  {
-    codes: ['11706014'],
-    placeholder: '$RUNTIMEOS',
-    extractValue: (_cause: string, context?: any) => {
-      return context?.runtimeOS || null;
-    }
   }
 ];
 
