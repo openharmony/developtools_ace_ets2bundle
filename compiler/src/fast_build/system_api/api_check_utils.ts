@@ -521,9 +521,10 @@ function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  */
 function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
   const availableConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
-    message: SINCE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: diagnosticType,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkAvailableDecorator
@@ -572,9 +573,10 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
  */
 function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
   const sinceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
-    message: SINCE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: diagnosticType,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkSinceValue
@@ -640,9 +642,10 @@ function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  * @returns {void}
  */
 function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(FORM_TAG_CHECK_ERROR)?.code}#${FORM_TAG_CHECK_ERROR}`;
   const formConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [FORM_TAG_CHECK_NAME],
-    message: FORM_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkFormValue
@@ -658,9 +661,10 @@ function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
  * @returns {void}
  */
 function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], logType: ts.DiagnosticCategory): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(CROSSPLATFORM_TAG_CHECK_ERROR)?.code}#${CROSSPLATFORM_TAG_CHECK_ERROR}`;
   const crossplatformConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [CROSSPLATFORM_TAG_CHECK_NAME],
-    message: CROSSPLATFORM_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: logType,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkCrossplatformValue
@@ -828,9 +832,10 @@ const API_NODE_KIND: Set<ts.SyntaxKind> = new Set([
  * @returns {void}
  */
 function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(FA_TAG_CHECK_ERROR)?.code}#${FA_TAG_CHECK_ERROR}`;
   const faModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-    message: FA_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkFaModelOnlyValue
@@ -845,9 +850,10 @@ function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[])
  * @returns {void}
  */
 function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(STAGE_TAG_CHECK_ERROR)?.code}#${STAGE_TAG_CHECK_ERROR}`;
   const stageModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
-    message: STAGE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkStageModuleValue
@@ -862,9 +868,10 @@ function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem
  * @returns {void}
  */
 function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(ATOMICSERVICE_TAG_CHECK_ERROR)?.code}#${ATOMICSERVICE_TAG_CHECK_ERROR}`;
   const atomicserviceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [ATOMICSERVICE_TAG_CHECK_NAME],
-    message: ATOMICSERVICE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkAtomicserviceValue
@@ -1179,7 +1186,8 @@ function checkAvailableDecorator(
     return false;
   }
 
-  config.message = AVAILABLE_DECORATOR_WARNING
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_DECORATOR_WARNING)?.code}#${AVAILABLE_DECORATOR_WARNING}`;
+  config.message = diagnosticMessage
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
 
@@ -1235,7 +1243,8 @@ function checkSinceValue(
     return false;
   }
 
-  config.message = SINCE_TAG_CHECK_ERROR
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
+  config.message = diagnosticMessage
     .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
 
@@ -2052,9 +2061,10 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
 
   if (hasSince && comparePointVersion(compatibleSdkVersion, minVersion) === -1) {
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
     result.valid = false;
     result.type = ts.DiagnosticCategory.Warning;
-    result.message = SINCE_TAG_CHECK_ERROR.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
+    result.message = diagnosticMessage.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
   }
   return result;
 }
@@ -2186,39 +2196,42 @@ function matchWithPlaceholders(messageRegex: string): string {
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
   let description: string = '';
-  let diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined;
+  let diagnosticInfo: SdkHvigorLogInfo = {
+    code: '',
+    description: '',
+    cause: '',
+    position: '',
+    solutions: ['']
+  };
   const runTimeOS: string = projectConfig.runtimeOS;
-  const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\./;
-  const apiAvailableRegex: RegExp = /^Invalid .+ version\.$/;
-  if (sinceRegex.test(messageRegex)) {
-    diagnosticInfo = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
-  } else if (apiAvailableRegex.test(messageRegex)) {
-    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(runTimeOS, '$RUNTIMEOS'));
-  } else {
-    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(/\r\n/g, '\\n'));
+  const messageInfo: string[] = message.split('#');
+  for(const item of ERROR_CODE_INFO.values()) {
+    if (item.code = messageInfo[0]) {
+      diagnosticInfo.code = item.code;
+      diagnosticInfo.description = item.description;
+      diagnosticInfo.cause = messageInfo[1] || message;
+      diagnosticInfo.position = positionMessage;
+      diagnosticInfo.solutions = item.solutions;
+    }
   }
 
-  if (!diagnosticInfo || !diagnosticInfo.code) {
+  if (!diagnosticInfo.code) {
     return undefined;
   }
 
+
   if (diagnosticInfo.code === '11706011' || diagnosticInfo.code === '11706012') {
-    const apiVersion: RegExpMatchArray = messageRegex.match(/version\s+([\S+.]+(?=\. However,))/i);
+    const apiVersion: RegExpMatchArray = diagnosticInfo.cause.match(/version\s+([\S+.]+(?=\. However,))/i);
     if (apiVersion) {
       description = diagnosticInfo.description.replace(/\$ApiVersion/g, `${apiVersion[1].trim()}`);
-    } else {
-      description = diagnosticInfo.description;
-    }
-  } else {
-    description = diagnosticInfo.description;
+    } 
   }
 
   return new BuildDiagnosticInfo()
     .setCode(Number(diagnosticInfo.code))
-    .setDescription(description)
-    .setPositionMessage(positionMessage)
-    .setMessage(message)
+    .setDescription(diagnosticInfo.description)
+    .setPositionMessage(diagnosticInfo.position)
+    .setMessage(diagnosticInfo.cause)
     .setSolutions(diagnosticInfo.solutions);
 }
 
@@ -2515,28 +2528,8 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     type: ts.DiagnosticCategory.Error
   }
 
-  if (!node) {
+  if (!checkApiAvailableCache) {
     return result;
-  }
-
-  const sourceFileName = node.getSourceFile()?.fileName;
-  const sourceFileText = node.getSourceFile()?.text;
-  // Check apiAvailable info cache
-  if (fileApiAvailableCheckPlugin.has(sourceFileName)) {
-    const hasAvailale = fileApiAvailableCheckPlugin.get(sourceFileName)!;
-    if (!hasAvailale) {
-      return result;
-    }
-  } else {
-    try {
-      const availableContentChecker = /\.apiAvailable/g.test(sourceFileText);
-      fileApiAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
-      if (!availableContentChecker) {
-        return result;
-      }
-    } catch (error) {
-      return result;
-    }
   }
 
   if (!ts.isCallExpression(node)) {
@@ -2559,16 +2552,18 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   if (sourceFile && sourceFile.fileName) {
     const fileName: string = sourceFile.fileName;
     if (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) {
+      const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_TS_FILE_ERROR)?.code}#${APIAVAILABLE_TS_FILE_ERROR}`;
       result.valid = false;
-      result.message = APIAVAILABLE_TS_FILE_ERROR;
+      result.message = diagnosticMessage;
       return result;
     }
   }
 
   const apiAvailableRegex = /\.apiAvailable\b/g;
   let nodeText: string = node.getText() || node.getFullText();
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
   if (!apiAvailableRegex.test(nodeText)) {
-    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.message = diagnosticMessage;
     result.valid = false;
     return result;
   }
@@ -2578,21 +2573,49 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
   const sincePoint: string[] = sinceFormat.split('.');
   if (!compatibileReg.test(sinceFormat)) {
-    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.message = diagnosticMessage;
     result.valid = false;
     return result;
   }
   const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
   if (isSinceVersionType) {
-    result = checkCharScene(sincePoint, sinceFormat);
+    result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
   } else {
     if (!checkIntegerMoreVersion(sinceFormat)) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.message = diagnosticMessage;
       result.valid = false;
     }
   }
 
   return result;
+}
+
+function checkApiAvailableCache(node: ts.Node): boolean {
+  if (!node) {
+    return false;
+  }
+
+  const sourceFileName = node.getSourceFile()?.fileName;
+  const sourceFileText = node.getSourceFile()?.text;
+  // Check apiAvailable info cache
+  if (fileApiAvailableCheckPlugin.has(sourceFileName)) {
+    const hasAvailale = fileApiAvailableCheckPlugin.get(sourceFileName)!;
+    if (!hasAvailale) {
+      return false;
+    }
+  } else {
+    try {
+      const availableContentChecker = /\.apiAvailable/g.test(sourceFileText);
+      fileApiAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
+      if (!availableContentChecker) {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -2619,21 +2642,21 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
  * @param sinceFormat del quotation mark version
  * @returns standardized results
  */
-function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailableResult {
+function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticMessage: string): ApiAvailableResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
   if (sincePoint.length === 1) {
-    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.message = diagnosticMessage;
     result.valid = false;
     return result;
   }
   if (isOpenHarmonyRuntime()) {
     const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
     if (!msfResult.valid) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.message = diagnosticMessage;
       result.valid = false;
     }
   } else {
@@ -2727,7 +2750,8 @@ export function checkFormatResult(parseVersion: ParsedVersion | null): ts.Condit
   } else if (parseVersion.os === projectConfig.runtimeOS) {
     checkResult = getFormatChecker()(parseVersion.formatVersion);
   } else {
-    let msg = AVAILABLE_OSNAME_ERROR
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_OSNAME_ERROR)?.code}#${AVAILABLE_OSNAME_ERROR}`;
+    let msg = diagnosticMessage
       .replace('$RUNTIMEOS', projectConfig.runtimeOS)
       .replace('$OSNAME', parseVersion.os);
     return {
@@ -2737,7 +2761,8 @@ export function checkFormatResult(parseVersion: ParsedVersion | null): ts.Condit
     }
   }
   if (checkResult && !checkResult.result) {
-    let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_VERSION_FORMAT_ERROR_PREFIX)?.code}#${AVAILABLE_VERSION_FORMAT_ERROR_PREFIX}`;
+    let msg = diagnosticMessage
       .replace('$RUNTIMEOS', projectConfig.runtimeOS)
       .replace('$VERSION', parseVersion.version);
     return {
