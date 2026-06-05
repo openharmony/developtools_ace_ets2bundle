@@ -101,6 +101,7 @@ import {
   SINCE_LEVEL_CONFIG,
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
+  APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
   APIAVAILABLE_TS_FILE_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
@@ -2701,23 +2702,24 @@ function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticMes
       result.valid = false;
     }
   } else {
-    result = checkCharDistributionOSScene(sinceFormat, result);
+    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticMessage);
   }
   
   return result;
 }
 
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticMessage: string): ApiAvailableResult {
   const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
   if (!msfResult.valid) {
     if (msfResult.needDistCheck) {
       const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
       if (!distributionOSCheck.valid) {
-        result.message = distributionOSCheck.message;
+        const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code}#${distributionOSCheck.message}`;
+        result.message = diagnosticMessage;
         result.valid = false;
       }
     } else {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.message = diagnosticMessage;
       result.valid = false;
     }
   }
