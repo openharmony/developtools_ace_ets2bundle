@@ -65,7 +65,8 @@ class ParseIntent {
   public intentData: object[];
   private currentFilePath: string;
   private heritageClassSet: Set<string>;
-  private updatePageIntentObj: Map<string, object[]>;
+  private updateIntentObj: Map<string, object[]>;
+  private allCompiledSourceFiles: Map<string, string>;
   public isUpdateCompile: boolean = true;
   private isInitCache: boolean = false;
   private entityMap: Map<string, object>;
@@ -84,7 +85,8 @@ class ParseIntent {
     this.heritageClassSet.add('InsightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('insightIntent.AppIntentEntity_sdk');
     this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
-    this.updatePageIntentObj = new Map();
+    this.updateIntentObj = new Map();
+    this.allCompiledSourceFiles = new Map();
     this.entityMap = new Map();
     this.entityOwnerMap = new Map();
     this.moduleJsonInfo = new Map();
@@ -106,6 +108,20 @@ class ParseIntent {
       }
       return decoratorName !== undefined && decorators.includes(decoratorName);
     });
+  }
+
+  public recordCompiledFile(filePath: string, metaInfo: object): void {
+    if (!projectConfig.pkgContextInfo) {
+      return;
+    }
+    const pkgParams: object = {
+      pkgName: metaInfo.pkgName,
+      pkgPath: metaInfo.pkgPath
+    };
+    const Logger: IntentLogger = IntentLogger.getInstance();
+    const recordName: string = getNormalizedOhmUrlByFilepath(filePath, projectConfig, Logger, pkgParams, null);
+    const decoratorFile = `@normalized:${recordName}`;
+    this.allCompiledSourceFiles.set(decoratorFile, filePath);
   }
 
   public detectInsightIntent(
@@ -147,25 +163,27 @@ class ParseIntent {
     if (!this.isInitCache) {
       if (projectConfig.cachePath) {
         const cacheSourceMapPath: string =
-          path.join(projectConfig.cachePath, 'insight_compile_cache.json'); // The user's intents configuration file
+          path.join(projectConfig.cachePath, 'insight_compile_cache.json');
         this.isUpdateCompile = fs.existsSync(cacheSourceMapPath);
         this.isInitCache = true;
       } else {
         this.isUpdateCompile = false;
       }
     }
-    if (this.isUpdateCompile) {
+    
+    if (projectConfig.pkgContextInfo) {
       const pkgParams: object = {
         pkgName: metaInfo.pkgName,
         pkgPath: metaInfo.pkgPath
       };
-      if (!projectConfig.pkgContextInfo) {
-        return;
-      }
       const Logger: IntentLogger = IntentLogger.getInstance();
       const recordName: string = getNormalizedOhmUrlByFilepath(filePath, projectConfig, Logger, pkgParams, null);
-      if (!this.updatePageIntentObj.has(`@normalized:${recordName}`)) {
-        this.updatePageIntentObj.set(`@normalized:${recordName}`, []);
+      const decoratorFile = `@normalized:${recordName}`;
+      this.allCompiledSourceFiles.set(decoratorFile, filePath);
+      if (this.isUpdateCompile) {
+        if (!this.updateIntentObj.has(decoratorFile)) {
+          this.updateIntentObj.set(decoratorFile, []);
+        }
       }
     }
   }
@@ -261,7 +279,7 @@ class ParseIntent {
       this.schemaValidateSync(properties, intentObj.parameters);
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+        this.updateIntentObj.get(intentObj.decoratorFile).push(intentObj);
       }
       this.intentData.push(intentObj);
     } else {
@@ -379,7 +397,7 @@ class ParseIntent {
       this.validatePagePath(intentObj, pkgParams);
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+        this.updateIntentObj.get(intentObj.decoratorFile).push(intentObj);
       }
       this.intentData.push(intentObj);
     } else {
@@ -426,7 +444,7 @@ class ParseIntent {
         const methodObj: object = Object.assign({}, intentObj, { functionName, 'functionParamList': functionParamList });
         this.analyzeDecoratorArgs(methodArgs, methodObj, intentMethodInfoChecker);
         if (this.isUpdateCompile) {
-          this.updatePageIntentObj.get(methodObj.decoratorFile).push(methodObj);
+          this.updateIntentObj.get(methodObj.decoratorFile).push(methodObj);
         }
         this.intentData.push(methodObj);
       });
@@ -457,7 +475,7 @@ class ParseIntent {
       });
       this.createObfuscation(node);
       if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+        this.updateIntentObj.get(intentObj.decoratorFile).push(intentObj);
       }
       this.intentData.push(intentObj);
     } else {
@@ -505,7 +523,7 @@ class ParseIntent {
       this.createObfuscation(node);
       this.processExecuteModeParam(intentObj);
       if (this.isUpdateCompile) {
-        this.updatePageIntentObj.get(intentObj.decoratorFile).push(intentObj);
+        this.updateIntentObj.get(intentObj.decoratorFile).push(intentObj);
       }
       this.intentData.push(intentObj);
     } else {
@@ -1736,13 +1754,28 @@ class ParseIntent {
     const cacheSourceMapPath: string = path.join(projectConfig.aceProfilePath, 'insight_intent.json'); // The user's intents configuration file
     try {
       if (Object.keys(mergedData).length > 0) {
+        const intentFiles = new Set<string>();
+        this.intentData.forEach(intent => {
+          if (intent.decoratorFile) {
+            intentFiles.add(intent.decoratorFile);
+          }
+        });
+
+        const sourceFilePathMap: Record<string, string> = {};
+        for (const [decoratorFile, filePath] of this.allCompiledSourceFiles.entries()) {
+          if (intentFiles.has(decoratorFile)) {
+            sourceFilePathMap[decoratorFile] = filePath;
+          }
+        }
+        
         const cacheContent: object = {
           'extractInsightIntents': this.intentData,
           'entityOwnerMap': Object.fromEntries(this.entityOwnerMap.entries()),
           'entityMap': Object.fromEntries(this.entityMap.entries()),
           'heritageClassSet': Object.fromEntries(this.heritageClassSet.entries()),
           'entityHeritageClassSet': Object.fromEntries(this.EntityHeritageClassSet.entries()),
-          'entityExtendsMap': Object.fromEntries(this.EntityExtendsMap.entries())
+          'entityExtendsMap': Object.fromEntries(this.EntityExtendsMap.entries()),
+          'sourceFilePathMap': sourceFilePathMap
         };
         fs.writeFileSync(cacheSourceMapPath, JSON.stringify(mergedData, null, 2), 'utf-8');
         fs.writeFileSync(cachePath, JSON.stringify(cacheContent, null, 2), 'utf-8');
@@ -1778,8 +1811,8 @@ class ParseIntent {
     }
   }
 
-  private processUpdateEntities(cacheDataObj: object): void {
-    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+  private processUpdateEntities(cacheDataObj: object, deletedFileSet?: Set<string>): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updateIntentObj.keys());
     if (cacheDataObj.entityOwnerMap && Object.keys(cacheDataObj.entityOwnerMap || {}).length > 0) {
       const cacheEntityOwnerMap: Map<string, string[]> = cacheDataObj.entityOwnerMap as Map<string, string[]>;
       for (const [intentName, entityClassNames] of Object.entries(cacheEntityOwnerMap)) {
@@ -1791,12 +1824,15 @@ class ParseIntent {
     if (cacheDataObj.entityMap && Object.keys(cacheDataObj.entityMap || {}).length > 0) {
       const cacheEntityMap: Map<string, object> = cacheDataObj.entityMap as Map<string, object>;
       for (const [className, entityObj] of Object.entries(cacheEntityMap)) {
+        if (deletedFileSet && deletedFileSet.has(entityObj.decoratorFile)) {
+          continue;
+        }
         if (!decoratorFileMapping.has(entityObj.decoratorFile)) {
           this.entityMap.set(entityObj.className, entityObj);
         }
       }
     }
-    this.processUpdateHeritageVerify(cacheDataObj);
+    this.processUpdateHeritageVerify(cacheDataObj, deletedFileSet);
     this.intentData.map(userIntent => {
       if (userIntent.entities) {
         delete userIntent.entities;
@@ -1804,12 +1840,15 @@ class ParseIntent {
     });
   }
 
-  private processUpdateHeritageVerify(cacheDataObj: object): void {
-    const decoratorFileMapping: Set<string> = new Set(this.updatePageIntentObj.keys());
+  private processUpdateHeritageVerify(cacheDataObj: object, deletedFileSet?: Set<string>): void {
+    const decoratorFileMapping: Set<string> = new Set(this.updateIntentObj.keys());
     if (cacheDataObj.heritageClassSet && Object.keys(cacheDataObj.heritageClassSet || {}).length > 0) {
       const cacheHeritageClassSet: Set<string> = cacheDataObj.heritageClassSet as Set<string>;
       for (const entityPathInfo of Object.values(cacheHeritageClassSet)) {
         const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (deletedFileSet && deletedFileSet.has(decoratorFilePath)) {
+          continue;
+        }
         if (!decoratorFileMapping.has(decoratorFilePath)) {
           this.heritageClassSet.add(entityPathInfo);
         }
@@ -1819,6 +1858,9 @@ class ParseIntent {
       const cacheEntityExtendsMap: Set<string> = cacheDataObj.entityHeritageClassSet as Set<string>;
       for (const entityPathInfo of Object.values(cacheEntityExtendsMap)) {
         const decoratorFilePath: string = entityPathInfo.split('_').pop();
+        if (deletedFileSet && deletedFileSet.has(decoratorFilePath)) {
+          continue;
+        }
         if (decoratorFileMapping.has(decoratorFilePath)) {
           this.EntityHeritageClassSet.add(entityPathInfo);
         }
@@ -1843,15 +1885,32 @@ class ParseIntent {
     }
     if (this.isUpdateCompile && fs.existsSync(cachePath)) {
       const cacheData: string = fs.readFileSync(cachePath, 'utf8');
-      const cacheDataObj: object = JSON.parse(cacheData);
+      const cacheDataObj: object = JSON.parse(cacheData); 
+      const cachedSourceFilePathMap: Record<string, string> = cacheDataObj.sourceFilePathMap || {};
+      const deletedFiles: string[] = this.detectDeletedFiles(cachedSourceFilePathMap);
+      const deletedFileSet = new Set(deletedFiles);
+      
       const insightIntents: object[] = cacheDataObj.extractInsightIntents.filter(insightIntent => {
-        return !this.updatePageIntentObj.has(insightIntent.decoratorFile);
+        if (this.updateIntentObj.has(insightIntent.decoratorFile)) {
+          return false;
+        }
+        if (deletedFileSet.has(insightIntent.decoratorFile)) {
+          return false;
+        }
+        return true;
       });
-      this.updatePageIntentObj.forEach(insightIntent => {
+      this.updateIntentObj.forEach(insightIntent => {
         insightIntents.push(...insightIntent);
       });
       this.intentData = insightIntents;
-      this.processUpdateEntities(cacheDataObj);
+      this.processUpdateEntities(cacheDataObj, deletedFileSet);
+      const mergedFiles: string[] = [];
+      for (const [decoratorFile, filePath] of Object.entries(cachedSourceFilePathMap)) {
+        if (!this.allCompiledSourceFiles.has(decoratorFile)) {
+          this.allCompiledSourceFiles.set(decoratorFile, filePath);
+          mergedFiles.push(decoratorFile);
+        }
+      }
     }
     this.verifyInheritanceChain();
     this.matchEntities();
@@ -1873,6 +1932,30 @@ class ParseIntent {
     const mergedData: object = this.mergeHarData(writeJsonData, harIntentDataObj);
     this.validateIntentIntentName(mergedData);
     return mergedData;
+  }
+
+  private detectDeletedFiles(
+    cachedSourceFilePathMap: Record<string, string>
+  ): string[] {
+    const deletedFiles: string[] = [];
+    const cachedFiles = Object.keys(cachedSourceFilePathMap);
+    for (const decoratorFile of cachedFiles) {
+      if (this.updateIntentObj.has(decoratorFile)) {
+        continue;
+      }
+      if (this.allCompiledSourceFiles.has(decoratorFile)) {
+        deletedFiles.push(decoratorFile);
+        continue;
+      }
+      const sourceFilePath = cachedSourceFilePathMap[decoratorFile];
+      if (sourceFilePath) {
+        if (!fs.existsSync(sourceFilePath)) {
+          deletedFiles.push(decoratorFile);
+        }
+        continue;
+      }
+    }
+    return deletedFiles;
   }
 
   private mergeHarData(writeJsonData: object, harIntentDataObj: object): object {
@@ -1953,7 +2036,8 @@ class ParseIntent {
     this.heritageClassSet.add('InsightIntentEntryExecutor_sdk');
     this.isInitCache = false;
     this.isUpdateCompile = true;
-    this.updatePageIntentObj = new Map();
+    this.updateIntentObj = new Map();
+    this.allCompiledSourceFiles = new Map();
     this.entityMap = new Map();
     this.entityOwnerMap = new Map();
     this.moduleJsonInfo = new Map();
