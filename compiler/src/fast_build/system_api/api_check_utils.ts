@@ -2179,13 +2179,55 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
   return ComparisonResult.Equal;
 }
 
-/**
- * Restore version number to placeholder and match error code.
- * @param messageRegex - Message containing actual version number
- * @returns error message or undefined
- */
-function matchWithPlaceholders(messageRegex: string): string {
-  return messageRegex.replace(/version\s+(?:(\S+))/, 'version $SINCE1.').replace(/version\s+is\s+(?:(\S+))/, 'version is $SINCE2.');
+interface PlaceholderConfig {
+  codes: string[];
+  placeholder: string;
+  extractValue: (cause: string, context?: any) => string | null;
+}
+
+const PLACEHOLDER_HANDLERS: PlaceholderConfig[] = [
+  {
+    codes: ['11706011', '11706012'],
+    placeholder: '$ApiVersion',
+    extractValue: (cause: string) => {
+      const match = cause.match(/version\s+([\S+.]+(?=\. However,))/i);
+      return match ? match[1].trim() : null;
+    }
+  },
+  {
+    codes: ['11706014'],
+    placeholder: '$RUNTIMEOS',
+    extractValue: (_cause: string, context?: any) => {
+      return context?.runtimeOS || null;
+    }
+  }
+];
+
+function processDescriptionPlaceholders(
+  code: string,
+  cause: string,
+  description: string,
+  context?: any
+): string {
+  let processedDescription = description;
+  
+  for (const handler of PLACEHOLDER_HANDLERS) {
+    if (handler.codes.includes(code)) {
+      const value = handler.extractValue(cause, context);
+      if (value) {
+        processedDescription = processedDescription.replace(
+          new RegExp(escapeRegExp(handler.placeholder), 'g'),
+          value
+        );
+      }
+    }
+  }
+  
+  return processedDescription;
+}
+
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -2195,7 +2237,6 @@ function matchWithPlaceholders(messageRegex: string): string {
  * @returns - Error message processed locally
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
-  let description: string = '';
   let diagnosticInfo: SdkHvigorLogInfo = {
     code: '',
     description: '',
@@ -2203,15 +2244,16 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
     position: '',
     solutions: ['']
   };
-  const runTimeOS: string = projectConfig.runtimeOS;
   const messageInfo: string[] = message.split('#');
-  for(const item of ERROR_CODE_INFO.values()) {
-    if (item.code = messageInfo[0]) {
+  
+  for (const item of ERROR_CODE_INFO.values()) {
+    if (item.code === messageInfo[0]) {
       diagnosticInfo.code = item.code;
       diagnosticInfo.description = item.description;
       diagnosticInfo.cause = messageInfo[1] || message;
       diagnosticInfo.position = positionMessage;
       diagnosticInfo.solutions = item.solutions;
+      break;
     }
   }
 
@@ -2219,17 +2261,16 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
     return undefined;
   }
 
-
-  if (diagnosticInfo.code === '11706011' || diagnosticInfo.code === '11706012') {
-    const apiVersion: RegExpMatchArray = diagnosticInfo.cause.match(/version\s+([\S+.]+(?=\. However,))/i);
-    if (apiVersion) {
-      description = diagnosticInfo.description.replace(/\$ApiVersion/g, `${apiVersion[1].trim()}`);
-    } 
-  }
+  const processedDescription = processDescriptionPlaceholders(
+    diagnosticInfo.code,
+    diagnosticInfo.cause,
+    diagnosticInfo.description,
+    { runtimeOS: projectConfig.runtimeOS }
+  );
 
   return new BuildDiagnosticInfo()
     .setCode(Number(diagnosticInfo.code))
-    .setDescription(diagnosticInfo.description)
+    .setDescription(processedDescription)
     .setPositionMessage(diagnosticInfo.position)
     .setMessage(diagnosticInfo.cause)
     .setSolutions(diagnosticInfo.solutions);
