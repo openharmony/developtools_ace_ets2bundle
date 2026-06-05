@@ -2200,14 +2200,13 @@ const PLACEHOLDER_HANDLERS: PlaceholderConfig[] = [
 function processDescriptionPlaceholders(
   code: string,
   cause: string,
-  description: string,
-  context?: any
+  description: string
 ): string {
   let processedDescription = description;
   
   for (const handler of PLACEHOLDER_HANDLERS) {
     if (handler.codes.includes(code)) {
-      const value = handler.extractValue(cause, context);
+      const value = handler.extractValue(cause);
       if (value) {
         processedDescription = processedDescription.replace(
           new RegExp(escapeRegExp(handler.placeholder), 'g'),
@@ -2258,8 +2257,7 @@ function buildErrorDiagnostic(positionMessage: string, message: string): BuildDi
   const processedDescription = processDescriptionPlaceholders(
     diagnosticInfo.code,
     diagnosticInfo.cause,
-    diagnosticInfo.description,
-    { runtimeOS: projectConfig.runtimeOS }
+    diagnosticInfo.description
   );
 
   return new BuildDiagnosticInfo()
