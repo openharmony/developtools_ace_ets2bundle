@@ -43,7 +43,7 @@ function func<T>(__memo_context: __memo_context_type, __memo_id: __memo_id_type)
     if (__memo_scope.unchanged) {
         return __memo_scope.cached;
     }
-    return __memo_scope.recache(((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {
+    return __memo_scope.recache(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: Item<T>): void => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {

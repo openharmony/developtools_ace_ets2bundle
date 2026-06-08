@@ -52,11 +52,12 @@ export class ImportStorage {
                     continue
                 }
 
-                // On checked state imports from unparsed sources cannot be inserted
-                if (!this.isParserState && !this.importSources.has(statement.source?.str)) {
-                    console.warn('Attempt to insert import from new source after parsed state:');
-                    console.warn(statement.dumpSrc());
-                }
+                // // On checked state imports from unparsed sources cannot be inserted
+                // // UPD: Now it works in compiler and is the preferred way in compilation plugins
+                // if (!this.isParserState && !this.importSources.has(statement.source?.str)) {
+                //     console.warn('Attempt to insert import from new source after parsed state:');
+                //     console.warn(statement.dumpSrc());
+                // }
 
                 const importDeclaration = unpackNonNullableNode<ETSImportDeclaration>(
                     // Note: this call is important, we cannot just pass "statement" to "InsertETSImportDeclarationAndParse"

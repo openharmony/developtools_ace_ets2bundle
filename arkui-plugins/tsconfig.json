@@ -23,6 +23,7 @@
         "./collectors/**/*.ts",
         "./common/**/*.ts",
         "./memo-plugins/**/*.ts",
+        "./memo-improved/**/*.ts",
         "./ui-plugins/**/*.ts",
         "./ui-syntax-plugins/**/*.ts",
         "./interop-plugins/**/*.ts",

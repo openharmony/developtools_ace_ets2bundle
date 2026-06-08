@@ -284,7 +284,7 @@ class Info {
       ForEachImpl<Info>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<Info>((() => {
           return this.infoList;
-        }), ((info: Info) => {
+        }), @Memo() ((info: Info) => {
           MiddleComponent._invoke(undefined, (() => {
             return {
               info: info,

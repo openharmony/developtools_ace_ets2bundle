@@ -66,13 +66,13 @@ function foo2(this: B, __memo_context: __memo_context_type, __memo_id: __memo_id
     return __memo_scope.cached;
   }
   console.log("Good", __memo_parameter_str.value);
-  return __memo_scope.recache(this);
+  return __memo_scope.recache(__memo_parameter_this.value);
 }
 
 class B {
   @Memo() 
   public internal_call(__memo_context: __memo_context_type, __memo_id: __memo_id_type): B {
-    const __memo_scope = __memo_context.scope<B>(((__memo_id) + (146437675)), 0);
+    const __memo_scope = __memo_context.scope<B>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       return __memo_scope.cached;
     }

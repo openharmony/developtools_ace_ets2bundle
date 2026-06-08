@@ -370,7 +370,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (75236795)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -857,7 +857,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
   @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (187581126)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;
@@ -963,7 +963,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public builderRegular3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
   public __options_has_builderRegular3?: boolean;
   @Local() @Memo() public builderLocal?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderLocal?: ILocalDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderLocal?: ILocalDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderLocal?: boolean;
   @Local() public builderLocal2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderLocal2?: ILocalDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -972,7 +972,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderLocal3?: ILocalDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderLocal3?: boolean;
   @Param() @Memo() public builderParam?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderParam?: IParamDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderParam?: IParamDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderParam?: boolean;
   @Param() public builderParam2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderParam2?: IParamDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -981,7 +981,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderParam3?: IParamDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderParam3?: boolean;
   @Once() @Param() @Memo() public builderOnceParam?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Param() @Memo() public __backing_builderOnceParam?: IParamOnceDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Param() @Memo() public __backing_builderOnceParam?: IParamOnceDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderOnceParam?: boolean;
   @Once() @Param() public builderOnceParam2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   @Param() public __backing_builderOnceParam2?: IParamOnceDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -990,7 +990,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   @Param() public __backing_builderOnceParam3?: IParamOnceDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderOnceParam3?: boolean;
   @Provider() @Memo() public builderProvider?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderProvider?: IProviderDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderProvider?: IProviderDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderProvider?: boolean;
   @Provider() public builderProvider2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderProvider2?: IProviderDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -999,7 +999,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderProvider3?: IProviderDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderProvider3?: boolean;
   @Consumer() @Memo() public builderConsumer?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderConsumer?: IConsumerDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderConsumer?: IConsumerDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderConsumer?: boolean;
   @Consumer() public builderConsumer2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderConsumer2?: IConsumerDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1018,7 +1018,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public builderRegular3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
   public __options_has_builderRegular3?: boolean;
   @State() @Memo() public builderState?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderState?: IStateDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderState?: IStateDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderState?: boolean;
   @State() public builderState2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderState2?: IStateDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1027,7 +1027,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderState3?: IStateDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderState3?: boolean;
   @PropRef() @Memo() public builderPropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderPropRef?: IPropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderPropRef?: IPropRefDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderPropRef?: boolean;
   @PropRef() public builderPropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderPropRef2?: IPropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1036,7 +1036,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderPropRef3?: IPropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderPropRef3?: boolean;
   @Link() @Memo() public builderLink: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
-  @Memo() public __backing_builderLink?: LinkSourceType<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderLink?: LinkSourceType<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderLink?: boolean;
   @Link() public builderLink2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderLink2?: LinkSourceType<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1045,7 +1045,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderLink3?: LinkSourceType<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderLink3?: boolean;
   @Provide() @Memo() public builderProvide?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderProvide?: IProvideDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderProvide?: IProvideDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderProvide?: boolean;
   @Provide() public builderProvide2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderProvide2?: IProvideDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1054,7 +1054,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderProvide3?: IProvideDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderProvide3?: boolean;
   @Consume() @Memo() public builderConsume?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderConsume?: IConsumeDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderConsume?: IConsumeDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderConsume?: boolean;
   @Consume() public builderConsume2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderConsume2?: IConsumeDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1063,7 +1063,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderConsume3?: IConsumeDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderConsume3?: boolean;
   @StorageLink({value:"aa"}) @Memo() public builderStorageLink?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderStorageLink?: IStorageLinkDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderStorageLink?: IStorageLinkDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderStorageLink?: boolean;
   @StorageLink({value:"aa"}) public builderStorageLink2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderStorageLink2?: IStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1072,7 +1072,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderStorageLink3?: IStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderStorageLink3?: boolean;
   @StoragePropRef({value:"aa"}) @Memo() public builderStoragePropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderStoragePropRef?: IStoragePropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderStoragePropRef?: IStoragePropRefDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderStoragePropRef?: boolean;
   @StoragePropRef({value:"aa"}) public builderStoragePropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderStoragePropRef2?: IStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1081,7 +1081,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderStoragePropRef3?: IStoragePropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderStoragePropRef3?: boolean;
   @LocalStorageLink({value:"aa"}) @Memo() public builderLocalStorageLink?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderLocalStorageLink?: ILocalStorageLinkDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderLocalStorageLink?: ILocalStorageLinkDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderLocalStorageLink?: boolean;
   @LocalStorageLink({value:"aa"}) public builderLocalStorageLink2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderLocalStorageLink2?: ILocalStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
@@ -1090,7 +1090,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __backing_builderLocalStorageLink3?: ILocalStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
   public __options_has_builderLocalStorageLink3?: boolean;
   @LocalStoragePropRef({value:"aa"}) @Memo() public builderLocalStoragePropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
-  @Memo() public __backing_builderLocalStoragePropRef?: ILocalStoragePropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  @Memo() public __backing_builderLocalStoragePropRef?: ILocalStoragePropRefDecoratedVariable<(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)>;
   public __options_has_builderLocalStoragePropRef?: boolean;
   @LocalStoragePropRef({value:"aa"}) public builderLocalStoragePropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
   public __backing_builderLocalStoragePropRef2?: ILocalStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;

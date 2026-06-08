@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { NodeCacheNames } from "./predefines";
 
 export interface AstNodeCacheValue {
     peer: arkts.KNativePointer;
@@ -249,6 +250,82 @@ export class NodeCache {
     }
 }
 
+class MemoNodeCache extends NodeCache {
+    shouldPerfLog(shouldLog: boolean): this {
+        console.warn(`[NODE CACHE] arkts.MemoNodeCache does not support: shouldPerfLog`);
+        return this
+    }
+
+    shouldCollect(shouldCollect: boolean): this {
+        throw new Error("Not supported");
+    }
+
+    shouldCollectUpdate(shouldCollectUpdate: boolean): this {
+        arkts.MemoNodeCache.getInstance().shouldCollectUpdate(shouldCollectUpdate);
+        return this;
+    }
+
+    collect(node: arkts.AstNode, metadata?: AstNodeCacheValueMetadata): void {
+        arkts.MemoNodeCache.getInstance().collect(node, metadata);
+    }
+
+    shouldUpdate(node: arkts.AstNode): boolean {
+        return arkts.MemoNodeCache.getInstance().shouldUpdate(node);
+    }
+
+    shouldUpdateByPeer(peer: arkts.KNativePointer): boolean {
+        return arkts.MemoNodeCache.getInstance().shouldUpdateByPeer(peer);
+    }
+
+    addNodeToUpdate(node: arkts.AstNode): void {
+        throw new Error("Not supported");
+    }
+
+    addNodeToUpdateByPeer(peer: arkts.KNativePointer): void {
+        arkts.MemoNodeCache.getInstance().addNodeToUpdateByPeer(peer);
+    }
+
+    refresh(original: arkts.AstNode, node: arkts.AstNode): void {
+        arkts.MemoNodeCache.getInstance().refresh(original, node);
+    }
+
+    refreshUpdate(original: arkts.AstNode, node: arkts.AstNode): void {
+        arkts.MemoNodeCache.getInstance().refreshUpdate(original, node);
+    }
+
+    isCollected(): boolean {
+        return arkts.MemoNodeCache.getInstance().isCollected();
+    }
+
+    isCollectEnabled(): boolean {
+        throw new Error("Not supported");
+    }
+
+    isCollectUpdateEnabled(): boolean {
+        throw new Error("Not supported");
+    }
+
+    has(node: arkts.AstNode): boolean {
+        return arkts.MemoNodeCache.getInstance().has(node);
+    }
+
+    get(node: arkts.AstNode): AstNodeCacheValue | undefined {
+        return arkts.MemoNodeCache.getInstance().get(node);
+    }
+
+    clear(): void {
+        arkts.MemoNodeCache.getInstance().clear();
+    }
+
+    visualize(): void {
+        arkts.MemoNodeCache.getInstance().visualize();
+    }
+
+    perfLog(key?: string): void {
+        console.warn(`[NODE CACHE] arkts.MemoNodeCache does not support: perfLog`);
+    }
+}
+
 export class NodeCacheFactory {
     private _shouldPerfLog: boolean = false;
     private cacheMap: Map<string, NodeCache>;
@@ -278,7 +355,11 @@ export class NodeCacheFactory {
 
     getCache(key: string): NodeCache {
         if (!this.cacheMap.has(key)) {
-            this.cacheMap.set(key, new NodeCache());
+            if (key == NodeCacheNames.MEMO) {
+                this.cacheMap.set(key, new MemoNodeCache(key));
+            } else {
+                this.cacheMap.set(key, new NodeCache(key));
+            }
         }
         return this.cacheMap.get(key)!;
     }

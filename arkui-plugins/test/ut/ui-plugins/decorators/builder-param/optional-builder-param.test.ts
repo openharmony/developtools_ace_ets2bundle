@@ -87,7 +87,7 @@ function showTextBuilder() {
     throw new Error("Declare interface");
   }
 
-  private __backing_customBuilderParam2?: ((()=> void) | undefined);
+  private __backing_customBuilderParam2?: (@Memo() (()=> void) | undefined);
 
   public get customBuilderParam2(): (@Memo() (()=> void) | undefined) {
     return this.__backing_customBuilderParam2;
@@ -97,7 +97,7 @@ function showTextBuilder() {
     this.__backing_customBuilderParam2 = value;
   }
 
-  private __backing_customBuilderParam1?: ((()=> void) | undefined);
+  private __backing_customBuilderParam1?: (@Memo() (()=> void) | undefined);
 
   public get customBuilderParam1(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam1!;
@@ -264,7 +264,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
     throw new Error("Declare interface");
   }
 
-  private __backing_customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_customBuilderParam2?: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
 
   public get customBuilderParam2(): (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) {
     return this.__backing_customBuilderParam2;
@@ -274,7 +274,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
     this.__backing_customBuilderParam2 = value;
   }
 
-  private __backing_customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_customBuilderParam1?: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
 
   public get customBuilderParam1(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam1!;

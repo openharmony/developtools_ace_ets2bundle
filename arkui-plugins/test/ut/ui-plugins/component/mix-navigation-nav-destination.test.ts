@@ -144,7 +144,7 @@ function main() {}
     this.__backing_displayMode!.set(value);
   }
 
-  private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
+  private __backing_navDestination?: (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined);
 
   public get navDestination(): (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
     return this.__backing_navDestination;

@@ -87,7 +87,7 @@ export class ProgramVisitor extends AbstractVisitor {
         this.pluginContext = options.pluginContext;
 
         if (this.pluginContext && 'getFileManager' in this.pluginContext) {
-            FileManager.setInstance(this.pluginContext.getFileManager());
+            FileManager.setInstance((this.pluginContext as any).getFileManager());
         }
 
         if (options.isFrameworkMode !== undefined) {

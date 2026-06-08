@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { ProjectConfig, ResourceInfo } from '../common/plugin-context';
+import { PluginContext, ProjectConfig, ResourceInfo } from '../common/plugin-context';
 import { factory as structFactory } from './struct-translators/factory';
 import { factory as builderLambdaFactory } from './builder-lambda-translators/factory';
 import { factory as entryFactory } from './entry-translators/factory';
@@ -39,6 +39,7 @@ import { generateBuilderCompatible, isFromBuilder1_1, insertCompatibleImport } f
 import { builderRewriteByType } from './builder-lambda-translators/builder-factory';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ComponentAttributeCache } from './builder-lambda-translators/cache/componentAttributeCache';
+import { CacheFactory as BuilderCacheFactory } from './builder-lambda-translators/cache-factory';
 import { MonitorCache } from './property-translators/cache/monitorCache';
 import { SyncMonitorCache } from './property-translators/cache/syncMonitorCache';
 import { ComputedCache } from './property-translators/cache/computedCache';
@@ -51,6 +52,8 @@ import { rewriteByType, RewriteFactory } from './checked-cache-factory';
 import { getPerfName } from '../common/debug';
 import { InnerComponentInfoCache } from './builder-lambda-translators/cache/innerComponentInfoCache';
 import { NodeCacheFactory } from '../common/node-cache';
+import { GlobalMemoPluginContext, MEMO_PLUGIN_CONTEXT_PARAMETER_NAME, MemoPluginContext } from '../memo-improved';
+import { useImprovedPlugin } from '../common/use-improved-memo-plugin';
 
 export interface CheckedTransformerOptions extends VisitorOptions {
     useCache?: boolean;
@@ -60,17 +63,24 @@ export class CheckedTransformer extends AbstractVisitor {
     private scope: ScopeInfoCollection;
     projectConfig: ProjectConfig | undefined;
     resourceInfo: ResourceInfo | undefined;
+    globalMemoPluginContext?: GlobalMemoPluginContext;
+    memoPluginContext?: MemoPluginContext;
     private insightIntentHandler: InsightIntentHandler;
 
     private readonly useCache: boolean = false;
 
-    constructor(options: CheckedTransformerOptions) {
+    constructor(options: CheckedTransformerOptions, context: PluginContext) {
         super();
         this.useCache = options.useCache ?? false;
         this.scope = { customComponents: [] };
         this.projectConfig = MetaDataCollector.getInstance().projectConfig;
         this.resourceInfo = MetaDataCollector.getInstance().resourceInfo;
         this.insightIntentHandler = InsightIntentHandler.getInstance(this.projectConfig);
+        if (useImprovedPlugin) {
+            this.globalMemoPluginContext = context.parameter<GlobalMemoPluginContext>(MEMO_PLUGIN_CONTEXT_PARAMETER_NAME)!;
+            builderLambdaFactory.globalMemoPluginContext = this.globalMemoPluginContext;
+            BuilderCacheFactory.globalMemoPluginContext = this.globalMemoPluginContext;
+        }
     }
 
     init(): void {
@@ -123,6 +133,13 @@ export class CheckedTransformer extends AbstractVisitor {
         }
     }
 
+    switchMemoPluginContext(node: arkts.ETSModule) {
+        if (node.program) {
+            this.memoPluginContext = this.globalMemoPluginContext?.getOrCreatePerProgramContext(node.program.absoluteName)
+            builderLambdaFactory.memoPluginContext = this.memoPluginContext
+        }
+    }
+
     private visitorWithCache(beforeChildren: arkts.AstNode): arkts.AstNode {
         const _uiCache = NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (!_uiCache.shouldUpdate(beforeChildren)) {
@@ -152,23 +169,39 @@ export class CheckedTransformer extends AbstractVisitor {
     }
 
     visitor(beforeChildren: arkts.AstNode): arkts.AstNode {
+        if (arkts.isETSModule(beforeChildren)) {
+            this.switchMemoPluginContext(beforeChildren)
+        }
         if (this.useCache) {
             return this.visitorWithCache(beforeChildren);
         }
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren)) {
-            const decl = arkts.getDecl(beforeChildren.callee!);
-            if (arkts.isIdentifier(beforeChildren.callee) && isFromBuilder1_1(decl)) {
-                // Builder
-                insertCompatibleImport();
-                return generateBuilderCompatible(beforeChildren, beforeChildren.callee.name);
-            } else if (isBuilderLambda(beforeChildren, decl)) {
-                const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
-                return this.visitEachChild(lambda);
+            // const decl = arkts.getDecl(beforeChildren.callee!);
+            // if (arkts.isIdentifier(beforeChildren.callee) && isFromBuilder1_1(decl)) {
+            //     // Builder
+            //     insertCompatibleImport();
+            //     return generateBuilderCompatible(beforeChildren, beforeChildren.callee.name);
+            // } else if (isBuilderLambda(beforeChildren, decl)) {
+            //     const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
+            //     return this.visitEachChild(lambda);
+            // }
+            if (!useImprovedPlugin || !beforeChildren.callee?.dumpSrc().endsWith('Impl')) {
+                const decl = arkts.getDecl(beforeChildren.callee!);
+                if (isBuilderLambda(beforeChildren, decl)) {
+                    const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
+                    return this.visitEachChild(lambda);
+                }
             }
         } else if (arkts.isMethodDefinition(beforeChildren) && isBuilderLambdaMethodDecl(beforeChildren)) {
             const lambda = builderLambdaFactory.transformBuilderLambdaMethodDecl(beforeChildren);
-            return this.visitEachChild(lambda);
+            const result = this.visitEachChild(lambda) as arkts.MethodDefinition;
+            // DeclarationFromIdentifier of callsite to rewrite will look at the old method definition
+            // (that is, beforeChildren), so put its function to memo context
+            if (useImprovedPlugin) {
+                this.globalMemoPluginContext?.registerAdditionalDeclarationRedirect(beforeChildren.function.peer, result.function.peer);
+            }
+            return result;
         }
         let node = this.visitEachChild(beforeChildren);
         findAndCollectMemoableNode(node, (currNode: arkts.AstNode, nodeType: arkts.Es2pandaAstNodeType) => {
