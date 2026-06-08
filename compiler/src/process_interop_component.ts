@@ -21,6 +21,7 @@ import { INTEROP_TRAILING_LAMBDA, STATIC_BUILDER } from './component_map';
 import { toUnixPath, LogType, LogInfo } from './utils';
 import { ChildAndParentComponentInfo } from './process_custom_component';
 import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
+import { globalProgram } from '../main';
 
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
@@ -288,15 +289,64 @@ function makeStaticFactory(name: string, componentNode: ts.CallExpression): ts.A
 }
 
 /**
- * 
+ * Get the parameter count of the builder method referenced by `initializer`.
+ * e.g. `this.parentStaClassBuilder` → resolves to the `@Builder parentStaClassBuilder(person: staClassPerson)` declaration → returns 1
+ */
+function getBuilderParamCount(initializer: ts.Expression): number {
+  const checker = globalProgram.checker;
+  if (!checker) {
+    return -1;
+  }
+
+  // initializer is typically `this.someBuilder` (PropertyAccessExpression)
+  let symbol: ts.Symbol | undefined;
+  if (ts.isPropertyAccessExpression(initializer)) {
+    symbol = checker.getSymbolAtLocation(initializer);
+  } else if (ts.isIdentifier(initializer)) {
+    symbol = checker.getSymbolAtLocation(initializer);
+  }
+
+  if (!symbol) {
+    return -1;
+  }
+
+  // Follow alias if needed
+  if ((symbol.getFlags() & ts.SymbolFlags.Alias) !== 0) {
+    symbol = checker.getAliasedSymbol(symbol);
+  }
+
+  const declaration = symbol.declarations?.[0];
+  if (declaration && (ts.isMethodDeclaration(declaration) || ts.isFunctionDeclaration(declaration))) {
+    return declaration.parameters.length;
+  }
+
+  return -1;
+}
+
+/**
+ *
  * @param initializer value for builderparam, trailing lambda or some builder
  * @returns (...args) => __Interop_transferCompatibleDynamicBuilder_Internal(this.builder1)(...args)
  */
-function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
-  const transferCall = ts.isIdentifier(initializer) && STATIC_BUILDER.has(initializer.escapedText.toString()) 
+function getTransferDynamicBuilderFnName(paramCount: number): string {
+  if (paramCount >= 0 && paramCount <= 10) {
+    return paramCount === 0
+      ? '__Interop_transferCompatibleDynamicBuilder_Internal'
+      : `__Interop_transferCompatibleDynamicBuilder${paramCount}_Internal`;
+  }
+  // fallback to 0-arg variant
+  return '__Interop_transferCompatibleDynamicBuilder_Internal';
+}
+
+function transformBuilderParam(initializer: ts.Expression): ts.Expression {
+  const builderParamCount = getBuilderParamCount(initializer);
+
+  const transferFnName = getTransferDynamicBuilderFnName(builderParamCount);
+
+  const transferCall = ts.isIdentifier(initializer) && STATIC_BUILDER.has(initializer.escapedText.toString())
     ? initializer
     : ts.factory.createCallExpression(
-      ts.factory.createIdentifier('__Interop_transferCompatibleDynamicBuilder_Internal'),
+      ts.factory.createIdentifier(transferFnName),
       undefined,
       [
         ts.factory.createCallExpression(
@@ -310,27 +360,7 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
       ]
     );
   
-  return ts.factory.createArrowFunction(
-    undefined,
-    undefined,
-    [
-      ts.factory.createParameterDeclaration(
-        undefined,
-        ts.factory.createToken(ts.SyntaxKind.DotDotDotToken),
-        ts.factory.createIdentifier('args'),
-        undefined,
-        undefined,
-        undefined
-      )
-    ],
-    undefined,
-    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-    ts.factory.createCallExpression(
-      transferCall,
-      undefined,
-      [ ts.factory.createSpreadElement(ts.factory.createIdentifier('args')) ]
-    )
-  );
+  return transferCall;
 }
 
 function cloneExpressionClean(node: ts.Expression): ts.Expression {

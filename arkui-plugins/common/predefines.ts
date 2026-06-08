@@ -76,6 +76,8 @@ export const INSIGHT_INTENT_FILE_NAME = 'insight_intent.json';
 
 export const ETSGLOBAL = 'ETSGLOBAL';
 
+export const DECLGEN_V2 = 'declgenV2';
+
 export enum UIClass {
     LOCAL_STORAGE = 'LocalStorage',
 }
