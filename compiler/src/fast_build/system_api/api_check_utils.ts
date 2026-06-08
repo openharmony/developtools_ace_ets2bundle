@@ -2561,7 +2561,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     type: ts.DiagnosticCategory.Error
   }
 
-  if (!checkApiAvailableCache) {
+  if (!checkApiAvailableCache(node)) {
     return result;
   }
 
