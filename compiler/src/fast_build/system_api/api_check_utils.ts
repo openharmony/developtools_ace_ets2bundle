@@ -2705,8 +2705,8 @@ function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableR
     if (msfResult.needDistCheck) {
       const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
       if (!distributionOSCheck.valid) {
-        const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code}#${distributionOSCheck.message}`;
-        result.message = diagnosticMessage;
+        const distributionOSMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code}#${distributionOSCheck.message}`;
+        result.message = distributionOSMessage;
         result.valid = false;
       }
     } else {
