@@ -384,7 +384,7 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
   }
   if (structInfo.customEnvDecoratorSet.has(propName)) {
     const customEnvDecorator: ts.Decorator | undefined =
-      decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_CUSTOM_ENV_DECORATOR);
+      decorators.find(decorator => getDecoratorNameFromAst(decorator) === COMPONENT_CUSTOM_ENV_DECORATOR);
     const customEnvTypeNames: CustomEnvTypeName = { currentTypeNames: [] };
     checkCustomEnvType(member.type, customEnvTypeNames);
     if (customEnvDecorator) {
@@ -550,6 +550,32 @@ export function getDecoratorName(decorator: ts.Decorator): string {
   return decorator.getText().replace(/\([^\(\)]*\)/, '').trim();
 }
 
+export function getDecoratorNameFromAst(
+  decorator: ts.Decorator
+): string {
+  function getIdentifierName(node: ts.Node): string {
+    if (ts.isIdentifier(node)) {
+      return `@` + node.text;
+    }
+    if (ts.isPropertyAccessExpression(node)) {
+      return getIdentifierName(node.name);
+    }
+    return '';
+  }
+
+  try {
+    const expr: ts.Exprssion = decorator.expression;
+
+    if (ts.isCallExpression(expr)) {
+      return getIdentifierName(expr.expression);
+    }
+
+    return getIdentifierName(expr);
+  } catch (err) {
+    return '';
+  }
+}
+
 function parsePropertyModifiers(propName: string, structInfo: StructInfo,
   modifiers: readonly ts.Modifier[]): void {
   if (modifiers && modifiers.length) {
@@ -581,6 +607,9 @@ const decoratorsFunc: Record<string, Function> = {
   'Provider': parseProviderDecorator,
   'Consumer': parseConsumerDecorator,
   'Env': parseEnvDecorator,
+};
+
+const astDecoratorsFunc: Record<string, Function> = {
   'CustomEnv': parseCustomEnvDecorator,
 };
 
@@ -591,8 +620,13 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
   for (let i = 0; i < decorators.length; i++) {
     const originalName: string = getDecoratorName(decorators[i]);
     const name: string = originalName.replace('@', '').trim();
+    const originAstName: string = getDecoratorNameFromAst(decorators[i]);
+    const astName: string = originAstName.replace('@', '').trim();
     if (decoratorsFunc[name]) {
       decoratorsFunc[name](propertyDecorator, member, structInfo);
+    }
+    if (astDecoratorsFunc[astName]) {
+      astDecoratorsFunc[astName](propertyDecorator, member, structInfo);
     }
     if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName) ||
       originalName === constantDefine.DECORATOR_BUILDER_PARAM ||
