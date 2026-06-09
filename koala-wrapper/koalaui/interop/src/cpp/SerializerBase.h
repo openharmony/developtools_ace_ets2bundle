@@ -77,9 +77,13 @@ private:
         ASSERT(ownData);
         ASSERT(newLength > dataLength);
         auto* newData = reinterpret_cast<uint8_t*>(malloc(newLength));
+        if (newData == nullptr) {
+            return;
+        }
 #ifdef __STDC_LIB_EXT1__
         errno_t res = memcpy_s(newData, newLength, data, position);
         if (res != EOK) {
+            free(newData);
             return;
         }
 #else
