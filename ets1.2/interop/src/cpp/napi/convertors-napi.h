@@ -301,12 +301,12 @@ struct InteropTypeConverter<KStringArray> {
         size_t count = 0;
         auto const* ptr = encoded + LengthByteSize;
         auto const* const end = encoded + bytes;
-        while (ptr < end) {
+        while (ptr < end && count < num) {
             auto length = decodeLength(ptr);
             result[count++] = SelfType::strndup(ptr + LengthByteSize, length);
             ptr += LengthByteSize + length;
         }
-        return { std::move(result), num };
+        return { std::move(result), count };
     }
     static InteropType convertTo(napi_env env, KStringArray value) = delete;
     static void release(napi_env env, InteropType value, const KInteropReturnBuffer& converted) = delete;
