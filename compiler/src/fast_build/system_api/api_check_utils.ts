@@ -1187,7 +1187,8 @@ function checkAvailableDecorator(
     return false;
   }
 
-  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_DECORATOR_WARNING)?.code}#${AVAILABLE_DECORATOR_WARNING}`;
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = diagnosticType ? `${ERROR_CODE_INFO.get(AVAILABLE_DECORATOR_WARNING)?.code}#${AVAILABLE_DECORATOR_WARNING}` : AVAILABLE_DECORATOR_WARNING;
   config.message = diagnosticMessage
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
@@ -1244,7 +1245,8 @@ function checkSinceValue(
     return false;
   }
 
-  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = diagnosticType ? `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}` : SINCE_TAG_CHECK_ERROR;
   config.message = diagnosticMessage
     .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
