@@ -789,14 +789,24 @@ function addPropertyMember(item: ts.ClassElement, newMembers: ts.ClassElement[],
         isLocalStorage = true;
       }
       if (decoratorName === COMPONENT_ENV_DECORATOR) {
+        const updateDecorators: readonly ts.Decorator[] = decorators.filter(
+          (decorator: ts.Decorator) => {
+            return decorator.getText().replace(/\(.*\)$/, '').trim() !== COMPONENT_WATCH_DECORATOR;
+          }
+        );
         updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
-          ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
+          ts.concatenateDecoratorsAndModifiers(updateDecorators, ts.getModifiers(propertyItem)),
           propertyItem.name, propertyItem.questionToken, propertyItem.type, undefined);
         continue;
       }
       if (decoratorName === COMPONENT_CUSTOM_ENV_DECORATOR) {
+        const updateDecorators: readonly ts.Decorator[] = decorators.filter(
+          (decorator: ts.Decorator) => {
+            return decorator.getText().replace(/\(.*\)$/, '').trim() !== COMPONENT_WATCH_DECORATOR;
+          }
+        );
         updatePropertyItem = ts.factory.updatePropertyDeclaration(propertyItem,
-          ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(propertyItem)),
+          ts.concatenateDecoratorsAndModifiers(updateDecorators, ts.getModifiers(propertyItem)),
           propertyItem.name, propertyItem.questionToken, propertyItem.type, propertyItem.initializer);
         continue;
       }
