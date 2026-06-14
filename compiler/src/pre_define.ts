@@ -65,7 +65,7 @@ export const RECYCLEFLAG: string = 'recycFlag';
 export const RECYCLENODEELMTID: string = 'recycleNodeElmtId';
 export const CURRENTLY_RENDERED_ELMTIDSTACK: string = 'currentlyRenderedElmtIdStack_';
 export const PUSH_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___pushRecycleElmtIdToRenderStack';
-export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___popRecycleElmtIdToRenderStack';
+export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___popRecycleElmtIdFromRenderStack';
 export const SHARED: string = 'shared';
 export const PERINSTANCE: string = 'perInstance';
 
