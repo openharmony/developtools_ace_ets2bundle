@@ -66,6 +66,7 @@ import {
   OBSERVED,
   SENDABLE,
   TYPE,
+  COMPONENT_BUILDER_DECORATOR,
   COMPONENT_LOCAL_BUILDER_DECORATOR,
   COMPONENT_DECORATOR_REUSABLE_V2,
   MAIN_COMPONENT_DECORATORS,
@@ -693,6 +694,31 @@ function checkComponentReuseSyntax(
   const decoratorNames: string[] = decorators.map(decoratorItem => {
     return getDecoratorName(decoratorItem);
   });
+
+  // Check if lifecycle decorators are used together with @Builder/@Styles
+  const lifecycleDecoratorsWarn = decoratorNames.filter(name =>
+    constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR_WARN.includes(name)
+  );
+  const lifecycleDecoratorsError = decoratorNames.filter(name =>
+    constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR_ERROR.includes(name)
+  );
+  const builderAndStyles: string[] = [COMPONENT_BUILDER_DECORATOR, COMPONENT_STYLES_DECORATOR];
+  const builderStylesDecorators = decoratorNames.filter(name =>
+    builderAndStyles.includes(name)
+  );
+
+  // Check WARN level lifecycle decorators
+  if (lifecycleDecoratorsWarn.length > 0 && builderStylesDecorators.length > 0) {
+    const message = `Lifecycle decorators ${lifecycleDecoratorsWarn.join(', ')} cannot be used together with ${builderStylesDecorators.join(', ')}.`;
+    addLog(LogType.WARN, message, node.getStart(), log, sourceFileNode);
+  }
+
+  // Check ERROR level lifecycle decorators
+  if (lifecycleDecoratorsError.length > 0 && builderStylesDecorators.length > 0) {
+    const message = `Lifecycle decorators ${lifecycleDecoratorsError.join(', ')} cannot be used together with ${builderStylesDecorators.join(', ')}.`;
+    addLog(LogType.ERROR, message, node.getStart(), log, sourceFileNode, { code: '10905383' });
+  }
+
   for (let i = 0; i < decoratorNames.length; i++) {
     if (constantDefine.COMPONENT_LIFECYCLE_MEMBER_DECORATOR.includes(decoratorNames[i])) {
       handleLifecycleDecorator(decoratorNames[i], structNode, node, log, sourceFileNode);
