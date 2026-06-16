@@ -35,7 +35,6 @@ import { ImportCollector } from '../../common/import-collector';
  */
 export function createEmptyESValue(result: string): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -49,8 +48,10 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
                         false,
                         false
                     ),
+                    [],
                     undefined,
-                    undefined
+                    false,
+                    false
                 )
             ),
         ]
@@ -62,7 +63,7 @@ export function createEmptyESValue(result: string): arkts.VariableDeclaration {
  * @param value
  * @returns ESValue.wrap(value)
  */
-export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
+export function getWrapValue(value: arkts.Expression): arkts.Expression {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             arkts.factory.createIdentifier(ESValueMethodNames.ESVALUE),
@@ -71,8 +72,10 @@ export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
             false,
             false
         ),
+        [value],
         undefined,
-        [value]
+        false,
+        false
     );
 }
 
@@ -83,7 +86,7 @@ export function getWrapValue(value: arkts.AstNode): arkts.AstNode {
  * @param value
  * @returns object.setProperty(key, value)
  */
-export function setPropertyESValue(object: string, key: string, value: arkts.AstNode): arkts.ExpressionStatement {
+export function setPropertyESValue(object: string, key: string, value: arkts.Expression): arkts.ExpressionStatement {
     return arkts.factory.createExpressionStatement(
         arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
@@ -93,8 +96,10 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
                 false,
                 false
             ),
+            [arkts.factory.createStringLiteral(key), value.clone()],
             undefined,
-            [arkts.factory.createStringLiteral(key), value.clone()]
+            false,
+            false
         )
     );
 }
@@ -108,7 +113,6 @@ export function setPropertyESValue(object: string, key: string, value: arkts.Ast
  */
 export function getPropertyESValue(result: string, obj: string, key: string): arkts.VariableDeclaration {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -122,8 +126,10 @@ export function getPropertyESValue(result: string, obj: string, key: string): ar
                         false,
                         false
                     ),
+                    [arkts.factory.createStringLiteral(key)],
                     undefined,
-                    [arkts.factory.create1StringLiteral(key)]
+                    false,
+                    false
                 )
             ),
         ]
@@ -148,7 +154,6 @@ export function stateProxy(stateVarName: string): string {
  */
 export function createELMTID(): arkts.Statement {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -164,16 +169,20 @@ export function createELMTID(): arkts.Statement {
                                 false,
                                 false
                             ),
+                            [arkts.factory.createStringLiteral('ViewStackProcessor')],
                             undefined,
-                            [arkts.factory.create1StringLiteral('ViewStackProcessor')]
+                            false,
+                            false
                         ),
                         arkts.factory.createIdentifier(ESValueMethodNames.INVOKEMETHOD),
                         arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                         false,
                         false
                     ),
+                    [arkts.factory.createStringLiteral('AllocateNewElmetIdForNextComponent')],
                     undefined,
-                    [arkts.factory.createStringLiteral('AllocateNewElmetIdForNextComponent')]
+                    false,
+                    false
                 )
             )
         ]
@@ -193,14 +202,20 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
         arkts.ObjectExpression.createObjectExpression(
             arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [
-                arkts.Property.createProperty(
+                arkts.Property.create1Property(
+                    arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                     arkts.factory.createIdentifier('component'),
-                    arkts.factory.createIdentifier(InteropInternalNames.COMPONENT)
+                    arkts.factory.createIdentifier(InteropInternalNames.COMPONENT),
+                    false,
+                    false
                 ),
-                arkts.Property.createProperty(
+                arkts.Property.create1Property(
+                    arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                     arkts.factory.createIdentifier('name'),
-                    arkts.factory.createStringLiteral(componentName)
-                )
+                    arkts.factory.createStringLiteral(componentName),
+                    false,
+                    false
+                ),
             ],
             false
         ),
@@ -213,7 +228,6 @@ export function createInitReturn(componentName: string): arkts.ReturnStatement {
  */
 export function createGlobal(): arkts.Statement {
     return arkts.factory.createVariableDeclaration(
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
         arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
         [
             arkts.factory.createVariableDeclarator(
@@ -227,8 +241,10 @@ export function createGlobal(): arkts.Statement {
                         false,
                         false
                     ),
+                    [],
                     undefined,
-                    undefined
+                    false,
+                    false
                 )
             )
         ]
@@ -246,8 +262,8 @@ export function isInstantiateImpl(node: arkts.MemberExpression): boolean {
 
 export function isArkTS1_1(node: arkts.MemberExpression): boolean {
     const struct = node.object;
-    const decl = arkts.getDecl(struct);
-    if (!decl || !arkts.isClassDefinition(decl) || decl.lang !== arkts.Es2pandaLanguage.JS) {
+    const decl = struct && arkts.getDecl(struct);
+    if (!decl || !arkts.isClassDefinition(decl) || decl.language !== arkts.Es2pandaLanguage.LANGUAGE_JS) {
         return false;
     }
     return true;
@@ -275,9 +291,9 @@ export function insertInteropComponentImports(): void {
 
 export function isInteropComponent(node: arkts.CallExpression): boolean {
     if (
-        arkts.isMemberExpression(node.expression) &&
-        isInstantiateImpl(node.expression) &&
-        isArkTS1_1(node.expression)
+        arkts.isMemberExpression(node.callee) &&
+        isInstantiateImpl(node.callee) &&
+        isArkTS1_1(node.callee)
     ) {
         return true;
     }
@@ -315,7 +331,7 @@ export function hasDecoratorInterop(
     decoratorName: string
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
+        return property.function.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
     }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
 }

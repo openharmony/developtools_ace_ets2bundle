@@ -35,7 +35,7 @@ function fieldWithMonitorMethod(
     const field: arkts.ClassProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(newName),
         undefined,
-        arkts.factory.createUnionType([
+        arkts.factory.createETSUnionType([
             UIFactory.createTypeReferenceFromString(StateManagementTypes.MONITOR_DECORATED),
             arkts.factory.createETSUndefinedType(),
         ]),
@@ -52,7 +52,7 @@ function monitorInfo(
     isFromStruct: boolean,
     paramsLength: number
 ): MonitorInfo {
-    const monitorItem: string[] | undefined = getValueInMonitorAnnotation(this.method.scriptFunction.annotations);
+    const monitorItem: string[] | undefined = getValueInMonitorAnnotation(this.method.function.annotations);
     const monitorInfo: MonitorInfo = {
         monitorItem: monitorItem,
         originalName: originalName,
@@ -90,7 +90,7 @@ export class MonitorTranslator extends MethodTranslator implements IMonitorTrans
             newName,
             originalName,
             this.classInfo.isFromStruct,
-            this.method.scriptFunction.params.length
+            this.method.function!.params.length
         );
     }
 
@@ -98,7 +98,7 @@ export class MonitorTranslator extends MethodTranslator implements IMonitorTrans
         if (this.isDecl) {
             return [this.method];
         }
-        const originalName: string = expectName(this.method.name);
+        const originalName: string = expectName(this.method.id);
         const newName: string = monitorField(originalName);
         this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
@@ -108,7 +108,7 @@ export class MonitorTranslator extends MethodTranslator implements IMonitorTrans
         const info: MonitorInfo = this.monitorInfo(newName, originalName);
         const monitorPathsStr: string = !!info.monitorItem ? info.monitorItem.join(',') : '';
         MonitorCache.getInstance().collectMonitors(this.classInfo.className, monitorPathsStr, info);
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(this.classInfo.className, [resetStateVars]);
     }
 
@@ -129,7 +129,7 @@ export class MonitorCacheTranslator extends MethodCacheTranslator implements IMo
 
     monitorInfo(newName: string, originalName: string): MonitorInfo {
         const isFromStruct = checkIsStructMethodFromInfo(this.methodInfo);
-        return monitorInfo.bind(this)(newName, originalName, isFromStruct, this.method.scriptFunction.params.length);
+        return monitorInfo.bind(this)(newName, originalName, isFromStruct, this.method.function!.params.length);
     }
 
     translateMember(): arkts.AstNode[] {
@@ -152,7 +152,7 @@ export class MonitorCacheTranslator extends MethodCacheTranslator implements IMo
             className = this.methodInfo.classInfo?.name!;
         }
         MonitorCache.getInstance().collectMonitors(className, monitorPathsStr, info);   
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(className, [resetStateVars]);
     }
 

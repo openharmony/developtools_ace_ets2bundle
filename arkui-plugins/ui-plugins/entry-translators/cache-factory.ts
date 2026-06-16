@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { NormalClassMethodInfo } from '../../collectors/ui-collectors/records';
 import { EntryWrapperNames, NodeCacheNames } from '../../common/predefines';
 import { addMemoAnnotation } from '../../collectors/memo-collectors/utils';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export class CacheFactory {
     /**
@@ -30,8 +31,8 @@ export class CacheFactory {
         metadata: NormalClassMethodInfo
     ): void {
         if (metadata.name === EntryWrapperNames.ENTRY_FUNC) {
-            addMemoAnnotation(node.scriptFunction);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
+            addMemoAnnotation(node.function);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node);
         }
     }
 }

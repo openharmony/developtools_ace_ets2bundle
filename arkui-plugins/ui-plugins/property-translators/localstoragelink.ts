@@ -43,12 +43,13 @@ import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithLocalStorageLinkProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -63,7 +64,7 @@ function initializeStructWithLocalStorageLinkProperty(
     const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(localStorageLinkValueStr),
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
     if (this.hasWatch) {
@@ -79,10 +80,12 @@ function initializeStructWithLocalStorageLinkProperty(
             PropertyValueCache.getInstance().collect({ value: propertyType });
         }
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
@@ -105,7 +108,7 @@ export class LocalStorageLinkTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithLocalStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -130,7 +133,7 @@ export class LocalStorageLinkCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithLocalStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -146,7 +149,7 @@ export class LocalStorageLinkInterfaceTranslator<
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
         }

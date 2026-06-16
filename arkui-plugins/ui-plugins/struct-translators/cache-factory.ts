@@ -79,6 +79,7 @@ import {
     CustomDialogControllerCache,
     PropertyFactoryCallTypeCache,
 } from '../memo-collect-cache';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
@@ -97,7 +98,7 @@ export function collectRewritedStructMethodInfo(
     if (!arkts.isMethodDefinition(node)) {
         return currInfo;
     }
-    const methodName = node.name.name;
+    const methodName = node.id!.name;
     const hasInitializeStruct = methodName === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
     const hasUpdateStruct = methodName === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
     const hasToRecord = methodName === CustomComponentNames.COMPONENT_TO_RECORD;
@@ -132,7 +133,7 @@ export class CacheFactory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!metadata.isDecl && !!metadata.name) {
-            body = arkts.factory.createBlock([
+            body = arkts.factory.createBlockStatement([
                 ...(reusePoolInitStmt ? [reusePoolInitStmt] : []),
                 ...ComputedCache.getInstance().getCachedComputed(metadata.name),
                 ...PropertyCache.getInstance().getInitializeBody(metadata.name),
@@ -146,7 +147,7 @@ export class CacheFactory {
                 ...ActiveInactiveCache.getInstance().getCachedCallStatements(metadata.name),
             ]);
             if (PropertyCache.getInstance().shouldMemoUpdateInitializeStruct(metadata.name)) {
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
             }
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
@@ -154,24 +155,23 @@ export class CacheFactory {
         const scriptFunction: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [UIFactory.createInitializersOptionsParameter(optionsTypeName), contentParam],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                undefined,
+                [UIFactory.createInitializersOptionsParameter(optionsTypeName), contentParam],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers
-            )
-            .setIdent(updateKey);
+                modifiers,
+                updateKey,
+                undefined
+            );
         const newMethod = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            scriptFunction,
+            arkts.factory.createFunctionExpression(undefined, scriptFunction),
             modifiers,
             false
         );
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(contentParam);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(contentParam);
         return newMethod;
     }
 
@@ -187,27 +187,26 @@ export class CacheFactory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!metadata.isDecl) {
-            body = arkts.factory.createBlock(PropertyCache.getInstance().getUpdateBody(metadata.name!));
+            body = arkts.factory.createBlockStatement(PropertyCache.getInstance().getUpdateBody(metadata.name!));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
         const scriptFunction: arkts.ScriptFunction = arkts.factory
             .createScriptFunction(
                 body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [UIFactory.createInitializersOptionsParameter(optionsTypeName)],
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                undefined,
+                [UIFactory.createInitializersOptionsParameter(optionsTypeName)],
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers
-            )
-            .setIdent(updateKey);
+                modifiers,
+                updateKey,
+                undefined
+            );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             updateKey,
-            scriptFunction,
+            arkts.factory.createFunctionExpression(undefined, scriptFunction),
             modifiers,
             false
         );
@@ -225,29 +224,30 @@ export class CacheFactory {
                 false
             )
         );
-        const body: arkts.BlockStatement = arkts.factory.createBlock([paramsCasted, returnRecord]);
+        const body: arkts.BlockStatement = arkts.factory.createBlockStatement([paramsCasted, returnRecord]);
 
-        const params = arkts.ETSParameterExpression.create(
+        const params = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier('params', StructFactory.generateTypeReferenceWithTypeName('Object')),
+            false,
             undefined
         );
 
         const toRecordScriptFunction = arkts.factory.createScriptFunction(
             body,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [params],
-                StructFactory.generateTypeRecord(),
-                false
-            ),
+            undefined,
+            [params],
+            StructFactory.generateTypeRecord(),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_TO_RECORD),
+            undefined
         );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_TO_RECORD),
-            toRecordScriptFunction,
+            arkts.factory.createFunctionExpression(undefined, toRecordScriptFunction),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OVERRIDE,
             false
         );
@@ -264,33 +264,31 @@ export class CacheFactory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!metadata.isDecl && !!metadata.name) {
-            body = arkts.factory.createBlock(PropertyCache.getInstance().getResetStateVars(metadata.name));
+            body = arkts.factory.createBlockStatement(PropertyCache.getInstance().getResetStateVars(metadata.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
         const params = UIFactory.createInitializersOptionsParameter(optionsTypeName)
         const scriptFunction = arkts.factory.createScriptFunction(
             body,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [params],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+            undefined,
+            [params],
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-            modifiers
+            modifiers,
+            resetKey,
+            undefined
         )
-        .setIdent(resetKey);
+        const functionExpression = arkts.factory.createFunctionExpression(resetKey.clone(), scriptFunction);
         const resetMethod = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             resetKey.clone(),
-            scriptFunction,
+            functionExpression,
             modifiers,
             false
         );
         if (!!body && PropertyCache.getInstance().shouldMemoUpdateResetOnReuse(metadata.name!)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(body.peer);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(scriptFunction.peer);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(resetMethod.peer);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collectToUpdate(body);
         }
         return resetMethod;
     }
@@ -382,7 +380,7 @@ export class CacheFactory {
                 return [child];
             }
             if (arkts.isMethodDefinition(child) &&
-                child.name.name === CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD &&
+                child.id?.name === CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD &&
                 arkts.hasModifierFlag(child, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC)) {
                 return [];
             }
@@ -415,7 +413,7 @@ export class CacheFactory {
                     BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME
                 ) : undefined;
             const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata, useSharedStorage);
-            addMemoAnnotation(structInvokeMethod.scriptFunction, MemoNames.MEMO_INTRINSIC_UI);
+            addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             newStatements.push(structInvokeMethod);
         }
         const newStaticBlock = !metadata.isDecl && !hasStaticBlock ? [UIFactory.createClassStaticBlock()] : [];
@@ -450,8 +448,8 @@ export class CacheFactory {
         if (!isDecl) {
             const invokeCall = this.createInvokeImplCall(structName, annotationInfo, useSharedStorage);
             if (invokeCall !== undefined) {
-                methodBody = arkts.factory.createBlock([arkts.factory.createExpressionStatement(invokeCall)]);
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(invokeCall);
+                methodBody = arkts.factory.createBlockStatement([arkts.factory.createExpressionStatement(invokeCall)]);
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(invokeCall);
             }
         }
         let modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
@@ -459,18 +457,19 @@ export class CacheFactory {
             modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
             modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
+        const key: arkts.Identifier = arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME)
         const func = UIFactory.createScriptFunction({
-            key: arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
+            key,
             body: methodBody,
             params,
-            returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            returnTypeAnnotation: arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
             modifiers,
         });
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            arkts.factory.createIdentifier(BuilderLambdaNames.TRANSFORM_METHOD_NAME),
-            func,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), func),
             modifiers,
             false
         );
@@ -517,9 +516,9 @@ export class CacheFactory {
         if (isFromComponentV2) {
             returnType.push(
                 arkts.factory.createObjectExpression(
-                    arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
                     [
                         arkts.factory.createProperty(
+                            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                             arkts.factory.createIdentifier('sClass'),
                             arkts.factory.createCallExpression(
                                 arkts.factory.createMemberExpression(
@@ -529,12 +528,17 @@ export class CacheFactory {
                                     false,
                                     false
                                 ),
-                                [UIFactory.createTypeReferenceFromString(structName)],
-                                []
-                            )
+                                [],
+                                arkts.factory.createTSTypeParameterInstantiation([
+                                    UIFactory.createTypeReferenceFromString(structName)
+                                ]),
+                                false,
+                                false
+                            ),
+                            false,
+                            false
                         )
-                    ],
-                    false
+                    ]
                 )
             )
         }
@@ -547,13 +551,18 @@ export class CacheFactory {
                 false,
                 false
             ),
-            [UIFactory.createTypeReferenceFromString(structName), UIFactory.createTypeReferenceFromString(optionsName)],
             [
                 ...styleParams,
                 StructFactory.createComponentFactoryParameter(structName, factoryParams, isFromCustomDialog),
                 ...restIdents,
                 ...returnType,
-            ]
+            ],
+            arkts.factory.createTSTypeParameterInstantiation([
+                UIFactory.createTypeReferenceFromString(structName),
+                UIFactory.createTypeReferenceFromString(optionsName)
+            ]),
+            false,
+            false
         );
         return intrinsicCall;
     }
@@ -605,7 +614,7 @@ export class CacheFactory {
         }
         if (structType === StructType.STRUCT && !!metadata.isDecl) {
             const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata);
-            addMemoAnnotation(structInvokeMethod.scriptFunction, MemoNames.MEMO_INTRINSIC_UI);
+            addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             const newDefinitionStatements = [...definition.body, structInvokeMethod];
             definition.setBody(newDefinitionStatements);
             return node;
@@ -620,7 +629,7 @@ export class CacheFactory {
         metadata: FunctionInfo
     ): arkts.MethodDefinition {
         const name: string | undefined = metadata.name;
-        const func: arkts.ScriptFunction = node.scriptFunction;
+        const func: arkts.ScriptFunction = node.function;
         const params = func.params as arkts.ETSParameterExpression[];
         const body = func.body;
         if (!name || !params.at(1) || !body || !arkts.isBlockStatement(body)) {
@@ -642,12 +651,14 @@ export class CacheFactory {
                     false,
                     false
                 ),
+                [funcName, paramValue.ident!, StructFactory.createAniExtendCbArg(paramValue, statements)],
                 undefined,
-                [funcName, paramValue.identifier, StructFactory.createAniExtendCbArg(paramValue, statements)]
+                false,
+                false
             )
         );
-        const newBody = arkts.factory.createBlock([createOrSetStatement, lastStatement]);
-        node.scriptFunction.setBody(newBody);
+        const newBody = arkts.factory.createBlockStatement([createOrSetStatement, lastStatement]);
+        node.function.setBody(newBody);
         return node;
     }
 
@@ -670,7 +681,7 @@ export class CacheFactory {
                     newStatements.push(...methods);
                 }
                 definition.setBody([...definition.body, ...newStatements]);
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(definition);
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(definition);
             },
             { 
                 ignoreCompare: 
@@ -678,7 +689,7 @@ export class CacheFactory {
                     InnerComponentInfoCache.getInstance().getAllComponentNames().filter(
                         name => INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(name)
                     ).length > 0
-                }
+            }
         );
         return node;
     }
@@ -772,24 +783,24 @@ export class CacheFactory {
     }
 
     static rewriteObservedV2Constuctor(ctor: arkts.MethodDefinition, className: string): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = [
+        const addConstructorNodes: arkts.Statement[] = [
             ...MonitorCache.getInstance().getCachedMonitors(className),
             ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
-        ];
-        const scriptFunc: arkts.ScriptFunction = ctor.scriptFunction;
+        ] as arkts.Statement[];
+        const scriptFunc: arkts.ScriptFunction = ctor.function;
         const originBody = scriptFunc.body as arkts.BlockStatement | undefined;
         if (!originBody) {
-            scriptFunc.setBody(arkts.factory.createBlock(addConstructorNodes));
+            scriptFunc.setBody(arkts.factory.createBlockStatement(addConstructorNodes));
         } else {
             scriptFunc.setBody(
-                arkts.factory.updateBlock(originBody, [...originBody.statements, ...addConstructorNodes])
+                arkts.factory.updateBlockStatement(originBody, [...originBody.statements, ...addConstructorNodes])
             );
         }
         return ctor;
     }
 
     static createNewObservedV2Constuctor(className: string, isDecl: boolean): arkts.MethodDefinition {
-        const addConstructorNodes: arkts.AstNode[] = [
+        const addConstructorNodes: arkts.Statement[] = [
             ...MonitorCache.getInstance().getCachedMonitors(className),
             ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
         ];
@@ -797,7 +808,7 @@ export class CacheFactory {
             key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
             function: {
                 key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
-                body: isDecl ? undefined : arkts.factory.createBlock(addConstructorNodes),
+                body: isDecl ? undefined : arkts.factory.createBlockStatement(addConstructorNodes),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
                 modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
             },
@@ -823,8 +834,10 @@ export class CacheFactory {
                                 false,
                                 false
                             ),
+                            [],
                             undefined,
-                            undefined
+                            false,
+                            false
                         )
                     )
                 );
@@ -847,13 +860,15 @@ export class CacheFactory {
                                 false,
                                 false
                             ),
+                            [],
                             undefined,
-                            undefined
+                            false,
+                            false
                         )
                     )
                 );
             });
-            body = arkts.factory.createBlock(bodyStmts);
+            body = arkts.factory.createBlockStatement(bodyStmts);
         } else {
             modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
@@ -862,7 +877,7 @@ export class CacheFactory {
             function: {
                 key: arkts.factory.createIdentifier(ObservedNames.ADD_REF_ANY_PROP),
                 body: body,
-                returnTypeAnnotation: arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                returnTypeAnnotation: arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
             },
             modifiers: modifiers,
@@ -918,7 +933,7 @@ export class CacheFactory {
     ): arkts.MethodDefinition {
         PropertyCacheFactory.addMemoToBuilderClassMethodFromInfo(member, metadata);
         if (metadata.name === CustomComponentNames.COMPONENT_BUILD_ORI) {
-            addMemoAnnotation(member.scriptFunction);
+            addMemoAnnotation(member.function);
             // return ConditionScopeFactory.rewriteBuilderMethod(member);
         }
         return member;
@@ -999,14 +1014,16 @@ export class CacheFactory {
             });
             builderNode.setOverloads(newOverLoads);
             if (!!newType) {
-                builderNode.scriptFunction.setReturnTypeAnnotation(newType);
+                builderNode.function.setReturnTypeAnnotation(newType);
             }
         } else if (builderNode.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET) {
-            const param = builderNode.scriptFunction.params[0] as arkts.ETSParameterExpression;
-            const newParam: arkts.Expression | undefined = arkts.factory.updateParameterDeclaration(
+            const param = builderNode.function.params[0] as arkts.ETSParameterExpression;
+            const newParam: arkts.Expression | undefined = arkts.factory.updateETSParameterExpression(
                 param,
-                arkts.factory.createIdentifier(param.identifier.name, newType),
-                param.initializer
+                arkts.factory.createIdentifier(param.ident!.name, newType),
+                param.isOptional,
+                param.initializer,
+                param.annotations
             );
             if (!!newParam) {
                 return UIFactory.updateMethodDefinition(builderNode, { function: { params: [newParam] } });

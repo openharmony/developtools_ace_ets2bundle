@@ -42,7 +42,7 @@ export class StructTransformer extends AbstractVisitor {
         this.projectConfig = projectConfig;
         this.scope = { customComponents: [] };
         this.aceBuildJson = loadBuildJson(this.projectConfig);
-        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson, resourcePath);
+        this.resourceInfo = initResourceInfo(this.projectConfig, this.aceBuildJson, resourcePath ?? '');
     }
 
     reset(): void {
@@ -62,7 +62,7 @@ export class StructTransformer extends AbstractVisitor {
             }
         }
         if (arkts.isMethodDefinition(node) && this.scope.customComponents.length > 0) {
-            const name = node.name.name;
+            const name = node.id!.name;
             const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
@@ -101,8 +101,9 @@ export class StructTransformer extends AbstractVisitor {
         } else if (arkts.isTSInterfaceDeclaration(node)) {
             return factory.tranformInterfaceMembers(node, this.externalSourceName);
         }
-        if (arkts.isEtsScript(node) && ImportCollector.getInstance().importInfos.length > 0) {
-            ImportCollector.getInstance().insertCurrentImports(this.program);
+        if (arkts.isETSModule(node) && ImportCollector.getInstance().importInfos.length > 0) {
+            let imports = ImportCollector.getInstance().getImportStatements();
+            return arkts.factory.updateETSModule(node, [...imports, ...node.statements]);
         }
         return node;
     }

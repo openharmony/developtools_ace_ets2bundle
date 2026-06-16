@@ -150,10 +150,10 @@ export function collectTypeRecordFromParameter<T extends arkts.AstNode = arkts.E
     param: T
 ): ParameterRecord {
     const _param = coerceToAstNode<arkts.ETSParameterExpression>(param);
-    const name = _param.identifier.name;
-    const typeRecord = collectTypeRecordFromType(_param.type)!;
+    const name = _param.ident!.name;
+    const typeRecord = collectTypeRecordFromType(_param.typeAnnotation)!;
     const annotations = _param.annotations;
-    const isOptional = _param.optional;
+    const isOptional = _param.isOptional;
     return { name, typeRecord, annotations, isOptional };
 }
 

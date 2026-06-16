@@ -15,11 +15,12 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { NodeCacheNames } from '../../../common/predefines';
+import { NodeCacheFactory, AstNodeCacheValueMetadata } from '../../../common/node-cache';
 
 export interface PropertyValueInfo {
     value: arkts.AstNode;
     shouldCache?: boolean;
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 }
 
 export class PropertyValueCache {
@@ -33,13 +34,13 @@ export class PropertyValueCache {
         return this.instance;
     }
 
-    private _updateValue(value: arkts.AstNode, shouldCache?: boolean, metadata?: arkts.AstNodeCacheValueMetadata): void {
+    private _updateValue(value: arkts.AstNode, shouldCache?: boolean, metadata?: AstNodeCacheValueMetadata): void {
         if (shouldCache) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(value, metadata);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(value, metadata);
         } else {
             let currParent: arkts.AstNode | undefined = value.parent;
-            while (!!currParent && !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer)) {
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
+            while (!!currParent && !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(currParent.peer)) {
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(currParent.peer);
                 currParent = currParent.parent;
             }
         }

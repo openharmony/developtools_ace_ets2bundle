@@ -79,7 +79,7 @@ interface PathValidationResult {
 
 interface PathValidationContext {
     type: string;
-    node: arkts.ClassDeclaration | arkts.StructDeclaration;
+    node: arkts.ClassDeclaration | arkts.ETSStructDeclaration;
     collectNode: Map<string, arkts.AstNode>;
     hasProperty?: (name: string) => boolean;
     hasStateVariable?: (name: string, isGetMethod: boolean) => boolean;
@@ -125,14 +125,14 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (!arkts.isEtsScript(node)) {
+        if (!arkts.isETSModule(node)) {
             return;
         }
 
         this.initList(node);
 
         for (const child of node.statements) {
-            if (!arkts.isClassDeclaration(child) && !arkts.isStructDeclaration(child)) {
+            if (!arkts.isClassDeclaration(child) && !arkts.isETSStructDeclaration(child)) {
                 continue;
             }
 
@@ -145,23 +145,23 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
             this.validateWildcardPaths(child);
 
-            if (arkts.isClassDeclaration(child)) {
-                this.checkInObservedV2Class(child);
-                this.validatePathsInClass(child);
-            } else {
+            if (arkts.isETSStructDeclaration(child)) {
                 this.checkInComponentV2Struct(child);
                 this.validatePathsInStruct(child);
+            } else {
+                this.checkInObservedV2Class(child);
+                this.validatePathsInClass(child);
             }
         }
     }
 
-    private hasAnySyncMonitorMethod(node: arkts.ClassDeclaration | arkts.StructDeclaration): boolean {
+    private hasAnySyncMonitorMethod(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): boolean {
         return (node.definition?.body ?? []).some(
             (member) => arkts.isMethodDefinition(member) && this.findSyncMonitorAnnotation(member) !== undefined
         );
     }
 
-    private validateWildcardPaths(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+    private validateWildcardPaths(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): void {
         for (const member of node.definition?.body ?? []) {
             if (!arkts.isMethodDefinition(member)) {
                 continue;
@@ -205,7 +205,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     // Collect the necessary nodes
-    private initList(node: arkts.EtsScript): void {
+    private initList(node: arkts.ETSModule): void {
         this.collectNode = new Map();
         this.enumMemberValues = new Map();
 
@@ -318,14 +318,14 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     // Decorator Usage Validation
     private findSyncMonitorAnnotation(body: arkts.MethodDefinition): arkts.AnnotationUsage | undefined {
-        return body.scriptFunction?.annotations?.find(
+        return body.function?.annotations?.find(
             (annotation) =>
                 annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name === PresetDecorators.SYNC_MONITOR
         );
     }
 
-    private checkSyncMonitorUsedAlone(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+    private checkSyncMonitorUsedAlone(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): void {
         for (const body of node.definition?.body ?? []) {
             if (!arkts.isMethodDefinition(body)) {
                 continue;
@@ -343,7 +343,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private getConflictingAnnotations(body: arkts.MethodDefinition): arkts.AnnotationUsage[] {
-        return body.scriptFunction!.annotations!.filter(
+        return body.function!.annotations!.filter(
             (annotation) =>
                 annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name !== PresetDecorators.SYNC_MONITOR &&
@@ -359,7 +359,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 const startPositions = conflicting.map((a) => a.startPosition);
                 const endPositions = conflicting.map((a) => a.endPosition);
                 let startPosition = startPositions[0];
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = endPositions[endPositions.length - 1];
                 return {
                     title: 'Remove the annotation',
@@ -370,7 +370,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private checkDecorateMethod(node: arkts.ClassDeclaration | arkts.StructDeclaration): void {
+    private checkDecorateMethod(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): void {
         node.definition?.body.forEach((body) => {
             if (!arkts.isClassProperty(body)) {
                 return;
@@ -390,7 +390,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 message: this.messages.syncMonitorDecorateMethod,
                 fix: () => {
                     let startPosition = syncMonitorDecorator.startPosition;
-                    startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                    startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                     const endPosition = syncMonitorDecorator.endPosition;
                     return {
                         title: 'Remove the @SyncMonitor annotation',
@@ -418,7 +418,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
     }
 
-    private checkInComponentV2Struct(node: arkts.StructDeclaration): void {
+    private checkInComponentV2Struct(node: arkts.ETSStructDeclaration): void {
         this.checkSyncMonitorUsedAlone(node);
 
         const hasComponentV2 = this.checkDecorator(node, PresetDecorators.COMPONENT_V2);
@@ -488,7 +488,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private reportAddComponentV2(node: arkts.StructDeclaration): void {
+    private reportAddComponentV2(node: arkts.ETSStructDeclaration): void {
         const syncMonitorAnnotation = this.findFirstSyncMonitorInNode(node);
         if (!syncMonitorAnnotation) {
             return;
@@ -511,7 +511,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private reportChangeToComponentV2(node: arkts.StructDeclaration): void {
+    private reportChangeToComponentV2(node: arkts.ETSStructDeclaration): void {
         const syncMonitorAnnotation = this.findFirstSyncMonitorInNode(node);
         if (!syncMonitorAnnotation) {
             return;
@@ -542,7 +542,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         });
     }
 
-    private findFirstSyncMonitorInNode(node: arkts.ClassDeclaration | arkts.StructDeclaration): arkts.AnnotationUsage | undefined {
+    private findFirstSyncMonitorInNode(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): arkts.AnnotationUsage | undefined {
         for (const body of node.definition?.body ?? []) {
             if (!arkts.isMethodDefinition(body)) {
                 continue;
@@ -595,7 +595,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     // Path Validation
-    private validatePathsInStruct(node: arkts.StructDeclaration): void {
+    private validatePathsInStruct(node: arkts.ETSStructDeclaration): void {
         if (!this.checkDecorator(node, PresetDecorators.COMPONENT_V2)) {
             return;
         }
@@ -726,7 +726,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     private validateSingleSegment(
         firstSegment: string,
         firstSegmentIsStateVariable: boolean,
-        node: arkts.StructDeclaration | arkts.ClassDeclaration
+        node: arkts.ETSStructDeclaration | arkts.ClassDeclaration
     ): PathValidationResult {
         if (!firstSegmentIsStateVariable) {
             return { valid: false, reason: PathInvalidReason.NOT_STATE_VARIABLE, level: 'warn' };
@@ -759,7 +759,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 );
             }
             return this.hasGetMethodWithDecorator(
-                context.node as arkts.StructDeclaration, segment, PresetDecorators.COMPUTED
+                context.node as arkts.ETSStructDeclaration, segment, PresetDecorators.COMPUTED
             );
         }
         if (context.type === CONTEXT_TYPE_CLASS) {
@@ -1092,7 +1092,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     // Union Type Validation
     private validateUnionTypeAccess(
-        parentNode: arkts.ClassDeclaration | arkts.StructDeclaration,
+        parentNode: arkts.ClassDeclaration | arkts.ETSStructDeclaration,
         segment: string,
         rest: string[],
         context: PathValidationContext,
@@ -1398,7 +1398,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         const isClassNode = arkts.isClassDeclaration(typeNode);
-        const isStructNode = arkts.isStructDeclaration(typeNode);
+        const isStructNode = arkts.isETSStructDeclaration(typeNode);
         const isGetMethod = (isClassNode || isStructNode) ? this.isGetMethod(typeNode, segment) : false;
         const nextType = this.getPropTypeName(typeNode, segment);
 
@@ -1483,7 +1483,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private firstSegmentTypeName(
-        variableName: string, node: arkts.StructDeclaration | arkts.ClassDeclaration
+        variableName: string, node: arkts.ETSStructDeclaration | arkts.ClassDeclaration
     ): string | undefined {
         if (!node.definition?.body) {
             return arkts.isClassDeclaration(node)
@@ -1520,10 +1520,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             member.kind !== arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
             return undefined;
         }
-        if (!this.isPropertyNameMatch(member, variableName) || !member.scriptFunction?.returnTypeAnnotation) {
+        if (!this.isPropertyNameMatch(member, variableName) || !member.function?.returnTypeAnnotation) {
             return undefined;
         }
-        return this.getTypeFromPropertyAnnotation(member.scriptFunction.returnTypeAnnotation);
+        return this.getTypeFromPropertyAnnotation(member.function.returnTypeAnnotation);
     }
 
     private findVariableTypeInParentClass(variableName: string, node: arkts.ClassDeclaration): string | undefined {
@@ -1614,8 +1614,8 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private getReturnTypeFromMethod(method: arkts.MethodDefinition): string | undefined {
-        return method.scriptFunction?.returnTypeAnnotation
-            ? this.getTypeFromPropertyAnnotation(method.scriptFunction.returnTypeAnnotation)
+        return method.function?.returnTypeAnnotation
+            ? this.getTypeFromPropertyAnnotation(method.function.returnTypeAnnotation)
             : undefined;
     }
 
@@ -1657,7 +1657,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     private getPropertyInDeclByName(
         node: arkts.AstNode, propertyName: string
     ): arkts.ClassProperty | undefined {
-        if (!arkts.isClassDeclaration(node) && !arkts.isStructDeclaration(node)) {
+        if (!arkts.isClassDeclaration(node) && !arkts.isETSStructDeclaration(node)) {
             return undefined;
         }
         const decl = node.definition;
@@ -1680,15 +1680,15 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         return undefined;
     }
 
-    private isGetMethod(node: arkts.ClassDeclaration | arkts.StructDeclaration, variableName: string): boolean {
+    private isGetMethod(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration, variableName: string): boolean {
         if (!node.definition?.body) {
             return false;
         }
         for (const member of node.definition.body) {
             if (arkts.isMethodDefinition(member) &&
                 member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET &&
-                member.name && arkts.isIdentifier(member.name) &&
-                member.name.name === variableName) {
+                member.id && arkts.isIdentifier(member.id) &&
+                member.id!.name! === variableName) {
                 return true;
             }
         }
@@ -1738,10 +1738,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         if (!decoratorName) {
             return true;
         }
-        if (!member.scriptFunction?.annotations) {
+        if (!member.function?.annotations) {
             return false;
         }
-        return member.scriptFunction.annotations.some(
+        return member.function.annotations.some(
             (annotation) => annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === decoratorName
         );
     }
@@ -1753,7 +1753,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private hasGetMethodWithDecorator(
-        node: arkts.ClassDeclaration | arkts.StructDeclaration,
+        node: arkts.ClassDeclaration | arkts.ETSStructDeclaration,
         methodName: string,
         decoratorName: string
     ): boolean {
@@ -1767,8 +1767,8 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 this.isPropertyNameMatch(member, methodName)
         ) as arkts.MethodDefinition | undefined;
 
-        if (method && method.scriptFunction?.annotations) {
-            const hasDecorator = method.scriptFunction.annotations.some(
+        if (method && method.function?.annotations) {
+            const hasDecorator = method.function.annotations.some(
                 (annotation) => annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === decoratorName
             );
             if (hasDecorator) {
@@ -1792,21 +1792,20 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         isClassNode: boolean,
         isStructNode: boolean
     ): boolean {
-        if (isClassNode) {
+        if (isStructNode) {
+            return isGetMethod
+                ? this.hasGetMethodWithDecorator(typeNode as arkts.ETSStructDeclaration, segment, PresetDecorators.COMPUTED)
+                : this.hasClassPropertyWithRequiredDecorators(typeNode as arkts.ETSStructDeclaration, segment, STRUCT_REQUIRED_DECORATORS);
+        } else if (isClassNode) {
             return isGetMethod
                 ? this.hasGetMethodWithDecorator(typeNode as arkts.ClassDeclaration, segment, PresetDecorators.COMPUTED)
                 : this.hasClassProperty(typeNode as arkts.ClassDeclaration, segment, PresetDecorators.TRACE);
-        }
-        if (isStructNode) {
-            return isGetMethod
-                ? this.hasGetMethodWithDecorator(typeNode as arkts.StructDeclaration, segment, PresetDecorators.COMPUTED)
-                : this.hasClassPropertyWithRequiredDecorators(typeNode as arkts.StructDeclaration, segment, STRUCT_REQUIRED_DECORATORS);
         }
         return false;
     }
 
     private hasClassPropertyWithRequiredDecorators(
-        node: arkts.StructDeclaration,
+        node: arkts.ETSStructDeclaration,
         propertyName: string,
         requiredDecorators: string[]
     ): boolean {
@@ -1832,10 +1831,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return requiredDecorators.some((d) => decorators.includes(d));
         }
         if (this.isGetMethodMatch(member, propertyName) && arkts.isMethodDefinition(member)) {
-            if (!member.scriptFunction?.annotations) {
+            if (!member.function?.annotations) {
                 return false;
             }
-            const methodDecorators = member.scriptFunction.annotations
+            const methodDecorators = member.function.annotations
                 .map((a) => a.expr && arkts.isIdentifier(a.expr) && a.expr.name ? a.expr.name : '')
                 .filter((n) => n);
             return requiredDecorators.some((d) => methodDecorators.includes(d));
@@ -1851,12 +1850,12 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return !!(member.key && arkts.isIdentifier(member.key) && member.key.name === propertyName);
         }
         if (arkts.isMethodDefinition(member)) {
-            return !!(member.name && arkts.isIdentifier(member.name) && member.name.name === propertyName);
+            return !!(member.id && arkts.isIdentifier(member.id) && member.id!.name! === propertyName);
         }
         return false;
     }
 
-    private collectVariables(node: arkts.ClassDeclaration | arkts.StructDeclaration): Map<string, string[]> {
+    private collectVariables(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): Map<string, string[]> {
         const variableMap = new Map<string, string[]>();
         node.definition?.body.forEach((member) => {
             if (arkts.isClassProperty(member)) {
@@ -1866,9 +1865,9 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 }
             } else if (arkts.isMethodDefinition(member) &&
                 member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
-                const methodId = member.scriptFunction?.id;
+                const methodId = member.function?.id;
                 if (methodId && arkts.isIdentifier(methodId) && methodId.name) {
-                    const methodDecorators = member.scriptFunction.annotations
+                    const methodDecorators = member.function.annotations
                         ?.map((e) => e.expr && arkts.isIdentifier(e.expr) && e.expr.name ? e.expr.name : '')
                         .filter((n) => n) || [];
                     variableMap.set(methodId.name, methodDecorators);
@@ -1878,7 +1877,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         return variableMap;
     }
 
-    private checkDecorator(node: arkts.ClassDeclaration | arkts.StructDeclaration, decoratorName: string): boolean {
+    private checkDecorator(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration, decoratorName: string): boolean {
         return node.definition?.annotations?.some(
             (annotation) => annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === decoratorName
         ) ?? false;

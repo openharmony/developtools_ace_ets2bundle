@@ -14,9 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getInteropPath } from '../path';
-const interop = require(getInteropPath());
-const nullptr = interop.nullptr;
 import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import {
     getCustomComponentOptionsName,
@@ -35,7 +32,6 @@ import {
     annotation,
     filterDefined,
     collect,
-    createAndInsertImportDeclaration,
     isDecoratorAnnotation,
     withAPIVersion,
     expectNameInTypeReference,
@@ -93,7 +89,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private entryAnnoInfo: EntryAnnoInfo[] = [];
     private structMembersMap: Map<string, arkts.AstNode[]> = new Map();
     private projectConfig: ProjectConfig | undefined;
-    private entryRouteName: arkts.AstNode | undefined;
+    private entryRouteName: arkts.Expression | undefined;
     private componentType: ComponentType = {
         hasComponent: false,
         hasComponentV2: false,
@@ -112,7 +108,7 @@ export class ComponentTransformer extends AbstractVisitor {
     init(): void {
         MetaDataCollector.getInstance()
             .setProjectConfig(this.projectConfig)
-            .setAbsName(this.program?.absName)
+            .setAbsName(this.program?.absoluteName)
             .setExternalSourceName(this.externalSourceName);
     }
 
@@ -132,7 +128,7 @@ export class ComponentTransformer extends AbstractVisitor {
         };
     }
 
-    enterStruct(node: arkts.StructDeclaration): void {
+    enterStruct(node: arkts.ETSStructDeclaration): void {
         if (!node.definition.ident) {
             return;
         }
@@ -142,7 +138,7 @@ export class ComponentTransformer extends AbstractVisitor {
         }
     }
 
-    exitStruct(node: arkts.StructDeclaration | arkts.ClassDeclaration): void {
+    exitStruct(node: arkts.ETSStructDeclaration | arkts.ClassDeclaration): void {
         if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) {
             return;
         }
@@ -151,24 +147,8 @@ export class ComponentTransformer extends AbstractVisitor {
         }
     }
 
-    createImportDeclaration(sourceName: string, importedName: string): void {
-        const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(sourceName);
-        const imported: arkts.Identifier = arkts.factory.createIdentifier(importedName);
-        // Insert this import at the top of the script's statements.
-        if (!this.program) {
-            throw Error('Failed to insert import: Transformer has no program');
-        }
-        createAndInsertImportDeclaration(
-            source,
-            imported,
-            imported,
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_VALUE,
-            this.program
-        );
-    }
-
-    getUpdateStatements(): arkts.AstNode[] {
-        let updateStatements: arkts.AstNode[] = [];
+    getUpdateStatements(): arkts.Statement[] {
+        let updateStatements: arkts.Statement[] = [];
         if (this.componentInterfaceCollection.length > 0) {
             this.insertComponentImport();
             updateStatements.push(...this.componentInterfaceCollection);
@@ -182,23 +162,25 @@ export class ComponentTransformer extends AbstractVisitor {
                     EntryFactory.callRegisterNamedRouter(
                         this.entryRouteName,
                         this.projectConfig,
-                        this.program?.absName,
-                        item.range
+                        this.program?.absoluteName,
+                        item.startPosition,
+                        item.endPosition
                     )
                 )
             );
-            this.createImportDeclaration(CUSTOM_COMPONENT_IMPORT_SOURCE_NAME, NavigationNames.NAVINTERFACE);
+            this.importCollector.collectSource(NavigationNames.NAVINTERFACE, CUSTOM_COMPONENT_IMPORT_SOURCE_NAME);
+            this.importCollector.collectImport(NavigationNames.NAVINTERFACE);
         }
         return updateStatements;
     }
 
-    processRootEtsScript(node: arkts.EtsScript): arkts.EtsScript {
+    processRootETSModule(node: arkts.ETSModule): arkts.ETSModule {
         if (this.isExternal && this.externalSourceName === CUSTOM_COMPONENT_IMPORT_SOURCE_NAME) {
             const navInterface = EntryFactory.createNavInterface();
             navInterface.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
-            return arkts.factory.updateEtsScript(node, [...node.statements, navInterface]);
+            return arkts.factory.updateETSModule(node, [...node.statements, navInterface]);
         }
-        let _newNode: arkts.EtsScript | undefined;
+        let _newNode: arkts.ETSModule | undefined;
         withAPIVersion(
             { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
             (sdkVersion: APIVersions) => {
@@ -209,7 +191,7 @@ export class ComponentTransformer extends AbstractVisitor {
                     const statements = node.statements;
                     const foundDecl = findNavigationModuleInfo(statements, this.externalSourceName);
                     if (!foundDecl) {
-                        _newNode = arkts.factory.updateEtsScript(node, [
+                        _newNode = arkts.factory.updateETSModule(node, [
                             ...node.statements,
                             EntryFactory.createNavigationModuleInfo(this.externalSourceName),
                         ]);
@@ -228,17 +210,23 @@ export class ComponentTransformer extends AbstractVisitor {
         ) {
             return node;
         }
-        let newNode: arkts.EtsScript = StructFactory.insertNavigationBuilderRegisterClass(
-            node, 
+        const navigationBuilderClass = StructFactory.createNavigationBuilderRegisterClass(
+            node,
             MetaDataCollector.getInstance().routerInfo, 
             MetaDataCollector.getInstance().fileAbsName
         );
         this.insertComponentImport();
-        const updateStatements: arkts.AstNode[] = this.getUpdateStatements();
-        if (updateStatements.length > 0) {
-            return arkts.factory.updateEtsScript(newNode, [...newNode.statements, ...updateStatements]);
+        const updateStatements: arkts.Statement[] = this.getUpdateStatements();
+        if (updateStatements.length > 0 || this.importCollector.importInfos.length > 0 || navigationBuilderClass !== undefined) {
+            const newStatements = collect<arkts.Statement>(
+                this.importCollector.getImportStatements(),
+                node.statements,
+                navigationBuilderClass ? [navigationBuilderClass] : [],
+                updateStatements
+            );
+            return arkts.factory.updateETSModule(node, newStatements);
         }
-        return newNode;
+        return node;
     }
 
     private _collectImportFromCustomComponentSource(importName: string): void {
@@ -270,7 +258,6 @@ export class ComponentTransformer extends AbstractVisitor {
             this._collectImportFromEntrySource(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
             this._collectImportFromCustomComponentSource(CustomComponentNames.PAGE_LIFE_CYCLE);
         }
-        this.importCollector.insertCurrentImports(this.program);
     }
 
     updateEntryPoint(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
@@ -293,7 +280,8 @@ export class ComponentTransformer extends AbstractVisitor {
                     ...node.definition.body,
                 ],
                 node.definition.modifiers,
-                arkts.classDefinitionFlags(node.definition)
+                arkts.classDefinitionFlags(node.definition),
+                node.definition.annotations
             )
         );
     }
@@ -304,21 +292,21 @@ export class ComponentTransformer extends AbstractVisitor {
             arkts.classDefinitionFlags(definition) |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-        const body = isDecl ? undefined : arkts.factory.createBlock([arkts.factory.createReturnStatement()]);
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const body = isDecl ? undefined : arkts.factory.createBlockStatement([arkts.factory.createReturnStatement()]);
+        const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 CustomComponentNames.OPTIONS,
                 UIFactory.createTypeReferenceFromString(getCustomComponentOptionsName(definition.ident!.name))
             ),
-            undefined
+            false
         );
-        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const returnTypeAnnotation = arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
         const key = arkts.factory.createIdentifier(CustomComponentNames.BUILDCOMPATIBLENODE);
 
         return UIFactory.createMethodDefinition({
-            key,
+            key: key.clone(),
             kind,
             function: {
                 key,
@@ -333,14 +321,14 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     processComponent(
-        node: arkts.ClassDeclaration | arkts.StructDeclaration
-    ): arkts.ClassDeclaration | arkts.StructDeclaration {
+        node: arkts.ClassDeclaration | arkts.ETSStructDeclaration
+    ): arkts.ClassDeclaration | arkts.ETSStructDeclaration {
         const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1];
         const className = node.definition?.ident?.name;
         if (!className || scopeInfo?.name !== className) {
             return node;
         }
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             if (node.definition.super || node.definition.implements.length !== 0) {
                 LogCollector.getInstance().collectLogInfo({
                     node: node.definition?.ident ?? node,
@@ -359,7 +347,11 @@ export class ComponentTransformer extends AbstractVisitor {
         NamespaceProcessor.getInstance().addInterfaceToCurrentNamespace(customComponentInterface);
         const definition: arkts.ClassDefinition = node.definition!;
         if (!!scopeInfo.annotations?.entry) {
-            this.entryAnnoInfo.push({ name: className, range: scopeInfo.annotations.entry.range });
+            this.entryAnnoInfo.push({
+                name: className,
+                startPosition: scopeInfo.annotations.entry.startPosition,
+                endPosition: scopeInfo.annotations.entry.endPosition
+            });
             const routeName = getEntryRouteParam(definition);
             if (routeName && routeName.value) {
                 this.entryRouteName = routeName.value;
@@ -367,10 +359,9 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         const newDefinition: arkts.ClassDefinition = this.createNewDefinition(node, className, definition);
 
-        if (arkts.isStructDeclaration(node)) {
-            arkts.classDefinitionSetFromStructModifier(newDefinition);
-            const _node = arkts.factory.createClassDeclaration(newDefinition);
-            _node.modifiers = node.modifiers;
+        if (arkts.isETSStructDeclaration(node)) {
+            newDefinition.setFromStructModifier()
+            const _node = arkts.factory.createClassDeclaration(newDefinition, node.modifierFlags);
             _node.startPosition = node.startPosition;
             _node.endPosition = node.endPosition;
             return _node;
@@ -433,12 +424,13 @@ export class ComponentTransformer extends AbstractVisitor {
                 false,
                 false
             );
-            if (envValueExpr.range) {
-                memberExpr.range = envValueExpr.range;
+            if (envValueExpr.startPosition && envValueExpr.endPosition) {
+                memberExpr.startPosition = envValueExpr.startPosition;
+                memberExpr.endPosition = envValueExpr.endPosition;
             }
 
-            const systemEnvKeyRef = arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
+            const systemEnvKeyRef = arkts.factory.createETSTypeReference(
+                arkts.factory.createETSTypeReferencePart(
                     arkts.factory.createIdentifier(systemEnvKeyType),
                     typeAnnotation
                         ? arkts.factory.createTSTypeParameterInstantiation([typeAnnotation.clone()])
@@ -451,12 +443,12 @@ export class ComponentTransformer extends AbstractVisitor {
                 memberExpr
             );
             const varDecl = arkts.factory.createVariableDeclaration(
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
                 arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
                 [varDeclarator]
             );
-            if (envValueExpr.range) {
-                varDecl.range = envValueExpr.range;
+            if (envValueExpr.startPosition && envValueExpr.endPosition) {
+                varDecl.startPosition = envValueExpr.startPosition;
+                varDecl.endPosition = envValueExpr.endPosition;
             }
             statements.push(varDecl);
         }
@@ -484,11 +476,12 @@ export class ComponentTransformer extends AbstractVisitor {
                 continue;
             }
             const envKeyId = arkts.factory.createIdentifier(envKeyExpr.str);
-            if (envKeyExpr.range) {
-                envKeyId.range = envKeyExpr.range;
+            if (envKeyExpr.startPosition && envKeyExpr.endPosition) {
+                envKeyId.startPosition = envKeyExpr.startPosition;
+                envKeyId.endPosition = envKeyExpr.endPosition;
             }
-            const customEnvKeyType = arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(
+            const customEnvKeyType = arkts.factory.createETSTypeReference(
+                arkts.factory.createETSTypeReferencePart(
                     arkts.factory.createIdentifier(StateManagementTypes.CUSTOM_ENV_KEY),
                     typeAnnotation
                         ? arkts.factory.createTSTypeParameterInstantiation([typeAnnotation.clone()])
@@ -501,12 +494,12 @@ export class ComponentTransformer extends AbstractVisitor {
                 envKeyId
             );
             const varDecl = arkts.factory.createVariableDeclaration(
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
                 arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_CONST,
                 [varDeclarator]
             );
-            if (envKeyExpr.range) {
-                varDecl.range = envKeyExpr.range;
+            if (envKeyExpr.startPosition && envKeyExpr.endPosition) {
+                varDecl.startPosition = envKeyExpr.startPosition;
+                varDecl.endPosition = envKeyExpr.endPosition;
             }
             statements.push(varDecl);
         }
@@ -524,38 +517,36 @@ export class ComponentTransformer extends AbstractVisitor {
             return undefined;
         }
 
-        const body = arkts.factory.createBlock(bodyStatements);
-        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const body = arkts.factory.createBlockStatement(bodyStatements);
+        const returnTypeAnnotation = arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const key = arkts.factory.createIdentifier(CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD);
         const modifiers =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
 
-        const scriptFunction = arkts.factory
-            .createScriptFunction(
-                body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    undefined,
-                    [],
-                    returnTypeAnnotation,
-                    false
-                ),
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
-            )
-            .setIdent(key);
+        const scriptFunction = arkts.factory.createScriptFunction(
+            body,
+            undefined,
+            [],
+            returnTypeAnnotation,
+            false,
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            key,
+            undefined
+        );
 
         return arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
-            key,
-            scriptFunction,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), scriptFunction),
             modifiers,
             false
         );
     }
 
     createNewDefinition(
-        node: arkts.ClassDeclaration | arkts.StructDeclaration,
+        node: arkts.ClassDeclaration | arkts.ETSStructDeclaration,
         className: string,
         definition: arkts.ClassDefinition
     ): arkts.ClassDefinition {
@@ -581,8 +572,8 @@ export class ComponentTransformer extends AbstractVisitor {
                 undefined, // superTypeParams doen't work
                 [...definition.implements, ...UIFactory.generateImplementsForStruct(scopeInfo.annotations)],
                 undefined,
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(
+                arkts.factory.createETSTypeReference(
+                    arkts.factory.createETSTypeReferencePart(
                         arkts.factory.createIdentifier(extendsName),
                         arkts.factory.createTSTypeParameterInstantiation([
                             UIFactory.createTypeReferenceFromString(className),
@@ -601,9 +592,9 @@ export class ComponentTransformer extends AbstractVisitor {
                     ...staticMethodBody,
                 ],
                 definition.modifiers,
-                arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL
-            )
-            .setAnnotations(definition.annotations);
+                arkts.classDefinitionFlags(definition) | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_FINAL,
+                definition.annotations
+            );
     }
 
     generateComponentInterface(
@@ -615,8 +606,8 @@ export class ComponentTransformer extends AbstractVisitor {
             .createInterfaceDeclaration(
                 [],
                 arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
-                nullptr,
-                arkts.factory.createInterfaceBody([...(this.structMembersMap.get(name) || [])]),
+                undefined,
+                arkts.factory.createTSInterfaceBody([...(this.structMembersMap.get(name) || [])]),
                 false,
                 false
             )
@@ -625,10 +616,10 @@ export class ComponentTransformer extends AbstractVisitor {
         return interfaceNode;
     }
 
-    collectComponentMembers(node: arkts.StructDeclaration, className: string): void {
+    collectComponentMembers(node: arkts.ETSStructDeclaration, className: string): void {
         const members = filterDefined(
             collect(
-                ...node.definition.body.filter(arkts.isClassProperty).map((it) => {
+                ...node.definition!.body.filter(arkts.isClassProperty).map((it) => {
                     // if (hasDecoratorName(it, DecoratorNames.PROVIDE)) {
                     //     UIFactory.processNoAliasProvideVariable(it);
                     // }
@@ -675,7 +666,7 @@ export class ComponentTransformer extends AbstractVisitor {
         return [originMember, optionsHasMember];
     }
 
-    visitStruct(node: arkts.StructDeclaration): arkts.StructDeclaration | arkts.ClassDeclaration {
+    visitStruct(node: arkts.ETSStructDeclaration): arkts.ETSStructDeclaration | arkts.ClassDeclaration {
         this.enterStruct(node);
         if (this.scopeInfos.length > 0 && isComponentStruct(node, this.scopeInfos[this.scopeInfos.length - 1])) {
             const updateNode = this.processComponent(node);
@@ -685,14 +676,14 @@ export class ComponentTransformer extends AbstractVisitor {
         return node;
     }
 
-    visitETSModule(node: arkts.EtsScript): arkts.EtsScript {
+    visitETSModule(node: arkts.ETSModule): arkts.ETSModule {
         NamespaceProcessor.getInstance().enter();
         const isNamespace = node.isNamespace;
         const newStatements = node.statements.map((st) => {
-            if (arkts.isStructDeclaration(st)) {
+            if (arkts.isETSStructDeclaration(st)) {
                 return this.visitStruct(st);
             }
-            if (arkts.isEtsScript(st)) {
+            if (arkts.isETSModule(st)) {
                 return this.visitETSModule(st);
             }
             if (!isNamespace) {
@@ -703,7 +694,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 ) {
                     return this.updateEntryPoint(st);
                 }
-                let _newSt: arkts.AstNode | undefined;
+                let _newSt: arkts.Statement | undefined;
                 withAPIVersion(
                     { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
                     (sdkVersion: APIVersions) => {
@@ -727,12 +718,12 @@ export class ComponentTransformer extends AbstractVisitor {
                                 && arkts.hasModifierFlag(st, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE)
                                 && hasDecoratorName(st, DecoratorNames.BUILDER)
                         ) {
-                            const functionName = st.name?.name;
-                            const returnType = st.scriptFunction.returnTypeAnnotation;
+                            const functionName = st.function!.id?.name;
+                            const returnType = st.function!.returnTypeAnnotation;
                             const returnTypeName = expectNameInTypeReference(returnType);
                             if (!!functionName && !!returnTypeName && returnTypeName.name === `${functionName}Attribute`) {
-                                st.scriptFunction.setReturnTypeAnnotation(
-                                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
+                                st.function!.setReturnTypeAnnotation(
+                                    arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
                                 );
                             }
                         }
@@ -741,18 +732,18 @@ export class ComponentTransformer extends AbstractVisitor {
             }
             return st;
         });
-        let newNode = arkts.factory.updateEtsScript(node, newStatements);
+        let newNode = arkts.factory.updateETSModule(node, newStatements);
         if (isNamespace) {
             newNode = NamespaceProcessor.getInstance().updateCurrentNamespace(newNode);
         } else {
-            newNode = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootEtsScript(newNode));
+            newNode = NamespaceProcessor.getInstance().updateCurrentNamespace(this.processRootETSModule(newNode));
         }
         NamespaceProcessor.getInstance().exit();
         return newNode;
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
-        if (!arkts.isEtsScript(node)) {
+        if (!arkts.isETSModule(node)) {
             return node;
         }
         return this.visitETSModule(node);

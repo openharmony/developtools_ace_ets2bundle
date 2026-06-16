@@ -62,8 +62,8 @@ function resetOnReuseWithEventTranslator(
             false,
             false
         ),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateInitializeValue(propertyValue, propertyType, originalName)
+        factory.generateInitializeValue(propertyValue, propertyType, originalName),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!propertyValue) {

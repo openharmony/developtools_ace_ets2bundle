@@ -194,13 +194,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     if (({let gensym___133282677 = initializers;
     (((gensym___133282677) == (null)) ? undefined : gensym___133282677.__options_has_linkVar)})) {
       this.__backing_linkVar = STATE_MGMT_FACTORY.makeLink<number>(this, "linkVar", initializers!.__backing_linkVar!);
-    };
+    }
     this.__backing_str = STATE_MGMT_FACTORY.makeState<string>(this, "str", ((({let gensym___195569523 = initializers;
     (((gensym___195569523) == (null)) ? undefined : gensym___195569523.str)})) ?? ("aaa")));
-    this.__backing_prop1 = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "appTheme", "prop1", "bbb")
-    this.__backing_prop2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "localTheme", "prop2", "ccc")
+    this.__backing_prop1 = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "appTheme", "prop1", "bbb");
+    this.__backing_prop2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "localTheme", "prop2", "ccc");
     this.__backing_objLinkVar = STATE_MGMT_FACTORY.makeObjectLink<MyClassB>(this, "objLinkVar", (({let gensym___208007857 = initializers;
-    (((gensym___208007857) == (null)) ? undefined : gensym___208007857.objLinkVar)}) as MyClassB))
+    (((gensym___208007857) == (null)) ? undefined : gensym___208007857.objLinkVar)}) as MyClassB));
     this.__backing_provideVar = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar", "alias", ((({let gensym___83712361 = initializers;
     (((gensym___83712361) == (null)) ? undefined : gensym___83712361.provideVar)})) ?? ("ddd")), false);
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));

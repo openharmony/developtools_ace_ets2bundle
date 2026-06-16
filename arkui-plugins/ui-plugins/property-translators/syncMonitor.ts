@@ -35,7 +35,7 @@ function fieldWithSyncMonitorMethod(
     const field: arkts.ClassProperty = arkts.factory.createClassProperty(
         arkts.factory.createIdentifier(newName),
         undefined,
-        arkts.factory.createUnionType([
+        arkts.factory.createETSUnionType([
             UIFactory.createTypeReferenceFromString(StateManagementTypes.MONITOR_DECORATED),
             arkts.factory.createETSUndefinedType(),
         ]),
@@ -52,7 +52,7 @@ function syncMonitorInfo(
     isFromStruct: boolean,
     paramsLength: number
 ): SyncMonitorInfo {
-    const monitorItem: string[] | undefined = getValueInSyncMonitorAnnotation(this.method.scriptFunction.annotations);
+    const monitorItem: string[] | undefined = getValueInSyncMonitorAnnotation(this.method.function!.annotations);
     const syncMonitorInfo: SyncMonitorInfo = {
         monitorItem: monitorItem,
         originalName: originalName,
@@ -90,7 +90,7 @@ export class SyncMonitorTranslator extends MethodTranslator implements ISyncMoni
             newName,
             originalName,
             this.classInfo.isFromStruct,
-            this.method.scriptFunction.params.length
+            this.method.function!.params.length
         );
     }
 
@@ -98,7 +98,7 @@ export class SyncMonitorTranslator extends MethodTranslator implements ISyncMoni
         if (this.isDecl) {
             return [this.method];
         }
-        const originalName: string = expectName(this.method.name);
+        const originalName: string = expectName(this.method.id!);
         const newName: string = syncMonitorField(originalName);
         this.cacheTranslatedInitializer(newName, originalName);
         return this.translateWithoutInitializer(newName, originalName);
@@ -108,7 +108,7 @@ export class SyncMonitorTranslator extends MethodTranslator implements ISyncMoni
         const info: SyncMonitorInfo = this.syncMonitorInfo(newName, originalName);
         const monitorPathsStr: string = !!info.monitorItem ? info.monitorItem.join(',') : '';
         SyncMonitorCache.getInstance().collectSyncMonitors(this.classInfo.className, monitorPathsStr, info);
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(this.classInfo.className, [resetStateVars]);
     }
 
@@ -129,7 +129,7 @@ export class SyncMonitorCacheTranslator extends MethodCacheTranslator implements
 
     syncMonitorInfo(newName: string, originalName: string): SyncMonitorInfo {
         const isFromStruct = checkIsStructMethodFromInfo(this.methodInfo);
-        return syncMonitorInfo.bind(this)(newName, originalName, isFromStruct, this.method.scriptFunction.params.length);
+        return syncMonitorInfo.bind(this)(newName, originalName, isFromStruct, this.method.function!.params.length);
     }
 
     translateMember(): arkts.AstNode[] {
@@ -152,7 +152,7 @@ export class SyncMonitorCacheTranslator extends MethodCacheTranslator implements
             className = this.methodInfo.classInfo?.name!;
         }
         SyncMonitorCache.getInstance().collectSyncMonitors(className, monitorPathsStr, info);
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(className, [resetStateVars]);
     }
 

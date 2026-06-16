@@ -44,12 +44,13 @@ import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from 'collectors/ui-collectors/records';
 import { ImportCollector } from '../../common/import-collector';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithEnvProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -70,12 +71,12 @@ function initializeStructWithEnvProperty(
     }
     const args: arkts.Expression[] = [
         envValue!,
-        arkts.factory.create1StringLiteral(originalName)
+        arkts.factory.createStringLiteral(originalName)
     ];
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     return arkts.factory.createExpressionStatement(assign);
 }
@@ -98,7 +99,7 @@ export class EnvTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
     }
@@ -122,7 +123,7 @@ export class EnvCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
     }
@@ -136,7 +137,7 @@ export class EnvInterfaceTranslator<T extends InterfacePropertyTypes> extends In
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.ENV);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.ENV);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.ENV);
         }

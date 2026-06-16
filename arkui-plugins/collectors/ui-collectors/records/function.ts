@@ -48,13 +48,13 @@ export class FunctionRecord extends BaseRecord<arkts.MethodDefinition, FunctionI
     }
 
     collectFromNode(node: arkts.MethodDefinition): void {
-        this.name = node.name.name;
+        this.name = node.id?.name;
         this.modifiers = node.modifiers;
         this.kind = node.kind;
         this.isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         this.isGlobalInit = this.name === BuiltInNames.GLOBAL_INIT_METHOD;
         this.isGlobalMain = this.name === BuiltInNames.GLOBAL_MAIN_METHOD;
-        for (const anno of node.scriptFunction.annotations) {
+        for (const anno of node.function.annotations) {
             this._annotationRecord?.collect(anno);
         }
         if (!!this._annotationRecord?.annotationInfo?.hasComponentBuilder) {

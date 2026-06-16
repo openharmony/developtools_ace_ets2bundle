@@ -21,6 +21,7 @@ import { backingField, expectName } from '../../common/arkts-utils';
 import { isStatic } from '../utils';
 import { DecoratorNames } from '../../common/predefines';
 import { StructPropertyInfo } from '../../collectors/ui-collectors/records';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 export class StaticPropertyTranslator extends PropertyTranslator {
     protected hasInitializeStruct: boolean = false;
@@ -36,22 +37,22 @@ export class StaticPropertyTranslator extends PropertyTranslator {
         return this.translateWithoutInitializer(newName, originalName);
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         return this.property;
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         throw new Error(`static property ${originalName} has no getter.`);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         throw new Error(`static property ${originalName} has no setter.`);
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return undefined;
     }
@@ -78,34 +79,34 @@ export class StaticPropertyCachedTranslator extends PropertyCachedTranslator {
     protected cacheTranslatedInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): void {}
 
     protected translateWithoutInitializer(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.AstNode[] {
         const field = this.field(newName, originalName, metadata);
         return [field];
     }
 
-    field(newName: string, originalName?: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ClassProperty {
+    field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         return this.property;
     }
 
-    getter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         throw new Error(`static property ${originalName} has no getter.`);
     }
 
-    setter(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.MethodDefinition {
+    setter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         throw new Error(`static property ${originalName} has no setter.`);
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return undefined;
     }

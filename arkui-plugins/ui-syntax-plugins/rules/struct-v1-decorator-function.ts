@@ -43,7 +43,7 @@ class StructV1DecoratorFunctionRule extends AbstractUISyntaxRule {
             this.typeAliasMap.set(node.id.name, node.typeAnnotation);
             return;
         }
-        if (!arkts.isStructDeclaration(node)) {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         node.definition.body.forEach(member => {

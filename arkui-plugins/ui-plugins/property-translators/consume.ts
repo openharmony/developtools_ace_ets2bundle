@@ -42,19 +42,20 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithConsumeProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
-        arkts.factory.create1StringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
+        arkts.factory.createStringLiteral(originalName),
+        arkts.factory.createStringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
     ];
     if (this.hasWatch) {
         factory.addWatchFunc(args, this.property);
@@ -65,12 +66,13 @@ function initializeStructWithConsumeProperty(
             args.push(arkts.factory.createUndefinedLiteral());
         }
         args.push(arkts.factory.createObjectExpression(
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier('defaultValue'),
-                defaultValue
-            )],
-            true
+                defaultValue,
+                false,
+                false
+            )]
         ));
         if (this.isMemoShouldUpdate) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
@@ -79,8 +81,8 @@ function initializeStructWithConsumeProperty(
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate && !!stateManagementCallType) {
         PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
@@ -122,7 +124,7 @@ export class ConsumeTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
@@ -148,14 +150,14 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
 
     resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
         const alias: string = getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName;
-        const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(alias)];
+        const args: arkts.Expression[] = [arkts.factory.createStringLiteral(alias)];
         if (this.hasWatch) {
             const watchStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.WATCH);
             if (watchStr) {
@@ -167,11 +169,14 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
             if (args.length === 1) {
                 args.push(arkts.factory.createUndefinedLiteral());
             }
-            args.push(arkts.factory.createObjectExpression(
+            args.push(arkts.ObjectExpression.createObjectExpression(
                 arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
                 [arkts.factory.createProperty(
+                    arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                     arkts.factory.createIdentifier('defaultValue'),
-                    defaultValue
+                    defaultValue,
+                    false,
+                    false
                 )],
                 true
             ));
@@ -194,7 +199,7 @@ export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extend
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.CONSUME);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.CONSUME);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.CONSUME);
         }

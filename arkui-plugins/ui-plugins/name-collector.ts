@@ -48,7 +48,9 @@ export class NameCollector extends AbstractVisitor {
     }
 
     collectInfoFromComponentFunction(component: arkts.ScriptFunction): void {
-        if (!component.id) return;
+        if (!component.id) {
+            return;
+        }
 
         const name: string = component.id.name;
         const argsNum: number = component.params.length;
@@ -65,13 +67,19 @@ export class NameCollector extends AbstractVisitor {
             node,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT
         );
-        if (!isDeclareAndExport) return undefined;
+        if (!isDeclareAndExport) {
+            return undefined;
+        }
 
         const isComponentBuilder = hasBuilderLambdaAnnotation(node);
-        if (!isComponentBuilder) return undefined;
-        if (!node.scriptFunction.id) return undefined;
+        if (!isComponentBuilder) {
+            return undefined;
+        }
+        if (!node.function?.id) {
+            return undefined;
+        }
 
-        return node.scriptFunction;
+        return node.function;
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {

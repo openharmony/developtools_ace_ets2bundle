@@ -92,16 +92,16 @@ function checkPoolAcceptsNotSelf(
     }
 }
 
-function getEtsScript(node: arkts.AstNode): arkts.EtsScript | undefined {
+function getETSModule(node: arkts.AstNode): arkts.ETSModule | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    const astNode = program?.astNode;
-    if (astNode && arkts.isEtsScript(astNode)) {
+    const astNode = program?.ast;
+    if (astNode && arkts.isETSModule(astNode)) {
         return astNode;
     }
     return undefined;
 }
 
-function collectSameFileStructNames(script: arkts.EtsScript): Set<string> {
+function collectSameFileStructNames(script: arkts.ETSModule): Set<string> {
     const names = new Set<string>();
     for (const stmt of script.statements) {
         if (arkts.isClassDeclaration(stmt) && stmt.definition?.ident) {
@@ -112,7 +112,7 @@ function collectSameFileStructNames(script: arkts.EtsScript): Set<string> {
 }
 
 function resolveImportedStructDecl(
-    script: arkts.EtsScript,
+    script: arkts.ETSModule,
     targetName: string
 ): arkts.ClassDefinition | undefined {
     for (const stmt of script.statements) {
@@ -136,7 +136,7 @@ function resolveImportedStructDecl(
 }
 
 function resolveStructDecl(
-    script: arkts.EtsScript,
+    script: arkts.ETSModule,
     sameFileStructs: Set<string>,
     targetName: string
 ): arkts.ClassDefinition | undefined {
@@ -158,7 +158,7 @@ function checkPoolAcceptsResolvesToStruct(
     poolAcceptsValue: arkts.ArrayExpression,
     structName: string
 ): void {
-    const script = getEtsScript(node);
+    const script = getETSModule(node);
     if (!script) {
         return;
     }

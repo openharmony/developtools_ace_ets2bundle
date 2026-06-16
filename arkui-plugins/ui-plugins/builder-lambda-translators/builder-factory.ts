@@ -20,6 +20,8 @@ import { factory as UIFactory } from '../ui-factory';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { coerceToAstNode } from '../../common/arkts-utils';
 import { generateBuilderCompatible, addcompatibleComponentImport, isFromBuilder1_1 } from '../interop/builder-interop';
+import { NodeCacheFactory } from '../../common/node-cache';
+import { NodeCacheNames } from '../../common/predefines';
 
 export class BuilderFactory {
     /**
@@ -44,8 +46,14 @@ export class BuilderFactory {
      */
     static rewriteBuilderMethod<T extends arkts.AstNode = arkts.MethodDefinition>(node: T): arkts.MethodDefinition {
         const _node = coerceToAstNode<arkts.MethodDefinition>(node);
-        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.scriptFunction);
-        return arkts.factory.updateMethodDefinition(_node, _node.kind, _node.name, newFunc, _node.modifiers, false);
+        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
+        const newFuncExpr = arkts.factory.createFunctionExpression(newFunc.id?.clone(), newFunc);
+        const result = arkts.factory.updateMethodDefinition(_node, _node.kind, _node.id, newFuncExpr, _node.modifierFlags, false, _node.overloads);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refresh(_node, result);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refreshUpdate(_node, result);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refresh(_node.function, result.function);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refreshUpdate(_node.function, result.function);
+        return result
     }
 
     /**
@@ -64,7 +72,8 @@ export class BuilderFactory {
             newValue,
             _node.typeAnnotation,
             _node.modifiers,
-            false
+            false,
+            _node.annotations
         );
     }
 
@@ -96,8 +105,8 @@ export class BuilderFactory {
         node: T
     ): arkts.ArrowFunctionExpression {
         const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
-        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.scriptFunction);
-        return arkts.factory.updateArrowFunction(_node, newFunc);
+        const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
+        return arkts.factory.updateArrowFunctionExpression(_node, newFunc, _node.annotations);
     }
 
     /**
@@ -112,7 +121,7 @@ export class BuilderFactory {
             return _node;
         }
         const newInitializer = BuilderFactory.rewriteBuilderArrowFunction(initializer);
-        return arkts.factory.updateParameterDeclaration(_node, _node.identifier, newInitializer);
+        return arkts.factory.updateETSParameterExpression(_node, _node.ident, _node.isOptional, newInitializer, _node.annotations);
     }
 
     /**
@@ -134,7 +143,7 @@ export class BuilderFactory {
         }
         const isFromClass = arkts.isClassDefinition(decl);
         const typeRef = BuilderLambdaFactory.createTypeRefInBuilderParameterProxyCall(arg, decl);
-        let newArgument: arkts.AstNode;
+        let newArgument: arkts.Expression;
         if (arkts.isTSAsExpression(arg)) {
             const objectExpr = arg.expr as arkts.ObjectExpression;
             newArgument = arkts.factory.updateTSAsExpression(
@@ -146,7 +155,7 @@ export class BuilderFactory {
         } else {
             newArgument = BuilderLambdaFactory.createBuilderParameterProxyCall(arg, decl, typeRef, isFromClass);
         }
-        return arkts.factory.updateCallExpression(_node, _node.expression, _node.typeArguments, [newArgument]);
+        return arkts.factory.updateCallExpression(_node, _node.callee, [newArgument], _node.typeParams, _node.isOptional, _node.hasTrailingComma, _node.trailingBlock);
     }
 }
 

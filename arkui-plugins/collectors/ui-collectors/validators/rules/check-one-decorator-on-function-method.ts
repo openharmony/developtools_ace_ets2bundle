@@ -68,7 +68,7 @@ function _checkOneDecoratorOnFunctionMethod(
         }
     }
     //  `@AnimatableExtend` 装饰器只能用于带有 `this` 参数的函数
-    if (metadata.annotationInfo?.hasAnimatableExtend && !hasThisParameter(node.funcExpr.scriptFunction!)) {
+    if (metadata.annotationInfo?.hasAnimatableExtend && !hasThisParameter(node.function!)) {
         const annotationNode = metadata.annotations?.[DecoratorNames.ANIMATABLE_EXTEND]!;
         this.report({
             node: annotationNode,
@@ -82,9 +82,9 @@ function _checkOneDecoratorOnFunctionMethod(
 function hasThisParameter(member: arkts.ScriptFunction): boolean {
     return member.params.some((param) => {
         return (
-            arkts.isEtsParameterExpression(param) &&
-            arkts.isIdentifier(param.identifier) &&
-            param.identifier.name === PARAM_THIS_NAME
+            arkts.isETSParameterExpression(param) &&
+            arkts.isIdentifier(param.ident) &&
+            param.ident!.name === PARAM_THIS_NAME
         );
     });
 }

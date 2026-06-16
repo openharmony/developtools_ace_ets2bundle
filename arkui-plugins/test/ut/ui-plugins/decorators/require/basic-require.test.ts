@@ -190,7 +190,7 @@ function main() {}
     this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
     this.__backing_builder = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builder)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builder)})) ?? (undefined))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builder)})) ?? (undefined))));
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {

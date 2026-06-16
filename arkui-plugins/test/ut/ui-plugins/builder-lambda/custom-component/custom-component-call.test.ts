@@ -149,7 +149,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (this.closerBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (this.closerBuilder))));
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}

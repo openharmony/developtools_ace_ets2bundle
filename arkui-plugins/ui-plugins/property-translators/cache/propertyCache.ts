@@ -15,12 +15,12 @@
 import * as arkts from '@koalaui/libarkts';
 
 export interface PropertyCachedBody {
-    initializeBody?: arkts.AstNode[];
-    updateBody?: arkts.AstNode[];
+    initializeBody?: arkts.Statement[];
+    updateBody?: arkts.Statement[];
     toRecordBody?: arkts.Property[];
     constructorBody?: arkts.AstNode[];
     monitorBody?: arkts.AstNode[];
-    resetStateVarsBody?: arkts.AstNode[];
+    resetStateVarsBody?: arkts.Statement[];
 }
 
 export interface PropertyMemoCachedInfo {
@@ -58,11 +58,11 @@ export class PropertyCache {
         return !!this._memoInfoCache.get(name)?.shouldMemoUpdateResetOnReuse;
     }
 
-    getInitializeBody(name: string): arkts.AstNode[] {
+    getInitializeBody(name: string): arkts.Statement[] {
         return this._cache.get(name)?.initializeBody ?? [];
     }
 
-    getUpdateBody(name: string): arkts.AstNode[] {
+    getUpdateBody(name: string): arkts.Statement[] {
         return this._cache.get(name)?.updateBody ?? [];
     }
 
@@ -70,7 +70,7 @@ export class PropertyCache {
         return this._cache.get(name)?.toRecordBody ?? [];
     }
 
-    getResetStateVars(name: string): arkts.AstNode[] {
+    getResetStateVars(name: string): arkts.Statement[] {
         return this._cache.get(name)?.resetStateVarsBody ?? [];
     }
 
@@ -86,13 +86,13 @@ export class PropertyCache {
         this._memoInfoCache.set(name, memoCachedInfo);
     }
 
-    collectInitializeStruct(name: string, initializeStruct: arkts.AstNode[]): void {
+    collectInitializeStruct(name: string, initializeStruct: arkts.Statement[]): void {
         const initializeBody = this._cache.get(name)?.initializeBody ?? [];
         const newInitializeBody = [...initializeBody, ...initializeStruct];
         this._cache.set(name, { ...this._cache.get(name), initializeBody: newInitializeBody });
     }
 
-    collectUpdateStruct(name: string, updateStruct: arkts.AstNode[]): void {
+    collectUpdateStruct(name: string, updateStruct: arkts.Statement[]): void {
         const updateBody = this._cache.get(name)?.updateBody ?? [];
         const newUpdateBody = [...updateBody, ...updateStruct];
         this._cache.set(name, { ...this._cache.get(name), updateBody: newUpdateBody });
@@ -104,7 +104,7 @@ export class PropertyCache {
         this._cache.set(name, { ...this._cache.get(name), toRecordBody: newToRecordBody });
     }
     
-    collectResetStateVars(name: string, resetStateVars: arkts.AstNode[]): void {
+    collectResetStateVars(name: string, resetStateVars: arkts.Statement[]): void {
         const resetStateVarsBody = this._cache.get(name)?.resetStateVarsBody ?? [];
         const newResetStateVarsBody = [...resetStateVarsBody, ...resetStateVars];
         this._cache.set(name, { ...this._cache.get(name), resetStateVarsBody: newResetStateVarsBody });

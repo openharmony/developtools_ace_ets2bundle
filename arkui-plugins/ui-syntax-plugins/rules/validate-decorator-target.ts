@@ -108,7 +108,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (arkts.isEtsScript(node)) {
+        if (arkts.isETSModule(node)) {
             this.collectNodes(node);
         }
     }
@@ -118,7 +118,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
         this.validateDecoratorPropertyOnly();
     }
 
-    private collectNodes(node: arkts.EtsScript): void {
+    private collectNodes(node: arkts.ETSModule): void {
         this.traverseNodes(node, false);
     }
 
@@ -137,7 +137,7 @@ class ValidateDecoratorTargetRule extends AbstractUISyntaxRule {
         ) {
             this.propertyOnlyNodes.push(node);
         }
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             isInStruct = true;
         }
         node.getChildren().forEach((child) => {

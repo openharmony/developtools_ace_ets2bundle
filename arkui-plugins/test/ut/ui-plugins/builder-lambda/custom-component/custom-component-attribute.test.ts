@@ -256,7 +256,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     if (({let gensym___257892811 = initializers;
     (((gensym___257892811) == (null)) ? undefined : gensym___257892811.__options_has_loadedCount)})) {
       this.__backing_loadedCount = STATE_MGMT_FACTORY.makeLink<string>(this, "loadedCount", initializers!.__backing_loadedCount!);
-    };
+    }
   }
   
   public __updateStruct(initializers: (__Options_PictureItemComponent | undefined)): void {}

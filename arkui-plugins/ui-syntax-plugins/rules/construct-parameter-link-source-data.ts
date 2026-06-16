@@ -57,11 +57,11 @@ class ConstructParameterLinkSourceDataRule extends AbstractUISyntaxRule {
 
     private initLinkPropertyMap(node: arkts.AstNode): void {
         // Check if the current node is the root node
-        if (!arkts.isEtsScript(node) || node.isNamespace) {
+        if (!arkts.isETSModule(node) || node.isNamespace) {
             return;
         }
         node.statements.forEach((member) => {
-            if (!arkts.isStructDeclaration(member) || !member.definition || !member.definition.ident ||
+            if (!arkts.isETSStructDeclaration(member) || !member.definition || !member.definition.ident ||
                 !arkts.isIdentifier(member.definition.ident)) {
                 return;
             }
@@ -86,11 +86,11 @@ class ConstructParameterLinkSourceDataRule extends AbstractUISyntaxRule {
 
     private checkLinkPropertySourceData(node: arkts.AstNode): void {
         // Validates only within the build method of StructV1 components.
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression) ||
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee) ||
             !this.isInStructV1BuildMethod(node)) {
             return;
         }
-        const componentName = node.expression.name;
+        const componentName = node.callee.name;
         // Only assignments to properties decorated with Link trigger rule checks
         if (!this.linkPropertyMap.has(componentName)) {
             return;
@@ -124,13 +124,13 @@ class ConstructParameterLinkSourceDataRule extends AbstractUISyntaxRule {
     }
 
     private isInStructV1BuildMethod(node: arkts.AstNode): boolean {
-        while (!(arkts.isMethodDefinition(node) && getIdentifierName(node.name) === BUILD_NAME)) {
-            if (!node.parent || arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) {
+        while (!(arkts.isMethodDefinition(node) && getIdentifierName(node.id!) === BUILD_NAME)) {
+            if (!node.parent || arkts.isETSStructDeclaration(node) || arkts.isClassDeclaration(node)) {
                 return false;
             }
             node = node.parent;
         }
-        while (!arkts.isStructDeclaration(node)) {
+        while (!arkts.isETSStructDeclaration(node)) {
             if (!node.parent) {
                 return false;
             }
@@ -148,12 +148,12 @@ class ConstructParameterLinkSourceDataRule extends AbstractUISyntaxRule {
         let nestingLevel = 0;
         while (curNode) {
             if (arkts.isMemberExpression(curNode)) {
-                curNode = curNode.object;
+                curNode = curNode.object!;
                 nestingLevel++;
             } else if (arkts.isTSNonNullExpression(curNode) && curNode.expr) {
                 curNode = curNode.expr;
-            } else if (arkts.isChainExpression(curNode) && curNode.getExpression) {
-                curNode = curNode.getExpression;
+            } else if (arkts.isChainExpression(curNode) && curNode.expression) {
+                curNode = curNode.expression;
             } else {
                 break;
             }

@@ -41,12 +41,13 @@ import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithProviderProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -56,8 +57,8 @@ function initializeStructWithProviderProperty(
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
-        arkts.factory.create1StringLiteral(
+        arkts.factory.createStringLiteral(originalName),
+        arkts.factory.createStringLiteral(
             getValueInAnnotation(this.property, DecoratorNames.PROVIDER) ?? originalName
         ),
         defaultValue,
@@ -65,8 +66,8 @@ function initializeStructWithProviderProperty(
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!defaultValue) {
@@ -98,7 +99,7 @@ export class ProviderTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProviderProperty.bind(this)(newName, originalName, metadata);
     }
@@ -123,7 +124,7 @@ export class ProviderCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProviderProperty.bind(this)(newName, originalName, metadata);
     }
@@ -137,7 +138,7 @@ export class ProviderInterfaceTranslator<T extends InterfacePropertyTypes> exten
      */
     static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROVIDER);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROVIDER);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROVIDER);
         }

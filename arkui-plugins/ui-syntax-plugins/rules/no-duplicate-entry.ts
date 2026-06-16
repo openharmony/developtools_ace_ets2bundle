@@ -32,8 +32,8 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
         this.entryDecoratorUsageIndex = 1;
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
-        if (!arkts.isStructDeclaration(node)) {
+    public parsed(node: arkts.ETSStructDeclaration): void {
+        if (!arkts.isETSStructDeclaration(node)) {
             return;
         }
         let entryDecoratorUsage = getAnnotationUsage(node, PresetDecorators.ENTRY);
@@ -50,7 +50,7 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
                 return;
             }
             let startPosition = entryDecoratorUsage.startPosition;
-            startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+            startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
             this.report({
                 node: entryDecoratorUsage,
                 message: this.messages.duplicateEntry,
@@ -68,14 +68,14 @@ class NoDuplicateEntryRule extends AbstractUISyntaxRule {
             return;
         }
         let startPosition = entryDecoratorUsage.startPosition;
-        startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
         this.report({
             node: entryDecoratorUsage,
             message: this.messages.duplicateEntry,
             fix: () => {
                 return {
                     title: 'Remove the duplicate \'Entry\' annotation',
-                    range: [startPosition, entryDecoratorUsage.endPosition],
+                    range: [startPosition, entryDecoratorUsage!.endPosition],
                     code: '',
                 };
             },

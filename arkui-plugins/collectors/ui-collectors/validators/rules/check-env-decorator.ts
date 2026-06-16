@@ -20,6 +20,7 @@ import type { IntrinsicValidatorFunction } from '../safe-types';
 import { CallInfo, StructPropertyInfo, StructPropertyRecord, CustomComponentInterfacePropertyInfo, RecordBuilder } from '../../records';
 import { DecoratorNames, LogType, ENV_KEY_STRING_PATTERN } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
+import type { AstNodePointer } from '../../../../common/safe-types';
 
 const ENV_TYPE_ARG_MAP: Map<string, string> = new Map([
     ['WindowSizeLayoutBreakpointInfo', 'SystemProperties.BREAK_POINT'],
@@ -172,12 +173,12 @@ function checkEnvInitInStructCall<T extends arkts.AstNode = arkts.CallExpression
 
 function checkEnvInitForProperty<T extends arkts.AstNode = arkts.CallExpression>(
     this: BaseValidator<T, CallInfo>,
-    propPtr: arkts.AstNode,
+    propPtr: AstNodePointer,
     propertyInfo: CustomComponentInterfacePropertyInfo | undefined,
     hasComponent: boolean,
     hasComponentV2: boolean
 ): void {
-    const prop = arkts.classByPeer<arkts.Property>(propPtr);
+    const prop = arkts.unpackNonNullableNode<arkts.Property>(propPtr);
     if (!prop?.value) {
         return;
     }

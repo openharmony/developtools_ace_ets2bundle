@@ -44,14 +44,14 @@ export class BindableFactory {
         ImportCollector.getInstance().collectImport(BindableNames.MAKE_BINDABLE);
         return arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(BindableNames.MAKE_BINDABLE),
-            undefined,
             [
                 bindableArg,
                 PropertyFactory.createArrowFunctionWithParamsAndBody(
                     undefined,
                     [
-                        arkts.factory.createParameterDeclaration(
+                        arkts.factory.createETSParameterExpression(
                             arkts.factory.createIdentifier(BindableNames.VALUE),
+                            false,
                             undefined
                         ),
                     ],
@@ -61,13 +61,16 @@ export class BindableFactory {
                         arkts.factory.createExpressionStatement(
                             arkts.factory.createAssignmentExpression(
                                 bindableArg.clone(),
-                                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                                arkts.factory.createIdentifier(BindableNames.VALUE)
+                                arkts.factory.createIdentifier(BindableNames.VALUE),
+                                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
                             )
                         ),
                     ]
                 ),
-            ]
+            ],
+            undefined,
+            false,
+            false
         );
     }
 
@@ -88,6 +91,6 @@ export class BindableFactory {
         if (!bindableArg) {
             return prop;
         }
-        return arkts.factory.updateProperty(prop, prop.key, BindableFactory.generateMakeBindableCall(bindableArg));
+        return arkts.factory.updateProperty(prop, prop.kind, prop.key, BindableFactory.generateMakeBindableCall(bindableArg), prop.isMethod, prop.isComputed);
     }
 }

@@ -42,6 +42,7 @@ const insightIntentJson = {
     {
       "decoratorFile": TEST_SOURCE_FILE_PATH,
       "decoratorType": "@InsightIntentEntry",
+      "packageName": "",
       "moduleName": "entry",
       "bundleName": "com.example.mock",
       "decoratorClass": "TestClass",

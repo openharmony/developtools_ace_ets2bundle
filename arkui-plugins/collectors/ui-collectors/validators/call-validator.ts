@@ -82,7 +82,7 @@ function reportInStructCall(this: CallValidator, node: arkts.CallExpression, met
     checkAttributeNoInvoke.bind(this)(node);
     checkEnvDecorator.bind(this)(node);
 
-    const struct = arkts.classByPeer<arkts.ClassDefinition>(metadata.structDeclInfo!.definitionPtr);
+    const struct = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.structDeclInfo!.definitionPtr!);
     checkBuilderParam.bind(this)(node, struct);
     checkComponentComponentV2Init.bind(this)(node, struct);
     checkReusableComponentInV2.bind(this)(struct);

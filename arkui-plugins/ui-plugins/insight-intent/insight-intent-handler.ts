@@ -255,8 +255,11 @@ function validateJsonSchema(schema: Record<string, unknown> | null | undefined, 
  * 校验page是否修饰在struct类型的页面上
  */
 function validatePageStruct(data: InsightIntentDataBase, node: arkts.AstNode): boolean {
+    if (!arkts.isClassDeclaration(node)) {
+        return true;
+    }
     const definition: arkts.ClassDefinition | undefined = node.definition;
-    const isStruct = arkts.classDefinitionIsFromStructConst(definition) || arkts.isStructDeclaration(node);
+    const isStruct = definition?.isFromStruct || arkts.isETSStructDeclaration(node);
     if (!isStruct && arkts.isClassDeclaration(node)) {
         LogCollector.getInstance().collectLogInfo({
             node: node,
@@ -349,7 +352,7 @@ function inferSchemaVerifyTypeFromExpression(expr: arkts.Expression | undefined)
 function getClassVisitKey(classNode: arkts.ClassDeclaration): string {
     const program = arkts.getProgramFromAstNode(classNode);
     const className = classNode.definition?.ident?.name || 'UnknownClass';
-    return `${program?.absName || ''}#${className}`;
+    return `${program?.absoluteName || ''}#${className}`;
 }
 
 function findEnclosingClassDeclaration(node: arkts.AstNode | null | undefined): arkts.ClassDeclaration | null {
@@ -504,11 +507,11 @@ function collectClassSchemaDataFromClass(
         if (arkts.isMethodDefinition(member)) {
             const isConstructorMethod =
                 member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR;
-            if (isConstructorMethod || member.isStatic || !member.name || !arkts.isIdentifier(member.name)) {
+            if (isConstructorMethod || member.isStatic || !member.id || !arkts.isIdentifier(member.id)) {
                 continue;
             }
-            if (!excludedPropertyNames.has(member.name.name)) {
-                schemaData[member.name.name] = { type: '', isEntity: false };
+            if (!excludedPropertyNames.has(member.id.name)) {
+                schemaData[member.id.name] = { type: '', isEntity: false };
             }
             continue;
         }
@@ -950,7 +953,7 @@ export class InsightIntentHandler {
     private normalizedPathCache: Map<string, string> = new Map();
     
     // 性能优化：装饰器处理器映射表
-    private readonly decoratorHandlers: Map<string, (anno: arkts.Decorator, node: arkts.AstNode) => InsightIntentData | null>;
+    private readonly decoratorHandlers: Map<string, (annotation: arkts.AnnotationUsage, classNode: arkts.ClassDeclaration) => InsightIntentData | null>;
     
     // 缓存当前文件的变量（从ETSGLOBAL类成员中按需提取）
     private topLevelVariables: Map<string, unknown> = new Map();
@@ -1057,7 +1060,7 @@ export class InsightIntentHandler {
 
     private prepareCurrentFile(program: arkts.Program): void {
         this.intentNames.clear();
-        this.currentDecoratorFile = this.makeFilePath(program.absName || '');
+        this.currentDecoratorFile = this.makeFilePath(program.absoluteName || '');
         if (this.currentDecoratorFile) {
             this.collector.markSourceFileTouched(this.currentDecoratorFile);
         }
@@ -1092,18 +1095,21 @@ export class InsightIntentHandler {
      * 初始化方法：仅收集 import 语句信息，不预解析
      */
     init(program: arkts.Program | undefined): void {
-        if (!program || !program.astNode) {
+        if (!program || !program.ast) {
             return;
         }
 
         this.prepareCurrentFile(program);
-        this.collectImports(program.astNode);
+        this.collectImports(program.ast as arkts.ETSModule);
     }
     /**
      * 处理枚举类型变量
      */
     private processEnumElement(actualNode: arkts.Expression): string {
-        let enumValue: string = actualNode.property.name||'';
+        let enumValue: string = '';
+        if (arkts.isMemberExpression(actualNode) && arkts.isIdentifier(actualNode.property)) {
+            enumValue = actualNode.property.name;
+        }
         const paramCategoryEnum: Map<string, string> = new Map();
         paramCategoryEnum.set('LINK', 'link');
         paramCategoryEnum.set('WANT', 'want');
@@ -1122,7 +1128,7 @@ export class InsightIntentHandler {
     /**
      * 收集当前文件的 import 语句
      */
-    private collectImports(script: arkts.EtsScript): void {
+    private collectImports(script: arkts.ETSModule): void {
         if (!script.statements) {
             return;
         }
@@ -1290,6 +1296,9 @@ export class InsightIntentHandler {
         return mergedData;
     }
     private getHarData(): object | undefined {
+        if (!MetaDataCollector.getInstance().loaderInfo) {
+            return undefined;
+        }
         const harIntentDataObj: object = {};
         const { byteCodeHarInfo } = MetaDataCollector.getInstance().loaderInfo!;
         Object.keys(byteCodeHarInfo || {})?.forEach((harName) => {
@@ -1337,7 +1346,9 @@ export class InsightIntentHandler {
                 const intentData = handler(anno, classNode);
                 const intentDataAll = this.collector.getAllIntents()
                 intentDataAll.forEach(item => {
-                    this.intentNames.add(item.intentName)
+                    if ('intentName' in item && item.intentName) {
+                        this.intentNames.add(item.intentName)
+                    }
                 })
                 if (intentData) {
                     // 检查 intentName 唯一性
@@ -1381,7 +1392,7 @@ export class InsightIntentHandler {
             if (arkts.isMethodDefinition(member)) {
                 isMethod = true;
                 methodDef = member;
-                annotations = member.scriptFunction?.annotations;
+                annotations = member.function?.annotations;
             } else if (arkts.isClassProperty(member)) {
                 // 检查属性上的装饰器
                 annotations = member.annotations;
@@ -1424,7 +1435,9 @@ export class InsightIntentHandler {
                         const intentData = this.extractFunctionMethodIntentDataFromMethod(anno, methodDef, classNode);
                         const intentDataAll = this.collector.getAllIntents()
                         intentDataAll.forEach(item => {
-                            this.intentNames.add(item.intentName)
+                            if ('intentName' in item && item.intentName) {
+                                this.intentNames.add(item.intentName)
+                            }
                         })
                         if (intentData) {
                             // 检查 intentName 唯一性
@@ -1544,7 +1557,7 @@ export class InsightIntentHandler {
      * 从变量声明器中提取值
      */
     private extractValueFromDeclarator(declarator: arkts.VariableDeclarator): unknown {
-        const init = declarator.initializer;
+        const init = declarator.init;
         
         if (!init) {
             return undefined;
@@ -1563,7 +1576,7 @@ export class InsightIntentHandler {
         }
         
         if (arkts.isNumberLiteral(init)) {
-            return Number(init.num);
+            return Number(init.value);
         }
         
         if (arkts.isBooleanLiteral(init)) {
@@ -1590,12 +1603,14 @@ export class InsightIntentHandler {
             };
             if (propName === 'uri') {
                 // uri 是必填字段，直接赋值
-                data.uri = propValue.str;
+                if (arkts.isStringLiteral(propValue)) {
+                    data.uri = propValue.str;
+                }
             } else if (propName === 'paramMappings') { 
                 // paramMappings 是非必填字段，空值不写入 
                 const paramMappings = this.extractJsonValue(propValue, classNode) as InsightIntentLinkData['paramMappings']; 
                 if (this.isValidOptionalValue(paramMappings, classNode, '@InsightIntentLink')) { 
-                    data.paramMappings = paramMappings; 
+                    data.paramMappings = paramMappings;
                 }
                 if (data.paramMappings === '') {
                     delete data.paramMappings;
@@ -1693,10 +1708,10 @@ export class InsightIntentHandler {
                 module?: { extensionAbilities?: FormExtensionAbilityInfo[] };
             };
             const extensionAbilities = Array.isArray(moduleJson?.module?.extensionAbilities)
-                ? moduleJson.module.extensionAbilities
+                ? moduleJson.module!.extensionAbilities
                 : [];
             const program = arkts.getProgramFromAstNode(classNode);
-            const currentFilePath = normalizePathForCompare(program?.absName || '', path);
+            const currentFilePath = normalizePathForCompare(program?.absoluteName || '', path);
             const currentClassName = classNode.definition?.ident?.name || '';
             const matchedByPath = extensionAbilities.find((extensionInfo: FormExtensionAbilityInfo) => {
                 if (!extensionInfo || extensionInfo.type !== 'form' || !extensionInfo.srcEntry) {
@@ -1789,15 +1804,15 @@ export class InsightIntentHandler {
                 case 'pagePath':
                     const validatedPath = this.validatePagePath(this.extractStringValue(propValue, classNode) as string, classNode, baseData.packageName as string);
                     if (validatedPath === null) {
-                        return null; 
+                        return null;
                     }
-                    data[propName] = validatedPath;
+                    data[propName] = validatedPath as string;
                     break;
                 case 'uiAbility':
                 case 'navigationId':
                 case 'navDestinationName': {
                     // 非必填字段，空字符串不写入
-                    const value = this.extractStringValue(propValue, classNode);
+                    const value = this.extractStringValue(propValue, classNode) as string | undefined;
                     if (this.isValidOptionalValue(value, classNode, '@InsightIntentPage')) {
                         data[propName] = value;
                     }
@@ -1877,6 +1892,7 @@ export class InsightIntentHandler {
                 return this.makeFilePath(normalPagePath)
             }
         }
+        return null;
     }
     private resolveAceProfilePath(): string | undefined {
         const projectConfig = this.projectConfig;
@@ -1921,8 +1937,8 @@ export class InsightIntentHandler {
         const program = arkts.getProgramFromAstNode(classNode);
         const data: InsightIntentEntityData & { supportedQueryProperties?: string[] } & { packageName?: string } = {
             className: classNode.definition?.ident?.name || 'UnknownClass',
-            decoratorFile: this.makeFilePath(program?.absName || ''),
-            packageName: this.makePackageName(program?.absName || ''),
+            decoratorFile: this.makeFilePath(program?.absoluteName || ''),
+            packageName: this.makePackageName(program?.absoluteName || ''),
             decoratorType: '@InsightIntentEntity',
             entityCategory: '',
         };
@@ -2021,9 +2037,6 @@ export class InsightIntentHandler {
 
     private isEntityIdPropertyName(propertyName: string): boolean {
         if (propertyName === 'entityId') {
-            return true;
-        }
-        if (propertyName === `${ObservedNames.PROPERTY_PREFIX}entityId`) {
             return true;
         }
         return propertyName === '_$property$_entityId';
@@ -2145,7 +2158,7 @@ export class InsightIntentHandler {
         };
         const className = classNode.definition?.ident?.name || 'UnknownClass';
         const program = arkts.getProgramFromAstNode(classNode);
-        const filePath = program?.absName || '';
+        const filePath = program?.absoluteName || '';
 
         data.decoratorClass = className;
         data.decoratorFile = this.makeFilePath(filePath);
@@ -2174,7 +2187,9 @@ export class InsightIntentHandler {
                 case 'llmDescription':
                 case 'example': {
                     // 必填字段，直接赋值
-                    data[propName] = propValue.str
+                    if (arkts.isStringLiteral(propValue)) {
+                        data[propName] = propValue.str;
+                    }
                     break;
                 }
                 case 'keywords': {
@@ -2191,9 +2206,9 @@ export class InsightIntentHandler {
                     // 注意：SDK 定义中这些字段有默认值 = ""，需要额外过滤空字符串
                     const jsonValue = this.extractJsonValue(propValue, classNode);
                     // 过滤掉 undefined、null 和空字符串（SDK 默认值导致的）
-                    if (this.isValidOptionalValue(jsonValue, classNode, decoratorType) && 
+                    if (this.isValidOptionalValue(jsonValue, classNode, decoratorType) &&
                         !(typeof jsonValue === 'string' && jsonValue.trim() === '')) {
-                        data[propName] = jsonValue;
+                        data[propName] = jsonValue as Record<string, unknown> | null | undefined;
                     }
                     break;
                 }
@@ -2276,7 +2291,7 @@ export class InsightIntentHandler {
                 return null;
             }
             if (node.quasis && node.quasis.length > 0) {
-                return node.quasis.map((q: arkts.TemplateLiteralElement) => q.cooked || q.raw || '').join('');
+                return node.quasis.map((q: arkts.TemplateElement) => q.cooked || q.raw || '').join('');
             }
             return null;
         } catch (error) {
@@ -2469,8 +2484,8 @@ export class InsightIntentHandler {
         if (arkts.isETSTypeReference(typeNode)) {
             const part = typeNode.part;
             if (part && arkts.isETSTypeReferencePart(part)) {
-                if (part.typeArguments) {
-                    for (const typeArgument of part.typeArguments) {
+                if (part.typeParams?.params) {
+                    for (const typeArgument of part.typeParams!.params) {
                         const resolvedTypeName = this.resolveEntityClassNameFromTypeNode(typeArgument);
                         if (resolvedTypeName) {
                             return resolvedTypeName;
@@ -2560,7 +2575,7 @@ export class InsightIntentHandler {
     private processEntryBaseClass(superClass: arkts.Expression, classNode: arkts.ClassDeclaration, intentObj: InsightIntentDataBase): void {
         // 获取父类名称和泛型参数
         let parentClassName: string | undefined;
-        let typeArguments: arkts.TypeNode[] = [];
+        let typeArguments: readonly arkts.TypeNode[] = [];
         let genericTypeTexts: string[] = [];
         
         // 处理 ETSTypeReference（包含泛型参数）
@@ -2571,8 +2586,8 @@ export class InsightIntentHandler {
                     parentClassName = part.name.name;
                 }
                 // 获取泛型参数
-                if (part.typeArguments) {
-                    typeArguments = part.typeArguments;
+                if (part.typeParams?.params) {
+                    typeArguments = part.typeParams!.params;
                 }
             }
         }
@@ -2618,7 +2633,7 @@ export class InsightIntentHandler {
      */
     private collectClassInheritanceInfo(
         parentClassName: string,
-        typeArguments: arkts.TypeNode[],
+        typeArguments: readonly arkts.TypeNode[],
         intentObj: InsightIntentDataBase,
         genericTypeTexts: string[] = []
     ): void {
@@ -2668,12 +2683,12 @@ export class InsightIntentHandler {
             }
         }
         // 处理 TypeReference（兼容）
-        else if (arkts.isTypeReference(typeNode)) {
-            if (arkts.isIdentifier(typeNode.typeName)) {
-                typeName = typeNode.typeName.name;
-            } else if (arkts.isQualifiedName(typeNode.typeName)) {
+        else if (arkts.isETSTypeReference(typeNode)) {
+            if (arkts.isIdentifier(typeNode.part?.name)) {
+                typeName = typeNode.part!.name.name;
+            } else if (arkts.isTSQualifiedName(typeNode.part?.name)) {
                 // 处理限定名称，如 Namespace.Type
-                typeName = typeNode.typeName.right.name;
+                typeName = typeNode.part!.name.right!.name;
             }
         } 
         // 处理 Identifier
@@ -3131,9 +3146,7 @@ export class InsightIntentHandler {
         }
         // 装饰的方法未使用static修饰
         for (const member of classNode.definition?.body || []) {
-            let kind = member.kind;
-            let isNotConstructorMethod = kind !== arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR;
-            if (arkts.isMethodDefinition(member) && isNotConstructorMethod && !member.isStatic) {
+            if (arkts.isMethodDefinition(member) && !member.isConstructor && !member.isStatic) {
                 const errorMessage: string = `Methods decorated with @InsightIntentFunctionMethod must be static.`;
                 LogCollector.getInstance().collectLogInfo({
                     node: classNode,
@@ -3153,18 +3166,18 @@ export class InsightIntentHandler {
         
         // 获取类名和方法名
         const className = classNode.definition?.ident?.name || 'UnknownClass';
-        const methodName = methodDef.name && arkts.isIdentifier(methodDef.name) 
-            ? methodDef.name.name 
+        const methodName = methodDef.id && arkts.isIdentifier(methodDef.id) 
+            ? methodDef.id.name 
             : 'UnknownMethod';
         
         // 获取文件路径
         const program = arkts.getProgramFromAstNode(classNode);
-        const filePath = program?.absName || '';
+        const filePath = program?.absoluteName || '';
         data.decoratorClass = className;
         data.functionName = methodName;
         // 从 scriptFunction.params 获取方法参数列表
-        const params = methodDef.scriptFunction?.params;
-        const returnTypeNode = methodDef.scriptFunction?.returnTypeAnnotation;
+        const params = methodDef.function?.params;
+        const returnTypeNode = methodDef.function?.returnTypeAnnotation;
         if (returnTypeNode) {
             const typeString = returnTypeNode.dumpSrc();
             data.functionReturnType = typeString;
@@ -3176,8 +3189,8 @@ export class InsightIntentHandler {
                         return param.name;
                     }
                     // ETSParameterExpression 的情况
-                    if (param && param.identifier && arkts.isIdentifier(param.identifier)) {
-                        return param.identifier.name;
+                    if (arkts.isETSParameterExpression(param) && arkts.isIdentifier(param.ident)) {
+                        return param.ident!.name;
                     }
                     return undefined;
                 })
@@ -3211,7 +3224,9 @@ export class InsightIntentHandler {
                 case 'llmDescription':
                 case 'example': {
                     // 必填字段，直接赋值
-                    data[propName] = propValue.str
+                    if (arkts.isStringLiteral(propValue)) {
+                        data[propName] = propValue.str;
+                    }
                     break;
                 }
                 case 'keywords': {
@@ -3228,9 +3243,9 @@ export class InsightIntentHandler {
                     // 注意：SDK 定义中这些字段有默认值 = ""，需要额外过滤空字符串
                     const jsonValue = this.extractJsonValue(propValue, classNode);
                     // 过滤掉 undefined、null 和空字符串（SDK 默认值导致的）
-                    if (this.isValidOptionalValue(jsonValue, classNode, '@InsightIntentFunctionMethod') && 
+                    if (this.isValidOptionalValue(jsonValue, classNode, '@InsightIntentFunctionMethod') &&
                         !(typeof jsonValue === 'string' && jsonValue.trim() === '')) {
-                        data[propName] = jsonValue;
+                        data[propName] = jsonValue as Record<string, unknown> | null | undefined;
                     }
                     break;
                 }

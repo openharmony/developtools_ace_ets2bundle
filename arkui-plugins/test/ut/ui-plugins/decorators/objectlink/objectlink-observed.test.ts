@@ -189,7 +189,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_label = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? ("date"));
     this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.data)}) as DateClass))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.data)}) as DateClass));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {

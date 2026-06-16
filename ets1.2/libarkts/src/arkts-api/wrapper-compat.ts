@@ -16,7 +16,7 @@
 // koala-wrapper compatibility helpers
 
 import { KNativePointer } from '@koalaui/interop';
-import { ETSModule } from '../../generated';
+import { ETSModule, extractDeclarationsFromAbcFile } from '../../generated';
 import { createETSModuleFromContext } from './utilities/public';
 import { global } from './static/global';
 
@@ -29,4 +29,8 @@ export class EtsScript {
 export function destroyConfig(config: KNativePointer): void {
     global.es2panda._DestroyConfig(config);
     global.resetConfig();
+}
+
+export function ExtractDeclarationsFromAbcFile(abcFile: string, cacheDir: string): number {
+    return extractDeclarationsFromAbcFile(abcFile, cacheDir);
 }

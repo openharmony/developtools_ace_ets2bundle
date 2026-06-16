@@ -44,9 +44,9 @@ function fieldWithComputedMethod(
             StateManagementTypes.MAKE_COMPUTED,
             this.returnType,
             [
-                arkts.factory.createArrowFunction(
+                arkts.factory.createArrowFunctionExpression(
                     UIFactory.createScriptFunction({
-                        body: this.method.scriptFunction.body?.clone(),
+                        body: this.method.function.body?.clone(),
                         modifiers: modifiers,
                         flags:
                             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
@@ -70,10 +70,10 @@ function getterWithComputedMethod(
     className: string,
     isStatic: boolean
 ): arkts.MethodDefinition {
-    const scriptFunction = this.method.scriptFunction;
+    const scriptFunction = this.method.function;
     scriptFunction.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN);
     scriptFunction.setBody(
-        arkts.factory.createBlock([arkts.factory.createReturnStatement(computedGetCall(newName, className, isStatic))])
+        arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(computedGetCall(newName, className, isStatic))])
     );
     return this.method;
 }
@@ -123,7 +123,7 @@ export class ComputedTranslator extends MethodTranslator implements IComputedTra
         if (this.isDecl) {
             return [this.method];
         }
-        const originalName: string = expectName(this.method.name);
+        const originalName: string = expectName(this.method.id);
         const newName: string = computedField(originalName);
         if (this.classInfo.isFromStruct && !this.isStatic) {
             this.cacheTranslatedInitializer(newName);
@@ -133,7 +133,7 @@ export class ComputedTranslator extends MethodTranslator implements IComputedTra
 
     cacheTranslatedInitializer(newName: string): void {
         ComputedCache.getInstance().collectComputed(this.classInfo.className, { newName });
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(this.classInfo.className, [resetStateVars]);
     }
 
@@ -187,7 +187,7 @@ export class ComputedCacheTranslator extends MethodCacheTranslator implements IC
         }
         const structName: string = this.methodInfo.structInfo.name;
         ComputedCache.getInstance().collectComputed(structName, { newName });
-        const resetStateVars: arkts.AstNode = this.resetOnReuse(newName);
+        const resetStateVars: arkts.Statement = this.resetOnReuse(newName);
         PropertyCache.getInstance().collectResetStateVars(structName, [resetStateVars]);
     }
 

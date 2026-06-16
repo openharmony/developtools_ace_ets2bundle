@@ -168,17 +168,17 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.__backing_linkvar = STATE_MGMT_FACTORY.makeLink<string>(this, "linkvar", initializers!.__backing_linkvar!, ((_: string): void => {
         this.linkOnChange(_);
       }));
-    };
+    }
     this.__backing_storagelinkvar = STATE_MGMT_FACTORY.makeStorageLink<string>(this, "prop1", "storagelinkvar", "Hello World", ((_: string): void => {
       this.storageLinkOnChange(_);
-    }))
+    }));
     this.__backing_storagepropvar = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "prop2", "storagepropvar", "Hello World", ((_: string): void => {
       this.storagePropOnChange(_);
-    }))
+    }));
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.objectlinkvar)}) as A), ((_: string): void => {
       this.objectLinkOnChange(_);
-    }))
+    }));
     this.__backing_providevar = STATE_MGMT_FACTORY.makeProvide<string>(this, "providevar", "providevar", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")), false, ((_: string): void => {
       this.ProvideOnChange(_);

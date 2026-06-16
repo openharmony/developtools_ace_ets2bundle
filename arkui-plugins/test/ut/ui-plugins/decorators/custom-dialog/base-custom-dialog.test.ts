@@ -83,7 +83,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.__backing_aaController = initializers!.aaController;
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined
