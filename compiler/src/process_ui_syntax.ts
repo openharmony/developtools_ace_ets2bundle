@@ -185,7 +185,7 @@ import {
 } from './performance';
 import parseIntent from './userIntents_parser/parseUserIntents';
 import { insertGetOptionsAtTop } from './process_interop_component';
-import { isPointVersion, processAvailableStatement } from './process_available_statement';
+import { createHelperFunctionDeclaration, isPointVersion, processAvailableStatement } from './process_available_statement';
 import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 
 export let transformLog: IFileLog = new createAstNodeUtils.FileLog();
@@ -206,12 +206,13 @@ export function processUISyntax(program: ts.Program, ut = false,
     let StateManagementV2: { hasReusableV2: boolean } = { hasReusableV2: false };
     let ReusePool: { hasReusePool: boolean } = { hasReusePool: false };
     let needProcessAvailable: boolean = false;
+    let needsAvailableHelper = false;
     return (node: ts.SourceFile) => {
       eventProcessUISyntax = createAndStartEvent(parentEvent, 'processUISyntax');
       pagesDir = path.resolve(path.dirname(node.fileName));
       resourceFileName = path.resolve(node.fileName);
       pageFile = path.resolve(filePath !== '' ? filePath : node.fileName);
-      needProcessAvailable = /\.apiAvailable\(.*\)/.test(node.getText());
+      needProcessAvailable = /\.apiAvailable/.test(node.getText());
       if (process.env.compiler === BUILD_ON || process.env.compileTool === 'rollup') {
         const fileHash = share?.getHashByFilePath ? share?.getHashByFilePath(pageFile) : '';
         storedFileInfo.transformCacheFiles[pageFile] = {
@@ -225,8 +226,12 @@ export function processUISyntax(program: ts.Program, ut = false,
           path.resolve(node.fileName) === path.resolve(projectConfig.projectPath, 'app.ets') ||
           /\.ts$/.test(node.fileName))) {
           node = ts.visitEachChild(node, processResourceNode, context);
-          node = ts.factory.updateSourceFile(node,
-            insertImportModuleNode(Array.from(node.statements), hasUseResource));
+          const statements: ts.Statement[] = Array.from(node.statements);
+          if (needsAvailableHelper) {
+            statements.unshift(createHelperFunctionDeclaration());
+          }
+          insertImportModuleNode(statements, hasUseResource);
+          node = ts.factory.updateSourceFile(node, statements);
           if (projectConfig.compileMode === ESMODULE && projectConfig.processTs === true) {
             if (process.env.compileTool !== 'rollup') {
               const processedNode: ts.SourceFile = ts.getTypeExportImportAndConstEnumTransformer(context)(node);
@@ -253,6 +258,9 @@ export function processUISyntax(program: ts.Program, ut = false,
         });
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
+        if (needsAvailableHelper) {
+          statements.unshift(createHelperFunctionDeclaration());
+        }
         if (!partialUpdateConfig.partialUpdateMode) {
           generateId(statements, node);
         }
@@ -455,10 +463,13 @@ export function processUISyntax(program: ts.Program, ut = false,
         if (node && node.illegalDecorators) {
           node.illegalDecorators = undefined;
         }
-      // 若CompatibleSdkVersion为点分格式，且首位大于等于26时，不进行转换
-      } else if (needProcessAvailable && !isPointVersion(projectConfig.originCompatibleSdkVersion) &&
-        ts.isCallExpression(node) && isApiAvailableStatement(node)) {
-        node = processAvailableStatement(node);
+        // 若CompatibleSdkVersion为点分格式，且首位大于等于26时，不进行转换
+      } else if (needProcessAvailable && !isPointVersion(projectConfig.originCompatibleSdkVersion) && isApiAvailableStatement(node)) {
+        const result = processAvailableStatement(node);
+        if (result !== undefined) {
+          node = result;
+          needsAvailableHelper = true;
+        }
       }
       return ts.visitEachChild(node, processAllNodes, context);
     }
@@ -471,6 +482,13 @@ export function processUISyntax(program: ts.Program, ut = false,
         node = processResourceData(node as ts.CallExpression, filePath);
       } else if (ts.isTypeReferenceNode(node)) {
         checkTypeReference(node, transformLog);
+        // 若CompatibleSdkVersion为点分格式，且首位大于等于26时，不进行转换
+      } else if (needProcessAvailable && !isPointVersion(projectConfig.originCompatibleSdkVersion) && isApiAvailableStatement(node)) {
+        const result = processAvailableStatement(node);
+        if (result !== undefined) {
+          node = result;
+          needsAvailableHelper = true;
+        }
       }
       return ts.visitEachChild(node, processResourceNode, context);
     }
