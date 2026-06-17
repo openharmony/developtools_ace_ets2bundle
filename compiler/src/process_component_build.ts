@@ -208,9 +208,7 @@ import {
   validatorCard,
   builderTypeParameter,
   resourceFileName,
-  IfConditionValidator,
-  validateComponentInstance,
-  validateUIFunctionFormat
+  IfConditionValidator
 } from './process_ui_syntax';
 import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
@@ -3116,24 +3114,22 @@ function processStyleBlockStatements(
   if (!styleStatements || styleStatements.length === 0) {
     return;
   }
-  const stmt: ts.Statement = styleStatements[0];
-  if (!stmt) {
-    return;
-  }
-  if (ts.isExpressionStatement(stmt)) {
-    bindComponentAttr(stmt, identifierNode, statements, log, false, true, newImmutableStatements);
-    if (isRecycleComponent) {
-      bindComponentAttr(stmt, identifierNode, updateStatements, log, false, true,
-        newImmutableStatements, isStyleFunction);
+  styleStatements.forEach((stmt: ts.Statement) => {
+    if (!stmt) {
+      return;
     }
-    return;
-  }
-  if (ts.isIfStatement(stmt) && isCompatibleVersionOverTarget(26)) {
-    processStyleIfStatement(stmt, identifierNode, log, statements, newImmutableStatements,
-      isRecycleComponent, updateStatements, isStyleFunction);
-  }
+    if (ts.isExpressionStatement(stmt)) {
+      bindComponentAttr(stmt, identifierNode, statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(stmt, identifierNode, updateStatements, log, false, true,
+          newImmutableStatements, isStyleFunction);
+      }
+    } else if (ts.isIfStatement(stmt) && isCompatibleVersionOverTarget(26)) {
+      processStyleIfStatement(stmt, identifierNode, log, statements, newImmutableStatements,
+        isRecycleComponent, updateStatements, isStyleFunction);
+    }
+  });
 }
-
 function processStyleIfStatement(
   ifStmt: ts.IfStatement,
   identifierNode: ts.Identifier,
@@ -3181,15 +3177,15 @@ function collectStyleBlockAttrStatements(
     return;
   }
   if (ts.isBlock(blockOrStmt)) {
-    parseStylesBlock(blockOrStmt, log);
     if (!blockOrStmt.statements || blockOrStmt.statements.length === 0) {
       return;
     }
-    const stmt: ts.Statement = blockOrStmt.statements[0];
-    if (stmt) {
-      dispatchStyleStatement(stmt, identifierNode, log, outputStatements,
-        newImmutableStatements, isRecycleComponent, isStyleFunction);
-    }
+    blockOrStmt.statements.forEach((stmt: ts.Statement) => {
+      if (stmt) {
+        dispatchStyleStatement(stmt, identifierNode, log, outputStatements,
+          newImmutableStatements, isRecycleComponent, isStyleFunction);
+      }
+    });
   } else {
     dispatchStyleStatement(blockOrStmt, identifierNode, log, outputStatements,
       newImmutableStatements, isRecycleComponent, isStyleFunction);
@@ -3207,31 +3203,11 @@ function dispatchStyleStatement(
 ): void {
   if (ts.isExpressionStatement(stmt)) {
     bindComponentAttr(stmt, identifierNode, outputStatements, log,
-      true, true, newImmutableStatements);
+      false, true, newImmutableStatements);
   } else if (ts.isIfStatement(stmt)) {
     processStyleIfStatement(stmt, identifierNode, log, outputStatements,
       newImmutableStatements, isRecycleComponent, outputStatements, isStyleFunction);
   }
-}
-
-function parseStylesBlock(bodyNode: ts.Block, log: LogInfo[]): void {
-  const commonInstance: string = `CommonInstance`;
-  if (!bodyNode.statements || !bodyNode.statements.length) {
-    return;
-  }
-  if (bodyNode.statements.length === 1 &&
-    ts.isExpressionStatement(bodyNode.statements[0])
-  ) {
-    !validateComponentInstance(bodyNode.statements[0], commonInstance) &&
-      validateUIFunctionFormat(log, bodyNode.statements[0]);
-    return;
-  }
-  if (isCompatibleVersionOverTarget(26) &&
-    bodyNode.statements.length === 1 &&
-    ts.isIfStatement(bodyNode.statements[0])) {
-    return;
-  }
-  validateUIFunctionFormat(log, bodyNode.statements[0]);
 }
 
 function isGestureType(node: ts.Identifier): boolean {
