@@ -114,8 +114,8 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -132,6 +132,7 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -168,8 +169,10 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse(new Tmp());
+    this.__backing_label!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())));
   }
 
   @MemoIntrinsic() 
@@ -222,10 +225,11 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   }
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @State() public label?: Tmp;
+  public __backing_label?: IStateDecoratedVariable<Tmp>;
+  public __options_has_label?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -366,6 +370,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -403,8 +408,10 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse(new Tmp());
+    this.__backing_label!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())));
   }
 
   @MemoIntrinsic() 
@@ -493,10 +500,11 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(Tmp | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_label', '(IStateDecoratedVariable<Tmp> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @State() public label?: Tmp;
+  public __backing_label?: IStateDecoratedVariable<Tmp>;
+  public __options_has_label?: boolean;
+  public constructor() {}
 
 }
 `;

@@ -76,6 +76,9 @@ export interface IMonitorTranslator {
     monitorInfo(newName: string, originalName: string): MonitorInfo;
 }
 
+/**
+ * @deprecated
+ */
 export class MonitorTranslator extends MethodTranslator implements IMonitorTranslator {
     field(newName: string, originalName?: string): arkts.ClassProperty {
         return fieldWithMonitorMethod.bind(this)(newName, originalName);

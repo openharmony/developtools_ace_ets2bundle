@@ -97,7 +97,7 @@ function showTextBuilder() {
     this.__backing_customBuilderParam2 = value;
   }
 
-  private __backing_customBuilderParam1?: @Memo() (()=> void);
+  private __backing_customBuilderParam1?: ((()=> void) | undefined);
 
   public get customBuilderParam1(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam1!;
@@ -134,6 +134,7 @@ function showTextBuilder() {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -181,17 +182,17 @@ function showTextBuilder() {
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(((()=> void) | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() (()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam2?: ((()=> void) | undefined);
+  public __options_has_customBuilderParam2?: boolean;
+  @Memo() public customBuilderParam1?: ((()=> void) | undefined);
+  public __options_has_customBuilderParam1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-
+@Component() class __Options_Parent {
+  public constructor() {}
 }
 `;
 
@@ -273,7 +274,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
     this.__backing_customBuilderParam2 = value;
   }
 
-  private __backing_customBuilderParam1?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
 
   public get customBuilderParam1(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam1!;
@@ -337,6 +338,7 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -438,17 +440,17 @@ function showTextBuilder(__memo_context: __memo_context_type, __memo_id: __memo_
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '((((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_customBuilderParam2?: boolean;
+  @Memo() public customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_customBuilderParam1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-
+@Component() class __Options_Parent {
+  public constructor() {}
 }
 `;
 

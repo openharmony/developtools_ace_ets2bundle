@@ -89,6 +89,9 @@ function collectLifecycleMethod(
     ComponentLifecycleCache.getInstance().collectLifecycleMethod(structName, methodInfo);
 }
 
+/**
+ * @deprecated
+ */
 export class ComponentLifecycleTranslator extends MethodTranslator {
     constructor(options: MethodTranslatorOptions) {
         super(options);

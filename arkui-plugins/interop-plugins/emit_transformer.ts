@@ -51,7 +51,7 @@ export class EmitTransformer extends AbstractVisitor {
         let newDec: arkts.ClassDeclaration = arkts.factory.updateClassDeclaration(node, newDefinition);
 
         debugLog(`DeclTransformer:checked:struct_ast:${newDefinition.dumpJson()}`);
-        newDec.modifiers = node.modifiers;
+        newDec.modifierFlags = node.modifierFlags;
         return newDec;
     }
 
@@ -95,7 +95,7 @@ export class EmitTransformer extends AbstractVisitor {
                 reusePoolProp.key,
                 arkts.factory.createStringLiteral(reusePoolStr),
                 reusePoolProp.typeAnnotation,
-                reusePoolProp.modifiers,
+                reusePoolProp.modifierFlags,
                 false
             );
             const updatedPoolAcceptsProp = this.transformPoolAccepts(poolAcceptsProp);
@@ -123,7 +123,7 @@ export class EmitTransformer extends AbstractVisitor {
             poolAcceptsProp.key,
             newArray,
             poolAcceptsProp.typeAnnotation,
-            poolAcceptsProp.modifiers,
+            poolAcceptsProp.modifierFlags,
             false
         );
     }
@@ -151,7 +151,7 @@ export class EmitTransformer extends AbstractVisitor {
                             arkts.factory.createIdentifier('value'),
                             value ? property.value : arkts.factory.createStringLiteral(node.key.name),
                             property.typeAnnotation,
-                            property.modifiers,
+                            property.modifierFlags,
                             false
                         )
                     ]);
@@ -188,7 +188,7 @@ export class EmitTransformer extends AbstractVisitor {
                         allowOverrideProp.key,
                         arkts.factory.createStringLiteral(aliasValue),
                         allowOverrideProp.typeAnnotation,
-                        allowOverrideProp.modifiers,
+                        allowOverrideProp.modifierFlags,
                         false,
                         allowOverrideProp.annotations
                     )
@@ -200,7 +200,7 @@ export class EmitTransformer extends AbstractVisitor {
                         arkts.factory.createIdentifier('value'),
                         aliasProp.value,
                         aliasProp.typeAnnotation,
-                        aliasProp.modifiers,
+                        aliasProp.modifierFlags,
                         false,
                         aliasProp.annotations
                     )
@@ -255,7 +255,7 @@ export class EmitTransformer extends AbstractVisitor {
 
     processMethodDefinition(node: arkts.MethodDefinition): arkts.MethodDefinition {
         if (hasDecorator(node, DecoratorNames.MONITOR) || hasDecorator(node, DecoratorNames.COMPUTED)){
-            node.scriptFunction.setAnnotations([]);
+            node.function.setAnnotations([]);
         }
         return node;
     }

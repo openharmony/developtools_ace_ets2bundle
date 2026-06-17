@@ -74,6 +74,7 @@ globalBuilder = wrapBuilder(myBuilder);
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -104,8 +105,9 @@ globalBuilder = wrapBuilder(myBuilder);
   static {
   }
 }
+@Component() class __Options_ImportStruct {
 
-@Component() interface __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 
@@ -167,6 +169,7 @@ globalBuilder = wrapBuilder(myBuilder);
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -224,7 +227,10 @@ globalBuilder = wrapBuilder(myBuilder);
   static {
   }
 }
-@Component() interface __Options_ImportStruct {
+
+@Component() class __Options_ImportStruct {
+
+  public constructor() {}
 }
 `;
 

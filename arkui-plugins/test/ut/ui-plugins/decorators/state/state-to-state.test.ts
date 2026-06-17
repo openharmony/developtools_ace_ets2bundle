@@ -85,8 +85,10 @@ class Per {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_parentVar1!.resetOnReuse(new Per("hello"));
+    this.__backing_parentVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))));
   }
 
   @MemoIntrinsic() 
@@ -142,8 +144,10 @@ class Per {
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_childVar1!.resetOnReuse(new Per("ccc"));
+    this.__backing_childVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))));
   }
 
   @MemoIntrinsic() 
@@ -185,17 +189,19 @@ class Per {
 
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentVar1', '(Per | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentVar1', '(IStateDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentVar1', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @State() public parentVar1?: Per;
+  public __backing_parentVar1?: IStateDecoratedVariable<Per>;
+  public __options_has_parentVar1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childVar1', '(Per | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childVar1', '(IStateDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childVar1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @State() public childVar1?: Per;
+  public __backing_childVar1?: IStateDecoratedVariable<Per>;
+  public __options_has_childVar1?: boolean;
+  public constructor() {}
   
 }
 `;

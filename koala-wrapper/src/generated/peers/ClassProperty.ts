@@ -65,6 +65,10 @@ export class ClassProperty extends ClassElement {
         global.generatedEs2panda._ClassPropertySetAnnotations(global.context, this.peer, passNodeArray(annotations), annotations.length)
         return this
     }
+    setIsImmediateInit(): this {
+        global.es2panda._ClassPropertySetIsImmediateInit(global.context, this.peer)
+        return this
+    }
 }
 export function isClassProperty(node: AstNode): node is ClassProperty {
     return node instanceof ClassProperty

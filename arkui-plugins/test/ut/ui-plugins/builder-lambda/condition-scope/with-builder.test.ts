@@ -99,6 +99,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -181,6 +182,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -196,7 +198,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
     throw new Error("Declare interface");
   }
 
-  private __backing_myBuilderParam?: @Memo() (()=> void);
+  private __backing_myBuilderParam?: ((()=> void) | undefined);
 
   public get myBuilderParam(): @Memo() (()=> void) {
     return this.__backing_myBuilderParam!;
@@ -223,12 +225,13 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
 
 }
 
-@Component() interface __Options_MyStruct {
-  
+@Component() class __Options_MyStruct {
+  public constructor() {}
 }
-@Component() interface __Options_Child {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() (()=> void) | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public myBuilderParam?: ((()=> void) | undefined);
+  public __options_has_myBuilderParam?: boolean;
+  public constructor() {}
 }
 `;
 
@@ -344,6 +347,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   public __initializeStruct(initializers: (__Options_MyStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStruct | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -525,6 +529,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -540,7 +545,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
     throw new Error("Declare interface");
   }
 
-  private __backing_myBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_myBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get myBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_myBuilderParam!;
   }
@@ -583,13 +588,14 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
 
 }
 
-@Component() interface __Options_MyStruct {
-  
+@Component() class __Options_MyStruct {
+  public constructor() {}
 }
 
-@Component() interface __Options_Child {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'myBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_myBuilderParam', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public myBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_myBuilderParam?: boolean;
+  public constructor() {}
 }
 
 `;

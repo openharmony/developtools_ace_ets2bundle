@@ -21,7 +21,7 @@ import {
     getTypeNameFromTypeParameter,
     getTypeParamsFromClassDecl,
     getValueInObjectAnnotation,
-    isCustomComponentInterface,
+    isCustomComponentInnerClass,
     isCustomDialogControllerOptions,
     isKnownMethodDefinition,
     isStatic,
@@ -41,10 +41,10 @@ import {
 } from '../../common/arkts-utils';
 import {
     classifyInObservedClass,
-    classifyPropertyInInterface,
+    classifyPropertyInInnerClass,
     classifyStructMembers,
     ClassScopeInfo,
-    InterfacePropertyTranslator,
+    InnerClassPropertyTranslator,
     PropertyTranslator,
 } from '../property-translators';
 import {
@@ -128,13 +128,14 @@ const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
 export class factory {
     /**
-     * copy struct modifier flags to struct interface, with no default export but export flag.
+     * copy struct modifier flags to struct inner class, with no default export but export flag.
      *
      * @param modifiers struct modifier flags
-     * @returns struct interface modifier flags
+     * @returns struct inner class modifier flags
      */
-    static copyStructModifierFlagsToOptionsInterface(
-        modifiers: arkts.Es2pandaModifierFlags
+    static copyStructModifierFlagsToOptionsInnerClass(
+        modifiers: arkts.Es2pandaModifierFlags,
+        isExported?: boolean
     ): arkts.Es2pandaModifierFlags {
         let _modifiers = modifiers;
         if (
@@ -142,6 +143,21 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT
         ) {
             _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFAULT_EXPORT;
+        }
+        if (
+            (modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT) ===
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT
+        ) {
+            _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
+        }
+        if (
+            (modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) ===
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
+        ) {
+            _modifiers ^= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        }
+        if (isExported) {
+            _modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
         }
         return _modifiers;
     }
@@ -165,7 +181,7 @@ export class factory {
             ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR
-            : member.modifiers | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
+            : member.modifierFlags | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PROTECTED;
         const body = isDecl
             ? undefined
             : arkts.factory.createBlockStatement([
@@ -893,6 +909,7 @@ export class factory {
 
     /**
      * transform members in custom-component class.
+     * @deprecated
      */
     static tranformClassMembers(node: arkts.ClassDeclaration, scope: CustomComponentScopeInfo): arkts.ClassDeclaration {
         if (!node.definition) {
@@ -1219,9 +1236,6 @@ export class factory {
         if (isCustomDialogControllerOptions(node, externalSourceName)) {
             return factory.transformControllerInterfaceType(node);
         }
-        if (isCustomComponentInterface(node)) {
-            return factory.tranformCustomComponentInterfaceMembers(node);
-        }
         withAPIVersion(
             { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
             (sdkVersion: APIVersions) => {
@@ -1261,11 +1275,12 @@ export class factory {
     }
 
     /**
-     * transform members in custom-component related interface.
+     * transform members in custom-component related inner class.
      */
-    static tranformCustomComponentInterfaceMembers(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-        const propertyTranslators: InterfacePropertyTranslator[] = filterDefined(
-            node.body!.body.map((it) => classifyPropertyInInterface(it))
+    static tranformCustomComponentInnerClassMembers(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+        const classDef = node.definition!;
+        const propertyTranslators: InnerClassPropertyTranslator[] = filterDefined(
+            classDef.body.map((it) => classifyPropertyInInnerClass(it))
         );
 
         let shouldUpdate: boolean = false;
@@ -1276,15 +1291,7 @@ export class factory {
         });
 
         if (shouldUpdate) {
-            return arkts.factory.updateInterfaceDeclaration(
-                node,
-                node.extends,
-                node.id,
-                node.typeParams,
-                arkts.factory.updateInterfaceBody(node.body!, newBody),
-                node.isStatic,
-                node.isFromExternal
-            ).setAnnotations(node.annotations);
+            classDef.setBody(newBody);
         }
 
         return node;
@@ -1317,7 +1324,7 @@ export class factory {
                     member.kind,
                     member.id!,
                     arkts.factory.createFunctionExpression(member.id?.clone(), factory.transformAnimatableExtend(member.function!)),
-                    member.modifiers,
+                    member.modifierFlags,
                     false,
                     member.overloads
                 );
@@ -1360,6 +1367,9 @@ export class factory {
         );
     }
 
+    /**
+     * @deprecated 
+     */
     static transformNormalClass(node: arkts.ClassDeclaration, externalSourceName?: string): arkts.ClassDeclaration {
         if (!node.definition) {
             return node;
@@ -1367,12 +1377,16 @@ export class factory {
         if (isEtsGlobalClass(node)) {
             return this.transformETSGlobalClass(node, externalSourceName);
         }
+        if (isCustomComponentInnerClass(node)) {
+            return factory.tranformCustomComponentInnerClassMembers(node);
+        }
         const newClassDef = factory.updateObservedTrackClassDef(node.definition);
         return arkts.factory.updateClassDeclaration(node, newClassDef);
     }
 
     /**
      * transform class definition with , `@ObservedV2` and `@Trace`, `@Observed` or `@Trace`.
+     * @deprecated
      */
     static updateObservedTrackClassDef(node: arkts.ClassDefinition): arkts.ClassDefinition {
         const isObserved: boolean = hasDecorator(node, DecoratorNames.OBSERVED);
@@ -1420,6 +1434,9 @@ export class factory {
         return updateClassDef;
     }
 
+    /**
+     * @deprecated
+     */
     static observedTrackPropertyMembers(
         definition: arkts.ClassDefinition,
         ObservedAnno: ObservedAnnoInfo

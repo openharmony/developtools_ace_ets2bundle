@@ -103,8 +103,8 @@ function main() {}
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -318,17 +318,19 @@ function main() {}
 
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Provider', { value: "data" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IProviderDecoratedVariable<Array<User>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Provider({value:"data"}) public users?: Array<User>;
+  public __backing_users?: IProviderDecoratedVariable<Array<User>>;
+  public __options_has_users?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'users', '(Array<User> | undefined)', [dumpAnnotation('Consumer', { value: "data" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_users', '(IConsumerDecoratedVariable<Array<User>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_users', '(boolean | undefined)')}
+@ComponentV2() class __Options_Child {
+  @Consumer({value:"data"}) public users?: Array<User>;
+  public __backing_users?: IConsumerDecoratedVariable<Array<User>>;
+  public __options_has_users?: boolean;
+  public constructor() {}
   
 }
 `;

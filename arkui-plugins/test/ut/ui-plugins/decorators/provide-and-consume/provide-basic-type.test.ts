@@ -100,25 +100,44 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
-    this.__backing_provideVar1!.resetOnReuse("propVar1");
-    this.__backing_provideVar2!.resetOnReuse(50);
-    this.__backing_provideVar3!.resetOnReuse(true);
-    this.__backing_provideVar4!.resetOnReuse(undefined);
-    this.__backing_provideVar5!.resetOnReuse(null);
-    this.__backing_provideVar6!.resetOnReuse("hello");
-    this.__backing_provideVar7!.resetOnReuse(null);
-    this.__backing_provideVar8!.resetOnReuse(10);
-    this.__backing_provideVar9!.resetOnReuse("hello");
-    this.__backing_provideVar10!.resetOnReuse(10);
-    this.__backing_provideVar11!.resetOnReuse(undefined);
-    this.__backing_provideVar12!.resetOnReuse(15);
-    this.__backing_provideVar13!.resetOnReuse("prop13");
-    this.__backing_provideVar14!.resetOnReuse(false);
-    this.__backing_provideVar15!.resetOnReuse(undefined);
-    this.__backing_provideVar16!.resetOnReuse(20);
-    this.__backing_provideVar17!.resetOnReuse(true);
+    this.__backing_provideVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar1)})) ?? ("propVar1")));
+    this.__backing_provideVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar2)})) ?? (50)));
+    this.__backing_provideVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar3)})) ?? (true)));
+    this.__backing_provideVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar4)})) ?? (undefined)));
+    this.__backing_provideVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar5)})) ?? (null)));
+    this.__backing_provideVar6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar6)})) ?? ("hello")));
+    this.__backing_provideVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar7)})) ?? (null)));
+    this.__backing_provideVar8!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar8)})) ?? (10)));
+    this.__backing_provideVar9!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar9)})) ?? ("hello")));
+    this.__backing_provideVar10!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar10)})) ?? (10)));
+    this.__backing_provideVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar11)})) ?? (undefined)));
+    this.__backing_provideVar12!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar12)})) ?? (15)));
+    this.__backing_provideVar13!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar13)})) ?? ("prop13")));
+    this.__backing_provideVar14!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar14)})) ?? (false)));
+    this.__backing_provideVar15!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar15)})) ?? (undefined)));
+    this.__backing_provideVar16!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar16)})) ?? (20)));
+    this.__backing_provideVar17!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar17)})) ?? (true)));
   }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
@@ -310,74 +329,59 @@ function main() {}
 
 }
 
-@Component() interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar1', '(string | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar1', '(IProvideDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar2', '(number | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar2', '(IProvideDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar3', '(boolean | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar3', '(IProvideDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar4', '(undefined | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar4', '(IProvideDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar5', '(null | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar5', '(IProvideDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar6', '((string | undefined) | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar7', '((string | null) | undefined)', [dumpAnnotation('Provide')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar7', '(IProvideDecoratedVariable<(string | null)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar8', '(number | undefined)', [dumpAnnotation('Provide', { alias: "a" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar8', '(IProvideDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar9', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "b" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar9', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar10', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar10', '(IProvideDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar11', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar11', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar12', '(number | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar12', '(IProvideDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar12', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar13', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar13', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar13', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar14', '((boolean | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "c", allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar14', '(IProvideDecoratedVariable<(boolean | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar14', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar15', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "d", allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar15', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar15', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar16', '((number | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "e", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar16', '(IProvideDecoratedVariable<(number | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar16', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'provideVar17', '((boolean | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "f", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_provideVar17', '(IProvideDecoratedVariable<(boolean | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_provideVar17', '(boolean | undefined)')}
+@Component() class __Options_PropParent {
+  @Provide() public provideVar1?: string;
+  public __backing_provideVar1?: IProvideDecoratedVariable<string>;
+  public __options_has_provideVar1?: boolean;
+  @Provide() public provideVar2?: number;
+  public __backing_provideVar2?: IProvideDecoratedVariable<number>;
+  public __options_has_provideVar2?: boolean;
+  @Provide() public provideVar3?: boolean;
+  public __backing_provideVar3?: IProvideDecoratedVariable<boolean>;
+  public __options_has_provideVar3?: boolean;
+  @Provide() public provideVar4?: undefined;
+  public __backing_provideVar4?: IProvideDecoratedVariable<undefined>;
+  public __options_has_provideVar4?: boolean;
+  @Provide() public provideVar5?: null;
+  public __backing_provideVar5?: IProvideDecoratedVariable<null>;
+  public __options_has_provideVar5?: boolean;
+  @Provide() public provideVar6?: (string | undefined);
+  public __backing_provideVar6?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_provideVar6?: boolean;
+  @Provide() public provideVar7?: (string | null);
+  public __backing_provideVar7?: IProvideDecoratedVariable<(string | null)>;
+  public __options_has_provideVar7?: boolean;
+  @Provide({alias:"a"}) public provideVar8?: number;
+  public __backing_provideVar8?: IProvideDecoratedVariable<number>;
+  public __options_has_provideVar8?: boolean;
+  @Provide({alias:"b"}) public provideVar9?: (string | undefined);
+  public __backing_provideVar9?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_provideVar9?: boolean;
+  @Provide({allowOverride:true}) public provideVar10?: number;
+  public __backing_provideVar10?: IProvideDecoratedVariable<number>;
+  public __options_has_provideVar10?: boolean;
+  @Provide({allowOverride:true}) public provideVar11?: (string | undefined);
+  public __backing_provideVar11?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_provideVar11?: boolean;
+  @Provide({allowOverride:false}) public provideVar12?: number;
+  public __backing_provideVar12?: IProvideDecoratedVariable<number>;
+  public __options_has_provideVar12?: boolean;
+  @Provide({allowOverride:false}) public provideVar13?: (string | undefined);
+  public __backing_provideVar13?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_provideVar13?: boolean;
+  @Provide({alias:"c",allowOverride:true}) public provideVar14?: (boolean | undefined);
+  public __backing_provideVar14?: IProvideDecoratedVariable<(boolean | undefined)>;
+  public __options_has_provideVar14?: boolean;
+  @Provide({alias:"d",allowOverride:true}) public provideVar15?: (string | undefined);
+  public __backing_provideVar15?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_provideVar15?: boolean;
+  @Provide({alias:"e",allowOverride:false}) public provideVar16?: (number | undefined);
+  public __backing_provideVar16?: IProvideDecoratedVariable<(number | undefined)>;
+  public __options_has_provideVar16?: boolean;
+  @Provide({alias:"f",allowOverride:false}) public provideVar17?: (boolean | undefined);
+  public __backing_provideVar17?: IProvideDecoratedVariable<(boolean | undefined)>;
+  public __options_has_provideVar17?: boolean;
+  public constructor() {}
 }
 `;
 

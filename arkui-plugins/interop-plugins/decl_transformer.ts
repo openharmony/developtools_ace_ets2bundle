@@ -47,7 +47,7 @@ export class DeclTransformer extends AbstractVisitor {
         );
 
         arkts.factory.updateClassDeclaration(newDec, newDefinition);
-        newDec.modifiers = node.modifiers;
+        newDec.modifierFlags = node.modifierFlags;
         return newDec;
     }
 
@@ -101,7 +101,7 @@ export class DeclTransformer extends AbstractVisitor {
             func.returnTypeAnnotation,
             false,
             func?.flags,
-            func?.modifiers,
+            func?.modifierFlags,
             func.id,
             func.annotations,
         );
@@ -114,7 +114,7 @@ export class DeclTransformer extends AbstractVisitor {
                 node.id?.name!
             ),
             arkts.factory.createFunctionExpression(func.id?.clone(), updateFunc),
-            node.modifiers,
+            node.modifierFlags,
             false,
             node.overloads
         );

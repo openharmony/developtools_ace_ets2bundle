@@ -16,19 +16,19 @@
 import { Memo } from 'arkui.incremental.annotation';
 import { ComponentBuilder } from 'arkui.component.builder';
 
-interface FakeOptions {
+export interface FakeOptions {
     str?: string;
 }
 
-interface FakeComponentAAttribute {
+export interface FakeComponentAAttribute {
 
 }
 
-interface FakeComponentBAttribute {
+export interface FakeComponentBAttribute {
 
 }
 
-interface FakeComponentCAttribute {
+export interface FakeComponentCAttribute {
     
 }
 

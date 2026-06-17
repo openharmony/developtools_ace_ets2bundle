@@ -26,7 +26,8 @@ import {
     KNativePointer,
     nodeByType,
     ArktsObject,
-    unpackString
+    unpackString,
+    Type
 } from "../../reexport-for-generated"
 
 import { TypedAstNode } from "./TypedAstNode"
@@ -54,6 +55,9 @@ export class Expression extends TypedAstNode {
     }
     get isAnnotatedExpression(): boolean {
         return global.generatedEs2panda._ExpressionIsAnnotatedExpressionConst(global.context, this.peer)
+    }
+    get tsType(): Type | undefined {
+        return new Type(global.es2panda._ExpressionTsType(global.context, this.peer))
     }
 }
 export function isExpression(node: AstNode): node is Expression {

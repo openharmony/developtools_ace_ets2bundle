@@ -124,8 +124,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/custom-inner-component/custom-inner-component-call",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() interface __Options_MyStateSample {
-  
+@Entry() @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 
 `;
@@ -254,8 +254,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() interface __Options_MyStateSample {
-  
+@Entry() @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

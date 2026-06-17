@@ -128,7 +128,7 @@ export class factory {
                 arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
                 false,
                 func.flags,
-                func.modifiers,
+                func.modifierFlags,
                 newName ? arkts.factory.createIdentifier(newName) : func.id,
                 newAnno
             );
@@ -140,7 +140,7 @@ export class factory {
                 newName ? arkts.factory.createIdentifier(newName) : func.id?.clone(),
                 isFunctionCall ? updateFunc : addMemoAnnotation(updateFunc)
             ),
-            node.modifiers,
+            node.modifierFlags,
             false,
             overloads
         );

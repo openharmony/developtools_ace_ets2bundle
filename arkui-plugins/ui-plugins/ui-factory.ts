@@ -26,9 +26,11 @@ import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/saf
 import { BuilderLambdaNames, BuiltInNames, CustomComponentNames, CustomDialogNames, DecoratorNames } from '../common/predefines';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ImportCollector } from '../common/import-collector';
-import { needDefiniteOrOptionalModifier, hasDecoratorName } from './property-translators/utils';
+import { hasDecoratorName, needInitializeWithoutAssignmentFromInfo } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
 import { removeRelativePathSuffix } from '../common/arkts-utils';
+import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotations } from '../collectors/ui-collectors/records';
 
 export interface ScriptFunctionConfiguration {
     key: arkts.Identifier | undefined;
@@ -213,7 +215,7 @@ export class factory {
             config.returnTypeAnnotation ?? original.returnTypeAnnotation,
             config.hasReceiver ?? original.hasReceiver,
             config.flags ?? original.flags,
-            config.modifiers ?? original.modifiers,
+            config.modifiers ?? original.modifierFlags,
             config.key ?? original.id,
             config.annotations ?? original.annotations
         );
@@ -255,7 +257,7 @@ export class factory {
             config.kind ?? original.kind,
             key.clone(),
             arkts.factory.createFunctionExpression(key.clone(), newFunc),
-            config.modifiers ?? original.modifiers,
+            config.modifiers ?? original.modifierFlags,
             config.isComputed ?? false
         );
         return newMethod;
@@ -347,18 +349,18 @@ export class factory {
     /**
      * add optional or definite modifier for class property needs initializing without assignment.
      */
-    static preprocessClassPropertyModifier(st: arkts.AstNode, isDecl: boolean): arkts.AstNode {
-        if (!isDecl && arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
-            if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
-            } else {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
-            }
-            if (st.typeAnnotation && (hasDecoratorName(st, DecoratorNames.ENV) || hasDecoratorName(st, DecoratorNames.CUSTOM_ENV))) {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
+    static preprocessClassPropertyModifier(
+        st: arkts.ClassProperty,
+        annotationRecord: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+    ): void {
+        if (needInitializeWithoutAssignmentFromInfo(st, annotationRecord)) {
+            st.setIsImmediateInit();
+        }
+        if (st.typeAnnotation && (annotationRecord?.annotationInfo?.hasEnv || annotationRecord?.annotationInfo?.hasCustomEnv)) {
+            if (!arkts.hasModifierFlag(st, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY)) {
+                st.modifierFlags |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
             }
         }
-        return st;
     }
 
     /**

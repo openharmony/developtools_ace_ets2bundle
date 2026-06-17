@@ -125,8 +125,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() @Reusable() interface __Options_Index {
-  
+@Entry() @Component() @Reusable() class __Options_Index {
+  public constructor() {}
 }
 
 `;

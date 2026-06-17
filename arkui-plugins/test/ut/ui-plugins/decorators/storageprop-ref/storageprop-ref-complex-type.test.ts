@@ -130,6 +130,7 @@ final class Status extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
     this.__backing_arrayB!.resetOnReuse();
     this.__backing_objectB!.resetOnReuse();
@@ -229,35 +230,29 @@ final class Status extends BaseEnum<int> {
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayB', '(IStoragePropRefDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectB', '(Object | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectB', '(IStoragePropRefDecoratedVariable<Object> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateB', '(Date | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateB', '(IStoragePropRefDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setB', '(Set<number> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setB', '(IStoragePropRefDecoratedVariable<Set<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapB', '(Map<number, string> | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapB', '(IStoragePropRefDecoratedVariable<Map<number, string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classB', '(Person | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop7" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classB', '(IStoragePropRefDecoratedVariable<Person> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumB', '(Status | undefined)', [dumpAnnotation('StoragePropRef', { value: "Prop8" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumB', '(IStoragePropRefDecoratedVariable<Status> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumB', '(boolean | undefined)')}
-  
+@Component() class __Options_MyStateSample {
+  @StoragePropRef({value:"Prop1"}) public arrayB?: Array<number>;
+  public __backing_arrayB?: IStoragePropRefDecoratedVariable<Array<number>>;
+  public __options_has_arrayB?: boolean;
+  @StoragePropRef({value:"Prop2"}) public objectB?: Object;
+  public __backing_objectB?: IStoragePropRefDecoratedVariable<Object>;
+  public __options_has_objectB?: boolean;
+  @StoragePropRef({value:"Prop3"}) public dateB?: Date;
+  public __backing_dateB?: IStoragePropRefDecoratedVariable<Date>;
+  public __options_has_dateB?: boolean;
+  @StoragePropRef({value:"Prop4"}) public setB?: Set<number>;
+  public __backing_setB?: IStoragePropRefDecoratedVariable<Set<number>>;
+  public __options_has_setB?: boolean;
+  @StoragePropRef({value:"Prop5"}) public mapB?: Map<number, string>;
+  public __backing_mapB?: IStoragePropRefDecoratedVariable<Map<number, string>>;
+  public __options_has_mapB?: boolean;
+  @StoragePropRef({value:"Prop7"}) public classB?: Person;
+  public __backing_classB?: IStoragePropRefDecoratedVariable<Person>;
+  public __options_has_classB?: boolean;
+  @StoragePropRef({value:"Prop8"}) public enumB?: Status;
+  public __backing_enumB?: IStoragePropRefDecoratedVariable<Status>;
+  public __options_has_enumB?: boolean;
+  public constructor() {}
 }
 `;
 

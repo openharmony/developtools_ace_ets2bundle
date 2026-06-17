@@ -76,6 +76,9 @@ export interface ISyncMonitorTranslator {
     syncMonitorInfo(newName: string, originalName: string): SyncMonitorInfo;
 }
 
+/**
+ * @deprecated
+ */
 export class SyncMonitorTranslator extends MethodTranslator implements ISyncMonitorTranslator {
     field(newName: string, originalName?: string): arkts.ClassProperty {
         return fieldWithSyncMonitorMethod.bind(this)(newName, originalName);

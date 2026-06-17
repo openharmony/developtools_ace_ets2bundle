@@ -229,6 +229,9 @@ export interface IObservedTrackTranslator extends IBaseObservedPropertyTranslato
     isDecl?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export class ObservedTrackTranslator extends ObservedPropertyTranslator implements IObservedTrackTranslator {
     className: string;
     traceDecorator: DecoratorNames.TRACK = DecoratorNames.TRACK;

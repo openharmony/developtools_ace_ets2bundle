@@ -84,6 +84,7 @@ class Data {
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -156,22 +157,20 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 }
 
-@Entry() @Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "PropA" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)', [dumpAnnotation('StorageLink', { value: "PropB" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLinkObject', '(IStorageLinkDecoratedVariable<Data> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLinkObject', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Index {
+  @StorageLink({value:"PropA"}) public storageLink?: number;
+  public __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
+  public __options_has_storageLink?: boolean;
+  @StorageLink({value:"PropB"}) public storageLinkObject?: Data;
+  public __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
+  public __options_has_storageLinkObject?: boolean;
+  public constructor() {}
   
 }
 `;

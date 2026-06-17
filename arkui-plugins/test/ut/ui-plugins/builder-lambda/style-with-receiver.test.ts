@@ -85,6 +85,7 @@ function style22(this: TextAttribute): TextAttribute {
   public __initializeStruct(initializers: (__Options_MM | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MM | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MM | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -124,8 +125,8 @@ function style22(this: TextAttribute): TextAttribute {
   }
 }
 
-@Component() interface __Options_MM {
-  
+@Component() class __Options_MM {
+  public constructor() {}
 }
 `;
 

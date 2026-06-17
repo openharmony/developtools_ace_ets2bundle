@@ -102,16 +102,15 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 
 }
 
-@Component() interface __Options_CustomContainer {
-  ${ignoreNewLines(`
-  @BuilderParam() closer?: (()=> void);
-  __options_has_closer?: boolean;
-  `)}
+@Component() class __Options_CustomContainer {
+  @BuilderParam() public closer?: ((()=> void) | undefined);
+  public __options_has_closer?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomContainerUser {
-
+@Component() class __Options_CustomContainerUser {
+  public constructor() {}
 }
 `;
 
@@ -153,6 +152,7 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_CustomContainer | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -171,7 +171,7 @@ function main() {}
   @Memo() 
   public closerBuilder() {}
 
-  private __backing_closer?: @Memo() (()=> void);
+  private __backing_closer?: ((()=> void) | undefined);
 
   public get closer(): @Memo() (()=> void) {
     return this.__backing_closer!;
@@ -194,6 +194,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_CustomContainerUser | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -249,14 +250,15 @@ function main() {}
 
 }
 
-@Component() interface __Options_CustomContainer {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
+@Component() class __Options_CustomContainer {
+  public closer?: ((()=> void) | undefined);
+  public __options_has_closer?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomContainerUser {
-
+@Component() class __Options_CustomContainerUser {
+  public constructor() {}
 }
 `;
 

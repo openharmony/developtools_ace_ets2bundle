@@ -14,13 +14,13 @@
  */
 
 import { Memo } from 'arkui.incremental.annotation';
-@Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
+@Retention({policy:"SOURCE"}) export @interface memo_intrinsic {}
 
-interface IA<T> {
+export interface IA<T> {
   ccc: boolean;
 }
 
-class A<T> implements IA<T> {
+export class A<T> implements IA<T> {
   bbb: Map<string, boolean> = new Map<string, boolean>();
   ddd: Map<string, number> = new Map<string, number>();
   ccc: boolean = false;

@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import {
     generateToRecord,
     createGetter,
@@ -31,9 +31,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -57,7 +57,7 @@ function initializeStructWithConsumeProperty(
         arkts.factory.createStringLiteral(originalName),
         arkts.factory.createStringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     const defaultValue = this.property.value;
@@ -90,21 +90,24 @@ function initializeStructWithConsumeProperty(
     return arkts.factory.createExpressionStatement(assign);
 }
 
-function updateStateMethodInInterface<T extends InterfacePropertyTypes>(
-    this: InterfacePropertyTranslator<T>,
+function updateStateMethodInInnerClass<T extends InnerClassPropertyTypes>(
+    this: InnerClassPropertyTranslator<T>,
     method: arkts.MethodDefinition
 ): arkts.MethodDefinition {
     const metadata = findCachedMemoMetadata(method);
-    return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.CONSUME, metadata);
+    return factory.wrapStateManagementTypeToMethodInInnerClass(method, DecoratorNames.CONSUME, metadata);
 }
 
-function updateStatePropertyInInterface<T extends InterfacePropertyTypes>(
-    this: InterfacePropertyTranslator<T>,
+function updateStatePropertyInInnerClass<T extends InnerClassPropertyTypes>(
+    this: InnerClassPropertyTranslator<T>,
     property: arkts.ClassProperty
 ): arkts.ClassProperty {
-    return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.CONSUME);
+    return factory.wrapStateManagementTypeToPropertyInInnerClass(property, DecoratorNames.CONSUME);
 }
 
+/**
+ * @deprecated
+ */
 export class ConsumeTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.CONSUME_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_CONSUME;
@@ -118,7 +121,10 @@ export class ConsumeTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -144,7 +150,10 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -158,7 +167,7 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
         const alias: string = getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName;
         const args: arkts.Expression[] = [arkts.factory.createStringLiteral(alias)];
-        if (this.hasWatch) {
+        if (this.initializeOptions?.isWatched) {
             const watchStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.WATCH);
             if (watchStr) {
                 args.push(factory.createWatchCallback(watchStr));
@@ -191,13 +200,16 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     }
 }
 
-export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ConsumeInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUME;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
             return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.CONSUME);
         } else if (arkts.isClassProperty(node)) {
@@ -207,18 +219,15 @@ export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extend
     }
 }
 
-export class ConsumeCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ConsumeCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUME;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasConsume;
     }
 }

@@ -77,6 +77,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -116,8 +117,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:true}) @Component() interface __Options_MyStateSample {
-  
+@Entry({storage:"myStorage",useSharedStorage:true}) @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

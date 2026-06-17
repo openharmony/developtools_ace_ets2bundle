@@ -25,6 +25,7 @@ import {
     hasDecoratorName,
     removeDecorator,
     findPropertyAccessModifierFlags,
+    InitializeValueOptions,
 } from './utils';
 import { CustomComponentInfo, ClassInfo } from '../utils';
 import {
@@ -37,7 +38,7 @@ import {
 } from '../../common/predefines';
 import { ClassScopeInfo } from '../struct-translators/utils';
 import {
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassPropertyInfo,
     NormalClassMethodInfo,
     NormalClassPropertyInfo,
     StructMethodInfo,
@@ -61,7 +62,6 @@ export abstract class BasePropertyTranslator {
     protected propertyType: arkts.TypeNode | undefined;
     protected isMemoCached?: boolean;
     protected isMemoShouldUpdate?: boolean;
-    protected hasWatch?: boolean;
     protected makeType?: StateManagementTypes;
     protected hasResetOnReuse?: boolean;
     protected hasInitializeStruct?: boolean;
@@ -71,6 +71,7 @@ export abstract class BasePropertyTranslator {
     protected hasGetter?: boolean;
     protected hasSetter?: boolean;
     protected shouldWrapPropertyType?: boolean;
+    protected initializeOptions?: InitializeValueOptions;
 
     constructor(options: BasePropertyTranslatorOptions) {
         this.property = options.property;
@@ -106,12 +107,12 @@ export abstract class BasePropertyTranslator {
     }
 
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
-        const field: arkts.ClassProperty = factory.createOptionalClassProperty(
-            newName,
-            this.property,
-            this.stateManagementType,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE
-        );
+        const field: arkts.ClassProperty = factory.createOptionalClassProperty({
+            name: newName,
+            propertyType: this.property.typeAnnotation,
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
+            stateMangementType: this.stateManagementType
+        });
         field.startPosition = this.property.startPosition;
         field.endPosition = this.property.endPosition;
         if (this.isMemoCached) {
@@ -165,9 +166,14 @@ export abstract class BasePropertyTranslator {
         const initializePropertyType = this.propertyType?.clone();
         const args: arkts.Expression[] = [
             arkts.factory.createStringLiteral(originalName),
-            factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
+            factory.generateInitializeValue(
+                initializePropertyValue, 
+                initializePropertyType, 
+                originalName, 
+                this.initializeOptions
+            ),
         ];
-        if (this.hasWatch) {
+        if (this.initializeOptions?.isWatched) {
             factory.addWatchFunc(args, this.property);
         }
         collectStateManagementTypeImport(this.stateManagementType);
@@ -493,7 +499,7 @@ export abstract class BaseObservedPropertyTranslator implements IBaseObservedPro
             false
         );
         if (!this.property.value) {
-            backingField.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
+            backingField.modifierFlags |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
         }
         const annotations: arkts.AnnotationUsage[] = [...this.property.annotations];
         if (
@@ -599,7 +605,7 @@ export abstract class ObservedPropertyTranslator extends BaseObservedPropertyTra
                         originGetter.id?.clone(),
                         newGetter.function.addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     ),
-                    originGetter.modifiers,
+                    originGetter.modifierFlags,
                     false
                 );
                 arkts.factory.updateMethodDefinition(
@@ -612,7 +618,7 @@ export abstract class ObservedPropertyTranslator extends BaseObservedPropertyTra
                             .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_OVERLOAD)
                             .addFlag(arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD),
                     ),
-                    originSetter.modifiers,
+                    originSetter.modifierFlags,
                     false
                 );
                 this.classScopeInfo.getters[idx] = updateGetter;
@@ -659,14 +665,14 @@ export abstract class ObservedPropertyCachedTranslator extends BaseObservedPrope
     }
 }
 
-export type InterfacePropertyTypes = arkts.MethodDefinition | arkts.ClassProperty;
+export type InnerClassPropertyTypes = arkts.MethodDefinition | arkts.ClassProperty;
 
-export interface InterfacePropertyTranslatorOptions<T extends InterfacePropertyTypes> {
+export interface InnerClassPropertyTranslatorOptions<T extends InnerClassPropertyTypes> {
     property: T;
 }
 
-export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTypes = InterfacePropertyTypes>
-    implements InterfacePropertyTranslatorOptions<T>
+export abstract class InnerClassPropertyTranslator<T extends InnerClassPropertyTypes = InnerClassPropertyTypes>
+    implements InnerClassPropertyTranslatorOptions<T>
 {
     protected decorator: DecoratorNames | undefined;
 
@@ -674,7 +680,7 @@ export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTyp
 
     modified: boolean;
 
-    constructor(options: InterfacePropertyTranslatorOptions<T>) {
+    constructor(options: InnerClassPropertyTranslatorOptions<T>) {
         this.property = options.property;
         this.modified = false;
     }
@@ -684,12 +690,12 @@ export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTyp
             this.modified = true;
             const method = flatVisitMethodWithOverloads(
                 this.property,
-                this.updateStateMethodInInterface.bind(this)
+                this.updateStateMethodInInnerClass.bind(this)
             ) as T;
             return method;
         } else if (arkts.isClassProperty(this.property)) {
             this.modified = true;
-            return this.updateStatePropertyInInterface(this.property) as T;
+            return this.updateStatePropertyInInnerClass(this.property) as T;
         }
         return this.property;
     }
@@ -700,12 +706,12 @@ export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTyp
      *
      * @param method expecting getter with decorator.
      */
-    protected updateStateMethodInInterface(method: arkts.MethodDefinition): arkts.MethodDefinition {
+    protected updateStateMethodInInnerClass(method: arkts.MethodDefinition): arkts.MethodDefinition {
         if (!this.decorator) {
             throw new Error('interface property does not have any decorator.');
         }
         const metadata = findCachedMemoMetadata(method);
-        return factory.wrapStateManagementTypeToMethodInInterface(method, this.decorator, metadata);
+        return factory.wrapStateManagementTypeToMethodInInnerClass(method, this.decorator, metadata);
     }
 
     /**
@@ -714,38 +720,38 @@ export abstract class InterfacePropertyTranslator<T extends InterfacePropertyTyp
      *
      * @param property expecting property with decorator.
      */
-    protected updateStatePropertyInInterface(property: arkts.ClassProperty): arkts.ClassProperty {
+    protected updateStatePropertyInInnerClass(property: arkts.ClassProperty): arkts.ClassProperty {
         if (!this.decorator) {
             throw new Error('interface property does not have any decorator.');
         }
-        return factory.wrapStateManagementTypeToPropertyInInterface(property, this.decorator);
+        return factory.wrapStateManagementTypeToPropertyInInnerClass(property, this.decorator);
     }
 
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         return false;
     }
 }
 
-export interface InterfacePropertyCachedTranslatorOptions<T extends InterfacePropertyTypes>
-    extends InterfacePropertyTranslatorOptions<T> {
-    propertyInfo?: CustomComponentInterfacePropertyInfo;
+export interface InnerClassPropertyCachedTranslatorOptions<T extends InnerClassPropertyTypes>
+    extends InnerClassPropertyTranslatorOptions<T> {
+    propertyInfo?: CustomComponentInnerClassPropertyInfo;
 }
 
-export abstract class InterfacePropertyCachedTranslator<T extends InterfacePropertyTypes = InterfacePropertyTypes>
-    extends InterfacePropertyTranslator<T>
-    implements InterfacePropertyCachedTranslatorOptions<T>
+export abstract class InnerClassPropertyCachedTranslator<T extends InnerClassPropertyTypes = InnerClassPropertyTypes>
+    extends InnerClassPropertyTranslator<T>
+    implements InnerClassPropertyCachedTranslatorOptions<T>
 {
-    propertyInfo?: CustomComponentInterfacePropertyInfo;
+    propertyInfo?: CustomComponentInnerClassPropertyInfo;
 
-    constructor(options: InterfacePropertyCachedTranslatorOptions<T>) {
+    constructor(options: InnerClassPropertyCachedTranslatorOptions<T>) {
         super(options);
         this.propertyInfo = options.propertyInfo;
     }
 
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return false;
     }
 }

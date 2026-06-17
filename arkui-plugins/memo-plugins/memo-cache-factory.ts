@@ -156,7 +156,7 @@ export class RewriteFactory {
             !!node.value && arkts.isArrowFunctionExpression(node.value)
                 ? RewriteFactory.rewriteArrowFunction(node.value, metadata)
                 : node.value;
-        return arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifiers, node.isComputed, node.annotations);
+        return arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifierFlags, node.isComputed, node.annotations);
     }
 
     static rewriteArrowFunction(
@@ -290,7 +290,7 @@ export class RewriteFactory {
                     isGetter,
                 })
             ),
-            node.modifiers,
+            node.modifierFlags,
             false,
             node.overloads
         );

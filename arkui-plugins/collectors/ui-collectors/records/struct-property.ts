@@ -43,13 +43,17 @@ export class StructPropertyRecord extends BaseRecord<arkts.ClassProperty, Struct
         this._annotationRecord = new StructPropertyAnnotationRecord(options);
     }
 
+    release(node: arkts.ClassProperty): void {
+        RecordCache.getInstance().delete(node.peer);
+    }
+
     collectFromNode(node: arkts.ClassProperty): void {
         const key: arkts.Expression | undefined = node.key;
         if (!key || !arkts.isIdentifier(key)) {
             return;
         }
         this.name = key.name;
-        this.modifiers = node.modifiers;
+        this.modifiers = node.modifierFlags;
         for (const anno of node.annotations) {
             this._annotationRecord.collect(anno);
         }

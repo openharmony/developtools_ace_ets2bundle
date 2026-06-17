@@ -74,6 +74,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample1 | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample1 | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -135,6 +136,7 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample2 | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -189,39 +191,17 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample1 {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_MyStateSample1 {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_MyStateSample2 {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_MyStateSample2 {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 `;

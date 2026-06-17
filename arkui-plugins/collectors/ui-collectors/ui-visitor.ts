@@ -23,6 +23,7 @@ import { LogCollector } from '../../common/log-collector';
 import { matchPrefix } from '../../common/arkts-utils';
 import { LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES } from '../../common/predefines';
 import { MetaDataCollector } from '../../common/metadata-collector';
+import { RecordBuilder } from './records';
 
 export interface UIVisitorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
@@ -67,6 +68,7 @@ export class UIVisitor extends AbstractVisitor {
     reset(): void {
         super.reset();
         CallRecordCollector.getInstance(this.getMetadata()).reset();
+        RecordBuilder.reset();
         if (this.shouldCheckUISyntax) {
             ValidatorBuilder.reset();
             LogCollector.getInstance().emitLogInfo();

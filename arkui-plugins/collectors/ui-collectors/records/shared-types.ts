@@ -25,23 +25,23 @@ import { NormalInterfacePropertyInfo } from "./normal-interface-property";
 import { ParameterInfo } from "./parameter";
 import { PropertyInfo } from "./property";
 import { CustomComponentInfo } from "./struct";
-import { CustomComponentInterfaceInfo } from "./struct-interface";
-import { CustomComponentInterfacePropertyInfo } from "./struct-interface-property";
+import { CustomComponentInnerClassInfo } from "./struct-interface";
+import { CustomComponentInnerClassPropertyInfo } from "./struct-interface-property";
 import { StructMethodInfo } from "./struct-method";
 import { StructPropertyInfo } from "./struct-property";
 
-export type ClassDeclarationRecordInfo = NormalClassInfo | CustomComponentInfo;
+export type ClassDeclarationRecordInfo = NormalClassInfo | CustomComponentInfo | CustomComponentInnerClassInfo;
 
 export type MethodDefinitionRecordInfo =
     | FunctionInfo
     | NormalClassMethodInfo
     | StructMethodInfo
     | NormalInterfacePropertyInfo
-    | CustomComponentInterfacePropertyInfo;
+    | CustomComponentInnerClassPropertyInfo;
 
 export type ClassPropertyRecordInfo = NormalClassPropertyInfo | StructPropertyInfo;
 
-export type TSInterfaceDeclarationRecordInfo = NormalInterfaceInfo | CustomComponentInterfaceInfo;
+export type TSInterfaceDeclarationRecordInfo = NormalInterfaceInfo | CustomComponentInnerClassInfo;
 
 export type CallExpressionRecordInfo = CallInfo;
 

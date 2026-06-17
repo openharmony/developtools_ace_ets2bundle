@@ -223,6 +223,9 @@ export interface IObservedV2TraceTranslator extends IBaseObservedPropertyTransla
     isDecl?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export class ObservedV2TraceTranslator extends ObservedPropertyTranslator implements IObservedV2TraceTranslator {
     traceDecorator: DecoratorNames.TRACE = DecoratorNames.TRACE;
     className: string;

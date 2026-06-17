@@ -65,6 +65,7 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -109,9 +110,10 @@ function main() {}
 
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderArr', '(Array<@Builder() ((p1: string, p2: number)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderArr', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  public builderArr?: Array<@Builder() ((p1: string, p2: number)=> void)>;
+  public __options_has_builderArr?: boolean;
+  public constructor() {}
 }`;
 
 function testMemoCheckedTransformer(this: PluginTestContext): void {

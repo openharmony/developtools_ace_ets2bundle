@@ -166,18 +166,25 @@ final class StateType extends BaseEnum<int> {
 }
 
 @ObservedV2() class OO implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   public setV1RenderId(renderId: RenderIdType): void {}
@@ -208,18 +215,25 @@ final class StateType extends BaseEnum<int> {
 }
 
 @Observed() class RR implements IObservedObject, ISubscribedWatches {
-  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: ISubscribedWatches = STATE_MGMT_FACTORY.makeSubscribedWatches();
+  @JSONStringifyIgnore() @JSONParseIgnore() private subscribedWatches: (ISubscribedWatches | undefined) = STATE_MGMT_FACTORY.makeSubscribedWatches();
   
   public addWatchSubscriber(watchId: WatchIdType): void {
-    this.subscribedWatches.addWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
   
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
-    return this.subscribedWatches.removeWatchSubscriber(watchId);
+    if (((this.subscribedWatches) !== (undefined))) {
+      return this.subscribedWatches!.removeWatchSubscriber(watchId);
+    }
+    return false;
   }
   
   public executeOnSubscribingWatches(propertyName: string): void {
-    this.subscribedWatches.executeOnSubscribingWatches(propertyName);
+    if (((this.subscribedWatches) !== (undefined))) {
+      this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
+    }
   }
   
   @JSONStringifyIgnore() @JSONParseIgnore() private ____V1RenderId: RenderIdType = 0;
@@ -670,7 +684,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@Component() interface __Options_Parent {
+@Component() class __Options_Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar1', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar1', '(IStateDecoratedVariable<Any> | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar1', '(boolean | undefined)')}
@@ -703,7 +717,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@ComponentV2() interface __Options_V2Parent {
+@ComponentV2() class __Options_V2Parent {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}
@@ -752,7 +766,7 @@ final class StateType extends BaseEnum<int> {
   
 }
 
-@CustomDialog() interface __Options_CC {
+@CustomDialog() class __Options_CC {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'stateVar4', '(Any | undefined)')}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stateVar4', '(IParamOnceDecoratedVariable<Any> | undefined)', [dumpAnnotation('Param')])}
   ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stateVar4', '(boolean | undefined)')}

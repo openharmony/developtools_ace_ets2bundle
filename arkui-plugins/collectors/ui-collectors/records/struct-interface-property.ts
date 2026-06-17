@@ -17,45 +17,53 @@ import * as arkts from '@koalaui/libarkts';
 import { StructPropertyAnnotationInfo, StructPropertyAnnotationRecord, StructPropertyAnnotations } from './annotations';
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
-import { CustomComponentInterfaceInfo, CustomComponentInterfaceRecord } from './struct-interface';
+import { CustomComponentInnerClassInfo, CustomComponentInnerClassRecord } from './struct-interface';
 import { RecordCache } from './cache';
 
-export type CustomComponentInterfacePropertyInfo = AnnotationRecord<
+export type CustomComponentInnerClassPropertyInfo = AnnotationRecord<
     StructPropertyAnnotations,
     StructPropertyAnnotationInfo
 > & {
-    interfaceInfo?: CustomComponentInterfaceInfo;
+    innerClassInfo?: CustomComponentInnerClassInfo;
     name?: string;
     modifiers?: arkts.Es2pandaModifierFlags;
-    kind?: arkts.Es2pandaMethodDefinitionKind;
+    // kind?: arkts.Es2pandaMethodDefinitionKind;
 };
 
-export interface CustomComponentInterfacePropertyRecordOptions extends RecordOptions {
-    interfaceRecord?: CustomComponentInterfaceRecord;
+export interface CustomComponentInnerClassPropertyRecordOptions extends RecordOptions {
+    innerClassRecord?: CustomComponentInnerClassRecord;
 }
 
-export class CustomComponentInterfacePropertyRecord extends BaseRecord<
-    arkts.MethodDefinition,
-    CustomComponentInterfacePropertyInfo
+export class CustomComponentInnerClassPropertyRecord extends BaseRecord<
+    arkts.ClassProperty,
+    CustomComponentInnerClassPropertyInfo
 > {
     private _annotationRecord: StructPropertyAnnotationRecord;
-    private _interfaceRecord?: CustomComponentInterfaceRecord;
+    private _innerClassRecord?: CustomComponentInnerClassRecord;
 
     protected name?: string;
     protected modifiers?: arkts.Es2pandaModifierFlags;
-    protected kind?: arkts.Es2pandaMethodDefinitionKind;
+    // protected kind?: arkts.Es2pandaMethodDefinitionKind;
 
-    constructor(options: CustomComponentInterfacePropertyRecordOptions) {
+    constructor(options: CustomComponentInnerClassPropertyRecordOptions) {
         super(options);
-        this._interfaceRecord = options.interfaceRecord;
+        this._innerClassRecord = options.innerClassRecord;
         this._annotationRecord = new StructPropertyAnnotationRecord(options);
     }
 
-    collectFromNode(node: arkts.MethodDefinition): void {
-        this.name = node.id?.name;
-        this.modifiers = node.modifiers;
-        this.kind = node.kind;
-        for (const anno of node.function.annotations) {
+    release(node: arkts.ClassProperty): void {
+        RecordCache.getInstance().delete(node.peer);
+    }
+
+    collectFromNode(node: arkts.ClassProperty): void {
+        const key = node.key;
+        if (!key || !arkts.isIdentifier(key)) {
+            return;
+        }
+        this.name = key.name;
+        this.modifiers = node.modifierFlags;
+        // this.kind = node.kind;
+        for (const anno of node.annotations) {
             this._annotationRecord.collect(anno);
         }
         RecordCache.getInstance().set(node.peer, this);
@@ -64,27 +72,27 @@ export class CustomComponentInterfacePropertyRecord extends BaseRecord<
     refreshOnce(): void {
         let currInfo = this.info ?? {};
         const annotationRecord = this._annotationRecord.toRecord();
-        const interfaceRecord = this._interfaceRecord?.toRecord();
+        const innerClassRecord = this._innerClassRecord?.toRecord();
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
             ...(this.modifiers && { modifiers: this.modifiers }),
-            ...(this.kind && { kind: this.kind }),
+            // ...(this.kind && { kind: this.kind }),
             ...(annotationRecord && { ...annotationRecord }),
-            ...(interfaceRecord && { interfaceInfo: interfaceRecord }),
+            ...(innerClassRecord && { innerClassInfo: innerClassRecord }),
         };
         this.info = currInfo;
     }
 
-    toJSON(): CustomComponentInterfacePropertyInfo {
+    toJSON(): CustomComponentInnerClassPropertyInfo {
         this.refresh();
-        const interfaceInfo = this._interfaceRecord?.toJSON();
+        const innerClassInfo = this._innerClassRecord?.toJSON();
         return {
             ...(this.info?.name && { name: this.info.name }),
             ...(this.info?.modifiers && { modifiers: this.info.modifiers }),
-            ...(this.info?.kind && { kind: this.info.kind }),
+            // ...(this.info?.kind && { kind: this.info.kind }),
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
-            ...(interfaceInfo && { interfaceInfo }),
+            ...(innerClassInfo && { innerClassInfo }),
         };
     }
 }

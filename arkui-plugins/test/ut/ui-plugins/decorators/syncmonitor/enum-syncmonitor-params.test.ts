@@ -166,7 +166,6 @@ final class MonitorNames extends BaseEnum<String> {
       this.subscribedWatches!.executeOnSubscribingWatches(propertyName);
     }
   }
-  
   public setV1RenderId(renderId: RenderIdType): void {}
   
   protected conditionalAddRef(meta: IMutableStateMeta): void {
@@ -298,19 +297,18 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}
+@Entry() @ComponentV2() class __Options_Index {
+  @Local() public varF?: FFF;
+  public __backing_varF?: ILocalDecoratedVariable<FFF>;
+  public __options_has_varF?: boolean;
+  public constructor() {}
   
 }
 `;

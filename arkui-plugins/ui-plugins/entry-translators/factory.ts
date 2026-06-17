@@ -217,7 +217,7 @@ export class factory {
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
             );
         const newClass = arkts.factory.createClassDeclaration(definition);
-        newClass.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
+        newClass.modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE;
         newClass.startPosition = entryAnnoInfo.startPosition;
         newClass.endPosition = entryAnnoInfo.endPosition;
         return newClass;

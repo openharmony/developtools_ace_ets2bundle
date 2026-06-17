@@ -247,6 +247,10 @@ export function destroyConfig(config: KNativePointer): void {
     global.es2panda._DestroyConfig(config);
     global.resetConfig();
 }
+export function destroyConfigWithoutLog(config: KNativePointer): void {
+    global.es2panda._DestroyConfigWithoutLog(config);
+    global.resetConfig();
+}
 
 export function setAllParents(ast: AstNode): void {
     global.es2panda._AstNodeUpdateAll(global.context, ast.peer);

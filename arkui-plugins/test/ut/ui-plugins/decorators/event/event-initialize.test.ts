@@ -59,9 +59,9 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
   
   @Param() public index: number = 0;
 
-  @Event() public changeIndex!: ((val: number)=> void);
+  @Event() public changeIndex: ((val: number)=> void);
 
-  @Event() public testEvent!: ((val: number)=> number);
+  @Event() public testEvent: ((val: number)=> number);
 
   @Event() public testEvent2: ((val: number)=> number) = ((val: number) => {
     return val;
@@ -104,27 +104,25 @@ import { Event as Event, Param as Param, Local as Local } from "@ohos.arkui.stat
 
 }
 
-@ComponentV2() interface __Options_Child {
-  ${ignoreNewLines(`
-  @Param() index?: number;
-  @Param() __backing_index?: number;
-  __options_has_index?: boolean;
-  @Event() changeIndex?: ((val: number)=> void);
-  __options_has_changeIndex?: boolean;
-  @Event() testEvent?: ((val: number)=> number);
-  __options_has_testEvent?: boolean;
-  @Event() testEvent2?: ((val: number)=> number);
-  __options_has_testEvent2?: boolean;
-  `)}
+@ComponentV2() class __Options_Child {
+  @Param() public index?: number;
+  @Param() public __backing_index?: number;
+  public __options_has_index?: boolean;
+  @Event() public changeIndex?: (((val: number)=> void) | undefined);
+  public __options_has_changeIndex?: boolean;
+  @Event() public testEvent?: (((val: number)=> number) | undefined);
+  public __options_has_testEvent?: boolean;
+  @Event() public testEvent2?: (((val: number)=> number) | undefined);
+  public __options_has_testEvent2?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Index {
-  ${ignoreNewLines(`
-  @Local() index?: number;
-  @Local() __backing_index?: number;
-  __options_has_index?: boolean;
-  `)}
+@ComponentV2() class __Options_Index {
+  @Local() public index?: number;
+  @Local() public __backing_index?: number;
+  public __options_has_index?: boolean;
+  public constructor() {}
 
 }
 `;
@@ -214,7 +212,7 @@ function main() {}
     return this.__backing_index!.get();
   }
 
-  private __backing_changeIndex?: ((val: number)=> void);
+  private __backing_changeIndex?: (((val: number)=> void) | undefined);
 
   public get changeIndex(): ((val: number)=> void) {
     return (this.__backing_changeIndex as ((val: number)=> void));
@@ -224,7 +222,7 @@ function main() {}
     this.__backing_changeIndex = value;
   }
 
-  private __backing_testEvent?: ((val: number)=> number);
+  private __backing_testEvent?: (((val: number)=> number) | undefined);
 
   public get testEvent(): ((val: number)=> number) {
     return (this.__backing_testEvent as ((val: number)=> number));
@@ -234,7 +232,7 @@ function main() {}
     this.__backing_testEvent = value;
   }
 
-  private __backing_testEvent2?: ((val: number)=> number);
+  private __backing_testEvent2?: (((val: number)=> number) | undefined);
 
   public get testEvent2(): ((val: number)=> number) {
     return (this.__backing_testEvent2 as ((val: number)=> number));
@@ -328,26 +326,25 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IParamDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'changeIndex', '(((val: number)=> void) | undefined)', [dumpAnnotation('Event')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_changeIndex', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent', '(((val: number)=> number) | undefined)', [dumpAnnotation('Event')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'testEvent2', '(((val: number)=> number) | undefined)', [dumpAnnotation('Event')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_testEvent2', '(boolean | undefined)')}
+@ComponentV2() class __Options_Child {
+  @Param() public index?: number;
+  public __backing_index?: IParamDecoratedVariable<number>;
+  public __options_has_index?: boolean;
+  @Event() public changeIndex?: (((val: number)=> void) | undefined);
+  public __options_has_changeIndex?: boolean;
+  @Event() public testEvent?: (((val: number)=> number) | undefined);
+  public __options_has_testEvent?: boolean;
+  @Event() public testEvent2?: (((val: number)=> number) | undefined);
+  public __options_has_testEvent2?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(number | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(ILocalDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index {
+  @Local() public index?: number;
+  public __backing_index?: ILocalDecoratedVariable<number>;
+  public __options_has_index?: boolean;
+  public constructor() {}
   
 }
 `;

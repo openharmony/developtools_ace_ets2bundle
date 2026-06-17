@@ -99,19 +99,17 @@ import hilog from "@ohos.hilog";
 
 }
 
-@Component() interface __Options_CustomDialogUser {
-  ${ignoreNewLines(`
-  dialogController?: (CustomDialogController | null);
-  __options_has_dialogController?: boolean;
-  `)}
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser2 {
-  ${ignoreNewLines(`
-  dialogController?: (CustomDialogController | null);
-  __options_has_dialogController?: boolean;
-  `)}
+@Component() class __Options_CustomDialogUser2 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -247,15 +245,17 @@ function builder2() {}
   }
 }
 
-@Component() interface __Options_CustomDialogUser {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUser2 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;

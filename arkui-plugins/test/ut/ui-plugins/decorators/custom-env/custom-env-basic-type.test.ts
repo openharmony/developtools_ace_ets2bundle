@@ -67,7 +67,7 @@ const myKey = CustomEnvKey.create<string>()
     throw new Error("Declare interface");
   }
   
-  @CustomEnv({value:"myKey"}) public readonly str!: string = "on";
+  @CustomEnv({value:"myKey"}) public readonly str: string = "on";
   public build() {}
   
   protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
@@ -100,8 +100,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/custom-env/custom-env-basic-type",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() interface __Options_Index {
-  @CustomEnv({value:"myKey"}) str?: string;@CustomEnv({value:"myKey"}) __backing_str?: string;__options_has_str?: boolean;
+@Entry() @Component() class __Options_Index {
+  @CustomEnv({value:"myKey"}) public str?: string;
+  @CustomEnv({value:"myKey"}) public __backing_str?: string;
+  public __options_has_str?: boolean;
+  public constructor() {}
 }
 
 `;
@@ -201,27 +204,11 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() interface __Options_Index {
-  @CustomEnv({value:"myKey"}) 
-  get str(): (string | undefined) {
-    return undefined;
-  }
-  @CustomEnv({value:"myKey"}) 
-  set str(str: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_str(): (ICustomEnvDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_str(__backing_str: (ICustomEnvDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_str(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_str(__options_has_str: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
+@Entry() @Component() class __Options_Index {
+  @CustomEnv({value:"myKey"}) public str?: string;
+  public __backing_str?: ICustomEnvDecoratedVariable<string>;
+  public __options_has_str?: boolean;
+  public constructor() {}
   
 }
 

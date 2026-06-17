@@ -157,15 +157,16 @@ function main() {}
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText3)})) {
       this.__backing_childText3!.update((initializers!.childText3 as string));
-    }
+      }
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_childText4)})) {
       this.__backing_childText4!.update((initializers!.childText4 as string));
+      }
     }
-  }
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
     this.__backing_childText!.resetOnReuse(initializers!.__backing_childText!);
-    this.__backing_childText2!.resetOnReuse("sss");
+    this.__backing_childText2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")));
     this.__backing_childText3!.resetOnReuse((initializers!.childText3 as string));
     this.__backing_childText4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")));
@@ -227,26 +228,28 @@ function main() {}
     }
   }
 
-@Component() interface __Options_Parant {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text1', '(string | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text1', '(LinkSourceType<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text1', '(boolean | undefined)')}
-  }
+@Component() class __Options_Parant {
+  @Link() public text1: string;
+  public __backing_text1?: LinkSourceType<string>;
+  public __options_has_text1?: boolean;
+  public constructor() {}
+}
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText', '(string | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText', '(LinkSourceType<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText2', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText2', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText3', '(string | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText3', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText3', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childText4', '(string | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childText4', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childText4', '(boolean | undefined)')}
-  }
+@Component() class __Options_Child {
+  @Link() public childText: string;
+  public __backing_childText?: LinkSourceType<string>;
+  public __options_has_childText?: boolean;
+  @State() public childText2?: string;
+  public __backing_childText2?: IStateDecoratedVariable<string>;
+  public __options_has_childText2?: boolean;
+  @PropRef() public childText3?: string;
+  public __backing_childText3?: IPropRefDecoratedVariable<string>;
+  public __options_has_childText3?: boolean;
+  @PropRef() public childText4?: string;
+  public __backing_childText4?: IPropRefDecoratedVariable<string>;
+  public __options_has_childText4?: boolean;
+  public constructor() {}
+}
 `;
 
 function testParsedAndCheckedTransformer(this: PluginTestContext): void {

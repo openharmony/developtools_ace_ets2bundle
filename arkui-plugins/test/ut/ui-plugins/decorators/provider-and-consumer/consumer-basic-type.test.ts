@@ -147,26 +147,23 @@ function main() {}
 
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar1', '(string | undefined)', [dumpAnnotation('Consumer')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar1', '(IConsumerDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar2', '(number | undefined)', [dumpAnnotation('Consumer')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar2', '(IConsumerDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar3', '(boolean | undefined)', [dumpAnnotation('Consumer')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar3', '(IConsumerDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar4', '(undefined | undefined)', [dumpAnnotation('Consumer')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar4', '(IConsumerDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'consumerVar5', '(null | undefined)', [dumpAnnotation('Consumer')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_consumerVar5', '(IConsumerDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_consumerVar5', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Consumer() public consumerVar1?: string;
+  public __backing_consumerVar1?: IConsumerDecoratedVariable<string>;
+  public __options_has_consumerVar1?: boolean;
+  @Consumer() public consumerVar2?: number;
+  public __backing_consumerVar2?: IConsumerDecoratedVariable<number>;
+  public __options_has_consumerVar2?: boolean;
+  @Consumer() public consumerVar3?: boolean;
+  public __backing_consumerVar3?: IConsumerDecoratedVariable<boolean>;
+  public __options_has_consumerVar3?: boolean;
+  @Consumer() public consumerVar4?: undefined;
+  public __backing_consumerVar4?: IConsumerDecoratedVariable<undefined>;
+  public __options_has_consumerVar4?: boolean;
+  @Consumer() public consumerVar5?: null;
+  public __backing_consumerVar5?: IConsumerDecoratedVariable<null>;
+  public __options_has_consumerVar5?: boolean;
+  public constructor() {}
   
 }
 `;

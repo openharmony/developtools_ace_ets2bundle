@@ -97,6 +97,7 @@ function main() {}
       this.__backing_propVar5!.update((initializers!.propVar5 as null));
     }
   }
+
   public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
     this.__backing_propVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? ("propVar1")));
@@ -109,6 +110,7 @@ function main() {}
     this.__backing_propVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? (null)));
   }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: PropParent)=> void) | undefined), initializers: ((()=> __Options_PropParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<PropParent, __Options_PropParent>(style, ((): PropParent => {
@@ -180,26 +182,23 @@ function main() {}
 
 }
 
-@Component() interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(number | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(boolean | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(undefined | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(null | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
+@Component() class __Options_PropParent {
+  @PropRef() public propVar1?: string;
+  public __backing_propVar1?: IPropRefDecoratedVariable<string>;
+  public __options_has_propVar1?: boolean;
+  @PropRef() public propVar2?: number;
+  public __backing_propVar2?: IPropRefDecoratedVariable<number>;
+  public __options_has_propVar2?: boolean;
+  @PropRef() public propVar3?: boolean;
+  public __backing_propVar3?: IPropRefDecoratedVariable<boolean>;
+  public __options_has_propVar3?: boolean;
+  @PropRef() public propVar4?: undefined;
+  public __backing_propVar4?: IPropRefDecoratedVariable<undefined>;
+  public __options_has_propVar4?: boolean;
+  @PropRef() public propVar5?: null;
+  public __backing_propVar5?: IPropRefDecoratedVariable<null>;
+  public __options_has_propVar5?: boolean;
+  public constructor() {}
 
 }
 `;

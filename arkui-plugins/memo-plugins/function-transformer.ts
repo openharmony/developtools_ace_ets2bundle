@@ -257,7 +257,7 @@ export class FunctionTransformer extends AbstractVisitor {
             scriptFunction.returnTypeAnnotation,
             scriptFunction.hasReceiver,
             scriptFunction.flags,
-            scriptFunction.modifiers,
+            scriptFunction.modifierFlags,
             scriptFunction.id ?? undefined,
             scriptFunction.annotations ?? undefined,
             scriptFunction.getSignaturePointer?.() ?? undefined,
@@ -535,7 +535,7 @@ export class FunctionTransformer extends AbstractVisitor {
             node.key,
             res ? arkts.factory.updateArrowFunctionExpression(nodeArrowFunction, res, nodeArrowFunction.annotations) : undefined,
             typeAnnotation,
-            node.modifiers,
+            node.modifierFlags,
             node.isComputed,
             node.annotations
         );

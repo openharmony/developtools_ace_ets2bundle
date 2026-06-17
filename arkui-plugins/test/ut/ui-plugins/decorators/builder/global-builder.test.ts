@@ -117,6 +117,7 @@ interface Person {
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @MemoIntrinsic() 
@@ -159,8 +160,8 @@ interface Person {
   }
 }
 
-@Component() interface __Options_BuilderDemo {
-  
+@Component() class __Options_BuilderDemo {
+  public constructor() {}
 }
 `;
 

@@ -109,8 +109,7 @@ function destroyContext(context: arkts.Context): void {
 
 function destroyConfig(config: AstNodePointer): void {
     try {
-        arkts.arktsGlobal.es2panda._DestroyConfig(config);
-        arkts.arktsGlobal.resetConfig();
+        arkts.destroyConfigWithoutLog(config.peer);
     } catch (e) {
         // Do nothing
     }

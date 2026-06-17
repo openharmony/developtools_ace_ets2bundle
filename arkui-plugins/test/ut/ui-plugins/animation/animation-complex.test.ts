@@ -146,8 +146,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component() interface __Options_AnimatablePropertyExample {
-  
+@Entry() @Component() class __Options_AnimatablePropertyExample {
+  public constructor() {}
 }
 
 `;

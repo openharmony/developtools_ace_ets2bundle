@@ -80,6 +80,10 @@ export class CustomComponentRecord extends BaseRecord<arkts.ClassDeclaration, Cu
         return this;
     }
 
+    release(node: arkts.ClassDeclaration): void {
+        RecordCache.getInstance().delete(node.peer);
+    }
+
     collectFromNode(node: arkts.ClassDeclaration): void {
         const definition: arkts.ClassDefinition | undefined = node.definition;
         if (!definition) {

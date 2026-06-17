@@ -35,8 +35,8 @@ import {
     CallDeclInfo,
     CallInfo,
     CustomComponentInfo,
-    CustomComponentInterfaceInfo,
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassInfo,
+    CustomComponentInnerClassPropertyInfo,
     FunctionInfo,
     NewClassInstanceInfo,
     NormalClassInfo,
@@ -111,14 +111,11 @@ export function getAnnotationName(anno: arkts.AnnotationUsage, ignoreDecl?: bool
     if (whiteList.includes(name)) {
         return name;
     }
+    if (ignoreDecl) {
+        return name;
+    }
     const decl = arkts.getPeerIdentifierDecl(expr.peer);
-    if (!decl) {
-        return;
-    }
-    if (!ignoreDecl && !isDeclFromArkUI(decl)) {
-        return undefined;
-    }
-    return name;
+    return !!decl && isDeclFromArkUI(decl) ? name : undefined;
 }
 
 export function getBuiltInAnnotationWhiteList(): string[] {
@@ -221,7 +218,7 @@ export function checkIsStructFromNode(node: arkts.AstNode, shouldFindStructFlag?
 }
 
 export function checkIsCustomComponentFromInfo(
-    info: CustomComponentInfo | CustomComponentInterfaceInfo | undefined
+    info: CustomComponentInfo | CustomComponentInnerClassInfo | undefined
 ): boolean {
     const annotationInfo = info?.annotationInfo ?? {};
     return !!annotationInfo.hasComponent || !!annotationInfo.hasComponentV2 || !!annotationInfo.hasCustomDialog;
@@ -342,11 +339,11 @@ export function checkIsNormalClassMethodFromInfo(info: NormalClassMethodInfo): b
     return Object.hasOwn(info, 'classInfo');
 }
 
-export function checkIsStructInterfacePropertyFromInfo(info: CustomComponentInterfacePropertyInfo): boolean {
-    if (!Object.hasOwn(info, 'interfaceInfo')) {
+export function checkIsStructInnerClassPropertyFromInfo(info: CustomComponentInnerClassPropertyInfo): boolean {
+    if (!Object.hasOwn(info, 'innerClassInfo')) {
         return false;
     }
-    return checkIsCustomComponentFromInfo(info.interfaceInfo);
+    return checkIsCustomComponentFromInfo(info.innerClassInfo);
 }
 
 export function checkIsNormalInterfacePropertyFromInfo(info: NormalInterfacePropertyInfo): boolean {
@@ -442,7 +439,7 @@ export function checkIsCustomDialogControllerBuilderOptionsFromInfo(metadata: No
 export function collectStructPropertyInfos(
     rootCallInfo: CallInfo, 
     callInfo: CallInfo
-): CustomComponentInterfacePropertyInfo[] {
+): CustomComponentInnerClassPropertyInfo[] {
     if (!rootCallInfo.structPropertyInfos && !callInfo.structPropertyInfos) {
         return [];
     }

@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import {
     createGetter,
     createSetter2,
@@ -30,9 +30,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -79,6 +79,9 @@ function initializeStructWithConsumerProperty(
     return arkts.factory.createExpressionStatement(assign);
 }
 
+/**
+ * @deprecated
+ */
 export class ConsumerTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.CONSUMER_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_CONSUMER;
@@ -125,13 +128,16 @@ export class ConsumerCachedTranslator extends PropertyCachedTranslator {
     }
 }
 
-export class ConsumerInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ConsumerInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUMER;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
             return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.CONSUMER);
         } else if (arkts.isClassProperty(node)) {
@@ -141,18 +147,15 @@ export class ConsumerInterfaceTranslator<T extends InterfacePropertyTypes> exten
     }
 }
 
-export class ConsumerCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ConsumerCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUMER;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasConsumer;
     }
 }

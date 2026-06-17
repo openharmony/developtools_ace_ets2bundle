@@ -175,6 +175,7 @@ final class LinkType extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
     this.__backing_linkVar1!.resetOnReuse(initializers!.__backing_linkVar1!);
     this.__backing_linkVar2!.resetOnReuse(initializers!.__backing_linkVar2!);
@@ -189,6 +190,7 @@ final class LinkType extends BaseEnum<int> {
     this.__backing_linkVar11!.resetOnReuse(initializers!.__backing_linkVar11!);
     this.__backing_linkVar12!.resetOnReuse(initializers!.__backing_linkVar12!);
   }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -331,54 +333,44 @@ final class LinkType extends BaseEnum<int> {
 
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(Per | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(Array<number> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(LinkType | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<LinkType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(Set<string> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar6', '(Array<Per> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar6', '(LinkSourceType<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar7', '(Array<Per> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar7', '(LinkSourceType<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar8', '(LinkSourceType<((sr: string)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar9', '(Date | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar9', '(LinkSourceType<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar10', '(LinkSourceType<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar11', '((string | number) | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar11', '(LinkSourceType<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar12', '(LinkSourceType<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar12', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @Link() public linkVar1: Per;
+  public __backing_linkVar1?: LinkSourceType<Per>;
+  public __options_has_linkVar1?: boolean;
+  @Link() public linkVar2: Array<number>;
+  public __backing_linkVar2?: LinkSourceType<Array<number>>;
+  public __options_has_linkVar2?: boolean;
+  @Link() public linkVar3: LinkType;
+  public __backing_linkVar3?: LinkSourceType<LinkType>;
+  public __options_has_linkVar3?: boolean;
+  @Link() public linkVar4: Set<string>;
+  public __backing_linkVar4?: LinkSourceType<Set<string>>;
+  public __options_has_linkVar4?: boolean;
+  @Link() public linkVar5: Array<boolean>;
+  public __backing_linkVar5?: LinkSourceType<Array<boolean>>;
+  public __options_has_linkVar5?: boolean;
+  @Link() public linkVar6: Array<Per>;
+  public __backing_linkVar6?: LinkSourceType<Array<Per>>;
+  public __options_has_linkVar6?: boolean;
+  @Link() public linkVar7: Array<Per>;
+  public __backing_linkVar7?: LinkSourceType<Array<Per>>;
+  public __options_has_linkVar7?: boolean;
+  @Link() public linkVar8: ((sr: string)=> void);
+  public __backing_linkVar8?: LinkSourceType<(((sr: string)=> void) | undefined)>;
+  public __options_has_linkVar8?: boolean;
+  @Link() public linkVar9: Date;
+  public __backing_linkVar9?: LinkSourceType<Date>;
+  public __options_has_linkVar9?: boolean;
+  @Link() public linkVar10: Map<number, Per>;
+  public __backing_linkVar10?: LinkSourceType<Map<number, Per>>;
+  public __options_has_linkVar10?: boolean;
+  @Link() public linkVar11: (string | number);
+  public __backing_linkVar11?: LinkSourceType<(string | number)>;
+  public __options_has_linkVar11?: boolean;
+  @Link() public linkVar12: (Set<string> | Per);
+  public __backing_linkVar12?: LinkSourceType<(Set<string> | Per)>;
+  public __options_has_linkVar12?: boolean;
+  public constructor() {}
   
 }
 `;

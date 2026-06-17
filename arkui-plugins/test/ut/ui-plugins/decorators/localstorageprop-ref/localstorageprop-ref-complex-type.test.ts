@@ -130,6 +130,7 @@ final class Status extends BaseEnum<int> {
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
     this.__backing_arrayB!.resetOnReuse();
     this.__backing_objectB!.resetOnReuse();
@@ -139,8 +140,8 @@ final class Status extends BaseEnum<int> {
     this.__backing_classB!.resetOnReuse();
     this.__backing_enumB!.resetOnReuse();
   }
-  @MemoIntrinsic() 
 
+  @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___<some_random_number> = storage;
@@ -230,34 +231,29 @@ final class Status extends BaseEnum<int> {
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayB', '(Array<number> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayB', '(ILocalStoragePropRefDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectB', '(Object | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectB', '(ILocalStoragePropRefDecoratedVariable<Object> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateB', '(Date | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateB', '(ILocalStoragePropRefDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setB', '(Set<number> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setB', '(ILocalStoragePropRefDecoratedVariable<Set<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapB', '(Map<number, string> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapB', '(ILocalStoragePropRefDecoratedVariable<Map<number, string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classB', '(Person | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop7" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classB', '(ILocalStoragePropRefDecoratedVariable<Person> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumB', '(Status | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop8" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumB', '(ILocalStoragePropRefDecoratedVariable<Status> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumB', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample {
+  @LocalStoragePropRef({value:"Prop1"}) public arrayB?: Array<number>;
+  public __backing_arrayB?: ILocalStoragePropRefDecoratedVariable<Array<number>>;
+  public __options_has_arrayB?: boolean;
+  @LocalStoragePropRef({value:"Prop2"}) public objectB?: Object;
+  public __backing_objectB?: ILocalStoragePropRefDecoratedVariable<Object>;
+  public __options_has_objectB?: boolean;
+  @LocalStoragePropRef({value:"Prop3"}) public dateB?: Date;
+  public __backing_dateB?: ILocalStoragePropRefDecoratedVariable<Date>;
+  public __options_has_dateB?: boolean;
+  @LocalStoragePropRef({value:"Prop4"}) public setB?: Set<number>;
+  public __backing_setB?: ILocalStoragePropRefDecoratedVariable<Set<number>>;
+  public __options_has_setB?: boolean;
+  @LocalStoragePropRef({value:"Prop5"}) public mapB?: Map<number, string>;
+  public __backing_mapB?: ILocalStoragePropRefDecoratedVariable<Map<number, string>>;
+  public __options_has_mapB?: boolean;
+  @LocalStoragePropRef({value:"Prop7"}) public classB?: Person;
+  public __backing_classB?: ILocalStoragePropRefDecoratedVariable<Person>;
+  public __options_has_classB?: boolean;
+  @LocalStoragePropRef({value:"Prop8"}) public enumB?: Status;
+  public __backing_enumB?: ILocalStoragePropRefDecoratedVariable<Status>;
+  public __options_has_enumB?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -75,8 +75,8 @@ import { SimpleStruct as SimpleStruct } from "./utils/simple-struct";
 
 }
 
-@Component() interface __Options_ImportStruct {
-
+@Component() class __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 
@@ -107,6 +107,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -145,8 +146,9 @@ function main() {}
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component() class __Options_ImportStruct {
 
+  public constructor() {}
 }
 `;
 

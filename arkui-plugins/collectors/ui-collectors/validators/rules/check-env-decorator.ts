@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { coerceToAstNode } from '../utils';
 import type { IntrinsicValidatorFunction } from '../safe-types';
-import { CallInfo, StructPropertyInfo, StructPropertyRecord, CustomComponentInterfacePropertyInfo, RecordBuilder } from '../../records';
+import { CallInfo, StructPropertyInfo, StructPropertyRecord, CustomComponentInnerClassPropertyInfo, RecordBuilder } from '../../records';
 import { DecoratorNames, LogType, ENV_KEY_STRING_PATTERN } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 import type { AstNodePointer } from '../../../../common/safe-types';
@@ -174,7 +174,7 @@ function checkEnvInitInStructCall<T extends arkts.AstNode = arkts.CallExpression
 function checkEnvInitForProperty<T extends arkts.AstNode = arkts.CallExpression>(
     this: BaseValidator<T, CallInfo>,
     propPtr: AstNodePointer,
-    propertyInfo: CustomComponentInterfacePropertyInfo | undefined,
+    propertyInfo: CustomComponentInnerClassPropertyInfo | undefined,
     hasComponent: boolean,
     hasComponentV2: boolean
 ): void {
@@ -239,7 +239,7 @@ function reportEnvInvalidType(
     });
 }
 
-function hasAnyStateDecorator(info: CustomComponentInterfacePropertyInfo | undefined): boolean {
+function hasAnyStateDecorator(info: CustomComponentInnerClassPropertyInfo | undefined): boolean {
     if (!info?.annotationInfo) {
         return false;
     }

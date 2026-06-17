@@ -66,7 +66,7 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
   @Param() @Once() public onceParamNum: number = 0;
 
-  @Param() @Once() @Require() public onceParamInfo!: Info;
+  @Param() @Once() @Require() public onceParamInfo: Info;
 
   public build() {
     Column(){
@@ -107,27 +107,25 @@ import { Param as Param, Once as Once, ObservedV2 as ObservedV2, Trace as Trace,
 
 }
 
-@ComponentV2() interface __Options_Child {
-  ${ignoreNewLines(`
-  @Param() @Once() onceParamNum?: number;
-  @Param() @Once() __backing_onceParamNum?: number;
-  __options_has_onceParamNum?: boolean;
-  @Param() @Once() @Require() onceParamInfo: Info;
-  @Param() @Once() __backing_onceParamInfo?: Info;
-  __options_has_onceParamInfo?: boolean;
-  `)}
+@ComponentV2() class __Options_Child {
+  @Param() @Once() public onceParamNum?: number;
+  @Param() @Once() public __backing_onceParamNum?: number;
+  public __options_has_onceParamNum?: boolean;
+  @Param() @Once() @Require() public onceParamInfo: Info;
+  @Param() @Once() public __backing_onceParamInfo?: Info;
+  public __options_has_onceParamInfo?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Index {
-  ${ignoreNewLines(`
-  @Local() localNum?: number;
-  @Local() __backing_localNum?: number;
-  __options_has_localNum?: boolean;
-  @Local() localInfo?: Info;
-  @Local() __backing_localInfo?: Info;
-  __options_has_localInfo?: boolean;
-  `)}
+@ComponentV2() class __Options_Index {
+  @Local() public localNum?: number;
+  @Local() public __backing_localNum?: number;
+  public __options_has_localNum?: boolean;
+  @Local() public localInfo?: Info;
+  @Local() public __backing_localInfo?: Info;
+  public __options_has_localInfo?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -186,8 +184,8 @@ function main() {}
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -390,25 +388,26 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamNum', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamNum', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamNum', '(boolean | undefined)')}
+@ComponentV2() class __Options_Child {
+  @Param() @Once() public onceParamNum?: number;
+  @Param() public __backing_onceParamNum?: IParamOnceDecoratedVariable<number>;
+  public __options_has_onceParamNum?: boolean;
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceParamInfo', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Once'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceParamInfo', '(IParamOnceDecoratedVariable<Info> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceParamInfo', '(boolean | undefined)')}
+  @Param() @Once() @Require() public onceParamInfo: Info;
+  @Param() public __backing_onceParamInfo?: IParamOnceDecoratedVariable<Info>;
+  public __options_has_onceParamInfo?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localNum', '(number | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localNum', '(ILocalDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localNum', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localInfo', '(Info | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localInfo', '(ILocalDecoratedVariable<Info> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localInfo', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index {
+  @Local() public localNum?: number;
+  public __backing_localNum?: ILocalDecoratedVariable<number>;
+  public __options_has_localNum?: boolean;
+  @Local() public localInfo?: Info;
+  public __backing_localInfo?: ILocalDecoratedVariable<Info>;
+  public __options_has_localInfo?: boolean;
+  public constructor() {}
   
 }
 `;

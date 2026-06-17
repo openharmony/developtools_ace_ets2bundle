@@ -132,8 +132,8 @@ class GGG {
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -360,18 +360,17 @@ class GGG {
   }
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'v1', '(boolean | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_v1', '(ILocalDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_v1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numArr', '(Array<string> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numArr', '(ILocalDecoratedVariable<Array<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numArr', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index {
+  @Local() public per?: EEE;
+  public __backing_per?: ILocalDecoratedVariable<EEE>;
+  public __options_has_per?: boolean;
+  @Local() public v1?: boolean;
+  public __backing_v1?: ILocalDecoratedVariable<boolean>;
+  public __options_has_v1?: boolean;
+  @Local() public numArr?: Array<string>;
+  public __backing_numArr?: ILocalDecoratedVariable<Array<string>>;
+  public __options_has_numArr?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -71,7 +71,7 @@ export class BuilderFactory {
             _node.key,
             newValue,
             _node.typeAnnotation,
-            _node.modifiers,
+            _node.modifierFlags,
             false,
             _node.annotations
         );

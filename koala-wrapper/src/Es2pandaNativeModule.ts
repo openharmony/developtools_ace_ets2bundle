@@ -1234,6 +1234,38 @@ export class Es2pandaNativeModule {
  	_MaybeOptionalExpressionIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
  	    throw new Error("This methods was not overloaded by native module initialization")
  	}
+
+    _ClassElementTsType(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("ClassElementTsType was not overloaded by native module initialization")
+    }
+
+    _TypePossiblyETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypePossiblyETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeDefinitelyETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypeDefinitelyETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeDefinitelyNotETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypeDefinitelyNotETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeClone(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("TypeClone was not overloaded by native module initialization")
+    }
+
+    _ExpressionTsType(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("ExpressionTsType was not overloaded by native module initialization")
+    }
+
+    _ClassPropertySetIsImmediateInit(context: KNativePointer, receiver: KNativePointer): void {
+        throw new Error("ClassPropertySetIsImmediateInit was not overloaded by native module initialization")
+    }
+
+    _DestroyConfigWithoutLog(receiver: KNativePointer): void {
+        throw new Error("DestroyConfigWithoutLog was not overloaded by native module initialization")
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

@@ -158,7 +158,8 @@ function main() {}
     }
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_countDownStartValue!.resetOnReuse(10);
+    this.__backing_countDownStartValue!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -219,20 +220,21 @@ function main() {}
     }
   }
 
-@Component() interface __Options_CountDownComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '(number | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IPropRefDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'costOfOneAttempt', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_costOfOneAttempt', '(boolean | undefined)')}
+@Component() class __Options_CountDownComponent {
+  @PropRef() public count?: number;
+  public __backing_count?: IPropRefDecoratedVariable<number>;
+  public __options_has_count?: boolean;
+  public costOfOneAttempt?: number;
+  public __options_has_costOfOneAttempt?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_ParentComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'countDownStartValue', '(number | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_countDownStartValue', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_countDownStartValue', '(boolean | undefined)')}
+@Component() class __Options_ParentComponent {
+  @State() public countDownStartValue?: number;
+  public __backing_countDownStartValue?: IStateDecoratedVariable<number>;
+  public __options_has_countDownStartValue?: boolean;
+  public constructor() {}
   
 }
 `;

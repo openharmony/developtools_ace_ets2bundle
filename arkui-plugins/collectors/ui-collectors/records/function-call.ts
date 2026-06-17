@@ -31,8 +31,8 @@ import { ARKUI_IMPORT_PREFIX_NAMES, Dollars } from '../../../common/predefines';
 import { matchPrefix } from '../../../common/arkts-utils';
 import { DeclarationCollector } from '../../../common/declaration-collector';
 import {
-    CustomComponentInterfacePropertyInfo,
-    CustomComponentInterfacePropertyRecord,
+    CustomComponentInnerClassPropertyInfo,
+    CustomComponentInnerClassPropertyRecord,
 } from './struct-interface-property';
 
 export type CallInfo = CallDeclInfo & {
@@ -84,7 +84,7 @@ export type CallInfo = CallDeclInfo & {
     /**
      * struct call's options argument information, call is not a struct call or no options argument if not exist
      */
-    structPropertyInfos?: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][];
+    structPropertyInfos?: [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][];
 
     /**
      * struct information which contains this call, call is not in a struct if not exist
@@ -96,7 +96,7 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
     private _declRecord: CallDeclRecord;
     private _structDeclRecord?: CustomComponentRecord;
     private _fromStructRecord?: CustomComponentRecord;
-    private _structPropertyRecords?: [AstNodePointer, CustomComponentInterfacePropertyRecord][];
+    private _structPropertyRecords?: [AstNodePointer, CustomComponentInnerClassPropertyRecord][];
 
     protected callName?: string;
     protected ptr?: AstNodePointer;
@@ -183,26 +183,26 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         if (!optionsArg || !arkts.isObjectExpression(optionsArg)) {
             return;
         }
-        const records: [AstNodePointer, CustomComponentInterfacePropertyRecord][] = [];
+        const records: [AstNodePointer, CustomComponentInnerClassPropertyRecord][] = [];
         (optionsArg.properties as arkts.Property[]).forEach((prop) => {
             let decl: arkts.AstNode | undefined;
             if (
                 !prop.key ||
                 !prop.value ||
                 !(decl = arkts.getPeerPropertyDecl(prop.peer)) ||
-                !arkts.isMethodDefinition(decl)
+                !arkts.isClassProperty(decl)
             ) {
                 return;
             }
-            const structInterfacePropRecord = RecordBuilder.build(
-                CustomComponentInterfacePropertyRecord,
+            const StructInnerClassPropRecord = RecordBuilder.build(
+                CustomComponentInnerClassPropertyRecord,
                 decl,
                 this.getOptions()
             );
-            if (!structInterfacePropRecord.isCollected) {
-                structInterfacePropRecord.collect(decl);
+            if (!StructInnerClassPropRecord.isCollected) {
+                StructInnerClassPropRecord.collect(decl);
             }
-            records.push([prop.peer, structInterfacePropRecord]);
+            records.push([prop.peer, StructInnerClassPropRecord]);
         });
         if (Object.keys(records).length > 0) {
             this._structPropertyRecords = records;
@@ -321,11 +321,11 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         }
     }
 
-    toPropertyRecords(): [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][] | undefined {
+    toPropertyRecords(): [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][] | undefined {
         if (!this._structPropertyRecords) {
             return undefined;
         }
-        const records: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][] = [];
+        const records: [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][] = [];
         this._structPropertyRecords.forEach((record) => {
             records.push([record[0], record[1].toRecord()]);
         });
@@ -356,11 +356,11 @@ export class CallRecord extends BaseRecord<arkts.CallExpression, CallInfo> {
         this.info = currInfo;
     }
 
-    toPropertyJSONs(): [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][] | undefined {
+    toPropertyJSONs(): [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][] | undefined {
         if (!this._structPropertyRecords) {
             return undefined;
         }
-        const records: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][] = [];
+        const records: [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][] = [];
         this._structPropertyRecords.forEach((record) => {
             records.push([-1, record[1].toJSON()]);
         });

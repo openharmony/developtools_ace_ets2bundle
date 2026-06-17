@@ -133,17 +133,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     AnimatablePropertyExample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_AnimatablePropertyExample {
-  
+@Entry() @Component() class __Options_AnimatablePropertyExample {
+  public constructor() {}
 }
 `;
 

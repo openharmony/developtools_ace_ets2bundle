@@ -160,27 +160,23 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar1', '(string | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar1', '(IParamOnceDecoratedVariable<string> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar2', '(number | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar2', '(IParamOnceDecoratedVariable<number> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar3', '(boolean | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar3', '(IParamOnceDecoratedVariable<boolean> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar4', '(undefined | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar4', '(IParamOnceDecoratedVariable<undefined> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'onceVar5', '(null | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_onceVar5', '(IParamOnceDecoratedVariable<null> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_onceVar5', '(boolean | undefined)')}
-  
+@ComponentV2() class __Options_Parent {
+  @Param() @Once() public onceVar1?: string;
+  @Param() public __backing_onceVar1?: IParamOnceDecoratedVariable<string>;
+  public __options_has_onceVar1?: boolean;
+  @Param() @Once() public onceVar2?: number;
+  @Param() public __backing_onceVar2?: IParamOnceDecoratedVariable<number>;
+  public __options_has_onceVar2?: boolean;
+  @Param() @Once() public onceVar3?: boolean;
+  @Param() public __backing_onceVar3?: IParamOnceDecoratedVariable<boolean>;
+  public __options_has_onceVar3?: boolean;
+  @Param() @Once() public onceVar4?: undefined;
+  @Param() public __backing_onceVar4?: IParamOnceDecoratedVariable<undefined>;
+  public __options_has_onceVar4?: boolean;
+  @Param() @Once() public onceVar5?: null;
+  @Param() public __backing_onceVar5?: IParamOnceDecoratedVariable<null>;
+  public __options_has_onceVar5?: boolean;
+  public constructor() {}
 }
 `;
 

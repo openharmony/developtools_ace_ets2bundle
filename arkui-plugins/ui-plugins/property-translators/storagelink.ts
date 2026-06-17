@@ -18,9 +18,9 @@ import * as arkts from '@koalaui/libarkts';
 import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -35,7 +35,7 @@ import {
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
 import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
@@ -58,7 +58,7 @@ function initializeStructWithStorageLinkProperty(
         arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
@@ -80,6 +80,9 @@ function initializeStructWithStorageLinkProperty(
     );
 }
 
+/**
+ * @deprecated
+ */
 export class StorageLinkTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.STORAGE_LINK_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_STORAGE_LINK;
@@ -93,7 +96,10 @@ export class StorageLinkTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -118,7 +124,10 @@ export class StorageLinkCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
@@ -130,12 +139,15 @@ export class StorageLinkCachedTranslator extends PropertyCachedTranslator {
     }
 }
 
-export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class StorageLinkInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_LINK;
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
             return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.STORAGE_LINK);
         } else if (arkts.isClassProperty(node)) {
@@ -145,18 +157,15 @@ export class StorageLinkInterfaceTranslator<T extends InterfacePropertyTypes> ex
     }
 }
 
-export class StorageLinkCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class StorageLinkCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_LINK;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasStorageLink;
     }
 }

@@ -74,14 +74,14 @@ function main() {}
   public doNothingBuilder() {}
   @Memo() 
   public doNothingBuilder2(@MemoSkip() str: string) {}
-  private __backing_customBuilderParam?: @Memo() (()=> void);
+  private __backing_customBuilderParam?: ((()=> void) | undefined);
   public get customBuilderParam(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam2?: @Memo() ((str: string)=> void);
+  private __backing_customBuilderParam2?: (((str: string)=> void) | undefined);
   public get customBuilderParam2(): @Memo() ((str: string)=> void) {
     return this.__backing_customBuilderParam2!;
   }
@@ -98,11 +98,12 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((str: string)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam?: ((()=> void) | undefined);
+  public __options_has_customBuilderParam?: boolean;
+  @Memo() public customBuilderParam2?: (((str: string)=> void) | undefined);
+  public __options_has_customBuilderParam2?: boolean;
+  public constructor() {}
 }
 `;
 
@@ -164,14 +165,14 @@ function main() {}
       return;
     }
   }
-  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam2?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void);
+  private __backing_customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined);
   public get customBuilderParam2(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) {
     return this.__backing_customBuilderParam2!;
   }
@@ -197,11 +198,12 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam2', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam2', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_customBuilderParam?: boolean;
+  @Memo() public customBuilderParam2?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type, str: string)=> void) | undefined);
+  public __options_has_customBuilderParam2?: boolean;
+  public constructor() {}
 }
 `;
 

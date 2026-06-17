@@ -200,7 +200,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_prop1 = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "appTheme", "prop1", "bbb");
     this.__backing_prop2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "localTheme", "prop2", "ccc");
     this.__backing_objLinkVar = STATE_MGMT_FACTORY.makeObjectLink<MyClassB>(this, "objLinkVar", (({let gensym___208007857 = initializers;
-    (((gensym___208007857) == (null)) ? undefined : gensym___208007857.objLinkVar)}) as MyClassB));
+    (((gensym___208007857) == (null)) ? undefined : gensym___208007857!.objLinkVar)}) as MyClassB));
     this.__backing_provideVar = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar", "alias", ((({let gensym___83712361 = initializers;
     (((gensym___83712361) == (null)) ? undefined : gensym___83712361.provideVar)})) ?? ("ddd")), false);
     this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));
@@ -257,11 +257,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public resetStateVarsOnReuse(initializers: (__Options_ComA | undefined)): void {
     this.__backing_linkVar!.resetOnReuse(initializers!.__backing_linkVar!);
-    this.__backing_str!.resetOnReuse("aaa");
+    this.__backing_str!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("aaa")));
     this.__backing_prop1!.resetOnReuse();
     this.__backing_prop2!.resetOnReuse();
     this.__backing_objLinkVar!.resetOnReuse((initializers!.objLinkVar as MyClassB));
-    this.__backing_provideVar!.resetOnReuse("ddd");
+    this.__backing_provideVar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar)})) ?? ("ddd")));
     this.__backing_propVar1!.resetOnReuse((initializers!.propVar1 as string));
     this.__backing_propVar2!.resetOnReuse(((({let gensym___196553660 = initializers;
     (((gensym___196553660) == (null)) ? undefined : gensym___196553660.propVar2)})) ?? ("eee")));
@@ -477,276 +479,56 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry() @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) interface __Options_Index {
+@Entry() @Component({reusePool:ReusePoolOwnership.SHARED,poolAccepts:["ComA", "ComB"]}) class __Options_Index {
+  public constructor() {}
+}
+
+@Reusable() @Component() class __Options_ComA {
+  @Link() public linkVar: number;
+  public __backing_linkVar?: LinkSourceType<number>;
+  public __options_has_linkVar?: boolean;
+  @State() public str?: string;
+  public __backing_str?: IStateDecoratedVariable<string>;
+  public __options_has_str?: boolean;
+  @StoragePropRef({value:"appTheme"}) public prop1?: string;
+  public __backing_prop1?: IStoragePropRefDecoratedVariable<string>;
+  public __options_has_prop1?: boolean;
+  @LocalStoragePropRef({value:"localTheme"}) public prop2?: string;
+  public __backing_prop2?: ILocalStoragePropRefDecoratedVariable<string>;
+  public __options_has_prop2?: boolean;
+  @ObjectLink() public objLinkVar: MyClassB;
+  public __backing_objLinkVar?: IObjectLinkDecoratedVariable<MyClassB>;
+  public __options_has_objLinkVar?: boolean;
+  @Provide({alias:"alias"}) public provideVar?: string;
+  public __backing_provideVar?: IProvideDecoratedVariable<string>;
+  public __options_has_provideVar?: boolean;
+  @PropRef() public propVar1?: string;
+  public __backing_propVar1?: IPropRefDecoratedVariable<string>;
+  public __options_has_propVar1?: boolean;
+  @PropRef() public propVar2?: string;
+  public __backing_propVar2?: IPropRefDecoratedVariable<string>;
+  public __options_has_propVar2?: boolean;
+  @Consume() public consumeVar1?: string;
+  public __backing_consumeVar1?: IConsumeDecoratedVariable<string>;
+  public __options_has_consumeVar1?: boolean;
+  @Consume({alias:"alias"}) public consumeVar2?: string;
+  public __backing_consumeVar2?: IConsumeDecoratedVariable<string>;
+  public __options_has_consumeVar2?: boolean;
+  @Consume({alias:"alias"}) @Watch({value:"onVarChange"}) public consumeVar3?: string;
+  public __backing_consumeVar3?: IConsumeDecoratedVariable<string>;
+  public __options_has_consumeVar3?: boolean;
+  @Consume({alias:"alias"}) @Watch({value:"onVarChange"}) public consumeVar4?: string;
+  public __backing_consumeVar4?: IConsumeDecoratedVariable<string>;
+  public __options_has_consumeVar4?: boolean;
+  @Consume({alias:"alias"}) public consumeVar5?: string;
+  public __backing_consumeVar5?: IConsumeDecoratedVariable<string>;
+  public __options_has_consumeVar5?: boolean;
+  public constructor() {}
   
 }
 
-@Reusable() @Component() interface __Options_ComA {
-  @Link() 
-  get linkVar(): (number | undefined) {
-    return undefined;
-  }
-  @Link() 
-  set linkVar(linkVar: (number | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_linkVar(): (LinkSourceType<number> | undefined) {
-    return undefined;
-  }
-  set __backing_linkVar(__backing_linkVar: (LinkSourceType<number> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_linkVar(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_linkVar(__options_has_linkVar: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @State() 
-  get str(): (string | undefined) {
-    return undefined;
-  }
-  @State() 
-  set str(str: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_str(): (IStateDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_str(__backing_str: (IStateDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_str(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_str(__options_has_str: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @StoragePropRef({value:"appTheme"}) 
-  get prop1(): (string | undefined) {
-    return undefined;
-  }
-  @StoragePropRef({value:"appTheme"}) 
-  set prop1(prop1: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_prop1(): (IStoragePropRefDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_prop1(__backing_prop1: (IStoragePropRefDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_prop1(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_prop1(__options_has_prop1: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @LocalStoragePropRef({value:"localTheme"}) 
-  get prop2(): (string | undefined) {
-    return undefined;
-  }
-  @LocalStoragePropRef({value:"localTheme"}) 
-  set prop2(prop2: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_prop2(): (ILocalStoragePropRefDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_prop2(__backing_prop2: (ILocalStoragePropRefDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_prop2(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_prop2(__options_has_prop2: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @ObjectLink() 
-  get objLinkVar(): MyClassB
-  @ObjectLink() 
-  set objLinkVar(objLinkVar: MyClassB)
-  get __backing_objLinkVar(): (IObjectLinkDecoratedVariable<MyClassB> | undefined) {
-    return undefined;
-  }
-  set __backing_objLinkVar(__backing_objLinkVar: (IObjectLinkDecoratedVariable<MyClassB> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_objLinkVar(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_objLinkVar(__options_has_objLinkVar: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Provide({alias:"alias"}) 
-  get provideVar(): (string | undefined) {
-    return undefined;
-  }
-  @Provide({alias:"alias"}) 
-  set provideVar(provideVar: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_provideVar(): (IProvideDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_provideVar(__backing_provideVar: (IProvideDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_provideVar(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_provideVar(__options_has_provideVar: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @PropRef() 
-  get propVar1(): (string | undefined) {
-    return undefined;
-  }
-  @PropRef() 
-  set propVar1(propVar1: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_propVar1(): (IPropRefDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_propVar1(__backing_propVar1: (IPropRefDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_propVar1(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_propVar1(__options_has_propVar1: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @PropRef() 
-  get propVar2(): (string | undefined) {
-    return undefined;
-  }
-  @PropRef() 
-  set propVar2(propVar2: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_propVar2(): (IPropRefDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_propVar2(__backing_propVar2: (IPropRefDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_propVar2(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_propVar2(__options_has_propVar2: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Consume() 
-  get consumeVar1(): (string | undefined) {
-    return undefined;
-  }
-  @Consume() 
-  set consumeVar1(consumeVar1: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_consumeVar1(): (IConsumeDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_consumeVar1(__backing_consumeVar1: (IConsumeDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_consumeVar1(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_consumeVar1(__options_has_consumeVar1: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Consume({alias:"alias"}) 
-  get consumeVar2(): (string | undefined) {
-    return undefined;
-  }
-  @Consume({alias:"alias"}) 
-  set consumeVar2(consumeVar2: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_consumeVar2(): (IConsumeDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_consumeVar2(__backing_consumeVar2: (IConsumeDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_consumeVar2(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_consumeVar2(__options_has_consumeVar2: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Consume({alias:"alias"}) 
-  @Watch({value:"onVarChange"}) 
-  get consumeVar3(): (string | undefined) {
-    return undefined;
-  }
-  @Consume({alias:"alias"}) 
-  @Watch({value:"onVarChange"}) 
-  set consumeVar3(consumeVar3: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_consumeVar3(): (IConsumeDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_consumeVar3(__backing_consumeVar3: (IConsumeDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_consumeVar3(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_consumeVar3(__options_has_consumeVar3: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Consume({alias:"alias"}) 
-  @Watch({value:"onVarChange"}) 
-  get consumeVar4(): (string | undefined) {
-    return undefined;
-  }
-  @Consume({alias:"alias"}) 
-  @Watch({value:"onVarChange"}) 
-  set consumeVar4(consumeVar4: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_consumeVar4(): (IConsumeDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_consumeVar4(__backing_consumeVar4: (IConsumeDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_consumeVar4(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_consumeVar4(__options_has_consumeVar4: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  @Consume({alias:"alias"}) 
-  get consumeVar5(): (string | undefined) {
-    return undefined;
-  }
-  @Consume({alias:"alias"}) 
-  set consumeVar5(consumeVar5: (string | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __backing_consumeVar5(): (IConsumeDecoratedVariable<string> | undefined) {
-    return undefined;
-  }
-  set __backing_consumeVar5(__backing_consumeVar5: (IConsumeDecoratedVariable<string> | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  get __options_has_consumeVar5(): (boolean | undefined) {
-    return undefined;
-  }
-  set __options_has_consumeVar5(__options_has_consumeVar5: (boolean | undefined)) {
-    throw new InvalidStoreAccessError();
-  }
-  
-}
-
-@ReusableV2() @ComponentV2() interface __Options_ComB {
-  
+@ReusableV2() @ComponentV2() class __Options_ComB {
+  public constructor() {}
 }
 
 `;

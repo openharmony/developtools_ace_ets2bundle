@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
-import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../records';
+import { CallInfo, CustomComponentInnerClassPropertyInfo } from '../../records';
 import { LogType } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 import type { AstNodePointer } from '../../../../common/safe-types';
@@ -71,7 +71,7 @@ function collectStaticProperties(
 
 function reportStaticPropertyInit(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    propertyInfos: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][],
+    propertyInfos: [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][],
     staticClassProperty: string[]
 ): void {
     propertyInfos.forEach(([propertyPtr, propertyInfo]) => {

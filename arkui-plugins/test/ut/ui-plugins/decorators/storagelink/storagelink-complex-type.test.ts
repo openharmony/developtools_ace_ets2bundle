@@ -132,6 +132,7 @@ final class Status extends BaseEnum<int> {
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
   @MemoIntrinsic() 
@@ -233,43 +234,36 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry() @Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)', [dumpAnnotation('StorageLink', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayA', '(IStorageLinkDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectA', '(Object | undefined)', [dumpAnnotation('StorageLink', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectA', '(IStorageLinkDecoratedVariable<Object> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateA', '(Date | undefined)', [dumpAnnotation('StorageLink', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateA', '(IStorageLinkDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setA', '(Set<number> | undefined)', [dumpAnnotation('StorageLink', { value: "Prop4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setA', '(IStorageLinkDecoratedVariable<Set<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapA', '(Map<number, string> | undefined)', [dumpAnnotation('StorageLink', { value: "Prop5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapA', '(IStorageLinkDecoratedVariable<Map<number, string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classA', '(Person | undefined)', [dumpAnnotation('StorageLink', { value: "Prop7" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classA', '(IStorageLinkDecoratedVariable<Person> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumA', '(Status | undefined)', [dumpAnnotation('StorageLink', { value: "Prop8" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumA', '(IStorageLinkDecoratedVariable<Status> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumA', '(boolean | undefined)')}
+@Entry() @Component() class __Options_MyStateSample {
+  @StorageLink({value:"Prop1"}) public arrayA?: Array<number>;
+  public __backing_arrayA?: IStorageLinkDecoratedVariable<Array<number>>;
+  public __options_has_arrayA?: boolean;
+  @StorageLink({value:"Prop2"}) public objectA?: Object;
+  public __backing_objectA?: IStorageLinkDecoratedVariable<Object>;
+  public __options_has_objectA?: boolean;
+  @StorageLink({value:"Prop3"}) public dateA?: Date;
+  public __backing_dateA?: IStorageLinkDecoratedVariable<Date>;
+  public __options_has_dateA?: boolean;
+  @StorageLink({value:"Prop4"}) public setA?: Set<number>;
+  public __backing_setA?: IStorageLinkDecoratedVariable<Set<number>>;
+  public __options_has_setA?: boolean;
+  @StorageLink({value:"Prop5"}) public mapA?: Map<number, string>;
+  public __backing_mapA?: IStorageLinkDecoratedVariable<Map<number, string>>;
+  public __options_has_mapA?: boolean;
+  @StorageLink({value:"Prop7"}) public classA?: Person;
+  public __backing_classA?: IStorageLinkDecoratedVariable<Person>;
+  public __options_has_classA?: boolean;
+  @StorageLink({value:"Prop8"}) public enumA?: Status;
+  public __backing_enumA?: IStorageLinkDecoratedVariable<Status>;
+  public __options_has_enumA?: boolean;
+  public constructor() {}
   
 }
 `;
