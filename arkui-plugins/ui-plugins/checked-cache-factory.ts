@@ -483,7 +483,7 @@ export class RewriteFactory {
         if (checkIsInteropComponentCallFromInfo(_metadata)) {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1], 'Legacy Struct call'));
             insertInteropComponentImports();
-            const res = generateArkUICompatible(_node, !!_metadata.isDeclFromFunction);
+            const res = generateArkUICompatible(_node, !_metadata.fromStructInfo?.name);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1], 'Legacy Struct call'));
             return res;
         }
