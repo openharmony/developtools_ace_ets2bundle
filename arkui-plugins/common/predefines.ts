@@ -523,8 +523,22 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.COMPONENT_ACTIVE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_INACTIVE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]],
-    [StructDecoratorNames.COMPONENT, [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, StateManagementTypes.REUSE_POOL_OWNERSHIP]],
-    [StructDecoratorNames.COMPONENT_V2, [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, StateManagementTypes.REUSE_POOL_OWNERSHIP]],
+    [
+        StructDecoratorNames.COMPONENT,
+        [
+            StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE,
+            StateManagementTypes.REUSE_POOL_OWNERSHIP,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ]
+    ],
+    [
+        StructDecoratorNames.COMPONENT_V2,
+        [
+            StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE,
+            StateManagementTypes.REUSE_POOL_OWNERSHIP,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ]
+    ],
 ]);
 
 /**
