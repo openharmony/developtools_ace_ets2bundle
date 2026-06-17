@@ -20,6 +20,7 @@ import { stateProxy, getWrapValue, setPropertyESValue, createEmptyESValue } from
 import { hasDecoratorInterop } from './utils';
 import { DecoratorNames, DeprecatedDecoratorNames, LANGUAGE_VERSION } from '../../common/predefines';
 import { FileManager } from '../../common/file-manager';
+import { factory as UIFactory } from '../ui-factory';
 
 export function initialArgs(args: arkts.ObjectExpression, varMap: Map<string, arkts.ClassProperty>,
     updateProp: arkts.Property[], node: arkts.CallExpression): arkts.Statement[] {
@@ -264,14 +265,42 @@ export function processBuilderParam(keyName: string, value: arkts.Expression): a
     const result: arkts.Statement[] = [];
     const decl = arkts.getDecl(value);
     const isDynamic = isDynamicBuilder(decl);
-    const newValue = isDynamic ? value : arkts.factory.createCallExpression(
-        checkUpdatable(value) ? arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER) :
-            arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
-        [value],
-        undefined,
-        false,
-        false
-    );
+
+    let newValue = value;
+
+    if (!isDynamic) {
+        if (checkUpdatable(value)) {
+            const funcType = arkts.factory.createFunctionType(
+                arkts.factory.createFunctionSignature(
+                    undefined,
+                    [
+                        UIFactory.createParameterDeclaration('__memo_context', 'Any'),
+                        UIFactory.createParameterDeclaration('__memo_id', 'Any'),
+                        UIFactory.createParameterDeclaration('arg', 'Object'),
+                    ],
+                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                    false
+                ),
+                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
+            );
+
+            const innerAsExpr = arkts.factory.createTSAsExpression(value, UIFactory.createTypeReferenceFromString('Any'), false);
+            const outerAsExpr = arkts.factory.createTSAsExpression(innerAsExpr, funcType, false);
+    
+            newValue = arkts.factory.createCallExpression(
+                arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEUPDATABLEBUILDER),    
+                [UIFactory.createTypeReferenceFromString('Object')],
+                [outerAsExpr]
+            );
+        } else {
+            newValue = arkts.factory.createCallExpression(
+                arkts.factory.createIdentifier(BuilderMethodNames.TRANSFERCOMPATIBLEBUILDER),
+                undefined,
+                [value]
+            );
+        }
+    }
+    
     const setProperty = setPropertyESValue(InteropInternalNames.PARAM, keyName, newValue);
     result.push(setProperty);
     return result;
