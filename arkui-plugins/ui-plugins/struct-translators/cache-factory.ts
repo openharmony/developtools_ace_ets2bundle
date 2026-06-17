@@ -40,6 +40,7 @@ import {
     NodeCacheNames,
     ObservedNames,
     RESOURCE_TYPE,
+    ReusableOptions,
     StateManagementTypes,
     StructDecoratorNames,
 } from '../../common/predefines';
@@ -73,7 +74,7 @@ import { CacheFactory as PropertyCacheFactory } from '../property-translators/ca
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as StructFactory } from './factory';
-import { getResourceParams, StructType } from './utils';
+import { FromStructInfo, getResourceParams, processFromStructInfo, StructAnnotationPropertyFields, StructType } from './utils';
 import {
     BuilderParamClassPropertyValueCache,
     CustomDialogControllerCache,
@@ -406,13 +407,8 @@ export class CacheFactory {
             globalReusePoolInfo
         );
         if (structType === StructType.STRUCT) {
-            const useSharedStorage = !!metadata.annotationInfo?.hasEntry
-                ?  getValueInObjectAnnotation(
-                    findDecoratorByName(definition, StructDecoratorNames.ENTRY),
-                    StructDecoratorNames.ENTRY,
-                    BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME
-                ) : undefined;
-            const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata, useSharedStorage);
+            const propertyFields = this.findStructAnnotationProperties(definition, metadata);
+            const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata, propertyFields);
             addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             newStatements.push(structInvokeMethod);
         }
@@ -425,9 +421,59 @@ export class CacheFactory {
     }
 
     /**
+     * collect struct annotation properties' value
+     */
+    static findStructAnnotationProperties(
+        definition: arkts.ClassDefinition, 
+        metadata: CustomComponentRecordInfo
+    ): StructAnnotationPropertyFields {
+        const structPropertyFields: StructAnnotationPropertyFields = {};
+        const fieldCollection: Map<string, Array<keyof StructAnnotationPropertyFields>> = new Map();
+
+        if (!!metadata.annotationInfo?.hasEntry) {
+            fieldCollection.set(StructDecoratorNames.ENTRY, [BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME]);
+        }
+        if (!!metadata.annotationInfo?.hasReusable) {
+            fieldCollection.set(StructDecoratorNames.RESUABLE, [ReusableOptions.MEMORY_OPT_STRATEGY]);
+        }
+        if (!!metadata.annotationInfo?.hasReusableV2) {
+            fieldCollection.set(StructDecoratorNames.RESUABLE_V2, [ReusableOptions.MEMORY_OPT_STRATEGY]);
+        }
+        definition.annotations.forEach((anno) => {
+            const expr = anno.expr;
+            if (!expr || !arkts.isIdentifier(expr)) {
+                return;
+            }
+            const name = expr.name;
+            if (fieldCollection.has(name)) {
+                const collectedFields = fieldCollection.get(name)!;
+                anno.properties.forEach((annoProp: arkts.AstNode) => {
+                    if (!arkts.isClassProperty(annoProp)) {
+                        return;
+                    }
+                    const key = annoProp.key;
+                    if (!key || !arkts.isIdentifier(key)) {
+                        return;
+                    }
+                    const keyName = key.name as keyof StructAnnotationPropertyFields;
+                    if (collectedFields.includes(keyName)) {
+                        structPropertyFields[keyName] = annoProp.value?.clone();
+                    }
+                });
+            }
+        });
+        fieldCollection.clear();
+        return structPropertyFields;
+    }
+
+    /**
      * create  `_invoke` static method in struct
      */
-    static createInvokeImplMethod(structName: string, metadata: CustomComponentRecordInfo, useSharedStorage?: arkts.Expression) {
+    static createInvokeImplMethod(
+        structName: string, 
+        metadata: CustomComponentRecordInfo, 
+        propertyFields?: StructAnnotationPropertyFields
+    ): arkts.MethodDefinition {
         const { isDecl, annotationInfo } = metadata;
         const params: arkts.Expression[] = [];
         const isCustomComponent = !!annotationInfo?.hasComponent || !!annotationInfo?.hasComponentV2;
@@ -446,7 +492,7 @@ export class CacheFactory {
         params.push(UIFactory.createContentParameter());
         let methodBody: arkts.BlockStatement | undefined = undefined;
         if (!isDecl) {
-            const invokeCall = this.createInvokeImplCall(structName, annotationInfo, useSharedStorage);
+            const invokeCall = this.createInvokeImplCall(structName, annotationInfo, propertyFields);
             if (invokeCall !== undefined) {
                 methodBody = arkts.factory.createBlockStatement([arkts.factory.createExpressionStatement(invokeCall)]);
                 NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(invokeCall);
@@ -476,33 +522,31 @@ export class CacheFactory {
     }
 
     /**
-     * create `<customComponentName>._invokeImpl(() => new <structName>(storage), style, initializers, storage, reuseId, content);`
+     * create `<customComponentName>._invokeImpl(() => new <structName>(storage), style, initializers, storage, reuseId, content, <options>);`
      */
     static createInvokeImplCall(
         structName: string, 
         annotationInfo: StructAnnotationInfo | undefined, 
-        useSharedStorage: arkts.Expression | undefined
+        propertyFields?: StructAnnotationPropertyFields
     ): arkts.CallExpression | undefined {
         const customComponentName = getCustomComponentNameFromAnnotationInfo(annotationInfo);
         if (customComponentName === undefined) {
             return undefined;
         }
         const optionsName = getCustomComponentOptionsName(structName);
-        const isFromCustomDialog = !!annotationInfo?.hasCustomDialog;
-        const isFromComponent = !!annotationInfo?.hasComponent || !!annotationInfo?.hasReusable;
-        const isFromComponentV2 = !!annotationInfo?.hasComponentV2 || !!annotationInfo?.hasReusableV2;
+        const fromStructInfo = processFromStructInfo(annotationInfo);
         const styleParams: arkts.Expression[] = [];
         const restIdents: arkts.Expression[] = [
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
             arkts.factory.createIdentifier(BuilderLambdaNames.CONTENT_PARAM_NAME),
         ];
-        if (!isFromCustomDialog) {
+        if (!fromStructInfo.isFromCustomDialog) {
             styleParams.push(arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME));
             restIdents.splice(1, 0, arkts.factory.createIdentifier(BuilderLambdaNames.REUSE_ID_PARAM_NAME));
         }
         let factoryParams: arkts.Expression[] = [];
-        if (isFromCustomDialog || isFromComponent) {
-            factoryParams.push(useSharedStorage ?? arkts.factory.createBooleanLiteral(false));
+        if (fromStructInfo.isFromCustomDialog || fromStructInfo.isFromComponent) {
+            factoryParams.push(propertyFields?.useSharedStorage ?? arkts.factory.createBooleanLiteral(false));
             factoryParams.push(
                 UIFactory.createOptionalCall(
                     arkts.factory.createIdentifier(BuilderLambdaNames.STORAGE_PARAM_NAME),
@@ -512,37 +556,11 @@ export class CacheFactory {
                 )
             );
         }
-        let returnType = [];
-        if (isFromComponentV2) {
-            returnType.push(
-                arkts.factory.createObjectExpression(
-                    [
-                        arkts.factory.createProperty(
-                            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
-                            arkts.factory.createIdentifier('sClass'),
-                            arkts.factory.createCallExpression(
-                                arkts.factory.createMemberExpression(
-                                    arkts.factory.createIdentifier('Class'),
-                                    arkts.factory.createIdentifier('from'),
-                                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                                    false,
-                                    false
-                                ),
-                                [],
-                                arkts.factory.createTSTypeParameterInstantiation([
-                                    UIFactory.createTypeReferenceFromString(structName)
-                                ]),
-                                false,
-                                false
-                            ),
-                            false,
-                            false
-                        )
-                    ]
-                )
-            )
+        const additionalArgs: arkts.Expression[] = [];
+        const optionsArg = this.createInvokeImplCallOptionsArg(structName, fromStructInfo, propertyFields);
+        if (optionsArg !== undefined) {
+            additionalArgs.push(optionsArg);
         }
-
         const intrinsicCall = arkts.factory.createCallExpression(
             arkts.factory.createMemberExpression(
                 arkts.factory.createIdentifier(customComponentName),
@@ -553,9 +571,9 @@ export class CacheFactory {
             ),
             [
                 ...styleParams,
-                StructFactory.createComponentFactoryParameter(structName, factoryParams, isFromCustomDialog),
+                StructFactory.createComponentFactoryParameter(structName, factoryParams, fromStructInfo.isFromCustomDialog),
                 ...restIdents,
-                ...returnType,
+                ...additionalArgs,
             ],
             arkts.factory.createTSTypeParameterInstantiation([
                 UIFactory.createTypeReferenceFromString(structName),
@@ -565,6 +583,87 @@ export class CacheFactory {
             false
         );
         return intrinsicCall;
+    }
+
+    /**
+     * create options argument for struct _invokeImpl call.
+     * 
+     * @internal
+     */
+    static createInvokeImplCallOptionsArg(
+        structName: string, 
+        fromStructInfo: FromStructInfo, 
+        propertyFields?: StructAnnotationPropertyFields
+    ): arkts.ObjectExpression | undefined {
+        let optionsArg: arkts.ObjectExpression | undefined;
+
+        if (fromStructInfo.isFromComponentV2) {
+            const optionsBody: arkts.Property[] = [];
+            optionsBody.push(this.addClassFromPropertyInInvokeImplCallOptions(structName));
+            if (fromStructInfo.isFromReusable && !!propertyFields?.memoryOptimizationStrategy) {
+                optionsBody.push(
+                    this.addMemoryOptStrategyPropertyInInvokeImplCallOptions(propertyFields.memoryOptimizationStrategy)
+                );
+            }
+            if (optionsBody.length > 0) {
+                optionsArg = arkts.factory.createObjectExpression(optionsBody);
+            }
+        } else if (fromStructInfo.isFromComponent && isSdkVersionAtLeast(APIVersions.API_26)) {
+            const optionsBody: arkts.Property[] = [];
+            if (fromStructInfo.isFromReusable && !!propertyFields?.memoryOptimizationStrategy) {
+                optionsBody.push(
+                    this.addMemoryOptStrategyPropertyInInvokeImplCallOptions(propertyFields.memoryOptimizationStrategy)
+                );
+            }
+            if (optionsBody.length > 0) {
+                optionsArg = arkts.factory.createObjectExpression(optionsBody);
+            }
+        }
+        return optionsArg;
+    }
+
+    /**
+     * add `sClass: Class.from<structName>()` to struct _invokeImpl options argument.
+     * 
+     * @internal
+     */
+    static addClassFromPropertyInInvokeImplCallOptions(structName: string): arkts.Property {
+        return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
+            arkts.factory.createIdentifier('sClass'),
+            arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier('Class'),
+                    arkts.factory.createIdentifier('from'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
+                    false,
+                    false
+                ),
+                [],
+                arkts.factory.createTSTypeParameterInstantiation([
+                    UIFactory.createTypeReferenceFromString(structName)
+                ]),
+                false,
+                false
+            ),
+            false,
+            false
+        );
+    }
+
+    /**
+     * add `memoryOptimizationStrategy` property to struct _invokeImpl options argument.
+     * 
+     * @internal
+     */
+    static addMemoryOptStrategyPropertyInInvokeImplCallOptions(propertyValue: arkts.Expression): arkts.Property {
+        return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
+            arkts.factory.createIdentifier(ReusableOptions.MEMORY_OPT_STRATEGY),
+            propertyValue,
+            false,
+            false
+        );
     }
 
     /**

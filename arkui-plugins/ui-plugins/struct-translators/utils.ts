@@ -29,15 +29,30 @@ import {
     CustomComponentNames,
     CustomDialogNames,
     ETSGLOBAL,
+    BuilderLambdaNames,
+    ReusableOptions,
 } from '../../common/predefines';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import { ProjectConfig, ResourceList } from '../../common/plugin-context';
 import { LogCollector } from '../../common/log-collector';
+import { StructAnnotationInfo } from '../../collectors/ui-collectors/records';
 import { hasDecorator } from '../property-translators/utils';
 
 export enum StructType {
     STRUCT,
     CUSTOM_COMPONENT_DECL,
+}
+
+export type StructAnnotationPropertyFields = {
+    [BuilderLambdaNames.USE_SHARED_STORAGE_PARAM_NAME]?: arkts.Expression;
+    [ReusableOptions.MEMORY_OPT_STRATEGY]?: arkts.Expression;
+}
+
+export type FromStructInfo = {
+    isFromCustomDialog?: boolean;
+    isFromComponent?: boolean;
+    isFromComponentV2?: boolean;
+    isFromReusable?: boolean;
 }
 
 export type ScopeInfoCollection = {
@@ -387,4 +402,20 @@ export function getNoTransformationMembersInClass(
                     isKnownMethodDefinition(member, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI))
             )
     );
+}
+
+/**
+ * process from-struct info to the following fields:
+ *  - isFromCustomDialog: struct is from `@CustomDialog`
+ *  - isFromComponent: struct is from `@Component` or `@Reusable`
+ *  - isFromComponentV2: struct is from `@ComponentV2` or `@ReusableV2`
+ *  - isFromReusable: struct is from `@Reusable` or `@ReusableV2`
+ */
+export function processFromStructInfo(annotationInfo: StructAnnotationInfo | undefined): FromStructInfo {
+    return {
+        isFromCustomDialog: !!annotationInfo?.hasCustomDialog,
+        isFromComponent: !!annotationInfo?.hasComponent || !!annotationInfo?.hasReusable,
+        isFromComponentV2: !!annotationInfo?.hasComponentV2 || !!annotationInfo?.hasReusableV2,
+        isFromReusable: !!annotationInfo?.hasReusable || !!annotationInfo?.hasReusableV2
+    }
 }
