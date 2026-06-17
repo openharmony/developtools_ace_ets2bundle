@@ -103,22 +103,72 @@ export class HandleUIImports {
       return this.addUIImports(result);
     }
 
-    if (ts.isMethodDeclaration(result) && !result.type) {
-      const voidTypeAnnotation = ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
-      return ts.factory.updateMethodDeclaration(
-        result,
-        result.modifiers,
-        result.asteriskToken,
-        result.name,
-        result.questionToken,
-        result.typeParameters,
-        result.parameters,
-        voidTypeAnnotation,
-        result.body
-      );
+    if (ts.isMethodDeclaration(result)) {
+      return this.transformMethodDeclaration(result);
     }
 
     return result;
+  }
+
+  private transformMethodDeclaration(node: ts.MethodDeclaration): ts.MethodDeclaration {
+    const { decorators, updated: decoratorsUpdated } = this.transformMonitorDecorator(ts.getAllDecorators(node));
+    const needsType = !node.type;
+
+    if (!decoratorsUpdated && !needsType) {
+      return node;
+    }
+
+    const type = needsType ? ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword) : node.type;
+
+    return ts.factory.updateMethodDeclaration(
+      node,
+      decoratorsUpdated ? decorators as ts.NodeArray<ts.Decorator> : node.modifiers,
+      node.asteriskToken,
+      node.name,
+      node.questionToken,
+      node.typeParameters,
+      node.parameters,
+      type,
+      node.body
+    );
+  }
+
+  private transformMonitorDecorator(decorators: readonly ts.Decorator[] | undefined): {
+    decorators: ts.NodeArray<ts.Decorator> | undefined;
+    updated: boolean;
+  } {
+    if (!decorators || decorators.length === 0) {
+      return { decorators: undefined, updated: false };
+    }
+
+    let updated = false;
+    const newDecorators = decorators.map(decorator => {
+      const expr = decorator.expression;
+      if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
+        return decorator;
+      }
+      if (expr.expression.text !== 'Monitor') {
+        return decorator;
+      }
+      if (expr.arguments.length === 1 && ts.isArrayLiteralExpression(expr.arguments[0])) {
+        return decorator;
+      }
+
+      updated = true;
+      const arrayLiteral = ts.factory.createArrayLiteralExpression([...expr.arguments]);
+      const newCall = ts.factory.updateCallExpression(
+        expr,
+        expr.expression,
+        expr.typeArguments,
+        [arrayLiteral]
+      );
+      return ts.factory.updateDecorator(decorator, newCall);
+    });
+
+    return {
+      decorators: updated ? ts.factory.createNodeArray(newDecorators) : undefined,
+      updated
+    };
   }
 
   private handleImportBuilder(node: ts.Node): void {
