@@ -87,8 +87,7 @@ import {
   ATTRIBUTE_ID,
   __GETRESOURCEID__,
   __RESOURCEIDHAR__,
-  APIVERSION,
-  DEVICE_INFO
+  APIVERSION
 } from './pre_define';
 import {
   componentInfo,
@@ -154,8 +153,7 @@ import {
 } from './process_component_member';
 import {
   assignComponentParams,
-  assignmentFunction,
-  isCompatibleVersionOverTarget
+  assignmentFunction
 } from './process_custom_component';
 import { processDecorator } from './fast_build/ark_compiler/process_decorator';
 import { hasArkDecorator } from './fast_build/ark_compiler/utils';
@@ -1150,137 +1148,10 @@ export function processAnimateToOrImmediately(node: ts.CallExpression): ts.CallE
   node.typeArguments, node.arguments);
 }
 
-export class ProcessExtendIfStatement {
-  static componentName: string;
-
-  static updateComponentName(
-    componentName: string
-  ): void {
-    ProcessExtendIfStatement.componentName = componentName;
-  }
-
-  static transformIfStatement(
-    node: ts.IfStatement,
-    componentName: string,
-    log: LogInfo[]
-  ): ts.IfStatement {
-    IfConditionValidator.validateIfStatement(node, log);
-    const thenBlock: ts.Block = this.visitBlockBody(
-      node.thenStatement,
-      componentName,
-      log
-    );
-
-    const elseStatement: ts.Statement | undefined = this.visitElseBranch(
-      node.elseStatement, componentName, log
-    );
-
-    return ts.factory.createIfStatement(
-      node.expression,
-      thenBlock,
-      elseStatement
-    );
-  }
-
-  static visitBlockBody(
-    body: ts.Statement,
-    componentName: string,
-    log: LogInfo[]
-  ): ts.Block {
-    const block: ts.Block = ts.isBlock(body) ? body : ts.factory.createBlock([body]);
-
-    const newStatementsBlock: ts.Block = this.transformStatement(
-      block,
-      componentName,
-      log
-    );
-
-    return newStatementsBlock;
-  }
-
-  static visitElseBranch(
-    elseNode: ts.Statement | undefined,
-    componentName: string,
-    log: LogInfo[]
-  ): ts.Statement | undefined {
-    if (!elseNode) {
-      return undefined;
-    }
-
-    if (ts.isIfStatement(elseNode)) {
-      return this.transformIfStatement(elseNode, componentName, log);
-    }
-
-    return this.visitBlockBody(elseNode, componentName, log);
-  }
-
-  static transformStatement(
-    currentBlock: ts.Block,
-    componentName: string,
-    log: LogInfo[]
-  ): ts.Block {
-    const statementArray: ts.Statement[] = [];
-    let bodynode: ts.Block;
-
-    if (isOriginalExtend(currentBlock) && currentBlock.statements.length) {
-      const attrSet: ts.CallExpression = currentBlock.statements[0].expression;
-      const changeCompName: ts.ExpressionStatement =
-      ts.factory.createExpressionStatement(processExtendBody(attrSet));
-      bindComponentAttr(
-        changeCompName as ts.ExpressionStatement,
-        ts.factory.createIdentifier(componentName),
-        statementArray,
-        log
-      );
-      return ts.factory.createBlock(statementArray);
-    } else {
-      bodynode = ts.visitEachChild(currentBlock,
-        ProcessExtendIfStatement.traverseExtendExpression, contextGlobal);
-      return bodynode;
-    }
-  }
-
-  static traverseExtendExpression(
-    node: ts.Node
-  ): ts.Node {
-    if (ts.isExpressionStatement(node) && isDollarNode(node, ProcessExtendIfStatement.componentName)) {
-      const changeCompName: ts.ExpressionStatement =
-        ts.factory.createExpressionStatement(processExtendBody(node.expression,
-          ProcessExtendIfStatement.componentName));
-      const statementArray: ts.Statement[] = [];
-      bindComponentAttr(changeCompName, ts.factory.createIdentifier(ProcessExtendIfStatement.componentName),
-        statementArray, []);
-      return ts.factory.createBlock(statementArray, true);
-    }
-    return ts.visitEachChild(node, ProcessExtendIfStatement.traverseExtendExpression,
-      contextGlobal);
-  }
-}
-
 function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
   decoratorName: string): ts.FunctionDeclaration {
   const componentName: string = isExtendFunction(node, { decoratorName: '', componentName: '' }, true);
   checkExtendNode(node, componentName, log);
-  if (isCompatibleVersionOverTarget(26) &&
-    componentName && node.body && node.body.statements.length &&
-    ts.isIfStatement(node.body.statements[0]) &&
-    decoratorName === COMPONENT_EXTEND_DECORATOR) {
-    ProcessExtendIfStatement.updateComponentName(componentName);
-    const newIfStatement = ProcessExtendIfStatement.transformIfStatement(
-      node.body.statements[0], componentName, log
-    );
-    let extendFunctionName: string;
-    if (node.name.getText().startsWith('__' + componentName + '__')) {
-      extendFunctionName = node.name.getText();
-    } else {
-      extendFunctionName = '__' + componentName + '__' + node.name.getText();
-      collectExtend(EXTEND_ATTRIBUTE, componentName, node.name.escapedText.toString());
-    }
-    return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
-      ts.factory.createIdentifier(extendFunctionName), node.typeParameters,
-      node.parameters, ts.factory.createToken(ts.SyntaxKind.VoidKeyword),
-      ts.factory.updateBlock(node.body, [newIfStatement]));
-  }
   if (componentName && node.body && !node.body.statements.length && decoratorName === COMPONENT_EXTEND_DECORATOR) {
     const statementArray: ts.Statement[] = [];
     const bodynode: ts.Block = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
@@ -1566,9 +1437,6 @@ function checkExtendNode(node: ts.FunctionDeclaration, componentName: string,
   }
   if (node.body && ts.isBlock(node.body) && node.body.statements &&
     node.body.statements.length === 1 && !ts.isExpressionStatement(node.body.statements[0])) {
-    if (isCompatibleVersionOverTarget(26) && ts.isIfStatement(node.body.statements[0])) {
-      return;
-    }
     validateUIFunctionFormat(log, node.body.statements[0]);
     return;
   }
@@ -1613,94 +1481,7 @@ export function parseStylesNode(node: ts.FunctionDeclaration | ts.MethodDeclarat
         validateUIFunctionFormat(log, node.body.statements[0]);
       return;
     }
-    if (isCompatibleVersionOverTarget(26) &&
-      node.body.statements.length === 1 &&
-      ts.isIfStatement(node.body.statements[0])) {
-      return;
-    }
     validateUIFunctionFormat(log, node.body.statements[0]);
-  }
-}
-
-export class IfConditionValidator {
-  public static validateIfStatement(
-    node: ts.IfStatement,
-    log: LogInfo[]
-  ): void {
-    if (!this.checkValidCondition(node.expression)) {
-      this.validateConditionFormat(log, node.expression);
-    }
-  }
-
-  private static checkValidCondition(
-    expr: ts.Expression
-  ): boolean {
-    // '!'
-    if (ts.isPrefixUnaryExpression(expr) &&
-      expr.operator === ts.SyntaxKind.ExclamationToken) {
-      return this.checkValidCondition(expr.operand);
-    }
-
-    // '&&','||'
-    if (expr.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
-      expr.kind === ts.SyntaxKind.BarBarToken
-    ) {
-      const logical = expr as ts.BinaryExpression;
-      return (
-        this.checkValidCondition(logical.left) &&
-        this.checkValidCondition(logical.right)
-      );
-    }
-
-    // compare
-    if (ts.isBinaryExpression(expr)) {
-      return (
-        this.checkValidCondition(expr.left) &&
-        this.checkValidCondition(expr.right)
-      );
-    }
-
-    // callexpression
-    if (ts.isCallExpression(expr)) {
-      return this.isDeviceInfoProperty(expr.expression);
-    }
-
-    if (this.isDeviceInfoProperty(expr)) {
-      return true;
-    }
-
-    if (expr.kind === ts.SyntaxKind.NumericLiteral ||
-      expr.kind === ts.SyntaxKind.StringLiteral ||
-      expr.kind === ts.SyntaxKind.TrueKeyword ||
-      expr.kind === ts.SyntaxKind.FalseKeyword
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private static isDeviceInfoProperty(
-    expr: ts.Expression
-  ): boolean {
-    if (!ts.isPropertyAccessExpression(expr)) {
-      return false;
-    }
-    return (
-      ts.isIdentifier(expr.expression) &&
-      expr.expression.text === DEVICE_INFO
-    );
-  }
-
-  private static validateConditionFormat(
-    log: LogInfo[],
-    expression: ts.Expression
-  ): void {
-    log.push({
-      message: `The condition expression does not meet the requirements. Use the attributes or methods of the 'deviceInfo' namespace for judgment.`,
-      type: LogType.WARN,
-      pos: expression.getStart()
-    });
   }
 }
 

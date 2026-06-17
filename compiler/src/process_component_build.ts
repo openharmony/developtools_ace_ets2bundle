@@ -207,8 +207,7 @@ import {
   contextGlobal,
   validatorCard,
   builderTypeParameter,
-  resourceFileName,
-  IfConditionValidator
+  resourceFileName
 } from './process_ui_syntax';
 import { regularCollection, getSymbolIfAliased } from './validate_ui_syntax';
 import { contextStackPushOrPop } from './process_component_class';
@@ -3065,9 +3064,12 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
     const styleBlock: ts.Block =
         INNER_STYLE_FUNCTION.get(propName) || GLOBAL_STYLE_FUNCTION.get(propName);
     if (styleBlock.statements.length > 0) {
-      processStyleBlockStatements(styleBlock.statements, identifierNode, log, statements,
-        newImmutableStatements, isRecycleComponent, updateStatements, true
-      );
+      bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+        statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(styleBlock.statements[0] as ts.ExpressionStatement, identifierNode,
+          updateStatements, log, false, true, newImmutableStatements, true);
+      }
     }
     lastStatement.kind = true;
   } else if (isDoubleBind(styleResult, isStylesAttr, identifierNode, propName, temp)) {
@@ -3098,115 +3100,6 @@ function addComponentAttr(temp, node: ts.Identifier, lastStatement,
       }
     }
     lastStatement.kind = true;
-  }
-}
-
-function processStyleBlockStatements(
-  styleStatements: ts.NodeArray<ts.Statement>,
-  identifierNode: ts.Identifier,
-  log: LogInfo[],
-  statements: ts.Statement[],
-  newImmutableStatements: ts.Statement[],
-  isRecycleComponent: boolean,
-  updateStatements: ts.Statement[],
-  isStyleFunction: boolean = false
-): void {
-  if (!styleStatements || styleStatements.length === 0) {
-    return;
-  }
-  styleStatements.forEach((stmt: ts.Statement) => {
-    if (!stmt) {
-      return;
-    }
-    if (ts.isExpressionStatement(stmt)) {
-      bindComponentAttr(stmt, identifierNode, statements, log, false, true, newImmutableStatements);
-      if (isRecycleComponent) {
-        bindComponentAttr(stmt, identifierNode, updateStatements, log, false, true,
-          newImmutableStatements, isStyleFunction);
-      }
-    } else if (ts.isIfStatement(stmt) && isCompatibleVersionOverTarget(26)) {
-      processStyleIfStatement(stmt, identifierNode, log, statements, newImmutableStatements,
-        isRecycleComponent, updateStatements, isStyleFunction);
-    }
-  });
-}
-function processStyleIfStatement(
-  ifStmt: ts.IfStatement,
-  identifierNode: ts.Identifier,
-  log: LogInfo[],
-  statements: ts.Statement[],
-  newImmutableStatements: ts.Statement[],
-  isRecycleComponent: boolean,
-  updateStatements: ts.Statement[],
-  isStyleFunction: boolean = false
-): void {
-  if (!ifStmt || !ifStmt.thenStatement) {
-    return;
-  }
-  const thenStmts: ts.Statement[] = [];
-  const elseStmts: ts.Statement[] = [];
-  IfConditionValidator.validateIfStatement(ifStmt, log);
-  collectStyleBlockAttrStatements(ifStmt.thenStatement, identifierNode, log, thenStmts,
-    newImmutableStatements, isRecycleComponent, isStyleFunction);
-  if (ifStmt.elseStatement) {
-    collectStyleBlockAttrStatements(ifStmt.elseStatement, identifierNode, log, elseStmts,
-      newImmutableStatements, isRecycleComponent, isStyleFunction);
-  }
-  const newThenBlock: ts.Block = thenStmts.length > 0 ? ts.factory.createBlock(thenStmts, true) : undefined;
-  const newElseBlock: ts.Block = elseStmts.length > 0 ? ts.factory.createBlock(elseStmts, true) : undefined;
-  if (newThenBlock || newElseBlock) {
-    const newIf: ts.IfStatement = ts.factory.updateIfStatement(ifStmt, ifStmt.expression,
-      newThenBlock, newElseBlock);
-    statements.push(newIf);
-    if (isRecycleComponent) {
-      updateStatements.push(newIf);
-    }
-  }
-}
-
-function collectStyleBlockAttrStatements(
-  blockOrStmt: ts.Statement,
-  identifierNode: ts.Identifier,
-  log: LogInfo[],
-  outputStatements: ts.Statement[],
-  newImmutableStatements: ts.Statement[],
-  isRecycleComponent: boolean,
-  isStyleFunction: boolean = false
-): void {
-  if (!blockOrStmt) {
-    return;
-  }
-  if (ts.isBlock(blockOrStmt)) {
-    if (!blockOrStmt.statements || blockOrStmt.statements.length === 0) {
-      return;
-    }
-    blockOrStmt.statements.forEach((stmt: ts.Statement) => {
-      if (stmt) {
-        dispatchStyleStatement(stmt, identifierNode, log, outputStatements,
-          newImmutableStatements, isRecycleComponent, isStyleFunction);
-      }
-    });
-  } else {
-    dispatchStyleStatement(blockOrStmt, identifierNode, log, outputStatements,
-      newImmutableStatements, isRecycleComponent, isStyleFunction);
-  }
-}
-
-function dispatchStyleStatement(
-  stmt: ts.Statement,
-  identifierNode: ts.Identifier,
-  log: LogInfo[],
-  outputStatements: ts.Statement[],
-  newImmutableStatements: ts.Statement[],
-  isRecycleComponent: boolean,
-  isStyleFunction: boolean = false
-): void {
-  if (ts.isExpressionStatement(stmt)) {
-    bindComponentAttr(stmt, identifierNode, outputStatements, log,
-      false, true, newImmutableStatements);
-  } else if (ts.isIfStatement(stmt)) {
-    processStyleIfStatement(stmt, identifierNode, log, outputStatements,
-      newImmutableStatements, isRecycleComponent, outputStatements, isStyleFunction);
   }
 }
 
@@ -3453,15 +3346,21 @@ function traverseStateStylesAttr(temp, statements: ts.Statement[],
       item.initializer.expression.getText() === THIS &&
       INNER_STYLE_FUNCTION.get(item.initializer.name.getText())) {
       const name: string = item.initializer.name.getText();
-      const styleBlock: ts.Block = INNER_STYLE_FUNCTION.get(name);
-      processStyleBlockStatements(styleBlock.statements, identifierNode,
-        log, statements, newImmutableStatements, isRecycleComponent, updateStatements);
+      bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(INNER_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+          identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      }
     } else if (ts.isIdentifier(item.initializer) &&
       GLOBAL_STYLE_FUNCTION.get(item.initializer.getText())) {
       const name: string = item.initializer.getText();
-      const styleBlock: ts.Block = GLOBAL_STYLE_FUNCTION.get(name);
-      processStyleBlockStatements(styleBlock.statements, identifierNode,
-        log, statements, newImmutableStatements, isRecycleComponent, updateStatements);
+      bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+        identifierNode, statements, log, false, true, newImmutableStatements);
+      if (isRecycleComponent) {
+        bindComponentAttr(GLOBAL_STYLE_FUNCTION.get(name).statements[0] as ts.ExpressionStatement,
+          identifierNode, updateStatements, log, false, true, newImmutableStatements);
+      }
     } else if (ts.isObjectLiteralExpression(item.initializer) &&
       item.initializer.properties.length === 1 &&
       ts.isPropertyAssignment(item.initializer.properties[0])) {
