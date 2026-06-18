@@ -994,7 +994,7 @@ export class InsightIntentHandler {
             [INSIGHT_INTENT_PAGE_DECORATOR, this.extractPageIntentData.bind(this)],
         ]);
     }
-        /**
+    /**
      * 加载现有的 insight_intent.json 文件中的 intentName
      */
     private loadExistingIntentNames(): void {
@@ -1027,16 +1027,41 @@ export class InsightIntentHandler {
             const insightIntentCachePath = projectConfig.cachePath ?
                 path.join(projectConfig.cachePath, 'insight_compile_cache.json') : '';
             
+            // 判断是否为增量编译：有缓存数据则为增量编译，否则为正常编译
+            const isIncrementalCompile = insightIntentCachePath && fs.existsSync(insightIntentCachePath);
+            // 读取缓存中的sourceFilePathMap，用于判断文件是否被删除
+            let cachedSourceFilePathMap: Record<string, string> = {};
+            if (isIncrementalCompile) {
+                const cacheContent = fs.readFileSync(insightIntentCachePath, 'utf-8');
+                const cacheConfig = JSON.parse(cacheContent);
+                cachedSourceFilePathMap = cacheConfig.sourceFilePathMap || {};
+            }
             const loadIntentNames = (intents: InsightIntentDataBase[] | undefined): void => {
                 if (!Array.isArray(intents)) {
                     return;
                 }
+                const touchedFiles = this.collector.getTouchedFiles();
+                const allCompiledSourceFiles = this.collector.getAllCompiledSourceFiles();
                 intents.forEach((intent: InsightIntentDataBase) => {
                     if (!intent.intentName) {
                         return;
                     }
                     if (this.currentDecoratorFile && intent.decoratorFile === this.currentDecoratorFile) {
                         return;
+                    }
+                    if (isIncrementalCompile) {
+                        if (intent.decoratorFile && touchedFiles.includes(intent.decoratorFile)) {
+                            return;
+                        }
+                        if (intent.decoratorFile && allCompiledSourceFiles.has(intent.decoratorFile) && !touchedFiles.includes(intent.decoratorFile)) {
+                            return;
+                        }
+                        if (intent.decoratorFile && !allCompiledSourceFiles.has(intent.decoratorFile) && !touchedFiles.includes(intent.decoratorFile)) {
+                            const sourceFilePath = cachedSourceFilePathMap[intent.decoratorFile];
+                            if (sourceFilePath && !fs.existsSync(sourceFilePath)) {
+                                return;
+                            }
+                        }
                     }
                     this.intentNames.add(intent.intentName);
                 });

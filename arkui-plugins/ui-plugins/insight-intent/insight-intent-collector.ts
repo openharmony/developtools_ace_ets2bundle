@@ -125,6 +125,7 @@ interface InsightIntentCacheConfig {
     entityIntents: InsightIntentEntityData[];
     entityOwnerMapByFile: Record<string, Record<string, string[]>>;
     entityExtendsMapByFile: Record<string, Record<string, string>>;
+    sourceFilePathMap: Record<string, string>;
 }
 
 /**
@@ -136,6 +137,7 @@ export class InsightIntentCollector {
     private intents: Map<string, InsightIntentData> = new Map();
     private fileIntentKeys: Map<string, Set<string>> = new Map();
     private touchedFiles: Set<string> = new Set();
+    private allCompiledSourceFiles: Map<string, string> = new Map();
     // 按源文件记录每个 intent 对应的 entity 类名，便于增量编译时精准替换
     private entityOwnerMapByFile: Map<string, Map<string, Set<string>>> = new Map();
     // 按源文件记录 entity 的直接继承关系：子类 -> 父类
@@ -165,6 +167,10 @@ export class InsightIntentCollector {
         const key = `${intent.decoratorFile}#${identifier}#${decoratorType}#${intentIdentity}`;
         this.intents.set(key, intent);
         if (intent.decoratorFile) {
+            if (!this.touchedFiles.has(intent.decoratorFile)) {
+                this.touchedFiles.add(intent.decoratorFile);
+                this.removeFileData(intent.decoratorFile);
+            }
             if (!this.fileIntentKeys.has(intent.decoratorFile)) {
                 this.fileIntentKeys.set(intent.decoratorFile, new Set());
             }
@@ -178,6 +184,27 @@ export class InsightIntentCollector {
         }
         this.touchedFiles.add(decoratorFile);
         this.removeFileData(decoratorFile);
+    }
+
+    private normalizeDecoratorFile(decoratorFile: string): string {
+        let normalizedPath = decoratorFile.replace(/\\/g, '/');
+        const srcMainIndex = normalizedPath.indexOf('/src/main/');
+        if (srcMainIndex !== -1) {
+            const relativePath = normalizedPath.substring(srcMainIndex + 10);
+            if (!relativePath.startsWith('./')) {
+                return './' + relativePath;
+            }
+            return relativePath;
+        }
+        return normalizedPath;
+    }
+
+    public recordCompiledFile(filePath: string, decoratorFile: string | undefined): void {
+        if (!decoratorFile || !filePath) {
+            return;
+        }
+        const normalizedDecoratorFile = this.normalizeDecoratorFile(decoratorFile);
+        this.allCompiledSourceFiles.set(normalizedDecoratorFile, filePath);
     }
     
     /**
@@ -217,6 +244,10 @@ export class InsightIntentCollector {
         return Array.from(this.intents.values());
     }
 
+    public getAllCompiledSourceFiles(): Map<string, string> {
+        return this.allCompiledSourceFiles;
+    }
+
     /**
      * 清空收集的数据
      */
@@ -224,6 +255,7 @@ export class InsightIntentCollector {
         this.intents.clear();
         this.fileIntentKeys.clear();
         this.touchedFiles.clear();
+        this.allCompiledSourceFiles.clear();
         this.entityOwnerMapByFile.clear();
         this.entityExtendsMapByFile.clear();
     }
@@ -240,7 +272,7 @@ export class InsightIntentCollector {
         this.entityExtendsMapByFile.delete(decoratorFile);
     }
 
-    private getTouchedFiles(): string[] {
+    public getTouchedFiles(): string[] {
         return Array.from(this.touchedFiles.values());
     }
 
@@ -504,6 +536,7 @@ export class InsightIntentCollector {
             entityIntents: [],
             entityOwnerMapByFile: {},
             entityExtendsMapByFile: {},
+            sourceFilePathMap: {},
         };
         if (!cacheFilePath || !fs.existsSync(cacheFilePath)) {
             return emptyCache;
@@ -516,6 +549,7 @@ export class InsightIntentCollector {
                 entityIntents: Array.isArray(parsedContent.entityIntents) ? parsedContent.entityIntents : [],
                 entityOwnerMapByFile: parsedContent.entityOwnerMapByFile ?? {},
                 entityExtendsMapByFile: parsedContent.entityExtendsMapByFile ?? {},
+                sourceFilePathMap: parsedContent.sourceFilePathMap ?? {},
             };
         } catch (error) {
             console.warn('[InsightIntent] Failed to parse cache file:', error);
@@ -523,17 +557,40 @@ export class InsightIntentCollector {
         }
     }
 
+    private detectDeletedFiles(
+        cachedSourceFilePathMap: Record<string, string>
+    ): string[] {
+        const deletedFiles: string[] = [];
+        const cachedFiles = Object.keys(cachedSourceFilePathMap);
+        for (const decoratorFile of cachedFiles) {
+            if (this.touchedFiles.has(decoratorFile)) {
+                continue;
+            }
+            if (this.allCompiledSourceFiles.has(decoratorFile)) {
+                deletedFiles.push(decoratorFile);
+                continue;
+            }
+            const sourceFilePath = cachedSourceFilePathMap[decoratorFile];
+            if (sourceFilePath && !fs.existsSync(sourceFilePath)) {
+                deletedFiles.push(decoratorFile);
+            }
+        }
+        return deletedFiles;
+    }
+
     private buildCacheFileContent(
         regularIntents: InsightIntentDataBase[],
         entityIntents: InsightIntentEntityData[],
         entityOwnerMapByFile: Map<string, Map<string, Set<string>>>,
-        entityExtendsMapByFile: Map<string, Map<string, string>>
+        entityExtendsMapByFile: Map<string, Map<string, string>>,
+        sourceFilePathMap: Record<string, string>
     ): InsightIntentCacheConfig {
         return {
             extractInsightIntents: this.stripEntitiesFromRegularIntents(regularIntents),
             entityIntents: this.cloneData(entityIntents),
             entityOwnerMapByFile: this.serializeEntityOwnerMapByFile(entityOwnerMapByFile),
             entityExtendsMapByFile: this.serializeEntityExtendsMapByFile(entityExtendsMapByFile),
+            sourceFilePathMap: sourceFilePathMap,
         };
     }
 
@@ -595,6 +652,9 @@ export class InsightIntentCollector {
             const cacheConfig = this.readCacheFile(cacheFilePath);
             const cachedEntityOwnerMapByFile = this.deserializeEntityOwnerMapByFile(cacheConfig.entityOwnerMapByFile);
             const cachedEntityExtendsMapByFile = this.deserializeEntityExtendsMapByFile(cacheConfig.entityExtendsMapByFile);
+            const cachedSourceFilePathMap: Record<string, string> = cacheConfig.sourceFilePathMap || {};
+            const deletedFiles: string[] = this.detectDeletedFiles(cachedSourceFilePathMap);
+            const deletedFileSet = new Set(deletedFiles);
             // 如果既没有新数据，也没有缓存，不进行写入处理
             if (intents.length === 0 && 
                 cacheConfig.extractInsightIntents.length === 0 && 
@@ -645,10 +705,12 @@ export class InsightIntentCollector {
             }
 
             const preservedIntents = cacheConfig.extractInsightIntents.filter((intent: InsightIntentDataBase) => {
-                return !intent.decoratorFile || !touchedFileSet.has(intent.decoratorFile);
+                return !intent.decoratorFile || 
+                       (!touchedFileSet.has(intent.decoratorFile) && !deletedFileSet.has(intent.decoratorFile));
             });
             const preservedEntities = cacheConfig.entityIntents.filter((entityIntent: InsightIntentEntityData) => {
-                return !entityIntent.decoratorFile || !touchedFileSet.has(entityIntent.decoratorFile);
+                return !entityIntent.decoratorFile || 
+                       (!touchedFileSet.has(entityIntent.decoratorFile) && !deletedFileSet.has(entityIntent.decoratorFile));
             });
             const mergedRegularIntents = this.stripEntitiesFromRegularIntents([
                 ...preservedIntents,
@@ -668,6 +730,23 @@ export class InsightIntentCollector {
                 this.entityExtendsMapByFile,
                 touchedFileSet
             );
+            for (const [decoratorFile, filePath] of Object.entries(cachedSourceFilePathMap)) {
+                if (!this.allCompiledSourceFiles.has(decoratorFile)) {
+                    this.allCompiledSourceFiles.set(decoratorFile, filePath);
+                }
+            }
+            const intentFiles = new Set<string>();
+            mergedRegularIntents.forEach(intent => {
+                if (intent.decoratorFile) {
+                    intentFiles.add(intent.decoratorFile);
+                }
+            });
+            const sourceFilePathMap: Record<string, string> = {};
+            for (const [decoratorFile, filePath] of this.allCompiledSourceFiles.entries()) {
+                if (intentFiles.has(decoratorFile)) {
+                    sourceFilePathMap[decoratorFile] = filePath;
+                }
+            }
             // 将 entities 关联到对应的 intents
             this.matchEntities(mergedRegularIntents, mergedEntities, mergedEntityOwnerMapByFile, mergedEntityExtendsMapByFile);
 
@@ -690,7 +769,8 @@ export class InsightIntentCollector {
                     mergedRegularIntents,
                     mergedEntities,
                     mergedEntityOwnerMapByFile,
-                    mergedEntityExtendsMapByFile
+                    mergedEntityExtendsMapByFile,
+                    sourceFilePathMap
                 );
                 fs.writeFileSync(cacheFilePath, JSON.stringify(cacheFileContent, null, 2), 'utf-8');
             }
