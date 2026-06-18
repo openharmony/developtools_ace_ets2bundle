@@ -2717,6 +2717,14 @@ function isNodeFunction(node: ts.CallExpression): boolean {
 
 function checkStatement(statement: ts.Statement, propertyName: string): ts.Statement {
   if (ts.isReturnStatement(statement)) {
+    if (!statement.expression) {
+      transformLog.errors.push({
+        type: LogType.WARN,
+        message: `The return statement needs to have content.`,
+        pos: statement.pos
+      });
+      return ts.factory.createReturnStatement(undefined);
+    }
     if (ts.isObjectLiteralExpression(statement.expression)) {
       const newProperties: ts.ObjectLiteralElementLike[] = [];
       for (let j = 0; j < statement.expression.properties.length; j++) {
