@@ -558,6 +558,94 @@ mocha.describe('process Lazy Imports tests', function () {
     }
   });
 
+  mocha.it('3-2: test type-only bindings do not generate empty lazy import', function () {
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      'type_only.ts',
+      'import { type TypeA, type TypeB } from "./mod";',
+      ts.ScriptTarget.ESNext,
+      true,
+      ts.ScriptKind.TS
+    );
+    const mockResolver = {
+      isReferencedAliasDeclaration() {
+        return false;
+      }
+    };
+
+    const transformed: ts.SourceFile = transformLazyImport({}, sourceFile, {}, mockResolver);
+    const result: string = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(transformed);
+
+    expect(result).to.equal('import { type TypeA, type TypeB } from "./mod";\n');
+    expect(result).not.to.include('import lazy {}');
+  });
+
+  mocha.it('3-3: test type and value bindings are split into separate imports', function () {
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      'mixed.ts',
+      'import { type TypeA, valueA, origin as local } from "./mod";',
+      ts.ScriptTarget.ESNext,
+      true,
+      ts.ScriptKind.TS
+    );
+    const mockResolver = {
+      isReferencedAliasDeclaration(element: ts.ImportSpecifier) {
+        return element.name.text !== 'TypeA';
+      }
+    };
+
+    const transformed: ts.SourceFile = transformLazyImport({}, sourceFile, {}, mockResolver);
+    const result: string = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(transformed);
+
+    expect(result).to.equal(
+      'import lazy { valueA, origin as local } from "./mod";\n' +
+      'import { type TypeA } from "./mod";\n'
+    );
+  });
+
+  mocha.it('3-4: test default import with type-only named bindings', function () {
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      'default_with_type.ts',
+      'import DefaultValue, { type TypeA } from "./mod";',
+      ts.ScriptTarget.ESNext,
+      true,
+      ts.ScriptKind.TS
+    );
+    const mockResolver = {
+      isReferencedAliasDeclaration() {
+        return false;
+      }
+    };
+
+    const transformed: ts.SourceFile = transformLazyImport({}, sourceFile, {}, mockResolver);
+    const result: string = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(transformed);
+
+    expect(result).to.equal(
+      'import lazy DefaultValue from "./mod";\n' +
+      'import { type TypeA } from "./mod";\n'
+    );
+    expect(result).not.to.include(', {}');
+  });
+
+  mocha.it('3-5: test type-only alias is preserved', function () {
+    const sourceFile: ts.SourceFile = ts.createSourceFile(
+      'type_alias.ts',
+      'import { type OriginType as LocalType } from "./mod";',
+      ts.ScriptTarget.ESNext,
+      true,
+      ts.ScriptKind.TS
+    );
+    const mockResolver = {
+      isReferencedAliasDeclaration() {
+        return false;
+      }
+    };
+
+    const transformed: ts.SourceFile = transformLazyImport({}, sourceFile, {}, mockResolver);
+    const result: string = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(transformed);
+
+    expect(result).to.equal('import { type OriginType as LocalType } from "./mod";\n');
+  });
+
   mocha.it('4-1: test autoLazyImport supports exclude list and include list: include list', function () {
     projectConfig.processTs = true;
     const metaInfo: Object = {

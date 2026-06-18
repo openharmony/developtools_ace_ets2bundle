@@ -95,7 +95,7 @@ function isNotAutoLazyImport(metaInfo: Object, autoLazyFilter: Object): boolean 
   return false;
 }
 
-function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration {
+function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.ImportDeclaration | ts.ImportDeclaration[] {
   const importClause: ts.ImportClause | undefined = node.importClause;
   const moduleRequest: string = (node.moduleSpecifier! as ts.StringLiteral).text.replace(/'|"/g, '');
   // The following cases do not support lazy-import.
@@ -114,6 +114,8 @@ function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.Impo
   if (moduleRequest.endsWith('.json')) {
     return node;
   }
+  const modifiers: readonly ts.Modifier[] | undefined =
+    ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   const namedBindings: ts.NamedImportBindings = importClause.namedBindings;
   let newImportClause: ts.ImportClause;
   // The following cases support lazy-import.
@@ -123,11 +125,38 @@ function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.Impo
     // The resolver is used to determine whether type symbols need to be processed.
     // Only TS/ETS files have type symbols.
     if (resolver) {
-      // eliminate the type symbol
-      // eg: import { type t, x } from '...' --> import { x } from '...'
-      const newNameBindings: ts.ImportSpecifier[] = eliminateTypeSymbol(namedBindings, resolver);
-      newImportClause = ts.factory.updateImportClause(importClause, false, importClause.name,
-        ts.factory.updateNamedImports(namedBindings, newNameBindings));
+      // Separate type symbols from runtime values.
+      // case1: import { type t, x } from '...' -->  import lazy { x } from '...'; import { type t } from '...';
+      // case2: import x { type t } from '...' -->  import lazy x from '...'; import { type t } from '...';
+      // case3: import type u { type t, x } from '...' -->  import lazy { x } from '...'; import { type u, type t } from '...';
+      const { valueBindings, typeBindings } = splitImportBindings(namedBindings, resolver);
+      const typeImportDeclaration: ts.ImportDeclaration | undefined = typeBindings.length > 0 ?
+        ts.factory.updateImportDeclaration(
+          node,
+          node.modifiers,
+          ts.factory.createImportClause(false, undefined, ts.factory.createNamedImports(typeBindings)),
+          node.moduleSpecifier,
+          node.assertClause
+        ) : undefined;
+      if (valueBindings.length === 0 && !importClause.name) {
+        return typeImportDeclaration ?? node;
+      }
+      const valueImportClause: ts.ImportClause = ts.factory.updateImportClause(
+        importClause,
+        false,
+        importClause.name,
+        valueBindings.length > 0 ? ts.factory.updateNamedImports(namedBindings, valueBindings) : undefined
+      );
+      // @ts-ignore
+      valueImportClause.isLazy = true;
+      const lazyImportDeclaration: ts.ImportDeclaration = ts.factory.updateImportDeclaration(
+        node,
+        modifiers,
+        valueImportClause,
+        node.moduleSpecifier,
+        node.assertClause
+      );
+      return typeImportDeclaration ? [lazyImportDeclaration, typeImportDeclaration] : lazyImportDeclaration;
     } else {
       newImportClause = importClause;
     }
@@ -137,28 +166,35 @@ function updateImportDecl(node: ts.ImportDeclaration, resolver: Object): ts.Impo
   }
   // @ts-ignore
   newImportClause.isLazy = true;
-  const modifiers: readonly ts.Modifier[] | undefined = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
   return ts.factory.updateImportDeclaration(node, modifiers, newImportClause, node.moduleSpecifier, node.assertClause);
 }
 
-function eliminateTypeSymbol(namedBindings: ts.NamedImportBindings, resolver: Object): ts.ImportSpecifier[] {
-  const newNameBindings: ts.ImportSpecifier[] = [];
+function splitImportBindings(namedBindings: ts.NamedImportBindings, resolver: Object): {
+  valueBindings: ts.ImportSpecifier[];
+  typeBindings: ts.ImportSpecifier[];
+} {
+  const valueBindings: ts.ImportSpecifier[] = [];
+  const typeBindings: ts.ImportSpecifier[] = [];
   namedBindings.elements.forEach(item => {
     const element = item as ts.ImportSpecifier;
-    if (!element.isTypeOnly && resolver.isReferencedAliasDeclaration(element)) {
-      // import { x } from './y' --> propertyName is undefined
-      // import { x as a } from './y' --> propertyName is x
-      newNameBindings.push(
-        ts.factory.updateImportSpecifier(
-          element,
-          false,
-          element.propertyName,
-          element.name
-        )
-      );
+    let targetBindings: ts.ImportSpecifier[];
+    if (element.isTypeOnly) {
+      targetBindings = typeBindings;
+    } else if (resolver.isReferencedAliasDeclaration(element)) {
+      targetBindings = valueBindings;
+    } else {
+      return;
     }
+    // import { x } from './y' --> propertyName is undefined
+    // import { x as a } from './y' --> propertyName is x
+    targetBindings.push(ts.factory.updateImportSpecifier(
+      element,
+      targetBindings === typeBindings,
+      element.propertyName,
+      element.name
+    ));
   });
-  return newNameBindings;
+  return { valueBindings, typeBindings };
 }
 
 export function resetReExportCheckLog(): void {
