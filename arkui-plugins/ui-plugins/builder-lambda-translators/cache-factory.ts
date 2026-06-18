@@ -228,16 +228,11 @@ export class CacheFactory {
         return newNode;
     }
 
-    /**
-     * transform `@ComponentBuilder` in non-declared calls.
-     */
-    static transformBuilderLambdaFromInfo(node: arkts.CallExpression, metadata: CallInfo): arkts.CallExpression {
-        const rootCallInfo: CallInfo = metadata.rootCallInfo ?? metadata;
-        if (!rootCallInfo.declName) {
-            return node;
-        }
-        arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 1], 'find instance style'));
-        let instanceCalls: InstanceCallInfo[] = [];
+    static collectInstanceCalls(
+        node: arkts.CallExpression,
+        metadata: CallInfo
+    ): { instanceCalls: InstanceCallInfo[]; leaf: arkts.CallExpression } {
+        const instanceCalls: InstanceCallInfo[] = [];
         const animateStartStack: InstanceCallInfo[] = [];
         let leaf: arkts.CallExpression = node;
         const chainingCallInfos = metadata.chainingCallInfos ?? [];
@@ -262,6 +257,21 @@ export class CacheFactory {
         while (animateStartStack.length > 0) {
             instanceCalls.push(animateStartStack.pop()!);
         }
+        return { instanceCalls, leaf };
+    }
+
+    /**
+     * transform `@ComponentBuilder` in non-declared calls.
+     */
+    static transformBuilderLambdaFromInfo(node: arkts.CallExpression, metadata: CallInfo): arkts.CallExpression {
+        const rootCallInfo: CallInfo = metadata.rootCallInfo ?? metadata;
+        if (!rootCallInfo.declName) {
+            return node;
+        }
+        arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 1], 'find instance style'));
+        const instanceCallInfo = this.collectInstanceCalls(node, metadata);
+        let instanceCalls = instanceCallInfo.instanceCalls;
+        const leaf: arkts.CallExpression = instanceCallInfo.leaf;
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 1], 'find instance style'));
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 2], 'findBuilderLambdaDeclInfo'));
         const declInfo: BuilderLambdaDeclInfo | undefined = collectDeclInfoFromInfo(leaf, rootCallInfo, metadata);
@@ -274,16 +284,24 @@ export class CacheFactory {
             return node;
         }
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 4], 'createInitLambdaBody'));
-        const structInfo = !declInfo.isFunctionCall ? getStructCalleeInfoFromCallInfo(leaf.callee, metadata) : {};
+        const structInfo = !declInfo.isFunctionCall ? getStructCalleeInfoFromCallInfo(leaf.callee, rootCallInfo) : {};
         const lambdaBodyInfo = BuilderLambdaFactory.createInitLambdaBody(declInfo, structInfo);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 4], 'createInitLambdaBody'));
         let reuseId: arkts.Expression | undefined;
+        const isReuse = !!structInfo?.isFromReuse || !!structInfo?.isFromReuseV2;
         let lambdaBody: arkts.Identifier | arkts.CallExpression | undefined = lambdaBodyInfo.lambdaBody;
         if (instanceCalls.length > 0) {
             instanceCalls = instanceCalls.reverse();
             instanceCalls.forEach((callInfo) => {
                 arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 5], 'createStyleLambdaBody'));
-                reuseId = !!declInfo.isFunctionCall ? findReuseId(callInfo.call) : undefined;
+                const foundReuseId = !declInfo.isFunctionCall ? findReuseId(callInfo.call) : undefined;
+                if (foundReuseId !== undefined && !isReuse) {
+                    arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 5], 'createStyleLambdaBody'));
+                    return;
+                }
+                if (isReuse) {
+                    reuseId = foundReuseId;
+                }
                 lambdaBody = this.createStyleLambdaBody(lambdaBody!, callInfo);
                 arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 5], 'createStyleLambdaBody'));
             });
