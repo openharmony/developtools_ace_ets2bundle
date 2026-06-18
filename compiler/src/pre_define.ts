@@ -309,8 +309,6 @@ export const RESOURCE_NAME_MODULE: string = 'moduleName';
 export const __GETRESOURCEID__: string = '__getResourceId__';
 export const __RESOURCEIDHAR__: string = '__resourceIdHar__';
 
-export const DEVICE_INFO: string = 'deviceInfo';
-
 export const RESOURCE_TYPE = {
   color: 10001,
   float: 10002,
