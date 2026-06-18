@@ -467,7 +467,7 @@ function createReusePoolPropertyDecl(
   const modifiers = ts.factory.createModifiersFromModifierFlags(
     ts.ModifierFlags.Protected | ts.ModifierFlags.Readonly
   );
-  const name = ts.factory.createIdentifier('___reusePool');
+  const name = ts.factory.createIdentifier('__reusePool__Internal');
 
   const optionsLiteral = ts.factory.createObjectLiteralExpression(
     [
@@ -488,7 +488,7 @@ function createReusePoolPropertyDecl(
 
   const callExpr = ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(
-      ts.factory.createIdentifier('__ReusePool'),
+      ts.factory.createIdentifier('__ReusePool__Internal'),
       ts.factory.createIdentifier('create')
     ),
     undefined,

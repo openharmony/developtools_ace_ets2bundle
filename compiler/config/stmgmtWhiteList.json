@@ -172,6 +172,12 @@
         "__isEntryValue__Internal",
         "__isEntry__Internal",
         "__getPathValueFromJson__Internal",
-        "__findPathValueInJson__Internal"
+        "__findPathValueInJson__Internal",
+        "__resetStateVarsOnReuse__Internal",
+        "__reInitializeConsume__Internal",
+        "__pushRecycleElmtIdToRenderStack__Internal",
+        "__popRecycleElmtIdFromRenderStack__Internal",
+        "__reusePool__Internal",
+        "__ReusePool__Internal"
     ]
 }
