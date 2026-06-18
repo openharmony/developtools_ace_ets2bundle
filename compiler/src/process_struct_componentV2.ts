@@ -20,7 +20,7 @@ import {
   LogInfo,
   LogType,
   addLog,
-  removeDecorator,
+  removeDecorator
 } from './utils';
 import {
   COMPONENT_CONSTRUCTOR_PARENT,
@@ -93,7 +93,6 @@ export class StructInfo {
   linkDecoratorsV1: string[] = [];
   paramDecoratorMap: Map<string, ParamDecoratorInfo> = new Map();
   eventDecoratorMap: Map<string, ts.PropertyDeclaration> = new Map();
-  onceDecoratorSet: Set<string> = new Set();
   localDecoratorSet: Set<string> = new Set();
   providerDecoratorSet: Set<string> = new Set();
   consumerDecoratorSet: Set<string> = new Set();
@@ -139,14 +138,14 @@ function processStructComponentV2(node: ts.StructDeclaration, log: LogInfo[],
   if (isReusableV2) {
     StateManagementV2.hasReusableV2 = true;
   }
-  return ts.factory.createClassDeclaration(isReusableV2 ? 
+  return ts.factory.createClassDeclaration(isReusableV2 ?
     ts.concatenateDecoratorsAndModifiers(
-      [ts.factory.createDecorator(ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR))], 
+      [ts.factory.createDecorator(ts.factory.createIdentifier(REUSABLE_V2_INNER_DECORATOR))],
       ts.getModifiers(node)
-    ) : 
-    ts.getModifiers(node), 
+    ) :
+    ts.getModifiers(node),
     node.name,
-    node.typeParameters, 
+    node.typeParameters,
     updateHeritageClauses(node, log, true),
     processStructMembersV2(node, context, log, ReusePool)
   );

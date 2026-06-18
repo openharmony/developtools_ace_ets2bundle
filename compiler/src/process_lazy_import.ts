@@ -28,11 +28,7 @@ import {
   ErrorCode
 } from './fast_build/ark_compiler/error_code';
 import creatAstNodeUtils from './create_ast_node_utils';
-import {
-  CompileEvent,
-  createAndStartEvent,
-  stopEvent
-} from './performance';
+import { CompileEvent, createAndStartEvent, stopEvent } from './performance';
 
 export const reExportCheckLog: IFileLog = new creatAstNodeUtils.FileLog();
 export const reExportNoCheckMode: string = 'noCheck';
