@@ -28,6 +28,7 @@ import {
   externalApiCheckPlugin,
   externalApiMethodPlugin,
   fileAvailableCheckPlugin,
+  fileApiAvailableCheckPlugin,
   externalApiCheckerMap,
   crossplatformExternalModule,
   crossplatformDepsConfig
@@ -100,12 +101,15 @@ import {
   SINCE_LEVEL_CONFIG,
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
-  APIAVAILABLE_TS_FILE_ERROR,
+  APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
   ApiAvailableResult,
   MSFVersionCheckResult,
-  MSF_SANDF_VERSION
+  MSF_SANDF_VERSION,
+  APIAVAILABLE_NUMBER_ERROR,
+  APIAVAILABLE_STRING_ERROR,
+  APIAVAILABLE_CHECK_NUMBER_STRING_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -113,8 +117,8 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
-import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 import { SDK_CONSTANTS } from './api_validator/api_validate_node';
+import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 
 /**
  * bundle info
@@ -523,9 +527,10 @@ function getFindModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  */
 function getAvailableCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
   const availableConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
-    message: SINCE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: diagnosticType,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkAvailableDecorator
@@ -574,9 +579,10 @@ function getSystemApiCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]
  */
 function getSinceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
   const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
   const sinceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [SINCE_TAG_NAME],
-    message: SINCE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: diagnosticType,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkSinceValue
@@ -642,9 +648,10 @@ function getPermissionCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[
  * @returns {void}
  */
 function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(FORM_TAG_CHECK_ERROR)?.code}#${FORM_TAG_CHECK_ERROR}`;
   const formConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [FORM_TAG_CHECK_NAME],
-    message: FORM_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkFormValue
@@ -660,9 +667,10 @@ function getFormCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): vo
  * @returns {void}
  */
 function getCrossplatformCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[], logType: ts.DiagnosticCategory): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(CROSSPLATFORM_TAG_CHECK_ERROR)?.code}#${CROSSPLATFORM_TAG_CHECK_ERROR}`;
   const crossplatformConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [CROSSPLATFORM_TAG_CHECK_NAME],
-    message: CROSSPLATFORM_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: logType,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkCrossplatformValue
@@ -682,7 +690,7 @@ function checkCrossplatformValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const mergingCommentHandle = checkCrossplatformMergeValue(jsDocTags, config, node);
+  const mergingCommentHandle = checkCrossplatformValueMerge(jsDocTags, config, node, declaration);
   if (!crossplatformDepsConfig) {
     return mergingCommentHandle;
   }
@@ -699,9 +707,9 @@ function checkCrossplatformValue(
 
   const functionKey: string = getApiPathFromNode(declaration);
   for (let i = 0; i < depsConfig.length; i++) {
-    const config: CrossplatformConfig = depsConfig[i];
-    if (config.function === functionKey) {
-      collectCrossplatformExternalModule(node, config);
+    const configInner: CrossplatformConfig = depsConfig[i];
+    if (configInner.function === functionKey) {
+      collectCrossplatformExternalModule(node, configInner);
       return mergingCommentHandle;
     }
   }
@@ -831,9 +839,10 @@ const API_NODE_KIND: Set<ts.SyntaxKind> = new Set([
  * @returns {void}
  */
 function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(FA_TAG_CHECK_ERROR)?.code}#${FA_TAG_CHECK_ERROR}`;
   const faModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [FA_TAG_CHECK_NAME, FA_TAG_HUMP_CHECK_NAME],
-    message: FA_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkFaModelOnlyValue
@@ -848,9 +857,10 @@ function getFAModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[])
  * @returns {void}
  */
 function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(STAGE_TAG_CHECK_ERROR)?.code}#${STAGE_TAG_CHECK_ERROR}`;
   const stageModelOnlyConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [STAGE_TAG_CHECK_NAME, STAGE_TAG_HUMP_CHECK_NAME],
-    message: STAGE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: false,
     checkJsDocSuppressorValidCallback: checkStageModuleValue
@@ -865,9 +875,10 @@ function getStageModuleCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem
  * @returns {void}
  */
 function getAtomicserviceCheckConfig(checkConfigArray: ts.JsDocNodeCheckConfigItem[]): void {
+  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(ATOMICSERVICE_TAG_CHECK_ERROR)?.code}#${ATOMICSERVICE_TAG_CHECK_ERROR}`;
   const atomicserviceConfig: JsDocNodeCheckConfigItemInterface = {
     tagName: [ATOMICSERVICE_TAG_CHECK_NAME],
-    message: ATOMICSERVICE_TAG_CHECK_ERROR,
+    message: diagnosticMessage,
     type: ts.DiagnosticCategory.Error,
     tagNameShouldExisted: true,
     checkJsDocSuppressorValidCallback: checkAtomicserviceValue
@@ -1182,7 +1193,9 @@ function checkAvailableDecorator(
     return false;
   }
 
-  config.message = AVAILABLE_DECORATOR_WARNING
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = diagnosticType ? `${ERROR_CODE_INFO.get(AVAILABLE_DECORATOR_WARNING)?.code}#${AVAILABLE_DECORATOR_WARNING}` : AVAILABLE_DECORATOR_WARNING;
+  config.message = diagnosticMessage
     .replace('$SINCE1', checker.getAvailableVersion()?.version || checker.getSdkVersion())  // Minimum required API version
     .replace('$SINCE2', checker.getSdkVersion());     // Current project API version
 
@@ -1238,7 +1251,9 @@ function checkSinceValue(
     return false;
   }
 
-  config.message = SINCE_TAG_CHECK_ERROR
+  const diagnosticType: ts.DiagnosticCategory = getSinceDiagnosticType(projectConfig.strictMode?.apiCompatibilityCheck);
+  const diagnosticMessage: string = diagnosticType ? `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}` : SINCE_TAG_CHECK_ERROR;
+  config.message = diagnosticMessage
     .replace('$SINCE1', checker.getMinApiVersion())
     .replace('$SINCE2', checker.getSdkVersion());
 
@@ -1587,7 +1602,7 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
  * @param retype - The retry type name.
  * @returns Returns the regex from external plugins.
  */
-function getBuildVersionRegex(tag, functionType) {
+function getBuildVersionRegex(tag, functionType) : RegExp | undefined {
   const tagName = `${projectConfig.runtimeOS}/${tag}/${functionType}`;
   const externalCheckers = externalApiCheckPlugin.get(tagName);
   if (!externalCheckers || externalCheckers.length === 0) {
@@ -1889,7 +1904,7 @@ export function checkStageModuleValue(jsDocTags: readonly ts.JSDocTag[], config:
  * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
  * @returns {boolean} - Returns true if the Cross-Platform value is valid; otherwise, returns false.
  */
-export function checkCrossplatformMergeValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+export function checkCrossplatformValueMerge(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
   // Find the JSDoc tag with CROSSPLATFORM_TAG_CHECK_NAME
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === CROSSPLATFORM_TAG_CHECK_NAME;
@@ -2060,9 +2075,10 @@ function checkSinceCondition(jsDocs: ts.JSDoc[]): ts.ConditionCheckResult {
   const compatibleSdkVersion: string = projectConfig.compatibleSdkVersion.toString();
 
   if (hasSince && comparePointVersion(compatibleSdkVersion, minVersion) === -1) {
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(SINCE_TAG_CHECK_ERROR)?.code}#${SINCE_TAG_CHECK_ERROR}`;
     result.valid = false;
     result.type = ts.DiagnosticCategory.Warning;
-    result.message = SINCE_TAG_CHECK_ERROR.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
+    result.message = diagnosticMessage.replace('$SINCE1', minVersion).replace('$SINCE2', compatibleSdkVersion);
   }
   return result;
 }
@@ -2177,13 +2193,47 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
   return ComparisonResult.Equal;
 }
 
-/**
- * Restore version number to placeholder and match error code.
- * @param messageRegex - Message containing actual version number
- * @returns error message or undefined
- */
-function matchWithPlaceholders(messageRegex: string): string {
-  return messageRegex.replace(/version\s+(?:(\S+))/, 'version $SINCE1.').replace(/version\s+is\s+(?:(\S+))/, 'version is $SINCE2.');
+interface PlaceholderConfig {
+  codes: string[];
+  placeholder: string;
+  extractValue: (cause: string) => string | null;
+}
+
+const PLACEHOLDER_HANDLERS: PlaceholderConfig[] = [
+  {
+    codes: ['11706011', '11706012'],
+    placeholder: '$ApiVersion',
+    extractValue: (cause: string): string | null => {
+      const match = cause.match(/version\s+([\S+.]+(?=\. However,))/i);
+      return match ? match[1].trim() : null;
+    }
+  }
+];
+
+function processDescriptionPlaceholders(
+  code: string,
+  cause: string,
+  description: string
+): string {
+  let processedDescription = description;
+  
+  for (const handler of PLACEHOLDER_HANDLERS) {
+    if (handler.codes.includes(code)) {
+      const value = handler.extractValue(cause);
+      if (value) {
+        processedDescription = processedDescription.replace(
+          new RegExp(escapeRegExp(handler.placeholder), 'g'),
+          value
+        );
+      }
+    }
+  }
+  
+  return processedDescription;
+}
+
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -2193,40 +2243,41 @@ function matchWithPlaceholders(messageRegex: string): string {
  * @returns - Error message processed locally
  */
 function buildErrorDiagnostic(positionMessage: string, message: string): BuildDiagnosticInfo | undefined {
-  let description: string = '';
-  let diagnosticInfo: Omit<SdkHvigorLogInfo, 'cause' | 'position'> | undefined;
-  const runTimeOS: string = projectConfig.runtimeOS;
-  const messageRegex: string = message.replace(/'[^']*'/g, '\'{0}\'').trim();
-  const sinceRegex: RegExp = /^The '.+' API is .+ since SDK version .+\. However, the current compatible SDK version is .+\./;
-  const apiAvailableRegex: RegExp = /^Invalid .+ version\.$/;
-  if (sinceRegex.test(messageRegex)) {
-    diagnosticInfo = ERROR_CODE_INFO.get(matchWithPlaceholders(messageRegex));
-  } else if (apiAvailableRegex.test(messageRegex)) {
-    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(runTimeOS, '$RUNTIMEOS'));
-  } else {
-    diagnosticInfo = ERROR_CODE_INFO.get(messageRegex.replace(/\r\n/g, '\\n'));
+  let diagnosticInfo: SdkHvigorLogInfo = {
+    code: '',
+    description: '',
+    cause: '',
+    position: '',
+    solutions: ['']
+  };
+  const messageInfo: string[] = message.split('#');
+  
+  for (const item of ERROR_CODE_INFO.values()) {
+    if (item.code === messageInfo[0]) {
+      diagnosticInfo.code = item.code;
+      diagnosticInfo.description = item.description;
+      diagnosticInfo.cause = messageInfo[1] || message;
+      diagnosticInfo.position = positionMessage;
+      diagnosticInfo.solutions = item.solutions;
+      break;
+    }
   }
 
-  if (!diagnosticInfo || !diagnosticInfo.code) {
+  if (!diagnosticInfo.code) {
     return undefined;
   }
 
-  if (diagnosticInfo.code === '11706011' || diagnosticInfo.code === '11706012') {
-    const apiVersion: RegExpMatchArray = messageRegex.match(/version\s+([\S+.]+(?=\. However,))/i);
-    if (apiVersion) {
-      description = diagnosticInfo.description.replace(/\$ApiVersion/g, `${apiVersion[1].trim()}`);
-    } else {
-      description = diagnosticInfo.description;
-    }
-  } else {
-    description = diagnosticInfo.description;
-  }
+  const processedDescription = processDescriptionPlaceholders(
+    diagnosticInfo.code,
+    diagnosticInfo.cause,
+    diagnosticInfo.description
+  );
 
   return new BuildDiagnosticInfo()
     .setCode(Number(diagnosticInfo.code))
-    .setDescription(description)
-    .setPositionMessage(positionMessage)
-    .setMessage(message)
+    .setDescription(processedDescription)
+    .setPositionMessage(diagnosticInfo.position)
+    .setMessage(diagnosticInfo.cause)
     .setSolutions(diagnosticInfo.solutions);
 }
 
@@ -2516,11 +2567,15 @@ function checkParentVersionHierarchy(
  * @param node  - current node
  * @returns Return the result of whether it meets the specifications
  */
-export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts.ConditionCheckResult {
+export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typeOfNodeFunc: Function): ts.ConditionCheckResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
+  }
+
+  if (!checkApiAvailableCache(node)) {
+    return result;
   }
 
   if (!ts.isCallExpression(node)) {
@@ -2535,48 +2590,92 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
     return result;
   }
 
-  if (!isApiAvailableStatement(node)) {
+  if (!isApiAvailableGetTypeOfNodeStatement(node, typeOfNodeFunc)) {
     return result;
   }
 
-  const sourceFile: ts.SourceFile = node.getSourceFile();
-  if (sourceFile && sourceFile.fileName) {
-    const fileName: string = sourceFile.fileName;
-    if (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) {
+  if (ts.isStringLiteral(node.arguments[0]) ||
+    ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
+    isNumericLiteral(node.arguments[0]) ||
+    isNullOrUndefinedScene(node.arguments[0])
+  ) {
+    const typeMessageInfo: string = isNumericLiteral(node.arguments[0]) ? APIAVAILABLE_NUMBER_ERROR : APIAVAILABLE_STRING_ERROR;
+    const errorMessageInfo: Map<string, string> = new Map([
+      [APIAVAILABLE_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`],
+      [APIAVAILABLE_CHECK_NUMBER_STRING_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}${typeMessageInfo}`],
+      [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`]
+    ]);
+    const compatibileReg: RegExp = /^(?:[1-9]\d*|[1-9]\d*\.\d+\.\d+(?:\(\d+\))?)$/;
+    const sinceValue: string = node.arguments[0].getText().trim();
+    const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
+    const sincePoint: string[] = sinceFormat.split('.');
+    if (isNullOrUndefinedScene(node.arguments[0])) {
+      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_ERROR);
       result.valid = false;
-      result.message = APIAVAILABLE_TS_FILE_ERROR;
       return result;
     }
-  }
-  
-  const apiAvailableRegex = /\.apiAvailable\b/g;
-  let nodeText: string = node.getText() || node.getFullText();
-  if (!apiAvailableRegex.test(nodeText)) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    if (!compatibileReg.test(sinceFormat)) {
+      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_NUMBER_STRING_ERROR);
       result.valid = false;
       return result;
-  }
-
-  const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
-  const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
-  const sincePoint: string[] = sinceFormat.split('.');
-  if (!compatibileReg.test(sinceFormat)) {
-    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
-    result.valid = false;
-    return result;
-  }
-  const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
-  if (isSinceVersionType) {
-    result = checkCharScene(sincePoint, sinceFormat);
-  } else {
-    if (!checkIntegerMoreVersion(sinceFormat)) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
-      result.valid = false;
+    }
+    const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
+    if (isSinceVersionType) {
+      result = checkCharScene(sincePoint, sinceFormat, errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR));
+    } else {
+      if (!checkIntegerMoreVersion(sinceFormat)) {
+        result.message = errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR);
+        result.valid = false;
+      }
     }
   }
-
   return result;
+}
+
+function isNullOrUndefinedScene(node: ts.Node): boolean {
+  const nodeValue: string = node.getText();
+  return nodeValue === 'null' || nodeValue === 'undefined';
+}
+
+function isNumericLiteral(node: ts.Node): boolean {
+  if (ts.isNumericLiteral(node)) {
+    return true;
+  }
+
+  if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
+    return node.operator === ts.SyntaxKind.MinusToken ||
+      node.operator === ts.SyntaxKind.PlusToken;
+  }
+
+  return false;
+}
+
+function checkApiAvailableCache(node: ts.Node): boolean {
+  if (!node) {
+    return false;
+  }
+
+  const sourceFileName = node.getSourceFile()?.fileName;
+  const sourceFileText = node.getSourceFile()?.text;
+  // Check apiAvailable info cache
+  if (fileApiAvailableCheckPlugin.has(sourceFileName)) {
+    const hasAvailale = fileApiAvailableCheckPlugin.get(sourceFileName)!;
+    if (!hasAvailale) {
+      return false;
+    }
+  } else {
+    try {
+      const availableContentChecker = /\.apiAvailable/g.test(sourceFileText);
+      fileApiAvailableCheckPlugin.set(sourceFileName, availableContentChecker);
+      if (!availableContentChecker) {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -2603,41 +2702,42 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression): ts
  * @param sinceFormat del quotation mark version
  * @returns standardized results
  */
-function checkCharScene(sincePoint: string[], sinceFormat: string): ApiAvailableResult {
+function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticOHMessage: string): ApiAvailableResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
   if (sincePoint.length === 1) {
-    result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+    result.message = diagnosticOHMessage;
     result.valid = false;
     return result;
   }
   if (isOpenHarmonyRuntime()) {
     const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
     if (!msfResult.valid) {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.message = diagnosticOHMessage;
       result.valid = false;
     }
   } else {
-    result = checkCharDistributionOSScene(sinceFormat, result);
+    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticOHMessage);
   }
   
   return result;
 }
 
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticOHMessage: string): ApiAvailableResult {
   const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
   if (!msfResult.valid) {
     if (msfResult.needDistCheck) {
       const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
       if (!distributionOSCheck.valid) {
-        result.message = distributionOSCheck.message;
+        const distributionOSMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code}#${distributionOSCheck.message}`;
+        result.message = distributionOSMessage;
         result.valid = false;
       }
     } else {
-      result.message = APIAVAILABLE_OPENHARMONY_CHECK_ERROR;
+      result.message = diagnosticOHMessage;
       result.valid = false;
     }
   }
@@ -2711,7 +2811,8 @@ export function checkFormatResult(parseVersion: ParsedVersion | null): ts.Condit
   } else if (parseVersion.os === projectConfig.runtimeOS) {
     checkResult = getFormatChecker()(parseVersion.formatVersion);
   } else {
-    let msg = AVAILABLE_OSNAME_ERROR
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_OSNAME_ERROR)?.code}#${AVAILABLE_OSNAME_ERROR}`;
+    let msg = diagnosticMessage
       .replace('$RUNTIMEOS', projectConfig.runtimeOS)
       .replace('$OSNAME', parseVersion.os);
     return {
@@ -2721,7 +2822,8 @@ export function checkFormatResult(parseVersion: ParsedVersion | null): ts.Condit
     }
   }
   if (checkResult && !checkResult.result) {
-    let msg = AVAILABLE_VERSION_FORMAT_ERROR_PREFIX
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(AVAILABLE_VERSION_FORMAT_ERROR_PREFIX)?.code}#${AVAILABLE_VERSION_FORMAT_ERROR_PREFIX}`;
+    let msg = diagnosticMessage
       .replace('$RUNTIMEOS', projectConfig.runtimeOS)
       .replace('$VERSION', parseVersion.version);
     return {
@@ -2812,10 +2914,71 @@ function getSinceDiagnosticType(sinceErrorLevel?: string): ts.DiagnosticCategory
  * @param node Call expression node
  * @returns true if it's an apiAvailable statement, false otherwise
  */
-export function isApiAvailableStatement(node: ts.CallExpression): boolean {
+export function isApiAvailableStatement(node: ts.Node): boolean {
+  if (!ts.isCallExpression(node) && !ts.isPropertyAccessExpression(node)) {
+    return false;
+  }
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (checker) {
-    const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(node.expression));
+    const availableNode: ts.LeftHandSideExpression = ts.isPropertyAccessExpression(node) ? node : node.expression;
+    const deviceInfoNode: ts.Expression = getExpression(availableNode);
+    const availableType: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(availableNode));
+    const deviceInfoType: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(deviceInfoNode));
+    if (Array.isArray(availableType) || Array.isArray(deviceInfoType)) {
+      return false;
+    }
+    if (
+      availableType.symbol &&
+      availableType.symbol.valueDeclaration?.name?.escapedText &&
+      deviceInfoType.symbol &&
+      deviceInfoType.symbol.valueDeclaration?.name?.escapedText
+    ) {
+      const availableSymbolFileName: string = availableType.symbol.valueDeclaration.getSourceFile().fileName;
+      const availableSymbolName: string = availableType.symbol.valueDeclaration.name.escapedText.toString();
+      const deviceInfoSymbolFileName: string = deviceInfoType.symbol.valueDeclaration.getSourceFile().fileName;
+      const deviceInfoSymbolName: string = deviceInfoType.symbol.valueDeclaration.name.escapedText.toString();
+      if (
+        availableSymbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) &&
+        availableSymbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO &&
+        deviceInfoSymbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) &&
+        deviceInfoSymbolName === SDK_CONSTANTS.DEVICE_INFO_NAME
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getExpression(node: ts.Expression): ts.Expression {
+  if (ts.isIdentifier(node)) {
+    return node;
+  }
+  if (ts.isPropertyAccessExpression(node) ||
+    ts.isElementAccessExpression(node) ||
+    ts.isCallExpression(node)) {
+    return node.expression;
+  }
+  if (ts.isNonNullExpression(node)) {
+    return getExpression(node.expression);
+  }
+  if (ts.isParenthesizedExpression(node)) {
+    return getExpression(node.expression);
+  }
+  if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) {
+    return getExpression(node.expression);
+  }
+  return node;
+}
+
+/**
+ * Check if the call expression is an apiAvailable statement
+ * @param node Call expression node
+ * @returns true if it's an apiAvailable statement, false otherwise
+ */
+export function isApiAvailableGetTypeOfNodeStatement(node: ts.CallExpression, typeOfNodeFunc: Function): boolean {
+  if (typeOfNodeFunc) {
+    const type: ts.Type | ts.Type[] = findNonNullType(typeOfNodeFunc(node.expression));
     if (Array.isArray(type)) {
       return false;
     }
