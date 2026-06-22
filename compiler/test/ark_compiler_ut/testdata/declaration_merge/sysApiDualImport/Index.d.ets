@@ -12,9 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
-}
-export declare type Callback<T> = (err: Error, data: T) => void;
+import type common from '@ohos.app.ability.common';
+import context from '@ohos.app.ability.common';
+export declare let b: common.UIAbilityContext;
+export declare let a: context.UIAbilityContext;

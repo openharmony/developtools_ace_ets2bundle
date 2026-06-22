@@ -38,31 +38,25 @@ function resolveWithFallback(
   return fallback[0] ?? null;
 }
 
-function buildSourceToDeclMap(): Map<string, string> {
+function buildBidirectionalMaps(): {
+  sourceToDecl: Map<string, string>;
+  declToSource: Map<string, string>;
+} {
   const sourceToDecl: Map<string, string> = new Map();
-  harFilesRecord.forEach((value: GeneratedFileInHar): void => {
-    if (value.originalDeclarationCachePath) {
-      sourceToDecl.set(toUnixPath(value.sourcePath), toUnixPath(value.originalDeclarationCachePath));
-    }
-  });
-  return sourceToDecl;
-}
-
-function buildDeclToSourceMap(): Map<string, string> {
   const declToSource: Map<string, string> = new Map();
   harFilesRecord.forEach((value: GeneratedFileInHar): void => {
     if (value.originalDeclarationCachePath) {
+      sourceToDecl.set(toUnixPath(value.sourcePath), toUnixPath(value.originalDeclarationCachePath));
       declToSource.set(toUnixPath(value.originalDeclarationCachePath), toUnixPath(value.sourcePath));
     }
   });
-  return declToSource;
+  return { sourceToDecl, declToSource };
 }
 
 function createDeclarationModuleResolver(
   projectPath: string
 ): (moduleNames: string[], containingFile: string) => (ts.ResolvedModuleFull | null)[] {
-  const sourceToDecl: Map<string, string> = buildSourceToDeclMap();
-  const declToSource: Map<string, string> = buildDeclToSourceMap();
+  const { sourceToDecl, declToSource } = buildBidirectionalMaps();
 
   return (
     moduleNames: string[],
@@ -94,237 +88,64 @@ function createDeclarationModuleResolver(
   };
 }
 
-enum EntityType {
-  InlineDeclaration,
+enum EntityKind {
+  Exported,
+  TypeDependency,
   SystemApiImport,
   SystemApiReexport,
-  NamespaceExport,
 }
 
-interface CollectorEntity {
-  type: EntityType;
+type SourceFileExt = '.d.ets' | '.d.ts';
+
+interface MergeEntity {
+  kind: EntityKind;
   symbol: ts.Symbol;
   declarations: ts.Declaration[];
-  preferredName: string;
-  nameForEmit: string;
+  emitName: string;
   exportNames: string[];
   isDefaultExport: boolean;
-  hasExportModifier: boolean;
-  systemApiInfo?: { moduleName: string; name: string };
-  isDefaultSystemApi?: boolean;
-  namespaceName?: string;
-  stripExport: boolean;
-  hasDirectExport?: boolean;
+  systemApiInfo?: { moduleName: string; name: string; statementText: string; exportStatementText?: string };
+  isolationNamespace?: string;
+  preferredName: string;
+  sourceFileExt: SourceFileExt;
+  aliases: string[];
 }
 
-class NameResolver {
-  private entities: CollectorEntity[] = [];
-  private symbolToEntity: Map<ts.Symbol, CollectorEntity> = new Map();
-  private usedNames: Set<string> = new Set();
-  private nameToEntity: Map<string, CollectorEntity> = new Map();
+interface NamespaceEmitItem {
+  symbol: ts.Symbol;
+  declarations: ts.Declaration[];
+  emitName: string;
+  aliases: string[];
+}
 
-  register(entity: CollectorEntity): CollectorEntity | null {
-    const existing: CollectorEntity | undefined = this.symbolToEntity.get(entity.symbol);
-    if (!existing) {
-      this.entities.push(entity);
-      this.symbolToEntity.set(entity.symbol, entity);
-      return null;
-    }
-    this.mergeExportNames(existing, entity.exportNames);
-    if (entity.isDefaultExport) {
-      existing.isDefaultExport = true;
-    }
-    if (entity.hasDirectExport) {
-      existing.hasDirectExport = true;
-    }
-    this.mergeDeclarations(existing, entity.declarations);
-    return existing;
-  }
+interface NamespaceBlockMember extends NamespaceEmitItem {
+  sourceFileExt: SourceFileExt;
+}
 
-  private mergeExportNames(target: CollectorEntity, names: string[]): void {
-    if (names.length === 0) {
-      return;
-    }
-    for (const name of names) {
-      if (!target.exportNames.includes(name)) {
-        target.exportNames.push(name);
-      }
-    }
-  }
+interface NamespaceSystemApiMember {
+  name: string;
+  importStatement: string;
+}
 
-  private mergeDeclarations(target: CollectorEntity, decls: ts.Declaration[]): void {
-    for (const decl of decls) {
-      if (!target.declarations.includes(decl)) {
-        target.declarations.push(decl);
-      }
-    }
-  }
+interface NamespaceBlock {
+  name: string;
+  members: NamespaceBlockMember[];
+  sourceFileExt: SourceFileExt;
+  systemApiMembers: NamespaceSystemApiMember[];
+}
 
-  getEntity(symbol: ts.Symbol): CollectorEntity | undefined {
-    return this.symbolToEntity.get(symbol);
-  }
-
-  hasEntity(symbol: ts.Symbol): boolean {
-    return this.symbolToEntity.has(symbol);
-  }
-
-  getEntities(): CollectorEntity[] {
-    return this.entities;
-  }
-
-  private static isMergeableDeclaration(decl: ts.Declaration): boolean {
-    return ts.isModuleDeclaration(decl) || ts.isInterfaceDeclaration(decl);
-  }
-
-  resolveAll(): void {
-    this.resolveNamespaceExports();
-    this.resolveSystemApiEntities();
-    this.resolveExportedDeclarations();
-    this.resolveNamespaceMembers();
-    this.resolveRemainingDeclarations();
-  }
-
-  private resolveNamespaceExports(): void {
-    for (const entity of this.entities) {
-      if (entity.type === EntityType.NamespaceExport) {
-        entity.nameForEmit = entity.preferredName;
-        this.usedNames.add(entity.nameForEmit);
-      }
-    }
-  }
-
-  private resolveSystemApiEntities(): void {
-    for (const entity of this.entities) {
-      if (entity.type === EntityType.SystemApiImport || entity.type === EntityType.SystemApiReexport) {
-        entity.nameForEmit = entity.preferredName;
-      }
-    }
-  }
-
-  private resolveExportedDeclarations(): void {
-    for (const entity of this.entities) {
-      if (entity.type !== EntityType.InlineDeclaration) {
-        continue;
-      }
-      if (entity.exportNames.length === 0 && !entity.isDefaultExport) {
-        continue;
-      }
-      const ideal: string = (entity.exportNames.length === 1 && entity.exportNames[0] !== 'default')
-        ? entity.exportNames[0]
-        : entity.preferredName;
-      entity.nameForEmit = ideal;
-      this.usedNames.add(ideal);
-      this.nameToEntity.set(ideal, entity);
-    }
-  }
-
-  private resolveNamespaceMembers(): void {
-    for (const entity of this.entities) {
-      if (entity.type !== EntityType.InlineDeclaration) {
-        continue;
-      }
-      if (!entity.namespaceName) {
-        continue;
-      }
-      if (entity.exportNames.length > 0) {
-        continue;
-      }
-      entity.nameForEmit = entity.preferredName;
-      this.usedNames.add(entity.nameForEmit);
-    }
-  }
-
-  private resolveRemainingDeclarations(): void {
-    for (const entity of this.entities) {
-      if (entity.type !== EntityType.InlineDeclaration) {
-        continue;
-      }
-      if (entity.exportNames.length > 0 || entity.isDefaultExport) {
-        continue;
-      }
-      if (entity.namespaceName) {
-        continue;
-      }
-      this.resolveRemainingEntity(entity);
-    }
-  }
-
-  private resolveRemainingEntity(entity: CollectorEntity): void {
-    const ideal: string = entity.preferredName;
-    if (!this.usedNames.has(ideal)) {
-      entity.nameForEmit = ideal;
-      this.usedNames.add(ideal);
-      this.nameToEntity.set(ideal, entity);
-      return;
-    }
-    const existingEntity: CollectorEntity | undefined = this.nameToEntity.get(ideal);
-    if (existingEntity && this.canMergeEntities(existingEntity, entity)) {
-      for (const decl of entity.declarations) {
-        if (!existingEntity.declarations.includes(decl)) {
-          existingEntity.declarations.push(decl);
-        }
-      }
-      this.mergeExportNames(existingEntity, entity.exportNames);
-      entity.nameForEmit = '';
-    } else {
-      entity.nameForEmit = this.findUniqueName(ideal);
-    }
-  }
-
-  private isEnumEntity(entity: CollectorEntity): boolean {
-    return entity.declarations.length > 0 && entity.declarations.some(ts.isEnumDeclaration);
-  }
-
-  private canMergeEntities(existing: CollectorEntity, current: CollectorEntity): boolean {
-    if (this.isEnumEntity(existing) && this.isEnumEntity(current)) {
-      return true;
-    }
-    const isMergeable = (e: CollectorEntity): boolean => {
-      return e.declarations.length > 0 && e.declarations.some(
-        (d: ts.Declaration): boolean => ts.isModuleDeclaration(d) || ts.isInterfaceDeclaration(d)
-      );
-    };
-    if (isMergeable(existing) && isMergeable(current)) {
-      return true;
-    }
-    if (current.stripExport && this.areFirstDeclarationsTextuallyIdentical(existing, current)) {
-      return true;
-    }
-    return false;
-  }
-
-  private areFirstDeclarationsTextuallyIdentical(
-    a: CollectorEntity,
-    b: CollectorEntity
-  ): boolean {
-    if (a.declarations.length === 0 || b.declarations.length === 0) {
-      return false;
-    }
-    const normalize = (text: string): string =>
-      text.replace(/^export\s+/, '').replace(/^declare\s+/, '').trim();
-    const textA: string = normalize(
-      a.declarations[0].getText(a.declarations[0].getSourceFile())
-    );
-    const textB: string = normalize(
-      b.declarations[0].getText(b.declarations[0].getSourceFile())
-    );
-    return textA === textB;
-  }
-
-  private findUniqueName(base: string): string {
-    let suffix: number = 1;
-    let candidate: string = `${base}_${suffix}`;
-    while (this.usedNames.has(candidate)) {
-      suffix++;
-      candidate = `${base}_${suffix}`;
-    }
-    this.usedNames.add(candidate);
-    return candidate;
-  }
-
-  getNameForSymbol(symbol: ts.Symbol): string | undefined {
-    return this.symbolToEntity.get(symbol)?.nameForEmit;
-  }
+interface EmitContext {
+  primaryLines: string[];
+  companionLines: string[];
+  emittedStatements: Set<string>;
+  primaryEmittedTexts: Set<string>;
+  companionEmittedTexts: Set<string>;
+  crossExtExportedNames: string[];
+  crossExtImportNamespaces: Set<string>;
+  crossExtImportNames: string[];
+  exportRenames: Array<{ emitName: string; exportName: string }>;
+  primaryExt: SourceFileExt;
+  companionModuleSpecifier: string;
 }
 
 export interface DeclarationMergeOptions {
@@ -346,15 +167,35 @@ export class DeclarationMerger {
   private program: ts.Program;
   private checker: ts.TypeChecker;
   private entrySourceFile: ts.SourceFile | undefined;
-  private entryExportSymbols: Set<ts.Symbol> = new Set();
-
-  private nameResolver: NameResolver = new NameResolver();
-
-  private dissolvedNamespaceNames: Set<string> = new Set();
-
-  private collectedContainerSymbols: Set<ts.Symbol> = new Set();
-
   private printer: ts.Printer;
+
+  private exportedEntities: MergeEntity[] = [];
+  private typeDepEntities: MergeEntity[] = [];
+  private systemApiEntities: MergeEntity[] = [];
+  private namespaceBlocks: NamespaceBlock[] = [];
+
+  private exportedEntityMap: Map<ts.Symbol, MergeEntity> = new Map();
+  private typeDepEntityMap: Map<ts.Symbol, MergeEntity> = new Map();
+  private systemApiEntityMap: Map<ts.Symbol, Set<string>> = new Map();
+
+  private entryExportSymbols: Set<ts.Symbol> = new Set();
+  private collectedContainerSymbols: Set<ts.Symbol> = new Set();
+  private renameMap: Map<ts.Symbol, string> = new Map();
+  private entryExt: SourceFileExt = '.d.ets';
+  private entryFilePath: string = '';
+
+  private static readonly MAX_TYPE_DEPTH: number = 50;
+
+  private static getCompanionFileName(entryFileName: string, companionExt: SourceFileExt): string {
+    const baseName: string = path.basename(entryFileName).replace(/\.d\.(ts|ets)$/, '');
+    return `${baseName}-declarations${companionExt}`;
+  }
+
+  private getCompanionFilePath(entryFile: string): string {
+    const companionExt: SourceFileExt = entryFile.endsWith('.d.ets') ? '.d.ts' : '.d.ets';
+    const companionName: string = DeclarationMerger.getCompanionFileName(entryFile, companionExt);
+    return path.join(path.dirname(entryFile), companionName);
+  }
 
   private constructor(options: DeclarationMergeOptions, rootFiles: string[]) {
     this.options = options;
@@ -363,24 +204,68 @@ export class DeclarationMerger {
     this.printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   }
 
+  public static mergeDeclarationFiles(options: DeclarationMergeOptions): void {
+    const rootFiles: string[] = options.entryFiles ?? (options.entryFile ? [options.entryFile] : []);
+    if (rootFiles.length === 0) {
+      return;
+    }
+    const merger = new DeclarationMerger(options, rootFiles);
+    for (const entryFile of rootFiles) {
+      merger.mergeEntry(entryFile);
+    }
+    merger.cleanup(rootFiles);
+  }
+
+  private resetState(): void {
+    this.exportedEntities = [];
+    this.typeDepEntities = [];
+    this.systemApiEntities = [];
+    this.namespaceBlocks = [];
+    this.exportedEntityMap.clear();
+    this.typeDepEntityMap.clear();
+    this.systemApiEntityMap.clear();
+    this.entryExportSymbols.clear();
+    this.collectedContainerSymbols.clear();
+    this.renameMap.clear();
+  }
+
   private mergeEntry(entryFile: string): void {
-    this.nameResolver = new NameResolver();
-    this.entryExportSymbols = new Set();
+    this.resetState();
     this.entrySourceFile = this.program.getSourceFile(entryFile);
     if (!this.entrySourceFile) {
       logger.debug(`Declaration entry file not found in program: ${entryFile}`);
       return;
     }
+    this.entryExt = entryFile.endsWith('.d.ets') ? '.d.ets' : '.d.ts';
+    this.entryFilePath = entryFile;
 
-    const mergedContent: string = this.generateMergedContent();
-    this.validateOutput(mergedContent, entryFile);
+    this.collectExports();
+    this.collectTypeDependencies();
+    this.resolveNames();
+    const { primary, companion } = this.emit();
+    this.validateOutput(primary, entryFile);
+
     harFilesRecord.forEach((value: GeneratedFileInHar): void => {
       if (value.originalDeclarationCachePath === entryFile) {
-        value.originalDeclarationContent = mergedContent;
+        value.originalDeclarationContent = primary;
       }
     });
+    if (companion) {
+      const companionPath: string = toUnixPath(this.getCompanionFilePath(entryFile));
+      const existing: GeneratedFileInHar | undefined = harFilesRecord.get(companionPath);
+      if (existing) {
+        existing.originalDeclarationContent = companion;
+      } else {
+        harFilesRecord.set(companionPath, {
+          sourcePath: companionPath,
+          originalDeclarationCachePath: companionPath,
+          originalDeclarationContent: companion,
+        });
+      }
+      fs.writeFileSync(this.getCompanionFilePath(entryFile), companion);
+    }
     if (!this.options.isByteCodeHar) {
-      fs.writeFileSync(entryFile, mergedContent);
+      fs.writeFileSync(entryFile, primary);
     }
   }
 
@@ -408,29 +293,284 @@ export class DeclarationMerger {
     return ts.createProgram(rootFiles, declOptions, host);
   }
 
-  private generateMergedContent(): string {
-    if (!this.entrySourceFile) {
-      return '';
+  // ─── Phase 2: Collect Exports ───
+
+  private collectExports(): void {
+    const entrySymbol: ts.Symbol | undefined =
+      this.checker.getSymbolAtLocation(this.entrySourceFile!);
+    if (!entrySymbol) {
+      return;
     }
 
-    const entrySymbol: ts.Symbol | undefined =
-      this.checker.getSymbolAtLocation(this.entrySourceFile);
-    if (!entrySymbol) {
-      return '';
-    }
+    const hasExplicitDefault: boolean = this.entryFileHasExplicitDefaultExport();
 
     for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
-      const resolved = this.resolveToActualDeclaration(exportSymbol);
-      if (resolved) {
+      if (exportSymbol.name === 'default' && !hasExplicitDefault) {
+        continue;
+      }
+
+      const resolved: ts.Symbol | null = this.resolveToActualDeclaration(exportSymbol);
+      if (!resolved || resolved.declarations.length === 0) {
+        continue;
+      }
+
+      const firstDecl: ts.Declaration = resolved.declarations[0];
+      const isDefault: boolean = exportSymbol.name === 'default';
+      const exportedName: string = exportSymbol.name;
+
+      if (ts.isSourceFile(firstDecl)) {
+        const { members, systemApiMembers } = this.collectNamespaceMembers(resolved);
+        if (members.length > 0 || systemApiMembers.length > 0) {
+          const blockExt: SourceFileExt = members.length > 0
+            ? members[0].sourceFileExt : this.entryExt;
+          this.namespaceBlocks.push({
+            name: exportedName, members, sourceFileExt: blockExt, systemApiMembers,
+          });
+        }
+        continue;
+      }
+
+      if (this.isDefaultLibraryDeclaration(firstDecl)) {
+        continue;
+      }
+
+      if (this.isInSdkPath(firstDecl.getSourceFile().fileName)) {
+        const localImport = this.findLocalImportForExport(exportedName, resolved);
+        if (localImport && this.isExternalModuleSpecifier(localImport.moduleName)) {
+          this.addSystemApiEntity(resolved, firstDecl, exportedName, {
+            moduleName: localImport.moduleName,
+            name: exportedName,
+            statementText: localImport.statementText,
+            exportStatementText: `export { ${exportedName} };`,
+          }, exportSymbol);
+          this.entryExportSymbols.add(resolved);
+          continue;
+        }
+      }
+
+      const sysApiDecl = this.isSystemApiDeclaration(firstDecl, exportSymbol);
+      if (sysApiDecl) {
+        this.addSystemApiEntity(resolved, firstDecl, exportedName, sysApiDecl, exportSymbol);
         this.entryExportSymbols.add(resolved);
+        continue;
+      }
+
+      this.addExportedEntity(resolved, exportedName, isDefault);
+      this.entryExportSymbols.add(resolved);
+    }
+
+    this.collectStarExportMembers();
+  }
+
+  private collectNamespaceMembers(moduleSymbol: ts.Symbol):
+    { members: NamespaceBlockMember[]; systemApiMembers: NamespaceSystemApiMember[] } {
+    const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
+    const members: NamespaceBlockMember[] = [];
+    const systemApiMembers: NamespaceSystemApiMember[] = [];
+    if (moduleExports.length === 0) {
+      return { members, systemApiMembers };
+    }
+
+    for (const memberSymbol of moduleExports) {
+      if (memberSymbol.name === 'default') {
+        continue;
+      }
+      const resolvedMember: ts.Symbol | null = this.resolveToActualDeclaration(memberSymbol);
+      if (!resolvedMember || !resolvedMember.declarations || resolvedMember.declarations.length === 0) {
+        continue;
+      }
+
+      const memberDecl: ts.Declaration = resolvedMember.declarations[0];
+      if (ts.isSourceFile(memberDecl)) {
+        continue;
+      }
+      if (this.isInSdkPath(memberDecl.getSourceFile().fileName)) {
+        const importInfo = this.findImportInModule(
+          moduleSymbol, memberSymbol.name, resolvedMember
+        );
+        if (importInfo && this.isExternalModuleSpecifier(importInfo.moduleName)) {
+          systemApiMembers.push({
+            name: memberSymbol.name,
+            importStatement: importInfo.statementText,
+          });
+          continue;
+        }
+        const reexportImport: string | null = this.findReexportForSymbol(memberSymbol);
+        if (reexportImport) {
+          systemApiMembers.push({
+            name: memberSymbol.name,
+            importStatement: reexportImport,
+          });
+          continue;
+        }
+      }
+      if (this.isSystemApiDeclaration(memberDecl, memberSymbol)) {
+        continue;
+      }
+      if (this.isDefaultLibraryDeclaration(memberDecl)) {
+        continue;
+      }
+
+      const existing: NamespaceBlockMember | undefined = members.find(m => m.symbol === resolvedMember);
+      if (existing) {
+        if (memberSymbol.name !== existing.emitName) {
+          existing.aliases.push(memberSymbol.name);
+        }
+      } else {
+        const declName = this.getLocalNameOfDeclaration(resolvedMember.declarations[0]);
+        if (memberSymbol.name !== declName) {
+          members.push({
+            symbol: resolvedMember,
+            declarations: [...resolvedMember.declarations],
+            emitName: declName,
+            aliases: [memberSymbol.name],
+            sourceFileExt: this.getSourceFileExt(memberDecl),
+          });
+        } else {
+          members.push({
+            symbol: resolvedMember,
+            declarations: [...resolvedMember.declarations],
+            emitName: memberSymbol.name,
+            aliases: [],
+            sourceFileExt: this.getSourceFileExt(memberDecl),
+          });
+        }
       }
     }
 
-    this.collectEntities();
+    return { members, systemApiMembers };
+  }
 
-    this.nameResolver.resolveAll();
+  private collectStarExportMembers(): void {
+    if (!this.entrySourceFile) {
+      return;
+    }
+    const entrySymbol: ts.Symbol | undefined =
+      this.checker.getSymbolAtLocation(this.entrySourceFile);
+    if (!entrySymbol) {
+      return;
+    }
 
-    return this.emitEntities();
+    const exportedNames: Set<string> = new Set();
+    for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
+      exportedNames.add(exportSymbol.name);
+    }
+    for (const entity of this.exportedEntities) {
+      for (const name of entity.exportNames) {
+        exportedNames.add(name);
+      }
+    }
+
+    ts.forEachChild(this.entrySourceFile, (node: ts.Node) => {
+      if (!ts.isExportDeclaration(node) || !node.moduleSpecifier) {
+        return;
+      }
+      if (!ts.isStringLiteral(node.moduleSpecifier)) {
+        return;
+      }
+      if (node.exportClause) {
+        return;
+      }
+
+      const moduleSymbol: ts.Symbol | undefined =
+        this.checker.getSymbolAtLocation(node.moduleSpecifier);
+      if (!moduleSymbol) {
+        return;
+      }
+
+      const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
+      for (const memberSymbol of moduleExports) {
+        this.tryCollectStarExportMember(memberSymbol, exportedNames);
+      }
+    });
+  }
+
+  private tryCollectStarExportMember(memberSymbol: ts.Symbol, exportedNames: Set<string>): void {
+    if (memberSymbol.name === 'default' || exportedNames.has(memberSymbol.name)) {
+      return;
+    }
+    const resolved: ts.Symbol | null = this.resolveToActualDeclaration(memberSymbol);
+    if (!resolved || !resolved.declarations || resolved.declarations.length === 0) {
+      return;
+    }
+    const memberDecl: ts.Declaration = resolved.declarations[0];
+    if (ts.isSourceFile(memberDecl) || this.isSystemApiDeclaration(memberDecl, memberSymbol) ||
+      this.isDefaultLibraryDeclaration(memberDecl) || this.exportedEntityMap.has(resolved)) {
+      return;
+    }
+    this.addExportedEntity(resolved, memberSymbol.name, false);
+    this.entryExportSymbols.add(resolved);
+    exportedNames.add(memberSymbol.name);
+  }
+
+  private getSourceFileExt(declaration: ts.Declaration): SourceFileExt {
+    return declaration.getSourceFile().fileName.endsWith('.d.ets') ? '.d.ets' : '.d.ts';
+  }
+
+  private addExportedEntity(
+    resolved: ts.Symbol,
+    exportedName: string,
+    isDefault: boolean
+  ): void {
+    const existing: MergeEntity | undefined = this.exportedEntityMap.get(resolved);
+    if (existing) {
+      if (!isDefault && exportedName && !existing.exportNames.includes(exportedName)) {
+        existing.exportNames.push(exportedName);
+      }
+      if (isDefault) {
+        existing.isDefaultExport = true;
+      }
+      return;
+    }
+
+    const entity: MergeEntity = {
+      kind: EntityKind.Exported,
+      symbol: resolved,
+      declarations: [...resolved.declarations],
+      emitName: '',
+      exportNames: isDefault ? [] : (exportedName ? [exportedName] : []),
+      isDefaultExport: isDefault,
+      preferredName: '',
+      sourceFileExt: this.getSourceFileExt(resolved.declarations[0]),
+      aliases: [],
+    };
+    this.exportedEntities.push(entity);
+    this.exportedEntityMap.set(resolved, entity);
+  }
+
+  private addSystemApiEntity(
+    resolved: ts.Symbol,
+    declaration: ts.Declaration,
+    exportedName: string,
+    sysApiDecl: { moduleName: string; name: string; statementText: string; exportStatementText?: string },
+    exportSymbol: ts.Symbol,
+    isTypeDep: boolean = false
+  ): void {
+    let seenNames: Set<string> | undefined = this.systemApiEntityMap.get(resolved);
+    if (seenNames && seenNames.has(exportedName)) {
+      return;
+    }
+    if (!seenNames) {
+      seenNames = new Set();
+      this.systemApiEntityMap.set(resolved, seenNames);
+    }
+    seenNames.add(exportedName);
+
+    const isReexport: boolean = !isTypeDep && exportedName === sysApiDecl.name;
+
+    const entity: MergeEntity = {
+      kind: isReexport ? EntityKind.SystemApiReexport : EntityKind.SystemApiImport,
+      symbol: resolved,
+      declarations: [declaration],
+      emitName: sysApiDecl.name,
+      exportNames: isReexport ? [exportedName] : [],
+      isDefaultExport: false,
+      systemApiInfo: sysApiDecl,
+      preferredName: sysApiDecl.name,
+      sourceFileExt: this.getSourceFileExt(declaration),
+      aliases: [],
+    };
+    this.systemApiEntities.push(entity);
   }
 
   private entryFileHasExplicitDefaultExport(): boolean {
@@ -460,269 +600,45 @@ export class DeclarationMerger {
     return false;
   }
 
-  private collectEntities(): void {
-    const entrySymbol: ts.Symbol | undefined =
-      this.checker.getSymbolAtLocation(this.entrySourceFile!);
-    if (!entrySymbol) {
-      return;
-    }
+  // ─── Phase 3: Collect Type Dependencies ───
 
-    const hasExplicitDefault = this.entryFileHasExplicitDefaultExport();
+  private collectTypeDependencies(): void {
     const visited: Set<ts.Symbol> = new Set();
-    for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
-      if (exportSymbol.name === 'default' && !hasExplicitDefault) {
-        continue;
-      }
-      this.collectExportEntity(exportSymbol, visited, undefined);
+
+    for (const entity of this.exportedEntities) {
+      this.registerContainerIfNeeded(entity.symbol);
     }
-
-    this.collectShadowedStarExports(visited);
-  }
-
-  private collectShadowedStarExports(visited: Set<ts.Symbol>): void {
-    if (!this.entrySourceFile) {
-      return;
-    }
-    const entrySymbol: ts.Symbol | undefined =
-      this.checker.getSymbolAtLocation(this.entrySourceFile);
-    const exportedNames: Set<string> = new Set();
-    if (entrySymbol) {
-      for (const exportSymbol of this.checker.getExportsOfModule(entrySymbol)) {
-        exportedNames.add(exportSymbol.name);
-      }
-    }
-    ts.forEachChild(this.entrySourceFile, (node: ts.Node) => {
-      if (!ts.isExportDeclaration(node) || !node.moduleSpecifier) {
-        return;
-      }
-      if (!ts.isStringLiteral(node.moduleSpecifier)) {
-        return;
-      }
-      if (node.exportClause) {
-        return;
-      }
-
-      const moduleSymbol: ts.Symbol | undefined =
-        this.checker.getSymbolAtLocation(node.moduleSpecifier);
-      if (!moduleSymbol) {
-        return;
-      }
-
-      const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
-      for (const memberSymbol of moduleExports) {
-        if (memberSymbol.name === 'default') {
-          continue;
-        }
-        if (exportedNames.has(memberSymbol.name)) {
-          continue;
-        }
-        const resolved = this.resolveToActualDeclaration(memberSymbol);
-        if (!resolved || !resolved.declarations || resolved.declarations.length === 0) {
-          continue;
-        }
-        if (this.nameResolver.hasEntity(resolved)) {
-          continue;
-        }
-
-        const memberDecl: ts.Declaration = resolved.declarations[0];
-        if (ts.isSourceFile(memberDecl)) {
-          continue;
-        }
-        if (this.isSystemApiDeclaration(memberDecl)) {
-          continue;
-        }
-        if (this.isDefaultLibraryDeclaration(memberDecl)) {
-          continue;
-        }
-
-        this.collectDeclarationEntity(
-          resolved, resolved.declarations, memberSymbol.name, false, visited, undefined
-        );
-      }
-    });
-  }
-
-  private collectExportEntity(
-    exportSymbol: ts.Symbol,
-    visited: Set<ts.Symbol>,
-    namespaceName: string | undefined
-  ): void {
-    const resolved = this.resolveToActualDeclaration(exportSymbol);
-    if (!resolved) {
-      return;
-    }
-
-    const isDefault: boolean = exportSymbol.name === 'default';
-    const exportedName: string = exportSymbol.name;
-
-    const firstDecl: ts.Declaration = resolved.declarations[0];
-
-    if (ts.isSourceFile(firstDecl)) {
-      this.collectNamespaceReexport(exportSymbol, resolved, visited);
-      return;
-    }
-
-    const sysApiDecl = this.isSystemApiDeclaration(firstDecl);
-    if (sysApiDecl) {
-      this.collectSystemApiEntity(resolved, firstDecl, exportedName, sysApiDecl, exportSymbol);
-      return;
-    }
-
-    this.collectDeclarationEntity(
-      resolved, resolved.declarations, exportedName, isDefault, visited, namespaceName
-    );
-  }
-
-  private collectDeclarationEntity(
-    resolved: ts.Symbol,
-    declarations: ts.Declaration[],
-    exportedName: string,
-    isDefault: boolean,
-    visited: Set<ts.Symbol>,
-    namespaceName: string | undefined
-  ): void {
-    const firstDecl: ts.Declaration = declarations[0];
-    const declName: string = this.getLocalNameOfDeclaration(firstDecl);
-    const hasExportModifier: boolean = declarations.some(
-      (d: ts.Declaration): boolean => this.nodeHasExportModifier(d)
-    );
-
-    const entity: CollectorEntity = {
-      type: EntityType.InlineDeclaration,
-      symbol: resolved,
-      declarations: [...declarations],
-      preferredName: declName,
-      nameForEmit: '',
-      exportNames: isDefault ? [] : (exportedName ? [exportedName] : []),
-      isDefaultExport: isDefault,
-      hasExportModifier,
-      stripExport: false,
-      namespaceName,
-      hasDirectExport: !namespaceName,
-    };
-
-    const merged: CollectorEntity | null = this.nameResolver.register(entity);
-    const target: CollectorEntity = merged ?? entity;
-
-    if (!visited.has(resolved)) {
-      visited.add(resolved);
-      this.registerContainerIfNeeded(resolved);
-      for (const decl of target.declarations) {
-        this.collectTypeDeps(decl, visited);
+    for (const block of this.namespaceBlocks) {
+      for (const member of block.members) {
+        this.registerContainerIfNeeded(member.symbol);
       }
     }
 
-    if (namespaceName && merged) {
-      if (!target.namespaceName) {
-        target.namespaceName = namespaceName;
+    for (const entity of this.exportedEntities) {
+      if (!visited.has(entity.symbol)) {
+        visited.add(entity.symbol);
+      }
+      for (const decl of entity.declarations) {
+        this.collectTypeDepsRecursive(decl, visited, 0);
+      }
+    }
+
+    for (const block of this.namespaceBlocks) {
+      for (const member of block.members) {
+        if (!visited.has(member.symbol)) {
+          visited.add(member.symbol);
+        }
+        for (const decl of member.declarations) {
+          this.collectTypeDepsRecursive(decl, visited, 0);
+        }
       }
     }
   }
 
-  private collectNamespaceReexport(
-    exportSymbol: ts.Symbol,
-    resolvedSymbol: ts.Symbol,
-    visited: Set<ts.Symbol>
-  ): void {
-    const namespaceName: string = exportSymbol.name;
-    let moduleSymbol: ts.Symbol | undefined;
-
-    const originalDecl: ts.Declaration | undefined = exportSymbol.declarations?.[0];
-    if (originalDecl && ts.isNamespaceExport(originalDecl)) {
-      const exportDecl: ts.Node = originalDecl.parent;
-      if (ts.isExportDeclaration(exportDecl) && exportDecl.moduleSpecifier &&
-        ts.isStringLiteral(exportDecl.moduleSpecifier)) {
-        moduleSymbol = this.checker.getSymbolAtLocation(exportDecl.moduleSpecifier);
-      }
-    }
-
-    if (!moduleSymbol) {
-      moduleSymbol = resolvedSymbol;
-    }
-
-    const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
-    if (moduleExports.length === 0) {
-      return;
-    }
-
-    const moduleDecl: ts.SourceFile | undefined =
-      moduleSymbol.declarations?.[0] && ts.isSourceFile(moduleSymbol.declarations[0])
-        ? moduleSymbol.declarations[0]
-        : undefined;
-
-    const nsEntity: CollectorEntity = {
-      type: EntityType.NamespaceExport,
-      symbol: exportSymbol,
-      declarations: [],
-      preferredName: namespaceName,
-      nameForEmit: '',
-      exportNames: [namespaceName],
-      isDefaultExport: false,
-      hasExportModifier: false,
-      namespaceName,
-      stripExport: false,
-    };
-    this.nameResolver.register(nsEntity);
-    this.dissolvedNamespaceNames.add(namespaceName);
-
-    for (const memberSymbol of moduleExports) {
-      const resolved = this.resolveToActualDeclaration(memberSymbol);
-      if (!resolved || !resolved.declarations || resolved.declarations.length === 0) {
-        continue;
-      }
-
-      const memberDecl: ts.Declaration = resolved.declarations[0];
-      if (ts.isSourceFile(memberDecl)) {
-        if (memberDecl === moduleDecl) {
-          continue;
-        }
-        this.collectNamespaceReexport(memberSymbol, resolved, visited);
-        continue;
-      }
-      const sysApiDecl = this.isSystemApiDeclaration(memberDecl);
-      if (sysApiDecl) {
-        continue;
-      }
-
-      this.collectDeclarationEntity(
-        resolved, resolved.declarations, memberSymbol.name, false, visited, namespaceName
-      );
-    }
-  }
-
-  private collectSystemApiEntity(
-    resolved: ts.Symbol,
-    declaration: ts.Declaration,
-    exportedName: string,
-    sysApiDecl: { moduleName: string; name: string },
-    exportSymbol: ts.Symbol,
-    isTypeDep: boolean = false
-  ): void {
-    const isDefaultSysApi: boolean = this.isDefaultExportOfModule(exportSymbol);
-    const isReexport: boolean = !isTypeDep && !isDefaultSysApi && exportedName === sysApiDecl.name;
-
-    const entity: CollectorEntity = {
-      type: isReexport ? EntityType.SystemApiReexport : EntityType.SystemApiImport,
-      symbol: resolved,
-      declarations: [declaration],
-      preferredName: sysApiDecl.name,
-      nameForEmit: '',
-      exportNames: isReexport ? [exportedName] : [],
-      isDefaultExport: isDefaultSysApi,
-      hasExportModifier: false,
-      systemApiInfo: sysApiDecl,
-      isDefaultSystemApi: isDefaultSysApi,
-      stripExport: false,
-    };
-    this.nameResolver.register(entity);
-  }
-
-  private static readonly MAX_TYPE_DEPTH: number = 50;
-
-  private collectTypeDeps(
+  private collectTypeDepsRecursive(
     declaration: ts.Declaration,
     visited: Set<ts.Symbol>,
-    depth: number = 0
+    depth: number
   ): void {
     if (depth > DeclarationMerger.MAX_TYPE_DEPTH) {
       logger.debug(
@@ -751,6 +667,12 @@ export class DeclarationMerger {
         this.collectEnumValueReference(node, visited, depth);
       } else if (ts.isImportTypeNode(node)) {
         this.collectImportTypeReference(node, visited, depth);
+      } else if (ts.isComputedPropertyName(node)) {
+        if (ts.isIdentifier(node.expression)) {
+          this.collectTypeReference(node.expression, visited, depth);
+        } else if (ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression)) {
+          this.collectTypeReference(node.expression.expression, visited, depth);
+        }
       }
       ts.forEachChild(node, visit);
     };
@@ -778,8 +700,42 @@ export class DeclarationMerger {
     if (this.isDefaultLibraryDeclaration(resolved.declarations[0])) {
       return;
     }
+
+    const firstDecl = resolved.declarations[0];
+
+    if (ts.isTypeAliasDeclaration(firstDecl)) {
+      for (const decl of resolved.declarations) {
+        this.collectTypeDepsRecursive(decl, visited, depth + 1);
+      }
+      return;
+    }
+
+    if (this.entryExportSymbols.has(resolved)) {
+      return;
+    }
+    if (this.typeDepEntityMap.has(resolved)) {
+      return;
+    }
+
+    const sysApiDecl = this.isSystemApiDeclaration(firstDecl, qualifierSymbol);
+    if (sysApiDecl) {
+      this.addSystemApiEntity(resolved, firstDecl, qualifier.text, sysApiDecl, qualifierSymbol, true);
+      return;
+    }
+
+    if (visited.has(resolved)) {
+      return;
+    }
+    visited.add(resolved);
+
+    if (this.isMemberOfCollectedContainer(resolved)) {
+      return;
+    }
+
+    this.addTypeDepEntity(resolved, qualifier.text);
+    this.registerContainerIfNeeded(resolved);
     for (const decl of resolved.declarations) {
-      this.collectTypeDeps(decl, visited, depth + 1);
+      this.collectTypeDepsRecursive(decl, visited, depth + 1);
     }
   }
 
@@ -807,12 +763,17 @@ export class DeclarationMerger {
       this.collectTypeReference(name, visited, depth);
     } else if (ts.isQualifiedName(name)) {
       this.collectEntityNameIdentifiers(name.left, visited, depth);
-      const rightResolved = this.tryResolveQualifiedNameMember(name);
-      if (rightResolved) {
+      const rightResult = this.tryResolveQualifiedNameMember(name);
+      if (rightResult) {
         this.collectResolvedTypeReference(
-          rightResolved, name.right.text, visited, depth
+          rightResult.resolved, name.right.text, visited, depth, rightResult.alias
         );
       } else {
+        const leftSym = this.checker.getSymbolAtLocation(name.left);
+        const resolvedLeft = leftSym ? this.resolveToActualDeclaration(leftSym) : null;
+        if (resolvedLeft && this.isSystemApiModule(resolvedLeft)) {
+          return;
+        }
         const rightSym = this.checker.getSymbolAtLocation(name.right);
         if (rightSym && this.isEnumMemberSymbol(rightSym)) {
           return;
@@ -822,64 +783,51 @@ export class DeclarationMerger {
     }
   }
 
-  private tryResolveQualifiedNameMember(qname: ts.QualifiedName): ts.Symbol | null {
-    const rightSym: ts.Symbol | undefined = this.checker.getSymbolAtLocation(qname.right);
-    if (rightSym && rightSym.declarations && rightSym.declarations.length > 0) {
-      return null;
+  private isSystemApiModule(symbol: ts.Symbol): boolean {
+    const modules: string[] | undefined = this.options.systemModules;
+    if (!modules || modules.length === 0) {
+      return false;
     }
+    for (const decl of symbol.declarations) {
+      if (this.isInSdkPath(decl.getSourceFile().fileName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private tryResolveQualifiedNameMember(
+    qname: ts.QualifiedName
+  ): { resolved: ts.Symbol; alias: ts.Symbol } | null {
     const leftSym: ts.Symbol | undefined = this.checker.getSymbolAtLocation(qname.left);
     if (!leftSym) {
       return null;
     }
     const resolvedLeft: ts.Symbol | null = this.resolveToActualDeclaration(leftSym);
-    if (resolvedLeft) {
-      return this.resolveMemberFromModule(resolvedLeft, qname.right.text);
-    }
-    return this.tryResolveViaDissolvedNamespace(qname);
-  }
-
-  private tryResolveViaDissolvedNamespace(qname: ts.QualifiedName): ts.Symbol | null {
-    if (!ts.isIdentifier(qname.left) || !this.dissolvedNamespaceNames.has(qname.left.text)) {
+    if (!resolvedLeft) {
       return null;
     }
-    const nsExportSymbol: ts.Symbol | undefined = this.findNamespaceExportSymbol(qname.left.text);
-    if (!nsExportSymbol) {
+    if (this.isSystemApiModule(resolvedLeft)) {
       return null;
     }
-    const resolvedNs: ts.Symbol | null = this.resolveToActualDeclaration(nsExportSymbol);
-    if (!resolvedNs) {
-      return null;
-    }
-    return this.resolveMemberFromModule(resolvedNs, qname.right.text);
+    return this.resolveMemberFromModule(resolvedLeft, qname.right.text);
   }
 
   private resolveMemberFromModule(
     moduleSymbol: ts.Symbol,
     memberName: string
-  ): ts.Symbol | null {
+  ): { resolved: ts.Symbol; alias: ts.Symbol } | null {
     const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
     for (const exp of moduleExports) {
       if (exp.name === memberName) {
-        return this.resolveToActualDeclaration(exp);
+        const resolved: ts.Symbol | null = this.resolveToActualDeclaration(exp);
+        if (resolved) {
+          return { resolved, alias: exp };
+        }
+        return null;
       }
     }
     return null;
-  }
-
-  private findNamespaceExportSymbol(nsName: string): ts.Symbol | undefined {
-    if (!this.entrySourceFile) {
-      return undefined;
-    }
-    const entrySymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(this.entrySourceFile);
-    if (!entrySymbol) {
-      return undefined;
-    }
-    for (const exp of this.checker.getExportsOfModule(entrySymbol)) {
-      if (exp.name === nsName) {
-        return exp;
-      }
-    }
-    return undefined;
   }
 
   private collectEnumValueReference(
@@ -914,13 +862,16 @@ export class DeclarationMerger {
     if (!resolvedLeft) {
       return;
     }
+    if (this.isSystemApiModule(resolvedLeft)) {
+      return;
+    }
     const rightText: string = pae.name.text;
     const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(resolvedLeft);
     for (const exp of moduleExports) {
       if (exp.name === rightText) {
         const rightResolved: ts.Symbol | null = this.resolveToActualDeclaration(exp);
         if (rightResolved && rightResolved.declarations && rightResolved.declarations.length > 0) {
-          this.collectResolvedTypeReference(rightResolved, rightText, visited, depth);
+          this.collectResolvedTypeReference(rightResolved, rightText, visited, depth, exp);
         }
         return;
       }
@@ -931,7 +882,8 @@ export class DeclarationMerger {
     resolved: ts.Symbol,
     localName: string,
     visited: Set<ts.Symbol>,
-    depth: number
+    depth: number,
+    aliasSymbol?: ts.Symbol
   ): void {
     if (!resolved.declarations || resolved.declarations.length === 0) {
       return;
@@ -939,54 +891,9 @@ export class DeclarationMerger {
     if (this.isTypeParameterSymbol(resolved)) {
       return;
     }
-    if (this.entryExportSymbols.has(resolved)) {
-      return;
-    }
-
-    const refDecl: ts.Declaration = resolved.declarations[0];
-    if (this.isDefaultLibraryDeclaration(refDecl)) {
-      return;
-    }
-
-    if (ts.isSourceFile(refDecl)) {
-      this.dissolvedNamespaceNames.add(localName);
-      return;
-    }
-
-    if (visited.has(resolved)) {
-      return;
-    }
-    visited.add(resolved);
-
-    if (this.isMemberOfCollectedContainer(resolved)) {
-      return;
-    }
-
-    const sysApiDecl = this.isSystemApiDeclaration(refDecl);
-    if (sysApiDecl) {
-      this.collectSystemApiEntity(resolved, refDecl, localName, sysApiDecl, resolved, true);
-      return;
-    }
-
-    const entity: CollectorEntity = {
-      type: EntityType.InlineDeclaration,
-      symbol: resolved,
-      declarations: [...resolved.declarations],
-      preferredName: localName,
-      nameForEmit: '',
-      exportNames: [],
-      isDefaultExport: false,
-      hasExportModifier: resolved.declarations.some(
-        (d: ts.Declaration): boolean => this.nodeHasExportModifier(d)
-      ),
-      stripExport: true,
-    };
-    this.nameResolver.register(entity);
-
-    this.registerContainerIfNeeded(resolved);
-    for (const decl of resolved.declarations) {
-      this.collectTypeDeps(decl, visited, depth + 1);
-    }
+    this.collectTypeDepCore(
+      resolved, localName, resolved.declarations[0], aliasSymbol, visited, depth
+    );
   }
 
   private collectTypeReference(
@@ -1009,9 +916,6 @@ export class DeclarationMerger {
     if (this.isTypeParameterSymbol(resolved)) {
       return;
     }
-    if (this.entryExportSymbols.has(resolved)) {
-      return;
-    }
 
     const refDecl: ts.Declaration = resolved.declarations[0];
     if (this.isDefaultLibraryDeclaration(refDecl)) {
@@ -1019,7 +923,49 @@ export class DeclarationMerger {
     }
 
     if (ts.isSourceFile(refDecl)) {
-      this.dissolvedNamespaceNames.add(identifier.text);
+      const sysApiDecl = this.isSystemApiDeclaration(refDecl, refSymbol);
+      if (sysApiDecl) {
+        this.addSystemApiEntity(resolved, refDecl, identifier.text, sysApiDecl, refSymbol, true);
+      }
+      return;
+    }
+
+    this.collectTypeDepCore(
+      resolved, identifier.text, refDecl, refSymbol, visited, depth
+    );
+  }
+
+  private collectTypeDepCore(
+    resolved: ts.Symbol,
+    localName: string,
+    refDecl: ts.Declaration,
+    aliasSymbol: ts.Symbol | undefined,
+    visited: Set<ts.Symbol>,
+    depth: number
+  ): void {
+    if (this.entryExportSymbols.has(resolved)) {
+      return;
+    }
+    if (this.typeDepEntityMap.has(resolved)) {
+      const existing = this.typeDepEntityMap.get(resolved)!;
+      if (localName !== existing.preferredName && localName !== existing.emitName &&
+        !existing.aliases.includes(localName)) {
+        existing.aliases.push(localName);
+      }
+      return;
+    }
+
+    if (this.isDefaultLibraryDeclaration(refDecl)) {
+      return;
+    }
+
+    if (ts.isSourceFile(refDecl)) {
+      return;
+    }
+
+    const sysApiDecl = this.isSystemApiDeclaration(refDecl, aliasSymbol);
+    if (sysApiDecl) {
+      this.addSystemApiEntity(resolved, refDecl, localName, sysApiDecl, resolved, true);
       return;
     }
 
@@ -1032,197 +978,518 @@ export class DeclarationMerger {
       return;
     }
 
-    const sysApiDecl = this.isSystemApiDeclaration(refDecl);
-    if (sysApiDecl) {
-      this.collectSystemApiEntity(resolved, refDecl, identifier.text, sysApiDecl, refSymbol, true);
-      return;
-    }
-
-    const localName: string = identifier.text;
-
-    const entity: CollectorEntity = {
-      type: EntityType.InlineDeclaration,
-      symbol: resolved,
-      declarations: [...resolved.declarations],
-      preferredName: localName,
-      nameForEmit: '',
-      exportNames: [],
-      isDefaultExport: false,
-      hasExportModifier: resolved.declarations.some(
-        (d: ts.Declaration): boolean => this.nodeHasExportModifier(d)
-      ),
-      stripExport: true,
-    };
-    this.nameResolver.register(entity);
-
+    this.addTypeDepEntity(resolved, localName);
     this.registerContainerIfNeeded(resolved);
     for (const decl of resolved.declarations) {
-      this.collectTypeDeps(decl, visited, depth + 1);
+      this.collectTypeDepsRecursive(decl, visited, depth + 1);
     }
   }
 
-  private emitEntities(): string {
-    const lines: string[] = [];
-    const emittedStatements: Set<string> = new Set();
-    const exportNames: string[] = [];
-    const exportNameSet: Set<string> = new Set();
-    const namespaceMembers: Map<string, string[]> = new Map();
-    const emittedDeclarationTexts: Set<string> = new Set();
+  private addTypeDepEntity(resolved: ts.Symbol, preferredName: string): void {
+    const entity: MergeEntity = {
+      kind: EntityKind.TypeDependency,
+      symbol: resolved,
+      declarations: [...resolved.declarations],
+      emitName: '',
+      exportNames: [],
+      isDefaultExport: false,
+      preferredName,
+      sourceFileExt: this.getSourceFileExt(resolved.declarations[0]),
+      aliases: [],
+    };
+    this.typeDepEntities.push(entity);
+    this.typeDepEntityMap.set(resolved, entity);
+  }
 
-    for (const entity of this.nameResolver.getEntities()) {
-      if (entity.type === EntityType.SystemApiImport) {
-        this.emitSystemApiImport(entity, lines, emittedStatements);
-        continue;
+  // ─── Phase 4: Resolve Names ───
+
+  private compareExportedEntities(a: MergeEntity, b: MergeEntity): number {
+    const aLocal = this.getLocalNameOfDeclaration(a.declarations[0]);
+    const bLocal = this.getLocalNameOfDeclaration(b.declarations[0]);
+    const aInflexible = a.isDefaultExport || a.exportNames.length !== 1 || a.exportNames[0] === aLocal;
+    const bInflexible = b.isDefaultExport || b.exportNames.length !== 1 || b.exportNames[0] === bLocal;
+    if (aInflexible && !bInflexible) { return -1; }
+    if (!aInflexible && bInflexible) { return 1; }
+    return 0;
+  }
+
+  private resolveExportedEntityName(entity: MergeEntity, usedNames: Set<string>): void {
+    if (entity.isDefaultExport) {
+      entity.emitName = this.getLocalNameOfDeclaration(entity.declarations[0]);
+      return;
+    }
+    if (entity.exportNames.length !== 1) {
+      entity.emitName = this.getLocalNameOfDeclaration(entity.declarations[0]);
+      for (const expName of entity.exportNames) {
+        if (expName !== entity.emitName && expName !== 'default') {
+          entity.aliases.push(expName);
+        }
       }
-      if (entity.type === EntityType.SystemApiReexport) {
-        this.emitSystemApiReexport(entity, lines, emittedStatements);
-        continue;
-      }
-      if (entity.type === EntityType.NamespaceExport || !entity.nameForEmit) {
-        continue;
+      return;
+    }
+    const localName = this.getLocalNameOfDeclaration(entity.declarations[0]);
+    const exportName = entity.exportNames[0];
+    if (exportName !== localName && !usedNames.has(localName)) {
+      entity.emitName = localName;
+      entity.aliases.push(exportName);
+    } else if (exportName !== localName) {
+      entity.emitName = exportName;
+    } else if (usedNames.has(localName)) {
+      entity.emitName = this.findUniqueName(localName, usedNames);
+      entity.aliases.push(exportName);
+    } else {
+      entity.emitName = exportName;
+    }
+  }
+
+  private resolveNames(): void {
+    const usedNames: Set<string> = new Set();
+    const exportedEmitNames: Set<string> = new Set();
+
+    const sorted = [...this.exportedEntities].sort(
+      (a, b) => this.compareExportedEntities(a, b)
+    );
+
+    for (const entity of sorted) {
+      this.resolveExportedEntityName(entity, usedNames);
+      usedNames.add(entity.emitName);
+      exportedEmitNames.add(entity.emitName);
+    }
+
+    for (const block of this.namespaceBlocks) {
+      usedNames.add(block.name);
+    }
+
+    const sourceFileGroups = new Map<string, { nsName: string; entities: MergeEntity[] }>();
+
+    for (const entity of this.typeDepEntities) {
+      const sourceFilePath: string = entity.declarations[0].getSourceFile().fileName;
+
+      if (!sourceFileGroups.has(sourceFilePath)) {
+        const baseName: string = path.basename(sourceFilePath);
+        let nsName: string = this.deriveNamespaceName(baseName);
+        if (usedNames.has(nsName)) {
+          nsName = this.findUniqueName(nsName, usedNames);
+        }
+        usedNames.add(nsName);
+        sourceFileGroups.set(sourceFilePath, { nsName, entities: [] });
       }
 
-      const text: string = this.emitDeclarationEntity(entity);
+      const group = sourceFileGroups.get(sourceFilePath)!;
+      group.entities.push(entity);
+      if (exportedEmitNames.has(entity.preferredName)) {
+        entity.emitName = this.getLocalNameOfDeclaration(entity.declarations[0]);
+      } else {
+        const localName = this.getLocalNameOfDeclaration(entity.declarations[0]);
+        if (entity.preferredName !== localName) {
+          entity.emitName = localName;
+          entity.aliases.push(entity.preferredName);
+        } else {
+          entity.emitName = entity.preferredName;
+        }
+      }
+      entity.isolationNamespace = group.nsName;
+    }
+
+    this.buildRenameMap();
+  }
+
+  private buildRenameMap(): void {
+    this.renameMap.clear();
+
+    for (const entity of this.exportedEntities) {
+      this.renameMap.set(entity.symbol, entity.emitName);
+    }
+
+    for (const entity of this.typeDepEntities) {
+      const name: string = `${entity.isolationNamespace}.${entity.emitName}`;
+      this.renameMap.set(entity.symbol, name);
+    }
+
+    for (const block of this.namespaceBlocks) {
+      for (const member of block.members) {
+        if (!this.renameMap.has(member.symbol)) {
+          this.renameMap.set(member.symbol, `${block.name}.${member.emitName}`);
+        }
+      }
+    }
+  }
+
+  private getSourceFileBaseName(entity: MergeEntity): string {
+    if (entity.declarations.length === 0) {
+      return '__unknown';
+    }
+    const fileName: string = entity.declarations[0].getSourceFile().fileName;
+    return path.basename(fileName);
+  }
+
+  private deriveNamespaceName(baseName: string): string {
+    const sanitized: string = baseName
+      .replace(/\.d\.ets$/, '')
+      .replace(/\.d\.ts$/, '')
+      .replace(/\.ets$/, '')
+      .replace(/\.ts$/, '')
+      .replace(/[^a-zA-Z0-9_]/g, '_');
+    return `_${sanitized}`;
+  }
+
+  private findUniqueName(base: string, usedNames: Set<string>): string {
+    let suffix: number = 1;
+    let candidate: string = `${base}_${suffix}`;
+    while (usedNames.has(candidate)) {
+      suffix++;
+      candidate = `${base}_${suffix}`;
+    }
+    usedNames.add(candidate);
+    return candidate;
+  }
+
+  // ─── Phase 5: Emit ───
+
+  private emit(): { primary: string; companion: string } {
+    const primaryExt: SourceFileExt = this.entryExt;
+    const companionExt: SourceFileExt = primaryExt === '.d.ets' ? '.d.ts' : '.d.ets';
+    const companionFileName: string = DeclarationMerger.getCompanionFileName(this.entryFilePath, companionExt);
+    const companionModuleSpecifier: string = companionFileName.replace(/\.d\.(ts|ets)$/, '');
+
+    const ctx: EmitContext = {
+      primaryLines: [],
+      companionLines: [],
+      emittedStatements: new Set(),
+      primaryEmittedTexts: new Set(),
+      companionEmittedTexts: new Set(),
+      crossExtExportedNames: [],
+      crossExtImportNamespaces: new Set(),
+      crossExtImportNames: [],
+      exportRenames: [],
+      primaryExt,
+      companionModuleSpecifier,
+    };
+
+    this.emitSystemApiStatements(ctx);
+    this.collectCrossExtNamespaceImports(ctx);
+    this.emitIsolationBlocks(ctx);
+    this.emitExportedEntities(ctx);
+    this.emitNamespaceBlocks(ctx);
+    this.emitCrossExtBridgeStatements(ctx);
+    this.assembleExportStatement(ctx);
+
+    let primaryResult: string = this.sortImportLinesFirst(ctx.primaryLines).join('\n\n');
+    if (primaryResult.trim().length === 0) {
+      primaryResult = 'export {}';
+    }
+
+    let companionResult: string = '';
+    if (ctx.companionLines.length > 0) {
+      companionResult = this.sortImportLinesFirst(ctx.companionLines).join('\n\n');
+    }
+
+    return { primary: primaryResult, companion: companionResult };
+  }
+
+  private emitSystemApiStatements(ctx: EmitContext): void {
+    for (const entity of this.systemApiEntities) {
+      this.emitSystemApiStatement(entity, ctx.primaryLines, ctx.emittedStatements);
+    }
+  }
+
+  private collectCrossExtNamespaceImports(ctx: EmitContext): void {
+    for (const entity of this.typeDepEntities) {
+      if (!entity.isolationNamespace) {
+        continue;
+      }
+      if (entity.sourceFileExt !== ctx.primaryExt) {
+        ctx.crossExtImportNamespaces.add(entity.isolationNamespace);
+      }
+    }
+  }
+
+  private emitIsolationBlocks(ctx: EmitContext): void {
+    const primaryEntities: MergeEntity[] = [];
+    const companionEntities: MergeEntity[] = [];
+    for (const entity of this.typeDepEntities) {
+      if (entity.sourceFileExt === ctx.primaryExt) {
+        primaryEntities.push(entity);
+      } else {
+        companionEntities.push(entity);
+      }
+    }
+
+    const primaryBlocks = this.groupEntitiesByNamespace(primaryEntities);
+    for (const [, blockData] of primaryBlocks) {
+      const blockText: string = this.emitIsolationNamespaceBlock(
+        blockData.nsName, blockData.entities
+      );
+      if (blockText) {
+        ctx.primaryLines.push(blockText);
+      }
+    }
+
+    const companionBlocks = this.groupEntitiesByNamespace(companionEntities);
+    for (const [, blockData] of companionBlocks) {
+      const blockText: string = this.emitIsolationNamespaceBlock(
+        blockData.nsName, blockData.entities, true
+      );
+      if (blockText) {
+        ctx.companionLines.push(blockText);
+      }
+    }
+  }
+
+  private emitExportedEntities(ctx: EmitContext): void {
+    for (const entity of this.exportedEntities) {
+      const targetLines: string[] = entity.sourceFileExt === ctx.primaryExt
+        ? ctx.primaryLines : ctx.companionLines;
+      const targetEmitted: Set<string> = entity.sourceFileExt === ctx.primaryExt
+        ? ctx.primaryEmittedTexts : ctx.companionEmittedTexts;
+
+      const isExported: boolean = entity.isDefaultExport || entity.exportNames.includes(entity.emitName);
+      const text: string = this.emitTopLevelDeclaration(entity, isExported);
       if (!text) {
         continue;
       }
 
-      const normalized: string = text.replace(/^export\s+/gm, '').replace(/^declare\s+/gm, '');
-      if (emittedDeclarationTexts.has(normalized)) {
-        continue;
+      const normalized: string = text.replace(/^declare\s+/, '').replace(/^export\s+/, '').trim();
+      if (!targetEmitted.has(normalized)) {
+        targetEmitted.add(normalized);
+        targetLines.push(text);
+      } else if (!entity.isDefaultExport) {
+        targetLines.push(text);
       }
-      emittedDeclarationTexts.add(normalized);
-
-      lines.push(text);
-
       if (entity.isDefaultExport) {
-        lines.push(`export default ${entity.nameForEmit};`);
+        targetLines.push(`export default ${entity.emitName};`);
       }
-
-      this.collectNamespaceMember(entity, namespaceMembers);
-      this.collectExportNames(entity, exportNames, exportNameSet);
+      if (entity.sourceFileExt !== ctx.primaryExt) {
+        for (const expName of entity.exportNames) {
+          ctx.crossExtExportedNames.push(expName !== 'default' ? expName : entity.emitName);
+        }
+      }
+      for (const expName of entity.exportNames) {
+        if (expName === entity.emitName || expName === 'default') {
+          continue;
+        }
+        if (entity.sourceFileExt === ctx.primaryExt) {
+          ctx.exportRenames.push({ emitName: entity.emitName, exportName: expName });
+        }
+      }
     }
-
-    this.emitNamespaceBlocks(namespaceMembers, lines, exportNames, exportNameSet);
-
-    if (exportNames.length > 0) {
-      const exportLine: string = `export { ${exportNames.join(', ')} };`;
-      lines.push(exportLine);
-    }
-
-    let result: string = this.sortImportLinesFirst(lines).join('\n\n');
-    result = this.stripDissolvedNamespacePrefixes(result);
-    if (result.trim().length === 0) {
-      return 'export {}';
-    }
-    return result;
   }
 
-  private collectNamespaceMember(
-    entity: CollectorEntity,
-    namespaceMembers: Map<string, string[]>
-  ): void {
-    if (!entity.namespaceName) {
+  private emitNamespaceBlocks(ctx: EmitContext): void {
+    for (const block of this.namespaceBlocks) {
+      for (const sysApi of block.systemApiMembers) {
+        if (!ctx.emittedStatements.has(sysApi.importStatement)) {
+          ctx.primaryLines.push(sysApi.importStatement);
+          ctx.emittedStatements.add(sysApi.importStatement);
+        }
+      }
+      if (block.sourceFileExt === ctx.primaryExt) {
+        const blockText: string = this.emitNamespaceBlock(block);
+        if (blockText) {
+          ctx.primaryLines.push(blockText);
+        }
+      } else {
+        const blockText: string = this.emitNamespaceBlock(block, true);
+        if (blockText) {
+          ctx.companionLines.push(blockText);
+          ctx.crossExtExportedNames.push(block.name);
+        }
+      }
+    }
+  }
+
+  private emitCrossExtBridgeStatements(ctx: EmitContext): void {
+    if (ctx.crossExtImportNamespaces.size > 0) {
+      const primaryText: string = ctx.primaryLines.join('\n');
+      const referenced: string[] = this.findNamesMatchingPattern(
+        [...ctx.crossExtImportNamespaces], primaryText, true
+      );
+      if (referenced.length > 0) {
+        ctx.primaryLines.unshift(
+          `import { ${referenced.join(', ')} } from './${ctx.companionModuleSpecifier}';`
+        );
+      }
+    }
+
+    if (ctx.crossExtExportedNames.length > 0) {
+      const primaryText: string = ctx.primaryLines.join('\n');
+      const importNames: string[] = [];
+      const reexportOnlyNames: string[] = [];
+      for (const name of ctx.crossExtExportedNames) {
+        if (this.isNameReferencedInText(name, primaryText)) {
+          importNames.push(name);
+        } else {
+          reexportOnlyNames.push(name);
+        }
+      }
+      if (importNames.length > 0) {
+        ctx.primaryLines.unshift(
+          `import { ${importNames.join(', ')} } from './${ctx.companionModuleSpecifier}';`
+        );
+        ctx.crossExtImportNames = importNames;
+      }
+      if (reexportOnlyNames.length > 0) {
+        ctx.primaryLines.push(
+          `export { ${reexportOnlyNames.join(', ')} } from './${ctx.companionModuleSpecifier}';`
+        );
+      }
+    }
+  }
+
+  private assembleExportStatement(ctx: EmitContext): void {
+    const exportParts: string[] = [];
+    for (const rename of ctx.exportRenames) {
+      exportParts.push(
+        rename.emitName === rename.exportName
+          ? rename.emitName
+          : `${rename.emitName} as ${rename.exportName}`
+      );
+    }
+
+    if (this.namespaceBlocks.length > 0) {
+      const nsExportNames: string[] = this.collectNamespaceExportNames(ctx.primaryExt);
+      exportParts.push(...nsExportNames.filter(n => !exportParts.includes(n)));
+    }
+
+    for (const name of ctx.crossExtImportNames) {
+      if (!exportParts.includes(name)) {
+        exportParts.push(name);
+      }
+    }
+
+    if (exportParts.length > 0) {
+      ctx.primaryLines.push(`export { ${exportParts.join(', ')} };`);
+    } else if (!ctx.primaryLines.some((l: string): boolean => /^export\s*\{[^}]+\}/.test(l))) {
+      ctx.primaryLines.push('export {};');
+    }
+  }
+
+  private collectMemberExportNames(member: NamespaceBlockMember, nsExportNames: string[]): void {
+    const exportedEntity = this.exportedEntityMap.get(member.symbol);
+    if (!exportedEntity) {
       return;
     }
-    const ns: string = entity.namespaceName;
-    if (!namespaceMembers.has(ns)) {
-      namespaceMembers.set(ns, []);
-    }
-    const members: string[] = namespaceMembers.get(ns)!;
-    if (!members.includes(entity.nameForEmit)) {
-      members.push(entity.nameForEmit);
-    }
-    for (const expName of entity.exportNames) {
-      if (expName === entity.nameForEmit || expName === 'default') {
+    for (const expName of exportedEntity.exportNames) {
+      if (expName === 'default' || expName !== exportedEntity.emitName || nsExportNames.includes(expName)) {
         continue;
       }
-      const alias: string = `${entity.nameForEmit} as ${expName}`;
-      if (!members.includes(alias)) {
-        members.push(alias);
-      }
+      nsExportNames.push(expName);
     }
   }
 
-  private collectExportNames(
-    entity: CollectorEntity,
-    exportNames: string[],
-    exportNameSet: Set<string>
-  ): void {
-    if (entity.isDefaultExport) {
-      return;
-    }
-    if (entity.hasDirectExport && !(entity.hasExportModifier && !entity.namespaceName)) {
-      if (!exportNameSet.has(entity.nameForEmit)) {
-        exportNames.push(entity.nameForEmit);
-        exportNameSet.add(entity.nameForEmit);
-      }
-    }
-
-    for (const expName of entity.exportNames) {
-      if (expName === entity.nameForEmit || expName === 'default') {
+  private collectNamespaceExportNames(primaryExt: SourceFileExt): string[] {
+    const nsExportNames: string[] = [];
+    for (const block of this.namespaceBlocks) {
+      if (block.sourceFileExt !== primaryExt) {
         continue;
       }
-      if (!exportNameSet.has(expName)) {
-        exportNames.push(`${entity.nameForEmit} as ${expName}`);
-        exportNameSet.add(expName);
+      nsExportNames.push(block.name);
+      for (const member of block.members) {
+        this.collectMemberExportNames(member, nsExportNames);
       }
     }
+    return nsExportNames;
   }
 
-  private emitNamespaceBlocks(
-    namespaceMembers: Map<string, string[]>,
+  private groupEntitiesByNamespace(entities: MergeEntity[]): Map<string, { nsName: string; entities: MergeEntity[] }> {
+    const groups = new Map<string, { nsName: string; entities: MergeEntity[] }>();
+    for (const entity of entities) {
+      const nsName: string = entity.isolationNamespace!;
+      if (!nsName) {
+        continue;
+      }
+      if (!groups.has(nsName)) {
+        groups.set(nsName, { nsName, entities: [] });
+      }
+      groups.get(nsName)!.entities.push(entity);
+    }
+    return groups;
+  }
+
+  private emitSystemApiStatement(
+    entity: MergeEntity,
     lines: string[],
-    exportNames: string[],
-    exportNameSet: Set<string>
+    emittedStatements: Set<string>
   ): void {
-    for (const [nsName, members] of namespaceMembers) {
-      lines.push(`declare namespace ${nsName} {\nexport {\n${members.join(',\n')}\n}\n}`);
-      if (!exportNameSet.has(nsName)) {
-        exportNames.push(nsName);
-        exportNameSet.add(nsName);
-      }
+    const info = entity.systemApiInfo!;
+    const line: string = info.statementText;
+    if (!emittedStatements.has(line)) {
+      lines.push(line);
+      emittedStatements.add(line);
+    }
+    if (info.exportStatementText && !emittedStatements.has(info.exportStatementText)) {
+      lines.push(info.exportStatementText);
+      emittedStatements.add(info.exportStatementText);
     }
   }
 
-  private emitDeclarationEntity(entity: CollectorEntity): string {
-    if (entity.declarations.length === 0) {
-      return '';
-    }
+  private emitTopLevelDeclaration(entity: MergeEntity, isExported: boolean): string {
+    return this.printDeclarations(entity.declarations, {
+      transformNode: (sanitizedNode: ts.Node): ts.Node => sanitizedNode,
+      formatText: (text: string, printNode: ts.Node): string => {
+        if (isExported && !entity.isDefaultExport) {
+          return this.transformToExportDeclare(text, printNode);
+        }
+        text = this.stripExportFromText(text, printNode);
+        return this.ensureDeclareKeyword(text, printNode);
+      },
+      normalizeForDedup: (text: string): string =>
+        text.replace(/^export\s+/, '').replace(/^declare\s+/, ''),
+    });
+  }
 
-    const mergedEnum: string | null = this.tryMergeEnumDeclarations(entity);
-    if (mergedEnum !== null) {
-      return mergedEnum;
+  private emitNamespaceMemberDeclaration(
+    declarations: ts.Declaration[],
+    localOverrides: Map<ts.Symbol, string>
+  ): string {
+    return this.printDeclarations(declarations, {
+      transformNode: (sanitizedNode: ts.Node): ts.Node =>
+        this.withNamespaceMemberModifiers(sanitizedNode),
+      formatText: (text: string, _printNode: ts.Node): string => text,
+      localOverrides,
+      normalizeForDedup: (text: string): string =>
+        text.replace(/^export\s+/, '').trim(),
+    });
+  }
+
+  private printDeclarations(
+    declarations: ts.Declaration[],
+    options: {
+      transformNode: (sanitizedNode: ts.Node) => ts.Node;
+      formatText: (text: string, printNode: ts.Node) => string;
+      localOverrides?: Map<ts.Symbol, string>;
+      normalizeForDedup: (text: string) => string;
+    }
+  ): string {
+    if (declarations.length === 0) {
+      return '';
     }
 
     const parts: string[] = [];
     const emittedNormalizedTexts: Set<string> = new Set();
-    for (const declaration of entity.declarations) {
+
+    for (const declaration of declarations) {
+      if (ts.isExportSpecifier(declaration)) {
+        continue;
+      }
       const sourceFile: ts.SourceFile = declaration.getSourceFile();
       const printNode: ts.Node = this.getDeclarationNode(declaration);
 
-      let sanitizedNode: ts.Node = this.sanitizeDeclarationNode(printNode);
-      if (this.shouldReplaceUnsupportedTsTypes()) {
-        sanitizedNode = this.replaceUnsupportedTsTypesWithESObject(sanitizedNode);
-      }
-      let text: string = this.printer.printNode(ts.EmitHint.Unspecified, sanitizedNode, sourceFile);
+      const sanitizedNode: ts.Node = this.sanitizeDeclarationNode(printNode);
+      const transformedNode: ts.Node = options.transformNode(sanitizedNode);
+      let text: string = this.printer.printNode(ts.EmitHint.Unspecified, transformedNode, sourceFile);
 
-      if (this.nodeHasAutoGeneratedHeritage(printNode) || this.textHasAutoGeneratedExtends(text)) {
-        text = this.stripExtendsFromText(text);
-      }
+      const { body } = this.splitLeadingTrivia(text);
+      text = body;
 
-      if (entity.stripExport || entity.isDefaultExport || entity.namespaceName) {
-        text = this.stripExportFromText(text, printNode);
-      } else {
-        text = this.stripDefaultKeywordFromText(text, printNode);
-      }
-
-      text = this.applyRenamesToText(text, printNode);
+      text = options.formatText(text, printNode);
+      text = this.applyRenamesToText(text, printNode, options.localOverrides);
       text = this.replaceImportTypeReferences(text, printNode);
       text = text.replace(/  +/g, ' ');
       text = text.trim();
+
       if (text) {
-        const normalized: string = text.replace(/^export\s+/, '').replace(/^declare\s+/, '');
+        const normalized: string = options.normalizeForDedup(text);
         if (!emittedNormalizedTexts.has(normalized)) {
           emittedNormalizedTexts.add(normalized);
           parts.push(text);
@@ -1232,87 +1499,178 @@ export class DeclarationMerger {
     return parts.join('\n\n');
   }
 
-  private tryMergeEnumDeclarations(entity: CollectorEntity): string | null {
-    const enumDecls: ts.EnumDeclaration[] = [];
-    for (const decl of entity.declarations) {
-      if (ts.isEnumDeclaration(decl)) {
-        enumDecls.push(decl);
-      }
-    }
-    if (enumDecls.length <= 1) {
-      return null;
-    }
-
-    const seenMemberNames: Set<string> = new Set();
-    const memberTexts: string[] = [];
-    for (const enumDecl of enumDecls) {
-      const enumSourceFile: ts.SourceFile = enumDecl.getSourceFile();
-      for (const member of enumDecl.members) {
-        const memberName: string = ts.isIdentifier(member.name)
-          ? member.name.text
-          : member.name.getText(enumSourceFile);
-        if (!seenMemberNames.has(memberName)) {
-          seenMemberNames.add(memberName);
-          memberTexts.push(
-            this.printer.printNode(ts.EmitHint.Unspecified, member, enumSourceFile).trim()
-          );
+  private transformToExportDeclare(text: string, node: ts.Node): string {
+    const hasDeclare: boolean = this.nodeHasModifier(node, ts.SyntaxKind.DeclareKeyword);
+    const hasDefault: boolean = this.nodeHasModifier(node, ts.SyntaxKind.DefaultKeyword);
+    const { leading, body } = this.splitLeadingTrivia(text);
+    let transformed: string = body;
+    if (hasDefault) {
+      transformed = transformed.replace(/^export\s+default\s+/, 'export declare ');
+    } else {
+      const hasExport: boolean = this.nodeHasModifier(node, ts.SyntaxKind.ExportKeyword);
+      const isTypeAlias: boolean = this.isTypeAliasLike(node);
+      if (isTypeAlias) {
+        if (hasExport && hasDeclare) {
+          transformed = transformed.replace(/^export\s+declare\s+/, 'export ');
+        } else if (hasDeclare) {
+          transformed = transformed.replace(/^declare\s+/, 'export ');
+        } else if (hasExport) {
+          // already "export type" - keep as is
+        } else {
+          transformed = 'export ' + transformed;
         }
+      } else if (hasExport && hasDeclare) {
+        // already "export declare" - keep as is
+      } else if (hasExport) {
+        transformed = transformed.replace(/^export\s+/, 'export declare ');
+      } else if (hasDeclare) {
+        transformed = transformed.replace(/^declare\s+/, 'export declare ');
+      } else {
+        transformed = 'export declare ' + transformed;
+      }
+    }
+    return leading + transformed;
+  }
+
+  private isTypeAliasLike(node: ts.Node): boolean {
+    const decl: ts.Node = this.getDeclarationNode(node);
+    return ts.isTypeAliasDeclaration(decl);
+  }
+
+  private emitNamespaceBlockCore(
+    nsName: string,
+    items: NamespaceEmitItem[],
+    isExported: boolean,
+    dedupByName: boolean,
+    systemApiMembers?: NamespaceSystemApiMember[]
+  ): string {
+    const localOverrides: Map<ts.Symbol, string> = new Map();
+    for (const item of items) {
+      localOverrides.set(item.symbol, item.emitName);
+    }
+
+    const memberTexts: string[] = [];
+    const emittedNames: Set<string> = new Set();
+    for (const item of items) {
+      if (dedupByName && emittedNames.has(item.emitName)) {
+        continue;
+      }
+      emittedNames.add(item.emitName);
+      const text: string = this.emitNamespaceMemberDeclaration(item.declarations, localOverrides);
+      if (text) {
+        memberTexts.push(text);
+      }
+      for (const alias of item.aliases) {
+        memberTexts.push(`export { ${item.emitName} as ${alias} };`);
       }
     }
 
-    const firstDecl: ts.EnumDeclaration = enumDecls[0];
-    const emitName: string = entity.nameForEmit || firstDecl.name.text;
-    const membersBlock: string = memberTexts.join(',\n');
-    const anyHasExport: boolean = enumDecls.some(
-      (d: ts.EnumDeclaration): boolean => this.nodeHasExportModifier(d)
-    );
-    const prefix: string = anyHasExport ? 'export declare' : 'declare';
-    let text: string = `${prefix} enum ${emitName} {\n${membersBlock}\n}`;
-
-    if (!anyHasExport && !entity.hasExportModifier) {
-      text = this.stripExportFromText(text, this.getDeclarationNode(firstDecl));
-    }
-
-    text = this.applyRenamesToText(text, firstDecl);
-    text = text.replace(/  +/g, ' ');
-    text = text.trim();
-    return text || null;
-  }
-
-  private shouldReplaceUnsupportedTsTypes(): boolean {
-    return this.entrySourceFile?.fileName.endsWith('.d.ets') ?? false;
-  }
-
-  private replaceUnsupportedTsTypesWithESObject(node: ts.Node): ts.Node {
-    const statement: ts.Statement = ts.isStatement(node)
-      ? node
-      : ts.factory.createExpressionStatement(node as ts.Expression);
-    const syntheticFile: ts.SourceFile = ts.factory.createSourceFile(
-      [statement],
-      ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
-      ts.NodeFlags.None
-    );
-    const result = ts.transform(syntheticFile, [
-      (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-        const visitor = (n: ts.Node): ts.Node => {
-          if (n.kind === ts.SyntaxKind.AnyKeyword || n.kind === ts.SyntaxKind.UnknownKeyword) {
-            return ts.factory.createTypeReferenceNode(
-              ts.factory.createIdentifier('ESObject'),
-              undefined
-            );
-          }
-          return ts.visitEachChild(n, visitor, context);
-        };
-        return (sf: ts.SourceFile) => ts.visitEachChild(sf, visitor, context) as ts.SourceFile;
+    if (systemApiMembers) {
+      for (const sysApi of systemApiMembers) {
+        memberTexts.push(`export { ${sysApi.name} };`);
       }
-    ]);
-    const transformed: ts.SourceFile = result.transformed[0] as ts.SourceFile;
-    const out: ts.Node = transformed.statements[0];
-    result.dispose();
-    if (ts.isExpressionStatement(out)) {
-      return out.expression;
     }
-    return out;
+
+    if (memberTexts.length === 0) {
+      return '';
+    }
+    const keyword: string = isExported ? 'export declare namespace' : 'declare namespace';
+    return `${keyword} ${nsName} {\n${memberTexts.join('\n')}\n}`;
+  }
+
+  private emitIsolationNamespaceBlock(
+    nsName: string,
+    entities: MergeEntity[],
+    isExported: boolean = false
+  ): string {
+    return this.emitNamespaceBlockCore(nsName, entities, isExported, true);
+  }
+
+  private emitNamespaceBlock(block: NamespaceBlock, isExported: boolean = false): string {
+    return this.emitNamespaceBlockCore(
+      block.name, block.members, isExported, false, block.systemApiMembers
+    );
+  }
+
+  private withNamespaceMemberModifiers(node: ts.Node): ts.Node {
+    const decorators: readonly ts.Decorator[] =
+      ts.canHaveDecorators(node) ? ts.getDecorators(node) ?? [] : [];
+    const modifiers: readonly ts.Modifier[] =
+      ts.canHaveModifiers(node) ? ts.getModifiers(node) ?? [] : [];
+
+    const keptModifiers: ts.Modifier[] = modifiers.filter(
+      (m: ts.Modifier): boolean =>
+        m.kind !== ts.SyntaxKind.ExportKeyword &&
+        m.kind !== ts.SyntaxKind.DeclareKeyword &&
+        m.kind !== ts.SyntaxKind.DefaultKeyword
+    );
+
+    const newModifiers: readonly (ts.Decorator | ts.Modifier)[] = [
+      ...decorators,
+      ts.factory.createModifier(ts.SyntaxKind.ExportKeyword),
+      ...keptModifiers,
+    ];
+
+    return this.applyModifiersToNode(node, newModifiers);
+  }
+
+  private applyModifiersToNode(
+    node: ts.Node,
+    newModifiers: readonly (ts.Decorator | ts.Modifier)[]
+  ): ts.Node {
+    const modArray = ts.factory.createNodeArray(newModifiers);
+
+    if (this.isStructDeclaration(node)) {
+      const n = node as ts.StructDeclaration;
+      return ts.factory.updateStructDeclaration(
+        n, modArray, n.name, n.typeParameters, n.heritageClauses, n.members
+      );
+    }
+    if (ts.isClassDeclaration(node)) {
+      return ts.factory.updateClassDeclaration(
+        node, modArray, node.name, node.typeParameters, node.heritageClauses, node.members
+      );
+    }
+    if (ts.isInterfaceDeclaration(node)) {
+      return ts.factory.updateInterfaceDeclaration(
+        node, modArray, node.name, node.typeParameters, node.heritageClauses, node.members
+      );
+    }
+    if (ts.isEnumDeclaration(node)) {
+      return ts.factory.updateEnumDeclaration(
+        node, modArray, node.name, node.members
+      );
+    }
+    if (ts.isTypeAliasDeclaration(node)) {
+      return ts.factory.updateTypeAliasDeclaration(
+        node, modArray, node.name, node.typeParameters, node.type
+      );
+    }
+    if (ts.isFunctionDeclaration(node)) {
+      return ts.factory.updateFunctionDeclaration(
+        node, modArray, node.asteriskToken, node.name,
+        node.typeParameters, node.parameters, node.type, node.body
+      );
+    }
+    if (ts.isVariableStatement(node)) {
+      return ts.factory.updateVariableStatement(node, modArray, node.declarationList);
+    }
+    if (ts.isModuleDeclaration(node)) {
+      return ts.factory.updateModuleDeclaration(node, modArray, node.name, node.body);
+    }
+    return node;
+  }
+
+
+
+  // ─── Declaration Processing Utilities ───
+
+  private ensureDeclareKeyword(text: string, node: ts.Node): string {
+    const { leading, body } = this.splitLeadingTrivia(text);
+    if (/^declare\s/.test(body)) {
+      return text;
+    }
+    return leading + 'declare ' + body;
   }
 
   private sanitizeDeclarationNode(node: ts.Node): ts.Node {
@@ -1329,13 +1687,15 @@ export class DeclarationMerger {
     const filteredMembers: ts.ClassElement[] = node.members.filter(
       (m: ts.ClassElement): boolean => !this.isAutoGeneratedConstructor(m)
     );
+    const filteredHeritage: ts.NodeArray<ts.HeritageClause> | undefined =
+      this.filterAutoGeneratedHeritage(node.heritageClauses);
     if (this.isStructDeclaration(node)) {
       return ts.factory.updateStructDeclaration(
         node,
         node.modifiers,
         node.name,
         node.typeParameters,
-        node.heritageClauses,
+        filteredHeritage,
         ts.factory.createNodeArray(filteredMembers)
       );
     }
@@ -1344,16 +1704,42 @@ export class DeclarationMerger {
       node.modifiers,
       node.name,
       node.typeParameters,
-      node.heritageClauses,
+      filteredHeritage,
       ts.factory.createNodeArray(filteredMembers)
     );
+  }
+
+  private filterAutoGeneratedHeritage(
+    clauses: ts.NodeArray<ts.HeritageClause> | undefined
+  ): ts.NodeArray<ts.HeritageClause> | undefined {
+    if (!clauses) {
+      return clauses;
+    }
+    const filtered: ts.HeritageClause[] = clauses.filter(
+      (clause: ts.HeritageClause): boolean => {
+        if (clause.token !== ts.SyntaxKind.ExtendsKeyword) {
+          return true;
+        }
+        return !clause.types.some(
+          (t: ts.ExpressionWithTypeArguments): boolean =>
+            this.isAutoGeneratedHeritageExpression(t.expression)
+        );
+      }
+    );
+    if (filtered.length === clauses.length) {
+      return clauses;
+    }
+    if (filtered.length === 0) {
+      return undefined;
+    }
+    return ts.factory.createNodeArray(filtered);
   }
 
   private isAutoGeneratedHeritageExpression(expr: ts.Expression): boolean {
     if (ts.isObjectLiteralExpression(expr)) {
       return true;
     }
-    if (ts.isIdentifier(expr) && expr.text === '' && expr.pos === expr.end) {
+    if (ts.isIdentifier(expr) && expr.pos === expr.end) {
       return true;
     }
     return false;
@@ -1384,82 +1770,19 @@ export class DeclarationMerger {
     return ts.isStructDeclaration ? ts.isStructDeclaration(node) : false;
   }
 
-  private nodeHasAutoGeneratedHeritage(node: ts.Node): boolean {
-    const isClassLike: boolean = ts.isClassDeclaration(node) ||
-      (ts.isStructDeclaration && ts.isStructDeclaration(node));
-    if (!isClassLike) {
-      return false;
-    }
-    const classNode = node as ts.ClassLikeDeclaration;
-    if (!classNode.heritageClauses) {
-      return false;
-    }
-    return classNode.heritageClauses.some(
-      (clause: ts.HeritageClause): boolean =>
-        clause.token === ts.SyntaxKind.ExtendsKeyword &&
-        clause.types.some((t: ts.ExpressionWithTypeArguments): boolean =>
-          this.isAutoGeneratedHeritageExpression(t.expression)
-        )
-    );
-  }
+  // ─── Rename / Reference Rewriting ───
 
-  private textHasAutoGeneratedExtends(text: string): boolean {
-    const { body } = this.splitLeadingTrivia(text);
-    const keywordMatch: RegExpMatchArray | null = body.match(/\b(?:struct|class)\b/);
-    if (!keywordMatch) {
-      return false;
-    }
-    const fromKeyword: string = body.slice(keywordMatch.index! + keywordMatch[0].length);
-    let angleDepth: number = 0;
-    let bracePos: number = -1;
-    for (let i: number = 0; i < fromKeyword.length; i++) {
-      const ch: string = fromKeyword[i];
-      if (ch === '<') { angleDepth++; continue; }
-      if (ch === '>') { angleDepth--; continue; }
-      if (ch === '{' && angleDepth === 0) {
-        bracePos = i;
-        break;
-      }
-    }
-    if (bracePos === -1) {
-      return false;
-    }
-    const header: string = fromKeyword.slice(0, bracePos + 1);
-    angleDepth = 0;
-    for (let i: number = 0; i < header.length; i++) {
-      const ch: string = header[i];
-      if (ch === '<') { angleDepth++; continue; }
-      if (ch === '>') { angleDepth--; continue; }
-      if (angleDepth === 0 && header.startsWith('extends', i)) {
-        if (i > 0 && /\w/.test(header[i - 1])) { continue; }
-        const after: string = header.slice(i + 7);
-        if (/^\s*\{/.test(after)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private stripExtendsFromText(text: string): string {
-    const { leading, body } = this.splitLeadingTrivia(text);
-    let stripped: string = body;
-    const objectLiteralMatch = stripped.match(/\s+extends\s*\{\s*\}/);
-    if (objectLiteralMatch) {
-      stripped = stripped.replace(/\s+extends\s*\{\s*\}/, '');
-    } else {
-      stripped = stripped.replace(/(\s+extends)\s*\{/, '{');
-    }
-    return leading + stripped;
-  }
-
-  private applyRenamesToText(text: string, node: ts.Node): string {
+  private applyRenamesToText(
+    text: string,
+    node: ts.Node,
+    localOverrides?: Map<ts.Symbol, string>
+  ): string {
     const renames: Map<string, string> = new Map();
     const visit = (n: ts.Node): void => {
       if (ts.isIdentifier(n)) {
-        this.collectRenameForIdentifier(n, renames);
+        this.collectRenameForIdentifier(n, renames, localOverrides);
       } else if (ts.isImportTypeNode(n)) {
-        this.collectImportTypeRename(n, renames);
+        this.collectImportTypeRename(n, renames, localOverrides);
       }
       ts.forEachChild(n, visit);
     };
@@ -1468,7 +1791,6 @@ export class DeclarationMerger {
     if (renames.size === 0) {
       return text;
     }
-
     return this.applyRenamesWithPlaceholders(text, renames);
   }
 
@@ -1506,20 +1828,22 @@ export class DeclarationMerger {
     }
     const firstDecl = resolved.declarations[0];
     if (ts.isTypeAliasDeclaration(firstDecl)) {
-      return firstDecl.type.getText(firstDecl.getSourceFile());
+      const rawText = firstDecl.type.getText(firstDecl.getSourceFile());
+      return this.applyRenamesToText(rawText, firstDecl.type);
     }
     if (this.isDefaultLibraryDeclaration(firstDecl)) {
       const resolvedType = this.checker.getTypeFromTypeNode(node);
       const typeText = resolvedType ? this.checker.typeToString(resolvedType) : null;
       return typeText ?? null;
     }
-    const emitName = this.nameResolver.getNameForSymbol(resolved);
+    const emitName = this.renameMap.get(resolved);
     return emitName ?? null;
   }
 
   private collectImportTypeRename(
     node: ts.ImportTypeNode,
-    renames: Map<string, string>
+    renames: Map<string, string>,
+    localOverrides?: Map<ts.Symbol, string>
   ): void {
     const qualifier = node.qualifier;
     if (!qualifier || !ts.isIdentifier(qualifier)) {
@@ -1533,7 +1857,7 @@ export class DeclarationMerger {
     if (!resolved) {
       return;
     }
-    const emitName = this.nameResolver.getNameForSymbol(resolved);
+    const emitName = this.resolveEmitName(resolved, localOverrides);
     if (!emitName) {
       return;
     }
@@ -1544,7 +1868,8 @@ export class DeclarationMerger {
 
   private collectRenameForIdentifier(
     n: ts.Identifier,
-    renames: Map<string, string>
+    renames: Map<string, string>,
+    localOverrides?: Map<ts.Symbol, string>
   ): void {
     const refSymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(n);
     if (!refSymbol) {
@@ -1554,19 +1879,117 @@ export class DeclarationMerger {
     if (!resolved) {
       return;
     }
-    const emitName: string | undefined = this.nameResolver.getNameForSymbol(resolved);
+    const aliasName: string | undefined = this.resolveAliasEmitName(resolved, n.text, localOverrides);
+    const emitName: string | undefined = aliasName ?? this.resolveEmitName(resolved, localOverrides);
     if (emitName && emitName !== n.text) {
+      if (this.isRightOfNamespaceImport(n, emitName, renames)) {
+        return;
+      }
+      if (this.isRightOfMatchingQualifiedName(n, emitName)) {
+        return;
+      }
       renames.set(n.text, emitName);
     }
+  }
+
+  private isRightOfMatchingQualifiedName(n: ts.Identifier, emitName: string): boolean {
+    if (!n.parent || !ts.isQualifiedName(n.parent) || n.parent.right !== n) {
+      return false;
+    }
+    const dotIdx: number = emitName.indexOf('.');
+    if (dotIdx < 0) {
+      return false;
+    }
+    const nsPart: string = emitName.substring(0, dotIdx);
+    const leftText: string = n.parent.left.getText(n.getSourceFile());
+    return leftText === nsPart;
+  }
+
+  private isRightOfNamespaceImport(
+    n: ts.Identifier,
+    emitName: string,
+    renames: Map<string, string>
+  ): boolean {
+    if (!n.parent) {
+      return false;
+    }
+
+    let leftNode: ts.Node | null = null;
+    if (ts.isQualifiedName(n.parent) && n.parent.right === n) {
+      leftNode = n.parent.left;
+    } else if (ts.isPropertyAccessExpression(n.parent) && n.parent.name === n) {
+      leftNode = n.parent.expression;
+    }
+
+    if (!leftNode) {
+      return false;
+    }
+
+    const leftSym: ts.Symbol | undefined = this.checker.getSymbolAtLocation(leftNode);
+    if (!leftSym) {
+      return false;
+    }
+
+    const resolvedLeft: ts.Symbol | null = this.resolveToActualDeclaration(leftSym);
+    if (!resolvedLeft?.declarations?.[0]) {
+      return false;
+    }
+
+    if (!ts.isSourceFile(resolvedLeft.declarations[0])) {
+      return false;
+    }
+
+    const fullText: string = n.parent.getText(n.getSourceFile());
+    renames.set(fullText, emitName);
+    return true;
+  }
+
+  private resolveAliasEmitName(
+    resolved: ts.Symbol,
+    identifierText: string,
+    localOverrides?: Map<ts.Symbol, string>
+  ): string | undefined {
+    if (localOverrides) {
+      return undefined;
+    }
+    const typeDepEntity = this.typeDepEntityMap.get(resolved);
+    if (typeDepEntity && typeDepEntity.aliases.includes(identifierText) && typeDepEntity.isolationNamespace) {
+      return `${typeDepEntity.isolationNamespace}.${identifierText}`;
+    }
+    for (const block of this.namespaceBlocks) {
+      for (const member of block.members) {
+        if (member.symbol === resolved && member.aliases.includes(identifierText)) {
+          return `${block.name}.${identifierText}`;
+        }
+      }
+    }
+    const exportedEntity = this.exportedEntityMap.get(resolved);
+    if (exportedEntity && exportedEntity.aliases.includes(identifierText)) {
+      return exportedEntity.emitName;
+    }
+    return undefined;
+  }
+
+  private resolveEmitName(
+    resolved: ts.Symbol,
+    localOverrides?: Map<ts.Symbol, string>
+  ): string | undefined {
+    if (localOverrides && localOverrides.has(resolved)) {
+      return localOverrides.get(resolved);
+    }
+    return this.renameMap.get(resolved);
   }
 
   private applyRenamesWithPlaceholders(
     text: string,
     renames: Map<string, string>
   ): string {
+    const sortedEntries: [string, string][] = [...renames.entries()].sort(
+      (a, b) => b[0].length - a[0].length
+    );
     const placeholders: Map<string, string> = new Map();
     let idx: number = 0;
-    for (const [oldName, newName] of renames) {
+    for (const [oldName, newName] of sortedEntries) {
       const placeholder: string = `\x00${idx}\x00`;
       idx++;
       placeholders.set(placeholder, newName);
@@ -1581,23 +2004,33 @@ export class DeclarationMerger {
     return text;
   }
 
-  private stripDissolvedNamespacePrefixes(text: string): string {
-    for (const ns of this.dissolvedNamespaceNames) {
-      text = text.replace(
-        new RegExp(`\\b${DeclarationMerger.escapeRegExp(ns)}\\.`, 'g'),
-        ''
-      );
-    }
-    return text;
-  }
-
   private static escapeRegExp(text: string): string {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  private isNameReferencedInText(name: string, text: string): boolean {
+    return new RegExp(`\\b${DeclarationMerger.escapeRegExp(name)}\\b`).test(text);
+  }
+
+  private isNamespaceReferencedInText(nsName: string, text: string): boolean {
+    return new RegExp(`\\b${DeclarationMerger.escapeRegExp(nsName)}\\.`).test(text);
+  }
+
+  private findNamesMatchingPattern(
+    names: string[], text: string, requireNamespaceDot: boolean
+  ): string[] {
+    return names.filter((name: string): boolean =>
+      requireNamespaceDot
+        ? this.isNamespaceReferencedInText(name, text)
+        : this.isNameReferencedInText(name, text)
+    );
+  }
+
+  // ─── Text Manipulation ───
+
   private stripExportFromText(text: string, node: ts.Node): string {
-    const hasDeclare: boolean = this.nodeHasDeclareModifier(node);
-    const hasDefault: boolean = this.nodeHasDefaultModifier(node);
+    const hasDeclare: boolean = this.nodeHasModifier(node, ts.SyntaxKind.DeclareKeyword);
+    const hasDefault: boolean = this.nodeHasModifier(node, ts.SyntaxKind.DefaultKeyword);
     const { leading, body } = this.splitLeadingTrivia(text);
     let stripped: string = body;
     if (hasDefault) {
@@ -1609,7 +2042,7 @@ export class DeclarationMerger {
   }
 
   private stripDefaultKeywordFromText(text: string, node: ts.Node): string {
-    if (this.nodeHasDefaultModifier(node)) {
+    if (this.nodeHasModifier(node, ts.SyntaxKind.DefaultKeyword)) {
       const { leading, body } = this.splitLeadingTrivia(text);
       return leading + body.replace(/^export\s+default\s+/, 'export declare ');
     }
@@ -1639,7 +2072,7 @@ export class DeclarationMerger {
     return { leading: text.substring(0, pos), body: text.substring(pos) };
   }
 
-  private nodeHasDeclareModifier(node: ts.Node): boolean {
+  private nodeHasModifier(node: ts.Node, kind: ts.SyntaxKind): boolean {
     const decl: ts.Node = this.getDeclarationNode(node);
     if (!ts.canHaveModifiers(decl)) {
       return false;
@@ -1648,118 +2081,10 @@ export class DeclarationMerger {
     if (!modifiers) {
       return false;
     }
-    return modifiers.some((m: ts.ModifierLike): boolean => m.kind === ts.SyntaxKind.DeclareKeyword);
+    return modifiers.some((m: ts.ModifierLike): boolean => m.kind === kind);
   }
 
-  private nodeHasDefaultModifier(node: ts.Node): boolean {
-    const decl: ts.Node = this.getDeclarationNode(node);
-    if (!ts.canHaveModifiers(decl)) {
-      return false;
-    }
-    const modifiers: readonly ts.ModifierLike[] | undefined = ts.getModifiers(decl);
-    if (!modifiers) {
-      return false;
-    }
-    return modifiers.some((m: ts.ModifierLike): boolean => m.kind === ts.SyntaxKind.DefaultKeyword);
-  }
-
-  private emitSystemApiImport(
-    entity: CollectorEntity,
-    lines: string[],
-    emittedStatements: Set<string>
-  ): void {
-    const info = entity.systemApiInfo!;
-    let importLine: string;
-    if (entity.isDefaultSystemApi) {
-      importLine = `import ${entity.nameForEmit} from '${info.moduleName}';`;
-    } else {
-      const importName: string = entity.nameForEmit !== info.name
-        ? `${info.name} as ${entity.nameForEmit}`
-        : entity.nameForEmit;
-      importLine = `import { ${importName} } from '${info.moduleName}';`;
-    }
-    if (!emittedStatements.has(importLine)) {
-      lines.push(importLine);
-      emittedStatements.add(importLine);
-    }
-  }
-
-  private emitSystemApiReexport(
-    entity: CollectorEntity,
-    lines: string[],
-    emittedStatements: Set<string>
-  ): void {
-    const info = entity.systemApiInfo!;
-    const exportName: string = entity.exportNames[0];
-    const namePart: string = exportName !== info.name
-      ? `${info.name} as ${exportName}`
-      : info.name;
-    const line: string = `export { ${namePart} } from '${info.moduleName}';`;
-    if (!emittedStatements.has(line)) {
-      lines.push(line);
-      emittedStatements.add(line);
-    }
-  }
-
-  private nodeHasExportModifier(node: ts.Node): boolean {
-    const decl = this.getDeclarationNode(node);
-    if (!ts.canHaveModifiers(decl)) {
-      return false;
-    }
-    const modifiers = ts.getModifiers(decl);
-    if (!modifiers) {
-      return false;
-    }
-    return modifiers.some((m: ts.ModifierLike): boolean => m.kind === ts.SyntaxKind.ExportKeyword);
-  }
-
-  private sortImportLinesFirst(lines: string[]): string[] {
-    const importLines: string[] = [];
-    const declarationLines: string[] = [];
-    for (const line of lines) {
-      if (line.startsWith('import ')) {
-        importLines.push(line);
-      } else {
-        declarationLines.push(line);
-      }
-    }
-    return [...importLines, ...declarationLines];
-  }
-
-  private validateOutput(content: string, entryFile: string): void {
-    if (!content || content.trim().length === 0) {
-      return;
-    }
-    try {
-      const isDets: boolean = entryFile.endsWith('.d.ets');
-      const scriptKind: ts.ScriptKind = isDets
-        ? (ts.ScriptKind as unknown as Record<string, number>).ETS ?? ts.ScriptKind.TS
-        : ts.ScriptKind.TS;
-      const sf: ts.SourceFile = ts.createSourceFile(
-        entryFile,
-        content,
-        ts.ScriptTarget.Latest,
-        true,
-        scriptKind
-      );
-      if (sf.parseDiagnostics && sf.parseDiagnostics.length > 0) {
-        const errors: string = sf.parseDiagnostics
-          .map((d: ts.Diagnostic): string => {
-            const msg: string = typeof d.messageText === 'string'
-              ? d.messageText
-              : (d.messageText as ts.DiagnosticMessageChain).messageText;
-            return `line ${d.line + 1}: ${msg}`;
-          })
-          .join('; ');
-        logger.debug(
-          `Declaration merge output has parse errors in ${entryFile}: ${errors}`
-        );
-      }
-    } catch (e) {
-      const errMsg: string = e instanceof Error ? e.message : String(e);
-      logger.debug(`Declaration merge output validation failed for ${entryFile}: ${errMsg}`);
-    }
-  }
+  // ─── Symbol Resolution Utilities ───
 
   private resolveToActualDeclaration(symbol: ts.Symbol): ts.Symbol | null {
     const visited: Set<ts.Symbol> = new Set();
@@ -1846,7 +2171,10 @@ export class DeclarationMerger {
     return this.program.isSourceFileDefaultLibrary(decl.getSourceFile());
   }
 
-  private isSystemApiDeclaration(declaration: ts.Node): { moduleName: string; name: string } | null {
+  private isSystemApiDeclaration(
+    declaration: ts.Node,
+    aliasSymbol?: ts.Symbol
+  ): { moduleName: string; name: string; statementText: string } | null {
     const modules: string[] | undefined = this.options.systemModules;
     if (!modules || modules.length === 0) {
       return null;
@@ -1855,15 +2183,235 @@ export class DeclarationMerger {
     if (!this.isInSdkPath(sourceFile.fileName)) {
       return null;
     }
-    const baseName: string = path.basename(sourceFile.fileName);
-    for (const mod of modules) {
-      if (baseName === mod) {
-        const moduleName: string = mod.replace(/\.d\.(ets|ts)$/, '');
-        const name: string = this.getLocalNameOfDeclaration(declaration);
-        return { moduleName, name };
+    if (!aliasSymbol) {
+      return null;
+    }
+    let found: { moduleName: string; statementText: string } | null =
+      this.findSystemApiModuleName(aliasSymbol);
+    if (!found) {
+      found = this.findSystemApiModuleNameViaReexportChain(aliasSymbol);
+    }
+    if (!found) {
+      return null;
+    }
+    const name: string = this.getLocalNameOfDeclaration(declaration);
+    return { moduleName: found.moduleName, name, statementText: found.statementText };
+  }
+
+  private findSystemApiModuleName(
+    symbol: ts.Symbol
+  ): { moduleName: string; statementText: string } | null {
+    const visited: Set<ts.Symbol> = new Set();
+    let current: ts.Symbol | undefined = symbol;
+    while (current && !visited.has(current)) {
+      visited.add(current);
+      for (const decl of current.declarations ?? []) {
+        const specifier: string | null = this.extractModuleSpecifier(decl);
+        if (specifier && this.specifierMatchesSystemModule(specifier)) {
+          const statementText: string | null = this.extractStatementText(decl);
+          if (statementText) {
+            return { moduleName: specifier, statementText };
+          }
+          return { moduleName: specifier, statementText: '' };
+        }
+      }
+      if (!(current.flags & ts.SymbolFlags.Alias)) {
+        break;
+      }
+      const aliased: ts.Symbol = this.checker.getAliasedSymbol(current);
+      if (!aliased || aliased === current) {
+        break;
+      }
+      current = aliased;
+    }
+    return null;
+  }
+
+  private seedReexportBfsQueue(
+    symbol: ts.Symbol,
+    queue: Array<{ declarations: readonly ts.Declaration[]; exportName: string }>,
+    visited: Set<string>
+  ): { moduleName: string; statementText: string } | null {
+    for (const decl of symbol.declarations ?? []) {
+      if (!ts.isExportSpecifier(decl)) {
+        continue;
+      }
+      const namedExports: ts.Node = decl.parent;
+      if (!ts.isNamedExports(namedExports)) {
+        continue;
+      }
+      const exportDecl: ts.Node = namedExports.parent;
+      if (!ts.isExportDeclaration(exportDecl) || !exportDecl.moduleSpecifier ||
+        !ts.isStringLiteral(exportDecl.moduleSpecifier)) {
+        continue;
+      }
+      const specifier: string = exportDecl.moduleSpecifier.text;
+      const exportName: string = (decl.propertyName ?? decl.name).text;
+      if (this.specifierMatchesSystemModule(specifier)) {
+        const statementText: string | null = this.extractStatementText(decl);
+        return { moduleName: specifier, statementText: statementText ?? '' };
+      }
+      const moduleSym: ts.Symbol | undefined =
+        this.checker.getSymbolAtLocation(exportDecl.moduleSpecifier);
+      if (!moduleSym) {
+        continue;
+      }
+      const nextDecls: ts.Declaration[] = this.collectExportDeclarationsFromModule(
+        moduleSym, exportName
+      );
+      if (nextDecls.length > 0) {
+        const key: string = specifier + ':' + exportName;
+        if (!visited.has(key)) {
+          visited.add(key);
+          queue.push({ declarations: nextDecls, exportName });
+        }
       }
     }
     return null;
+  }
+
+  private findSystemApiModuleNameViaReexportChain(
+    symbol: ts.Symbol
+  ): { moduleName: string; statementText: string } | null {
+    const visited: Set<string> = new Set();
+    const queue: Array<{ declarations: readonly ts.Declaration[]; exportName: string }> = [];
+
+    const seedResult: { moduleName: string; statementText: string } | null =
+      this.seedReexportBfsQueue(symbol, queue, visited);
+    if (seedResult) {
+      return seedResult;
+    }
+
+    while (queue.length > 0) {
+      const item = queue.shift()!;
+      for (const expDecl of item.declarations) {
+        const expSpec: string | null = this.extractModuleSpecifier(expDecl);
+        if (!expSpec) {
+          continue;
+        }
+        if (this.specifierMatchesSystemModule(expSpec)) {
+          const statementText: string | null = this.extractStatementText(expDecl);
+          return { moduleName: expSpec, statementText: statementText ?? '' };
+        }
+        const namedExports: ts.Node = (expDecl as ts.ExportSpecifier).parent;
+        if (!ts.isNamedExports(namedExports)) {
+          continue;
+        }
+        const exportDecl: ts.Node = namedExports.parent;
+        if (!ts.isExportDeclaration(exportDecl) || !exportDecl.moduleSpecifier ||
+          !ts.isStringLiteral(exportDecl.moduleSpecifier)) {
+          continue;
+        }
+        const nextKey: string = expSpec + ':' + item.exportName;
+        if (visited.has(nextKey)) {
+          continue;
+        }
+        visited.add(nextKey);
+        const moduleSym: ts.Symbol | undefined =
+          this.checker.getSymbolAtLocation(exportDecl.moduleSpecifier);
+        if (!moduleSym) {
+          continue;
+        }
+        const nextDecls: ts.Declaration[] = this.collectExportDeclarationsFromModule(
+          moduleSym, item.exportName
+        );
+        if (nextDecls.length > 0) {
+          queue.push({ declarations: nextDecls, exportName: item.exportName });
+        }
+      }
+    }
+    return null;
+  }
+
+  private collectExportDeclarationsFromModule(
+    moduleSymbol: ts.Symbol,
+    exportName: string
+  ): ts.Declaration[] {
+    const results: ts.Declaration[] = [];
+    const moduleExports: ts.Symbol[] = this.checker.getExportsOfModule(moduleSymbol);
+    for (const exp of moduleExports) {
+      if (exp.name !== exportName) {
+        continue;
+      }
+      for (const decl of exp.declarations ?? []) {
+        if (ts.isExportSpecifier(decl)) {
+          results.push(decl);
+        }
+      }
+    }
+    return results;
+  }
+
+  private extractStatementText(decl: ts.Declaration): string | null {
+    let current: ts.Node | undefined = decl;
+    while (current) {
+      if (ts.isImportDeclaration(current) || ts.isExportDeclaration(current)) {
+        const text: string = this.printer.printNode(
+          ts.EmitHint.Unspecified, current, current.getSourceFile()
+        ).trim();
+        return text;
+      }
+      if (ts.isSourceFile(current)) {
+        break;
+      }
+      current = current.parent;
+    }
+    return null;
+  }
+
+  private extractModuleSpecifier(decl: ts.Declaration): string | null {
+    if (ts.isExportSpecifier(decl)) {
+      return this.extractModuleSpecifierFromExport(decl);
+    }
+    return this.extractModuleSpecifierFromImport(decl);
+  }
+
+  private extractModuleSpecifierFromExport(decl: ts.ExportSpecifier): string | null {
+    if (!ts.isNamedExports(decl.parent)) {
+      return null;
+    }
+    const exportDecl: ts.Node = decl.parent.parent;
+    if (ts.isExportDeclaration(exportDecl) && exportDecl.moduleSpecifier &&
+      ts.isStringLiteral(exportDecl.moduleSpecifier)) {
+      return exportDecl.moduleSpecifier.text;
+    }
+    return null;
+  }
+
+  private extractModuleSpecifierFromImport(decl: ts.Declaration): string | null {
+    const importDecl: ts.ImportDeclaration | null = this.findAncestorImportDeclaration(decl);
+    if (importDecl && importDecl.moduleSpecifier && ts.isStringLiteral(importDecl.moduleSpecifier)) {
+      return importDecl.moduleSpecifier.text;
+    }
+    return null;
+  }
+
+  private findAncestorImportDeclaration(node: ts.Node): ts.ImportDeclaration | null {
+    let current: ts.Node | undefined = node;
+    while (current) {
+      if (ts.isImportDeclaration(current)) {
+        return current;
+      }
+      if (ts.isSourceFile(current)) {
+        break;
+      }
+      current = current.parent;
+    }
+    return null;
+  }
+
+  private specifierMatchesSystemModule(specifier: string): boolean {
+    const modules: string[] | undefined = this.options.systemModules;
+    if (!modules) {
+      return false;
+    }
+    for (const mod of modules) {
+      const moduleName: string = mod.replace(/\.d\.(ets|ts)$/, '');
+      if (moduleName === specifier) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private isInSdkPath(fileName: string): boolean {
@@ -1876,30 +2424,130 @@ export class DeclarationMerger {
     return resolved.startsWith(normalizedSdk + path.sep) || resolved.startsWith(normalizedSdk + '/');
   }
 
-  private isDefaultExportOfModule(symbol: ts.Symbol): boolean {
-    const visited: Set<ts.Symbol> = new Set();
-    let current: ts.Symbol | undefined = symbol;
-    while (current) {
-      if (visited.has(current)) {
-        break;
+  private isExternalModuleSpecifier(specifier: string): boolean {
+    return !specifier.startsWith('.') && !specifier.startsWith('/');
+  }
+
+  private findLocalImportForExport(
+    exportName: string,
+    resolvedSymbol: ts.Symbol
+  ): { moduleName: string; statementText: string } | null {
+    if (!this.entrySourceFile) {
+      return null;
+    }
+    let result: { moduleName: string; statementText: string } | null = null;
+    ts.forEachChild(this.entrySourceFile, (node: ts.Node): void => {
+      if (result) {
+        return;
       }
-      visited.add(current);
-      if (current.name === 'default') {
-        return true;
+      if (!ts.isImportDeclaration(node)) {
+        return;
       }
-      if (current.declarations?.some(
-        (d: ts.Declaration): boolean => ts.isImportClause(d) && !!d.name
-      )) {
-        return true;
+      if (!node.moduleSpecifier || !ts.isStringLiteral(node.moduleSpecifier)) {
+        return;
       }
-      if (!(current.flags & ts.SymbolFlags.Alias)) {
-        break;
+      if (!node.importClause) {
+        return;
       }
-      const aliased: ts.Symbol = this.checker.getAliasedSymbol(current);
-      if (!aliased || aliased === current) {
-        break;
+      if (this.importClauseMatchesExport(node.importClause, exportName, resolvedSymbol)) {
+        const moduleName: string = node.moduleSpecifier.text;
+        const statementText: string = this.printer.printNode(
+          ts.EmitHint.Unspecified, node, this.entrySourceFile!
+        ).trim();
+        result = { moduleName, statementText };
       }
-      current = aliased;
+    });
+    return result;
+  }
+
+  private findImportInModule(
+    moduleSymbol: ts.Symbol,
+    memberName: string,
+    targetSymbol: ts.Symbol
+  ): { moduleName: string; statementText: string } | null {
+    const sourceFile: ts.Node | undefined = moduleSymbol.declarations?.[0];
+    if (!sourceFile || !ts.isSourceFile(sourceFile)) {
+      return null;
+    }
+    let result: { moduleName: string; statementText: string } | null = null;
+    ts.forEachChild(sourceFile, (node: ts.Node): void => {
+      if (result || !ts.isImportDeclaration(node)) {
+        return;
+      }
+      if (!node.moduleSpecifier || !ts.isStringLiteral(node.moduleSpecifier)) {
+        return;
+      }
+      if (!node.importClause) {
+        return;
+      }
+      if (this.importClauseMatchesExport(node.importClause, memberName, targetSymbol)) {
+        result = {
+          moduleName: node.moduleSpecifier.text,
+          statementText: this.printer.printNode(
+            ts.EmitHint.Unspecified, node, sourceFile
+          ).trim(),
+        };
+      }
+    });
+    return result;
+  }
+
+  private findReexportForSymbol(memberSymbol: ts.Symbol): string | null {
+    for (const decl of memberSymbol.declarations ?? []) {
+      if (!ts.isExportSpecifier(decl)) {
+        continue;
+      }
+      const spec: string | null = this.extractModuleSpecifierFromExport(decl);
+      if (!spec || !this.isExternalModuleSpecifier(spec)) {
+        continue;
+      }
+      const stmtText: string | null = this.extractStatementText(decl);
+      if (!stmtText) {
+        continue;
+      }
+      return stmtText.replace(/^export\s+/, 'import ');
+    }
+    return null;
+  }
+
+  private importClauseMatchesExport(
+    importClause: ts.ImportClause,
+    exportName: string,
+    resolvedSymbol: ts.Symbol
+  ): boolean {
+    if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
+      for (const spec of importClause.namedBindings.elements) {
+        if (spec.name.text !== exportName) {
+          continue;
+        }
+        const specSymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(spec.name);
+        if (!specSymbol) {
+          continue;
+        }
+        const specResolved: ts.Symbol | null = this.resolveToActualDeclaration(specSymbol);
+        if (specResolved === resolvedSymbol) {
+          return true;
+        }
+      }
+    }
+    if (importClause.name && importClause.name.text === exportName) {
+      const nameSymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(importClause.name);
+      if (nameSymbol) {
+        const nameResolved: ts.Symbol | null = this.resolveToActualDeclaration(nameSymbol);
+        if (nameResolved === resolvedSymbol) {
+          return true;
+        }
+      }
+    }
+    if (importClause.namedBindings && ts.isNamespaceImport(importClause.namedBindings) &&
+      importClause.namedBindings.name.text === exportName) {
+      const nsSymbol: ts.Symbol | undefined = this.checker.getSymbolAtLocation(importClause.namedBindings.name);
+      if (nsSymbol) {
+        const nsResolved: ts.Symbol | null = this.resolveToActualDeclaration(nsSymbol);
+        if (nsResolved === resolvedSymbol) {
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -1933,27 +2581,71 @@ export class DeclarationMerger {
     return null;
   }
 
-  public static mergeDeclarationFiles(options: DeclarationMergeOptions): void {
-    const rootFiles: string[] = options.entryFiles ?? (options.entryFile ? [options.entryFile] : []);
-    if (rootFiles.length === 0) {
+  // ─── Validation ───
+
+  private validateOutput(content: string, entryFile: string): void {
+    if (!content || content.trim().length === 0) {
       return;
     }
-    const merger = new DeclarationMerger(options, rootFiles);
-    for (const entryFile of rootFiles) {
-      merger.mergeEntry(entryFile);
+    try {
+      const isDets: boolean = entryFile.endsWith('.d.ets');
+      const scriptKind: ts.ScriptKind = isDets
+        ? (ts.ScriptKind as unknown as Record<string, number>).ETS ?? ts.ScriptKind.TS
+        : ts.ScriptKind.TS;
+      const sf: ts.SourceFile = ts.createSourceFile(
+        entryFile,
+        content,
+        ts.ScriptTarget.Latest,
+        true,
+        scriptKind
+      );
+      if (sf.parseDiagnostics && sf.parseDiagnostics.length > 0) {
+        const errors: string = sf.parseDiagnostics
+          .map((d: ts.Diagnostic): string => {
+            const msg: string = typeof d.messageText === 'string'
+              ? d.messageText
+              : (d.messageText as ts.DiagnosticMessageChain).messageText;
+            return `line ${d.line + 1}: ${msg}`;
+          })
+          .join('; ');
+        logger.debug(
+          `Declaration merge output has parse errors in ${entryFile}: ${errors}`
+        );
+      }
+    } catch (e) {
+      const errMsg: string = e instanceof Error ? e.message : String(e);
+      logger.debug(`Declaration merge output validation failed for ${entryFile}: ${errMsg}`);
     }
-    merger.cleanup(rootFiles);
   }
+
+  private sortImportLinesFirst(lines: string[]): string[] {
+    const importLines: string[] = [];
+    const declarationLines: string[] = [];
+    for (const line of lines) {
+      if (line.startsWith('import ')) {
+        importLines.push(line);
+      } else {
+        declarationLines.push(line);
+      }
+    }
+    return [...importLines, ...declarationLines];
+  }
+
+  // ─── Cleanup ───
 
   private cleanup(entryFiles: string[]): void {
     const entrySet: Set<string> = new Set(entryFiles.map(toUnixPath));
+    const companionPaths: Set<string> = new Set();
+    for (const entryFile of entryFiles) {
+      companionPaths.add(toUnixPath(this.getCompanionFilePath(entryFile)));
+    }
 
     for (const [key, value] of harFilesRecord) {
       if (!value.originalDeclarationCachePath) {
         continue;
       }
       const cachePath: string = toUnixPath(value.originalDeclarationCachePath);
-      if (entrySet.has(cachePath)) {
+      if (entrySet.has(cachePath) || companionPaths.has(cachePath)) {
         continue;
       }
       if (fs.existsSync(cachePath)) {

@@ -849,6 +849,10 @@ export function tryMangleFileName(filePath: string, projectConfig: Object, origi
   if (projectConfig.obfuscationMergedObConfig?.options?.enableFileNameObfuscation && !isOhModule) {
     const mangledFilePath: string = mangleFilePath(filePath);
     if ((/\.d\.e?ts$/).test(filePath)) {
+      if (projectConfig?.projectArkOption?.bundle?.bundledDeclare &&
+        fs.existsSync(genFileInHar.originalDeclarationCachePath)) {
+        fs.unlinkSync(genFileInHar.originalDeclarationCachePath);
+      }
       genFileInHar.obfuscatedDeclarationCachePath = mangledFilePath;
     } else {
       genFileInHar.obfuscatedSourceCachePath = mangledFilePath;
@@ -871,7 +875,7 @@ export async function mangleDeclarationFileName(printObfLogger: Function, projec
           content: genFilesInHar.originalDeclarationContent,
           buildFilePath: genFilesInHar.originalDeclarationCachePath,
           relativeSourceFilePath: relativeSourceFilePath,
-          originSourceFilePath: sourcePath
+          originSourceFilePath: projectConfig?.projectArkOption?.bundle?.bundledDeclare ? filePath : sourcePath
         }, printObfLogger, projectConfig, {});
     }
   }

@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare const base: string;
-export declare const nestedBase: string;
-export declare interface ErrorCallback {
-    (err: string): void;
+import { EOverLayTypeName, OverlayType } from './test1';
+export default class MapController {
+  removeOverlays(type?: OverlayType): void;
 }
-export declare type Callback<T> = (err: Error, data: T) => void;
+export * as SysEnum from './test1';
+export { MapController, EOverLayTypeName };
