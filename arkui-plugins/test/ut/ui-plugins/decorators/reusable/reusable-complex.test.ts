@@ -157,7 +157,7 @@ class Message {
           message: new Message("Child"),
           __options_has_message: true,
         };
-      }), undefined, undefined, undefined);
+      }), undefined, "res", undefined);
       if (this.display) {
         Child._invoke(undefined, (() => {
           return {

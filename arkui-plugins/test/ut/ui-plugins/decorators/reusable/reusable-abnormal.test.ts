@@ -18,7 +18,7 @@ import { PluginTester } from '../../../../utils/plugin-tester';
 import { mockBuildConfig } from '../../../../utils/artkts-config';
 import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
 import { parseDumpSrc } from '../../../../utils/parse-string';
-import { uiNoRecheck, recheck } from '../../../../utils/plugins';
+import { uiNoRecheck, recheck, collectNoRecheck } from '../../../../utils/plugins';
 import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
 import { dumpGetterSetter, GetSetDumper, dumpConstructor } from '../../../../utils/simplify-dump';
 import { uiTransform } from '../../../../../ui-plugins';
@@ -81,6 +81,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -123,6 +125,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   ${dumpConstructor()}
+
+  static {
+    
+  }
   
 }
 
@@ -130,6 +136,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_ComA | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ComA | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_ComA | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ComA)=> void) | undefined), initializers: ((()=> __Options_ComA) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -154,6 +162,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   ${dumpConstructor()}
+
+  static {
+    
+  }
   
 }
 
@@ -166,6 +178,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     const paramsCasted = (params as __Options_ComB);
     return {};
   }
+
+  public resetStateVarsOnReuse(initializers: (__Options_ComB | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ComB)=> void) | undefined), initializers: ((()=> __Options_ComB) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -190,6 +204,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   ${dumpConstructor()}
+
+  static {
+    
+  }
   
 }
 
@@ -225,6 +243,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public constructor() {}
   
+  static {
+    
+  }
 }
 
 class __EntryWrapper extends EntryPoint {
@@ -263,7 +284,7 @@ function testReusableTransformer(this: PluginTestContext): void {
 
 pluginTester.run(
     'test complex reusable',
-    [reusableTransform, uiNoRecheck, recheck],
+    [reusableTransform, collectNoRecheck, uiNoRecheck, recheck],
     {
         'checked:ui-no-recheck': [testReusableTransformer],
     },

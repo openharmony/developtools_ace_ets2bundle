@@ -20,8 +20,6 @@ import {
     checkComponentV2StateUsage,
     checkComponentComponentV2Init,
     checkConstructPrivateParameter,
-    checkReusableComponentInV2,
-    checkNestedReuseComponent,
     checkSpecificComponentChildren,
     checkConstructParameterLiteral,
     checkVariableInitializationPassing,
@@ -85,8 +83,6 @@ function reportInStructCall(this: CallValidator, node: arkts.CallExpression, met
     const struct = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.structDeclInfo!.definitionPtr!);
     checkBuilderParam.bind(this)(node, struct);
     checkComponentComponentV2Init.bind(this)(node, struct);
-    checkReusableComponentInV2.bind(this)(struct);
-    checkNestedReuseComponent.bind(this)(struct);
     checkConstructPrivateParameter.bind(this)(struct);
     checkVariableInitializationPassing.bind(this)(node, struct);
 }
