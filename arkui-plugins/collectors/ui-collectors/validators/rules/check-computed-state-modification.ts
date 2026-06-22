@@ -59,7 +59,7 @@ function _checkComputedStateModification(
     if (node.kind !== arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
         return;
     }
-    const body = node.scriptFunction.body;
+    const body = node.function.body;
     if (!body || !arkts.isBlockStatement(body)) {
         return;
     }
@@ -116,7 +116,7 @@ function findLastPropertyInChain(memberExpr: arkts.MemberExpression): arkts.Iden
         return undefined;
     }
     const targetProperty = memberExpr.property;
-    let current: arkts.AstNode = memberExpr.object;
+    let current: arkts.Expression | undefined = memberExpr.object;
     while (arkts.isMemberExpression(current)) {
         current = current.object;
     }

@@ -63,14 +63,22 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_numB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<number>(this, "Prop1", "numB", 43)
-    this.__backing_stringB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "Prop2", "stringB", "BB")
-    this.__backing_booleanB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<boolean>(this, "Prop3", "booleanB", false)
-    this.__backing_undefinedB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<undefined>(this, "Prop4", "undefinedB", undefined)
-    this.__backing_nullB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<null>(this, "Prop5", "nullB", null)
+    this.__backing_numB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<number>(this, "Prop1", "numB", 43);
+    this.__backing_stringB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "Prop2", "stringB", "BB");
+    this.__backing_booleanB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<boolean>(this, "Prop3", "booleanB", false);
+    this.__backing_undefinedB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<undefined>(this, "Prop4", "undefinedB", undefined);
+    this.__backing_nullB = STATE_MGMT_FACTORY.makeLocalStoragePropRef<null>(this, "Prop5", "nullB", null);
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_numB!.resetOnReuse();
+    this.__backing_stringB!.resetOnReuse();
+    this.__backing_booleanB!.resetOnReuse();
+    this.__backing_undefinedB!.resetOnReuse();
+    this.__backing_nullB!.resetOnReuse();
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -141,26 +149,23 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numB', '(number | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numB', '(ILocalStoragePropRefDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringB', '(string | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringB', '(ILocalStoragePropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanB', '(boolean | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanB', '(ILocalStoragePropRefDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanB', '(boolean | undefined)')}
-  
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'undefinedB', '(undefined | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_undefinedB', '(ILocalStoragePropRefDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_undefinedB', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'nullB', '(null | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "Prop5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_nullB', '(ILocalStoragePropRefDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_nullB', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample {
+  @LocalStoragePropRef({value:"Prop1"}) public numB?: number;
+  public __backing_numB?: ILocalStoragePropRefDecoratedVariable<number>;
+  public __options_has_numB?: boolean;
+  @LocalStoragePropRef({value:"Prop2"}) public stringB?: string;
+  public __backing_stringB?: ILocalStoragePropRefDecoratedVariable<string>;
+  public __options_has_stringB?: boolean;
+  @LocalStoragePropRef({value:"Prop3"}) public booleanB?: boolean;
+  public __backing_booleanB?: ILocalStoragePropRefDecoratedVariable<boolean>;
+  public __options_has_booleanB?: boolean;
+  @LocalStoragePropRef({value:"Prop4"}) public undefinedB?: undefined;
+  public __backing_undefinedB?: ILocalStoragePropRefDecoratedVariable<undefined>;
+  public __options_has_undefinedB?: boolean;
+  @LocalStoragePropRef({value:"Prop5"}) public nullB?: null;
+  public __backing_nullB?: ILocalStoragePropRefDecoratedVariable<null>;
+  public __options_has_nullB?: boolean;
+  public constructor() {}
   
 }
 `;

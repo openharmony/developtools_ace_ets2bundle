@@ -27,6 +27,7 @@ import {
     PREVIEWER_RESOURCE_PATH,
     APIComparison,
     APIVersions,
+    ARKTS_FILE_EXTENSION_LIST,
 } from './predefines';
 import {
     ApplicationMainPages,
@@ -39,6 +40,18 @@ import {
 } from './plugin-context';
 import { MetaDataCollector } from './metadata-collector';
 
+export function isExported(node: arkts.AstNode): boolean {
+    return node.isExport || node.isDefaultExport || node.hasExportAlias;
+}
+
+export function removeRelativePathSuffix(str: string, suffixes: string[] = ARKTS_FILE_EXTENSION_LIST): string {
+    for (const suffix of suffixes) {
+        if (str.endsWith(suffix)) {
+            return str.slice(0, -suffix.length);
+        }
+    }
+    return str;
+}
 
 export function expectNameInTypeReference(node: arkts.TypeNode | undefined): arkts.Identifier | undefined {
     if (!node || !arkts.isETSTypeReference(node)) {
@@ -80,35 +93,15 @@ export function coerceToAstNode<T extends arkts.AstNode>(node: arkts.AstNode): T
     return node as T;
 }
 
-/**
- * create and insert `import { <imported> as <local> } from <source>` to the top of script's statements.
- */
-export function createAndInsertImportDeclaration(
-    source: arkts.StringLiteral,
-    imported: arkts.Identifier,
-    local: arkts.Identifier,
-    importKind: arkts.Es2pandaImportKinds,
-    program: arkts.Program
-): void {
-    const importDecl: arkts.ETSImportDeclaration = arkts.factory.createImportDeclaration(
-        source,
-        [arkts.factory.createImportSpecifier(imported, local)],
-        importKind,
-        program
-    );
-    arkts.importDeclarationInsert(importDecl, program);
-    return;
-}
-
 export function isNumeric(str: string): boolean {
     return /^\d+$/.test(str);
 }
 
 export function annotation(name: string): arkts.AnnotationUsage {
     const ident: arkts.Identifier = arkts.factory.createIdentifier(name).setAnnotationUsage();
-    const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident);
+    const annotation: arkts.AnnotationUsage = arkts.factory.createAnnotationUsage(ident, []);
 
-    annotation.modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
+    annotation.modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_ANNOTATION_USAGE;
     ident.parent = annotation;
 
     return annotation;

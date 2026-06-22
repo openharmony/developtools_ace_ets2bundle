@@ -89,6 +89,12 @@ class BooleanClass {
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_boo!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.boo)})) ?? ([true, false, true])));
+    this.__backing_booClass!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.booClass)})) ?? (new BooleanClass())));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -168,14 +174,14 @@ class BooleanClass {
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'boo', '(Array<boolean> | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_boo', '(IStateDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_boo', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booClass', '(BooleanClass | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booClass', '(IStateDecoratedVariable<BooleanClass> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booClass', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample {
+  @State() public boo?: Array<boolean>;
+  public __backing_boo?: IStateDecoratedVariable<Array<boolean>>;
+  public __options_has_boo?: boolean;
+  @State() public booClass?: BooleanClass;
+  public __backing_booClass?: IStateDecoratedVariable<BooleanClass>;
+  public __options_has_booClass?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -236,6 +236,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           return visitEachChildNode;
         }
         const id: number = ++componentInfo.id;
+        parseIntent.recordCompiledFile(pageFile, metaInfo);
         node = ts.visitEachChild(node, processAllNodes, context);
         // for interop
         if (isMixCompile()) {

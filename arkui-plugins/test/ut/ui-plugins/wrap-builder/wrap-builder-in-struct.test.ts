@@ -218,7 +218,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     throw new Error("Declare interface");
   }
 
-  private __backing_builderRegular?: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+  private __backing_builderRegular?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
   public get builderRegular(): @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) {
     return (this.__backing_builderRegular as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void));
   }
@@ -405,7 +405,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
-        }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (46726221)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -434,7 +434,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderProvider3;
-        }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (54078781)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -492,15 +492,15 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     if (({let gensym___14830560 = initializers;
     (((gensym___14830560) == (null)) ? undefined : gensym___14830560.__options_has_builderLink)})) {
       this.__backing_builderLink = STATE_MGMT_FACTORY.makeLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderLink", initializers!.__backing_builderLink!);
-    };
+    }
     if (({let gensym___225609674 = initializers;
     (((gensym___225609674) == (null)) ? undefined : gensym___225609674.__options_has_builderLink2)})) {
       this.__backing_builderLink2 = STATE_MGMT_FACTORY.makeLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderLink2", initializers!.__backing_builderLink2!);
-    };
+    }
     if (({let gensym___44855388 = initializers;
     (((gensym___44855388) == (null)) ? undefined : gensym___44855388.__options_has_builderLink3)})) {
       this.__backing_builderLink3 = STATE_MGMT_FACTORY.makeLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderLink3", initializers!.__backing_builderLink3!);
-    };
+    }
     this.__backing_builderProvide = STATE_MGMT_FACTORY.makeProvide<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderProvide", "builderProvide", ((({let gensym___142246099 = initializers;
     (((gensym___142246099) == (null)) ? undefined : gensym___142246099.builderProvide)})) ?? (MyBuilder)), false);
     this.__backing_builderProvide2 = STATE_MGMT_FACTORY.makeProvide<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderProvide2", "builderProvide2", ((({let gensym___39863061 = initializers;
@@ -510,18 +510,18 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     this.__backing_builderConsume = STATE_MGMT_FACTORY.makeConsume<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "builderConsume", "builderConsume");
     this.__backing_builderConsume2 = STATE_MGMT_FACTORY.makeConsume<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "builderConsume2", "builderConsume2");
     this.__backing_builderConsume3 = STATE_MGMT_FACTORY.makeConsume<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "builderConsume3", "builderConsume3");
-    this.__backing_builderStorageLink = STATE_MGMT_FACTORY.makeStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStorageLink", MyBuilder)
-    this.__backing_builderStorageLink2 = STATE_MGMT_FACTORY.makeStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStorageLink2", wrapBuilder(MyBuilder))
-    this.__backing_builderStorageLink3 = STATE_MGMT_FACTORY.makeStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderStoragePropRef = STATE_MGMT_FACTORY.makeStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStoragePropRef", MyBuilder)
-    this.__backing_builderStoragePropRef2 = STATE_MGMT_FACTORY.makeStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStoragePropRef2", wrapBuilder(MyBuilder))
-    this.__backing_builderStoragePropRef3 = STATE_MGMT_FACTORY.makeStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderLocalStorageLink = STATE_MGMT_FACTORY.makeLocalStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStorageLink", MyBuilder)
-    this.__backing_builderLocalStorageLink2 = STATE_MGMT_FACTORY.makeLocalStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStorageLink2", wrapBuilder(MyBuilder))
-    this.__backing_builderLocalStorageLink3 = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
-    this.__backing_builderLocalStoragePropRef = STATE_MGMT_FACTORY.makeLocalStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStoragePropRef", MyBuilder)
-    this.__backing_builderLocalStoragePropRef2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStoragePropRef2", wrapBuilder(MyBuilder))
-    this.__backing_builderLocalStoragePropRef3 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])
+    this.__backing_builderStorageLink = STATE_MGMT_FACTORY.makeStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStorageLink", MyBuilder);
+    this.__backing_builderStorageLink2 = STATE_MGMT_FACTORY.makeStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStorageLink2", wrapBuilder(MyBuilder));
+    this.__backing_builderStorageLink3 = STATE_MGMT_FACTORY.makeStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderStoragePropRef = STATE_MGMT_FACTORY.makeStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderStoragePropRef", MyBuilder);
+    this.__backing_builderStoragePropRef2 = STATE_MGMT_FACTORY.makeStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderStoragePropRef2", wrapBuilder(MyBuilder));
+    this.__backing_builderStoragePropRef3 = STATE_MGMT_FACTORY.makeStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderLocalStorageLink = STATE_MGMT_FACTORY.makeLocalStorageLink<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStorageLink", MyBuilder);
+    this.__backing_builderLocalStorageLink2 = STATE_MGMT_FACTORY.makeLocalStorageLink<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStorageLink2", wrapBuilder(MyBuilder));
+    this.__backing_builderLocalStorageLink3 = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStorageLink3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
+    this.__backing_builderLocalStoragePropRef = STATE_MGMT_FACTORY.makeLocalStoragePropRef<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>(this, "aa", "builderLocalStoragePropRef", MyBuilder);
+    this.__backing_builderLocalStoragePropRef2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>(this, "aa", "builderLocalStoragePropRef2", wrapBuilder(MyBuilder));
+    this.__backing_builderLocalStoragePropRef3 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>(this, "aa", "builderLocalStoragePropRef3", [wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {
@@ -539,6 +539,39 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
+    this.__backing_builderState!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState)})) ?? (MyBuilder)));
+    this.__backing_builderState2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderState3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderPropRef!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef)})) ?? (MyBuilder)));
+    this.__backing_builderPropRef2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderPropRef3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderLink!.resetOnReuse(initializers!.__backing_builderLink!);
+    this.__backing_builderLink2!.resetOnReuse(initializers!.__backing_builderLink2!);
+    this.__backing_builderLink3!.resetOnReuse(initializers!.__backing_builderLink3!);
+    this.__backing_builderProvide!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide)})) ?? (MyBuilder)));
+    this.__backing_builderProvide2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide2)})) ?? (wrapBuilder(MyBuilder))));
+    this.__backing_builderProvide3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])));
+    this.__backing_builderConsume!.resetOnReuse("builderConsume");
+    this.__backing_builderConsume2!.resetOnReuse("builderConsume2");
+    this.__backing_builderConsume3!.resetOnReuse("builderConsume3");
+    this.__backing_builderStoragePropRef!.resetOnReuse();
+    this.__backing_builderStoragePropRef2!.resetOnReuse();
+    this.__backing_builderStoragePropRef3!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef2!.resetOnReuse();
+    this.__backing_builderLocalStoragePropRef3!.resetOnReuse();
+  }
+
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Index, __Options_Index>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Index => {
@@ -552,7 +585,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     throw new Error("Declare interface");
   }
 
-  private __backing_builderRegular?: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+  private __backing_builderRegular?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
   public get builderRegular(): @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) {
     return (this.__backing_builderRegular as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void));
   }
@@ -859,7 +892,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderRegular3;
-        }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (18973066)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -888,7 +921,7 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
         }
         __memo_parameter_instance.value.setForEachOptions((() => {
           return this.builderLocalStorageLink3;
-        }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
+        }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>) => {
           const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (139295044)), 1);
           const __memo_parameter_item = __memo_scope.param(0, item);
           if (__memo_scope.unchanged) {
@@ -922,192 +955,150 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@ComponentV2() interface __Options_Index2 {
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderRegular2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderRegular3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular3', '(boolean | undefined)')}
-  
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderLocal', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Local'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderLocal', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Local')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLocal', '(ILocalDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderLocal', '(ILocalDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocal', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocal2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocal2', '(ILocalDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocal2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocal3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocal3', '(ILocalDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocal3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderParam', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderParam', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Param')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderParam', '(IParamDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderParam', '(IParamDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderParam2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderParam2', '(IParamDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderParam2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderParam3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderParam3', '(IParamDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderParam3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderOnceParam', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderOnceParam', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderOnceParam', '(IParamOnceDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderOnceParam', '(IParamOnceDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Param')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderOnceParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderOnceParam2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderOnceParam2', '(IParamOnceDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderOnceParam2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderOnceParam3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Param'), dumpAnnotation('Once')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderOnceParam3', '(IParamOnceDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderOnceParam3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderProvider', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Provider', { alias: "" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderProvider', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Provider', { alias: "" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderProvider', '(IProviderDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderProvider', '(IProviderDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvider', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderProvider2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderProvider2', '(IProviderDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvider2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderProvider3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Provider', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderProvider3', '(IProviderDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvider3', '(boolean | undefined)')}
-  
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderConsumer', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Consumer', { alias: "" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderConsumer', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Consumer', { alias: "" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderConsumer', '(IConsumerDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderConsumer', '(IConsumerDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsumer', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderConsumer2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderConsumer2', '(IConsumerDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsumer2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderConsumer3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Consumer', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderConsumer3', '(IConsumerDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsumer3', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index2 {
+  @Memo() public builderRegular?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  public __options_has_builderRegular?: boolean;
+  public builderRegular2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __options_has_builderRegular2?: boolean;
+  public builderRegular3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderRegular3?: boolean;
+  @Local() @Memo() public builderLocal?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderLocal?: ILocalDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderLocal?: boolean;
+  @Local() public builderLocal2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderLocal2?: ILocalDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderLocal2?: boolean;
+  @Local() public builderLocal3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderLocal3?: ILocalDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderLocal3?: boolean;
+  @Param() @Memo() public builderParam?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderParam?: IParamDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderParam?: boolean;
+  @Param() public builderParam2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderParam2?: IParamDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderParam2?: boolean;
+  @Param() public builderParam3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderParam3?: IParamDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderParam3?: boolean;
+  @Once() @Param() @Memo() public builderOnceParam?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Param() @Memo() public __backing_builderOnceParam?: IParamOnceDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderOnceParam?: boolean;
+  @Once() @Param() public builderOnceParam2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  @Param() public __backing_builderOnceParam2?: IParamOnceDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderOnceParam2?: boolean;
+  @Once() @Param() public builderOnceParam3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  @Param() public __backing_builderOnceParam3?: IParamOnceDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderOnceParam3?: boolean;
+  @Provider() @Memo() public builderProvider?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderProvider?: IProviderDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderProvider?: boolean;
+  @Provider() public builderProvider2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderProvider2?: IProviderDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderProvider2?: boolean;
+  @Provider() public builderProvider3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderProvider3?: IProviderDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderProvider3?: boolean;
+  @Consumer() @Memo() public builderConsumer?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderConsumer?: IConsumerDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderConsumer?: boolean;
+  @Consumer() public builderConsumer2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderConsumer2?: IConsumerDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderConsumer2?: boolean;
+  @Consumer() public builderConsumer3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderConsumer3?: IConsumerDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderConsumer3?: boolean;
+  public constructor() {}
 }
 
-@Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderRegular', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderRegular2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderRegular3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderRegular3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderState', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('State'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderState', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('State')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderState', '(IStateDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderState', '(IStateDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderState', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderState2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderState2', '(IStateDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderState2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderState3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderState3', '(IStateDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderState3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderPropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('PropRef'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderPropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('PropRef')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderPropRef', '(IPropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderPropRef', '(IPropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderPropRef', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderPropRef2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderPropRef2', '(IPropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderPropRef2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderPropRef3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderPropRef3', '(IPropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderPropRef3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Link'), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Link')], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLink', '(LinkSourceType<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderLink', '(LinkSourceType<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLink2', '(LinkSourceType<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLink3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLink3', '(LinkSourceType<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLink3', '(boolean | undefined)')}
-  
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderProvide', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Provide', { alias: "builderProvide", allowOverride: false }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderProvide', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Provide', { alias: "builderProvide", allowOverride: false })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderProvide', '(IProvideDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderProvide', '(IProvideDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvide', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderProvide2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Provide', { alias: "builderProvide2", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderProvide2', '(IProvideDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvide2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderProvide3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Provide', { alias: "builderProvide3", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderProvide3', '(IProvideDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderProvide3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderConsume', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Consume', { alias: "" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderConsume', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('Consume', { alias: "" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderConsume', '(IConsumeDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderConsume', '(IConsumeDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsume', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderConsume2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderConsume2', '(IConsumeDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsume2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderConsume3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderConsume3', '(IConsumeDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderConsume3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderStorageLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('StorageLink', { value: "aa" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderStorageLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('StorageLink', { value: "aa" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderStorageLink', '(IStorageLinkDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderStorageLink', '(IStorageLinkDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStorageLink', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderStorageLink2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('StorageLink', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderStorageLink2', '(IStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStorageLink2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderStorageLink3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('StorageLink', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderStorageLink3', '(IStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStorageLink3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderStoragePropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('StoragePropRef', { value: "aa" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderStoragePropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('StoragePropRef', { value: "aa" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderStoragePropRef', '(IStoragePropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderStoragePropRef', '(IStoragePropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStoragePropRef', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderStoragePropRef2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('StoragePropRef', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderStoragePropRef2', '(IStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStoragePropRef2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderStoragePropRef3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('StoragePropRef', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderStoragePropRef3', '(IStoragePropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderStoragePropRef3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderLocalStorageLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('LocalStorageLink', { value: "aa" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderLocalStorageLink', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('LocalStorageLink', { value: "aa" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLocalStorageLink', '(ILocalStorageLinkDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderLocalStorageLink', '(ILocalStorageLinkDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStorageLink', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocalStorageLink2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocalStorageLink2', '(ILocalStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStorageLink2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocalStorageLink3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocalStorageLink3', '(ILocalStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStorageLink3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.GET, 'builderLocalStoragePropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "aa" }), dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, 'builderLocalStoragePropRef', '(@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "aa" })], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.GET, '__backing_builderLocalStoragePropRef', '(ILocalStoragePropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.SET, '__backing_builderLocalStoragePropRef', '(ILocalStoragePropRefDecoratedVariable<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [], [dumpAnnotation('Memo')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStoragePropRef', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocalStoragePropRef2', '(WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocalStoragePropRef2', '(ILocalStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStoragePropRef2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builderLocalStoragePropRef3', '(Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>> | undefined)', [dumpAnnotation('LocalStoragePropRef', { value: "aa" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_builderLocalStoragePropRef3', '(ILocalStoragePropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builderLocalStoragePropRef3', '(boolean | undefined)')}
+@Component() class __Options_Index {
+  @Memo() public builderRegular?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  public __options_has_builderRegular?: boolean;
+  public builderRegular2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __options_has_builderRegular2?: boolean;
+  public builderRegular3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderRegular3?: boolean;
+  @State() @Memo() public builderState?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderState?: IStateDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderState?: boolean;
+  @State() public builderState2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderState2?: IStateDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderState2?: boolean;
+  @State() public builderState3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderState3?: IStateDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderState3?: boolean;
+  @PropRef() @Memo() public builderPropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderPropRef?: IPropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderPropRef?: boolean;
+  @PropRef() public builderPropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderPropRef2?: IPropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderPropRef2?: boolean;
+  @PropRef() public builderPropRef3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderPropRef3?: IPropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderPropRef3?: boolean;
+  @Link() @Memo() public builderLink: @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void);
+  @Memo() public __backing_builderLink?: LinkSourceType<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderLink?: boolean;
+  @Link() public builderLink2: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderLink2?: LinkSourceType<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderLink2?: boolean;
+  @Link() public builderLink3: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderLink3?: LinkSourceType<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderLink3?: boolean;
+  @Provide() @Memo() public builderProvide?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderProvide?: IProvideDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderProvide?: boolean;
+  @Provide() public builderProvide2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderProvide2?: IProvideDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderProvide2?: boolean;
+  @Provide() public builderProvide3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderProvide3?: IProvideDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderProvide3?: boolean;
+  @Consume() @Memo() public builderConsume?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderConsume?: IConsumeDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderConsume?: boolean;
+  @Consume() public builderConsume2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderConsume2?: IConsumeDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderConsume2?: boolean;
+  @Consume() public builderConsume3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderConsume3?: IConsumeDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderConsume3?: boolean;
+  @StorageLink({value:"aa"}) @Memo() public builderStorageLink?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderStorageLink?: IStorageLinkDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderStorageLink?: boolean;
+  @StorageLink({value:"aa"}) public builderStorageLink2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderStorageLink2?: IStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderStorageLink2?: boolean;
+  @StorageLink({value:"aa"}) public builderStorageLink3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderStorageLink3?: IStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderStorageLink3?: boolean;
+  @StoragePropRef({value:"aa"}) @Memo() public builderStoragePropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderStoragePropRef?: IStoragePropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderStoragePropRef?: boolean;
+  @StoragePropRef({value:"aa"}) public builderStoragePropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderStoragePropRef2?: IStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderStoragePropRef2?: boolean;
+  @StoragePropRef({value:"aa"}) public builderStoragePropRef3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderStoragePropRef3?: IStoragePropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderStoragePropRef3?: boolean;
+  @LocalStorageLink({value:"aa"}) @Memo() public builderLocalStorageLink?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderLocalStorageLink?: ILocalStorageLinkDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderLocalStorageLink?: boolean;
+  @LocalStorageLink({value:"aa"}) public builderLocalStorageLink2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderLocalStorageLink2?: ILocalStorageLinkDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderLocalStorageLink2?: boolean;
+  @LocalStorageLink({value:"aa"}) public builderLocalStorageLink3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderLocalStorageLink3?: ILocalStorageLinkDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderLocalStorageLink3?: boolean;
+  @LocalStoragePropRef({value:"aa"}) @Memo() public builderLocalStoragePropRef?: (@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void) | undefined);
+  @Memo() public __backing_builderLocalStoragePropRef?: ILocalStoragePropRefDecoratedVariable<(@Builder() ((value: string, size: number)=> void) | undefined)>;
+  public __options_has_builderLocalStoragePropRef?: boolean;
+  @LocalStoragePropRef({value:"aa"}) public builderLocalStoragePropRef2?: WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>;
+  public __backing_builderLocalStoragePropRef2?: ILocalStoragePropRefDecoratedVariable<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __options_has_builderLocalStoragePropRef2?: boolean;
+  @LocalStoragePropRef({value:"aa"}) public builderLocalStoragePropRef3?: Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>;
+  public __backing_builderLocalStoragePropRef3?: ILocalStoragePropRefDecoratedVariable<Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>>;
+  public __options_has_builderLocalStoragePropRef3?: boolean;
+  public constructor() {}
 }
 `;
 

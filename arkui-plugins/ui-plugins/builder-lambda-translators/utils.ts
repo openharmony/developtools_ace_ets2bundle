@@ -37,7 +37,7 @@ import {
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { AstNodePointer } from '../../common/safe-types';
-import { CallInfo, CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CallInfo, CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { checkIsBuilderLambdaFunctionCallFromInfo, checkIsCustomFunctionMethodDeclFromInfo } from '../../collectors/ui-collectors/utils';
 import { MetaDataCollector } from '../../common/metadata-collector';
 
@@ -60,10 +60,10 @@ export type BuilderLambdaDeclInfo = {
 export type BuilderLambdaStyleBodyInfo = {
     lambdaBody: arkts.Identifier | arkts.CallExpression | undefined;
     initCallPtr: AstNodePointer | undefined;
-    reuseId: arkts.AstNode | undefined;
-    defaultReuseId: arkts.AstNode | undefined;
+    reuseId: arkts.Expression | undefined;
+    defaultReuseId: arkts.Expression | undefined;
     structEntryStroage: string | undefined;
-    structPropertyInfos?: CustomComponentInterfacePropertyInfo[];
+    structPropertyInfos?: CustomComponentInnerClassPropertyInfo[];
 };
 
 export type BuilderLambdaAstNode = arkts.ScriptFunction | arkts.ETSParameterExpression | arkts.FunctionDeclaration;
@@ -135,7 +135,7 @@ export function getStructCalleeInfoFromCallee(
     if (!callee || !arkts.isMemberExpression(callee)) {
         return undefined;
     }
-    const decl = arkts.getDecl(callee.object);
+    const decl = arkts.getDecl(callee.object!);
     if (!decl || !arkts.isClassDefinition(decl)) {
         return undefined;
     }
@@ -177,7 +177,7 @@ export function getStructCalleeInfoFromCallInfo(
         structName: callInfo.structDeclInfo.name
     };
     if (callInfo.structDeclInfo.annotationInfo.hasEntry) {
-        const structDecl = arkts.getPeerIdentifierDecl(callee.object.peer);
+        const structDecl = arkts.getPeerIdentifierDecl(callee.object!.peer);
         if (!!structDecl && arkts.isClassDefinition(structDecl)) {
             let structEntryStroage: arkts.Expression | undefined;
             structDecl.annotations.forEach((anno) => {
@@ -216,8 +216,8 @@ export function builderLambdaArgumentName(annotation: arkts.AnnotationUsage): st
     return property.value.str;
 }
 
-export function findReuseId(chainingCall: arkts.CallExpression): arkts.AstNode | undefined {
-    const callee = chainingCall.expression;
+export function findReuseId(chainingCall: arkts.CallExpression): arkts.Expression | undefined {
+    const callee = chainingCall.callee;
     if (!arkts.isIdentifier(callee) || chainingCall.arguments.length === 0) {
         return undefined;
     }
@@ -230,7 +230,7 @@ export function findReuseId(chainingCall: arkts.CallExpression): arkts.AstNode |
     return undefined;
 }
 
-function findReusableV2Id(arg: arkts.Expression): arkts.AstNode | undefined {
+function findReusableV2Id(arg: arkts.Expression): arkts.Expression | undefined {
     if (!arkts.isObjectExpression(arg) || arg.properties.length === 0 || !arkts.isProperty(arg.properties[0])) {
         return undefined;
     }
@@ -252,8 +252,8 @@ export function isBuilderLambda(node: arkts.AstNode, nodeDecl?: arkts.AstNode | 
  * @param node method definition node
  */
 export function isFunctionWithReceiver(node: arkts.MethodDefinition): boolean {
-    if (node.scriptFunction && arkts.isScriptFunction(node.scriptFunction)) {
-        return node.scriptFunction.hasReceiver;
+    if (node.function! && arkts.isScriptFunction(node.function!)) {
+        return node.function!.hasReceiver;
     }
     return false;
 }
@@ -278,9 +278,9 @@ export function isFunctionWithReceiverCall(node: arkts.Identifier): boolean {
  */
 export function isStyleChainedCall(node: arkts.CallExpression): boolean {
     return (
-        arkts.isMemberExpression(node.expression) &&
-        arkts.isIdentifier(node.expression.property) &&
-        arkts.isCallExpression(node.expression.object)
+        arkts.isMemberExpression(node.callee) &&
+        arkts.isIdentifier(node.callee.property) &&
+        arkts.isCallExpression(node.callee.object)
     );
 }
 
@@ -298,8 +298,8 @@ export function isStyleChainedCallee(callee: arkts.AstNode): callee is arkts.Mem
  */
 export function isStyleWithReceiverCall(node: arkts.CallExpression): boolean {
     return (
-        arkts.isIdentifier(node.expression) &&
-        isFunctionWithReceiverCall(node.expression) &&
+        arkts.isIdentifier(node.callee) &&
+        isFunctionWithReceiverCall(node.callee) &&
         !!node.arguments.length &&
         arkts.isCallExpression(node.arguments[0])
     );
@@ -340,17 +340,17 @@ export function getDeclForBuilderLambdaMethodDecl(node: arkts.AstNode): arkts.As
     if (!node || !arkts.isMethodDefinition(node)) {
         return undefined;
     }
-    const nameNode = node.name;
+    const nameNode = node.id;
     if (!nameNode || nameNode.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
         return undefined;
     }
-    let isBuilderLambda: boolean = hasBuilderLambdaAnnotation(node.scriptFunction);
+    let isBuilderLambda: boolean = hasBuilderLambdaAnnotation(node.function);
     if (!isBuilderLambda) {
-        isBuilderLambda = !!node.name && isBuilderLambdaCall(node.name);
+        isBuilderLambda = !!node.id && isBuilderLambdaCall(node.id);
     }
     const isMethodDecl: boolean =
-        !!node.scriptFunction &&
-        arkts.hasModifierFlag(node.scriptFunction, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        !!node.function! &&
+        arkts.hasModifierFlag(node.function!, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     if (isBuilderLambda && isMethodDecl) {
         return node;
     }
@@ -365,14 +365,14 @@ export function getDeclForBuilderLambda(
         return undefined;
     }
 
-    let currNode: arkts.AstNode = node;
+    let currNode: arkts.Expression = node;
     while (
         !!currNode &&
         arkts.isCallExpression(currNode) &&
-        !!currNode.expression &&
-        arkts.isMemberExpression(currNode.expression)
+        !!currNode.callee &&
+        arkts.isMemberExpression(currNode.callee)
     ) {
-        const _node: arkts.MemberExpression = currNode.expression;
+        const _node: arkts.MemberExpression = currNode.callee;
 
         if (!!_node.property && arkts.isIdentifier(_node.property) && isBuilderLambdaCall(_node.property)) {
             return node;
@@ -382,7 +382,7 @@ export function getDeclForBuilderLambda(
             return node;
         }
 
-        currNode = _node.object;
+        currNode = _node.object!;
     }
 
     if (isBuilderLambdaCall(node, nodeDecl)) {
@@ -397,8 +397,8 @@ export function isBuilderLambdaCall(
 ): boolean {
     let decl = nodeDecl;
     if (decl === undefined) {
-        const expr = arkts.isIdentifier(node) ? node : node.expression;
-        decl = arkts.getDecl(expr);
+        const expr = arkts.isIdentifier(node) ? node : node.callee;
+        decl = expr && arkts.getDecl(expr);
     }
 
     if (!decl) {
@@ -415,8 +415,8 @@ export function isBuilderLambdaCall(
         }
         return isBuilderLambdaMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl) && !!decl.scriptFunction) {
-        return hasBuilderLambdaAnnotation(decl.scriptFunction);
+    if (arkts.isFunctionExpression(decl) && !!decl.function) {
+        return hasBuilderLambdaAnnotation(decl.function);
     }
     return false;
 }
@@ -426,7 +426,7 @@ export function isBuilderLambdaMethod(node: arkts.MethodDefinition): boolean {
         return false;
     }
 
-    const result = hasBuilderLambdaAnnotation(node.scriptFunction);
+    const result = hasBuilderLambdaAnnotation(node.function!);
     if (result) {
         return true;
     }
@@ -444,6 +444,13 @@ export function isBuilderLambdaAnnotation(node: arkts.AnnotationUsage): boolean 
     return isAnnotation(node, BuilderLambdaNames.ANNOTATION_NAME);
 }
 
+export function findThisMemberValueInExpression(node: arkts.Expression | undefined): arkts.MemberExpression | undefined {
+    if (!!node && arkts.isMemberExpression(node) && arkts.isThisExpression(node.object)) {
+        return node;
+    }
+    return undefined;
+}
+
 export function findBuilderLambdaAnnotation(
     node: arkts.ScriptFunction | arkts.ETSParameterExpression
 ): arkts.AnnotationUsage | undefined {
@@ -454,7 +461,7 @@ export function findBuilderLambdaInMethod(node: arkts.MethodDefinition): arkts.A
     if (!node || !arkts.isMethodDefinition(node)) {
         return undefined;
     }
-    const result = findBuilderLambdaAnnotation(node.scriptFunction);
+    const result = findBuilderLambdaAnnotation(node.function!);
     if (!!result) {
         return result;
     }
@@ -478,15 +485,15 @@ export function findBuilderLambdaInCall(
     if (arkts.isMethodDefinition(decl)) {
         return findBuilderLambdaInMethod(decl);
     }
-    if (arkts.isFunctionExpression(decl) && !!decl.scriptFunction) {
-        return findBuilderLambdaAnnotation(decl.scriptFunction);
+    if (arkts.isFunctionExpression(decl) && !!decl.function) {
+        return findBuilderLambdaAnnotation(decl.function);
     }
     return undefined;
 }
 
 export function findBuilderLambdaDecl(node: arkts.CallExpression | arkts.Identifier): arkts.AstNode | undefined {
-    const expr = arkts.isIdentifier(node) ? node : node.expression;
-    const decl = arkts.getDecl(expr);
+    const expr = arkts.isIdentifier(node) ? node : node.callee;
+    const decl = expr && arkts.getDecl(expr);
     if (!decl) {
         return undefined;
     }
@@ -514,8 +521,8 @@ export function findBuilderLambdaDeclInfo(decl: arkts.AstNode | undefined): Buil
     if (!decl || !arkts.isMethodDefinition(decl)) {
         return undefined;
     }
-    const func = decl.scriptFunction;
-    const nameNode = decl.name;
+    const func = decl.function!;
+    const nameNode = decl.id!;
     const isFunctionCall = isBuilderLambdaFunctionCall(nameNode);
     const isCustomFunctionCall = isFunctionCall && isCustomBuilderLambdaFunctionCall(nameNode);
     const params = func.params.map((p) => p.clone());
@@ -551,7 +558,7 @@ export function collectDeclInfoFromInfo(
     }    
     const rootCallee: arkts.CallExpression = coerceToAstNode<arkts.CallExpression>(node);
     const decl: arkts.MethodDefinition = coerceToAstNode<arkts.MethodDefinition>(findRootCalleeDecl(rootCallee)!);
-    const func: arkts.ScriptFunction = decl.scriptFunction;
+    const func: arkts.ScriptFunction = decl.function;
     const params: arkts.Expression[] = func.params.map((p) => p.clone());
     const isFunctionCall: boolean = !rootCallInfo.structDeclInfo && !callInfo.structDeclInfo;
     const isCustomFunctionCall: boolean = rootCallInfo.declName === BuilderLambdaNames.INNER_METHOD_NAME 
@@ -597,7 +604,7 @@ export function findRootCalleeDecl(rootCall: arkts.CallExpression | arkts.Identi
     if (arkts.isIdentifier(rootCall)) {
         decl = arkts.getPeerIdentifierDecl(rootCall.peer);
     } else {
-        decl = arkts.getDecl(rootCall.expression);
+        decl = arkts.getDecl(rootCall.callee!);
     }
     return decl;
 }
@@ -664,7 +671,7 @@ export function isCustomBuilderLambdaFunctionCall(nameNode: arkts.Identifier | u
 }
 
 export function callIsGoodForBuilderLambda(leaf: arkts.CallExpression): boolean {
-    const node = leaf.expression;
+    const node = leaf.callee;
     return arkts.isIdentifier(node) || arkts.isMemberExpression(node);
 }
 
@@ -702,20 +709,20 @@ export function builderLambdaMethodDeclType(
     method: arkts.MethodDefinition,
     isFunctionCall: boolean
 ): arkts.TypeNode | undefined {
-    if (!method || !method.scriptFunction || !method.scriptFunction.returnTypeAnnotation) {
+    if (!method || !method.function || !method.function!.returnTypeAnnotation) {
         return undefined;
     }
     if (isFunctionCall) {
-        return method.scriptFunction.returnTypeAnnotation;
+        return method.function!.returnTypeAnnotation;
     }
-    return arkts.factory.createUnionType([method.scriptFunction.returnTypeAnnotation, arkts.factory.createETSUndefinedType()]);
+    return arkts.factory.createETSUnionType([method.function.returnTypeAnnotation, arkts.factory.createETSUndefinedType()]);
 }
 
 export function builderLambdaType(leaf: arkts.CallExpression): arkts.Identifier | undefined {
     if (!callIsGoodForBuilderLambda(leaf)) {
         return undefined;
     }
-    const node = leaf.expression;
+    const node = leaf.callee;
     let name: arkts.Identifier | undefined;
     if (arkts.isIdentifier(node)) {
         name = node;
@@ -731,8 +738,8 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
     if (!annotation) {
         return undefined;
     }
-    if (arkts.isIdentifier(node.expression)) {
-        let _builderLambdaFunctionName: string = node.expression.name;
+    if (arkts.isIdentifier(node.callee)) {
+        let _builderLambdaFunctionName: string = node.callee.name;
         withAPIVersion(
             { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
             (sdkVersion: APIVersions) => {
@@ -743,10 +750,10 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         return _builderLambdaFunctionName;
     }
     if (
-        arkts.isMemberExpression(node.expression) &&
-        arkts.isIdentifier(node.expression.property)
+        arkts.isMemberExpression(node.callee) &&
+        arkts.isIdentifier(node.callee.property)
     ) {
-        const propertyName: string = node.expression.property.name;
+        const propertyName: string = node.callee.property.name;
         if (propertyName === BuilderLambdaNames.ORIGIN_METHOD_NAME) {
             return BuilderLambdaNames.TRANSFORM_METHOD_NAME;
         } else if (propertyName === BuilderLambdaNames.INNER_METHOD_NAME) {
@@ -772,7 +779,7 @@ export function isDoubleDollarCall(
     if (!arkts.isCallExpression(_value)) {
         return false;
     }
-    const expr = _value.expression;
+    const expr = _value.callee;
     if (!expr || !arkts.isIdentifier(expr) || expr.name !== Dollars.DOLLAR_DOLLAR) {
         return false;
     }
@@ -951,6 +958,28 @@ export function flatObjectExpressionToEntries(
         entries.push([key, p.value]);
     });
     return entries;
+}
+
+export function getObjectInstanceDeclTypeMap(
+    objInstance: arkts.TSInterfaceDeclaration | arkts.ClassDefinition
+): Map<string, arkts.TypeNode> {
+    const typeMap: Map<string, arkts.TypeNode> = new Map<string, arkts.TypeNode>();
+    const body = arkts.isTSInterfaceDeclaration(objInstance) ? objInstance.body?.body : objInstance.body;
+    body?.forEach((st) => {
+        let key: string | undefined;
+        let typeAnnotation: arkts.TypeNode | undefined;
+        if (arkts.isMethodDefinition(st) && st.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            key = st.id?.name;
+            typeAnnotation = st.function.returnTypeAnnotation;
+        } else if (arkts.isClassProperty(st) && !!st.key && arkts.isIdentifier(st.key)) {
+            key = st.key.name;
+            typeAnnotation = st.typeAnnotation;
+        }
+        if (!!key && !!typeAnnotation) {
+            typeMap.set(key, typeAnnotation);
+        }
+    });
+    return typeMap;
 }
 
 /**

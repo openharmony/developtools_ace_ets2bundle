@@ -135,6 +135,7 @@ import {
   isCompatibleVersionOverTarget,
   isFunctionType
 } from './process_custom_component';
+import { getDecoratorNameFromAst } from './process_struct_componentV2';
 export type ControllerType = {
   hasController: boolean;
   unassignedControllerSet: Set<string>;
@@ -1591,7 +1592,11 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
   let innerDecorator: ts.Decorator;
   for (let i = 0; i < decorators.length; i++) {
     const decorator: ts.Decorator = decorators[i];
-    const decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+    let decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
+    const astDecoratorName: string = getDecoratorNameFromAst(decorator);
+    if (isCompatibleVersionOverTarget(26) && astDecoratorName) {
+      decoratorName = astDecoratorName;
+    }
     if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       hasInnerDecorator = true;
       innerDecorator = innerDecorator || decorator;

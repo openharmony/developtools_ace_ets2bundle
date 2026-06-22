@@ -96,10 +96,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     if (({let gensym___27735436 = initializers;
     (((gensym___27735436) == (null)) ? undefined : gensym___27735436.__options_has_selectedDate)})) {
       this.__backing_selectedDate = STATE_MGMT_FACTORY.makeLink<Date>(this, "selectedDate", initializers!.__backing_selectedDate!);
-    };
+    }
   }
 
   public __updateStruct(initializers: (__Options_DateComponent | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_DateComponent | undefined)): void {
+    this.__backing_selectedDate!.resetOnReuse(initializers!.__backing_selectedDate!);
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: DateComponent)=> void) | undefined), initializers: ((()=> __Options_DateComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -164,13 +168,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
+@Entry() @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
     (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
   }
 
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
+    this.__backing_parentSelectedDate!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -247,26 +256,26 @@ class __EntryWrapper extends EntryPoint {
     ParentComponent._invoke(undefined, undefined, undefined, undefined, undefined);
 
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Component() interface __Options_DateComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectedDate', '(Date | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectedDate', '(LinkSourceType<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectedDate', '(boolean | undefined)')}
+@Component() class __Options_DateComponent {
+  @Link() public selectedDate: Date;
+  public __backing_selectedDate?: LinkSourceType<Date>;
+  public __options_has_selectedDate?: boolean;
+  public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_ParentComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentSelectedDate', '(Date | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentSelectedDate', '(IStateDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentSelectedDate', '(boolean | undefined)')}
+@Entry() @Component() class __Options_ParentComponent {
+  @State() public parentSelectedDate?: Date;
+  public __backing_parentSelectedDate?: IStateDecoratedVariable<Date>;
+  public __options_has_parentSelectedDate?: boolean;
+  public constructor() {}
   
 }
 `;

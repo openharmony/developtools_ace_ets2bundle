@@ -73,7 +73,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/localstorage/storage-with-componentV2",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @ComponentV2() final struct MyStateSample extends CustomComponentV2<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() final struct MyStateSample extends CustomComponentV2<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
@@ -110,17 +110,15 @@ class __EntryWrapper extends EntryPoint {
       return myStorage();
     }), undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:false,routeName:""}) @ComponentV2() interface __Options_MyStateSample {
-  
+@Entry({storage:"myStorage",useSharedStorage:false}) @ComponentV2() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

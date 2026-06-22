@@ -55,10 +55,10 @@ function _checkNestedReuseComponent(
     struct: arkts.ClassDefinition
 ): void {
     const metadata = this.context ?? {};
-    if (!metadata.structDeclInfo || !metadata.fromStructInfo) {
+    if (!metadata.structDeclInfo || !metadata.fromStructInfo || !metadata.ptr) {
         return;
     }
-    const callExpression = arkts.classByPeer<arkts.CallExpression>(metadata.ptr);
+    const callExpression = arkts.unpackNonNullableNode<arkts.CallExpression>(metadata.ptr);
     const { hasRepeat, hasTemplate } = checkHasRepeatOrTemplate(callExpression);
     validateNestedReuseRules.bind(this)(metadata, callExpression, hasRepeat, hasTemplate);
 }
@@ -113,7 +113,7 @@ function isRepeatCall(expr: arkts.MemberExpression): boolean {
     if (!obj || !arkts.isCallExpression(obj)) {
         return false;
     }
-    const callee = obj.expression;
+    const callee = obj.callee;
     return !!callee && arkts.isIdentifier(callee) && callee.name === REPEAT;
 }
 
@@ -122,14 +122,14 @@ function findAncestorCallExpression(node: arkts.CallExpression): arkts.CallExpre
     let currParent: arkts.AstNode | undefined = node.parent;
     while (!!currParent) {
         if (arkts.isCallExpression(currParent)) {
-            if (!currParent.expression.findNodeInInnerChild(prevCall)) {
+            if (!currParent.callee!.findNodeInInnerChild(prevCall)) {
                 break;
             }
             prevCall = currParent;
         }
         currParent = currParent.parent;
     }
-    if (!currParent || !arkts.isCallExpression(currParent) || !arkts.isMemberExpression(currParent.expression)) {
+    if (!currParent || !arkts.isCallExpression(currParent) || !arkts.isMemberExpression(currParent.callee)) {
         return undefined;
     }
     return currParent;
@@ -140,7 +140,7 @@ function checkHasRepeatOrTemplate(node: arkts.CallExpression): { hasRepeat: bool
     if (!ancestorCall) {
         return { hasRepeat: false, hasTemplate: false };
     }
-    const expr = ancestorCall.expression as arkts.MemberExpression;
+    const expr = ancestorCall.callee as arkts.MemberExpression;
     return {
         hasTemplate: isTemplateCall(expr),
         hasRepeat: isRepeatCall(expr),

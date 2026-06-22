@@ -75,6 +75,8 @@ globalBuilder = wrapBuilder(myBuilder);
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
@@ -103,8 +105,9 @@ globalBuilder = wrapBuilder(myBuilder);
   static {
   }
 }
+@Component() class __Options_ImportStruct {
 
-@Component() interface __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 
@@ -167,6 +170,8 @@ globalBuilder = wrapBuilder(myBuilder);
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): ImportStruct => {
@@ -222,7 +227,10 @@ globalBuilder = wrapBuilder(myBuilder);
   static {
   }
 }
-@Component() interface __Options_ImportStruct {
+
+@Component() class __Options_ImportStruct {
+
+  public constructor() {}
 }
 `;
 

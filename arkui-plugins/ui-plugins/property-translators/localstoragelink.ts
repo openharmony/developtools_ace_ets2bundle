@@ -19,9 +19,9 @@ import { backingField, expectName, flatVisitMethodWithOverloads } from '../../co
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -41,14 +41,15 @@ import {
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithLocalStorageLinkProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -63,10 +64,10 @@ function initializeStructWithLocalStorageLinkProperty(
     const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(localStorageLinkValueStr),
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
@@ -79,13 +80,18 @@ function initializeStructWithLocalStorageLinkProperty(
             PropertyValueCache.getInstance().collect({ value: propertyType });
         }
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
+/**
+ * @deprecated
+ */
 export class LocalStorageLinkTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.LOCAL_STORAGE_LINK_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_LOCAL_STORAGE_LINK;
@@ -99,13 +105,16 @@ export class LocalStorageLinkTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithLocalStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -124,29 +133,35 @@ export class LocalStorageLinkCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithLocalStorageLinkProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
-export class LocalStorageLinkInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class LocalStorageLinkInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.LOCAL_STORAGE_LINK;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.LOCAL_STORAGE_LINK);
         }
@@ -154,18 +169,15 @@ export class LocalStorageLinkInterfaceTranslator<
     }
 }
 
-export class LocalStorageLinkCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class LocalStorageLinkCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.LOCAL_STORAGE_LINK;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return (
             !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasLocalStorageLink
         );

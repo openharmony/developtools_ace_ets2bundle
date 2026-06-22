@@ -75,6 +75,8 @@ export abstract class BaseRecord<Node extends arkts.AstNode, T extends Record<st
         this._isCollected = true;
     }
 
+    release(node: Node): void {}
+
     refresh(): void {
         if (!this.isChanged) {
             return;

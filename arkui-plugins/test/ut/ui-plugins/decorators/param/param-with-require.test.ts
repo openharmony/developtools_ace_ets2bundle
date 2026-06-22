@@ -111,7 +111,7 @@ class Info {
     throw new Error("Declare interface");
   }
 
-  @Require() @Param() public info!: Info;
+  @Require() @Param() public info: Info;
 
   public build() {
     Column(){
@@ -133,7 +133,7 @@ class Info {
     throw new Error("Declare interface");
   }
 
-  @Require() @Param() public region!: Region;
+  @Require() @Param() public region: Region;
 
   public build() {
     Column(){
@@ -145,30 +145,27 @@ class Info {
 
 }
 
-@ComponentV2() interface __Options_Index {
-  ${ignoreNewLines(`
-  @Local() infoList?: Info[];
-  @Local() __backing_infoList?: Info[];
-  __options_has_infoList?: boolean;
-  `)}
+@ComponentV2() class __Options_Index {
+  @Local() public infoList?: Info[];
+  @Local() public __backing_infoList?: Info[];
+  public __options_has_infoList?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_MiddleComponent {
-  ${ignoreNewLines(`
-  @Param() @Require() info: Info;
-  @Param() __backing_info?: Info;
-  __options_has_info?: boolean;
-  `)}
+@ComponentV2() class __Options_MiddleComponent {
+  @Require() @Param() public info: Info;
+  @Param() public __backing_info?: Info;
+  public __options_has_info?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_SubComponent {
-  ${ignoreNewLines(`
-  @Param() @Require() region: Region;
-  @Param() __backing_region?: Region;
-  __options_has_region?: boolean;
-  `)}
+@ComponentV2() class __Options_SubComponent {
+  @Require() @Param() public region: Region;
+  @Param() public __backing_region?: Region;
+  public __options_has_region?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -435,24 +432,27 @@ class Info {
   }
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'infoList', '(Array<Info> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_infoList', '(ILocalDecoratedVariable<Array<Info>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_infoList', '(boolean | undefined)')}
+@ComponentV2() class __Options_Index {
+  @Local() public infoList?: Array<Info>;
+  public __backing_infoList?: ILocalDecoratedVariable<Array<Info>>;
+  public __options_has_infoList?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_MiddleComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'info', 'Info', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_info', '(IParamDecoratedVariable<Info> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_info', '(boolean | undefined)')}
+@ComponentV2() class __Options_MiddleComponent {
+  @Require() @Param() public info: Info;
+  public __backing_info?: IParamDecoratedVariable<Info>;
+  public __options_has_info?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_SubComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'region', 'Region', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_region', '(IParamDecoratedVariable<Region> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_region', '(boolean | undefined)')}
+@ComponentV2() class __Options_SubComponent {
+  @Require() @Param() public region: Region;
+  public __backing_region?: IParamDecoratedVariable<Region>;
+  public __options_has_region?: boolean;
+  public constructor() {}
   
 }
 `;

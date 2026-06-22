@@ -155,6 +155,10 @@ export class Es2pandaNativeModule {
         throw new Error('Not implemented');
     }
 
+    _GetAnnotationDeclarationProperties(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+
     // From koala-wrapper
     _ClassVariableDeclaration(context: KNativePointer, classInstance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
@@ -193,6 +197,7 @@ export class Es2pandaNativeModule {
     _ProgramCanSkipPhases(context: KNativePointer, program: KNativePointer): KBoolean {
         throw new Error('Not implemented');
     }
+
     _AstNodeProgram(context: KNativePointer, instance: KNativePointer): KNativePointer {
         throw new Error('Not implemented');
     }

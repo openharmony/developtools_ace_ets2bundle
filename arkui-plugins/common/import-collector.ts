@@ -14,7 +14,6 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { createAndInsertImportDeclaration } from './arkts-utils';
 
 interface ImportInfo {
     imported: string;
@@ -23,21 +22,22 @@ interface ImportInfo {
     kind: arkts.Es2pandaImportKinds;
 }
 
-function insertImport(importInfo: ImportInfo, program?: arkts.Program): void {
-    const source: arkts.StringLiteral = arkts.factory.create1StringLiteral(importInfo.source);
+function createImport(importInfo: ImportInfo): arkts.ETSImportDeclaration {
+    const source: arkts.StringLiteral = arkts.factory.createStringLiteral(importInfo.source);
     const imported: arkts.Identifier = arkts.factory.createIdentifier(importInfo.imported);
     const local: arkts.Identifier = arkts.factory.createIdentifier(importInfo.local);
-    // Insert this import at the top of the script's statements.
-    if (!program) {
-        throw Error('Failed to insert import: Transformer has no program');
-    }
-    createAndInsertImportDeclaration(source, imported, local, importInfo.kind, program);
+    return arkts.factory.createETSImportDeclaration(
+        source,
+        [arkts.factory.createImportSpecifier(imported, local)],
+        importInfo.kind
+    );
 }
 
 export class ImportCollector {
     public importInfos: ImportInfo[];
     public localMap: Map<string, string>;
     public sourceMap: Map<string, string>;
+    public localSourceMap: Map<string, string>;
     private static instance: ImportCollector;
 
     /** this set is used for keeping the import sentence unique */
@@ -48,6 +48,7 @@ export class ImportCollector {
         this.imported = new Set();
         this.localMap = new Map();
         this.sourceMap = new Map();
+        this.localSourceMap = new Map();
     }
 
     static getInstance(): ImportCollector {
@@ -58,14 +59,21 @@ export class ImportCollector {
     }
 
     reset(): void {
-        this.localMap.clear();
         this.sourceMap.clear();
-        this.clearImports();
+        this.clearImports()
+            .clearLocals();
     }
 
-    clearImports(): void {
+    clearImports(): this {
         this.importInfos = [];
         this.imported.clear();
+        return this;
+    }
+
+    clearLocals(): this {
+        this.localMap.clear();
+        this.localSourceMap.clear();
+        return this;
     }
 
     collectSource(imported: string, source: string): void {
@@ -77,7 +85,7 @@ export class ImportCollector {
     collectImport(
         imported: string,
         local?: string,
-        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
     ): void {
         if (!this.sourceMap.has(imported)) {
             throw new Error(`ImportCollector: import ${imported}'s source haven't been collected yet.`);
@@ -101,8 +109,11 @@ export class ImportCollector {
         imported: string,
         source: string,
         local?: string,
-        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPE
+        kind: arkts.Es2pandaImportKinds = arkts.Es2pandaImportKinds.IMPORT_KINDS_TYPES
     ): void {
+        if (this.imported.has(imported)) {
+            return;
+        }
         const _local: string = local ?? imported;
         this.importInfos.push({
             source,
@@ -110,15 +121,25 @@ export class ImportCollector {
             local: _local,
             kind,
         });
+        this.localMap.set(imported, _local);
+        this.localSourceMap.set(imported, source);
+        this.imported.add(imported);
+    }
+
+    addToLocal(imported: string, localSource: string, local: string): void {
+        this.localMap.set(imported, local);
+        this.localSourceMap.set(imported, localSource);
     }
 
     getLocal(imported: string): string | undefined {
         return this.localMap.get(imported);
     }
 
-    insertCurrentImports(program?: arkts.Program): void {
-        this.importInfos.forEach((importInfo) => {
-            insertImport(importInfo, program);
-        });
+    getLocalSource(imported: string): string | undefined {
+        return this.localSourceMap.get(imported);
+    }
+
+    getImportStatements(): arkts.ETSImportDeclaration[] {
+        return this.importInfos.map((importInfo) => createImport(importInfo));
     }
 }

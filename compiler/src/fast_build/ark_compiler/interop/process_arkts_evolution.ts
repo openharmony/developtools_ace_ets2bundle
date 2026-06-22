@@ -326,15 +326,18 @@ export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolea
     }
 
     // Concatenate the corresponding source code path based on the bridge code path.
-    const declgenCodeBrigdePath = path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName);
-    if (normalizedFilePath.startsWith(toUnixPath(hybridModule.declgenBridgeCodePath) + '/') && fs.existsSync(normalizedFilePath)) {
-      return true;
+    const declgenCodeBrigdePath = toUnixPath(path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName));
+    if (normalizedFilePath.startsWith(toUnixPath(hybridModule.declgenBridgeCodePath) + '/')) {
+      if (fs.existsSync(normalizedFilePath)) {
+        return true;
+      }
+      // Bridge code file does not exist yet; verify via reverse-mapping to the source file.
+      const moduleId = normalizedFilePath.replace(declgenCodeBrigdePath, toUnixPath(metaInfo.pkgPath));
+      const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
+      const arktsEvolutionDeclFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_D_ETS);
+      return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile) || new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionDeclFile);
     }
-    let moduleId = normalizedFilePath.replace(toUnixPath(declgenCodeBrigdePath), toUnixPath(metaInfo.pkgPath));
-    const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
-    const arktsEvolutionDeclFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_D_ETS);
-
-    return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile) || new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionDeclFile);
+    return false;
   }
 
   return false;

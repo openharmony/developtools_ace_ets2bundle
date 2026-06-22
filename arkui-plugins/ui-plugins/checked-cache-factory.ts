@@ -21,8 +21,8 @@ import {
     ClassDeclarationRecordInfo,
     ClassPropertyRecordInfo,
     CustomComponentInfo,
-    CustomComponentInterfaceInfo,
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassInfo,
+    CustomComponentInnerClassPropertyInfo,
     ETSNewClassInstanceExpressionRecordInfo,
     ETSParameterExpressionRecordInfo,
     FunctionInfo,
@@ -70,7 +70,7 @@ import {
     checkIsObservedImplementsMethod,
     checkIsObservedV2ImplementsMethod,
     checkIsResourceFromInfo,
-    checkIsStructInterfacePropertyFromInfo,
+    checkIsStructInnerClassPropertyFromInfo,
     checkIsStructMethodFromInfo,
     checkIsStructPropertyFromInfo,
     getGetterSetterTypeFromInfo,
@@ -91,14 +91,14 @@ import { BuilderFactory } from './builder-lambda-translators/builder-factory';
 import { CacheFactory as EntryCacheFactory } from './entry-translators/cache-factory';
 import { factory as EntryFactory } from './entry-translators/factory';
 import {
-    InterfacePropertyCachedTranslator,
+    InnerClassPropertyCachedTranslator,
     PropertyCachedTranslator,
 } from './property-translators/base';
 import { StructType } from './struct-translators/utils';
 import {
     classifyObservedClassPropertyFromInfo,
     classifyPropertyFromInfo,
-    classifyPropertyInInterfaceFromInfo,
+    classifyPropertyInInnerClassFromInfo,
 } from './property-translators';
 import { PropertyRewriteCache } from './property-translators/cache/propertyRewriteCache';
 import { generateBuilderCompatible, insertCompatibleImport } from './interop/builder-interop';
@@ -283,23 +283,23 @@ export class RewriteFactory {
     /**
      * @internal
      */
-    static rewriteStructInterfaceProperty(
-        node: arkts.MethodDefinition,
-        metadata: CustomComponentInterfacePropertyInfo
-    ): arkts.MethodDefinition {
+    static rewriteStructInnerClassProperty(
+        node: arkts.ClassProperty,
+        metadata: CustomComponentInnerClassPropertyInfo
+    ): arkts.ClassProperty {
         arkts.Performance.getInstance().createDetailedEvent(
-            getPerfName([1, 1, 6, 1], 'classifyPropertyInInterfaceFromInfo')
+            getPerfName([1, 1, 6, 1], 'classifyPropertyInInnerClassFromInfo')
         );
-        const interfacePropertyTranslator: InterfacePropertyCachedTranslator<arkts.MethodDefinition> | undefined =
-            classifyPropertyInInterfaceFromInfo(node, metadata);
+        const innerClassPropertyTranslator: InnerClassPropertyCachedTranslator<arkts.ClassProperty> | undefined =
+            classifyPropertyInInnerClassFromInfo(node, metadata);
         arkts.Performance.getInstance().stopDetailedEvent(
-            getPerfName([1, 1, 6, 1], 'classifyPropertyInInterfaceFromInfo')
+            getPerfName([1, 1, 6, 1], 'classifyPropertyInInnerClassFromInfo')
         );
-        if (!interfacePropertyTranslator) {
+        if (!innerClassPropertyTranslator) {
             return node;
         }
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 6, 2], 'translateProperty'));
-        const res = interfacePropertyTranslator.translateProperty();
+        const res = innerClassPropertyTranslator.translateProperty();
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 6, 2], 'translateProperty'));
         return res;
     }
@@ -421,12 +421,6 @@ export class RewriteFactory {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 5], 'rewriteNormalClassMethod'));
             _node = RewriteFactory.rewriteNormalClassMethod(_node, metadata);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 5], 'rewriteNormalClassMethod'));
-        } else if (checkIsStructInterfacePropertyFromInfo(metadata)) {
-            arkts.Performance.getInstance().createDetailedEvent(
-                getPerfName([1, 1, 6], 'rewriteStructInterfaceProperty')
-            );
-            _node = RewriteFactory.rewriteStructInterfaceProperty(_node, metadata);
-            arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 6], 'rewriteStructInterfaceProperty'));
         } else if (checkIsNormalInterfacePropertyFromInfo(metadata)) {
             arkts.Performance.getInstance().createDetailedEvent(
                 getPerfName([1, 1, 7], 'rewriteNormalInterfaceProperty')
@@ -452,8 +446,13 @@ export class RewriteFactory {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1], 'rewriteStructProperty'));
             _node = RewriteFactory.rewriteStructProperty(_node, metadata);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1], 'rewriteStructProperty'));
-        }
-        if (checkIsNormalClassPropertyFromInfo(metadata)) {
+        } else if (checkIsStructInnerClassPropertyFromInfo(metadata)) {
+            arkts.Performance.getInstance().createDetailedEvent(
+                getPerfName([1, 1, 6], 'rewriteStructInnerClassProperty')
+            );
+            _node = RewriteFactory.rewriteStructInnerClassProperty(_node, metadata);
+            arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 6], 'rewriteStructInnerClassProperty'));
+        } else if (checkIsNormalClassPropertyFromInfo(metadata)) {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 2], 'rewriteNormalClassProperty'));
             _node = RewriteFactory.rewriteNormalClassProperty(_node, metadata);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 2], 'rewriteNormalClassProperty'));
@@ -483,7 +482,7 @@ export class RewriteFactory {
         if (checkIsInteropComponentCallFromInfo(_metadata)) {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1], 'Legacy Struct call'));
             insertInteropComponentImports();
-            const res = generateArkUICompatible(_node, !!_metadata.isDeclFromFunction);
+            const res = generateArkUICompatible(_node, !_metadata.fromStructInfo?.name);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1], 'Legacy Struct call'));
             return res;
         }

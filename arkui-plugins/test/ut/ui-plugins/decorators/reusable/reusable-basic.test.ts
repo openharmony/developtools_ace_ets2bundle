@@ -68,6 +68,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -120,6 +122,13 @@ function main() {}
     };
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_num!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
+    this.__backing_num1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
@@ -162,18 +171,18 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 
-@Component() @Reusable() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IPropRefDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num1', '(number | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num1', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num1', '(boolean | undefined)')}
+@Component() @Reusable() class __Options_Child {
+  @PropRef() public num?: number;
+  public __backing_num?: IPropRefDecoratedVariable<number>;
+  public __options_has_num?: boolean;
+  @State() public num1?: number;
+  public __backing_num1?: IStateDecoratedVariable<number>;
+  public __options_has_num1?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -26,6 +26,7 @@ import { BuilderLambdaNames, CustomComponentNames, NodeCacheNames } from '../../
 import { StructMethodValidator, StructPropertyValidator, ValidatorBuilder } from './validators';
 import { checkIsCustomComponentFromInfo } from './utils';
 import { BaseRecord } from './records/base';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 export interface StructCollectorOptions extends VisitorOptions {
     structRecord: CustomComponentRecord;
@@ -112,7 +113,7 @@ export class StructCollector extends AbstractVisitor {
         if (this.canRememberPropertyFromInfo(propertyInfo)) {
             this._rememberedProperties.push({ info: propertyInfo, node, record: propertyRecord });
         } else {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
             ValidatorBuilder.build(StructPropertyValidator).checkIsViolated(node, propertyInfo);
         }
     }
@@ -129,7 +130,7 @@ export class StructCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
         ValidatorBuilder.build(StructMethodValidator).checkIsViolated(node, methodInfo);
     }
@@ -143,10 +144,10 @@ export class StructCollector extends AbstractVisitor {
                 if (!newPropertyInfo) {
                     continue;
                 }
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
                 ValidatorBuilder.build(StructPropertyValidator).checkIsViolated(node, newPropertyInfo);
             } else {
-                arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
+                NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, record.toJSON());
                 ValidatorBuilder.build(StructPropertyValidator).checkIsViolated(node, info);
             }
         }

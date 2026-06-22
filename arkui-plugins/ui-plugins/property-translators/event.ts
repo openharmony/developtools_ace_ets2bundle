@@ -27,9 +27,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyTranslator,
 } from './base';
@@ -37,10 +37,10 @@ import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { factory as UIFactory } from '../ui-factory';
 // import { CustomComponentNames, optionsHasField } from '../utils';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import {
-    RegularCachedInterfaceTranslator,
-    RegularInterfaceTranslator,
+    RegularCachedInnerClassTranslator,
+    RegularInnerClassTranslator,
     RegularPropertyCachedTranslator,
     RegularPropertyTranslator,
 } from './regularProperty';
@@ -62,8 +62,8 @@ function resetOnReuseWithEventTranslator(
             false,
             false
         ),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateInitializeValue(propertyValue, propertyType, originalName)
+        factory.generateInitializeValue(propertyValue, propertyType, originalName),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!propertyValue) {
@@ -77,6 +77,9 @@ function resetOnReuseWithEventTranslator(
     return arkts.factory.createExpressionStatement(resetStateVars);
 }
 
+/**
+ * @deprecated
+ */
 export class EventTranslator extends RegularPropertyTranslator {
     protected shouldWrapPropertyType: boolean = false;
     protected hasInitializeStruct: boolean = true;
@@ -107,17 +110,20 @@ export class EventCachedTranslator extends RegularPropertyCachedTranslator {
     }
 }
 
-export class EventInterfaceTranslator<T extends InterfacePropertyTypes> extends RegularInterfaceTranslator<T> {}
+/**
+ * @deprecated
+ */
+export class EventInnerClassTranslator<T extends InnerClassPropertyTypes> extends RegularInnerClassTranslator<T> {}
 
-export class EventCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends RegularCachedInterfaceTranslator<T> {
+export class EventCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends RegularCachedInnerClassTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.EVENT;
 
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.annotationInfo?.hasEvent;
     }
 }

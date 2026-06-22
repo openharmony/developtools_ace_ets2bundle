@@ -14,3 +14,6 @@
  */
 export declare const base: string;
 export declare const nestedBase: string;
+export declare interface ErrorCallback {
+    (err: string): void;
+}

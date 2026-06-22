@@ -19,8 +19,8 @@ import { coerceToAstNode } from '../utils';
 import type { ExtendedValidatorFunction, IntrinsicValidatorFunction } from '../safe-types';
 import {
     CallInfo,
-    CustomComponentInterfacePropertyInfo,
-    CustomComponentInterfacePropertyRecord,
+    CustomComponentInnerClassPropertyInfo,
+    CustomComponentInnerClassPropertyRecord,
     NormalClassPropertyInfo,
     RecordBuilder,
     StructMethodInfo,
@@ -158,7 +158,7 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
         }
         const decoratorInfo = findConsumerOrProviderFromInterfacePropertyInfo(propertyInfo);
         if (!!decoratorInfo) {
-            const prop = arkts.classByPeer<arkts.Property>(propPtr);
+            const prop = arkts.unpackNonNullableNode<arkts.Property>(propPtr);
             this.report({
                 node: prop,
                 message: getForbiddenInitializationMessage(decoratorInfo.name, propertyInfo.name, structName),
@@ -220,7 +220,7 @@ function findOtherDecoratorFromInfo(info: StructPropertyInfo, except: string): a
 }
 
 function findConsumerOrProviderFromInterfacePropertyInfo(
-    propertyInfo: CustomComponentInterfacePropertyInfo
+    propertyInfo: CustomComponentInnerClassPropertyInfo
 ): DecoratorInfo | undefined {
     if (propertyInfo?.annotationInfo?.hasConsumer) {
         const annotation = propertyInfo.annotations?.[DecoratorNames.CONSUMER]!;
@@ -233,14 +233,14 @@ function findConsumerOrProviderFromInterfacePropertyInfo(
     return undefined;
 }
 
-function findConsumerOrProviderFromInterfaceProperty(property: arkts.MethodDefinition): DecoratorInfo | undefined {
-    const structInterfacePropRecord = RecordBuilder.build(CustomComponentInterfacePropertyRecord, property, {
+function findConsumerOrProviderFromInterfaceProperty(property: arkts.ClassProperty): DecoratorInfo | undefined {
+    const StructInnerClassPropRecord = RecordBuilder.build(CustomComponentInnerClassPropertyRecord, property, {
         shouldIgnoreDecl: false,
     });
-    if (!structInterfacePropRecord.isCollected) {
-        structInterfacePropRecord.collect(property);
+    if (!StructInnerClassPropRecord.isCollected) {
+        StructInnerClassPropRecord.collect(property);
     }
-    const propertyInfo = structInterfacePropRecord.toRecord();
+    const propertyInfo = StructInnerClassPropRecord.toRecord();
     if (propertyInfo?.annotationInfo?.hasConsumer) {
         const annotation = propertyInfo.annotations?.[DecoratorNames.CONSUMER]!;
         return { name: DecoratorNames.CONSUMER, annotation };

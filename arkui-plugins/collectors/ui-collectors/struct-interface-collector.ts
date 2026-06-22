@@ -16,37 +16,38 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
 import {
-    CustomComponentInterfacePropertyInfo,
-    CustomComponentInterfacePropertyRecord,
-    CustomComponentInterfaceRecord,
+    CustomComponentInnerClassPropertyInfo,
+    CustomComponentInnerClassPropertyRecord,
+    CustomComponentInnerClassRecord,
 } from './records';
 import { NodeCacheNames } from '../../common/predefines';
+import { NodeCacheFactory } from '../../common/node-cache';
 
-export interface StructInterfaceCollectorOptions extends VisitorOptions {
-    interfaceRecord: CustomComponentInterfaceRecord;
+export interface StructInnerClassCollectorOptions extends VisitorOptions {
+    innerClassRecord: CustomComponentInnerClassRecord;
     shouldIgnoreDecl?: boolean;
 }
 
-export class StructInterfaceCollector extends AbstractVisitor {
-    private _interfaceRecord: CustomComponentInterfaceRecord;
+export class StructInnerClassCollector extends AbstractVisitor {
+    private _innerClassRecord: CustomComponentInnerClassRecord;
     public shouldIgnoreDecl: boolean;
 
-    constructor(options: StructInterfaceCollectorOptions) {
+    constructor(options: StructInnerClassCollectorOptions) {
         super(options);
-        this._interfaceRecord = options.interfaceRecord;
+        this._innerClassRecord = options.innerClassRecord;
         this.shouldIgnoreDecl = options.shouldIgnoreDecl ?? false;
     }
 
-    private canCollectMethodFromInfo(info: CustomComponentInterfacePropertyInfo): boolean {
+    private canCollectMethodFromInfo(info: CustomComponentInnerClassPropertyInfo): boolean {
         if (!!info.annotationInfo && Object.keys(info.annotationInfo).length > 0) {
             return true;
         }
         return false;
     }
 
-    private collectMethod(node: arkts.MethodDefinition): void {
-        const methodRecord = new CustomComponentInterfacePropertyRecord({
-            interfaceRecord: this._interfaceRecord,
+    private collectMethod(node: arkts.ClassProperty): void {
+        const methodRecord = new CustomComponentInnerClassPropertyRecord({
+            innerClassRecord: this._innerClassRecord,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
         });
         methodRecord.collect(node);
@@ -56,13 +57,13 @@ export class StructInterfaceCollector extends AbstractVisitor {
             return;
         }
         if (this.canCollectMethodFromInfo(methodInfo)) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, methodRecord.toJSON());
         }
     }
 
-    visitor(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
-        node.body?.body.forEach((st) => {
-            if (arkts.isMethodDefinition(st)) {
+    visitor(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
+        node.definition?.body.forEach((st) => {
+            if (arkts.isClassProperty(st)) {
                 this.collectMethod(st);
             }
         });

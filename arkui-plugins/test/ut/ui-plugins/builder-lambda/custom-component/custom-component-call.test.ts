@@ -102,16 +102,15 @@ import { Text as Text, Column as Column, Component as Component, Builder as Buil
 
 }
 
-@Component() interface __Options_CustomContainer {
-  ${ignoreNewLines(`
-  @BuilderParam() closer?: (()=> void);
-  __options_has_closer?: boolean;
-  `)}
+@Component() class __Options_CustomContainer {
+  @BuilderParam() public closer?: ((()=> void) | undefined);
+  public __options_has_closer?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomContainerUser {
-
+@Component() class __Options_CustomContainerUser {
+  public constructor() {}
 }
 `;
 
@@ -149,10 +148,12 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomContainer | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_closer = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (this.closerBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.closer)})) ?? (this.closerBuilder))));
   }
 
   public __updateStruct(initializers: (__Options_CustomContainer | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_CustomContainer | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomContainer)=> void) | undefined), initializers: ((()=> __Options_CustomContainer) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -170,7 +171,7 @@ function main() {}
   @Memo() 
   public closerBuilder() {}
 
-  private __backing_closer?: @Memo() (()=> void);
+  private __backing_closer?: ((()=> void) | undefined);
 
   public get closer(): @Memo() (()=> void) {
     return this.__backing_closer!;
@@ -193,6 +194,8 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomContainerUser | undefined), @Memo() content: ((()=> void) | undefined)): void {}
 
   public __updateStruct(initializers: (__Options_CustomContainerUser | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_CustomContainerUser | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomContainerUser)=> void) | undefined), initializers: ((()=> __Options_CustomContainerUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -247,14 +250,15 @@ function main() {}
 
 }
 
-@Component() interface __Options_CustomContainer {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'closer', '(@Memo() (()=> void) | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_closer', '(boolean | undefined)')}
+@Component() class __Options_CustomContainer {
+  public closer?: ((()=> void) | undefined);
+  public __options_has_closer?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomContainerUser {
-
+@Component() class __Options_CustomContainerUser {
+  public constructor() {}
 }
 `;
 

@@ -19,9 +19,9 @@ import { backingField, expectName, flatVisitMethodWithOverloads } from '../../co
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -41,14 +41,15 @@ import {
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithStoragePropRefProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -63,10 +64,10 @@ function initializeStructWithStoragePropRefProperty(
     const defaultValue = this.property.value;
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(storagePropValueStr),
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         defaultValue ?? arkts.factory.createUndefinedLiteral(),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
@@ -79,13 +80,18 @@ function initializeStructWithStoragePropRefProperty(
             PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
         }
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
+/**
+ * @deprecated
+ */
 export class StoragePropRefTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.STORAGE_PROP_REF_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_STORAGE_PROP_REF;
@@ -99,13 +105,16 @@ export class StoragePropRefTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithStoragePropRefProperty.bind(this)(newName, originalName, metadata);
     }
@@ -121,32 +130,43 @@ export class StoragePropRefCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithStoragePropRefProperty.bind(this)(newName, originalName, metadata);
     }
+
+    resetOnReuse(newName: string): arkts.ExpressionStatement {
+        return factory.createResetOnReuseStmt(newName);
+    }
 }
 
-export class StoragePropRefInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class StoragePropRefInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_PROP_REF;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.STORAGE_PROP_REF);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.STORAGE_PROP_REF);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.STORAGE_PROP_REF);
         }
@@ -154,18 +174,15 @@ export class StoragePropRefInterfaceTranslator<
     }
 }
 
-export class StoragePropRefCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class StoragePropRefCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.STORAGE_PROP_REF;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return (
             !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasStoragePropRef
         );

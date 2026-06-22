@@ -461,8 +461,8 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     isSourceRetentionAnnotationContentValid: (annotation: ts.Annotation) => {
       return isSourceRetentionAnnotationContentValid(annotation);
     },
-    isApiAvailableVersionSpecifications: (apiAvailable: ts.CallExpression) => {
-      return isApiAvailableVersionSpecifications(apiAvailable);
+    isApiAvailableVersionSpecifications: (apiAvailable: ts.CallExpression, typeOfNodeFunc: Function) => {
+      return isApiAvailableVersionSpecifications(apiAvailable, typeOfNodeFunc);
     },
     uiProps: new Set(),
     clearProps: function () {
@@ -1138,6 +1138,33 @@ interface MessageCollection {
   logMessage: string
 }
 
+function hackInteropDiagnostic(diagnostic: ts.Diagnostic): void {
+  if (isMixCompile() && diagnostic.code === 2307) {
+    const rawMessage: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+    const moduleMatch: RegExpMatchArray | null = rawMessage.match(/Cannot find module '([^']+)'/);
+    if (moduleMatch && interopDeclNotFoundModules.has(moduleMatch[1])) {
+      // Keep the original message as the top-level chain entry and append the hint as next[],
+      // consistent with how tsc chains "did you mean ..." style supplementary messages.
+      const hintChain: ts.DiagnosticMessageChain = {
+        messageText: 'To use static sources in dynamic, please generate interop declarations or use STValue.',
+        category: diagnostic.category,
+        code: diagnostic.code,
+      };
+      if (typeof diagnostic.messageText === 'string') {
+        diagnostic.messageText = {
+          messageText: diagnostic.messageText,
+          category: diagnostic.category,
+          code: diagnostic.code,
+          next: [hintChain],
+        };
+      } else {
+        // Already a chain — append hint to the leaf's next array.
+        diagnostic.messageText.next = [...(diagnostic.messageText.next ?? []), hintChain];
+      }
+    }
+  }
+}
+
 export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
@@ -1153,6 +1180,10 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     isAtomicJsFile(diagnostic.file.fileName) && !matchJSGrammarErrorMessage(diagnostic.messageText)) {
     return;
   }
+
+  // When a module couldn't be resolved because its ArkTS 1.2 declgen output is missing,
+  // append an actionable hint as a sub-chain after the original "Cannot find module" message.
+  hackInteropDiagnostic(diagnostic);  
 
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
   if (validateError(message)) {
@@ -1433,6 +1464,9 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 
 // resolvedModulesCache records the files and their dependencies of program.
 export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
+// Records module names whose ArkTS 1.2 source file has no corresponding declgen output (.d.ets),
+// used to emit a targeted error in printDiagnostic instead of the generic "Cannot find module" message.
+const interopDeclNotFoundModules: Set<string> = new Set();
 
 export function isOhExport(packageName: string | undefined, resolvedFileName: string | undefined): boolean {
   if (packageName === undefined || resolvedFileName === undefined) {
@@ -1473,10 +1507,14 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           }
         } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName)) {
           // When result has a value and the path parsed is the source code file path of module 1.2,
-          // the parsing result needs to be modified to the glue code path of module 1.2
+          // the parsing result needs to be modified to the decl path of module 1.2
+          const resolvedFileVersion = FileManager.getInstance().getLanguageVersionByFilePath(result.resolvedModule.resolvedFileName)?.languageVersion;
           const queryResult = redirectToDeclFileForInterop(result.resolvedModule.resolvedFileName);
           if (queryResult) {
             resolvedModules.push(queryResult);
+          } else if (languageVersion === ARKTS_1_1 && resolvedFileVersion === ARKTS_1_2) {
+            interopDeclNotFoundModules.add(moduleName);
+            resolvedModules.push(null);
           } else {
             resolvedModules.push(result.resolvedModule);
           }
@@ -2231,6 +2269,7 @@ export function resetEtsCheck(): void {
   checkerResult.count = 0;
   warnCheckerResult.count = 0;
   resolvedModulesCache.clear();
+  interopDeclNotFoundModules.clear();
   dollarCollection.clear();
   extendCollection.clear();
   newExtendCollection.clear();

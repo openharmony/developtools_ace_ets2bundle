@@ -57,6 +57,7 @@ import {
   ARKTS_HYBRID
 } from './pre_define';
 import { readFirstLineSync } from './utils';
+import { logger } from '../../../compile_info';
 
 export let entryFileLanguageInfo = new Map();
 export let workerFile = null;
@@ -280,7 +281,7 @@ export class FileManager {
     };
   }
 
-  private static matchModulePathByDeclenPath(contentPath: string): ArkTSEvolutionModule | undefined {
+  private static matchModulePathByDeclgenPath(contentPath: string): ArkTSEvolutionModule | undefined {
     const projectConfig = FileManager.getInstance().getInteropConfig()?.projectConfig;
     if (!projectConfig) {
       return undefined;
@@ -288,7 +289,8 @@ export class FileManager {
     const projectRootDir = projectConfig['projectTopDir'];
     const sourcePath = toUnixPath(contentPath);
     const declgenPath = toUnixPath(path.join(projectRootDir, 'build', 'declgen'));
-    if (!isSubPathOf(sourcePath, declgenPath)) {
+    const declgenPathSeparateHvigor = toUnixPath(path.join(projectRootDir, 'interop-declaration'));
+    if (!isSubPathOf(sourcePath, declgenPath) && !isSubPathOf(sourcePath, declgenPathSeparateHvigor)) {
       return undefined;
     }
     const relativePath = toUnixPath(path.relative(declgenPath, sourcePath));
@@ -318,7 +320,7 @@ export class FileManager {
     languageVersion: string,
     pkgName: string
   } | undefined {
-    let matchedModuleInfo = this.matchModulePathByPrefix(path) || this.matchModulePathByDeclenPath(path);
+    let matchedModuleInfo = this.matchModulePathByPrefix(path) || this.matchModulePathByDeclgenPath(path);
 
     if (!matchedModuleInfo) {
       return undefined;
@@ -650,7 +652,17 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
 
       const relativePath = path.relative(interopInfo.moduleRootPath, rawPath);
       const withoutExt = removeExt(relativePath);
-      newEntry[newKey] = path.join(interopInfo.declgenBridgeCodePath, interopInfo.packageName, withoutExt + '.ts');
+      const bridgeCodePath = path.join(interopInfo.declgenBridgeCodePath, interopInfo.packageName, withoutExt + '.ts');
+      if (!fs.existsSync(bridgeCodePath)) {
+        const errInfo = LogDataFactory.newInstance(
+          ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
+          ArkTSErrorDescription,
+          `failed to find bridge code '${toUnixPath(bridgeCodePath)}' for entry '${toUnixPath(rawPath)}'. ` +
+          `To compile an interop project with static entry, please generate interop declarations and bridge code.`
+        );
+        throw Error(errInfo.toString());
+      }
+      newEntry[newKey] = bridgeCodePath;
     }
 
     return newEntry;

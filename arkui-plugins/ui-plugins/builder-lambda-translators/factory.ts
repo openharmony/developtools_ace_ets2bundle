@@ -14,8 +14,8 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import path from 'path';
-import { optionsHasField } from '../utils';
+import * as path from 'path';
+import { LocalImportInfo, optionsHasField } from '../utils';
 import {
     backingField,
     filterDefined,
@@ -52,9 +52,10 @@ import {
     getTransformedComponentName,
     findReuseId,
     getStructCalleeInfoFromCallee,
-    StructCalleeInfo,
     isInEntryWrapper,
     isDebugLineEnabled,
+    getObjectInstanceDeclTypeMap,
+    StructCalleeInfo,
 } from './utils';
 // import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { checkIsNameStartWithBackingField, hasDecorator } from '../property-translators/utils';
@@ -95,6 +96,7 @@ import { ComponentAttributeCache, ComponentRecord } from './cache/componentAttri
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { checkIsTrailingLambdaInLastParam, isForEach, isNavigationOrNavDestination } from '../../collectors/ui-collectors/records';
 import { InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
+import { NodeCacheFactory } from '../../common/node-cache';
 
 interface CreateStyleLambdaArgumentOptions {
     shouldApplyAttribute?: boolean;
@@ -109,10 +111,11 @@ export class factory {
         node: arkts.MethodDefinition,
         prefixArgs: arkts.ETSParameterExpression[],
         newAnno: arkts.AnnotationUsage[],
-        newName: string | undefined
+        newName: string | undefined,
+        overloads: arkts.MethodDefinition[]
     ): arkts.MethodDefinition {
-        const func: arkts.ScriptFunction = node.scriptFunction;
-        const ident: arkts.Identifier = node.name;
+        const func: arkts.ScriptFunction = node.function;
+        const ident: arkts.Identifier = node.id!;
         const name: string = ident.name;
         const isFunctionCall: boolean = name !== BuilderLambdaNames.ORIGIN_METHOD_NAME;
         const newParams: arkts.Expression[] = [...prefixArgs, ...func.params];
@@ -120,38 +123,42 @@ export class factory {
             .updateScriptFunction(
                 func,
                 func.body,
-                arkts.FunctionSignature.createFunctionSignature(
-                    func.typeParams,
-                    newParams,
-                    arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                    false
-                ),
+                func.typeParams,
+                newParams,
+                arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                false,
                 func.flags,
-                func.modifiers
-            )
-            .setAnnotations(newAnno);
-
-        return arkts.factory.updateMethodDefinition(
+                func.modifierFlags,
+                newName ? arkts.factory.createIdentifier(newName) : func.id,
+                newAnno
+            );
+        const updated =  arkts.factory.updateMethodDefinition(
             node,
             node.kind,
-            arkts.factory.updateIdentifier(ident, newName ?? name),
-            isFunctionCall ? updateFunc : addMemoAnnotation(updateFunc),
-            node.modifiers,
-            false
+            newName ? arkts.factory.createIdentifier(newName) : node.id,
+            arkts.factory.createFunctionExpression(
+                newName ? arkts.factory.createIdentifier(newName) : func.id?.clone(),
+                isFunctionCall ? updateFunc : addMemoAnnotation(updateFunc)
+            ),
+            node.modifierFlags,
+            false,
+            overloads
         );
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(updated.value!);
+        return updated;
     }
 
     /**
      * transform arguments in style node.
      */
     static getTransformedStyle(call: arkts.CallExpression): BuilderLambdaChainingCallArgInfo[] {
-        const decl = arkts.getDecl(call.expression);
+        const decl = arkts.getDecl(call.callee!);
         if (!decl || !arkts.isMethodDefinition(decl)) {
             return call.arguments.map((arg) => ({ arg }));
         }
         const argInfo: BuilderLambdaChainingCallArgInfo[] = [];
         const args = call.arguments;
-        const params = decl.scriptFunction.params;
+        const params = decl.function!.params;
         const isTrailingCall = call.isTrailingCall;
         forEachArgWithParam(
             args,
@@ -169,30 +176,32 @@ export class factory {
     /**
      * create style instance call, e.g. `instance.margin(10)`.
      */
-    static createStyleLambdaBody(lambdaBody: arkts.AstNode, callInfo: InstanceCallInfo): arkts.CallExpression {
+    static createStyleLambdaBody(lambdaBody: arkts.Expression, callInfo: InstanceCallInfo): arkts.CallExpression {
         if (!callInfo.isReceiver) {
             const argInfos: BuilderLambdaChainingCallArgInfo[] = factory.getTransformedStyle(callInfo.call);
             return arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
                     lambdaBody,
-                    callInfo.call.expression,
+                    callInfo.call.callee,
                     arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                     false,
                     false
                 ),
-                undefined,
                 argInfos.map((info) => {
                     if (arkts.isArrowFunctionExpression(info.arg)) {
                         return this.processArgArrowFunction(info.arg);
                     }
                     return info.arg;
-                })
+                }),
+                undefined,
+                false,
+                false
             );
         } else {
-            return arkts.factory.createCallExpression(callInfo.call.expression, callInfo.call.typeArguments, [
+            return arkts.factory.createCallExpression(callInfo.call.callee, [
                 lambdaBody,
                 ...callInfo.call.arguments.slice(1),
-            ]);
+            ], callInfo.call.typeParams, false, false);
         }
     }
 
@@ -214,11 +223,13 @@ export class factory {
                     false,
                     false
                 ),
+                [],
                 undefined,
-                []
+                false,
+                false
             );
         }
-        return arkts.factory.createCallExpression(methodName, undefined, [lambdaBody]);
+        return arkts.factory.createCallExpression(methodName, [lambdaBody], undefined, false, false);
     }
 
     /**
@@ -243,9 +254,9 @@ export class factory {
             lambdaBodyInfo.defaultReuseId = arkts.factory.createStringLiteral(structInfo.structName);
         }
         if (!!structInfo?.isFromReuseV2 && !!structInfo?.structName && !structInfo?.isFromEntry) {
-            lambdaBodyInfo.defaultReuseId = arkts.factory.createArrowFunction(
+            lambdaBodyInfo.defaultReuseId = arkts.factory.createArrowFunctionExpression(
                 UIFactory.createScriptFunction({
-                    body: arkts.factory.createBlock([arkts.factory.createReturnStatement(arkts.factory.createStringLiteral(structInfo.structName))]),
+                    body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(arkts.factory.createStringLiteral(structInfo.structName))]),
                     flags:
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
@@ -292,8 +303,9 @@ export class factory {
     ): arkts.ArrowFunctionExpression {
         const shouldApplyAttribute = options?.shouldApplyAttribute ?? true;
         const shouldSkipDebugLine = options?.shouldSkipDebugLine ?? false;
-        const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, typeNode),
+            false,
             undefined
         );
         const debugLineStatement = sourceNode && !shouldSkipDebugLine ? factory.createDebugLineStatement(sourceNode) : undefined;
@@ -308,14 +320,16 @@ export class factory {
                     false,
                     false
                 ),
+                [],
                 undefined,
-                []
+                false,
+                false
             )
         );
 
         const returnStatement = arkts.factory.createReturnStatement();
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnStatement);
-        const body: arkts.BlockStatement = arkts.factory.createBlock([
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnStatement);
+        const body: arkts.BlockStatement = arkts.factory.createBlockStatement([
             ...(debugLineStatement ? [debugLineStatement] : []),
             ...(arkts.isIdentifier(lambdaBody) ? [] : [arkts.factory.createExpressionStatement(lambdaBody)]),
             ...(shouldApplyAttribute ? [applyAttributesFinish]: []),
@@ -323,16 +337,16 @@ export class factory {
         ]);
         const func = arkts.factory.createScriptFunction(
             body,
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [styleLambdaParam],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+            undefined,
+            [styleLambdaParam],
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            undefined,
+            undefined
         );
-        const newNode = arkts.factory.createArrowFunction(func);
+        const newNode = arkts.factory.createArrowFunctionExpression(func);
         newNode.setNoDebugLineFlag();
         return addMemoAnnotation(newNode);
     }
@@ -361,11 +375,11 @@ export class factory {
 
         const relativeFilePath = path.relative(projectRootPath, fileAbsName);
         const formattedFilePath = relativeFilePath.replace(/\//g, '\\\\');
-        const line = sourceNode.startPosition.line() + 1;
-        const column = sourceNode.startPosition.col();
+        const line = sourceNode.startPosition.getLine() + 1;
+        const column = sourceNode.startPosition.getCol();
         const locationString = `${formattedFilePath}(${line}:${column})`;
         const instanceIdentifier = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(instanceIdentifier);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(instanceIdentifier);
         const debugLineStatement = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -375,11 +389,13 @@ export class factory {
                     false,
                     false
                 ),
-                undefined,
                 [
                     arkts.factory.createStringLiteral(locationString),
                     arkts.factory.createStringLiteral(moduleName)
-                ]
+                ],
+                undefined,
+                false,
+                false
             )
         );
         return debugLineStatement;
@@ -418,26 +434,26 @@ export class factory {
         typeNode: arkts.TypeNode | undefined,
         hasMemoSkip?: boolean
     ): arkts.ETSParameterExpression {
-        const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+        const styleLambdaParam: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME, typeNode),
+            false,
             undefined
         );
-        const funcType = arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [styleLambdaParam],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+        const funcType = arkts.factory.createETSFunctionType(
+            undefined,
+            [styleLambdaParam],
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
-        const unionType = arkts.factory.createUnionType([funcType, arkts.factory.createETSUndefinedType()]);
+        const unionType = arkts.factory.createETSUnionType([funcType, arkts.factory.createETSUndefinedType()]);
         addMemoAnnotation(funcType);
-        const parameter = arkts.factory.createParameterDeclaration(
+        const parameter = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_PARAM_NAME, unionType),
+            false,
             undefined
         );
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter, { hasMemoSkip });
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter, { hasMemoSkip });
         return parameter;
     }
 
@@ -445,24 +461,22 @@ export class factory {
      * create content argument in builder lambda declaration.
      */
     static createContentArgInBuilderLambdaDecl(): arkts.ETSParameterExpression {
-        const funcType = arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [],
-                arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+        const funcType = arkts.factory.createETSFunctionType(
+            undefined,
+            [],
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
         addMemoAnnotation(funcType);
 
         const parameter: arkts.ETSParameterExpression = arkts.factory
-            .createParameterDeclaration(
+            .createETSParameterExpression(
                 arkts.factory.createIdentifier(BuilderLambdaNames.CONTENT_PARAM_NAME, funcType),
+                true,
                 undefined
-            )
-            .setOptional(true);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter);
+            );
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(parameter);
         return parameter;
     }
 
@@ -473,25 +487,25 @@ export class factory {
     static processArgArrowFunction(
         arg: arkts.ArrowFunctionExpression
     ): arkts.ArrowFunctionExpression {
-        const func: arkts.ScriptFunction = arg.scriptFunction;
+        const func: arkts.ScriptFunction = arg.function!;
         const updateFunc = arkts.factory.updateScriptFunction(
             func,
             !!func.body && arkts.isBlockStatement(func.body)
-                ? arkts.factory.updateBlock(
+                ? arkts.factory.updateBlockStatement(
                       func.body,
                       func.body.statements.map((st) => this.updateContentBodyInBuilderLambda(st))
                   )
                 : undefined,
-            arkts.FunctionSignature.createFunctionSignature(
-                func.typeParams,
-                func.params,
-                func.returnTypeAnnotation,
-                false
-            ),
+            func.typeParams,
+            func.params,
+            func.returnTypeAnnotation,
+            false,
             func.flags,
-            func.modifiers
+            func.modifierFlags,
+            func.id,
+            func.annotations
         );
-        return arkts.factory.updateArrowFunction(arg, updateFunc);
+        return arkts.factory.updateArrowFunctionExpression(arg, updateFunc, arg.annotations);
     }
 
     /**
@@ -540,10 +554,10 @@ export class factory {
         if (!propertyDecl || !arkts.isMethodDefinition(propertyDecl)) {
             return [prop];
         }
-        const isNotBacking: boolean = !checkIsNameStartWithBackingField(propertyDecl.name);
+        const isNotBacking: boolean = !checkIsNameStartWithBackingField(propertyDecl.id);
         let isBuilderParam: boolean = false;
         let isLink: boolean = false;
-        propertyDecl.scriptFunction.annotations.forEach((anno) => {
+        propertyDecl.function.annotations.forEach((anno) => {
             isBuilderParam ||= isDecoratorAnnotation(anno, DecoratorNames.BUILDER_PARAM);
             isLink ||= isDecoratorAnnotation(anno, DecoratorNames.LINK);
         });
@@ -572,8 +586,11 @@ export class factory {
         ) {
             newProperty = arkts.factory.updateProperty(
                 prop,
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier(backingField(keyName)),
-                factory.updateBackingMember(value, value.property.name)
+                factory.updateBackingMember(value, value.property.name),
+                false,
+                false
             );
         }
         if (declInfo?.isFunctionCall) {
@@ -586,8 +603,11 @@ export class factory {
         propertyCollections.push(newProperty);
         propertyCollections.push(
             arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier(optionsHasField(keyName)),
-                arkts.factory.createBooleanLiteral(true)
+                arkts.factory.createBooleanLiteral(true),
+                false,
+                false
             )
         )
         return propertyCollections;
@@ -598,11 +618,11 @@ export class factory {
      * If the corresponding argument is not provided, fill-in an `undefined` to it.
      */
     static createOrUpdateArgInBuilderLambda(
-        fallback: arkts.AstNode,
+        fallback: arkts.Expression,
         arg: arkts.Expression | undefined,
         param: arkts.Expression,
         declInfo?: BuilderLambdaDeclInfo
-    ): arkts.AstNode {
+    ): arkts.Expression {
         if (!arg) {
             return fallback;
         }
@@ -628,7 +648,7 @@ export class factory {
      */
     static rewriteArgumentToLambda(arg: arkts.Expression): arkts.ArrowFunctionExpression {
         const newFunc = UIFactory.createScriptFunction({
-            body: arkts.factory.createBlock([arkts.factory.createReturnStatement(arg)]),
+            body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(arg)]),
             flags:
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
@@ -636,7 +656,7 @@ export class factory {
         });
         const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
         collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
-        const newNode = arkts.factory.createArrowFunction(newFunc);
+        const newNode = arkts.factory.createArrowFunctionExpression(newFunc);
         newNode.setNoDebugLineFlag();
         return newNode;
     }
@@ -645,17 +665,17 @@ export class factory {
         leaf: arkts.CallExpression,
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         declInfo: BuilderLambdaDeclInfo
-    ): (arkts.AstNode | undefined)[] {
+    ): (arkts.Expression | undefined)[] {
         const { params, moduleName, isFromCommonMethod } = declInfo;
         let returnType: arkts.TypeNode | undefined;
-        const expression = leaf.expression;
+        const expression = leaf.callee;
         if (arkts.isMemberExpression(expression) && !!expression.object && arkts.isIdentifier(expression.object)) {
             returnType = UIFactory.createTypeReferenceFromString(expression.object.name);
         }
-        const args: Array<arkts.AstNode | undefined> = [];
-        const modifiedArgs: (arkts.AstNode | undefined)[] = [];
+        const args: Array<arkts.Expression | undefined> = [];
+        const modifiedArgs: (arkts.Expression | undefined)[] = [];
         const isTrailingCall = leaf.isTrailingCall;
-        const typeArguments = leaf.typeArguments;
+        const typeArguments = leaf.typeParams;
         const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
         forEachArgWithParam(
             leaf.arguments,
@@ -678,7 +698,7 @@ export class factory {
         const lambdaBody = this.addOptionsArgsToLambdaBodyInStyleArg(
             lambdaBodyInfo,
             modifiedArgs,
-            typeArguments,
+            typeArguments?.params,
         );
         const styleArg = this.createComponentStyleArgInBuilderLambda(lambdaBody, returnType, moduleName!, isFromCommonMethod, leaf);
         args.unshift(styleArg);
@@ -692,10 +712,10 @@ export class factory {
         leaf: arkts.CallExpression,
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         declInfo: BuilderLambdaDeclInfo
-    ): (arkts.AstNode | undefined)[] {
+    ): (arkts.Expression | undefined)[] {
         const { params, returnType } = declInfo;
         const { lambdaBody, reuseId, defaultReuseId, structEntryStroage } = lambdaBodyInfo;
-        const args: Array<arkts.AstNode | undefined> = [];
+        const args: Array<arkts.Expression | undefined> = [];
         const isTrailingCall = leaf.isTrailingCall;
         forEachArgWithParam(
             leaf.arguments,
@@ -731,15 +751,15 @@ export class factory {
 
     static preprocessArgWithParamName(
         param: arkts.Expression,
-        arg: arkts.AstNode,
+        arg: arkts.Expression,
         name: string | undefined
-    ): arkts.AstNode {
-        if (!arkts.isEtsParameterExpression(param)) {
+    ): arkts.Expression {
+        if (!arkts.isETSParameterExpression(param)) {
             return arg;
         }
-        const paramName: string = param.identifier.name;
+        const paramName: string | undefined = param.ident?.name;
         if (paramName === BuilderLambdaNames.STORAGE_PARAM_NAME) {
-            return name ? arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), undefined, []) : arg;
+            return name ? arkts.factory.createCallExpression(arkts.factory.createIdentifier(name), [], undefined, false, false) : arg;
         }
         return arg;
     }
@@ -751,35 +771,35 @@ export class factory {
         leaf: arkts.CallExpression,
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         declInfo: BuilderLambdaDeclInfo
-    ): (arkts.AstNode | undefined)[] {
+    ): (arkts.Expression | undefined)[] {
         const { params, returnType, moduleName, isFromCommonMethod } = declInfo;
         const type: arkts.Identifier | undefined = builderLambdaType(leaf);
         const typeName: string | undefined = type?.name;
-        const args: (arkts.AstNode | undefined)[] = [];
-        const modifiedArgs: (arkts.AstNode | undefined)[] = [];
+        const args: (arkts.Expression | undefined)[] = [];
+        const modifiedArgs: (arkts.Expression | undefined)[] = [];
         const isTrailingCall = leaf.isTrailingCall;
-        const typeArguments = leaf.typeArguments;
+        const typeArguments = leaf.typeParams?.params;
         const hasLastTrailingLambda = checkIsTrailingLambdaInLastParam(params);
         forEachArgWithParam(
             leaf.arguments,
             params,
             (arg, param, index) => {
-                let modifiedArg: arkts.AstNode | undefined;
+                let modifiedArg: arkts.Expression | undefined;
                 if (!modifiedArg) {
                     const fallback = arkts.factory.createUndefinedLiteral();
                     modifiedArg = this.createOrUpdateArgInBuilderLambda(fallback, arg, param, declInfo);
                 }
-                const shouldUpdateMemo = !!arg && arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(arg);
+                const shouldUpdateMemo = !!arg && NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdate(arg);
                 const shouldInsertToArgs = index === params.length - 1 && hasLastTrailingLambda;
                 if (shouldInsertToArgs) {
                     if (shouldUpdateMemo) {
-                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
                     }
                     args.push(modifiedArg);
                 } else {
                     modifiedArg = factory.processModifiedArg(modifiedArg, index, moduleName, type?.name);
                     if (shouldUpdateMemo && !!modifiedArg) {
-                        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
+                        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).addNodeToUpdateByPeer(modifiedArg.peer);
                     }
                     modifiedArgs.push(modifiedArg);
                 }
@@ -797,10 +817,10 @@ export class factory {
     }
 
     static addArgsInNavigationBuilderLambdaCall(
-        modifiedArgs: (arkts.AstNode | undefined)[],
+        modifiedArgs: (arkts.Expression | undefined)[],
         typeName: string | undefined,
         moduleName: string | undefined
-    ): (arkts.AstNode | undefined)[] {
+    ): (arkts.Expression | undefined)[] {
         const filteredModifiedArgs = filterDefined(modifiedArgs);
         const sourceName: string | undefined = moduleName ?? MetaDataCollector.getInstance().externalSourceName;
         if (isNavigationOrNavDestination(typeName, sourceName)) {
@@ -820,27 +840,32 @@ export class factory {
         const pagePath = projectConfig?.moduleType === ModuleType.HAR ? '' : filePath;
         const properties: arkts.Property[] = [
             arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier(NavigationNames.MODULE_NAME),
-                arkts.factory.createStringLiteral(moduleName)
+                arkts.factory.createStringLiteral(moduleName),
+                false,
+                false
             ),
             arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier(NavigationNames.PAGE_PATH),
-                arkts.factory.createStringLiteral(pagePath)
+                arkts.factory.createStringLiteral(pagePath),
+                false,
+                false
             ),
         ];
         if (isUserCreateStack !== undefined) {
             properties.push(
                 arkts.factory.createProperty(
+                    arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                     arkts.factory.createIdentifier(NavigationNames.IS_USER_CREATE_STACK),
-                    arkts.factory.createBooleanLiteral(isUserCreateStack)
+                    arkts.factory.createBooleanLiteral(isUserCreateStack),
+                    false,
+                    false
                 )
             );
         }
-        return arkts.factory.createObjectExpression(
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
-            properties,
-            true
-        );
+        return arkts.factory.createObjectExpression(properties);
     }
 
     /**
@@ -850,7 +875,7 @@ export class factory {
         leaf: arkts.CallExpression,
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
         declInfo: BuilderLambdaDeclInfo
-    ): (arkts.AstNode | undefined)[] {
+    ): (arkts.Expression | undefined)[] {
         if (declInfo.isFunctionCall) {
             if (declInfo.isCustomFunctionCall) {
                 return this.generateCustomInnerComponentArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
@@ -864,15 +889,15 @@ export class factory {
      * process `@ComponentBuilder` call arguments for some specific transformation.
      */
     static processModifiedArg(
-        modifiedArg: arkts.AstNode | undefined,
+        modifiedArg: arkts.Expression | undefined,
         index: number | undefined,
         moduleName: string | undefined,
         typeName: string | undefined
-    ): arkts.AstNode | undefined {
+    ): arkts.Expression | undefined {
         if (isForEach(typeName, moduleName) && !!modifiedArg) {
             if (index === 0 && arkts.isExpression(modifiedArg)) {
                 const newFunc = UIFactory.createScriptFunction({
-                    body: arkts.factory.createBlock([arkts.factory.createReturnStatement(modifiedArg)]),
+                    body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(modifiedArg)]),
                     flags:
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW |
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
@@ -880,7 +905,7 @@ export class factory {
                 });
                 const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(newFunc);
                 collectScriptFunctionReturnTypeFromInfo(newFunc, returnMemoableInfo);
-                return arkts.factory.createArrowFunction(newFunc);
+                return arkts.factory.createArrowFunctionExpression(newFunc);
             }
         }
         return modifiedArg;
@@ -893,15 +918,15 @@ export class factory {
         if (
             args.length <= 1 ||
             !arkts.isArrowFunctionExpression(args[1]) ||
-            args[1].scriptFunction.params.length <= 0
+            args[1].function.params.length <= 0
         ) {
             return undefined;
         }
-        const argTypeParam: arkts.Expression = args[1].scriptFunction.params[0];
-        if (!arkts.isEtsParameterExpression(argTypeParam)) {
+        const argTypeParam: arkts.Expression = args[1].function.params[0];
+        if (!arkts.isETSParameterExpression(argTypeParam)) {
             return undefined;
         }
-        const type: arkts.AstNode | undefined = argTypeParam.type;
+        const type: arkts.AstNode | undefined = argTypeParam.typeAnnotation;
         if (type && arkts.isTypeNode(type)) {
             return UIFactory.createComplexTypeFromStringAndTypeParameter(TypeNames.ARRAY, [type.clone()]);
         }
@@ -913,11 +938,14 @@ export class factory {
      * @deprecated
      */
     static getReturnTypeFromTsType(node: arkts.AstNode): arkts.TypeNode | undefined {
+        if (arkts.isCallExpression(node)) {
+            return undefined;
+        }
         const type = arkts.createTypeNodeFromTsType(node);
         if (!type || !arkts.isTypeNode(type)) {
             return undefined;
         }
-        return type;
+        return type.clone();
     }
 
     /**
@@ -925,7 +953,7 @@ export class factory {
      */
     static addOptionsArgsToLambdaBodyInStyleArg(
         lambdaBodyInfo: BuilderLambdaStyleBodyInfo,
-        args: (arkts.AstNode | undefined)[],
+        args: (arkts.Expression | undefined)[],
         typeArguments: readonly arkts.TypeNode[] | undefined
     ): arkts.CallExpression | arkts.Identifier | undefined {
         const { lambdaBody, initCallPtr } = lambdaBodyInfo;
@@ -971,7 +999,7 @@ export class factory {
         if (!callIsGoodForBuilderLambda(leaf) || !declInfo) {
             return undefined;
         }
-        const node = leaf.expression;
+        const node = leaf.callee;
         const funcName = builderLambdaFunctionName(leaf);
         if (!funcName) {
             return undefined;
@@ -986,8 +1014,8 @@ export class factory {
                 declInfo.superName !== undefined ? arkts.factory.createIdentifier(declInfo.superName) : node.object,
                 arkts.factory.createIdentifier(funcName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
-                node.computed,
-                node.optional
+                node.isComputed,
+                node.isOptional
             );
         }
         return undefined;
@@ -997,8 +1025,8 @@ export class factory {
      * transform `@ComponentBuilder` in declared methods.
      */
     static transformBuilderLambdaMethodDecl(node: arkts.MethodDefinition): arkts.MethodDefinition {
-        const nameNode: arkts.Identifier | undefined = node.name;
-        const func: arkts.ScriptFunction = node.scriptFunction;
+        const nameNode: arkts.Identifier | undefined = node.id;
+        const func: arkts.ScriptFunction = node.function!;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
         const isCustomFunctionCall: boolean = isCustomBuilderLambdaFunctionCall(nameNode);
         withAPIVersion(
@@ -1008,16 +1036,17 @@ export class factory {
                     ComponentAttributeCache.getInstance().collect(node);
                 }
             },
-            { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(nameNode.name) }
+            { ignoreCompare: !!nameNode?.name && INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(nameNode?.name) }
         )
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,
             [this.createStyleArgInBuilderLambdaDecl(typeNode)],
             removeAnnotationByName(func.annotations, BuilderLambdaNames.ANNOTATION_NAME),
-            replaceBuilderLambdaDeclMethodName(nameNode.name)
+            replaceBuilderLambdaDeclMethodName(nameNode?.name),
+            []
         );
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
     }
 
@@ -1033,17 +1062,21 @@ export class factory {
                 curIdx++;
                 continue;
             }
-            const property: arkts.Identifier = instanceCalls[curIdx].call.expression as arkts.Identifier;
+            const property: arkts.Identifier = instanceCalls[curIdx].call.callee as arkts.Identifier;
             if (property.name === AnimationNames.ANIMATION) {
                 const aniStart: arkts.CallExpression = arkts.factory.createCallExpression(
                     arkts.factory.createIdentifier(AnimationNames.ANIMATION_START),
+                    instanceCalls[curIdx].call.arguments,
                     undefined,
-                    instanceCalls[curIdx].call.arguments
+                    false,
+                    false
                 );
                 const aniStop: arkts.CallExpression = arkts.factory.createCallExpression(
                     arkts.factory.createIdentifier(AnimationNames.ANIMATION_STOP),
+                    instanceCalls[curIdx].call.arguments.map((arg) => arg.clone()),
                     undefined,
-                    instanceCalls[curIdx].call.arguments.map((arg) => arg.clone())
+                    false,
+                    false
                 );
                 instanceCalls.splice(lastAniIdx, 0, { isReceiver: false, call: aniStart });
                 instanceCalls[curIdx + 1] = { isReceiver: false, call: aniStop };
@@ -1058,7 +1091,7 @@ export class factory {
     /**
      * transform `@ComponentBuilder` in non-declared calls.
      */
-    static transformBuilderLambda(node: arkts.CallExpression): arkts.AstNode {
+    static transformBuilderLambda(node: arkts.CallExpression): arkts.Expression {
         let instanceCalls: InstanceCallInfo[] = [];
         let leaf: arkts.CallExpression = node;
         while (isStyleChainedCall(leaf) || isStyleWithReceiverCall(leaf)) {
@@ -1066,17 +1099,19 @@ export class factory {
                 instanceCalls.push({
                     isReceiver: false,
                     call: arkts.factory.createCallExpression(
-                        (leaf.expression as arkts.MemberExpression).property,
-                        leaf.typeArguments,
-                        leaf.arguments
+                        (leaf.callee as arkts.MemberExpression).property,
+                        leaf.arguments,
+                        leaf.typeParams,
+                        leaf.isOptional,
+                        leaf.hasTrailingComma
                     ),
                 });
-                leaf = (leaf.expression as arkts.MemberExpression).object as arkts.CallExpression;
+                leaf = (leaf.callee as arkts.MemberExpression).object as arkts.CallExpression;
             }
             if (isStyleWithReceiverCall(leaf)) {
                 instanceCalls.push({
                     isReceiver: true,
-                    call: arkts.factory.createCallExpression(leaf.expression, leaf.typeArguments, leaf.arguments),
+                    call: arkts.factory.createCallExpression(leaf.callee, leaf.arguments, leaf.typeParams, leaf.isOptional, leaf.hasTrailingComma),
                 });
                 leaf = leaf.arguments[0] as arkts.CallExpression;
             }
@@ -1093,9 +1128,9 @@ export class factory {
         if (!replace || !declInfo) {
             return node;
         }
-        const structInfo = !declInfo.isFunctionCall ? getStructCalleeInfoFromCallee(leaf.expression) : {};
+        const structInfo = !declInfo.isFunctionCall ? getStructCalleeInfoFromCallee(leaf.callee) : {};
  	    const lambdaBodyInfo = factory.createInitLambdaBody(declInfo, structInfo);
-        let reuseId: arkts.AstNode | undefined;
+        let reuseId: arkts.Expression | undefined;
         const isReuse = !!structInfo?.isFromReuse || !!structInfo?.isFromReuseV2;
         let lambdaBody: arkts.Identifier | arkts.CallExpression | undefined = lambdaBodyInfo.lambdaBody;
         if (instanceCalls.length > 0 && !!lambdaBodyInfo.lambdaBody) {
@@ -1114,12 +1149,12 @@ export class factory {
         }
         lambdaBodyInfo.lambdaBody = lambdaBody;
         lambdaBodyInfo.reuseId = reuseId;
-        const args: (arkts.AstNode | undefined)[] = this.generateArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
+        const args: (arkts.Expression | undefined)[] = this.generateArgsInBuilderLambda(leaf, lambdaBodyInfo, declInfo);
         const isTrailingCall = leaf.isTrailingCall;
-        const newNode = arkts.factory.updateCallExpression(node, replace, leaf.typeArguments, filterDefined(args));
+        const newNode = arkts.factory.updateCallExpression(node, replace, filterDefined(args), leaf.typeParams, node.isOptional, node.hasTrailingComma, node.trailingBlock);
         factory.setBuilderLambdaRange(isTrailingCall, newNode, node);
         InitialBuilderLambdaBodyCache.getInstance().updateAll().reset();
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
     }
 
@@ -1132,9 +1167,11 @@ export class factory {
         node: arkts.CallExpression
     ): void {
         if (isTrailingCall && node.parent && node.parent.parent) {
-            newNode.range = node.parent.parent.range;
+            newNode.startPosition = node.parent.parent.startPosition;
+            newNode.endPosition = node.parent.parent.endPosition;
         } else {
-            newNode.range = node.range;
+            newNode.startPosition = node.startPosition;
+            newNode.endPosition = node.endPosition;
         }
     }
 
@@ -1142,7 +1179,13 @@ export class factory {
      * generate `value: <bindableArg>` in object.
      */
     static generateValueProperty(bindableArg: arkts.Expression): arkts.Property {
-        return arkts.factory.createProperty(arkts.factory.createIdentifier('value'), bindableArg.clone());
+        return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
+            arkts.factory.createIdentifier('value'),
+            bindableArg.clone(),
+            false,
+            false
+        );
     }
 
     /*
@@ -1153,12 +1196,14 @@ export class factory {
         valueType: arkts.TypeNode | undefined
     ): arkts.Property {
         return arkts.factory.createProperty(
+            arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
             arkts.factory.createIdentifier('onChange'),
             PropertyFactory.createArrowFunctionWithParamsAndBody(
                 undefined,
                 [
-                    arkts.factory.createParameterDeclaration(
+                    arkts.factory.createETSParameterExpression(
                         arkts.factory.createIdentifier('value', valueType?.clone()),
+                        false,
                         undefined
                     ),
                 ],
@@ -1168,12 +1213,14 @@ export class factory {
                     arkts.factory.createExpressionStatement(
                         arkts.factory.createAssignmentExpression(
                             bindableArg.clone(),
-                            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                            arkts.factory.createIdentifier('value')
+                            arkts.factory.createIdentifier('value'),
+                            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
                         )
                     ),
                 ]
-            )
+            ),
+            false,
+            false
         );
     }
 
@@ -1189,24 +1236,23 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
-        const param = arkts.factory.createParameterDeclaration(
+        const param = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
                 BuilderLambdaNames.CONTENT_PARAM_NAME,
-                arkts.factory.createFunctionType(
-                    arkts.factory.createFunctionSignature(
-                        undefined,
-                        [],
-                        arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                        false
-                    ),
+                arkts.factory.createETSFunctionType(
+                    undefined,
+                    [],
+                    arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+                    false,
                     arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
                 )
             ),
-            undefined
+            false,
+            undefined,
+            [annotation(DecoratorNames.BUILDER)]
         );
-        param.annotations = [annotation(DecoratorNames.BUILDER)];
         const method = UIFactory.createMethodDefinition({
-            key,
+            key: key.clone(),
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
             function: {
                 key,
@@ -1218,8 +1264,8 @@ export class factory {
             },
             modifiers,
         });
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(param);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(param);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(method);
         return method;
     }
 
@@ -1228,15 +1274,17 @@ export class factory {
      */
     static createBuilderParameterProxyCall(
         node: arkts.ObjectExpression,
+        decl: arkts.ClassDefinition | arkts.TSInterfaceDeclaration,
         typeRef: arkts.TypeNode,
         isFromClass: boolean
     ): arkts.CallExpression {
+        const typeMap = getObjectInstanceDeclTypeMap(decl);
         const entries = flatObjectExpressionToEntries(node);
         const objectArg = isFromClass
-            ? arkts.factory.createObjectExpression(arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION, [], false)
+            ? arkts.factory.createObjectExpression([])
             : node;
-        const newMapArg = this.createInitMapArgInBuilderParameterProxyCall(entries);
-        const updateArg = this.createUpdateArgInBuilderParameterProxyCall(typeRef.clone(), entries, isFromClass);
+        const newMapArg = this.createInitMapArgInBuilderParameterProxyCall(entries, typeMap);
+        const updateArg = this.createUpdateArgInBuilderParameterProxyCall(typeRef.clone(), entries, typeMap, isFromClass);
         ImportCollector.getInstance().collectSource(
             StateManagementTypes.MAKE_BUILDER_PARAM_PROXY,
             ARKUI_BUILDER_SOURCE_NAME
@@ -1244,8 +1292,10 @@ export class factory {
         ImportCollector.getInstance().collectImport(StateManagementTypes.MAKE_BUILDER_PARAM_PROXY);
         return arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(StateManagementTypes.MAKE_BUILDER_PARAM_PROXY),
-            [typeRef],
-            [objectArg, newMapArg, updateArg]
+            [objectArg, newMapArg, updateArg],
+            arkts.factory.createTSTypeParameterInstantiation([typeRef]),
+            false,
+            false
         );
     }
 
@@ -1266,34 +1316,35 @@ export class factory {
             nameNode = decl.ident!;
         }
         const typeName = nameNode.name;
-        const declModuleName = arkts.getProgramFromAstNode(decl)?.moduleName;
-        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        if (!!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
-            const localTypeName = `${typeName}_${GenSymGenerator.getInstance().id(typeName)}`;
-            ImportCollector.getInstance().collectLocalImport(typeName, declModuleName, localTypeName);
-            return UIFactory.createTypeReferenceFromString(localTypeName);
+        const localImportInfos: LocalImportInfo[] = [];
+        const localName = UIFactory.addSymbolToLocalImport(decl, typeName, localImportInfos);
+        for (const localImportInfo of localImportInfos) {
+            ImportCollector.getInstance().collectLocalImport(
+                localImportInfo.symbolName, 
+                localImportInfo.localSource, 
+                localImportInfo.localTypeName
+            );
         }
-        return UIFactory.createTypeReferenceFromString(typeName);
+        return UIFactory.createTypeReferenceFromString(localName);
     }
 
     /**
      * create `new Map<string, () => Any>([...])` as the second argument in `makeBuilderParameterProxy` function call.
      */
     static createInitMapArgInBuilderParameterProxyCall(
-        entries: [arkts.Identifier, arkts.Expression | undefined][]
+        entries: [arkts.Identifier, arkts.Expression | undefined][],
+        typeMap: Map<string, arkts.TypeNode>
     ): arkts.ETSNewClassInstanceExpression {
-        const newMapName = arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        const newMapName = arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier(TypeNames.MAP),
                 arkts.factory.createTSTypeParameterInstantiation([
                     UIFactory.createTypeReferenceFromString(TypeNames.STRING),
-                    arkts.factory.createFunctionType(
-                        arkts.factory.createFunctionSignature(
-                            undefined,
-                            [],
-                            UIFactory.createTypeReferenceFromString(TypeNames.ANY),
-                            false
-                        ),
+                    arkts.factory.createETSFunctionType(
+                        undefined,
+                        [],
+                        UIFactory.createTypeReferenceFromString(TypeNames.ANY),
+                        false,
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
                     ),
                 ])
@@ -1306,10 +1357,10 @@ export class factory {
                     entries.map(([k, v]) => {
                         const name = k.name;
                         const key = arkts.factory.createStringLiteral(name);
-                        const value = this.prepareBuilderParameterPropertyValue(v);
-                        const arrowFunc = arkts.factory.createArrowFunction(
+                        const value = this.prepareBuilderParameterPropertyValue(v, typeMap.get(name));
+                        const arrowFunc = arkts.factory.createArrowFunctionExpression(
                             UIFactory.createScriptFunction({
-                                body: arkts.factory.createBlock([arkts.factory.createReturnStatement(value)]),
+                                body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(value)]),
                                 returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
                                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW 
                                     | arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_HAS_RETURN,
@@ -1330,11 +1381,13 @@ export class factory {
     static createUpdateArgInBuilderParameterProxyCall(
         typeRef: arkts.TypeNode,
         entries: [arkts.Identifier, arkts.Expression | undefined][],
+        typeMap: Map<string, arkts.TypeNode>,
         isFromClass: boolean
     ): arkts.ArrowFunctionExpression {
         const genSymName: string = GenSymGenerator.getInstance().id();
-        const param = arkts.factory.createParameterDeclaration(
+        const param = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(genSymName, typeRef),
+            false,
             undefined
         );
         const statements = isFromClass
@@ -1346,32 +1399,52 @@ export class factory {
                       false,
                       false
                   );
-                  const right = this.prepareBuilderParameterPropertyValue(v);
+                  const right = this.prepareBuilderParameterPropertyValue(v, typeMap.get(k.name));
                   return arkts.factory.createExpressionStatement(
                       arkts.factory.createAssignmentExpression(
                           left,
-                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                          right
+                          right,
+                          arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
                       )
                   );
               })
             : [];
-        const body = arkts.factory.createBlock(statements);
+        const body = arkts.factory.createBlockStatement(statements);
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW;
-        return arkts.factory.createArrowFunction(UIFactory.createScriptFunction({ params: [param], body, flags }));
+        return arkts.factory.createArrowFunctionExpression(UIFactory.createScriptFunction({ params: [param], body, flags }));
     }
 
     /**
      * Wrap correct type and value to each property in `@Builder` function ONLY parameter.
      */
-    static prepareBuilderParameterPropertyValue(value: arkts.Expression | undefined): arkts.Expression {
+    static prepareBuilderParameterPropertyValue(
+        value: arkts.Expression | undefined, 
+        declType: arkts.TypeNode | undefined
+    ): arkts.Expression {
         if (!value) {
             return arkts.factory.createUndefinedLiteral();
         }
-        if (arkts.isObjectExpression(value)) {
-            const type: arkts.TypeNode | undefined = 
-                UIFactory.findObjectType(value) ?? UIFactory.createTypeReferenceFromString(TypeNames.ANY);
-            return arkts.factory.createTSAsExpression(value.clone(), type, false);
+        if (arkts.isArrayExpression(value) || arkts.isObjectExpression(value)) {
+            let localImportInfos: LocalImportInfo[] = [];
+            let localType: arkts.TypeNode | undefined = UIFactory.findSafeLocalType(declType, localImportInfos);
+            if (localType === undefined) {
+                localImportInfos = [];
+                if (arkts.isObjectExpression(value)) {
+                    localType = UIFactory.findObjectType(value, localImportInfos);
+                }
+            }
+            if (localType !== undefined) {
+                for (const localImportInfo of localImportInfos) {
+                    ImportCollector.getInstance().collectLocalImport(
+                        localImportInfo.symbolName, 
+                        localImportInfo.localSource, 
+                        localImportInfo.localTypeName
+                    );
+                }
+            } else {
+                localType = UIFactory.createTypeReferenceFromString(TypeNames.ANY);
+            }
+            return arkts.factory.createTSAsExpression(value.clone(), localType, false);
         }
         return value.clone();
     }
@@ -1381,7 +1454,7 @@ export class factory {
      */
     static createModuleInfoParam(name: string): arkts.ETSParameterExpression {
         return arkts.factory
-            .createParameterDeclaration(
+            .createETSParameterExpression(
                 arkts.factory.createIdentifier(
                     NavigationNames.MODULE_INFO,
                     UIFactory.createTypeReferenceFromString(
@@ -1390,9 +1463,9 @@ export class factory {
                             : NavigationNames.NAV_DESTINATION_MODULE_INFO
                     )
                 ),
+                true,
                 undefined
-            )
-            .setOptional(true);
+            );
     }
 
     /**
@@ -1408,7 +1481,7 @@ export class factory {
 
         const hasSetOptions = node.body.body.find((member) => {
             if (arkts.isMethodDefinition(member)) {
-                const methodName = member.name.name;
+                const methodName = member.id!.name;
                 return methodName.startsWith('set') && methodName.endsWith('Options');
             }
             return false;
@@ -1446,7 +1519,7 @@ export class factory {
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
         const modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         const funcTypeParams = typeParams
-            ? arkts.factory.createTypeParameterDeclaration(typeParams, typeParams.length)
+            ? arkts.factory.createTSTypeParameterDeclaration(typeParams, typeParams.length)
             : undefined;
         const returnTypeAnnotation = arkts.factory.createTSThisType();
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
@@ -1474,7 +1547,7 @@ export class factory {
         const key = arkts.factory.createIdentifier(BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD);
         const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
         const modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
-        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const returnTypeAnnotation = arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
         return UIFactory.createMethodDefinition({
             key,
@@ -1530,7 +1603,7 @@ export class factory {
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
-        const returnTypeAnnotation = arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
+        const returnTypeAnnotation = arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID);
         const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
         const params = factory.createDeclaredComponentFunctionParameters(
             attributeName,
@@ -1539,7 +1612,7 @@ export class factory {
         );
         const typeParamItems = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
         const typeParams = !!typeParamItems
-            ? arkts.factory.createTypeParameterDeclaration(typeParamItems, typeParamItems.length)
+            ? arkts.factory.createTSTypeParameterDeclaration(typeParamItems, typeParamItems.length)
             : undefined;
         const newMethod = UIFactory.createMethodDefinition({
             key,
@@ -1554,8 +1627,8 @@ export class factory {
             },
             modifiers,
         });
-        addMemoAnnotation(newMethod.scriptFunction);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newMethod);
+        addMemoAnnotation(newMethod.function);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newMethod);
         return newMethod;
     }
 

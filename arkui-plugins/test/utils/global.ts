@@ -15,6 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { CompileFileInfo } from './shared-types';
+import { AstNodePointer } from '../../common/safe-types';
 
 function createGlobalConfig(
     fileInfo: CompileFileInfo,
@@ -47,24 +48,24 @@ function createGlobalConfig(
 }
 
 function destroyGlobalConfig(config: arkts.Config, isUseCache: boolean = true): void {
-    destroyConfig(config);
+    destroyConfig(config.peer);
     if (isUseCache) {
         arkts.memFinalize();
     }
 }
 
-function createGlobalContextPtr(config: arkts.Config, files: string[]): number {
-    return arkts.createGlobalContext(config.peer, files, files.length, false);
+function createGlobalContextPtr(config: arkts.Config, files: string[]): AstNodePointer {
+    return arkts.arktsGlobal.es2panda._CreateGlobalContext(config.peer, files, files.length, false);
 }
 
-function destroyGlobalContextPtr(globalContextPtr: number): void {
-    arkts.destroyGlobalContext(globalContextPtr);
+function destroyGlobalContextPtr(globalContextPtr: AstNodePointer): void {
+    arkts.arktsGlobal.es2panda._DestroyGlobalContext(globalContextPtr);
 }
 
 function createCacheContextFromFile(
     config: arkts.Config,
     filePath: string,
-    globalContextPtr: number,
+    globalContextPtr: AstNodePointer,
     isExternal: boolean
 ): arkts.Context {
     return arkts.Context.createCacheContextFromFile(config.peer, filePath, globalContextPtr, isExternal);
@@ -106,17 +107,28 @@ function destroyContext(context: arkts.Context): void {
     }
 }
 
-function destroyConfig(config: arkts.Config): void {
+function destroyConfig(config: AstNodePointer): void {
     try {
-        arkts.destroyConfig(config);
+        arkts.destroyConfigWithoutLog(config.peer);
     } catch (e) {
         // Do nothing
     }
 }
 
-function setUpSoPath(pandaSdkPath: string): void {
+function initializeLibarkts(pandaSdkPath: string): void {
     arkts.arktsGlobal.es2panda._SetUpSoPath(pandaSdkPath);
+    arkts.initVisitsTable();
 }
+
+export type TestGlobal = typeof globalThis & {
+    PANDA_SDK_PATH: string;
+    API_PATH: string;
+    KIT_PATH: string;
+    UI_CACHE_ENABLED: boolean;
+    UI_UPDATE_ENABLED: boolean;
+    MEMO_CACHE_ENABLED: boolean;
+    MEMO_UPDATE_ENABLED: boolean;
+};
 
 export {
     createGlobalConfig,
@@ -129,5 +141,5 @@ export {
     resetConfig,
     destroyContext,
     destroyConfig,
-    setUpSoPath,
+    initializeLibarkts,
 };

@@ -13,4 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cp $@
+if [ $# -lt 2 ]; then
+    echo "Error: cp requires at least 2 arguments (source and target)" >&2
+    exit 1
+fi
+
+cp "$@"

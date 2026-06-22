@@ -56,6 +56,12 @@ const {
   ARKTS_MODE
 } = require('./lib/fast_build/ark_compiler/interop/pre_define');
 
+const arkLogger = require('./lib/fast_build/ark_compiler/logger');
+const errCode = require('./lib/fast_build/ark_compiler/error_code');
+
+let runDeclgenStandaloneModule = undefined;
+let runInteropContextModule = undefined;
+
 configure({
   appenders: { 'ETS': { type: 'stderr', layout: {type: 'messagePassThrough' } } },
   categories: {'default': { appenders: ['ETS'], level: 'info' } }
@@ -90,6 +96,7 @@ let externalApiCheckPlugin = new Map();
 let externalApiMethodPlugin = new Map();
 let fileDeviceCheckPlugin = new Map();
 let fileAvailableCheckPlugin = new Map();
+let fileApiAvailableCheckPlugin = new Map();
 let suppressWarningsCheckPlugin = new Map();
 // 拓展SDK校验插件
 let externalApiCheckerMap = new Map();
@@ -551,8 +558,16 @@ function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
       if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
         return;
       }
-      if (isMixCompile() && transformAbilityPages(projectConfig, abilityPath)) {
-        return;
+      if (isMixCompile()) {
+        if (transformAbilityPages(projectConfig, abilityPath)) {
+          return;
+        }
+        const errInfo = arkLogger.LogDataFactory.newInstance(
+          errCode.ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
+          errCode.ArkTSErrorDescription,
+          'Failed to find srcEntry bridge code. To compile an interop project, please generate interop declarations and bridge codes manually.'
+        );
+        throw Error(errInfo.toString());
       }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
@@ -1320,6 +1335,7 @@ function resetMain() {
   externalApiMethodPlugin = new Map();
   fileDeviceCheckPlugin = new Map();
   fileAvailableCheckPlugin = new Map();
+  fileApiAvailableCheckPlugin = new Map();
   suppressWarningsCheckPlugin = new Map();
   externalApiCheckerMap = new Map();
   crossplatformDepsConfig = new Map();
@@ -1384,6 +1400,20 @@ function initMain() {
   abilityConfig.abilityType = process.env.abilityType || 'page';
 }
 
+async function runInteropContext(params) {
+  if (runInteropContextModule === undefined) {
+    runInteropContextModule = require('./lib/fast_build/ark_compiler/interop/run_interop_context');
+  }
+  return runInteropContextModule.run(params);
+}
+
+async function runDeclgenStandalone(params) {
+  if (runDeclgenStandaloneModule === undefined) {
+    runDeclgenStandaloneModule = require('./lib/fast_build/ark_compiler/interop/run_declgen_standalone');
+  }
+  return runDeclgenStandaloneModule.run(params);
+}
+
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
@@ -1421,7 +1451,10 @@ exports.externalApiCheckPlugin = externalApiCheckPlugin;
 exports.externalApiMethodPlugin = externalApiMethodPlugin;
 exports.fileDeviceCheckPlugin = fileDeviceCheckPlugin;
 exports.fileAvailableCheckPlugin = fileAvailableCheckPlugin;
+exports.fileApiAvailableCheckPlugin = fileApiAvailableCheckPlugin;
 exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
 exports.crossplatformDepsConfig = crossplatformDepsConfig;
 exports.crossplatformExternalModule = crossplatformExternalModule;
+exports.runInteropContext = runInteropContext;
+exports.runDeclgenTs2Ets = runDeclgenStandalone;

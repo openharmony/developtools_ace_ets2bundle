@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import {
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassPropertyInfo,
     NormalClassAnnotationInfo,
     NormalClassPropertyInfo,
     StructPropertyAnnotationInfo,
@@ -25,128 +25,132 @@ import {
 import { DecoratorNames } from '../../common/predefines';
 import {
     PropertyCachedTranslator,
-    InterfacePropertyTranslator,
+    InnerClassPropertyTranslator,
     MethodTranslator,
     PropertyTranslator,
-    InterfacePropertyCachedTranslator,
+    InnerClassPropertyCachedTranslator,
     BaseObservedPropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyTypes,
     BaseMethodTranslator,
 } from './base';
 import { hasDecorator } from './utils';
 import {
-    StateCachedInterfaceTranslator,
+    StateCachedInnerClassTranslator,
     StateCachedTranslator,
     StateTranslator,
-    StateInterfaceTranslator,
+    StateInnerClassTranslator,
 } from './state';
 import {
     StorageLinkCachedTranslator,
-    StorageLinkCachedInterfaceTranslator,
+    StorageLinkCachedInnerClassTranslator,
     StorageLinkTranslator,
-    StorageLinkInterfaceTranslator,
+    StorageLinkInnerClassTranslator,
 } from './storagelink';
 import {
     LocalStorageLinkCachedTranslator,
-    LocalStorageLinkCachedInterfaceTranslator,
+    LocalStorageLinkCachedInnerClassTranslator,
     LocalStorageLinkTranslator,
-    LocalStorageLinkInterfaceTranslator,
+    LocalStorageLinkInnerClassTranslator,
 } from './localstoragelink';
-import { LinkCachedTranslator, LinkCachedInterfaceTranslator, LinkTranslator, LinkInterfaceTranslator } from './link';
+import { LinkCachedTranslator, LinkCachedInnerClassTranslator, LinkTranslator, LinkInnerClassTranslator } from './link';
 import {
     ObjectLinkCachedTranslator,
     ObjectLinkTranslator,
-    ObjectLinkInterfaceTranslator,
-    ObjectLinkCachedInterfaceTranslator,
+    ObjectLinkInnerClassTranslator,
+    ObjectLinkCachedInnerClassTranslator,
 } from './objectlink';
 import {
     RegularPropertyCachedTranslator,
-    RegularCachedInterfaceTranslator,
+    RegularCachedInnerClassTranslator,
     RegularPropertyTranslator,
-    RegularInterfaceTranslator,
+    RegularInnerClassTranslator,
 } from './regularProperty';
 import { StaticPropertyCachedTranslator, StaticPropertyTranslator } from './staticProperty';
 import { ClassInfo, CustomComponentInfo } from '../utils';
 import {
     ConsumeCachedTranslator,
-    ConsumeCachedInterfaceTranslator,
+    ConsumeCachedInnerClassTranslator,
     ConsumeTranslator,
-    ConsumeInterfaceTranslator,
+    ConsumeInnerClassTranslator,
 } from './consume';
 import {
     ProvideCachedTranslator,
-    ProvideCachedInterfaceTranslator,
+    ProvideCachedInnerClassTranslator,
     ProvideTranslator,
-    ProvideInterfaceTranslator,
+    ProvideInnerClassTranslator,
 } from './provide';
 import {
     BuilderParamCachedTranslator,
-    BuilderParamCachedInterfaceTranslator,
+    BuilderParamCachedInnerClassTranslator,
     BuilderParamTranslator,
-    BuilderParamInterfaceTranslator,
+    BuilderParamInnerClassTranslator,
 } from './builderParam';
 import {
     PropRefCachedTranslator,
-    PropRefCachedInterfaceTranslator,
+    PropRefCachedInnerClassTranslator,
     PropRefTranslator,
-    PropRefInterfaceTranslator,
+    PropRefInnerClassTranslator,
 } from './propRef';
 import { ObservedTrackCachedTranslator, ObservedTrackTranslator } from './observedTrack';
 import { ClassScopeInfo } from '../struct-translators/utils';
 import {
     LocalCachedTranslator,
-    LocalCachedInterfaceTranslator,
+    LocalCachedInnerClassTranslator,
     LocalTranslator,
-    LocalInterfaceTranslator,
+    LocalInnerClassTranslator,
 } from './local';
 import {
     StoragePropRefCachedTranslator,
-    StoragePropRefCachedInterfaceTranslator,
+    StoragePropRefCachedInnerClassTranslator,
     StoragePropRefTranslator,
-    StoragePropRefInterfaceTranslator,
+    StoragePropRefInnerClassTranslator,
 } from './storagePropRef';
 import {
     LocalStoragePropRefCachedTranslator,
-    LocalStoragePropRefCachedInterfaceTranslator,
+    LocalStoragePropRefCachedInnerClassTranslator,
     LocalStoragePropRefTranslator,
-    LocalStoragePropRefInterfaceTranslator,
+    LocalStoragePropRefInnerClassTranslator,
 } from './localStoragePropRef';
 import { ObservedV2TraceCachedTranslator, ObservedV2TraceTranslator } from './observedV2Trace';
 import {
     ParamCachedTranslator,
-    ParamCachedInterfaceTranslator,
+    ParamCachedInnerClassTranslator,
     ParamTranslator,
-    ParamInterfaceTranslator,
+    ParamInnerClassTranslator,
 } from './param';
-import { OnceCachedTranslator, OnceCachedInterfaceTranslator, OnceTranslator, OnceInterfaceTranslator } from './once';
+import { OnceCachedTranslator, OnceCachedInnerClassTranslator, OnceTranslator, OnceInnerClassTranslator } from './once';
 import {
     ProviderCachedTranslator,
-    ProviderCachedInterfaceTranslator,
+    ProviderCachedInnerClassTranslator,
     ProviderTranslator,
-    ProviderInterfaceTranslator,
+    ProviderInnerClassTranslator,
 } from './provider';
 import {
     ConsumerCachedTranslator,
-    ConsumerCachedInterfaceTranslator,
+    ConsumerCachedInnerClassTranslator,
     ConsumerTranslator,
-    ConsumerInterfaceTranslator,
+    ConsumerInnerClassTranslator,
 } from './consumer';
 import { ComputedTranslator } from './computed';
 import { MonitorTranslator } from './monitor';
 import {
-    EventCachedInterfaceTranslator,
+    EventCachedInnerClassTranslator,
     EventCachedTranslator,
     EventTranslator,
-    EventInterfaceTranslator
+    EventInnerClassTranslator
 } from './event';
 import { RequireCachedTranslator } from './require';
-import { EnvTranslator, EnvInterfaceTranslator, EnvCachedTranslator, EnvCachedInterfaceTranslator } from './env';
+import { EnvTranslator, EnvInnerClassTranslator, EnvCachedTranslator, EnvCachedInnerClassTranslator } from './env';
+import { CustomEnvCachedTranslator, CustomEnvCachedInnerClassTranslator } from './customEnv';
 import { ComponentLifecycleTranslator } from './componentLifecycle';
 import { SyncMonitorTranslator } from './syncMonitor';
 
-export { BaseObservedPropertyTranslator, PropertyTranslator, PropertyCachedTranslator, InterfacePropertyTranslator };
+export { BaseObservedPropertyTranslator, PropertyTranslator, PropertyCachedTranslator, InnerClassPropertyTranslator };
 export type { ClassScopeInfo };
 
+/**
+ * @deprecated
+ */
 export function classifyStructMembers(
     member: arkts.AstNode,
     structInfo: CustomComponentInfo
@@ -159,6 +163,9 @@ export function classifyStructMembers(
     return undefined;
 }
 
+/**
+ * @deprecated
+ */
 export function classifyProperty(
     property: arkts.AstNode,
     structInfo: CustomComponentInfo
@@ -182,6 +189,9 @@ export function classifyProperty(
     return new RegularPropertyTranslator({ property, structInfo });
 }
 
+/**
+ * @deprecated
+ */
 export function classifyV1Property(
     property: arkts.ClassProperty,
     structInfo: CustomComponentInfo
@@ -223,6 +233,9 @@ export function classifyV1Property(
     return undefined;
 }
 
+/**
+ * @deprecated
+ */
 export function classifyV2Property(
     property: arkts.ClassProperty,
     structInfo: CustomComponentInfo
@@ -251,89 +264,104 @@ export function classifyV2Property(
     return undefined;
 }
 
-export function classifyPropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
-    let interfacePropertyTranslater: InterfacePropertyTranslator | undefined = undefined;
+/**
+ * @deprecated
+ */
+export function classifyPropertyInInnerClass(property: arkts.AstNode): InnerClassPropertyTranslator | undefined {
+    let InnerClassPropertyTranslater: InnerClassPropertyTranslator | undefined = undefined;
 
-    interfacePropertyTranslater = classifyV1PropertyInInterface(property);
-    if (!!interfacePropertyTranslater) {
-        return interfacePropertyTranslater;
+    InnerClassPropertyTranslater = classifyV1PropertyInInnerClass(property);
+    if (!!InnerClassPropertyTranslater) {
+        return InnerClassPropertyTranslater;
     }
 
-    interfacePropertyTranslater = classifyV2PropertyInInterface(property);
-    if (!!interfacePropertyTranslater) {
-        return interfacePropertyTranslater;
+    InnerClassPropertyTranslater = classifyV2PropertyInInnerClass(property);
+    if (!!InnerClassPropertyTranslater) {
+        return InnerClassPropertyTranslater;
     }
 
-    if (RegularInterfaceTranslator.canBeTranslated(property)) {
-        return new RegularInterfaceTranslator({ property });
+    if (RegularInnerClassTranslator.canBeTranslated(property)) {
+        return new RegularInnerClassTranslator({ property });
     }
     return undefined;
 }
 
-export function classifyV1PropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
-    if (StateInterfaceTranslator.canBeTranslated(property)) {
-        return new StateInterfaceTranslator({ property });
+/**
+ * @deprecated
+ */
+export function classifyV1PropertyInInnerClass(property: arkts.AstNode): InnerClassPropertyTranslator | undefined {
+    if (StateInnerClassTranslator.canBeTranslated(property)) {
+        return new StateInnerClassTranslator({ property });
     }
-    if (LinkInterfaceTranslator.canBeTranslated(property)) {
-        return new LinkInterfaceTranslator({ property });
+    if (LinkInnerClassTranslator.canBeTranslated(property)) {
+        return new LinkInnerClassTranslator({ property });
     }
-    if (PropRefInterfaceTranslator.canBeTranslated(property)) {
-        return new PropRefInterfaceTranslator({ property });
+    if (PropRefInnerClassTranslator.canBeTranslated(property)) {
+        return new PropRefInnerClassTranslator({ property });
     }
-    if (ProvideInterfaceTranslator.canBeTranslated(property)) {
-        return new ProvideInterfaceTranslator({ property });
+    if (ProvideInnerClassTranslator.canBeTranslated(property)) {
+        return new ProvideInnerClassTranslator({ property });
     }
-    if (ConsumeInterfaceTranslator.canBeTranslated(property)) {
-        return new ConsumeInterfaceTranslator({ property });
+    if (ConsumeInnerClassTranslator.canBeTranslated(property)) {
+        return new ConsumeInnerClassTranslator({ property });
     }
-    if (StorageLinkInterfaceTranslator.canBeTranslated(property)) {
-        return new StorageLinkInterfaceTranslator({ property });
+    if (StorageLinkInnerClassTranslator.canBeTranslated(property)) {
+        return new StorageLinkInnerClassTranslator({ property });
     }
-    if (StoragePropRefInterfaceTranslator.canBeTranslated(property)) {
-        return new StoragePropRefInterfaceTranslator({ property });
+    if (StoragePropRefInnerClassTranslator.canBeTranslated(property)) {
+        return new StoragePropRefInnerClassTranslator({ property });
     }
-    if (LocalStoragePropRefInterfaceTranslator.canBeTranslated(property)) {
-        return new LocalStoragePropRefInterfaceTranslator({ property });
+    if (LocalStoragePropRefInnerClassTranslator.canBeTranslated(property)) {
+        return new LocalStoragePropRefInnerClassTranslator({ property });
     }
-    if (BuilderParamInterfaceTranslator.canBeTranslated(property)) {
-        return new BuilderParamInterfaceTranslator({ property });
+    if (BuilderParamInnerClassTranslator.canBeTranslated(property)) {
+        return new BuilderParamInnerClassTranslator({ property });
     }
-    if (LocalStorageLinkInterfaceTranslator.canBeTranslated(property)) {
-        return new LocalStorageLinkInterfaceTranslator({ property });
+    if (LocalStorageLinkInnerClassTranslator.canBeTranslated(property)) {
+        return new LocalStorageLinkInnerClassTranslator({ property });
     }
-    if (ObjectLinkInterfaceTranslator.canBeTranslated(property)) {
-        return new ObjectLinkInterfaceTranslator({ property });
+    if (ObjectLinkInnerClassTranslator.canBeTranslated(property)) {
+        return new ObjectLinkInnerClassTranslator({ property });
     }
-    if (EnvInterfaceTranslator.canBeTranslated(property)) {
-        return new EnvInterfaceTranslator({ property });
-    }
-    return undefined;
-}
-
-export function classifyV2PropertyInInterface(property: arkts.AstNode): InterfacePropertyTranslator | undefined {
-    if (LocalInterfaceTranslator.canBeTranslated(property)) {
-        return new LocalInterfaceTranslator({ property });
-    }
-    if (OnceInterfaceTranslator.canBeTranslated(property)) {
-        return new OnceInterfaceTranslator({ property });
-    }
-    if (ParamInterfaceTranslator.canBeTranslated(property)) {
-        return new ParamInterfaceTranslator({ property });
-    }
-    if (ProviderInterfaceTranslator.canBeTranslated(property)) {
-        return new ProviderInterfaceTranslator({ property });
-    }
-    if (ConsumerInterfaceTranslator.canBeTranslated(property)) {
-        return new ConsumerInterfaceTranslator({ property });
-    }
-    if (EventInterfaceTranslator.canBeTranslated(property)) {
-        return new EventInterfaceTranslator({ property });
+    if (EnvInnerClassTranslator.canBeTranslated(property)) {
+        return new EnvInnerClassTranslator({ property });
     }
     return undefined;
 }
 
+/**
+ * @deprecated
+ */
+export function classifyV2PropertyInInnerClass(property: arkts.AstNode): InnerClassPropertyTranslator | undefined {
+    if (LocalInnerClassTranslator.canBeTranslated(property)) {
+        return new LocalInnerClassTranslator({ property });
+    }
+    if (OnceInnerClassTranslator.canBeTranslated(property)) {
+        return new OnceInnerClassTranslator({ property });
+    }
+    if (ParamInnerClassTranslator.canBeTranslated(property)) {
+        return new ParamInnerClassTranslator({ property });
+    }
+    if (ProviderInnerClassTranslator.canBeTranslated(property)) {
+        return new ProviderInnerClassTranslator({ property });
+    }
+    if (ConsumerInnerClassTranslator.canBeTranslated(property)) {
+        return new ConsumerInnerClassTranslator({ property });
+    }
+    if (EventInnerClassTranslator.canBeTranslated(property)) {
+        return new EventInnerClassTranslator({ property });
+    }
+    return undefined;
+}
+
+/**
+ * @deprecated
+ */
 export type ObservedTranslator = ObservedV2TraceTranslator | ObservedTrackTranslator;
 
+/**
+ * @deprecated
+ */
 export function classifyObservedClassProperty(
     property: arkts.ClassProperty,
     classScopeInfo: ClassScopeInfo
@@ -347,6 +375,9 @@ export function classifyObservedClassProperty(
     return undefined;
 }
 
+/**
+ * @deprecated
+ */
 export function classifyMethod(method: arkts.AstNode, classInfo: ClassInfo): MethodTranslator | undefined {
     if (!arkts.isMethodDefinition(method)) {
         return undefined;
@@ -373,6 +404,9 @@ export function classifyMethod(method: arkts.AstNode, classInfo: ClassInfo): Met
     return undefined;
 }
 
+/**
+ * @deprecated
+ */
 export function classifyInObservedClass(
     member: arkts.AstNode,
     classScopeInfo: ClassScopeInfo
@@ -454,6 +488,9 @@ export function classifyV1PropertyFromInfo(
     if (annotationInfo.hasEnv) {
         return new EnvCachedTranslator({ property, propertyInfo });
     }
+    if (annotationInfo.hasCustomEnv) {
+        return new CustomEnvCachedTranslator({ property, propertyInfo });
+    }
     return undefined;
 }
 
@@ -488,92 +525,95 @@ export function classifyV2PropertyFromInfo(
     return undefined;
 }
 
-export function classifyPropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+export function classifyPropertyInInnerClassFromInfo<T extends InnerClassPropertyTypes>(
     property: T,
-    metadata?: CustomComponentInterfacePropertyInfo
-): InterfacePropertyCachedTranslator<T> | undefined {
+    metadata?: CustomComponentInnerClassPropertyInfo
+): InnerClassPropertyCachedTranslator<T> | undefined {
     const propertyInfo = metadata;
-    let interfacePropertyTranslater: InterfacePropertyCachedTranslator<T> | undefined;
-    interfacePropertyTranslater = classifyV1PropertyInInterfaceFromInfo(property, propertyInfo);
-    if (!!interfacePropertyTranslater) {
-        return interfacePropertyTranslater;
+    let InnerClassPropertyTranslater: InnerClassPropertyCachedTranslator<T> | undefined;
+    InnerClassPropertyTranslater = classifyV1PropertyInInnerClassFromInfo(property, propertyInfo);
+    if (!!InnerClassPropertyTranslater) {
+        return InnerClassPropertyTranslater;
     }
-    interfacePropertyTranslater = classifyV2PropertyInInterfaceFromInfo(property, propertyInfo);
-    if (!!interfacePropertyTranslater) {
-        return interfacePropertyTranslater;
+    InnerClassPropertyTranslater = classifyV2PropertyInInnerClassFromInfo(property, propertyInfo);
+    if (!!InnerClassPropertyTranslater) {
+        return InnerClassPropertyTranslater;
     }
-    if (RegularCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new RegularCachedInterfaceTranslator({ property, propertyInfo });
+    if (RegularCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new RegularCachedInnerClassTranslator({ property, propertyInfo });
     }
     return undefined;
 }
 
-export function classifyV1PropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+export function classifyV1PropertyInInnerClassFromInfo<T extends InnerClassPropertyTypes>(
     property: T,
-    metadata?: CustomComponentInterfacePropertyInfo
-): InterfacePropertyCachedTranslator<T> | undefined {
+    metadata?: CustomComponentInnerClassPropertyInfo
+): InnerClassPropertyCachedTranslator<T> | undefined {
     const propertyInfo = metadata;
-    if (StateCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new StateCachedInterfaceTranslator({ property, propertyInfo });
+    if (StateCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StateCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (LinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new LinkCachedInterfaceTranslator({ property, propertyInfo });
+    if (LinkCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LinkCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (PropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new PropRefCachedInterfaceTranslator({ property, propertyInfo });
+    if (PropRefCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new PropRefCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ProvideCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ProvideCachedInterfaceTranslator({ property, propertyInfo });
+    if (ProvideCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ProvideCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ConsumeCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ConsumeCachedInterfaceTranslator({ property, propertyInfo });
+    if (ConsumeCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ConsumeCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (StorageLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new StorageLinkCachedInterfaceTranslator({ property, propertyInfo });
+    if (StorageLinkCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StorageLinkCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (StoragePropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new StoragePropRefCachedInterfaceTranslator({ property, propertyInfo });
+    if (StoragePropRefCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new StoragePropRefCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (LocalStoragePropRefCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new LocalStoragePropRefCachedInterfaceTranslator({ property, propertyInfo });
+    if (LocalStoragePropRefCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalStoragePropRefCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (BuilderParamCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new BuilderParamCachedInterfaceTranslator({ property, propertyInfo });
+    if (BuilderParamCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new BuilderParamCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (LocalStorageLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new LocalStorageLinkCachedInterfaceTranslator({ property, propertyInfo });
+    if (LocalStorageLinkCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalStorageLinkCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ObjectLinkCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ObjectLinkCachedInterfaceTranslator({ property, propertyInfo });
+    if (ObjectLinkCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ObjectLinkCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (EnvCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new EnvCachedInterfaceTranslator({ property, propertyInfo });
+    if (EnvCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new EnvCachedInnerClassTranslator({ property, propertyInfo });
+    }
+    if (CustomEnvCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new CustomEnvCachedInnerClassTranslator({ property, propertyInfo });
     }
     return undefined;
 }
 
-export function classifyV2PropertyInInterfaceFromInfo<T extends InterfacePropertyTypes>(
+export function classifyV2PropertyInInnerClassFromInfo<T extends InnerClassPropertyTypes>(
     property: T,
-    metadata?: CustomComponentInterfacePropertyInfo
-): InterfacePropertyCachedTranslator<T> | undefined {
+    metadata?: CustomComponentInnerClassPropertyInfo
+): InnerClassPropertyCachedTranslator<T> | undefined {
     const propertyInfo = metadata;
-    if (LocalCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new LocalCachedInterfaceTranslator({ property, propertyInfo });
+    if (LocalCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new LocalCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (OnceCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new OnceCachedInterfaceTranslator({ property, propertyInfo });
+    if (OnceCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new OnceCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ParamCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ParamCachedInterfaceTranslator({ property, propertyInfo });
+    if (ParamCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ParamCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ProviderCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ProviderCachedInterfaceTranslator({ property, propertyInfo });
+    if (ProviderCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ProviderCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (ConsumerCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new ConsumerCachedInterfaceTranslator({ property, propertyInfo });
+    if (ConsumerCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new ConsumerCachedInnerClassTranslator({ property, propertyInfo });
     }
-    if (EventCachedInterfaceTranslator.canBeTranslated(property, propertyInfo)) {
-        return new EventCachedInterfaceTranslator({ property, propertyInfo });
+    if (EventCachedInnerClassTranslator.canBeTranslated(property, propertyInfo)) {
+        return new EventCachedInnerClassTranslator({ property, propertyInfo });
     }
     return undefined;
 }

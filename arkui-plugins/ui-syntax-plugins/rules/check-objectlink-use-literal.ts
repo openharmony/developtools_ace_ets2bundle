@@ -44,14 +44,14 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
         this.currentStructName = '';
     }
 
-    public parsed(node: arkts.StructDeclaration): void {
+    public parsed(node: arkts.AstNode): void {
         this.initMap(node);
         this.checkInitializeWithLiteral(node);
     }
 
     private initMap(node: arkts.AstNode): void {
         // Check if the current node is the root node
-        if (!arkts.isEtsScript(node) || node.isNamespace) {
+        if (!arkts.isETSModule(node) || node.isNamespace) {
             return;
         }
         node.statements.forEach((member: arkts.AstNode) => {
@@ -61,23 +61,22 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
             if (arkts.isVariableDeclaration(member)) {
                 this.handleVariableDeclaration(member);
             }
-            if (arkts.isClassDeclaration(member)) {
-                this.handleClassDeclaration(member, undefined);
-            }
-            if ((arkts.isStructDeclaration(member))) {
+            if ((arkts.isETSStructDeclaration(member))) {
                 this.handleStructDeclaration(member);
+            } else if (arkts.isClassDeclaration(member)) {
+                this.handleClassDeclaration(member, undefined);
             }
         });
     }
 
     private handleFunctionDeclaration(functionDeclaration: arkts.FunctionDeclaration): void {
-        if (!functionDeclaration.scriptFunction ||
-            !functionDeclaration.scriptFunction.id ||
-            !arkts.isIdentifier(functionDeclaration.scriptFunction.id) ||
-            !functionDeclaration.scriptFunction.id.name) {
+        if (!functionDeclaration.function ||
+            !functionDeclaration.function.id ||
+            !arkts.isIdentifier(functionDeclaration.function.id) ||
+            !functionDeclaration.function.id.name) {
             return;
         }
-        const functionName: string = functionDeclaration.scriptFunction.id.name;
+        const functionName: string = functionDeclaration.function.id.name;
         if (functionName === '') {
             return;
         }
@@ -104,10 +103,10 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
             return;
         }
         variable.declarators?.forEach((node: arkts.AstNode) => {
-            if (!arkts.isVariableDeclarator(node) || !node.name) {
+            if (!arkts.isVariableDeclarator(node) || !arkts.isIdentifier(node.id)) {
                 return;
             }
-            const globalPropertyName = node.name.name;
+            const globalPropertyName = node.id.name;
             // add all global variables
             this.addProperties(CheckObjectLinkUseLiteralKeyword.GLOBAL, globalPropertyName, node);
         });
@@ -186,7 +185,7 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
         this.addProperties(categoryName, classPropertyName, item);
     }
 
-    private handleStructDeclaration(member: arkts.StructDeclaration): void {
+    private handleStructDeclaration(member: arkts.ETSStructDeclaration): void {
         if (!member.definition || !member.definition.ident || !arkts.isIdentifier(member.definition.ident)) {
             return;
         }
@@ -216,10 +215,10 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
     }
 
     private handleFunctionsInStruct(item: arkts.AstNode, categoryName: string): void {
-        if (!arkts.isMethodDefinition(item) || !item.name || !arkts.isIdentifier(item.name) || !item.name.name) {
+        if (!arkts.isMethodDefinition(item) || !arkts.isIdentifier(item.id) || !item.id.name) {
             return;
         }
-        const funcName: string = item.name.name;
+        const funcName: string = item.id.name;
         if (funcName === '') {
             return;
         }
@@ -232,10 +231,10 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
 
     private checkInitializeWithLiteral(node: arkts.AstNode): void {
         this.handleCurrentStructName(node);
-        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.expression)) {
+        if (!arkts.isCallExpression(node) || !arkts.isIdentifier(node.callee)) {
             return;
         }
-        const componentName = node.expression.name;
+        const componentName = node.callee.name;
         // Only assignments to properties decorated with ObjectLink trigger rule checks
         if (!this.objectLinkMap.has(componentName)) {
             return;
@@ -275,7 +274,7 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
     }
 
     private handleCurrentStructName(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             if (node.definition && node.definition.ident && node.definition.ident.name !== '') {
                 this.currentStructName = node.definition.ident.name;
             }
@@ -300,12 +299,12 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
         if (arkts.isIdentifier(subPropertyNode)) {
             chainArray.unshift(subPropertyNode.name);
         }
-        if (arkts.isCallExpression(subPropertyNode) && subPropertyNode.expression) {
+        if (arkts.isCallExpression(subPropertyNode) && subPropertyNode.callee) {
             isFunction = true;
-            if (arkts.isIdentifier(subPropertyNode.expression)) {
-                chainArray.unshift(subPropertyNode.expression.name);
+            if (arkts.isIdentifier(subPropertyNode.callee)) {
+                chainArray.unshift(subPropertyNode.callee.name);
             } else {
-                subPropertyNode = this.handleAsChainNonNullExpression(subPropertyNode.expression);
+                subPropertyNode = this.handleAsChainNonNullExpression(subPropertyNode.callee);
                 this.handleParamsWithCallee(subPropertyNode);
             }
         }
@@ -331,7 +330,7 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
             }
             if (subPropertyNode && arkts.isCallExpression(subPropertyNode)) {
                 isFunction = true;
-                subPropertyNode = this.handleAsChainNonNullExpression(subPropertyNode.expression);
+                subPropertyNode = this.handleAsChainNonNullExpression(subPropertyNode.callee!);
                 if (arkts.isIdentifier(subPropertyNode)) {
                     chainArray.unshift(subPropertyNode.name);
                 }
@@ -379,11 +378,11 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
         let node: arkts.AstNode | undefined = undefined;
         if (funcNode &&
             (arkts.isFunctionDeclaration(funcNode) || arkts.isMethodDefinition(funcNode)) &&
-            funcNode.scriptFunction &&
-            funcNode.scriptFunction.body &&
-            arkts.isBlockStatement(funcNode.scriptFunction.body) &&
-            funcNode.scriptFunction.body.statements) {
-            funcNode.scriptFunction.body.statements.forEach((item: arkts.AstNode) => {
+            funcNode.function &&
+            funcNode.function.body &&
+            arkts.isBlockStatement(funcNode.function.body) &&
+            funcNode.function.body.statements) {
+            funcNode.function.body.statements.forEach((item: arkts.AstNode) => {
                 if (arkts.isReturnStatement(item) && item.argument) {
                     node = item.argument;
                 }
@@ -394,15 +393,15 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
 
     private getClassNameWithNewExpression(node: arkts.ETSNewClassInstanceExpression): string {
         if (
-            node.getTypeRef &&
-            arkts.isETSTypeReference(node.getTypeRef) &&
-            node.getTypeRef.part &&
-            arkts.isETSTypeReferencePart(node.getTypeRef.part) &&
-            node.getTypeRef.part.name &&
-            arkts.isIdentifier(node.getTypeRef.part.name) &&
-            node.getTypeRef.part.name.name
+            node.typeRef &&
+            arkts.isETSTypeReference(node.typeRef) &&
+            node.typeRef.part &&
+            arkts.isETSTypeReferencePart(node.typeRef.part) &&
+            node.typeRef.part.name &&
+            arkts.isIdentifier(node.typeRef.part.name) &&
+            node.typeRef.part.name.name
         ) {
-            const className: string = node.getTypeRef.part.name.name;
+            const className: string = node.typeRef.part.name.name;
             return className;
         }
         return '';
@@ -416,8 +415,8 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
         }
         // ChainExpression
         if (arkts.isChainExpression(node)) {
-            if (node.getExpression) {
-                return this.handleAsChainNonNullExpression(node.getExpression);
+            if (node.expression) {
+                return this.handleAsChainNonNullExpression(node.expression);
             }
             return node;
         }
@@ -463,8 +462,8 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
     }
 
     private handleSingleTierProperty(rootNode: arkts.ClassProperty | arkts.VariableDeclarator | undefined): boolean {
-        if (rootNode && arkts.isVariableDeclarator(rootNode) && rootNode.initializer) {
-            const globalResultNode: arkts.AstNode = this.handleAsChainNonNullExpression(rootNode.initializer);
+        if (rootNode && arkts.isVariableDeclarator(rootNode) && rootNode.init) {
+            const globalResultNode: arkts.AstNode = this.handleAsChainNonNullExpression(rootNode.init);
             if (arkts.isObjectExpression(globalResultNode)) {
                 return true;
             }
@@ -489,8 +488,8 @@ class CheckObjectLinkUseLiteralRule extends AbstractUISyntaxRule {
                 if (rootNode && arkts.isClassProperty(rootNode) && rootNode.value) {
                     currentNode = this.handleAsChainNonNullExpression(rootNode.value);
                 }
-                if (rootNode && arkts.isVariableDeclarator(rootNode) && rootNode.initializer) {
-                    currentNode = this.handleAsChainNonNullExpression(rootNode.initializer);
+                if (rootNode && arkts.isVariableDeclarator(rootNode) && rootNode.init) {
+                    currentNode = this.handleAsChainNonNullExpression(rootNode.init);
                 }
             }
             if (!currentNode) {

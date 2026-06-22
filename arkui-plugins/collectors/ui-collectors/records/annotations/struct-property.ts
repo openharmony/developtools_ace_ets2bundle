@@ -39,6 +39,7 @@ export interface StructPropertyAnnotationInfo extends AnnotationInfo {
     hasConsumer?: boolean;
     hasProvider?: boolean;
     hasEnv?: boolean;
+    hasCustomEnv?: boolean;
 }
 
 export interface StructPropertyAnnotations extends Annotations {
@@ -62,6 +63,7 @@ export interface StructPropertyAnnotations extends Annotations {
     [DecoratorNames.CONSUMER]?: arkts.AnnotationUsage;
     [DecoratorNames.PROVIDER]?: arkts.AnnotationUsage;
     [DecoratorNames.ENV]?: arkts.AnnotationUsage;
+    [DecoratorNames.CUSTOM_ENV]?: arkts.AnnotationUsage;
 }
 
 export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
@@ -72,7 +74,6 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
 
     constructor(options: RecordOptions) {
         super(options);
-        this.shouldIgnoreDecl = false;
         this.annotationNames = [
             DecoratorNames.STATE,
             DecoratorNames.STORAGE_LINK,
@@ -94,6 +95,7 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
             DecoratorNames.CONSUMER,
             DecoratorNames.PROVIDER,
             DecoratorNames.ENV,
+            DecoratorNames.CUSTOM_ENV,
         ];
     }
 
@@ -101,8 +103,10 @@ export class StructPropertyAnnotationRecord extends BaseAnnotationRecord<
         info: StructPropertyAnnotationInfo,
         name: string | undefined
     ): StructPropertyAnnotationInfo {
-        if (!!name && this.annotationNames.includes(name)) {
-            info[`has${name}`] = true;
+        if (!!name) {
+            if (this.annotationNames.includes(name)) {
+                info[`has${name}`] = true;
+            }
         }
         return info;
     }

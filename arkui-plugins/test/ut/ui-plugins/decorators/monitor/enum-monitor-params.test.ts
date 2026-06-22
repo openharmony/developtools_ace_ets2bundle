@@ -145,8 +145,8 @@ final class MonitorNames extends BaseEnum<String> {
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -292,11 +292,12 @@ final class MonitorNames extends BaseEnum<String> {
   }
 }
 
-@ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'varF', '(FFF | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_varF', '(ILocalDecoratedVariable<FFF> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varF', '(boolean | undefined)')}
-  
+@ComponentV2() class __Options_Index {
+  @Local() public varF?: FFF;
+  public __backing_varF?: ILocalDecoratedVariable<FFF>;
+  public __options_has_varF?: boolean;
+  public constructor() {}
+
 }
 `;
 

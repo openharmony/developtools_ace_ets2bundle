@@ -99,19 +99,17 @@ import hilog from "@ohos.hilog";
 
 }
 
-@Component() interface __Options_CustomDialogUser {
-  ${ignoreNewLines(`
-  dialogController?: (CustomDialogController | null);
-  __options_has_dialogController?: boolean;
-  `)}
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser2 {
-  ${ignoreNewLines(`
-  dialogController?: (CustomDialogController | null);
-  __options_has_dialogController?: boolean;
-  `)}
+@Component() class __Options_CustomDialogUser2 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -163,6 +161,7 @@ function builder2() {}
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
@@ -210,6 +209,7 @@ function builder2() {}
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser2 | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser2 | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser2)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser2, __Options_CustomDialogUser2>(style, ((): CustomDialogUser2 => {
@@ -245,15 +245,17 @@ function builder2() {}
   }
 }
 
-@Component() interface __Options_CustomDialogUser {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUser2 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;

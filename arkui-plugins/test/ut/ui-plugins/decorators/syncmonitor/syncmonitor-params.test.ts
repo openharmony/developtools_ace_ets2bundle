@@ -270,7 +270,7 @@ class GGG {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_per = STATE_MGMT_FACTORY.makeLocal<EEE>(this, "per", new EEE());
     this.__backing_v1 = STATE_MGMT_FACTORY.makeLocal<boolean>(this, "v1", true);
@@ -367,27 +367,24 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'per', '(EEE | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_per', '(ILocalDecoratedVariable<EEE> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_per', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'v1', '(boolean | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_v1', '(ILocalDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_v1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numArr', '(Array<string> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numArr', '(ILocalDecoratedVariable<Array<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numArr', '(boolean | undefined)')}
+@Entry() @ComponentV2() class __Options_Index {
+  @Local() public per?: EEE;
+  public __backing_per?: ILocalDecoratedVariable<EEE>;
+  public __options_has_per?: boolean;
+  @Local() public v1?: boolean;
+  public __backing_v1?: ILocalDecoratedVariable<boolean>;
+  public __options_has_v1?: boolean;
+  @Local() public numArr?: Array<string>;
+  public __backing_numArr?: ILocalDecoratedVariable<Array<string>>;
+  public __options_has_numArr?: boolean;
+  public constructor() {}
   
 }
 `;

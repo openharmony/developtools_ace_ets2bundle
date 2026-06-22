@@ -67,6 +67,8 @@ function main() {}
   public __initializeStruct(initializers: (__Options_BuilderDemo | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_BuilderDemo | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_BuilderDemo | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: BuilderDemo)=> void) | undefined), initializers: ((()=> __Options_BuilderDemo) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -116,8 +118,8 @@ function main() {}
   }
 }
 
-@Component() interface __Options_BuilderDemo {
-  
+@Component() class __Options_BuilderDemo {
+  public constructor() {}
 }
 `;
 

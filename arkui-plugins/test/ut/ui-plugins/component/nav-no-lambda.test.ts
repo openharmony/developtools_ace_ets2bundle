@@ -75,6 +75,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_NavDestinationStruct | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: NavDestinationStruct)=> void) | undefined), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<NavDestinationStruct, __Options_NavDestinationStruct>(style, ((): NavDestinationStruct => {
@@ -137,21 +139,10 @@ function main() {}
   }
 }
 
-@Component() interface __Options_NavDestinationStruct {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_NavDestinationStruct {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 `;

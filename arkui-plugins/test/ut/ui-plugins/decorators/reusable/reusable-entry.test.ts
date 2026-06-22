@@ -77,7 +77,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/reusable/reusable-entry",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() @Reusable() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() @Reusable() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -125,8 +125,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() @Reusable() interface __Options_Index {
-  
+@Entry() @Component() @Reusable() class __Options_Index {
+  public constructor() {}
 }
 
 `;

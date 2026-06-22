@@ -4,7 +4,8 @@
         "FlowItem",
         "LazyVGridLayout",
         "LazyVWaterFlowLayout",
-        "LazyColumnLayout"
+        "LazyColumnLayout",
+        "LazyDynamicLayout"
     ],
     "attrs": [
         "onReachEnd",
@@ -44,6 +45,7 @@
         "contentEndOffset",
         "supportEmptyBranchInLazyLoading",
         "autoAdjustScrollBarMargin",
-        "enableScrollWithMouse"
+        "enableScrollWithMouse",
+        "scrollBarHeight"
     ]
 }

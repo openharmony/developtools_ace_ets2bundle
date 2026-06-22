@@ -124,8 +124,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/custom-inner-component/custom-inner-component-call",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() interface __Options_MyStateSample {
-  
+@Entry() @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 
 `;
@@ -195,10 +195,11 @@ class MyStack extends ExtendableStack {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -253,8 +254,8 @@ class __EntryWrapper extends EntryPoint {
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
-  
+@Entry() @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

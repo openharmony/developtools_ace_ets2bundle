@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName } from '../../common/arkts-utils';
-import { NodeCacheNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
 import {
     createGetter,
     generateToRecord,
@@ -27,19 +27,24 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
+    PropertyCachedTranslatorOptions,
     PropertyTranslator,
+    PropertyTranslatorOptions,
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { factory as UIFactory } from '../ui-factory';
 // import { CustomComponentNames, hasNullOrUndefinedType, optionsHasField } from '../utils';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { RegularPropertyCachedTranslator, RegularPropertyTranslator } from './regularProperty';
 
+/**
+ * @deprecated
+ */
 export class RequireTranslator extends RegularPropertyTranslator {
     protected shouldWrapPropertyType: boolean = false;
     protected hasInitializeStruct: boolean = true;
@@ -48,6 +53,13 @@ export class RequireTranslator extends RegularPropertyTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.initializeOptions = {
+            isRequired: true
+        };
+    }
 }
 
 export class RequireCachedTranslator extends RegularPropertyCachedTranslator {
@@ -58,4 +70,11 @@ export class RequireCachedTranslator extends RegularPropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    
+    constructor(options: PropertyCachedTranslatorOptions) {
+        super(options);
+        this.initializeOptions = {
+            isRequired: true
+        };
+    }
 }

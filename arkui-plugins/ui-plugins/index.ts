@@ -20,7 +20,7 @@ import { CheckedTransformer } from './checked-transformer';
 import { Plugins, PluginContext, ProjectConfig, loadBuildJson, initResourceInfo, initRouterInfo } from '../common/plugin-context';
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
-import { debugLog, getDumpFileName } from '../common/debug';
+import { Debugger, debugLog, getDumpFileName } from '../common/debug';
 import { ProgramSkipper } from '../common/program-skipper';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { GenSymGenerator } from '../common/gensym-generator';
@@ -32,6 +32,7 @@ import { AbstractVisitor } from '../common/abstract-visitor';
 import { Collector } from '../collectors/collector';
 import { getSystemResourcePath } from './utils';
 import { ResourceSourceCache } from './insight-intent/resource-source-cache';
+import { NodeCacheFactory } from '../common/node-cache';
 
 export function uiTransform(): Plugins {
     return {
@@ -42,36 +43,35 @@ export function uiTransform(): Plugins {
             ProgramSkipper.clear();
             GenSymGenerator.clear();
             InsightIntentCollector.getInstance().clear();
-            arkts.NodeCacheFactory.getInstance().clear();
+            NodeCacheFactory.getInstance().clear();
         },
     };
 }
 
-function parsedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
+function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:AfterParse');
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     if (!!contextPtr) {
-        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-        script = program.astNode;
+        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let script = program.ast;
         debugLog('[BEFORE PARSED SCRIPT] script: ', script.dumpSrc());
         arkts.Performance.getInstance().createEvent('ui-parsed');
         program = parsedProgramVisit(program, this);
-        script = program.astNode;
+        script = program.ast;
         arkts.Performance.getInstance().stopEvent('ui-parsed', true);
         debugLog('[AFTER PARSED SCRIPT] script: ', script.dumpSrc());
-        this.setArkTSAst(script);
+        this.setArkTSAst(script as arkts.ETSModule);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:AfterParse');
         arkts.Performance.getInstance().memoryTrackerReset();
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:AfterParse');
-        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT');
-        return script;
+        Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT');
+        return script as arkts.ETSModule;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
-    return script;
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED EXIT WITH NO TRANSFORM');
+    return undefined;
 }
 
 function parsedProgramVisit(
@@ -104,9 +104,8 @@ function parsedProgramVisit(
     return program;
 }
 
-function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
-    let script: arkts.EtsScript | undefined;
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
+function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerReset();
@@ -114,25 +113,25 @@ function checkedTransform(this: PluginContext): arkts.EtsScript | undefined {
     const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
     const isCoding = this.isCoding?.() ?? false;
     if (!isCoding && !!contextPtr) {
-        let program = arkts.getOrUpdateGlobalContext(contextPtr, true).program;
-        script = program.astNode;
+        let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
+        let script = program.ast;
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         debugLog('[BEFORE STRUCT SCRIPT] script: ', script.dumpSrc());
         arkts.Performance.getInstance().createEvent('ui-checked');
         program = checkedProgramVisit(program, this);
-        script = program.astNode;
+        script = program.ast;
         arkts.Performance.getInstance().stopEvent('ui-checked', true);
         debugLog('[AFTER STRUCT SCRIPT] script: ', script.dumpSrc());
-        this.setArkTSAst(script);
+        this.setArkTSAst(script as arkts.ETSModule);
         arkts.Performance.getInstance().memoryTrackerGetDelta('UIPlugin:UI-AfterCheck');
         arkts.Performance.getInstance().stopMemRecord('Node:UIPlugin:UI-AfterCheck');
         // 多文件编译时，每次都会更新文件，最后一次包含所有数据
         InsightIntentCollector.getInstance().tryWriteFromContext(this);
-        arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
-        return script;
+        Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT');
+        return script as arkts.ETSModule;
     }
-    arkts.Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
-    return script;
+    Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED EXIT WITH NO TRANSFORM');
+    return undefined;
 }
 
 function checkedProgramVisit(
@@ -144,7 +143,7 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
         const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
         if (projectConfig && !projectConfig.appResource) {
             projectConfig.ignoreError = true;
@@ -158,11 +157,11 @@ function checkedProgramVisit(
             .setResourceInfo(resourceInfo)
             .setShouldHandleInsightIntent(true);
         const visitors: AbstractVisitor[] = [];
-        if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected()) {
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(true);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(true);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
+        if (!NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected()) {
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(true);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(true);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
             const collector = new Collector({
                 shouldCollectUI: true,
                 shouldCollectMemo: true,
@@ -179,13 +178,15 @@ function checkedProgramVisit(
             skipPrefixNames: EXTERNAL_SOURCE_PREFIX_NAMES,
             pluginContext: context,
         });
+        NodeCacheFactory.currentCacheKey = NodeCacheNames.MEMO;
         program = programVisitor.programVisitor(program);
+        NodeCacheFactory.currentCacheKey = undefined;
         ResourceSourceCache.getInstance().clear();
         MetaDataCollector.getInstance().reset();
         ImportCollector.getInstance().reset();
         DeclarationCollector.getInstance().reset();
         LogCollector.getInstance().reset();
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).clear();
     }
     return program;
 }

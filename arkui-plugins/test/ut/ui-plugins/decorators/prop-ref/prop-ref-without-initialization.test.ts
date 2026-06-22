@@ -63,19 +63,19 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
     throw new Error("Declare interface");
   }
 
-  @PropRef() public propVar1!: string;
+  @PropRef() public propVar1: string;
 
   @PropRef() public propVar2?: (number | undefined);
 
-  @PropRef() public propVar3!: boolean;
+  @PropRef() public propVar3: boolean;
 
-  @PropRef() public propVar4?: undefined;
+  @PropRef() public propVar4: undefined;
 
-  @PropRef() public propVar5?: null;
+  @PropRef() public propVar5: null;
 
-  @PropRef() public propVar6?: (Array<number> | null);
+  @PropRef() public propVar6: (Array<number> | null);
 
-  @PropRef() public propVar7?: (Map<string, number> | undefined);
+  @PropRef() public propVar7: (Map<string, number> | undefined);
 
   public build() {}
 
@@ -84,30 +84,29 @@ import { PropRef as PropRef } from "@ohos.arkui.stateManagement";
   }
 }
 
-@Component() interface __Options_PropParent {
-  ${ignoreNewLines(`
-  @PropRef() propVar1?: string;
-  @PropRef() __backing_propVar1?: string;
-  __options_has_propVar1?: boolean;
-  @PropRef() propVar2?: (number | undefined);
-  @PropRef() __backing_propVar2?: (number | undefined);
-  __options_has_propVar2?: boolean;
-  @PropRef() propVar3?: boolean;
-  @PropRef() __backing_propVar3?: boolean;
-  __options_has_propVar3?: boolean;
-  @PropRef() propVar4?: undefined;
-  @PropRef() __backing_propVar4?: undefined;
-  __options_has_propVar4?: boolean;
-  @PropRef() propVar5?: null;
-  @PropRef() __backing_propVar5?: null;
-  __options_has_propVar5?: boolean;
-  @PropRef() propVar6?: (Array<number> | null);
-  @PropRef() __backing_propVar6?: (Array<number> | null);
-  __options_has_propVar6?: boolean;
-  @PropRef() propVar7?: (Map<string, number> | undefined);
-  @PropRef() __backing_propVar7?: (Map<string, number> | undefined);
-  __options_has_propVar7?: boolean;
-  `)}
+@Component() class __Options_PropParent {
+  @PropRef() public propVar1?: string;
+  @PropRef() public __backing_propVar1?: string;
+  public __options_has_propVar1?: boolean;
+  @PropRef() public propVar2?: (number | undefined);
+  @PropRef() public __backing_propVar2?: (number | undefined);
+  public __options_has_propVar2?: boolean;
+  @PropRef() public propVar3?: boolean;
+  @PropRef() public __backing_propVar3?: boolean;
+  public __options_has_propVar3?: boolean;
+  @PropRef() public propVar4?: undefined;
+  @PropRef() public __backing_propVar4?: undefined;
+  public __options_has_propVar4?: boolean;
+  @PropRef() public propVar5?: null;
+  @PropRef() public __backing_propVar5?: null;
+  public __options_has_propVar5?: boolean;
+  @PropRef() public propVar6?: (Array<number> | null);
+  @PropRef() public __backing_propVar6?: (Array<number> | null);
+  public __options_has_propVar6?: boolean;
+  @PropRef() public propVar7?: (Map<string, number> | undefined);
+  @PropRef() public __backing_propVar7?: (Map<string, number> | undefined);
+  public __options_has_propVar7?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -175,6 +174,16 @@ function main() {}
     (((gensym___198355044) == (null)) ? undefined : gensym___198355044.__options_has_propVar7)})) {
       this.__backing_propVar7!.update((initializers!.propVar7 as (Map<string, number> | undefined)));
     }
+  }
+
+  public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
+    this.__backing_propVar1!.resetOnReuse((initializers!.propVar1 as string));
+    this.__backing_propVar2!.resetOnReuse((initializers!.propVar2 as (number | undefined)));
+    this.__backing_propVar3!.resetOnReuse((initializers!.propVar3 as boolean));
+    this.__backing_propVar4!.resetOnReuse((initializers!.propVar4 as undefined));
+    this.__backing_propVar5!.resetOnReuse((initializers!.propVar5 as null));
+    this.__backing_propVar6!.resetOnReuse((initializers!.propVar6 as (Array<number> | null)));
+    this.__backing_propVar7!.resetOnReuse((initializers!.propVar7 as (Map<string, number> | undefined)));
   }
 
   @MemoIntrinsic() 
@@ -272,34 +281,29 @@ function main() {}
 
 }
 
-@Component() interface __Options_PropParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(string | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '((number | undefined) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<(number | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(boolean | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(undefined | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(null | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '((Array<number> | null) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<(Array<number> | null)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '((Map<string, number> | undefined) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<(Map<string, number> | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
+@Component() class __Options_PropParent {
+  @PropRef() public propVar1?: string;
+  public __backing_propVar1?: IPropRefDecoratedVariable<string>;
+  public __options_has_propVar1?: boolean;
+  @PropRef() public propVar2?: (number | undefined);
+  public __backing_propVar2?: IPropRefDecoratedVariable<(number | undefined)>;
+  public __options_has_propVar2?: boolean;
+  @PropRef() public propVar3?: boolean;
+  public __backing_propVar3?: IPropRefDecoratedVariable<boolean>;
+  public __options_has_propVar3?: boolean;
+  @PropRef() public propVar4?: undefined;
+  public __backing_propVar4?: IPropRefDecoratedVariable<undefined>;
+  public __options_has_propVar4?: boolean;
+  @PropRef() public propVar5?: null;
+  public __backing_propVar5?: IPropRefDecoratedVariable<null>;
+  public __options_has_propVar5?: boolean;
+  @PropRef() public propVar6?: (Array<number> | null);
+  public __backing_propVar6?: IPropRefDecoratedVariable<(Array<number> | null)>;
+  public __options_has_propVar6?: boolean;
+  @PropRef() public propVar7?: (Map<string, number> | undefined);
+  public __backing_propVar7?: IPropRefDecoratedVariable<(Map<string, number> | undefined)>;
+  public __options_has_propVar7?: boolean;
+  public constructor() {}
   
 }
 `;

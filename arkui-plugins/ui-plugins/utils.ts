@@ -23,14 +23,22 @@ import {
     CustomDialogNames,
     DecoratorNames,
     StructDecoratorNames,
+    GlobalReusePoolNames,
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { hasDecorator } from './property-translators/utils';
 
 export type EntryAnnoInfo = {
-    range: arkts.SourceRange;
+    startPosition: arkts.SourcePosition;
+    endPosition: arkts.SourcePosition;
     name: string;
 };
+
+export type LocalImportInfo = {
+    symbolName: string;
+    localSource: string;
+    localTypeName: string;
+}
 
 export function getSystemResourcePath(): string {
     return path.resolve(__dirname, './sysResource.js');
@@ -110,14 +118,22 @@ export function getGettersFromClassDecl(definition: arkts.ClassDefinition): arkt
 }
 
 // ANNOTATION
-export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string): boolean {
-    return !!annotation.properties.find(
+export function hasPropertyInAnnotation(annotation: arkts.AnnotationUsage, propertyName: string, allowDefault?: boolean): boolean {
+    return !!getPropertyInAnnotation(annotation, propertyName, allowDefault);
+}
+
+export function getPropertyInAnnotation(
+    annotation: arkts.AnnotationUsage, 
+    propertyName: string, 
+    allowDefault?: boolean
+): arkts.ClassProperty | undefined {
+    return (allowDefault ? arkts.getAnnotationDeclarationProperties(annotation) : annotation.properties).find(
         (annoProp: arkts.AstNode) =>
             arkts.isClassProperty(annoProp) &&
             annoProp.key &&
             arkts.isIdentifier(annoProp.key) &&
             annoProp.key.name === propertyName
-    );
+    ) as arkts.ClassProperty | undefined;
 }
 
 // CUSTOM COMPONENT
@@ -192,13 +208,13 @@ export function isBaseComponentClass(name: string): boolean {
 }
 
 export function collectCustomComponentScopeInfo(
-    node: arkts.ClassDeclaration | arkts.StructDeclaration
+    node: arkts.ClassDeclaration | arkts.ETSStructDeclaration
 ): CustomComponentInfo | undefined {
     const definition: arkts.ClassDefinition | undefined = node.definition;
     if (!definition || !definition?.ident?.name) {
         return undefined;
     }
-    const isStruct = arkts.classDefinitionIsFromStructConst(definition) || arkts.isStructDeclaration(node);
+    const isStruct = definition.isFromStruct || arkts.isETSStructDeclaration(node);
     const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClass = !isStruct && isDecl && isBaseComponentClass(definition.ident.name);
     const shouldIgnoreDecl = isStruct || isDecl;
@@ -226,6 +242,7 @@ export function collectCustomComponentScopeInfo(
         if (!isCustomComponent) {
             return undefined;
         }
+        checkGlobalReuseAnnotation(annotations);
     }
     return {
         name: definition.ident.name,
@@ -233,6 +250,81 @@ export function collectCustomComponentScopeInfo(
         isCustomComponentClass,
         annotations: annotations as CustomComponentAnontations,
     };
+}
+
+function checkGlobalReuseAnnotation(annotations: CustomComponentAnontations): void {
+    const componentAnno = annotations.component ?? annotations.componentV2;
+    if (!componentAnno || componentAnno.properties.length === 0) {
+        return;
+    }
+    const hasReusePool = hasPropertyInAnnotation(componentAnno, GlobalReusePoolNames.REUSE_POOL);
+    const hasPoolAccepts = hasPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+    checkReusePoolAndPoolAcceptsBothSet(componentAnno, hasReusePool, hasPoolAccepts);
+    checkPoolAcceptsNotEmpty(componentAnno, hasReusePool, hasPoolAccepts);
+}
+
+function checkReusePoolAndPoolAcceptsBothSet(
+    componentAnno: arkts.AnnotationUsage,
+    hasReusePool: boolean,
+    hasPoolAccepts: boolean
+): void {
+    if (hasReusePool === hasPoolAccepts) {
+        return;
+    }
+    const message = `'reusePool' and 'poolAccepts' must be both set. Neither can be omitted when using the global reuse pool.`;
+    const diagnosticKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    const diagnosticInfo = arkts.createDiagnosticInfo(diagnosticKind, componentAnno.startPosition);
+    if (!hasReusePool && hasPoolAccepts) {
+        const poolAcceptsProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+        if (!poolAcceptsProp || !poolAcceptsProp.value) {
+            return;
+        }
+        const annoName = (componentAnno.expr as arkts.Identifier).name;
+        const fixCode = `@${annoName}({ reusePool: ReusePoolOwnership.SHARED, poolAccepts: ${poolAcceptsProp.value.dumpSrc()} })`;
+        const startPos = arkts.createSourcePosition(componentAnno.startPosition.getIndex() - 1, componentAnno.startPosition.getLine());
+        const annoRange = arkts.createSourceRange(startPos, componentAnno.endPosition);
+        const suggestionKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION);
+        const suggestionInfo = arkts.createSuggestionInfo(suggestionKind, fixCode, `Add 'reusePool' property`, annoRange);
+        arkts.logDiagnosticWithSuggestion(diagnosticInfo, suggestionInfo);
+    } else {
+        arkts.logDiagnostic(diagnosticKind, componentAnno.startPosition);
+    }
+}
+
+function checkPoolAcceptsNotEmpty(
+    componentAnno: arkts.AnnotationUsage,
+    hasReusePool: boolean,
+    hasPoolAccepts: boolean
+): void {
+    if (!hasPoolAccepts || !hasReusePool) {
+        return;
+    }
+    const poolAcceptsProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.POOL_ACCEPTS);
+    if (
+        !poolAcceptsProp ||
+        !arkts.isClassProperty(poolAcceptsProp) ||
+        !poolAcceptsProp.value ||
+        !arkts.isArrayExpression(poolAcceptsProp.value)
+    ) {
+        return;
+    }
+    const poolAcceptsValue = poolAcceptsProp.value;
+    if (poolAcceptsValue.elements.length !== 0) {
+        return;
+    }
+    const reusePoolProp = getPropertyInAnnotation(componentAnno, GlobalReusePoolNames.REUSE_POOL);
+    if (
+        !reusePoolProp ||
+        !reusePoolProp.value ||
+        !arkts.isMemberExpression(reusePoolProp.value) ||
+        !arkts.isIdentifier(reusePoolProp.value.property) ||
+        reusePoolProp.value.property.name === GlobalReusePoolNames.REUSE_POOL_OWNERSHIP_OFF
+    ) {
+        return;
+    }
+    const message = `'poolAccepts' cannot be an empty array. Provide at least one '@Reusable' or '@ReusableV2' component.`;
+    const diagnosticKind = arkts.createDiagnosticKind(message, arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR);
+    arkts.logDiagnostic(diagnosticKind, componentAnno.startPosition);
 }
 
 export function getAnnotationInfoForStruct(
@@ -249,8 +341,8 @@ export function getAnnotationInfoForStruct(
     return { isComponent, isComponentV2, isEntry, isReusable, isReusableV2, isCustomLayout, isCustomDialog };
 }
 
-export function isComponentStruct(node: arkts.StructDeclaration, scopeInfo: CustomComponentInfo): boolean {
-    return scopeInfo.name === node.definition.ident?.name;
+export function isComponentStruct(node: arkts.ETSStructDeclaration, scopeInfo: CustomComponentInfo): boolean {
+    return scopeInfo.name === node.definition!.ident?.name;
 }
 
 /**
@@ -267,9 +359,10 @@ export function isCustomComponentClass(node: arkts.ClassDeclaration, scopeInfo: 
     return name === scopeInfo.name;
 }
 
-export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): boolean {
-    const checkPrefix = !!node.id?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
-    const checkComponent = node.annotations.some(
+export function isCustomComponentInnerClass(node: arkts.ClassDeclaration): boolean {
+    const classDef = node.definition;
+    const checkPrefix = !!classDef?.ident?.name.startsWith(CustomComponentNames.COMPONENT_INTERFACE_PREFIX);
+    const checkComponent = !!classDef?.annotations.some(
         (anno) =>
             isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT) ||
             isCustomComponentAnnotation(anno, StructDecoratorNames.COMPONENT_V2) ||
@@ -280,6 +373,10 @@ export function isCustomComponentInterface(node: arkts.TSInterfaceDeclaration): 
 
 export function getCustomComponentOptionsName(className: string): string {
     return `${CustomComponentNames.COMPONENT_INTERFACE_PREFIX}${className}`;
+}
+
+export function getStructNameFromOptionsName(optionsName: string): string {
+    return optionsName.slice(CustomComponentNames.COMPONENT_INTERFACE_PREFIX.length);
 }
 
 /**
@@ -294,19 +391,19 @@ export function isKnownMethodDefinition(method: arkts.MethodDefinition, name: st
     }
 
     // For now, we only considered matched method name.
-    const isNameMatched: boolean = method.name?.name === name;
+    const isNameMatched: boolean = method.id?.name === name;
     return isNameMatched;
 }
 
 export function isSpecificNewClass(node: arkts.ETSNewClassInstanceExpression, className: string): boolean {
     if (
-        node.getTypeRef &&
-        arkts.isETSTypeReference(node.getTypeRef) &&
-        node.getTypeRef.part &&
-        arkts.isETSTypeReferencePart(node.getTypeRef.part) &&
-        node.getTypeRef.part.name &&
-        arkts.isIdentifier(node.getTypeRef.part.name) &&
-        node.getTypeRef.part.name.name === className
+        node.typeRef &&
+        arkts.isETSTypeReference(node.typeRef) &&
+        node.typeRef.part &&
+        arkts.isETSTypeReferencePart(node.typeRef.part) &&
+        node.typeRef.part.name &&
+        arkts.isIdentifier(node.typeRef.part.name) &&
+        node.typeRef.part.name.name === className
     ) {
         return true;
     }
@@ -402,7 +499,8 @@ export function expectNameInTypeReference(node: arkts.TypeNode | undefined): ark
 export function getValueInObjectAnnotation(
     anno: arkts.AnnotationUsage | undefined,
     decoratorName: string,
-    key: string
+    key: string,
+    allowDefault?: boolean
 ): arkts.Expression | undefined {
     if (!anno) {
         return undefined;
@@ -412,7 +510,10 @@ export function getValueInObjectAnnotation(
     if (!isSuitableAnnotation) {
         return undefined;
     }
-    const keyItem: arkts.AstNode | undefined = anno.properties.find(
+    const keyItem: arkts.AstNode | undefined = (allowDefault 
+        ? arkts.getAnnotationDeclarationProperties(anno) 
+        : anno.properties
+    ).find(
         (annoProp: arkts.AstNode) =>
             arkts.isClassProperty(annoProp) &&
             annoProp.key &&

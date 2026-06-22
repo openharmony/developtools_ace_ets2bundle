@@ -50,6 +50,7 @@ import { CustomComponentNames, CustomDialogNames, LANGUAGE_VERSION, NodeCacheNam
 import { rewriteByType, RewriteFactory } from './checked-cache-factory';
 import { getPerfName } from '../common/debug';
 import { InnerComponentInfoCache } from './builder-lambda-translators/cache/innerComponentInfoCache';
+import { NodeCacheFactory } from '../common/node-cache';
 
 export interface CheckedTransformerOptions extends VisitorOptions {
     useCache?: boolean;
@@ -75,7 +76,7 @@ export class CheckedTransformer extends AbstractVisitor {
     init(): void {
         MetaDataCollector.getInstance()
             .setProjectConfig(this.projectConfig)
-            .setAbsName(this.program?.absName)
+            .setAbsName(this.program?.absoluteName)
             .setExternalSourceName(this.externalSourceName);
         // 初始化 InsightIntentHandler，收集当前文件的顶层变量
         this.insightIntentHandler.init(this.program);
@@ -93,7 +94,7 @@ export class CheckedTransformer extends AbstractVisitor {
         ActiveInactiveCache.getInstance().reset();
         ComponentAttributeCache.getInstance().reset();
         InnerComponentInfoCache.getInstance().reset();
-        ImportCollector.getInstance().clearImports();
+        ImportCollector.getInstance().clearImports().clearLocals();
     }
 
     enter(node: arkts.AstNode): void {
@@ -104,7 +105,7 @@ export class CheckedTransformer extends AbstractVisitor {
             }
         }
         if (arkts.isMethodDefinition(node) && this.scope.customComponents.length > 0) {
-            const name = node.name.name;
+            const name = node.id!.name;
             const scopeInfo = this.scope.customComponents.pop()!;
             scopeInfo.hasInitializeStruct ||= name === CustomComponentNames.COMPONENT_INITIALIZE_STRUCT;
             scopeInfo.hasUpdateStruct ||= name === CustomComponentNames.COMPONENT_UPDATE_STRUCT;
@@ -123,11 +124,11 @@ export class CheckedTransformer extends AbstractVisitor {
     }
 
     private visitorWithCache(beforeChildren: arkts.AstNode): arkts.AstNode {
-        const _uiCache = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
+        const _uiCache = NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI);
         if (!_uiCache.shouldUpdate(beforeChildren)) {
             return beforeChildren;
         }
-        const node = this.visitEachChild(beforeChildren);
+        let node = this.visitEachChild(beforeChildren);
         if (_uiCache.has(node)) {
             const value = _uiCache.get(node)!;
             if (rewriteByType.has(value.type)) {
@@ -138,8 +139,11 @@ export class CheckedTransformer extends AbstractVisitor {
                 return newNode;
             }
         }
-        if (arkts.isEtsScript(node) && !node.isNamespace) {
-            ImportCollector.getInstance().insertCurrentImports(this.program);
+        if (arkts.isETSModule(node) && !node.isNamespace) {
+            if (ImportCollector.getInstance().importInfos.length > 0) {
+                let imports = ImportCollector.getInstance().getImportStatements();
+                node = arkts.factory.updateETSModule(node, [...imports, ...node.statements]);
+            }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
         }
@@ -152,11 +156,11 @@ export class CheckedTransformer extends AbstractVisitor {
         }
         this.enter(beforeChildren);
         if (arkts.isCallExpression(beforeChildren)) {
-            const decl = arkts.getDecl(beforeChildren.expression);
-            if (arkts.isIdentifier(beforeChildren.expression) && isFromBuilder1_1(decl)) {
+            const decl = arkts.getDecl(beforeChildren.callee!);
+            if (arkts.isIdentifier(beforeChildren.callee) && isFromBuilder1_1(decl)) {
                 // Builder
                 insertCompatibleImport();
-                return generateBuilderCompatible(beforeChildren, beforeChildren.expression.name);
+                return generateBuilderCompatible(beforeChildren, beforeChildren.callee.name);
             } else if (isBuilderLambda(beforeChildren, decl)) {
                 const lambda = builderLambdaFactory.transformBuilderLambda(beforeChildren);
                 return this.visitEachChild(lambda);
@@ -204,7 +208,7 @@ export class CheckedTransformer extends AbstractVisitor {
             return structFactory.transformCallExpression(
                 node,
                 this.projectConfig,
-                this.resourceInfo,
+                this.resourceInfo!,
                 this.scope.customComponents.length === 0
             );
         } else if (arkts.isTSInterfaceDeclaration(node)) {
@@ -215,13 +219,18 @@ export class CheckedTransformer extends AbstractVisitor {
         ) {
             return structFactory.transformCustomDialogController(node);
         }
-        if (arkts.isEtsScript(node) && !node.isNamespace) {
-            if(ImportCollector.getInstance().importInfos.length > 0){
-                ImportCollector.getInstance().insertCurrentImports(this.program);
+        if (arkts.isETSModule(node) && !node.isNamespace) {
+            let newScript = node;
+            if (ImportCollector.getInstance().importInfos.length > 0) {
+                const imports = ImportCollector.getInstance().getImportStatements();
+                newScript = arkts.factory.updateETSModule(
+                    node,
+                    [...imports, ...node.statements]
+                );
             }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
-            return node;
+            return newScript;
         }
         return node;
     }

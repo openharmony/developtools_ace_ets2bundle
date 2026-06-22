@@ -17,7 +17,6 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-// import { CustomComponentNames } from '../utils';
 import {
     generateToRecord,
     createGetter,
@@ -30,9 +29,9 @@ import {
     checkIsNameStartWithBackingField,
 } from './utils';
 import {
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -40,8 +39,12 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { PropertyValueCache } from '../memo-collect-cache';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 
+/**
+ * @deprecated
+ */
 export class PropRefTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.PROP_REF_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PROP_REF;
@@ -55,7 +58,12 @@ export class PropRefTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
+        this.initializeOptions = {
+            isWatched,
+            isRequired
+        };
     }
 }
 
@@ -69,22 +77,47 @@ export class PropRefCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
+        this.initializeOptions = {
+            isWatched,
+            isRequired
+        };
+    }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const propertyValue = this.property.value?.clone();
+        const propertyType = this.propertyType?.clone();
+        const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+        if (this.isMemoShouldUpdate) {
+            if (!!propertyValue) {
+                const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue });
+            }
+            if (!!propertyType) {
+                PropertyValueCache.getInstance().collect({ value: propertyType });
+            }
+        }
+        return factory.createResetOnReuseStmt(newName, arg);
     }
 }
 
-export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class PropRefInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROP_REF;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROP_REF);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROP_REF);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROP_REF);
         }
@@ -92,18 +125,15 @@ export class PropRefInterfaceTranslator<T extends InterfacePropertyTypes> extend
     }
 }
 
-export class PropRefCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class PropRefCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROP_REF;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasPropRef;
     }
 }

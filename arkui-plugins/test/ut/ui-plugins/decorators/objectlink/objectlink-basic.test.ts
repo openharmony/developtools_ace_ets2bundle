@@ -78,8 +78,8 @@ function main() {}
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -96,6 +96,7 @@ function main() {}
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -112,8 +113,8 @@ function main() {}
 
   public addWatchSubscriber(watchId: WatchIdType): void {
     if (((this.subscribedWatches) !== (undefined))) {
-      this.subscribedWatches!.addWatchSubscriber(watchId);
-    }
+  this.subscribedWatches!.addWatchSubscriber(watchId);
+}
   }
 
   public removeWatchSubscriber(watchId: WatchIdType): boolean {
@@ -130,6 +131,7 @@ function main() {}
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -144,7 +146,7 @@ function main() {}
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
-    (((gensym___248819442) == (null)) ? undefined : gensym___248819442.objectlinkvar)}) as A))
+    (((gensym___248819442) == (null)) ? undefined : gensym___248819442!.objectlinkvar)}) as A));
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
@@ -154,6 +156,9 @@ function main() {}
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_objectlinkvar!.resetOnReuse((initializers!.objectlinkvar as A));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -185,11 +190,11 @@ function main() {}
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
-    (((gensym___219806589) == (null)) ? undefined : gensym___219806589.objectlinkvar1)}) as (A | undefined)))
+    (((gensym___219806589) == (null)) ? undefined : gensym___219806589!.objectlinkvar1)}) as (A | undefined)));
     this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
-    (((gensym___217261862) == (null)) ? undefined : gensym___217261862.objectlinkvar2)}) as (A | B)))
+    (((gensym___217261862) == (null)) ? undefined : gensym___217261862!.objectlinkvar2)}) as (A | B)));
     this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
-    (((gensym___199257778) == (null)) ? undefined : gensym___199257778.objectlinkvar3)}) as (A | B | null)))
+    (((gensym___199257778) == (null)) ? undefined : gensym___199257778!.objectlinkvar3)}) as (A | B | null)));
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {
@@ -207,6 +212,11 @@ function main() {}
     }
   }
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample2 | undefined)): void {
+    this.__backing_objectlinkvar1!.resetOnReuse((initializers!.objectlinkvar1 as (A | undefined)));
+    this.__backing_objectlinkvar2!.resetOnReuse((initializers!.objectlinkvar2 as (A | B)));
+    this.__backing_objectlinkvar3!.resetOnReuse((initializers!.objectlinkvar3 as (A | B | null)));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -247,25 +257,25 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar', 'A', [dumpAnnotation('ObjectLink')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar', '(IObjectLinkDecoratedVariable<A> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample {
+  @ObjectLink() public objectlinkvar: A;
+  public __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+  public __options_has_objectlinkvar?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_MyStateSample2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar1', '(A | undefined)', [dumpAnnotation('ObjectLink')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar1', '(IObjectLinkDecoratedVariable<(A | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar2', '(A | B)', [dumpAnnotation('ObjectLink')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar2', '(IObjectLinkDecoratedVariable<(A | B)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectlinkvar3', '(A | B | null)', [dumpAnnotation('ObjectLink')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectlinkvar3', '(IObjectLinkDecoratedVariable<(A | B | null)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectlinkvar3', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample2 {
+  @ObjectLink() public objectlinkvar1: (A | undefined);
+  public __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined)>;
+  public __options_has_objectlinkvar1?: boolean;
+  @ObjectLink() public objectlinkvar2: (A | B);
+  public __backing_objectlinkvar2?: IObjectLinkDecoratedVariable<(A | B)>;
+  public __options_has_objectlinkvar2?: boolean;
+  @ObjectLink() public objectlinkvar3: (A | B | null);
+  public __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null)>;
+  public __options_has_objectlinkvar3?: boolean;
+  public constructor() {}
   
 }
 `;

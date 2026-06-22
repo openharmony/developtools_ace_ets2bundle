@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, GetSetTypes, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import {
     generateToRecord,
     createGetter,
@@ -31,9 +31,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -42,21 +42,22 @@ import {
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithConsumeProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
-        arkts.factory.create1StringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
+        arkts.factory.createStringLiteral(originalName),
+        arkts.factory.createStringLiteral(getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName),
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     const defaultValue = this.property.value;
@@ -65,12 +66,13 @@ function initializeStructWithConsumeProperty(
             args.push(arkts.factory.createUndefinedLiteral());
         }
         args.push(arkts.factory.createObjectExpression(
-            arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
             [arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
                 arkts.factory.createIdentifier('defaultValue'),
-                defaultValue
-            )],
-            true
+                defaultValue,
+                false,
+                false
+            )]
         ));
         if (this.isMemoShouldUpdate) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
@@ -79,8 +81,8 @@ function initializeStructWithConsumeProperty(
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate && !!stateManagementCallType) {
         PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
@@ -88,21 +90,24 @@ function initializeStructWithConsumeProperty(
     return arkts.factory.createExpressionStatement(assign);
 }
 
-function updateStateMethodInInterface<T extends InterfacePropertyTypes>(
-    this: InterfacePropertyTranslator<T>,
+function updateStateMethodInInnerClass<T extends InnerClassPropertyTypes>(
+    this: InnerClassPropertyTranslator<T>,
     method: arkts.MethodDefinition
 ): arkts.MethodDefinition {
     const metadata = findCachedMemoMetadata(method);
-    return factory.wrapStateManagementTypeToMethodInInterface(method, DecoratorNames.CONSUME, metadata);
+    return factory.wrapStateManagementTypeToMethodInInnerClass(method, DecoratorNames.CONSUME, metadata);
 }
 
-function updateStatePropertyInInterface<T extends InterfacePropertyTypes>(
-    this: InterfacePropertyTranslator<T>,
+function updateStatePropertyInInnerClass<T extends InnerClassPropertyTypes>(
+    this: InnerClassPropertyTranslator<T>,
     property: arkts.ClassProperty
 ): arkts.ClassProperty {
-    return factory.wrapStateManagementTypeToPropertyInInterface(property, DecoratorNames.CONSUME);
+    return factory.wrapStateManagementTypeToPropertyInInnerClass(property, DecoratorNames.CONSUME);
 }
 
+/**
+ * @deprecated
+ */
 export class ConsumeTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.CONSUME_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_CONSUME;
@@ -116,13 +121,16 @@ export class ConsumeTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
@@ -138,30 +146,72 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithConsumeProperty.bind(this)(newName, originalName, metadata);
     }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const alias: string = getValueInAnnotation(this.property, DecoratorNames.CONSUME) ?? originalName;
+        const args: arkts.Expression[] = [arkts.factory.createStringLiteral(alias)];
+        if (this.initializeOptions?.isWatched) {
+            const watchStr: string | undefined = getValueInAnnotation(this.property, DecoratorNames.WATCH);
+            if (watchStr) {
+                args.push(factory.createWatchCallback(watchStr));
+            }
+        }
+        const defaultValue = this.property.value?.clone();
+        if (!!defaultValue) {
+            if (args.length === 1) {
+                args.push(arkts.factory.createUndefinedLiteral());
+            }
+            args.push(arkts.ObjectExpression.createObjectExpression(
+                arkts.Es2pandaAstNodeType.AST_NODE_TYPE_OBJECT_EXPRESSION,
+                [arkts.factory.createProperty(
+                    arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
+                    arkts.factory.createIdentifier('defaultValue'),
+                    defaultValue,
+                    false,
+                    false
+                )],
+                true
+            ));
+        }
+        if (this.isMemoShouldUpdate) {
+            if (!!defaultValue) {
+                const isFunctionValue = arkts.isArrowFunctionExpression(defaultValue);
+                PropertyValueCache.getInstance().collect({ value: defaultValue, shouldCache: this.isMemoCached && isFunctionValue });
+            }
+        }
+        return factory.createResetOnReuseStmtWithArgs(newName, args);
+    }
 }
 
-export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ConsumeInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUME;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.CONSUME);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.CONSUME);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.CONSUME);
         }
@@ -169,18 +219,15 @@ export class ConsumeInterfaceTranslator<T extends InterfacePropertyTypes> extend
     }
 }
 
-export class ConsumeCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ConsumeCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.CONSUME;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasConsume;
     }
 }

@@ -205,7 +205,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -238,17 +238,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() interface __Options_Index {
-  
+@Entry() @ComponentV2() class __Options_Index {
+  public constructor() {}
 }
 
 `;

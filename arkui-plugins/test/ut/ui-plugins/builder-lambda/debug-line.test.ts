@@ -88,7 +88,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/debug-line",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct DebugLineComponent extends CustomComponent<DebugLineComponent, __Options_DebugLineComponent> implements PageLifeCycle {
+@Entry() @Component() final struct DebugLineComponent extends CustomComponent<DebugLineComponent, __Options_DebugLineComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_DebugLineComponent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_DebugLineComponent | undefined)): void {}
@@ -266,21 +266,19 @@ class __EntryWrapper extends EntryPoint {
       return;
     }
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_DebugLineComponent {
-  
+@Entry() @Component() class __Options_DebugLineComponent {
+  public constructor() {}
 }
 
-@Component() interface __Options_MyComponent {
-  
+@Component() class __Options_MyComponent {
+  public constructor() {}
 }
 
 `;

@@ -641,6 +641,8 @@ export const whiteList: Set<string> = new Set([
   'LazyVGridLayoutAttribute',
   'LazyVWaterFlowLayout',
   'LazyVWaterFlowLayoutAttribute',
+  'LazyDynamicLayout',
+  'LazyDynamicLayoutAttribute',
   'LazyWaterFlowLayoutAttribute',
   'LeadingMarginPlaceholder',
   'Length',
@@ -1628,7 +1630,8 @@ export const stateManagementWhiteList: string[] = [
   'AppStorageV2',
   'PersistenceV2',
   'ColorMode',
-  'LayoutDirection'
+  'LayoutDirection',
+  'IMonitor'
 ];
 
 export const decoratorsWhiteList: string[] = [

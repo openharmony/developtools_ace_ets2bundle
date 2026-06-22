@@ -58,7 +58,7 @@ export enum SplitPolicy {
   PlACE_HOLDER_PAGE = 3,
 }
 
-class MultiNavPolicyInfo {
+export class MultiNavPolicyInfo {
   public policy: SplitPolicy = SplitPolicy.DETAIL_PAGE;
   public navInfo: NavPathInfo | undefined = undefined;
   public isFullScreen: boolean | undefined = undefined;
@@ -106,11 +106,11 @@ export class MyNavPathStack extends NavPathStack {
   }
 }
 
-interface NavPathStackOperate {
+export interface NavPathStackOperate {
   onSystemPop: ()=>void;
 }
 
-interface MultiNavPathStackOperate {
+export interface MultiNavPathStackOperate {
   onPrimaryPop: ()=>void;
   onSecondaryPop: ()=>void;
 }

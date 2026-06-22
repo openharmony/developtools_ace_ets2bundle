@@ -1194,6 +1194,78 @@ export class Es2pandaNativeModule {
     _AstNodeSetNoDebugLineFlag(context: KNativePointer, node: KNativePointer): void {
         throw new Error('AstNodeSetNoDebugLineFlag was not overloaded by native module initialization');
     }
+
+    _ProgramRelativeFilePathConst(context: KNativePointer, receiver: KNativePointer): KStringPtr {
+        throw new Error("ProgramRelativeFilePathConst was not overloaded by native module initialization")
+    }
+
+    _ProgramModulePrefixConst(context: KNativePointer, receiver: KNativePointer): KStringPtr {
+        throw new Error("ProgramModulePrefixConst was not overloaded by native module initialization")
+    }
+
+    _ProgramIsDeclForDynamicStaticInteropConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("ProgramIsDeclForDynamicStaticInteropConst was not overloaded by native module initialization")
+    }
+
+    _ProgramIsDeclarationModuleConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("ProgramIsDeclarationModuleConst was not overloaded by native module initialization")
+    }
+
+    _GetAnnotationDeclarationProperties(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("GetAnnotationDeclarationProperties was not overloaded by native module initialization")
+    }
+    
+ 	_FilterNodes(context: KNativePointer, node: KNativePointer, filters: string, deeperAfterMatch: boolean): KNativePointer {
+ 	    throw new Error('FilterNodes was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_FilterNodes2(context: KNativePointer, node: KNativePointer, type: KInt): KNativePointer {
+ 	    throw new Error('FilterNodes2 was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_FilterNodes3(context: KNativePointer, node: KNativePointer, types: Int32Array, typesSize: KInt): KNativePointer {
+ 	    throw new Error('FilterNodes3 was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_AstNodeTransformChildrenRecursively(context: KNativePointer, rootNode: KNativePointer, callback: (nodePtr: bigint) => bigint): KNativePointer {
+ 	    throw new Error('AstNodeTransformChildrenRecursively was not overloaded by native module initialization');
+ 	}
+ 	
+ 	_MaybeOptionalExpressionIsOptionalConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+ 	    throw new Error("This methods was not overloaded by native module initialization")
+ 	}
+
+    _ClassElementTsType(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("ClassElementTsType was not overloaded by native module initialization")
+    }
+
+    _TypePossiblyETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypePossiblyETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeDefinitelyETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypeDefinitelyETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeDefinitelyNotETSNullishConst(context: KNativePointer, receiver: KNativePointer): KBoolean {
+        throw new Error("TypeDefinitelyNotETSNullishConst was not overloaded by native module initialization")
+    }
+
+    _TypeClone(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("TypeClone was not overloaded by native module initialization")
+    }
+
+    _ExpressionTsType(context: KNativePointer, receiver: KNativePointer): KNativePointer {
+        throw new Error("ExpressionTsType was not overloaded by native module initialization")
+    }
+
+    _ClassPropertySetIsImmediateInit(context: KNativePointer, receiver: KNativePointer): void {
+        throw new Error("ClassPropertySetIsImmediateInit was not overloaded by native module initialization")
+    }
+
+    _DestroyConfigWithoutLog(receiver: KNativePointer): void {
+        throw new Error("DestroyConfigWithoutLog was not overloaded by native module initialization")
+    }
 }
 
 export function initEs2panda(): Es2pandaNativeModule {

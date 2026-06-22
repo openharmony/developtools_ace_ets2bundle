@@ -94,6 +94,8 @@ class AB {
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
@@ -208,9 +210,10 @@ class AB {
   }
 }
 
-@Component() interface __Options_ImportStruct {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arr', '(Array<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arr', '(boolean | undefined)')}
+@Component() class __Options_ImportStruct {
+  public arr?: Array<string>;
+  public __options_has_arr?: boolean;
+  public constructor() {}
   
 }
 `;

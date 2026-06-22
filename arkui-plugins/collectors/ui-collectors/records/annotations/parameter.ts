@@ -31,7 +31,6 @@ export class ParameterAnnotationRecord extends BaseAnnotationRecord<ParameterAnn
 
     constructor(options: RecordOptions) {
         super(options);
-        this.shouldIgnoreDecl = false;
         this.annotationNames = [DecoratorNames.BUILDER];
     }
 

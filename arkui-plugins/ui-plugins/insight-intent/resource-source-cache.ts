@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import { AstNodePointer } from '../../common/safe-types';
 
 /**
  * 资源源代码缓存
@@ -25,7 +26,7 @@ export class ResourceSourceCache {
     
     // 使用节点的 peer（底层指针）作为 key，因为 AST 节点对象可能被重建
     // key: peer (number), value: 原始源代码字符串
-    private cache: Map<number, string> = new Map();
+    private cache: Map<AstNodePointer, string> = new Map();
     
     private constructor() {}
     

@@ -77,7 +77,7 @@ import hilog from "@ohos.hilog";
 
   @State() public a: string = "str";
   
-  @PropRef() public b!: string;
+  @PropRef() public b: string;
   
   public build() {
     Column(){
@@ -96,11 +96,9 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     A();
   }
-
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 
 }
@@ -112,15 +110,14 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface))
 
-@Entry() @Component() interface __Options_A {
-  ${ignoreNewLines(`
-  @State() a?: string;
-  @State() __backing_a?: string;
-  __options_has_a?: boolean;
-  @PropRef() b?: string;
-  @PropRef() __backing_b?: string;
-  __options_has_b?: boolean;
-  `)}
+@Entry() @Component() class __Options_A {
+  @State() public a?: string;
+  @State() public __backing_a?: string;
+  public __options_has_a?: boolean;
+  @PropRef() public b?: string;
+  @PropRef() public __backing_b?: string;
+  public __options_has_b?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -182,7 +179,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
   } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
     (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
@@ -195,7 +192,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       this.__backing_b!.update((initializers!.b as string));
     }
   }
-
+  public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {
+    this.__backing_a!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.a)})) ?? ("str")));
+    this.__backing_b!.resetOnReuse((initializers!.b as string));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
@@ -259,24 +260,23 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     A._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_A {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'a', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_a', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_a', '(boolean | undefined)')}
+@Entry() @Component() class __Options_A {
+  @State() public a?: string;
+  public __backing_a?: IStateDecoratedVariable<string>;
+  public __options_has_a?: boolean;
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'b', '(string | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_b', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_b', '(boolean | undefined)')}
-  
+  @PropRef() public b?: string;
+  public __backing_b?: IPropRefDecoratedVariable<string>;
+  public __options_has_b?: boolean;
+  public constructor() {}
+
 }
 `;
 

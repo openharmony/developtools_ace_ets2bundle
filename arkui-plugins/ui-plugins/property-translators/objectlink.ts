@@ -29,9 +29,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -39,14 +39,15 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithObjectLinkProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType || !this.propertyType) {
         return undefined;
@@ -55,13 +56,14 @@ function initializeStructWithObjectLinkProperty(
     const initializers = arkts.factory.createTSAsExpression(
         factory.createBlockStatementForOptionalExpression(
             arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName
+            originalName,
+            { isNonNull: true }
         ),
         initializerPropertyType,
         false
     );
-    const args: arkts.Expression[] = [arkts.factory.create1StringLiteral(originalName), initializers];
-    if (this.hasWatch) {
+    const args: arkts.Expression[] = [arkts.factory.createStringLiteral(originalName), initializers];
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     const stateManagementCallType = this.propertyType.clone();
@@ -73,13 +75,18 @@ function initializeStructWithObjectLinkProperty(
             PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
         }
     }
-    return arkts.factory.createAssignmentExpression(
-        generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+    return arkts.factory.createExpressionStatement(
+        arkts.factory.createAssignmentExpression(
+            generateThisBacking(newName),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+        )
     );
 }
 
+/**
+ * @deprecated
+ */
 export class ObjectLinkTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.OBJECT_LINK_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_OBJECT_LINK;
@@ -93,13 +100,16 @@ export class ObjectLinkTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithObjectLinkProperty.bind(this)(newName, originalName, metadata);
     }
@@ -115,30 +125,51 @@ export class ObjectLinkCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = false;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        this.initializeOptions = {
+            isWatched
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithObjectLinkProperty.bind(this)(newName, originalName, metadata);
     }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const propertyType = this.propertyType?.clone();
+        const initializerAccess = factory.createNonNullOrOptionalMemberExpression(
+            CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
+            originalName,
+            false,
+            true
+        );
+        const arg = propertyType
+            ? arkts.factory.createTSAsExpression(initializerAccess, propertyType, false)
+            : initializerAccess;
+        return factory.createResetOnReuseStmt(newName, arg);
+    }
 }
 
-export class ObjectLinkInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ObjectLinkInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.OBJECT_LINK;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.OBJECT_LINK);
         }
@@ -146,18 +177,15 @@ export class ObjectLinkInterfaceTranslator<T extends InterfacePropertyTypes> ext
     }
 }
 
-export class ObjectLinkCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ObjectLinkCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.OBJECT_LINK;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasObjectLink;
     }
 }

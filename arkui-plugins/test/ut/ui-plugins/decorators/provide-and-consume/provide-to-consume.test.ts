@@ -57,9 +57,9 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     throw new Error("Declare interface");
   }
 
-  @Consume() public num!: number;
+  @Consume() public num: number;
 
-  @Consume({value:"ss"}) public str!: string;
+  @Consume({value:"ss"}) public str: string;
 
   public build() {
     Column(){
@@ -80,7 +80,7 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
     throw new Error("Declare interface");
   }
   
-  @Provide({alias:"num"}) public num: number = 10;
+  @Provide() public num: number = 10;
 
   @Provide({alias:"ss"}) public str: string = "hello";
 
@@ -98,27 +98,25 @@ import { Consume as Consume, Provide as Provide } from "@ohos.arkui.stateManagem
 
 }
 
-@Component() interface __Options_Child {
-  ${ignoreNewLines(`
-  @Consume() num?: number;
-  @Consume() __backing_num?: number;
-  __options_has_num?: boolean;
-  @Consume({value:"ss"}) str?: string;
-  @Consume({value:"ss"}) __backing_str?: string;
-  __options_has_str?: boolean;
-  `)}
+@Component() class __Options_Child {
+  @Consume() public num?: number;
+  @Consume() public __backing_num?: number;
+  public __options_has_num?: boolean;
+  @Consume({value:"ss"}) public str?: string;
+  @Consume({value:"ss"}) public __backing_str?: string;
+  public __options_has_str?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-  ${ignoreNewLines(`
-  @Provide({alias:"num"}) num?: number;
-  @Provide({alias:"num"}) __backing_num?: number;
-  __options_has_num?: boolean;
-  @Provide({alias:"ss"}) str?: string;
-  @Provide({alias:"ss"}) __backing_str?: string;
-  __options_has_str?: boolean;
-  `)}
+@Component() class __Options_Parent {
+  @Provide() public num?: number;
+  @Provide() public __backing_num?: number;
+  public __options_has_num?: boolean;
+  @Provide({alias:"ss"}) public str?: string;
+  @Provide({alias:"ss"}) public __backing_str?: string;
+  public __options_has_str?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -163,6 +161,11 @@ function main() {}
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_num!.resetOnReuse("num");
+    this.__backing_str!.resetOnReuse("ss");
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -232,6 +235,13 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_num!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (10)));
+    this.__backing_str!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("hello")));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -291,25 +301,25 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Consume', { alias: "" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IConsumeDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Consume', { value: "ss" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IConsumeDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Consume() public num?: number;
+  public __backing_num?: IConsumeDecoratedVariable<number>;
+  public __options_has_num?: boolean;
+  @Consume({value:"ss"}) public str?: string;
+  public __backing_str?: IConsumeDecoratedVariable<string>;
+  public __options_has_str?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'num', '(number | undefined)', [dumpAnnotation('Provide', { alias: "num", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_num', '(IProvideDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_num', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(string | undefined)', [dumpAnnotation('Provide', { alias: "ss", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str', '(IProvideDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @Provide() public num?: number;
+  public __backing_num?: IProvideDecoratedVariable<number>;
+  public __options_has_num?: boolean;
+  @Provide({alias:"ss"}) public str?: string;
+  public __backing_str?: IProvideDecoratedVariable<string>;
+  public __options_has_str?: boolean;
+  public constructor() {}
   
 }
 `;

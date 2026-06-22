@@ -52,7 +52,11 @@ function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo
     if (!decoratedNode) {
         return;
     }
-    const structDefinition = arkts.classByPeer<arkts.ClassDefinition>(metadata.structDeclInfo.definitionPtr);
+    const definitionPtr = metadata.structDeclInfo.definitionPtr;
+    if (!definitionPtr) {
+        return;
+    }
+    const structDefinition = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
     if (!structDefinition || !structDefinition.parent || !arkts.isClassDeclaration(structDefinition.parent)) {
         return;
     }
@@ -61,13 +65,13 @@ function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo
 
 function extractReusePropertyNode(node: arkts.CallExpression): arkts.Identifier | undefined {
     if (
-        !arkts.isMemberExpression(node.expression) ||
-        !node.expression.property ||
-        !arkts.isCallExpression(node.expression.object)
+        !arkts.isMemberExpression(node.callee) ||
+        !node.callee.property ||
+        !arkts.isCallExpression(node.callee.object)
     ) {
         return undefined;
     }
-    const property = node.expression.property;
+    const property = node.callee.property;
     return arkts.isIdentifier(property) ? property : undefined;
 }
 

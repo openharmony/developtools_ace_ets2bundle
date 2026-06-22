@@ -86,6 +86,11 @@ class Per {
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_parentVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -140,6 +145,11 @@ class Per {
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_childVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
@@ -179,17 +189,19 @@ class Per {
 
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'parentVar1', '(Per | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_parentVar1', '(IStateDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_parentVar1', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @State() public parentVar1?: Per;
+  public __backing_parentVar1?: IStateDecoratedVariable<Per>;
+  public __options_has_parentVar1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'childVar1', '(Per | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_childVar1', '(IStateDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_childVar1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @State() public childVar1?: Per;
+  public __backing_childVar1?: IStateDecoratedVariable<Per>;
+  public __options_has_childVar1?: boolean;
+  public constructor() {}
   
 }
 `;

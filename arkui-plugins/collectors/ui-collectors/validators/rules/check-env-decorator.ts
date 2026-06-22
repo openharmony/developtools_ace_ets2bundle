@@ -17,9 +17,10 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { coerceToAstNode } from '../utils';
 import type { IntrinsicValidatorFunction } from '../safe-types';
-import { CallInfo, StructPropertyInfo, CustomComponentInterfacePropertyInfo } from '../../records';
-import { DecoratorNames, LogType } from '../../../../common/predefines';
+import { CallInfo, StructPropertyInfo, StructPropertyRecord, CustomComponentInnerClassPropertyInfo, RecordBuilder } from '../../records';
+import { DecoratorNames, LogType, ENV_KEY_STRING_PATTERN } from '../../../../common/predefines';
 import { getPerfName, performanceLog } from '../../../../common/debug';
+import type { AstNodePointer } from '../../../../common/safe-types';
 
 const ENV_TYPE_ARG_MAP: Map<string, string> = new Map([
     ['WindowSizeLayoutBreakpointInfo', 'SystemProperties.BREAK_POINT'],
@@ -30,6 +31,30 @@ const ENV_TYPE_ARG_MAP: Map<string, string> = new Map([
 ]);
 
 const ENV_TYPE_KEYS = [...ENV_TYPE_ARG_MAP.values()];
+
+const INCOMPATIBLE_DECORATORS: string[] = [
+    DecoratorNames.ENV,
+    DecoratorNames.CUSTOM_ENV,
+    DecoratorNames.STATE,
+    DecoratorNames.STORAGE_LINK,
+    DecoratorNames.LINK,
+    DecoratorNames.PROVIDE,
+    DecoratorNames.CONSUME,
+    DecoratorNames.OBJECT_LINK,
+    DecoratorNames.WATCH,
+    DecoratorNames.BUILDER_PARAM,
+    DecoratorNames.LOCAL_STORAGE_LINK,
+    DecoratorNames.PROP_REF,
+    DecoratorNames.STORAGE_PROP_REF,
+    DecoratorNames.LOCAL_STORAGE_PROP_REF,
+    DecoratorNames.LOCAL,
+    DecoratorNames.ONCE,
+    DecoratorNames.PARAM,
+    DecoratorNames.EVENT,
+    DecoratorNames.REQUIRE,
+    DecoratorNames.CONSUMER,
+    DecoratorNames.PROVIDER,
+];
 
 export const checkEnvDecorator = performanceLog(
     _checkEnvDecorator,
@@ -62,6 +87,14 @@ function checkEnvVariableType<T extends arkts.AstNode = arkts.ClassProperty>(
     if (!envDecorator) {
         return;
     }
+    const valueNode = getEnvAnnotationValue(envDecorator);
+    if (!valueNode || arkts.isStringLiteral(valueNode)) {
+        return;
+    }
+    const envKey = valueNode.dumpSrc();
+    if (!envKey || !ENV_TYPE_KEYS.includes(envKey)) {
+        return;
+    }
     const propType = _node.typeAnnotation;
     if (!propType) {
         reportEnvInvalidType.bind(this)(_node);
@@ -79,10 +112,6 @@ function checkEnvVariableType<T extends arkts.AstNode = arkts.ClassProperty>(
     if (!expectedKey) {
         return;
     }
-    const envKey = extractEnvKey(envDecorator);
-    if (!envKey || !ENV_TYPE_KEYS.includes(envKey)) {
-        return;
-    }
     if (ENV_TYPE_ARG_MAP.get(envTypeName.currentTypeName) !== envKey) {
         this.report({
             node: _node,
@@ -90,6 +119,37 @@ function checkEnvVariableType<T extends arkts.AstNode = arkts.ClassProperty>(
             message: `Invalid parameter. State variables decorated with '@Env' of '${envTypeName.currentTypeName}' can only accept ${expectedKey}.`,
         });
     }
+}
+
+function checkEnvParamValue<T extends arkts.AstNode = arkts.ClassProperty>(
+    this: BaseValidator<T, StructPropertyInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    const envDecorator = metadata.annotations?.[DecoratorNames.ENV];
+    if (!envDecorator) {
+        return;
+    }
+    const valueNode = getEnvAnnotationValue(envDecorator);
+    if (!valueNode || !arkts.isStringLiteral(valueNode)) {
+        return;
+    }
+
+    if (!ENV_KEY_STRING_PATTERN.test(valueNode.str)) {
+        this.report({
+            node: valueNode,
+            level: LogType.ERROR,
+            message: `Invalid parameter for '@Env'. Expected 'WritableEnvKey.<member>' or 'ReadonlyEnvKey.<member>', but got '${valueNode.str}'.`,
+        });
+    }
+}
+
+function getEnvAnnotationValue(decorator: arkts.AnnotationUsage): arkts.AstNode | undefined {
+    const properties = decorator.properties;
+    if (properties.length !== 1 || !arkts.isClassProperty(properties[0])) {
+        return undefined;
+    }
+    return properties[0].value;
 }
 
 function checkEnvInitInStructCall<T extends arkts.AstNode = arkts.CallExpression>(
@@ -113,20 +173,30 @@ function checkEnvInitInStructCall<T extends arkts.AstNode = arkts.CallExpression
 
 function checkEnvInitForProperty<T extends arkts.AstNode = arkts.CallExpression>(
     this: BaseValidator<T, CallInfo>,
-    propPtr: arkts.AstNode,
-    propertyInfo: CustomComponentInterfacePropertyInfo | undefined,
+    propPtr: AstNodePointer,
+    propertyInfo: CustomComponentInnerClassPropertyInfo | undefined,
     hasComponent: boolean,
     hasComponentV2: boolean
 ): void {
-    const prop = arkts.classByPeer<arkts.Property>(propPtr);
+    const prop = arkts.unpackNonNullableNode<arkts.Property>(propPtr);
     if (!prop?.value) {
         return;
     }
     const valueDecl = arkts.getDecl(prop.value);
-    if (!valueDecl || !arkts.isClassProperty(valueDecl) || !findEnvDecorator(valueDecl)) {
+    if (!valueDecl || !arkts.isClassProperty(valueDecl)) {
         return;
     }
-    if (hasComponent && hasAnyStateDecorator(propertyInfo)) {
+    const sourceRecord = RecordBuilder.build(StructPropertyRecord, valueDecl, { shouldIgnoreDecl: false });
+    if (!sourceRecord.isCollected) {
+        sourceRecord.collect(valueDecl);
+    }
+    const sourceAnnoInfo = sourceRecord.toRecord()?.annotationInfo;
+    const hasEnv = !!sourceAnnoInfo?.hasEnv;
+    const hasCustomEnv = !!sourceAnnoInfo?.hasCustomEnv;
+    if (!hasEnv && !hasCustomEnv) {
+        return;
+    }
+    if (hasComponent && hasEnv && hasAnyStateDecorator(propertyInfo)) {
         this.report({
             node: prop,
             level: LogType.ERROR,
@@ -134,16 +204,26 @@ function checkEnvInitForProperty<T extends arkts.AstNode = arkts.CallExpression>
         });
     }
     if (hasComponentV2 && !propertyInfo?.annotationInfo?.hasParam) {
+        const decoratorName = hasEnv ? DecoratorNames.ENV : DecoratorNames.CUSTOM_ENV;
         this.report({
             node: prop,
             level: LogType.ERROR,
-            message: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
+            message: `Within structs decorated with '@ComponentV2', '${decoratorName}' can only initialize variables decorated with '@Param'.`,
         });
     }
 }
 
+function checkClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
+    this: BaseValidator<T, StructPropertyInfo>,
+    node: T
+): void {
+    checkEnvVariableType.bind(this)(node);
+    checkEnvParamValue.bind(this)(node);
+    checkDecoratorCombination.bind(this)(node);
+}
+
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction>([
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkEnvVariableType],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkClassProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkEnvInitInStructCall],
 ]);
 
@@ -159,14 +239,7 @@ function reportEnvInvalidType(
     });
 }
 
-function findEnvDecorator(node: arkts.ClassProperty): arkts.AnnotationUsage | undefined {
-    return node.annotations?.find(annotation =>
-        annotation.expr && arkts.isIdentifier(annotation.expr) &&
-        annotation.expr.name === DecoratorNames.ENV
-    );
-}
-
-function hasAnyStateDecorator(info: CustomComponentInterfacePropertyInfo | undefined): boolean {
+function hasAnyStateDecorator(info: CustomComponentInnerClassPropertyInfo | undefined): boolean {
     if (!info?.annotationInfo) {
         return false;
     }
@@ -176,7 +249,7 @@ function hasAnyStateDecorator(info: CustomComponentInterfacePropertyInfo | undef
         annoInfo.hasConsume, annoInfo.hasObjectLink, annoInfo.hasWatch, annoInfo.hasBuilderParam,
         annoInfo.hasLocalStorageLink, annoInfo.hasPropRef, annoInfo.hasStoragePropRef,
         annoInfo.hasLocalStoragePropRef, annoInfo.hasLocal, annoInfo.hasOnce, annoInfo.hasParam,
-        annoInfo.hasEvent, annoInfo.hasRequire, annoInfo.hasConsumer, annoInfo.hasProvider
+        annoInfo.hasEvent, annoInfo.hasConsumer, annoInfo.hasProvider
     ].some(Boolean);
 }
 
@@ -226,10 +299,45 @@ function isEnvVariableTypeValid(
     return false;
 }
 
-function extractEnvKey(decorator: arkts.AnnotationUsage): string | undefined {
-    if (decorator.properties.length !== 1 || !arkts.isClassProperty(decorator.properties[0])) {
-        return undefined;
+function checkDecoratorCombination<T extends arkts.AstNode = arkts.ClassProperty>(
+    this: BaseValidator<T, StructPropertyInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    const annoInfo = metadata.annotationInfo;
+    if (!annoInfo) {
+        return;
     }
-    const value = decorator.properties[0].value;
-    return value?.dumpSrc();
+
+    const hasEnv = !!annoInfo.hasEnv;
+    const hasCustomEnv = !!annoInfo.hasCustomEnv;
+    if (!hasEnv && !hasCustomEnv) {
+        return;
+    }
+
+    const targetDecorator = hasEnv ? DecoratorNames.ENV : DecoratorNames.CUSTOM_ENV;
+    const otherDecorator = INCOMPATIBLE_DECORATORS.find(decorator =>
+        decorator !== targetDecorator && annoInfo[`has${decorator}`]
+    );
+    if (!otherDecorator) {
+        return;
+    }
+
+    const _node = coerceToAstNode<arkts.ClassProperty>(node);
+    const propName = _node.key && arkts.isIdentifier(_node.key) ? _node.key.name : '';
+    const hasComponentV2 = !!metadata.structInfo?.annotationInfo?.hasComponentV2;
+
+    if (hasComponentV2) {
+        this.report({
+            node: _node,
+            level: LogType.ERROR,
+            message: `The member property or method can not be decorated by multiple built-in annotations.`,
+        });
+    } else {
+        this.report({
+            node: _node,
+            level: LogType.ERROR,
+            message: `The property '${propName}' cannot have multiple state management annotations.`,
+        });
+    }
 }

@@ -50,15 +50,17 @@ export function createAddRef(
                     ),
                     ObservedNames.ADD_REF
                 ),
+                [],
                 undefined,
-                undefined
+                false,
+                false
             )
         );
     }
     return arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), undefined, [
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.CONDITIONAL_ADD_REF), [
             metaMember.bind(this)(originalName, classIdent),
-        ])
+        ], undefined, false, false)
     );
 }
 
@@ -92,7 +94,7 @@ export function getterBodyWithObservedTrackProperty(
             ? backingMember
             : arkts.factory.createTSAsExpression(backingMember, this.propertyType, false)
     );
-    return arkts.factory.createBlock([createAddRef.bind(this)(originalName, classIdent), returnMember]);
+    return arkts.factory.createBlockStatement([createAddRef.bind(this)(originalName, classIdent), returnMember]);
 }
 
 function getterWithObservedTrackProperty(
@@ -137,12 +139,13 @@ function setterWithObservedTrackProperty(
             originalName,
             newName
         );
-        body = arkts.factory.createBlock([ifEqualsNewValue]);
+        body = arkts.factory.createBlockStatement([ifEqualsNewValue]);
     } else {
         methodModifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
     }
-    const param = arkts.factory.createParameterDeclaration(
+    const param = arkts.factory.createETSParameterExpression(
         arkts.factory.createIdentifier(ObservedNames.NEW_VALUE, this.propertyType),
+        false,
         undefined
     );
     return uiFactory.createMethodDefinition({
@@ -177,8 +180,8 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
     const setNewValue = arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             backingMember,
-            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE)
+            arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         )
     );
     const fireChange = arkts.factory.createExpressionStatement(
@@ -190,14 +193,20 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
                 false,
                 false
             ),
+            [],
             undefined,
-            undefined
+            false,
+            false
         )
     );
     const subscribingWatches = arkts.factory.createExpressionStatement(
-        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), undefined, [
-            arkts.factory.createStringLiteral(originalName),
-        ])
+        arkts.factory.createCallExpression(generateThisBacking(ObservedNames.EXECUATE_WATCHES), [
+                arkts.factory.createStringLiteral(originalName),
+            ],
+            undefined,
+            false,
+            false
+        )
     );
     const consequentArr = this.isStatic
             ? [setNewValue, fireChange]
@@ -208,7 +217,7 @@ export function setterIfEqualsNewValueWithObservedTrackProperty(
             arkts.factory.createIdentifier(ObservedNames.NEW_VALUE),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NOT_STRICT_EQUAL
         ),
-        arkts.factory.createBlock(consequentArr)
+        arkts.factory.createBlockStatement(consequentArr)
     );
 }
 
@@ -220,6 +229,9 @@ export interface IObservedTrackTranslator extends IBaseObservedPropertyTranslato
     isDecl?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export class ObservedTrackTranslator extends ObservedPropertyTranslator implements IObservedTrackTranslator {
     className: string;
     traceDecorator: DecoratorNames.TRACK = DecoratorNames.TRACK;

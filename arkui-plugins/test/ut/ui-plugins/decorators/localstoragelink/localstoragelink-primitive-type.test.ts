@@ -75,14 +75,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_numA = STATE_MGMT_FACTORY.makeLocalStorageLink<number>(this, "Prop1", "numA", 33)
-    this.__backing_stringA = STATE_MGMT_FACTORY.makeLocalStorageLink<string>(this, "Prop2", "stringA", "AA")
-    this.__backing_booleanA = STATE_MGMT_FACTORY.makeLocalStorageLink<boolean>(this, "Prop3", "booleanA", true)
+    this.__backing_numA = STATE_MGMT_FACTORY.makeLocalStorageLink<number>(this, "Prop1", "numA", 33);
+    this.__backing_stringA = STATE_MGMT_FACTORY.makeLocalStorageLink<string>(this, "Prop2", "stringA", "AA");
+    this.__backing_booleanA = STATE_MGMT_FACTORY.makeLocalStorageLink<boolean>(this, "Prop3", "booleanA", true);
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -140,27 +142,24 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numA', '(number | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_numA', '(ILocalStorageLinkDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'stringA', '(string | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_stringA', '(ILocalStorageLinkDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_stringA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'booleanA', '(boolean | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_booleanA', '(ILocalStorageLinkDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_booleanA', '(boolean | undefined)')}
+@Entry() @Component() class __Options_MyStateSample {
+  @LocalStorageLink({value:"Prop1"}) public numA?: number;
+  public __backing_numA?: ILocalStorageLinkDecoratedVariable<number>;
+  public __options_has_numA?: boolean;
+  @LocalStorageLink({value:"Prop2"}) public stringA?: string;
+  public __backing_stringA?: ILocalStorageLinkDecoratedVariable<string>;
+  public __options_has_stringA?: boolean;
+  @LocalStorageLink({value:"Prop3"}) public booleanA?: boolean;
+  public __backing_booleanA?: ILocalStorageLinkDecoratedVariable<boolean>;
+  public __options_has_booleanA?: boolean;
+  public constructor() {}
   
 }
 `;

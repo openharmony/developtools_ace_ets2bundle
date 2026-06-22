@@ -66,12 +66,13 @@ function main() {}
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))));
   }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(style, ((): Child => {
@@ -85,14 +86,14 @@ function main() {}
   }
   @Memo() 
   public customBuilder() {}
-  private __backing_customBuilderParam?: @Memo() (()=> void);
+  private __backing_customBuilderParam?: ((()=> void) | undefined);
   public get customBuilderParam(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam1?: @Memo() (()=> void);
+  private __backing_customBuilderParam1?: ((()=> void) | undefined);
   public get customBuilderParam1(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam1!;
   }
@@ -112,6 +113,7 @@ function main() {}
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -166,16 +168,17 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() (()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() (()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam?: ((()=> void) | undefined);
+  public __options_has_customBuilderParam?: boolean;
+  @Memo() public customBuilderParam1?: ((()=> void) | undefined);
+  public __options_has_customBuilderParam1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-
+@Component() class __Options_Parent {
+  public constructor() {}
 }
 `;
 
@@ -198,12 +201,13 @@ function main() {}
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_customBuilderParam = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam)})) ?? (this.customBuilder));
     this.__backing_customBuilderParam1 = ((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.customBuilderParam1)})) ?? (this.customBuilder))));
   }
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Child, __Options_Child>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Child => {
@@ -227,14 +231,14 @@ function main() {}
       return;
     }
   }
-  private __backing_customBuilderParam?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam1?: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void);
+  private __backing_customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get customBuilderParam1(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam1!;
   }
@@ -263,6 +267,7 @@ function main() {}
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(__memo_context, ((__memo_id) + (<some_random_number>)), style, ((): Parent => {
@@ -389,16 +394,17 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'customBuilderParam1', '(@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_customBuilderParam1', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  @Memo() public customBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_customBuilderParam?: boolean;
+  @Memo() public customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  public __options_has_customBuilderParam1?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_Parent {
-
+@Component() class __Options_Parent {
+  public constructor() {}
 }
 `;
 

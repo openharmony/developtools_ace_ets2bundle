@@ -287,7 +287,8 @@
         "ArcScrollBar",
         "UnionEffectContainer",
         "UIPickerComponent",
-        "DistortionComponent"
+        "DistortionComponent",
+        "SelectionContainer"
       ],
       "extend": {
         "decorator": ["Extend", "AnimatableExtend"],
@@ -912,6 +913,11 @@
             "type": "DistortionComponentAttribute",
             "instance": "DistortionComponentInstance"
           },
+          {
+ 	          "name": "SelectionContainer",
+ 	          "type": "SelectionContainerAttribute",
+ 	          "instance": "SelectionContainerInstance"
+ 	        },
         ]
       },
       "styles": {

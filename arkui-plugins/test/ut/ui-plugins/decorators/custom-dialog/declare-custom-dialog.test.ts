@@ -93,6 +93,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUserV1 | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUserV1 | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUserV1)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUserV1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUserV1, __Options_CustomDialogUserV1>(style, ((): CustomDialogUserV1 => {
@@ -175,28 +177,29 @@ function main() {}
 
 }
 
-@CustomDialog() export declare interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)', [], [], false)}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [dumpAnnotation('State')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)', [], [], false)}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)', [], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)', [], [], false)}
+@CustomDialog() export declare class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  @State() public text?: string;
+  public __backing_text?: IStateDecoratedVariable<string>;
+  public __options_has_text?: boolean;
+  public hh?: string;
+  public __options_has_hh?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUserV1 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUserV1 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_CustomDialogUserV2 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@ComponentV2() class __Options_CustomDialogUserV2 {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;

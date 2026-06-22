@@ -90,7 +90,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/syncmonitor/syncmonitor-no-params",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @ComponentV2() final struct Index extends CustomComponentV2<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_message = STATE_MGMT_FACTORY.makeLocal<string>(this, "message", "Hello World");
     this.__backing_name = STATE_MGMT_FACTORY.makeLocal<string>(this, "name", "Tom");
@@ -203,23 +203,21 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @ComponentV2() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'message', '(string | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_message', '(ILocalDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_message', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'name', '(string | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_name', '(ILocalDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_name', '(boolean | undefined)')}
+@Entry() @ComponentV2() class __Options_Index {
+  @Local() public message?: string;
+  public __backing_message?: ILocalDecoratedVariable<string>;
+  public __options_has_message?: boolean;
+  @Local() public name?: string;
+  public __backing_name?: ILocalDecoratedVariable<string>;
+  public __options_has_name?: boolean;
+  public constructor() {}
   
 }
 

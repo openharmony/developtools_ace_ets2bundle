@@ -19,19 +19,21 @@ import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../../../common/predefines';
 import { UIVisitor } from '../../../collectors/ui-collectors/ui-visitor';
 import { MetaDataCollector } from '../../../common/metadata-collector';
+import { NodeCacheFactory } from '../../../common/node-cache';
+import { TestGlobal } from './global';
 
 /**
  * AfterCheck before-ui-visit and cache any node that should be ui-transformed with no recheck AST.
  */
 export const beforeUINoRecheck: Plugins = {
     name: 'before-ui-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
-        if (global.UI_CACHE_ENABLED && !!contextPtr) {
+        if ((global as TestGlobal).UI_CACHE_ENABLED && !!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(global.UI_UPDATE_ENABLED);
+            script = program.ast as arkts.ETSModule;
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate((global as TestGlobal).UI_UPDATE_ENABLED);
             const projectConfig = this.getProjectConfig();
             MetaDataCollector.getInstance()
                 .setProjectConfig(projectConfig)
@@ -45,7 +47,7 @@ export const beforeUINoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             MetaDataCollector.getInstance().reset();
             return script;
         }

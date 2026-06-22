@@ -75,6 +75,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample1 | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample1 | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample1)=> void) | undefined), initializers: ((()=> __Options_MyStateSample1) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample1, __Options_MyStateSample1>(style, ((): MyStateSample1 => {
@@ -135,6 +137,8 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample2 | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample2 | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample2)=> void) | undefined), initializers: ((()=> __Options_MyStateSample2) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample2, __Options_MyStateSample2>(style, ((): MyStateSample2 => {
@@ -187,39 +191,17 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample1 {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_MyStateSample1 {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_MyStateSample2 {
-  get pathStack(): (NavPathStack | undefined) {
-  return undefined;
-  }
-  
-  set pathStack(pathStack: (NavPathStack | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
-  get __options_has_pathStack(): (boolean | undefined) {
-  return undefined;
-  }
-  
-  set __options_has_pathStack(__options_has_pathStack: (boolean | undefined)) {
-  throw new InvalidStoreAccessError();
-  }
+@Component() class __Options_MyStateSample2 {
+  public pathStack?: NavPathStack;
+  public __options_has_pathStack?: boolean;
+  public constructor() {}
   
 }
 `;

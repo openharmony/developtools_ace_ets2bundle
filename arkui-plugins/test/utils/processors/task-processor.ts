@@ -41,6 +41,7 @@ import { Plugins, PluginState, ProjectConfig } from '../../../common/plugin-cont
 import { concatObject, serializable } from '../serializable';
 import { compileAbc, compileExternalProgram } from '../compile';
 import { BaseProcessor } from './base-processor';
+import { AstNodePointer } from '../../common/safe-types';
 
 interface Job {
     id: string;
@@ -389,7 +390,7 @@ class TaskProcessor extends BaseProcessor {
 
     private assignTaskToIdleWorker(
         processingJobs: Set<string>,
-        globalContextPtr: number,
+        globalContextPtr: AstNodePointer,
         plugins: Plugins[],
         stopAfter?: PluginState
     ) {

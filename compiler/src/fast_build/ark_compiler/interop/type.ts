@@ -29,13 +29,14 @@ export interface ArkTSEvolutionModule {
   cachePath: string;
   byteCodeHarInfo?: Object;
   packageVersion: string;
+  isNative?: boolean;
   moduleType: string;
 }
 
 export interface Params {
   dependentModuleMap: Map<string, ArkTSEvolutionModule>;
   projectConfig: ProjectConfig;
-  tasks: taskInfo[];
+  tasks: TaskInfo[];
 }
 
 export interface ProjectConfig {
@@ -52,7 +53,7 @@ export enum BuildType {
   INTEROP_CONTEXT = 'interopContext'
 }
 
-interface taskInfo {
+export interface TaskInfo {
   packageName: string;
   buildTask: BuildType;
   mainModuleName?: string;
@@ -75,10 +76,9 @@ export interface RunnerParms {
   inputFiles: string[];
   outDir: string;
   rootDir: string;
-  customResolveModuleNames?: (moduleName: string[], containingFile: string) => ts.ResolvedModuleFull[];
+  customResolveModuleNames?: (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[];
   customCompilerOptions?: ts.CompilerOptions;
   includePaths?: string[];
-  uiInteropTransformer?: Function;
 }
 
 export interface DeclFilesConfig {
@@ -95,15 +95,11 @@ interface DeclFileConfig {
   isNative?: boolean
 }
 
-export interface Params {
+export interface DeclgenParams {
   dependentModuleMap: Map<string, ArkTSEvolutionModule>;
   projectConfig: ProjectConfig;
-  tasks: taskInfo[];
-}
-
-interface taskInfo {
-  packageName: string;
-  buildTask: BuildType
+  inputFiles?: string[];
+  inputModules?: string[];
 }
 
 export interface AliasConfig {

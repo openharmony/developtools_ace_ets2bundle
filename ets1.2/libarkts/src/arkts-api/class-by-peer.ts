@@ -17,7 +17,7 @@ import { Es2pandaAstNodeType } from '../../generated/Es2pandaEnums';
 import { throwError } from '../utils';
 import { global } from './static/global';
 import { KNativePointer } from '@koalaui/interop';
-import { AstNode } from './peers/AstNode';
+import { AstNode, UnsupportedNode } from './peers/AstNode';
 import { NodeCache } from './node-cache';
 
 export const nodeByType = new Map<Es2pandaAstNodeType, (peer: KNativePointer) => AstNode>([]);
@@ -46,6 +46,11 @@ export function nodeFrom<T extends AstNode>(peer: KNativePointer, typeHint?: Es2
     }
 
     const type = nodeTypeFilter(typeHint ?? global.generatedEs2panda._AstNodeTypeConst(global.context, peer))
-    const create = nodeByType.get(type) ?? throwError(`unknown node type: ${type}`);
-    return create(peer) as T;
+    const create = nodeByType.get(type);
+    if (create) {
+        return create(peer) as T;
+    }
+
+    console.warn(`unknown node type: ${type}`);
+    return new UnsupportedNode(peer, type) as T;
 }

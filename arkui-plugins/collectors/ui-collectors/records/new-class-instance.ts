@@ -32,7 +32,7 @@ export class NewClassInstanceRecord extends BaseRecord<arkts.ETSNewClassInstance
     }
 
     collectFromNode(node: arkts.ETSNewClassInstanceExpression): void {
-        const typeRef = node.getTypeRef;
+        const typeRef = node.typeRef;
         if (!typeRef || !arkts.isETSTypeReference(typeRef)) {
             return;
         }

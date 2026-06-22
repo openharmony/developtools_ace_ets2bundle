@@ -46,16 +46,16 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
     }
   }
 
-  public checked(node: arkts.StructDeclaration): void {
+  public checked(node: arkts.AstNode): void {
     this.checkObservedV1V2WhenInterop(node);
   }
 
-  private checkObservedV1V2WhenInterop(node: arkts.StructDeclaration): void {
+  private checkObservedV1V2WhenInterop(node: arkts.AstNode): void {
     if (!arkts.isClassProperty(node)) {
       return;
     }
-    const parentNode: arkts.AstNode = node.parent;
-    if (!parentNode) {
+    const parentNode: arkts.AstNode | undefined = node.parent;
+    if (!parentNode || !arkts.isClassDefinition(parentNode)) {
       return;
     }
     const hasComponentDecorator = parentNode.annotations?.some(annotations =>
@@ -111,7 +111,7 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
   }
 
   private getHasAnnotationObserved(node: arkts.ClassProperty, annotationObserved: string): boolean {
-    let typeIdentifiers: string[] = [];
+    let typeIdentifiers: arkts.Expression[] = [];
     this.extractTypeIdentifiers(node.typeAnnotation, annotationObserved, typeIdentifiers);
     return typeIdentifiers.length > 0;
   }
@@ -119,17 +119,17 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
   private extractTypeIdentifiers(
     typeNode: arkts.AstNode | undefined,
     annotationObserved: string,
-    typeIdentifiers: string[]
+    typeIdentifiers: arkts.Expression[]
   ): void {
     if (!typeNode) {
       return;
     }
     if (arkts.isETSTypeReference(typeNode) && typeNode.part && arkts.isETSTypeReferencePart(typeNode.part)) {
-      if (this.checkObservedFormDynamic(typeNode.part.name, annotationObserved)) {
-        typeIdentifiers.push(typeNode.part.name);
+      if (this.checkObservedFormDynamic(typeNode.part.name!, annotationObserved)) {
+        typeIdentifiers.push(typeNode.part.name!);
         return;
       }
-      const typeParams: arkts.AstNode = typeNode.part.typeParams;
+      const typeParams: arkts.AstNode | undefined = typeNode.part.typeParams;
       if (typeParams && arkts.isTSTypeParameterInstantiation(typeParams) && typeParams.params) {
         typeParams.params.forEach((param: arkts.AstNode) =>
           this.extractTypeIdentifiers(param, annotationObserved, typeIdentifiers));
@@ -142,12 +142,12 @@ class ObservedObservedV2Rule extends AbstractUISyntaxRule {
 
   private checkObservedFormDynamic(typeNode: arkts.AstNode, annotationObserved: string): boolean {
     const typeDecl = arkts.getDecl(typeNode);
-    if (!typeDecl || !typeDecl.annotations) {
+    if (!typeDecl || !arkts.isClassDefinition(typeDecl) || !typeDecl.annotations) {
       return false;
     }
     const program = arkts.getProgramFromAstNode(typeDecl);
     const fileManager = FileManager.getInstance();
-    const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
+    const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absoluteName) === LANGUAGE_VERSION.ARKTS_1_1;
     if (!isFrom1_1) {
       return false;
     }

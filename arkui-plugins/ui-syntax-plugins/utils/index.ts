@@ -145,6 +145,7 @@ export const PresetDecorators = {
     COMPONENTDISAPPEAR: 'ComponentDisappear',
     COMPONENTACTIVE: 'ComponentActive',
     COMPONENTINACTIVE: 'ComponentInactive',
+    CUSTOM_ENV: 'CustomEnv',
 };
 
 export const TOGGLE_TYPE: string = 'ToggleType';
@@ -184,7 +185,7 @@ export function getAnnotationName(annotation: arkts.AnnotationUsage): string {
 }
 
 export function getAnnotationUsage(
-    declaration: arkts.StructDeclaration,
+    declaration: arkts.ETSStructDeclaration,
     annotationName: string
 ): arkts.AnnotationUsage | undefined {
     return declaration.definition.annotations.find(
@@ -400,7 +401,7 @@ export function getAnnotationUsageByName(
 
 export function isStructClassDeclaration(node: arkts.AstNode): node is arkts.ClassDeclaration {
     return (
-        arkts.isClassDeclaration(node) && !!node.definition && arkts.classDefinitionIsFromStructConst(node.definition)
+        arkts.isClassDeclaration(node) && !!node.definition && node.definition.isFromStruct
     );
 }
 
@@ -422,7 +423,7 @@ export function getFunctionAnnotationUsage(
 }
 
 export function getCallee(callExpression: arkts.CallExpression): arkts.Identifier | undefined {
-    const expression = callExpression.expression;
+    const expression = callExpression.callee;
     if (arkts.isIdentifier(expression)) {
         return expression;
     }
@@ -458,7 +459,7 @@ export const TypeFlags = {
 
 export function getCurrentFilePath(node: arkts.AstNode): string | undefined {
     const program = arkts.getProgramFromAstNode(node);
-    return program?.absName;
+    return program?.absoluteName;
 }
 export interface ImportInfo {
     importedNames: Set<string>;
@@ -466,11 +467,11 @@ export interface ImportInfo {
     lastImportNode?: arkts.ImportDeclaration;
 }
 
-export function collectFileImports(scriptFile: arkts.EtsScript): ImportInfo {
+export function collectFileImports(scriptFile: arkts.ETSModule): ImportInfo {
     const importedNames = new Set<string>();
     let arkUIImportNode: arkts.ImportDeclaration | undefined = undefined;
     let lastImportNode: arkts.ImportDeclaration | undefined = undefined;
-    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements) {
+    if (!arkts.isETSModule(scriptFile) || !scriptFile.statements) {
         return { importedNames, arkUIImportNode, lastImportNode };
     }
 
@@ -518,9 +519,9 @@ function getImportModuleName(importNode: arkts.ImportDeclaration): string | unde
 }
 
 export function findFirstStmtPosition(program: arkts.Program): arkts.SourcePosition {
-    const scriptFile = program.astNode;
-    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements || scriptFile.statements.length === 0) {
-        return arkts.SourcePosition.create(0, 0);
+    const scriptFile = program.ast;
+    if (!arkts.isETSModule(scriptFile) || !scriptFile.statements || scriptFile.statements.length === 0) {
+        return arkts.createSourcePosition(0, 0);
     }
     return scriptFile.statements[0].endPosition;
 }
@@ -600,7 +601,7 @@ export function isComponentBuilder(node: arkts.MemberExpression): boolean {
     if (!symbol || !arkts.isMethodDefinition(symbol)) {
         return false;
     }
-    return symbol.scriptFunction.annotations.some(annotation => {
+    return symbol.function?.annotations?.some(annotation => {
         return annotation.expr && arkts.isIdentifier(annotation.expr) &&
             annotation.expr.name === COMPONENT_BUILDER;
     }) || isDynStruct(symbol);
@@ -608,7 +609,7 @@ export function isComponentBuilder(node: arkts.MemberExpression): boolean {
 
 export function isDynStruct(symbol: arkts.AstNode): boolean {
     const fileManager: FileManager = FileManager.getInstance();
-    const path: string = arkts.getProgramFromAstNode(symbol)?.absName;
+    const path: string = arkts.getProgramFromAstNode(symbol)?.absoluteName;
     const version: string = LANGUAGE_VERSION.ARKTS_1_1;
     return fileManager.getLanguageVersionByFilePath(path) === version;
 }

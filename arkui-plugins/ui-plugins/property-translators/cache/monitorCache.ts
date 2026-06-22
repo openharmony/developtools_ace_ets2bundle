@@ -43,7 +43,7 @@ export class MonitorCache {
         this._cache.clear();
     }
 
-    getCachedMonitors(className: string): arkts.AstNode[] {
+    getCachedMonitors(className: string): arkts.Statement[] {
         if (!this._cache.has(className)) {
             return [];
         }

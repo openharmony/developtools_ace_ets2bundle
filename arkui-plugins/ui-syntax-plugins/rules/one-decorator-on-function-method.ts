@@ -44,8 +44,8 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
         }
         // @AnimatableExtend decorators can only be used with functions with this parameter.
         const animatableExtendDecorator = this.findDecorator(annotations, PresetDecorators.ANIMATABLE_EXTEND);
-        if (arkts.isScriptFunction(node.scriptFunction) && animatableExtendDecorator) {
-            const member = node.scriptFunction;
+        if (arkts.isScriptFunction(node.function!) && animatableExtendDecorator) {
+            const member = node.function!;
             if (this.hasThisParameter(member)) {
                 return;
             }
@@ -54,7 +54,7 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
         this.validateAllowedDecorators(annotations);
     }
 
-    private findDecorator(annotations: arkts.AnnotationUsage[], decorator: string): arkts.AnnotationUsage | undefined {
+    private findDecorator(annotations: readonly arkts.AnnotationUsage[], decorator: string): arkts.AnnotationUsage | undefined {
         return annotations?.find(annotation =>
             annotation.expr && arkts.isIdentifier(annotation.expr) &&
             annotation.expr.name === decorator
@@ -63,14 +63,14 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
 
     private hasThisParameter(member: arkts.ScriptFunction): boolean {
         return member.params.some((param) => {
-            return arkts.isEtsParameterExpression(param) &&
-                arkts.isIdentifier(param.identifier) &&
-                param.identifier.name === PARAM_THIS_NAME;
+            return arkts.isETSParameterExpression(param) &&
+                arkts.isIdentifier(param.ident) &&
+                param.ident.name === PARAM_THIS_NAME;
         });
     }
 
     private validateAllowedDecorators(
-        annotations: arkts.AnnotationUsage[],
+        annotations: readonly arkts.AnnotationUsage[],
     ): void {
         const hasInvalidUIDecorator = annotations.some((annotation) => {
             const decoratorName = getAnnotationName(annotation);
@@ -94,7 +94,7 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
         }
     }
 
-    private reportInvalidDecorators(annotations: arkts.AnnotationUsage[]): void {
+    private reportInvalidDecorators(annotations: readonly arkts.AnnotationUsage[]): void {
         annotations.forEach((annotation) => {
             const decoratorName = getAnnotationName(annotation);
             if (!UIDecorators.includes(decoratorName)) {
@@ -122,7 +122,7 @@ class OneDecoratorOnFunctionMethodRule extends AbstractUISyntaxRule {
             message: this.messages.invalidDecorator,
             fix: () => {
                 let startPosition = annotation.startPosition;
-                startPosition = arkts.SourcePosition.create(startPosition.index() - 1, startPosition.line());
+                startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
                 const endPosition = annotation.endPosition;
                 return {
                     title: 'Remove the annotation',

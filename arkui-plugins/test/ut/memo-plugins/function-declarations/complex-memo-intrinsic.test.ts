@@ -77,14 +77,14 @@ export function impl<T>(__memo_context: __memo_context_type, __memo_id: __memo_i
   }
 }
 
-@Retention({policy:"SOURCE"}) @interface memo_intrinsic {}
+@Retention({policy:"SOURCE"}) export @interface memo_intrinsic {}
 
-interface IA<T> {
+export interface IA<T> {
   ${dumpGetterSetter(GetSetDumper.BOTH, 'ccc', 'boolean', [], [], false)}
   
 }
 
-class A<T>  implements IA<T> {
+export class A<T>  implements IA<T> {
   public bbb: Map<string, boolean> = new Map<string, boolean>();
 
   public ddd: Map<string, number> = new Map<string, number>();

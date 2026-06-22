@@ -73,10 +73,12 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/entry/localstorage/storage-in-component-call",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({storage:"myStorage",useSharedStorage:true,routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry({storage:"myStorage",useSharedStorage:true}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -110,6 +112,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Child)=> void) | undefined), initializers: ((()=> __Options_Child) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -140,21 +144,19 @@ class __EntryWrapper extends EntryPoint {
       return myStorage();
     }), undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({storage:"myStorage",useSharedStorage:true,routeName:""}) @Component() interface __Options_MyStateSample {
-  
+@Entry({storage:"myStorage",useSharedStorage:true}) @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 
-@Component() interface __Options_Child {
-  
+@Component() class __Options_Child {
+  public constructor() {}
 }
 `;
 

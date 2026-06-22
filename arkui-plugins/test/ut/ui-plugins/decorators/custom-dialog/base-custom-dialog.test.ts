@@ -83,7 +83,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.__backing_aaController = initializers!.aaController;
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined
@@ -137,7 +137,7 @@ function main() {}
     this.__backing_text!.set(value);
   }
 
-  private __backing_cancel?: (()=> void);
+  private __backing_cancel?: ((()=> void) | undefined);
 
   public get cancel(): (()=> void) {
     return (this.__backing_cancel as (()=> void));
@@ -147,7 +147,7 @@ function main() {}
     this.__backing_cancel = value;
   }
 
-  private __backing_confirm?: (()=> void);
+  private __backing_confirm?: ((()=> void) | undefined);
 
   public get confirm(): (()=> void) {
     return (this.__backing_confirm as (()=> void));
@@ -238,6 +238,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
@@ -301,29 +303,27 @@ function main() {}
   }
 }
 
-@CustomDialog() interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'text', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_text', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_text', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'cancel', '((()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_cancel', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'confirm', '((()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_confirm', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hh', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_hh', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hh', '(boolean | undefined)')}
+@CustomDialog() class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  @State() public text?: string;
+  public __backing_text?: IStateDecoratedVariable<string>;
+  public __options_has_text?: boolean;
+  public cancel?: ((()=> void) | undefined);
+  public __options_has_cancel?: boolean;
+  public confirm?: ((()=> void) | undefined);
+  public __options_has_confirm?: boolean;
+  @State() public hh?: string;
+  public __backing_hh?: IStateDecoratedVariable<string>;
+  public __options_has_hh?: boolean;
+  public constructor() {}
   
 }
 
-@Component() interface __Options_CustomDialogUser {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
   
 }
 `;

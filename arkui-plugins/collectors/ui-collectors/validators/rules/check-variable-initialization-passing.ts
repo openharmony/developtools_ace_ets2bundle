@@ -33,6 +33,7 @@ const notAllowInitDecorators: string[] = [
     DecoratorNames.CONSUME,
     DecoratorNames.LOCAL_STORAGE_LINK,
     DecoratorNames.LOCAL_STORAGE_PROP_REF,
+    DecoratorNames.CUSTOM_ENV,
 ];
 
 /**
@@ -41,6 +42,7 @@ const notAllowInitDecorators: string[] = [
  * 2. `@Link`、`@ObjectLink`修饰的属性在组件构造时，必须赋值。
  * 3. 特定装饰器修饰的属性在组件构造时，禁止赋值。
  * 4. interop模式下，禁止`@Component`与`@ComponentV2`组件互相嵌套。
+ * 5. 常规属性当属性类型为Non-null时，必须赋值。
  *
  * 校验等级：error
  */
@@ -95,6 +97,11 @@ function collectMustInitProperties(
             mustInitProperty.push(propertyInfo.name);
         } else if (checkPropertyRequireInitFromInfo(propertyInfo)) {
             requireInitProperty.push(propertyInfo.name);
+        } else if (
+            !arkts.hasModifierFlag(struct, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) && 
+            checkRegularPropertyInitFromInfo(item, propertyInfo)
+        ) {
+            mustInitProperty.push(propertyInfo.name);
         }
     });
     return { requireInitProperty, mustInitProperty };
@@ -135,7 +142,7 @@ function reportCannotInitProperties(
         if (!cannotInitAnnotation) {
             return;
         }
-        const property = arkts.classByPeer<arkts.ClassProperty>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.ClassProperty>(propertyPtr);
         this.report({
             node: property,
             level: LogType.ERROR,
@@ -174,9 +181,15 @@ function checkPropertyRequireInitFromInfo(metadata: StructPropertyInfo | undefin
         return false;
     }
     const anno = metadata.annotationInfo;
-    return Object.keys(anno).length === 1 ||
-        !!anno.hasState || !!anno.hasProvide || !!anno.hasPropRef ||
+    return Object.keys(anno).length === 1 || !!anno.hasState || !!anno.hasProvide || !!anno.hasPropRef ||
         !!anno.hasBuilderParam || !!anno.hasParam;
+}
+
+function checkRegularPropertyInitFromInfo(property: arkts.ClassProperty, metadata: StructPropertyInfo | undefined): boolean {
+    if (!!metadata?.annotationInfo && Object.keys(metadata.annotationInfo).length > 0) {
+        return false;
+    }
+    return !property.value && !!property.typeAnnotation?.tsType?.definitelyNotETSNullish;
 }
 
 function checkPropertyMustInitFromInfo(metadata: StructPropertyInfo | undefined): boolean {
@@ -198,9 +211,9 @@ function reportComponentV1V2MixUse(
     const isParentV2 = !!parentAnnotation.hasComponentV2;
     const parentName = metadata.fromStructInfo?.name ?? '';
     let childStructDecl: arkts.AstNode | undefined;
-    if (node.expression && arkts.isMemberExpression(node.expression) &&
-        node.expression.object && arkts.isIdentifier(node.expression.object)) {
-        childStructDecl = arkts.getPeerIdentifierDecl(node.expression.object.peer);
+    if (node.callee && arkts.isMemberExpression(node.callee) &&
+        node.callee.object && arkts.isIdentifier(node.callee.object)) {
+        childStructDecl = arkts.getPeerIdentifierDecl(node.callee.object.peer);
     }
     if (!childStructDecl || !arkts.isClassDefinition(childStructDecl)) {
         return;
@@ -209,8 +222,8 @@ function reportComponentV1V2MixUse(
         (anno: arkts.AnnotationUsage) => anno.expr && arkts.isIdentifier(anno.expr) && anno.expr.name === StructDecoratorNames.COMPONENT_V2
     );
     let childName: string | undefined;
-    if (arkts.isMemberExpression(node.expression) && arkts.isIdentifier(node.expression.object)) {
-        childName = node.expression.object.name;
+    if (arkts.isMemberExpression(node.callee) && arkts.isIdentifier(node.callee.object)) {
+        childName = node.callee.object.name;
     }
     const parentDecorator = isParentV2 ? StructDecoratorNames.COMPONENT_V2 : StructDecoratorNames.COMPONENT;
     const childDecorator = isChildV2 ? StructDecoratorNames.COMPONENT_V2 : StructDecoratorNames.COMPONENT;

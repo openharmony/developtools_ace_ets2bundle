@@ -75,15 +75,15 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
             envMultipleAnnotationsV2: `The member property or method can not be decorated by multiple built-in annotations.`,
             envOnlyInitParamInV2: `Within structs decorated with '@ComponentV2', '@Env' can only initialize variables decorated with '@Param'.`,
             envOnlyInitRegularInV1: `Within structs decorated with '@Component', '@Env' can only initialize regular(non-decorated) variables.`,
+            customEnvOnlyInComponentOrComponentV2: `The '@CustomEnv' annotation can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
         };
     }
 
     public parsed(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             const hasComponent = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V1);
             const hasComponentV2 = hasAnnotation(node.definition.annotations, PresetDecorators.COMPONENT_V2);
             this.checkEnvUsagePositionInStruct(node, hasComponent, hasComponentV2);
-            this.checkDecoratorCombination(node, hasComponentV2);
             return;
         }
 
@@ -93,7 +93,7 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
     }
     
     // Reports error when @Env decorator is used in non-component structs.
-    private checkEnvUsagePositionInStruct(node: arkts.StructDeclaration, hasComponent: boolean, hasComponentV2: boolean): void {
+    private checkEnvUsagePositionInStruct(node: arkts.ETSStructDeclaration, hasComponent: boolean, hasComponentV2: boolean): void {
         if (hasComponent || hasComponentV2) {
             return;
         }
@@ -108,6 +108,14 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
                 this.report({
                     node: envDecorator,
                     message: this.messages.envOnlyInComponentOrComponentV2,
+                });
+            }
+
+            const customEnvDecorator = findDecorator(member, PresetDecorators.CUSTOM_ENV);
+            if (customEnvDecorator) {
+                this.report({
+                    node: customEnvDecorator,
+                    message: this.messages.customEnvOnlyInComponentOrComponentV2,
                 });
             }
         }
@@ -129,7 +137,7 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     // Reports error when @Env decorator is combined with other specific decorators.
-    private checkDecoratorCombination(node: arkts.StructDeclaration, isComponentV2: boolean): void {
+    private checkDecoratorCombination(node: arkts.ETSStructDeclaration, isComponentV2: boolean): void {
         for (const member of node.definition.body) {
             if (!arkts.isClassProperty(member)) {
                 continue;
@@ -164,13 +172,13 @@ class EnvDecoratorCheckRule extends AbstractUISyntaxRule {
     // Reports error when @Env variable initializes a state-decorated property in @Component structs.
     // Reports error when @Env variable initializes a non-@Param property in @ComponentV2 structs.
     private checkStructPropertyDefinition(node: arkts.CallExpression): void {
-        if (!node.expression || !arkts.isMemberExpression(node.expression) || !isComponentBuilder(node.expression)) {
+        if (!node.callee || !arkts.isMemberExpression(node.callee) || !isComponentBuilder(node.callee)) {
             return;
         }
-        if (!arkts.isIdentifier(node.expression.object)) {
+        if (!arkts.isIdentifier(node.callee.object)) {
             return;
         }
-        const structDecl = arkts.getDecl(node.expression.object);
+        const structDecl = arkts.getDecl(node.callee.object);
         if (!structDecl || !arkts.isClassDefinition(structDecl)) {
             return;
         }

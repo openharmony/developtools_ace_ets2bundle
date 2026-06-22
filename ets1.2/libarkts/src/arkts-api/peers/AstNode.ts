@@ -173,6 +173,10 @@ export abstract class AstNode extends ArktsObject {
         return global.generatedEs2panda._AstNodeIsDefaultExportedConst(global.context, this.peer);
     }
 
+    public get hasExportAlias(): boolean {
+        return global.generatedEs2panda._AstNodeHasExportAliasConst(global.context, this.peer);
+    }
+
     public get isStatic(): boolean {
         return global.generatedEs2panda._AstNodeIsStaticConst(global.context, this.peer);
     }
@@ -191,5 +195,15 @@ export abstract class AstNode extends ArktsObject {
 
     public set endPosition(end: SourcePosition) {
         global.generatedEs2panda._AstNodeSetEnd(global.context, this.peer, end.peer);
+    }
+
+    public setNoDebugLineFlag(): void {
+        global.generatedEs2panda._AstNodeSetNoDebugLineFlag(global.context, this.peer);
+    }
+}
+
+export class UnsupportedNode extends AstNode {
+    constructor(peer: KNativePointer, astNodeType: Es2pandaAstNodeType) {
+        super(peer, astNodeType);
     }
 }

@@ -77,7 +77,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/reusable/reusable-abnormal",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
@@ -232,29 +232,27 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
-  
+@Entry() @Component() class __Options_Index {
+  public constructor() {}
 }
 
-@Component() interface __Options_ComA {
-  
+@Component() class __Options_ComA {
+  public constructor() {}
 }
 
-@Reusable() @Component() interface __Options_ComB {
-  
+@Reusable() @Component() class __Options_ComB {
+  public constructor() {}
 }
 
-@ReusableV2() @ComponentV2() interface __Options_ComC {
-  
+@ReusableV2() @ComponentV2() class __Options_ComC {
+  public constructor() {}
 }
 
 `;

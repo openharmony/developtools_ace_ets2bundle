@@ -34,6 +34,16 @@ const COMPONENT_LIFECYCLE_MEMBER_DECORATOR: string[] = [
   '@ComponentInit', '@ComponentAppear', '@ComponentBuilt', '@ComponentAttach', '@ComponentDetach', '@ComponentReuse', '@ComponentRecycle', '@ComponentDisappear', '@ComponentActive', '@ComponentInactive'
 ];
 
+// Lifecycle decorators that should WARN when used with @Builder/@Styles
+const COMPONENT_LIFECYCLE_MEMBER_DECORATOR_WARN: string[] = [
+  '@ComponentInit', '@ComponentAppear', '@ComponentBuilt', '@ComponentReuse', '@ComponentRecycle', '@ComponentDisappear'
+];
+
+// Lifecycle decorators that should ERROR when used with @Builder/@Styles
+const COMPONENT_LIFECYCLE_MEMBER_DECORATOR_ERROR: string[] = [
+  '@ComponentActive', '@ComponentInactive'
+];
+
 const COMPONENT_MEMBER_DECORATOR_V1: string[] = [
   '@State', '@Prop', '@Link', '@Provide', '@Consume', '@Watch', '@StorageLink', '@StorageProp',
   '@LocalStorageLink', '@LocalStorageProp', '@ObjectLink'
@@ -81,6 +91,8 @@ export default {
   COMPONENT_MEMBER_DECORATOR_V1,
   COMPONENT_MEMBER_DECORATOR_V2,
   COMPONENT_LIFECYCLE_MEMBER_DECORATOR,
+  COMPONENT_LIFECYCLE_MEMBER_DECORATOR_WARN,
+  COMPONENT_LIFECYCLE_MEMBER_DECORATOR_ERROR,
   INIT_PARAM,
   UPDATE_PARAM,
   RESET_PARAM,

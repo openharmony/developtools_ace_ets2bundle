@@ -36,7 +36,7 @@ function _checkReusableComponentInV2(
 ): void {
     const metadata = this.context ?? {};
     // 如果非自定义组件调用，直接返回
-    if (!metadata.structDeclInfo || !metadata.fromStructInfo) {
+    if (!metadata.structDeclInfo || !metadata.fromStructInfo || !metadata.ptr) {
         return;
     }
     const fromComponentV2 = !!metadata.fromStructInfo?.annotationInfo?.hasComponentV2;
@@ -47,7 +47,7 @@ function _checkReusableComponentInV2(
     if (!fromComponentV2 || !isReusableCall || fromReusableV2) {
         return;
     }
-    const callExpression = arkts.classByPeer<arkts.CallExpression>(metadata.ptr);
+    const callExpression = arkts.unpackNonNullableNode<arkts.CallExpression>(metadata.ptr);
     this.report({
         node: callExpression,
         level: LogType.WARN,

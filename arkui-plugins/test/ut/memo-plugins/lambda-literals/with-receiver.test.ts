@@ -110,17 +110,6 @@ function goo(__memo_context: __memo_context_type, __memo_id: __memo_id_type, a: 
             return;
         }
     }));
-    f1(a, __memo_context, ((__memo_id) + (<some_random_number>)), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
-        if (__memo_scope.unchanged) {
-            __memo_scope.cached;
-            return;
-        }
-        {
-            __memo_scope.recache();
-            return;
-        }
-    }));
     f2(__memo_context, ((__memo_id) + (<some_random_number>)), a, ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {

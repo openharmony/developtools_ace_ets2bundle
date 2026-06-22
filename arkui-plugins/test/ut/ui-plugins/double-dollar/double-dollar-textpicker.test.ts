@@ -92,6 +92,16 @@ function main() {}
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_tt!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.tt)})) ?? ("state var")));
+    this.__backing_index!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.index)})) ?? (1)));
+    this.__backing_select!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.select)})) ?? (0)));
+    this.__backing_selectArr!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.selectArr)})) ?? ([0, 1, 2])));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -214,21 +224,22 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'tt', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_tt', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_tt', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'index', '(int | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_index', '(IStateDecoratedVariable<int> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_index', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select', '(int | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select', '(IStateDecoratedVariable<int> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'selectArr', '(Array<int> | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_selectArr', '(IStateDecoratedVariable<Array<int>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_selectArr', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'fruits', '(Array<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_fruits', '(boolean | undefined)')}
+@Component() class __Options_MyStateSample {
+  @State() public tt?: string;
+  public __backing_tt?: IStateDecoratedVariable<string>;
+  public __options_has_tt?: boolean;
+  @State() public index?: int;
+  public __backing_index?: IStateDecoratedVariable<int>;
+  public __options_has_index?: boolean;
+  @State() public select?: int;
+  public __backing_select?: IStateDecoratedVariable<int>;
+  public __options_has_select?: boolean;
+  @State() public selectArr?: Array<int>;
+  public __backing_selectArr?: IStateDecoratedVariable<Array<int>>;
+  public __options_has_selectArr?: boolean;
+  public fruits?: Array<string>;
+  public __options_has_fruits?: boolean;
+  public constructor() {}
 }
 `;
 

@@ -19,7 +19,7 @@ import { AstNodePointer } from '../../common/safe-types';
 
 export class StyleInternalsVisitor extends AbstractVisitor {
     private initCallPtr: AstNodePointer | undefined;
-    private initCallArgs: arkts.AstNode[] | undefined;
+    private initCallArgs: arkts.Expression[] | undefined;
     private initCallTypeArguments: readonly arkts.TypeNode[] | undefined;
 
     registerInitCall(initCallPtr: AstNodePointer): this {
@@ -27,7 +27,7 @@ export class StyleInternalsVisitor extends AbstractVisitor {
         return this;
     }
 
-    registerInitCallArgs(initCallArgs: arkts.AstNode[]): this {
+    registerInitCallArgs(initCallArgs: arkts.Expression[]): this {
         this.initCallArgs = initCallArgs;
         return this;
     }
@@ -39,11 +39,17 @@ export class StyleInternalsVisitor extends AbstractVisitor {
 
     visitor(node: arkts.CallExpression): arkts.AstNode {
         if (!!this.initCallPtr && !!this.initCallArgs && node.peer === this.initCallPtr) {
+            const typeParams = this.initCallTypeArguments
+                ? arkts.factory.createTSTypeParameterInstantiation(this.initCallTypeArguments)
+                : node.typeParams;
             return arkts.factory.updateCallExpression(
                 node,
-                node.expression,
-                this.initCallTypeArguments ?? node.typeArguments,
-                this.initCallArgs
+                node.callee,
+                this.initCallArgs,
+                typeParams,
+                node.isOptional,
+                node.hasTrailingComma,
+                node.trailingBlock
             );
         }
         return this.visitEachChild(node);

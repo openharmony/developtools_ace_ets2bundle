@@ -120,6 +120,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -160,6 +161,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public setV1RenderId(renderId: RenderIdType): void {}
+
   protected conditionalAddRef(meta: IMutableStateMeta): void {
     meta.addRef();
   }
@@ -189,7 +191,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_label = ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? ("date"));
     this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.data)}) as DateClass))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.data)}) as DateClass));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
@@ -197,6 +199,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_data)})) {
       this.__backing_data!.update((initializers!.data as DateClass));
     }
+  }
+
+  public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
+    this.__backing_data!.resetOnReuse((initializers!.data as DateClass));
   }
 
   @MemoIntrinsic() 
@@ -251,13 +257,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
+@Entry() @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_newData!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
+  }
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -325,29 +336,28 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Parent._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Component() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'label', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_label', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'data', 'DateClass', [dumpAnnotation('ObjectLink')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_data', '(IObjectLinkDecoratedVariable<DateClass> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_data', '(boolean | undefined)')}
+@Component() class __Options_Child {
+  public label?: string;
+  public __options_has_label?: boolean;
+  @ObjectLink() public data: DateClass;
+  public __backing_data?: IObjectLinkDecoratedVariable<DateClass>;
+  public __options_has_data?: boolean;
+  public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'newData', '(NewDate | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newData', '(IStateDecoratedVariable<NewDate> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newData', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Parent {
+  @State() public newData?: NewDate;
+  public __backing_newData?: IStateDecoratedVariable<NewDate>;
+  public __options_has_newData?: boolean;
+  public constructor() {}
   
 }
 `;

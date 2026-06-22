@@ -15,7 +15,8 @@
 
 import { global } from '../static/global';
 import { isNumber, throwError, getEnumName } from '../../utils';
-import { KNativePointer, KInt, nullptr, withStringResult, KStringArrayPtr } from '@koalaui/interop'
+import { KNativePointer, KInt, nullptr, withStringResult, KStringArrayPtr, wrapCallback, disposeCallback, CallbackType } from '@koalaui/interop';
+import { int32 } from '@koalaui/common';
 import { passNode, passString, passStringArray, unpackNodeArray, unpackNonNullableNode, unpackString } from './private';
 import { isFunctionDeclaration, isMemberExpression, isMethodDefinition, isNumberLiteral } from '../factory/nodeTests';
 import {
@@ -199,6 +200,10 @@ export function importDeclarationInsert(node: ETSImportDeclaration, program: Pro
     global.es2panda._InsertETSImportDeclarationAndParse(global.context, program.peer, node.peer);
 }
 
+export function getAnnotationDeclarationProperties(node: AnnotationUsage): ClassProperty[] {
+    return unpackNodeArray(global.es2panda._GetAnnotationDeclarationProperties(global.context, node.peer));
+}
+
 export function getProgramFromAstNode(node: AstNode): Program | undefined {
     const programPeer = global.es2panda._AstNodeProgram(global.context, node.peer);
     if (programPeer === nullptr) {
@@ -240,6 +245,10 @@ export function modifiersToString(modifiers: Es2pandaModifierFlags): string {
 }
 export function destroyConfig(config: KNativePointer): void {
     global.es2panda._DestroyConfig(config);
+    global.resetConfig();
+}
+export function destroyConfigWithoutLog(config: KNativePointer): void {
+    global.es2panda._DestroyConfigWithoutLog(config);
     global.resetConfig();
 }
 
@@ -352,4 +361,94 @@ export function formOutputPathForFile(inputPath: string): string {
 
 export function getJsdocStringFromDeclaration(decl: AstNode): string {
     return withStringResult(global.es2panda._JsdocStringFromDeclaration(global.context, decl.peer)) ?? throwError(`failed to unpack (peer shouldn't be NULLPTR)`);
+}
+
+/**
+ * Filter AST nodes based on query string
+ * @param node - Root AST node to start filtering from
+ * @param filters - Query string (e.g., "type=method;annotation=@State")
+ * @param deeperAfterMatch - Whether to continue searching in matched nodes' children
+ * @returns Array of matched AST nodes
+ */
+export function filterNodes(node: AstNode, filters: string, deeperAfterMatch: boolean = false): readonly AstNode[] {
+    return unpackNodeArray(
+        global.es2panda._FilterNodes(global.context, passNode(node), passString(filters), deeperAfterMatch)
+    );
+}
+
+/**
+ * Filter AST nodes by a single type
+ * @param node - Root AST node to start filtering from
+ * @param type - AST node type to filter
+ * @returns Array of matched AST nodes
+ */
+export function filterNodesByType<T extends AstNode = AstNode>(node: AstNode, type: Es2pandaAstNodeType): T[] {
+    return unpackNodeArray(
+        global.es2panda._FilterNodes2(global.context, passNode(node), type)
+    );
+}
+
+/**
+ * Filter AST nodes by multiple types
+ * @param node - Root AST node to start filtering from
+ * @param types - Array of AST node types to filter
+ * @returns Array of matched AST nodes
+ */
+export function filterNodesByTypes(node: AstNode, types: Es2pandaAstNodeType[]): readonly AstNode[] {
+    // Convert TypeScript array to Int32Array for C compatibility
+    const typesArray = new Int32Array(types);
+    return unpackNodeArray(
+        global.es2panda._FilterNodes3(global.context, passNode(node), typesArray, types.length)
+    );
+}
+
+/**
+ * Traverse and transform AST nodes with a custom callback
+ * @param rootNode - Root node to start traversal from
+ * @param callback - Transform callback function that returns a new node to replace the original, or undefined to keep it
+ * @returns Transformed root node
+ *
+ * @example
+ * ```typescript
+ * // Add logging to all methods
+ * const transformed = transformChildrenRecursively(rootNode, (node) => {
+ *     if (isMethodDefinition(node)) {
+ *         return cloneMethodWithLogging(node);
+ *     }
+ *     return undefined; // Keep original node
+ * });
+ * ```
+ */
+export function transformChildrenRecursively(
+    rootNode: AstNode,
+    callback: (node: AstNode) => AstNode | undefined
+): AstNode {
+    // Simplified version: pass the function directly, no callback ID wrapper
+    const wrappedCallback = (nodePtr: bigint): bigint => {
+        try {
+            // Unpack node object
+            const node = unpackNonNullableNode(nodePtr as KNativePointer);
+
+            // Call user's business logic callback
+            const newNode = callback(node);
+
+            // Return new node pointer or 0 to keep original
+            if (newNode) {
+                return BigInt(newNode.peer as number | bigint);
+            } else {
+                return BigInt(0);
+            }
+        } catch (error) {
+            console.error('Error in transformChildrenRecursively callback:', error);
+            return BigInt(0); // Keep original node on error
+        }
+    };
+
+    const resultPtr = global.es2panda._AstNodeTransformChildrenRecursively(
+        global.context,
+        passNode(rootNode),
+        wrappedCallback
+    );
+
+    return unpackNonNullableNode(resultPtr);
 }

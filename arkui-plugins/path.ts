@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 import { error } from 'console';
+import * as fs from 'fs';
 import * as path from 'path';
 
 const UI_PLUGINS = 'ui-plugins';
@@ -45,7 +46,11 @@ function findRootDir() {
 }
 
 export function getArktsPath() {
-    return path.join(findRootDir(), 'koala-wrapper', './build/lib/arkts-api/index.js');
+    let dirName = findRootDir();
+    if (fs.existsSync(path.join(dirName, ARKUI_PLUGINS))) {
+        dirName = path.join(dirName, 'ets1.2');
+    }
+    return path.join(dirName, 'libarkts', './lib/libarkts.js');
 }
 
 export function getInteropPath() {

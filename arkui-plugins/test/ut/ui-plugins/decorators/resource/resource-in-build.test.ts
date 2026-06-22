@@ -95,6 +95,7 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_ResourceComponent | undefined)): void {}
 
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -230,15 +231,14 @@ function main() {}
   }
 }
 
-@Component() interface __Options_ResourceComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str1', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str2', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'numbers', '(Array<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_numbers', '(boolean | undefined)')}
+@Component() class __Options_ResourceComponent {
+  public str1?: string;
+  public __options_has_str1?: boolean;
+  public str2?: string;
+  public __options_has_str2?: boolean;
+  public numbers?: Array<string>;
+  public __options_has_numbers?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -26,6 +26,7 @@ import {
 import { AstNodeRevisitCache } from '../../common/cache/astNodeRevisitCache';
 import { AstNodePointer } from '../../common/safe-types';
 import { MemoFunctionCollector } from './function-collector';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 
 export enum MemoNames {
     MEMO = 'memo',
@@ -111,7 +112,7 @@ function addMemoAnnotationInScriptFunction(
     node: arkts.ScriptFunction,
     memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI],
-    metadata: arkts.AstNodeCacheValueMetadata
+    metadata: AstNodeCacheValueMetadata
 ): arkts.ScriptFunction {
     const newAnnotations: arkts.AnnotationUsage[] = [
         ...node.annotations.filter((it) => !isMemoAnnotation(it, memoName)),
@@ -131,7 +132,7 @@ function addMemoAnnotationInUnionType(
     memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI]
 ): arkts.ETSUnionType {
-    return arkts.factory.updateUnionType(
+    return arkts.factory.updateETSUnionType(
         node,
         node.types.map((type) => {
             if (arkts.isETSFunctionType(type)) {
@@ -146,10 +147,10 @@ function collectMemoAstNode(
     node: arkts.AstNode,
     memoName: MemoNames = MemoNames.MEMO_UI,
     skipNames: MemoNames[] = [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI],
-    metadata: arkts.AstNodeCacheValueMetadata = {},
+    metadata: AstNodeCacheValueMetadata = {},
 ): void {
     if (!skipNames.includes(memoName)) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, metadata);
     }
 }
 
@@ -169,12 +170,12 @@ export function addMemoAnnotation<T extends MemoAstNode>(
         annotation(memoName),
     ];
     collectMemoAnnotationImport(memoName);
-    const metadata: arkts.AstNodeCacheValueMetadata = {
+    const metadata: AstNodeCacheValueMetadata = {
         ...(intrisicNames.includes(memoName) && { hasMemoIntrinsic: true }),
         ...(entryNames.includes(memoName) && { hasMemoEntry: true }),
     };
-    if (arkts.isEtsParameterExpression(node)) {
-        node.annotations = newAnnotations;
+    if (arkts.isETSParameterExpression(node)) {
+        node.setAnnotations(newAnnotations);
         collectMemoAstNode(node, memoName, skipNames, metadata);
         return node;
     }
@@ -225,9 +226,8 @@ export function collectMemoAnnotationSource(memoName: MemoNames = MemoNames.MEMO
 
 export function collectMemoableInfoInUnionType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isETSUnionType(node)) {
@@ -271,8 +271,8 @@ function collectMemoableInfoInTypeReferencePart(node: arkts.ETSTypeReferencePart
 
 export function collectMemoableInfoInTypeReference(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const metadata = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const metadata = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata;
         return { ...currInfo, ...metadata };
     }
     if (!arkts.isETSTypeReference(node) || !node.part || !arkts.isETSTypeReferencePart(node.part)) {
@@ -295,9 +295,8 @@ export function collectMemoableInfoInTypeReference(node: arkts.AstNode, info?: M
 
 export function collectMemoableInfoInFunctionType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isETSFunctionType(node)) {
@@ -314,9 +313,8 @@ export function collectMemoableInfoInTypeAlias(node: arkts.AstNode, info?: Memoa
         return currInfo;
     }
     AstNodeRevisitCache.getInstance().collect(node);
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isTSTypeAliasDeclaration(node)) {
@@ -337,21 +335,21 @@ export function collectMemoableInfoInTypeAlias(node: arkts.AstNode, info?: Memoa
 
 export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const metadata = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const metadata = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata;
         return { ...currInfo, hasMemo: true, hasProperType: true, ...metadata };
     }
-    if (!arkts.isEtsParameterExpression(node)) {
+    if (!arkts.isETSParameterExpression(node)) {
         return currInfo;
     }
     currInfo = {
         ...currInfo,
         ...hasMemoableAnnotation(node),
     };
-    if (!!node.type) {
+    if (!!node.typeAnnotation) {
         currInfo = {
             ...currInfo,
-            ...collectMemoableInfoInType(node.type),
+            ...collectMemoableInfoInType(node.typeAnnotation),
         };
     }
     if (!!node.initializer) {
@@ -362,7 +360,7 @@ export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: Memoa
     }
     if (!!currInfo.isWithinTypeParams) {
         const forbidTypeRewrite = !checkIsMemoFromMemoableInfo(currInfo);
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, { forbidTypeRewrite, isWithinTypeParams: true, hasBuilder: currInfo.hasBuilder });
     }
@@ -371,24 +369,23 @@ export function collectMemoableInfoInParameter(node: arkts.AstNode, info?: Memoa
 
 export function collectMemoableInfoInVariableDeclarator(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isVariableDeclarator(node)) {
         return currInfo;
     }
-    if (!!node.name.typeAnnotation) {
+    if (!!(node.id! as arkts.Identifier).typeAnnotation) {
         currInfo = {
             ...currInfo,
-            ...collectMemoableInfoInType(node.name.typeAnnotation),
+            ...collectMemoableInfoInType((node.id! as arkts.Identifier).typeAnnotation!),
         };
     }
-    if (!!node.initializer && arkts.isArrowFunctionExpression(node.initializer)) {
+    if (!!node.init && arkts.isArrowFunctionExpression(node.init)) {
         currInfo = {
             ...currInfo,
-            ...collectMemoableInfoInArrowFunction(node.initializer),
+            ...collectMemoableInfoInArrowFunction(node.init),
         };
     }
     if (!!node.parent && arkts.isVariableDeclaration(node.parent)) {
@@ -397,14 +394,14 @@ export function collectMemoableInfoInVariableDeclarator(node: arkts.AstNode, inf
             ...hasMemoableAnnotation(node.parent),
         };
     }
-    const decl = arkts.getPeerIdentifierDecl(node.name.peer);
+    const decl = arkts.getPeerIdentifierDecl(node.id!.peer);
     if (!decl) {
         return currInfo;
     }
     if (arkts.isMethodDefinition(decl)) {
         currInfo = {
             ...currInfo,
-            ...collectMemoableInfoInScriptFunction(decl.scriptFunction),
+            ...collectMemoableInfoInScriptFunction(decl.function!),
         };
     } else if (arkts.isClassProperty(decl)) {
         currInfo = {
@@ -417,11 +414,10 @@ export function collectMemoableInfoInVariableDeclarator(node: arkts.AstNode, inf
 
 export function collectMemoableInfoInProperty(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
         const property = node as arkts.Property;
         const hasProperType = !!property.value && arkts.isArrowFunctionExpression(property.value);
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType, hasBuilder };
     }
     if (!arkts.isProperty(node) || !node.key || !arkts.isIdentifier(node.key)) {
@@ -453,9 +449,8 @@ export function isArrowFunctionAsValue(value: arkts.Expression): value is arkts.
 
 export function collectMemoableInfoInClassProperty(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isClassProperty(node)) {
@@ -479,9 +474,8 @@ export function collectMemoableInfoInClassProperty(node: arkts.AstNode, info?: M
 
 export function collectMemoableInfoInArrowFunction(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isArrowFunctionExpression(node)) {
@@ -489,15 +483,15 @@ export function collectMemoableInfoInArrowFunction(node: arkts.AstNode, info?: M
     }
     currInfo.hasProperType = true;
     currInfo = { ...currInfo, ...hasMemoableAnnotation(node) };
-    if (!!node.scriptFunction) {
+    if (!!node.function!) {
         currInfo = {
             ...currInfo,
-            ...collectMemoableInfoInScriptFunction(node.scriptFunction),
+            ...collectMemoableInfoInScriptFunction(node.function!),
         };
     }
     if (!!node.parent && arkts.isAssignmentExpression(node.parent) && !!node.parent.left) {
         const expr = arkts.isMemberExpression(node.parent.left) ? node.parent.left.property : node.parent.left;
-        const decl = arkts.getPeerIdentifierDecl(expr.peer);
+        const decl = arkts.getPeerIdentifierDecl(expr!.peer);
         if (!decl) {
             return currInfo;
         }
@@ -513,9 +507,8 @@ export function collectMemoableInfoInArrowFunction(node: arkts.AstNode, info?: M
 
 export function collectMemoableInfoInScriptFunction(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
     let currInfo = info ?? {};
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         return { ...currInfo, hasMemo: true, hasProperType: true, hasBuilder };
     }
     if (!arkts.isScriptFunction(node)) {
@@ -527,20 +520,20 @@ export function collectMemoableInfoInScriptFunction(node: arkts.AstNode, info?: 
 }
 
 export function collectMemoableInfoInMethod(node: arkts.MethodDefinition): MemoableInfo {
-    const hasReceiver = node.scriptFunction.hasReceiver;
+    const hasReceiver = node.function!.hasReceiver;
     const isSetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     const isGetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
     let info: MemoableInfo = {};
-    if (isSetter && node.scriptFunction.params.length > 0) {
-        if (hasReceiver && node.scriptFunction.params.length === 2) {
-            info = collectMemoableInfoInParameter(node.scriptFunction.params.at(1)!);
+    if (isSetter && node.function!.params.length > 0) {
+        if (hasReceiver && node.function!.params.length === 2) {
+            info = collectMemoableInfoInParameter(node.function!.params.at(1)!);
         } else {
-            info = collectMemoableInfoInParameter(node.scriptFunction.params.at(0)!);
+            info = collectMemoableInfoInParameter(node.function!.params.at(0)!);
         }
     } else if (isGetter) {
-        info = collectMemoableInfoInFunctionReturnType(node.scriptFunction);
+        info = collectMemoableInfoInFunctionReturnType(node.function!);
     }
-    return collectMemoableInfoInScriptFunction(node.scriptFunction, info);
+    return collectMemoableInfoInScriptFunction(node.function!, info);
 }
 
 export function collectMemoableInfoInType(node: arkts.AstNode, info?: MemoableInfo): MemoableInfo {
@@ -556,8 +549,8 @@ export function collectMemoableInfoInType(node: arkts.AstNode, info?: MemoableIn
 export function collectMemoableInfoInFunctionReturnType(node: arkts.ScriptFunction): MemoableInfo {
     if (!!node.returnTypeAnnotation) {
         let memoableInfo: MemoableInfo;
-        if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.returnTypeAnnotation)) {
-            const hasBuilder = arkts.NodeCacheFactory.getInstance()
+        if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node.returnTypeAnnotation)) {
+            const hasBuilder = NodeCacheFactory.getInstance()
                                     .getCache(NodeCacheNames.MEMO)
                                     .get(node.returnTypeAnnotation)!.metadata?.hasBuilder;
             memoableInfo = { hasMemo: true, hasProperType: true, hasBuilder };
@@ -565,7 +558,7 @@ export function collectMemoableInfoInFunctionReturnType(node: arkts.ScriptFuncti
             memoableInfo = collectMemoableInfoInType(node.returnTypeAnnotation);
         }
         if ((memoableInfo.hasMemo || memoableInfo.hasBuilder) && memoableInfo.hasProperType) {
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.MEMO)
                 .collect(node.returnTypeAnnotation, { hasBuilder: memoableInfo.hasBuilder });
         }
@@ -576,14 +569,14 @@ export function collectMemoableInfoInFunctionReturnType(node: arkts.ScriptFuncti
 
 export function collectScriptFunctionReturnTypeFromInfo(node: arkts.ScriptFunction, info: MemoableInfo): void {
     const returnType = node.returnTypeAnnotation;
-    if (!returnType || arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(returnType)) {
+    if (!returnType || NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(returnType)) {
         return;
     }
     const isMemoReturnType = checkIsMemoFromMemoableInfo(info);
     const isWithinTypeParams = info.isWithinTypeParams;
     if (isMemoReturnType || isWithinTypeParams) {
         const forbidTypeRewrite = !isMemoReturnType;
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(returnType, { forbidTypeRewrite, isWithinTypeParams, hasBuilder: info.hasBuilder });
     }
@@ -593,10 +586,10 @@ export function collectGensymDeclarator(declarator: arkts.VariableDeclarator, in
     if (!info.hasMemo && !info.hasBuilder) {
         return;
     }
-    arkts.NodeCacheFactory.getInstance()
+    NodeCacheFactory.getInstance()
         .getCache(NodeCacheNames.MEMO)
         .collect(declarator, { hasBuilder: info.hasBuilder });
-    const initializer = declarator.initializer;
+    const initializer = declarator.init;
     if (!initializer || !arkts.isConditionalExpression(initializer)) {
         return;
     }
@@ -611,7 +604,7 @@ export function collectGensymDeclarator(declarator: arkts.VariableDeclarator, in
         arrowFunc = alternate;
     }
     if (!!arrowFunc) {
-        const func = arrowFunc.scriptFunction;
+        const func = arrowFunc.function!;
         const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
         collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
         const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
@@ -660,8 +653,8 @@ function collectMemoableInfoInFunctionParam(
     const peers: AstNodePointer[] = [];
     let memoableInfo: MemoableInfo;
     const _param = param as arkts.ETSParameterExpression;
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(_param)) {
-        const metadata = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(_param)!.metadata ?? {};
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(_param)) {
+        const metadata = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(_param)!.metadata ?? {};
         const { hasMemoSkip } = metadata;
         memoableInfo = { hasMemo: true, hasMemoSkip, hasProperType: true };
     } else {
@@ -671,7 +664,7 @@ function collectMemoableInfoInFunctionParam(
         memoableInfo.hasMemoSkip = true;
     }
     if (
-        _param.identifier.name.startsWith(BuiltInNames.GENSYM_INTRINSIC_PREFIX) &&
+        _param.ident!.name.startsWith(BuiltInNames.GENSYM_INTRINSIC_PREFIX) &&
         !!node.body &&
         arkts.isBlockStatement(node.body)
     ) {
@@ -680,18 +673,18 @@ function collectMemoableInfoInFunctionParam(
             const declarator = declaration.declarators[0];
             collectGensymDeclarator(declarator, memoableInfo);
             if (!memoableInfo.hasMemoSkip && shouldCollectParameter) {
-                peers.push(declarator.name.peer);
+                peers.push(declarator.id!.peer);
             }
             gensymCount++;
         }
     }
     if (checkIsMemoFromMemoableInfo(memoableInfo)) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(_param, { hasMemoSkip: memoableInfo.hasMemoSkip, hasBuilder: memoableInfo.hasBuilder });
     }
     if (!memoableInfo.hasMemoSkip && shouldCollectParameter) {
-        peers.push(_param.identifier.peer);
+        peers.push(_param.ident!.peer);
     }
     return { peers, memoableInfo, gensymCount };
 }
@@ -711,7 +704,7 @@ export function findCanAddMemoFromTypeAnnotation(
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInType(typeAnnotation);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(typeAnnotation, { hasBuilder: memoableInfo.hasBuilder });
     }
@@ -730,7 +723,7 @@ export function findCanAddMemoFromProperty(property: arkts.AstNode): CanAddMemoI
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInProperty(property);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(property, { hasBuilder: memoableInfo.hasBuilder });
     }
@@ -749,14 +742,14 @@ export function findCanAddMemoFromClassProperty(property: arkts.AstNode): CanAdd
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInClassProperty(property);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(property, { hasBuilder: memoableInfo.hasBuilder });
     }
     const hasBuilder = !!memoableInfo.hasBuilder;
     const hasBuilderType = hasBuilder || !!memoableInfo.hasBuilderParam;
     if (!!memoableInfo.isWithinTypeParams) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(property, { isWithinTypeParams: true, hasBuilder: memoableInfo.hasBuilder });
     }
@@ -777,7 +770,7 @@ export function findCanAddMemoFromParameter(param: arkts.AstNode | undefined): C
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInParameter(param);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(param, { hasMemoSkip: memoableInfo.hasMemoSkip, hasBuilder: memoableInfo.hasBuilder });
     }
@@ -799,7 +792,7 @@ export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): CanAddMemo
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInArrowFunction(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
-    const func = node.scriptFunction;
+    const func = node.function!;
     const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
     collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
     const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(
@@ -807,8 +800,8 @@ export function findCanAddMemoFromArrowFunction(node: arkts.AstNode): CanAddMemo
         !hasMemoEntry && !hasMemoIntrinsic
     );
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
-    if (isMemo && !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
-        arkts.NodeCacheFactory.getInstance()
+    if (isMemo && !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, { hasMemoEntry, hasMemoIntrinsic, hasBuilder: memoableInfo.hasBuilder });
         const body = func.body;
@@ -838,7 +831,7 @@ export function findCanAddMemoFromTypeAlias(node: arkts.AstNode): CanAddMemoInfo
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInTypeAlias(node);
     if (!!memoableInfo.hasMemo && !!memoableInfo.hasProperType) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, { hasBuilder: memoableInfo.hasBuilder });
     }
@@ -860,7 +853,7 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): CanAddMemoInfo {
     AstNodeRevisitCache.getInstance().reset();
     const memoableInfo = collectMemoableInfoInMethod(node);
     const { hasMemoEntry, hasMemoIntrinsic } = memoableInfo;
-    const func = node.scriptFunction;
+    const func = node.function!;
     const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
     collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
     const shouldEnforceMemoSkip = !!memoableInfo.hasBuilder;
@@ -870,9 +863,9 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): CanAddMemoInfo {
         shouldEnforceMemoSkip
     );
     const isMemo = checkIsMemoFromMemoableInfo(memoableInfo);
-    if (isMemo && !arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+    if (isMemo && !NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
         const metadata = collectMetadataInMethod(node);
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, {
                 ...metadata,
@@ -880,6 +873,15 @@ export function findCanAddMemoFromMethod(node: arkts.AstNode): CanAddMemoInfo {
                 hasMemoIntrinsic,
                 hasBuilder: memoableInfo.hasBuilder
             });
+        if (metadata.isGetter && returnMemoableInfo.isWithinTypeParams) {
+            NodeCacheFactory.getInstance()
+                .getCache(NodeCacheNames.MEMO)
+                .collect(func, {
+                    ...metadata,
+                    hasMemoEntry,
+                    hasMemoIntrinsic,
+                });
+        }
         const body = func.body;
         if (!!body && arkts.isBlockStatement(body) && !isScriptFunctionFromInterfaceGetterSetter(func)) {
             const disableCollectReturn = hasMemoEntry || hasMemoIntrinsic;
@@ -906,7 +908,7 @@ export function collectMemoFromTSTypeParameterInstantiation(node: arkts.TSTypePa
     node.params.forEach((t) => {
         const typeInfo = collectMemoableInfoInType(t);
         if (checkIsMemoFromMemoableInfo(typeInfo)) {
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.MEMO)
                 .collect(t, { hasBuilder: typeInfo.hasBuilder });
         }
@@ -919,13 +921,13 @@ export function collectMemoFromTSTypeParameterInstantiation(node: arkts.TSTypePa
  * @param node `arkts.ETSNewClassInstanceExpression` node.
  */
 export function collectMemoFromNewClass(node: arkts.ETSNewClassInstanceExpression): void {
-    const typeRef = node.getTypeRef;
+    const typeRef = node.typeRef;
     if (!typeRef || !arkts.isETSTypeReference(typeRef)) {
         return;
     }
     const typeInfo = collectMemoableInfoInTypeReference(typeRef);
     if (typeInfo.isWithinTypeParams) { 
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(typeRef, { isWithinTypeParams: true, hasBuilder: typeInfo.hasBuilder });
     }
@@ -938,23 +940,22 @@ export function collectMemoFromNewClass(node: arkts.ETSNewClassInstanceExpressio
  * @param node `arkts.CallExpression` node.
  */
 export function collectMemoFromCallExpression(node: arkts.CallExpression): boolean {
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
         return false;
     }
     const typeParams = node.typeParams;
     if (!!typeParams) {
         collectMemoFromTSTypeParameterInstantiation(typeParams);
     }
-    const expr = findIdentifierFromCallee(node.expression);
-    const decl = (expr && getDeclResolveAlias(expr)) ?? node.expression;
+    const expr = findIdentifierFromCallee(node.callee);
+    const decl = (expr && getDeclResolveAlias(expr)) ?? node.callee;
     if (!decl) {
         return false;
     }
     let isCollected: boolean = false;
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata?.hasBuilder;
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, { hasBuilder });
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata?.hasBuilder;
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, { hasBuilder });
         isCollected = true;
     }
     if (arkts.isMethodDefinition(decl)) {
@@ -962,26 +963,24 @@ export function collectMemoFromCallExpression(node: arkts.CallExpression): boole
     } else if (arkts.isClassProperty(decl)) {
         isCollected = collectCallWithDeclaredClassProperty(node, decl);
     }
-    if (isCollected && arkts.isTSAsExpression(node.expression) && node.expression.typeAnnotation) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
-        arkts.NodeCacheFactory.getInstance()
+    if (isCollected && arkts.isTSAsExpression(node.callee) && node.callee.typeAnnotation) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
-            .collect(node.expression.typeAnnotation, { hasBuilder });
+            .collect(node.callee.typeAnnotation, { hasBuilder });
     }
     return isCollected;
 }
 
 export function collectCallWithDeclaredClassProperty(node: arkts.CallExpression, decl: arkts.ClassProperty): boolean {
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata?.hasBuilder;
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, { hasBuilder });
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata?.hasBuilder;
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(node, { hasBuilder });
         return true;
     }
     const memoableInfo = collectMemoableInfoInClassProperty(decl);
     if (checkIsMemoFromMemoableInfo(memoableInfo, false) || memoableInfo.hasBuilder || memoableInfo.hasBuilderParam) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, { hasBuilder: memoableInfo.hasBuilder });
         return true;
@@ -990,25 +989,25 @@ export function collectCallWithDeclaredClassProperty(node: arkts.CallExpression,
 }
 
 export function collectCallWithDeclaredMethod(node: arkts.CallExpression, decl: arkts.MethodDefinition): boolean {
-    const hasReceiver = decl.scriptFunction.hasReceiver;
-    const params = decl.scriptFunction.params;
+    const hasReceiver = decl.function!.hasReceiver;
+    const params = decl.function!.params;
     const args = node.arguments;
-    const hasRestParameter = decl.scriptFunction.hasRestParameter;
+    const hasRestParameter = decl.function!.hasRestParameter;
     const isTrailingCall = node.isTrailingCall;
     const options = { hasRestParameter, isTrailingCall };
     forEachArgWithParam(args, params, collectCallArgsWithMethodParams, options);
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(decl)) {
         const { hasMemoEntry, hasMemoIntrinsic, hasBuilder } =
-            arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata ?? {};
-        arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(decl)!.metadata ?? {};
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node, { hasReceiver, hasMemoEntry, hasMemoIntrinsic, hasBuilder });
         return true;
     } else {
-        const memoableInfo = collectMemoableInfoInScriptFunction(decl.scriptFunction);
+        const memoableInfo = collectMemoableInfoInScriptFunction(decl.function!);
         if (checkIsMemoFromMemoableInfo(memoableInfo, true)) {
             const { hasMemoEntry, hasMemoIntrinsic, hasBuilder } = memoableInfo;
-            arkts.NodeCacheFactory.getInstance()
+            NodeCacheFactory.getInstance()
                 .getCache(NodeCacheNames.MEMO)
                 .collect(node, { hasReceiver, hasMemoEntry, hasMemoIntrinsic, hasBuilder });
             return true;
@@ -1022,18 +1021,17 @@ export function collectCallArgsWithMethodParams(arg: arkts.Expression | undefine
         return;
     }
     let info: MemoableInfo;
-    if (arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(param)) {
-        const hasBuilder
-            = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(param)!.metadata?.hasBuilder;
+    if (NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(param)) {
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(param)!.metadata?.hasBuilder;
         info = { hasMemo: true, hasProperType: true, hasBuilder };
     } else {
         info = collectMemoableInfoInParameter(param);
     }
     if (checkIsMemoFromMemoableInfo(info) && arkts.isArrowFunctionExpression(arg)) {
-        arkts.NodeCacheFactory.getInstance()
+        NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(arg, { hasBuilder: info.hasBuilder });
-        const func = arg.scriptFunction;
+        const func = arg.function;
         const returnMemoableInfo = collectMemoableInfoInFunctionReturnType(func);
         collectScriptFunctionReturnTypeFromInfo(func, returnMemoableInfo);
         const [paramMemoableInfoMap, gensymCount] = collectMemoableInfoMapInFunctionParams(func);
@@ -1083,9 +1081,9 @@ export function collectMemoScriptFunctionBody(
     });
 }
 
-export function collectMetadataInMethod(node: arkts.MethodDefinition): arkts.AstNodeCacheValue['metadata'] {
-    const callName = node.name.name;
-    const hasReceiver = node.scriptFunction.hasReceiver;
+export function collectMetadataInMethod(node: arkts.MethodDefinition): AstNodeCacheValueMetadata {
+    const callName = node.id!.name;
+    const hasReceiver = node.function!.hasReceiver;
     const isSetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET;
     const isGetter = node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET;
     return { callName, hasReceiver, isSetter, isGetter };
@@ -1106,11 +1104,11 @@ export function getDeclResolveAlias(node: arkts.AstNode): arkts.AstNode | undefi
         decl = arkts.getPeerIdentifierDecl(node.peer);
     }
     if (!!decl && !!decl.parent && arkts.isIdentifier(decl) && arkts.isVariableDeclarator(decl.parent)) {
-        if (!!decl.parent.initializer && arkts.isIdentifier(decl.parent.initializer)) {
-            return getDeclResolveAlias(decl.parent.initializer);
+        if (!!decl.parent.init && arkts.isIdentifier(decl.parent.init)) {
+            return getDeclResolveAlias(decl.parent.init);
         }
-        if (!!decl.parent.initializer && arkts.isMemberExpression(decl.parent.initializer)) {
-            return getDeclResolveAlias(decl.parent.initializer.property);
+        if (!!decl.parent.init && arkts.isMemberExpression(decl.parent.init)) {
+            return getDeclResolveAlias(decl.parent.init.property!);
         }
     }
     return decl;

@@ -47,7 +47,7 @@ function _checkConstructParameterLiteral(
             return;
         }
         const annotationName = propertyInfo.annotationInfo?.hasLink ? DecoratorNames.LINK : DecoratorNames.OBJECT_LINK;
-        const property = arkts.classByPeer<arkts.Property>(propertyPtr);
+        const property = arkts.unpackNonNullableNode<arkts.Property>(propertyPtr);
 
         const errorNode = verifyRegularInitialization(property);
         if (!errorNode) {

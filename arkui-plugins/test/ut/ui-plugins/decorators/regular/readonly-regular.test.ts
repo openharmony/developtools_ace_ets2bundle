@@ -74,7 +74,7 @@ function main() {}
     }
 
     @Memo() 
-  public build() {}
+    public build() {}
 
     public constructor() {}
 
@@ -82,9 +82,10 @@ function main() {}
 
     }
 }
-@ComponentV2() interface __Options_Child {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'readOnlyParam', '(number | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_readOnlyParam', '(boolean | undefined)')}
+@ComponentV2() class __Options_Child {
+    public readOnlyParam?: number;
+    public __options_has_readOnlyParam?: boolean;
+    public constructor() {}
 }
 `;
 

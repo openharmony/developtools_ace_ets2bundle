@@ -71,7 +71,7 @@ function main() {}
   public __initializeStruct(initializers: (__Options_CustomDialogExample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_aaController)})) {
-      this.__backing_aaController = initializers!.aaController
+      this.__backing_aaController = initializers!.aaController;
     } else {
       if (!(this.__backing_aaController)) {
         this.__backing_aaController = undefined
@@ -160,6 +160,7 @@ class DialogControllerV3 extends DialogControllerV2 {
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_CustomDialogUser | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CustomDialogUser)=> void) | undefined), initializers: ((()=> __Options_CustomDialogUser) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<CustomDialogUser, __Options_CustomDialogUser>(style, ((): CustomDialogUser => {
@@ -207,15 +208,17 @@ class DialogControllerV3 extends DialogControllerV2 {
 
 }
 
-@CustomDialog() interface __Options_CustomDialogExample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'aaController', '((CustomDialogController | undefined) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_aaController', '(boolean | undefined)')}
-  }
+@CustomDialog() class __Options_CustomDialogExample {
+  public aaController?: (CustomDialogController | undefined);
+  public __options_has_aaController?: boolean;
+  public constructor() {}
+}
 
-@Component() interface __Options_CustomDialogUser {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dialogController', '((CustomDialogController | null) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dialogController', '(boolean | undefined)')}
-  }
+@Component() class __Options_CustomDialogUser {
+  public dialogController?: (CustomDialogController | null);
+  public __options_has_dialogController?: boolean;
+  public constructor() {}
+}
 `;
 
 function testCheckedTransformer(this: PluginTestContext): void {

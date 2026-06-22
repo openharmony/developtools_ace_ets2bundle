@@ -198,6 +198,34 @@ final class PropType extends BaseEnum<int> {
       this.__backing_propVar12!.update((initializers!.propVar12 as (Set<string> | Per)));
     }
   }
+
+  public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
+    this.__backing_propVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? (new Per(6))));
+    this.__backing_propVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_propVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (PropType.TYPE3)));
+    this.__backing_propVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
+    this.__backing_propVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? ([true, false])));
+    this.__backing_propVar6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
+    this.__backing_propVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar7)})) ?? ([new Per(7), new Per(11)])));
+    this.__backing_propVar8!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar8)})) ?? (((sr: string) => {}))));
+    this.__backing_propVar9!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar9)})) ?? (new Date("2025-4-23"))));
+    this.__backing_propVar10!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
+    this.__backing_propVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar11)})) ?? (0.0)));
+    this.__backing_propVar12!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar12)})) ?? (new Per(6))));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Parent, __Options_Parent>(style, ((): Parent => {
@@ -302,54 +330,44 @@ final class PropType extends BaseEnum<int> {
 
 }
 
-@Component() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar1', '(Per | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar1', '(IPropRefDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar2', '(Array<number> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar2', '(IPropRefDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar3', '(PropType | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar3', '(IPropRefDecoratedVariable<PropType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar4', '(Set<string> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar4', '(IPropRefDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar5', '(Array<boolean> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar5', '(IPropRefDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar6', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar6', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar7', '(Array<Per> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar7', '(IPropRefDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar8', '(IPropRefDecoratedVariable<((sr: string)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar9', '(Date | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar9', '(IPropRefDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar10', '(IPropRefDecoratedVariable<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar11', '((string | number) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar11', '(IPropRefDecoratedVariable<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'propVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('PropRef')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_propVar12', '(IPropRefDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_propVar12', '(boolean | undefined)')}
+@Component() class __Options_Parent {
+  @PropRef() public propVar1?: Per;
+  public __backing_propVar1?: IPropRefDecoratedVariable<Per>;
+  public __options_has_propVar1?: boolean;
+  @PropRef() public propVar2?: Array<number>;
+  public __backing_propVar2?: IPropRefDecoratedVariable<Array<number>>;
+  public __options_has_propVar2?: boolean;
+  @PropRef() public propVar3?: PropType;
+  public __backing_propVar3?: IPropRefDecoratedVariable<PropType>;
+  public __options_has_propVar3?: boolean;
+  @PropRef() public propVar4?: Set<string>;
+  public __backing_propVar4?: IPropRefDecoratedVariable<Set<string>>;
+  public __options_has_propVar4?: boolean;
+  @PropRef() public propVar5?: Array<boolean>;
+  public __backing_propVar5?: IPropRefDecoratedVariable<Array<boolean>>;
+  public __options_has_propVar5?: boolean;
+  @PropRef() public propVar6?: Array<Per>;
+  public __backing_propVar6?: IPropRefDecoratedVariable<Array<Per>>;
+  public __options_has_propVar6?: boolean;
+  @PropRef() public propVar7?: Array<Per>;
+  public __backing_propVar7?: IPropRefDecoratedVariable<Array<Per>>;
+  public __options_has_propVar7?: boolean;
+  @PropRef() public propVar8?: (((sr: string)=> void) | undefined);
+  public __backing_propVar8?: IPropRefDecoratedVariable<(((sr: string)=> void) | undefined)>;
+  public __options_has_propVar8?: boolean;
+  @PropRef() public propVar9?: Date;
+  public __backing_propVar9?: IPropRefDecoratedVariable<Date>;
+  public __options_has_propVar9?: boolean;
+  @PropRef() public propVar10?: Map<number, Per>;
+  public __backing_propVar10?: IPropRefDecoratedVariable<Map<number, Per>>;
+  public __options_has_propVar10?: boolean;
+  @PropRef() public propVar11?: (string | number);
+  public __backing_propVar11?: IPropRefDecoratedVariable<(string | number)>;
+  public __options_has_propVar11?: boolean;
+  @PropRef() public propVar12?: (Set<string> | Per);
+  public __backing_propVar12?: IPropRefDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_propVar12?: boolean;
+  public constructor() {}
   
 }
 `;

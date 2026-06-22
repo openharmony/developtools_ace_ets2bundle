@@ -60,12 +60,12 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
     }
 
     getImportsInfo(program: arkts.Program): ImportInfo {
-        const filePath = program.absName;
+        const filePath = program.absoluteName;
         if (this.currentFilePath === filePath && this.currentImportInfo) {
             return this.currentImportInfo;
         }
         this.currentFilePath = filePath;
-        this.currentImportInfo = collectFileImports(program.astNode as arkts.EtsScript);
+        this.currentImportInfo = collectFileImports(program.ast as arkts.ETSModule);
         return this.currentImportInfo;
     }
 
@@ -82,33 +82,33 @@ class ConcreteUISyntaxRuleContext implements UISyntaxRuleContext {
             message = this.format(options.message, options.data);
         }
 
-        const diagnosticKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+        const diagnosticKind: arkts.DiagnosticKind = arkts.createDiagnosticKind(
             message,
             options.level === 'error'
-                ? arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
-                : arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
+                ? arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_ERROR
+                : arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_WARNING
         );
         if (options.fix) {
-            const diagnosticInfo: arkts.DiagnosticInfo = arkts.DiagnosticInfo.create(diagnosticKind,
-                arkts.getStartPosition(options.node));
+            const diagnosticInfo: arkts.DiagnosticInfo = arkts.createDiagnosticInfo(diagnosticKind,
+                options.node.startPosition);
             const fixSuggestions = [options.fix(options.node) ?? []].flat();
-            const suggestionKind: arkts.DiagnosticKind = arkts.DiagnosticKind.create(
+            const suggestionKind: arkts.DiagnosticKind = arkts.createDiagnosticKind(
                 message,
-                arkts.PluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
+                arkts.Es2pandaPluginDiagnosticType.ES2PANDA_PLUGIN_SUGGESTION
             );
             const suggestionInfos = fixSuggestions.map((fixSuggestion) => {
                 const [startPosition, endPosition] = fixSuggestion.range;
-                const sourceRange: arkts.SourceRange = arkts.SourceRange.create(startPosition, endPosition);
-                return arkts.SuggestionInfo.create(
+                const sourceRange: arkts.SourceRange = arkts.createSourceRange(startPosition, endPosition);
+                return arkts.createSuggestionInfo(
                     suggestionKind,
                     fixSuggestion.code,
                     fixSuggestion.title ? fixSuggestion.title : '',
                     sourceRange
                 );
             });
-            arkts.Diagnostic.logDiagnosticWithSuggestions(diagnosticInfo, suggestionInfos);
+            arkts.logDiagnosticWithSuggestions(diagnosticInfo, suggestionInfos);
         } else {
-            arkts.Diagnostic.logDiagnostic(diagnosticKind, arkts.getStartPosition(options.node));
+            arkts.logDiagnostic(diagnosticKind, options.node.startPosition);
         }
     }
 

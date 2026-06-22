@@ -445,12 +445,12 @@ public:
 #ifdef KOALA_NO_UNALIGNED_ACCESS
     InteropInt64 value;
 #ifdef __STDC_LIB_EXT1__
-    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    errno_t res = memcpy_s(&value, 8, data + position, 8);
     if (res != EOK) {
         return value;
     }
 #else
-    memcpy(&value, data + position, 4);
+    memcpy(&value, data + position, 8);
 #endif
 #else
     auto value = *(InteropInt64 *)(data + position);
@@ -462,14 +462,14 @@ public:
   {
     check(8);
 #ifdef KOALA_NO_UNALIGNED_ACCESS
-    InteropInt64 value;
+    InteropUInt64 value;
 #ifdef __STDC_LIB_EXT1__
-    errno_t res = memcpy_s(&value, 4, data + position, 4);
+    errno_t res = memcpy_s(&value, 8, data + position, 8);
     if (res != EOK) {
         return value;
     }
 #else
-    memcpy(&value, data + position, 4);
+    memcpy(&value, data + position, 8);
 #endif
 #else
     auto value = *(InteropUInt64 *)(data + position);

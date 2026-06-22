@@ -80,6 +80,10 @@ export class CustomComponentRecord extends BaseRecord<arkts.ClassDeclaration, Cu
         return this;
     }
 
+    release(node: arkts.ClassDeclaration): void {
+        RecordCache.getInstance().delete(node.peer);
+    }
+
     collectFromNode(node: arkts.ClassDeclaration): void {
         const definition: arkts.ClassDefinition | undefined = node.definition;
         if (!definition) {
@@ -90,7 +94,7 @@ export class CustomComponentRecord extends BaseRecord<arkts.ClassDeclaration, Cu
             return;
         }
         const isDecl = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const isLegacy = definition.lang === arkts.Es2pandaLanguage.JS;
+        const isLegacy = definition.language === arkts.Es2pandaLanguage.LANGUAGE_JS;
         const isStruct = checkIsStructFromNode(node, !isLegacy);
         const isCustomComponentClass = checkIsCustomComponentDeclaredClassFromInfo({
             name,

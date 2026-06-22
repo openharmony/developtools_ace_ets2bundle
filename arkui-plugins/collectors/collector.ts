@@ -26,6 +26,7 @@ import { CallRecordCollector } from './ui-collectors/call-record-collector';
 import { UICollectMetadata } from './ui-collectors/shared-types';
 import { collectUINodeByTypeInPostOrder, collectUINodeByTypeInPreOrder } from './ui-collectors/factory';
 import { collectMemoableNodeByTypeInPostOrder } from './memo-collectors/factory';
+import { RecordBuilder } from './ui-collectors/records';
 
 export interface CollectorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
@@ -90,6 +91,7 @@ export class Collector extends AbstractVisitor {
         super.reset();
         if (this.shouldCollectUI) {
             CallRecordCollector.getInstance(this.getMetadata()).reset();
+            RecordBuilder.reset();
         }
         if (this.shouldCheckUISyntax) {
             ValidatorBuilder.reset();
@@ -97,16 +99,6 @@ export class Collector extends AbstractVisitor {
             LogCollector.getInstance().emitLogInfo();
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([0, 0, 2], 'LogCollector.emitLogInfo'));
             LogCollector.getInstance().reset();
-        }
-        if (this.shouldCollectMemo) {
-            arkts.Performance.getInstance().createDetailedEvent(
-                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
-            );
-            ImportCollector.getInstance().insertCurrentImports(this.program);
-            ImportCollector.getInstance().clearImports();
-            arkts.Performance.getInstance().stopDetailedEvent(
-                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
-            );
         }
     }
 
@@ -141,7 +133,21 @@ export class Collector extends AbstractVisitor {
 
     visitor(node: arkts.AstNode): arkts.AstNode {
         this.preOrderVisitor(node);
-        const newNode = this.visitEachChild(node);
+        let newNode = this.visitEachChild(node);
+
+        if (arkts.isETSModule(newNode) && this.shouldCollectMemo) {
+            arkts.Performance.getInstance().createDetailedEvent(
+                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
+            );
+            if (ImportCollector.getInstance().importInfos.length > 0) {
+                let imports = ImportCollector.getInstance().getImportStatements();
+                newNode = arkts.factory.updateETSModule(newNode, [...imports, ...newNode.statements]);
+            }
+            arkts.Performance.getInstance().stopDetailedEvent(
+                getPerfName([0, 0, 3], 'ImportCollector.insertCurrentImports')
+            );
+            ImportCollector.getInstance().clearImports();
+        }
         this.postOrderVisitor(newNode);
         return newNode;
     }

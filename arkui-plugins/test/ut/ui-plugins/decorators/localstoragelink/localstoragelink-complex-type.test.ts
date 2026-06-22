@@ -120,18 +120,19 @@ final class Status extends BaseEnum<int> {
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3])
-    this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {})
-    this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"))
-    this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>())
-    this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>())
-    this.__backing_unionA = STATE_MGMT_FACTORY.makeLocalStorageLink<(string | undefined)>(this, "Prop6", "unionA", "")
-    this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"))
-    this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound)
+    this.__backing_arrayA = STATE_MGMT_FACTORY.makeLocalStorageLink<Array<number>>(this, "Prop1", "arrayA", [1, 2, 3]);
+    this.__backing_objectA = STATE_MGMT_FACTORY.makeLocalStorageLink<Object>(this, "Prop2", "objectA", {});
+    this.__backing_dateA = STATE_MGMT_FACTORY.makeLocalStorageLink<Date>(this, "Prop3", "dateA", new Date("2021-08-08"));
+    this.__backing_setA = STATE_MGMT_FACTORY.makeLocalStorageLink<Set<number>>(this, "Prop4", "setA", new Set<number>());
+    this.__backing_mapA = STATE_MGMT_FACTORY.makeLocalStorageLink<Map<number, string>>(this, "Prop5", "mapA", new Map<number, string>());
+    this.__backing_unionA = STATE_MGMT_FACTORY.makeLocalStorageLink<(string | undefined)>(this, "Prop6", "unionA", "");
+    this.__backing_classA = STATE_MGMT_FACTORY.makeLocalStorageLink<Person>(this, "Prop7", "classA", new Person("John"));
+    this.__backing_enumA = STATE_MGMT_FACTORY.makeLocalStorageLink<Status>(this, "Prop8", "enumA", Status.NotFound);
   }
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -213,47 +214,39 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'arrayA', '(Array<number> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop1" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_arrayA', '(ILocalStorageLinkDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_arrayA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'objectA', '(Object | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop2" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_objectA', '(ILocalStorageLinkDecoratedVariable<Object> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_objectA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'dateA', '(Date | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop3" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_dateA', '(ILocalStorageLinkDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_dateA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'setA', '(Set<number> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_setA', '(ILocalStorageLinkDecoratedVariable<Set<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_setA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'mapA', '(Map<number, string> | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_mapA', '(ILocalStorageLinkDecoratedVariable<Map<number, string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_mapA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'unionA', '((string | undefined) | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop6" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_unionA', '(ILocalStorageLinkDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_unionA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'classA', '(Person | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop7" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_classA', '(ILocalStorageLinkDecoratedVariable<Person> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_classA', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'enumA', '(Status | undefined)', [dumpAnnotation('LocalStorageLink', { value: "Prop8" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_enumA', '(ILocalStorageLinkDecoratedVariable<Status> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_enumA', '(boolean | undefined)')}
+@Entry() @Component() class __Options_MyStateSample {
+  @LocalStorageLink({value:"Prop1"}) public arrayA?: Array<number>;
+  public __backing_arrayA?: ILocalStorageLinkDecoratedVariable<Array<number>>;
+  public __options_has_arrayA?: boolean;
+  @LocalStorageLink({value:"Prop2"}) public objectA?: Object;
+  public __backing_objectA?: ILocalStorageLinkDecoratedVariable<Object>;
+  public __options_has_objectA?: boolean;
+  @LocalStorageLink({value:"Prop3"}) public dateA?: Date;
+  public __backing_dateA?: ILocalStorageLinkDecoratedVariable<Date>;
+  public __options_has_dateA?: boolean;
+  @LocalStorageLink({value:"Prop4"}) public setA?: Set<number>;
+  public __backing_setA?: ILocalStorageLinkDecoratedVariable<Set<number>>;
+  public __options_has_setA?: boolean;
+  @LocalStorageLink({value:"Prop5"}) public mapA?: Map<number, string>;
+  public __backing_mapA?: ILocalStorageLinkDecoratedVariable<Map<number, string>>;
+  public __options_has_mapA?: boolean;
+  @LocalStorageLink({value:"Prop6"}) public unionA?: (string | undefined);
+  public __backing_unionA?: ILocalStorageLinkDecoratedVariable<(string | undefined)>;
+  public __options_has_unionA?: boolean;
+  @LocalStorageLink({value:"Prop7"}) public classA?: Person;
+  public __backing_classA?: ILocalStorageLinkDecoratedVariable<Person>;
+  public __options_has_classA?: boolean;
+  @LocalStorageLink({value:"Prop8"}) public enumA?: Status;
+  public __backing_enumA?: ILocalStorageLinkDecoratedVariable<Status>;
+  public __options_has_enumA?: boolean;
+  public constructor() {}
 
 }
 `;

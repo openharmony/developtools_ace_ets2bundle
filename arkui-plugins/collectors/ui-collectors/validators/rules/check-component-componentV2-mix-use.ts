@@ -47,7 +47,7 @@ function _checkComponentComponentV2MixUse(
     let expr: arkts.Identifier | undefined;
     expr = findTypeRefIdentFromType(classProperty.typeAnnotation);
     if (!expr && checkIsNewClass(classProperty.value)) {
-        expr = findTypeRefIdentFromType(classProperty.value.getTypeRef);
+        expr = findTypeRefIdentFromType(classProperty.value.typeRef);
     }
     if (!!expr) {
         decl = arkts.getPeerIdentifierDecl(expr.peer);
@@ -57,7 +57,7 @@ function _checkComponentComponentV2MixUse(
     }
     const declProgram = arkts.getProgramFromAstNode(decl);
     const isFrom1_1 = declProgram !== undefined
-        ? FileManager.getInstance().getLanguageVersionByFilePath(declProgram.absName) === LANGUAGE_VERSION.ARKTS_1_1
+        ? FileManager.getInstance().getLanguageVersionByFilePath(declProgram.absoluteName) === LANGUAGE_VERSION.ARKTS_1_1
         : undefined;
     if (isFrom1_1) {
         return;

@@ -34,7 +34,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     private collectNode: Map<string, arkts.AstNode> = new Map();
     private builderVariableCollect: Map<string, string[]> = new Map();
     private variableCollect: Map<string, string[]> = new Map();
-    private structNode: arkts.StructDeclaration | undefined;
+    private structNode: arkts.ETSStructDeclaration | undefined;
     private errorNodes: arkts.AstNode[] = [];
 
     public setup(): Record<string, string> {
@@ -50,7 +50,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private checkVarChangeInStructBuild(node: arkts.AstNode): void {
-        if (arkts.isStructDeclaration(node)) {
+        if (arkts.isETSStructDeclaration(node)) {
             this.variableCollect = this.collectVariables(node);
             this.structNode = node;
         } else if (arkts.isBlockStatement(node)) {
@@ -69,7 +69,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private checkInBuild(node: arkts.AstNode): boolean {
-        if (arkts.isMethodDefinition(node) && node.name && getIdentifierName(node.name) === BUILD_NAME) {
+        if (arkts.isMethodDefinition(node) && node.id && getIdentifierName(node.id) === BUILD_NAME) {
             return true;
         } else if (node.parent) {
             return this.checkInBuild(node.parent);
@@ -91,11 +91,11 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
             return;
         }
         this.builderVariableCollect.clear();
-        if (!node.scriptFunction.body || !arkts.isBlockStatement(node.scriptFunction.body)) {
+        if (!node.function?.body || !arkts.isBlockStatement(node.function.body)) {
             return;
         }
-        this.collectBuilderVariables(node.scriptFunction.body);
-        this.checkBuilderBody(node.scriptFunction.body, this.builderVariableCollect);
+        this.collectBuilderVariables(node.function.body);
+        this.checkBuilderBody(node.function.body, this.builderVariableCollect);
     }
 
     private isBuilderFunction(node: arkts.FunctionDeclaration): boolean {
@@ -115,7 +115,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
 
     private processVariableDeclarations(statement: arkts.VariableDeclaration): void {
         for (const declarator of statement.declarators) {
-            if (!arkts.isVariableDeclarator(declarator) || !arkts.isIdentifier(declarator.name)) {
+            if (!arkts.isVariableDeclarator(declarator) || !arkts.isIdentifier(declarator.id)) {
                 continue;
             }
             this.processVariableDeclarator(declarator);
@@ -123,7 +123,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private processVariableDeclarator(declarator: arkts.VariableDeclarator): void {
-        const varName = getIdentifierName(declarator.name);
+        const varName = getIdentifierName(declarator.id!);
         if (!this.isValidRememberVariable(declarator)) {
             return;
         }
@@ -132,10 +132,10 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
 
     private isValidRememberVariable(declarator: arkts.VariableDeclarator): boolean {
         return !!(
-            declarator.initializer &&
-            arkts.isCallExpression(declarator.initializer) &&
-            arkts.isIdentifier(declarator.initializer.expression) &&
-            getIdentifierName(declarator.initializer.expression) === 'rememberVariable'
+            declarator.init &&
+            arkts.isCallExpression(declarator.init) &&
+            arkts.isIdentifier(declarator.init.callee) &&
+            getIdentifierName(declarator.init.callee) === 'rememberVariable'
         );
     }
 
@@ -176,13 +176,13 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
                 this.checkExpressionForModifications(arg, variableCollect);
             }
         }
-        const expression = callExpr.expression;
-        if (arkts.isMemberExpression(expression)) {
-            if (expression.object) {
-                this.checkExpressionForModifications(expression.object, variableCollect);
+        const callee = callExpr.callee;
+        if (arkts.isMemberExpression(callee)) {
+            if (callee.object) {
+                this.checkExpressionForModifications(callee.object, variableCollect);
             }
-        } else if (arkts.isCallExpression(expression)) {
-            this.checkCallExpressionForModifications(expression, variableCollect);
+        } else if (arkts.isCallExpression(callee)) {
+            this.checkCallExpressionForModifications(callee, variableCollect);
         }
     }
 
@@ -223,10 +223,10 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private hasBuilderDecorator(methodNode: arkts.MethodDefinition): boolean {
-        if (!methodNode.scriptFunction || !methodNode.scriptFunction.annotations) {
+        if (!methodNode.function || !methodNode.function.annotations) {
             return false;
         }
-        for (const annotation of methodNode.scriptFunction.annotations) {
+        for (const annotation of methodNode.function.annotations) {
             if (annotation.expr && arkts.isIdentifier(annotation.expr) && annotation.expr.name === 'Builder') {
                 return true;
             }
@@ -234,7 +234,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         return false;
     }
 
-    private collectVariables(node: arkts.ClassDeclaration | arkts.StructDeclaration): Map<string, string[]> {
+    private collectVariables(node: arkts.ClassDeclaration | arkts.ETSStructDeclaration): Map<string, string[]> {
         const variableMap = new Map<string, string[]>();
         node.definition?.body.forEach(member => {
             this.processMemberForVariableCollection(member, variableMap);
@@ -252,9 +252,9 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
                 variableMap.set(variableName, getClassPropertyAnnotationNames(member) || []);
             }
         } else if (arkts.isMethodDefinition(member) && member.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
-            const methodId = member.scriptFunction?.id;
+            const methodId = member.function?.id;
             if (methodId && arkts.isIdentifier(methodId) && methodId.name) {
-                const methodDecorators = member.scriptFunction.annotations
+                const methodDecorators = member.function.annotations
                     ?.map(e => e.expr && arkts.isIdentifier(e.expr) && e.expr.name ? e.expr.name : '')
                     .filter(name => name) || [];
                 variableMap.set(methodId.name, methodDecorators);
@@ -263,7 +263,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private initList(node: arkts.AstNode): void {
-        if (!arkts.isEtsScript(node) || node.isNamespace) {
+        if (!arkts.isETSModule(node) || node.isNamespace) {
             return;
         }
         node.statements.forEach((member) => {
@@ -344,7 +344,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         }
     }
 
-    private checkFirstStateNode(node: arkts.StructDeclaration | undefined, memberName: string): arkts.AstNode | undefined {
+    private checkFirstStateNode(node: arkts.ETSStructDeclaration | undefined, memberName: string): arkts.AstNode | undefined {
         if (!node) {
             return undefined;
         }
@@ -433,8 +433,8 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         let annotationNames: string[] = [];
         if (arkts.isClassProperty(member)) {
             annotationNames = getClassPropertyAnnotationNames(member) || [];
-        } else if (arkts.isMethodDefinition(member) && member.scriptFunction?.annotations) {
-            annotationNames = member.scriptFunction.annotations
+        } else if (arkts.isMethodDefinition(member) && member.function?.annotations) {
+            annotationNames = member.function.annotations
                 .map(annotation => {
                     if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
                         return annotation.expr.name;
@@ -506,18 +506,18 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
         }
         if (arkts.isMemberExpression(node)) {
             const memberExpr = node as arkts.MemberExpression;
-            const objectParts = this.extractPropertyNames(memberExpr.object);
-            const propertyParts = this.extractPropertyNames(memberExpr.property);
+            const objectParts = this.extractPropertyNames(memberExpr.object!);
+            const propertyParts = this.extractPropertyNames(memberExpr.property!);
             return [...objectParts, ...propertyParts];
         }
         return [];
     };
 
-    private firstSegmentTypeName(variableName: string, node: arkts.StructDeclaration | arkts.ClassDeclaration | undefined): string | undefined {
+    private firstSegmentTypeName(variableName: string, node: arkts.ETSStructDeclaration | arkts.ClassDeclaration | undefined): string | undefined {
         if (!node) {
             return undefined;
         }
-        if (!(arkts.isStructDeclaration(node) || arkts.isClassDeclaration(node)) || !node.definition?.body) {
+        if (!(arkts.isETSStructDeclaration(node) || arkts.isClassDeclaration(node)) || !node.definition?.body) {
             return arkts.isClassDeclaration(node) ? this.findVariableTypeInParentClass(variableName, node) : undefined;
         }
         for (const e of node.definition.body) {
@@ -597,7 +597,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
             return !!(member.key && arkts.isIdentifier(member.key) && member.key.name === propertyName);
         }
         if (arkts.isMethodDefinition(member)) {
-            return !!(member.name && arkts.isIdentifier(member.name) && member.name.name === propertyName);
+            return !!(member.id && arkts.isIdentifier(member.id) && member.id.name === propertyName);
         }
         return false;
     }
@@ -702,7 +702,7 @@ class NoVariablesChangeInBuildRule extends AbstractUISyntaxRule {
     }
 
     private hasPropertyInType(typeNode: arkts.AstNode, propertyName: string, remainingPath: string[]): boolean {
-        if (arkts.isClassDeclaration(typeNode) || arkts.isStructDeclaration(typeNode)) {
+        if (arkts.isClassDeclaration(typeNode) || arkts.isETSStructDeclaration(typeNode)) {
             const body = typeNode.definition?.body;
             if (!body) {
                 return false;

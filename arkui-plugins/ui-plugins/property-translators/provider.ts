@@ -29,9 +29,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -39,14 +39,15 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithProviderProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -56,8 +57,8 @@ function initializeStructWithProviderProperty(
         return undefined;
     }
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
-        arkts.factory.create1StringLiteral(
+        arkts.factory.createStringLiteral(originalName),
+        arkts.factory.createStringLiteral(
             getValueInAnnotation(this.property, DecoratorNames.PROVIDER) ?? originalName
         ),
         defaultValue,
@@ -65,8 +66,8 @@ function initializeStructWithProviderProperty(
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!defaultValue) {
@@ -79,6 +80,9 @@ function initializeStructWithProviderProperty(
     return arkts.factory.createExpressionStatement(assign);
 }
 
+/**
+ * @deprecated
+ */
 export class ProviderTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.PROVIDER_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PROVIDER;
@@ -98,7 +102,7 @@ export class ProviderTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProviderProperty.bind(this)(newName, originalName, metadata);
     }
@@ -123,21 +127,24 @@ export class ProviderCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProviderProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
-export class ProviderInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ProviderInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROVIDER;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROVIDER);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROVIDER);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROVIDER);
         }
@@ -145,18 +152,15 @@ export class ProviderInterfaceTranslator<T extends InterfacePropertyTypes> exten
     }
 }
 
-export class ProviderCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ProviderCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROVIDER;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasProvider;
     }
 }

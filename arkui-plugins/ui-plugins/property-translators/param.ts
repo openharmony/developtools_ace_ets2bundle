@@ -29,9 +29,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -39,7 +39,7 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
 
 function resetOnReuseWithParamProperty(
@@ -50,7 +50,7 @@ function resetOnReuseWithParamProperty(
 ): arkts.ExpressionStatement {
     const propertyValue = this.property.value?.clone();
     const propertyType = this.propertyType?.clone();
-    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName, this.initializeOptions);
     if (this.isMemoShouldUpdate) {
         if (!!propertyValue) {
             const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
@@ -63,6 +63,9 @@ function resetOnReuseWithParamProperty(
     return factory.createResetOnReuseStmt(newName, arg);
 }
 
+/**
+ * @deprecated
+ */
 export class ParamTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.PARAM_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PARAM;
@@ -77,6 +80,10 @@ export class ParamTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
+        const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
+        this.initializeOptions = {
+            isRequired
+        };
     }
 
     resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
@@ -98,6 +105,10 @@ export class ParamCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
+        this.initializeOptions = {
+            isRequired
+        };
     }
 
     resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
@@ -105,15 +116,18 @@ export class ParamCachedTranslator extends PropertyCachedTranslator {
     }
 }
 
-export class ParamInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ParamInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PARAM;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PARAM);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PARAM);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PARAM);
         }
@@ -121,18 +135,15 @@ export class ParamInterfaceTranslator<T extends InterfacePropertyTypes> extends 
     }
 }
 
-export class ParamCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ParamCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PARAM;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasParam;
     }
 }

@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
-import { DecoratorNames, GetSetTypes, StateManagementTypes, NodeCacheNames } from '../../common/predefines';
+import { DecoratorNames, GetSetTypes, StateManagementTypes, NodeCacheNames, ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME, ENV_KEY_STRING_PATTERN } from '../../common/predefines';
 import {
     generateToRecord,
     createGetter,
@@ -31,9 +31,9 @@ import {
 } from './utils';
 import { 
     BasePropertyTranslator, 
-    InterfacePropertyCachedTranslator, 
-    InterfacePropertyTranslator, 
-    InterfacePropertyTypes, 
+    InnerClassPropertyCachedTranslator, 
+    InnerClassPropertyTranslator, 
+    InnerClassPropertyTypes, 
     PropertyCachedTranslator, 
     PropertyCachedTranslatorOptions, 
     PropertyTranslator, 
@@ -42,13 +42,15 @@ import {
 // import { GetterSetter, InitializerConstructor } from './types';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from 'collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from 'collectors/ui-collectors/records';
+import { ImportCollector } from '../../common/import-collector';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithEnvProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
@@ -57,19 +59,31 @@ function initializeStructWithEnvProperty(
     if (!options) {
         return undefined;
     }
-    const envValue = options.envValue;
+    let envValue = options.envValue;
+    if (envValue && arkts.isStringLiteral(envValue)) {
+        if (!ENV_KEY_STRING_PATTERN.test(envValue.str)) {
+            return undefined;
+        }
+        const parts: string[] = envValue.str.split('.');
+        envValue = factory.stringLiteralToMemberExpression(envValue);
+        ImportCollector.getInstance().collectSource(parts[0], ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(parts[0]);
+    }
     const args: arkts.Expression[] = [
         envValue!,
-        arkts.factory.create1StringLiteral(originalName)
+        arkts.factory.createStringLiteral(originalName)
     ];
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     return arkts.factory.createExpressionStatement(assign);
 }
 
+/**
+ * @deprecated
+ */
 export class EnvTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.ENV_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_ENV;
@@ -88,7 +102,7 @@ export class EnvTranslator extends PropertyTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
     }
@@ -112,21 +126,24 @@ export class EnvCachedTranslator extends PropertyCachedTranslator {
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithEnvProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
-export class EnvInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class EnvInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.ENV;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.ENV);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.ENV);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.ENV);
         }
@@ -134,18 +151,15 @@ export class EnvInterfaceTranslator<T extends InterfacePropertyTypes> extends In
     }
 }
 
-export class EnvCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class EnvCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.ENV;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasEnv;
     }
 }

@@ -59,6 +59,7 @@ export const ARKUI_INTEROP_SOURCE_NAME: string = 'arkui.component.interop';
 export const ARKUI_NAVIGATION_SOURCE_NAME: string = 'arkui.component.navigation';
 export const ARKUI_NAV_DESTINATION_SOURCE_NAME: string = 'arkui.component.navDestination';
 export const ARKUI_LOCAL_STORAGE_SOURCE_NAME: string = 'arkui.stateManagement.storage.localStorage';
+export const ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME: string = 'arkui.stateManagement.decorator';
 
 export const LIB_UI_COMPONENTS_PATH: string = path.resolve(__dirname, '../components');
 export const PREVIEWER_RESOURCE_PATH: string = path.resolve(
@@ -68,6 +69,8 @@ export const PREVIEWER_RESOURCE_PATH: string = path.resolve(
 export const PREVIEWER_RESOURCE_SKIP_PREFIX_NAMES: string[] = ['ohos_id', 'ohos_fa'];
 export const APPLICATION_MAIN_BASE_RESOURCE_PATH = 'src/main/resources/base';
 export const APPLICATION_MAIN_ETS_PATH = 'src/main/ets';
+
+export const ARKTS_FILE_EXTENSION_LIST: string[] = ['.d.ets', '.ets'];
 
 export const INSIGHT_INTENT_FILE_NAME = 'insight_intent.json';
 
@@ -158,7 +161,7 @@ export enum ObservedNames {
 
 export enum MonitorNames {
     PATH = 'path',
-    VALUE_CALL_CACK = 'valueCallback',
+    VALUE_CALLBACK = 'valueCallback',
     I_MONITOR = 'IMonitor',
     M_PARAM = '_m',
     OWNER = 'owner',
@@ -246,6 +249,7 @@ export enum DecoratorNames {
     STORAGE_PROP = 'StorageProp',
     REGULAR = 'Regular',
     VARIABLE = 'Variable',
+    CUSTOM_ENV = 'CustomEnv',
 }
 
 export enum DeprecatedDecoratorNames {
@@ -328,10 +332,20 @@ export enum StateManagementTypes {
     BACKING = '__backing',
     RESET_ON_REUSE = 'resetOnReuse',
     MAKE_ENV = 'makeEnv',
+    CUSTOM_ENV_DECORATED = 'ICustomEnvDecoratedVariable',
+    MAKE_CUSTOM_ENV = 'makeCustomEnv',
+    CUSTOM_ENV_KEY = 'CustomEnvKey',
+    WRITABLE_ENV_KEY = 'WritableEnvKey',
+    WRITABLE_SYSTEM_ENV_KEY = 'WritableSystemEnvKey',
+    READONLY_ENV_KEY = 'ReadonlyEnvKey',
+    READONLY_SYSTEM_ENV_KEY = 'ReadonlySystemEnvKey',
     CUSTOM_COMPONENT_LIFECYCLE_OBSERVER = 'CustomComponentLifecycleObserver',
     REUSE_OBJECT = 'ReuseObject',
     I_MONITOR = 'IMonitor',
     REGISTER_ACTIVE_AND_INACTIVE_FUNC = 'registerActiveAndInactiveCallback',
+    IGLOBAL_REUSE_POOL_VARIABLE = 'IGlobalReusePoolVariable',
+    MAKE_GLOBAL_REUSE_POOL = 'makeGlobalReusePool',
+    REUSE_POOL_OWNERSHIP = 'ReusePoolOwnership',
 }
 
 export enum AnimationNames {
@@ -382,6 +396,12 @@ export const RESOURCE_TYPE: Record<string, number> = {
     symbol: 40000,
 };
 
+export const REQUIRED_ANNOTATIONS = [
+    DecoratorNames.LINK, 
+    DecoratorNames.OBJECT_LINK, 
+    DecoratorNames.REQUIRE
+];
+
 export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>([
     [DecoratorNames.STATE, StateManagementTypes.STATE_DECORATED],
     [DecoratorNames.LINK, StateManagementTypes.LINK_SOURCE_TYPE],
@@ -398,7 +418,8 @@ export const DECORATOR_TYPE_MAP = new Map<DecoratorNames, StateManagementTypes>(
     [DecoratorNames.ONCE, StateManagementTypes.ONCE_DECORATED],
     [DecoratorNames.PROVIDER, StateManagementTypes.PROVIDER_DECORATED],
     [DecoratorNames.CONSUMER, StateManagementTypes.CONSUMER_DECORATED],
-    [DecoratorNames.ENV, StateManagementTypes.ENV_DECORATED]
+    [DecoratorNames.ENV, StateManagementTypes.ENV_DECORATED],
+    [DecoratorNames.CUSTOM_ENV, StateManagementTypes.CUSTOM_ENV_DECORATED]
 ]);
 
 export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string, string[]>([
@@ -462,6 +483,7 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
         ]
     ],
     [DecoratorNames.ENV, [StateManagementTypes.ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
+    [DecoratorNames.CUSTOM_ENV, [StateManagementTypes.CUSTOM_ENV_DECORATED, StateManagementTypes.STATE_MANAGEMENT_FACTORY]],
     [
         DecoratorNames.OBSERVED,
         [
@@ -506,7 +528,23 @@ export const INTERMEDIATE_IMPORT_SOURCE: Map<string, string[]> = new Map<string,
     [DecoratorNames.COMPONENT_RECYCLE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_ACTIVE, [StateManagementTypes.UI_UTILS]],
     [DecoratorNames.COMPONENT_INACTIVE, [StateManagementTypes.UI_UTILS]],
-    [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]]
+    [DecoratorNames.ANIMATABLE_EXTEND, [AnimationNames.ANIMATABLE_ARITHMETIC]],
+    [
+        StructDecoratorNames.COMPONENT,
+        [
+            StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE,
+            StateManagementTypes.REUSE_POOL_OWNERSHIP,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ]
+    ],
+    [
+        StructDecoratorNames.COMPONENT_V2,
+        [
+            StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE,
+            StateManagementTypes.REUSE_POOL_OWNERSHIP,
+            StateManagementTypes.STATE_MANAGEMENT_FACTORY
+        ]
+    ],
 ]);
 
 /**
@@ -518,9 +556,12 @@ export const IMPORT_SOURCE_MAP_V2: Map<string, string> = new Map<string, string>
     [StateManagementTypes.STORAGE_LINK_STATE, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.OBSERVABLE_PROXY, 'arkui.stateManagement.runtime'],
     [StateManagementTypes.PROP_STATE, 'arkui.stateManagement.runtime'],
+    [StateManagementTypes.IGLOBAL_REUSE_POOL_VARIABLE, 'arkui.stateManagement.decorator'],
     [StateManagementTypes.UI_UTILS, 'arkui.stateManagement.utils'],
     [AnimationNames.ANIMATABLE_ARITHMETIC, 'arkui.component.common'],
 ]);
+
+export const ENV_KEY_STRING_PATTERN = /^(WritableEnvKey|ReadonlyEnvKey)\.(\w+)$/;
 
 export enum GetSetTypes {
     GET = 'get',
@@ -550,7 +591,8 @@ export enum CustomComponentNames {
     OPTIONS = 'options',
     PAGE_LIFE_CYCLE = 'PageLifeCycle',
     LAYOUT_CALLBACKS = 'LayoutCallbacks',
-    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse'
+    RESET_STATE_VARS_ON_REUSE = 'resetStateVarsOnReuse',
+    RESOLVE_DECORATOR_SYMBOLS_METHOD = '__resolveDecoratorSymbols',
 }
  	 
 export enum CustomDialogNames {
@@ -598,6 +640,13 @@ export enum LANGUAGE_VERSION {
 export enum ReuseNames {
     REUSE_ID = 'reuseId',
     REUSE_OPTIONS = 'ReuseOptions'
+}
+
+export enum GlobalReusePoolNames {
+    REUSE_POOL = 'reusePool',
+    POOL_ACCEPTS = 'poolAccepts',
+    BACKING_REUSE_POOL = '__backing_reusePool',
+    REUSE_POOL_OWNERSHIP_OFF = 'OFF',
 }
 
 export enum EnvInternalProperty {
@@ -689,12 +738,12 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     // 'ArcListItem',
     // 'ArcScrollBar',
     // 'Grid',
-    'GridItem',
+    // 'GridItem',
     // 'LazyVGridLayout',
     // 'List',
-    'ListItem',
-    'ListItemGroup',
-    'FlowItem',
+    // 'ListItem',
+    // 'ListItemGroup',
+    // 'FlowItem',
     'LazyVColumn',
     'LazyVWaterflow',
     // 'Refresh',
@@ -722,5 +771,21 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     // 'RowSplit',
     // 'Shape',
     // 'Stack',
-    // 'Video'
+    // 'Video',
+    'MovingPhotoView',
+    'DynamicLayout',
+    'Component3D',
+    'DepthComponent',
+    'DistortionComponent',
+    'DynamicComponent',
+    'FormComponent',
+    'MediaCachedImage',
+    'PasteButton',
+    'RemoteWindow',
+    'RootScene',
+    'SaveButton',
+    'Screen',
+    'SecurityUIExtensionComponent',
+    'WindowScene',
+    'Web'
 ]

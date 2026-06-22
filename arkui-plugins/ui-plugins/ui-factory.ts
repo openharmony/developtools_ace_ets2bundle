@@ -18,6 +18,7 @@ import {
     CustomComponentAnontations,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
+    LocalImportInfo,
     optionsHasField,
 } from './utils';
 import { GenSymGenerator } from '../common/gensym-generator';
@@ -25,8 +26,11 @@ import { PartialExcept, PartialNested, PartialNestedExcept } from '../common/saf
 import { BuilderLambdaNames, BuiltInNames, CustomComponentNames, CustomDialogNames, DecoratorNames } from '../common/predefines';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { ImportCollector } from '../common/import-collector';
-import { needDefiniteOrOptionalModifier, hasDecoratorName } from './property-translators/utils';
+import { hasDecoratorName, needInitializeWithoutAssignmentFromInfo } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
+import { removeRelativePathSuffix } from '../common/arkts-utils';
+import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotations } from '../collectors/ui-collectors/records';
 
 export interface ScriptFunctionConfiguration {
     key: arkts.Identifier | undefined;
@@ -68,20 +72,18 @@ export class factory {
      * create `instance: <typeName>` as parameter
      */
     static createInstanceParameter(typeName: string): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(factory.createInstanceIdentifier(typeName), undefined);
+        return arkts.factory.createETSParameterExpression(factory.createInstanceIdentifier(typeName), false, undefined);
     }
 
     /**
      * create `(instance: <typeName>) => void`
      */
     static createStyleLambdaFunctionType(typeName: string): arkts.ETSFunctionType {
-        return arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                [factory.createInstanceParameter(typeName)],
-                factory.createTypeReferenceFromString(typeName),
-                false
-            ),
+        return arkts.factory.createETSFunctionType(
+            undefined,
+            [factory.createInstanceParameter(typeName)],
+            factory.createTypeReferenceFromString(typeName),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
     }
@@ -95,7 +97,7 @@ export class factory {
         isOptional?: boolean
     ): arkts.Identifier {
         const type: arkts.TypeNode = isOptional
-            ? arkts.factory.createUnionType([typeNode, arkts.factory.createETSUndefinedType()])
+            ? arkts.factory.createETSUnionType([typeNode, arkts.factory.createETSUndefinedType()])
             : typeNode;
         return arkts.factory.createIdentifier(identName, type);
     }
@@ -109,23 +111,20 @@ export class factory {
         isOptional?: boolean
     ): arkts.ETSParameterExpression {
         const ident = factory.createIdentifierWithType(identName, typeNode);
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(ident, undefined);
-        if (isOptional) {
-            param.setOptional(true);
-        }
-        return param;
+        return arkts.factory.createETSParameterExpression(ident, isOptional ?? false, undefined);
     }
 
     /**
      * create `initializers: <optionsName> | undefined` as parameter
      */
     static createInitializersOptionsParameter(optionsName: string): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             factory.createIdentifierWithType(
                 CustomComponentNames.COMPONENT_INITIALIZERS_NAME,
                 factory.createTypeReferenceFromString(optionsName),
                 true
             ),
+            false,
             undefined
         );
     }
@@ -139,7 +138,7 @@ export class factory {
             factory.createLambdaFunctionType(),
             true
         );
-        const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(contentParam, undefined);
+        const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(contentParam, false, undefined);
         addMemoAnnotation(param);
         return param;
     }
@@ -153,11 +152,11 @@ export class factory {
     ): arkts.TypeNode {
         let part: arkts.ETSTypeReferencePart;
         if (!!typeParams) {
-            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name), typeParams);
+            part = arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(name), typeParams);
         } else {
-            part = arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(name));
+            part = arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(name));
         }
-        return arkts.factory.createTypeReference(part);
+        return arkts.factory.createETSTypeReference(part);
     }
 
     /**
@@ -167,8 +166,8 @@ export class factory {
         name: string,
         params: readonly arkts.TypeNode[]
     ): arkts.TypeNode {
-        return arkts.factory.createTypeReference(
-            arkts.factory.createTypeReferencePart(
+        return arkts.factory.createETSTypeReference(
+            arkts.factory.createETSTypeReferencePart(
                 arkts.factory.createIdentifier(name),
                 arkts.factory.createTSTypeParameterInstantiation(params)
             )
@@ -182,13 +181,11 @@ export class factory {
         params?: arkts.Expression[],
         returnType?: arkts.TypeNode | undefined
     ): arkts.ETSFunctionType {
-        return arkts.factory.createFunctionType(
-            arkts.FunctionSignature.createFunctionSignature(
-                undefined,
-                params ?? [],
-                returnType ?? arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
-                false
-            ),
+        return arkts.factory.createETSFunctionType(
+            undefined,
+            params ?? [],
+            returnType ?? arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID),
+            false,
             arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW
         );
     }
@@ -213,21 +210,15 @@ export class factory {
         const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
             original,
             Object.hasOwn(config, 'body') ? config.body : original.body,
-            arkts.factory.createFunctionSignature(
-                config.typeParams ?? original.typeParams,
-                config.params ?? original.params,
-                config.returnTypeAnnotation ?? original.returnTypeAnnotation,
-                config.hasReceiver ?? original.hasReceiver
-            ),
+            config.typeParams ?? original.typeParams,
+            config.params ?? original.params,
+            config.returnTypeAnnotation ?? original.returnTypeAnnotation,
+            config.hasReceiver ?? original.hasReceiver,
             config.flags ?? original.flags,
-            config.modifiers ?? original.modifiers
+            config.modifiers ?? original.modifierFlags,
+            config.key ?? original.id,
+            config.annotations ?? original.annotations
         );
-        if (!!config.key) {
-            newFunc.setIdent(config.key);
-        }
-        if (!!config.annotations) {
-            newFunc.setAnnotations(config.annotations);
-        }
         return newFunc;
     }
 
@@ -237,21 +228,15 @@ export class factory {
     static createScriptFunction(config: Partial<ScriptFunctionConfiguration>): arkts.ScriptFunction {
         const newFunc: arkts.ScriptFunction = arkts.factory.createScriptFunction(
             config.body ?? undefined,
-            arkts.factory.createFunctionSignature(
-                config.typeParams ?? undefined,
-                config.params ?? [],
-                config.returnTypeAnnotation ?? undefined,
-                config.hasReceiver ?? false
-            ),
+            config.typeParams ?? undefined,
+            config.params ?? [],
+            config.returnTypeAnnotation ?? undefined,
+            config.hasReceiver ?? false,
             config.flags ?? arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_NONE,
-            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE
+            config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            config.key?.clone(),
+            config.annotations,
         );
-        if (!!config.key) {
-            newFunc.setIdent(config.key);
-        }
-        if (!!config.annotations) {
-            newFunc.setAnnotations(config.annotations);
-        }
         return newFunc;
     }
 
@@ -262,17 +247,17 @@ export class factory {
         original: arkts.MethodDefinition,
         config: PartialNested<MethodDefinitionConfiguration>
     ): arkts.MethodDefinition {
-        const key: arkts.Identifier = config.key ?? original.name;
-        const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.scriptFunction, {
+        const key: arkts.Identifier = config.key ?? original.id!.clone();
+        const newFunc: arkts.ScriptFunction = factory.updateScriptFunction(original.function!, {
             ...config.function,
             key,
         });
         const newMethod: arkts.MethodDefinition = arkts.factory.updateMethodDefinition(
             original,
             config.kind ?? original.kind,
-            key,
-            newFunc,
-            config.modifiers ?? original.modifiers,
+            key.clone(),
+            arkts.factory.createFunctionExpression(key.clone(), newFunc),
+            config.modifiers ?? original.modifierFlags,
             config.isComputed ?? false
         );
         return newMethod;
@@ -288,8 +273,8 @@ export class factory {
         });
         const newMethod: arkts.MethodDefinition = arkts.factory.createMethodDefinition(
             config.kind ?? arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_NONE,
-            config.key!,
-            newFunc,
+            config.key?.clone(),
+            arkts.factory.createFunctionExpression(config.key?.clone(), newFunc),
             config.modifiers ?? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             config.isComputed ?? false
         );
@@ -304,7 +289,7 @@ export class factory {
         config: PartialExcept<IntrinsicAnnotationDeclarationConfiguration, 'expr'>
     ): arkts.AnnotationDeclaration {
         const intrinsicAnnotations: arkts.AnnotationUsage[] = [
-            arkts.factory.create1AnnotationUsage(arkts.factory.createIdentifier('Retention'), [
+            arkts.factory.createAnnotationUsage(arkts.factory.createIdentifier('Retention'), [
                 arkts.factory.createClassProperty(
                     arkts.factory.createIdentifier('policy'),
                     arkts.factory.createStringLiteral('SOURCE'),
@@ -337,7 +322,7 @@ export class factory {
                 property.key &&
                 arkts.isIdentifier(property.key)
             ) {
-                return arkts.factory.update1AnnotationUsage(anno, anno.expr, [
+                return arkts.factory.updateAnnotationUsage(anno, anno.expr, [
                     ...anno.properties,
                     factory.createAliasClassProperty(property.key),
                 ]);
@@ -354,7 +339,7 @@ export class factory {
     static createAliasClassProperty(value: arkts.Identifier): arkts.ClassProperty {
         return arkts.factory.createClassProperty(
             arkts.factory.createIdentifier('alias'),
-            arkts.factory.create1StringLiteral(value.name),
+            arkts.factory.createStringLiteral(value.name),
             undefined,
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
@@ -364,18 +349,18 @@ export class factory {
     /**
      * add optional or definite modifier for class property needs initializing without assignment.
      */
-    static preprocessClassPropertyModifier(st: arkts.AstNode, isDecl: boolean): arkts.AstNode {
-        if (!isDecl && arkts.isClassProperty(st) && needDefiniteOrOptionalModifier(st)) {
-            if (st.typeAnnotation && hasNullOrUndefinedType(st.typeAnnotation)) {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL;
-            } else {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE;
-            }
-            if (st.typeAnnotation && hasDecoratorName(st, DecoratorNames.ENV)) {
-                st.modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
+    static preprocessClassPropertyModifier(
+        st: arkts.ClassProperty,
+        annotationRecord: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+    ): void {
+        if (needInitializeWithoutAssignmentFromInfo(st, annotationRecord)) {
+            st.setIsImmediateInit();
+        }
+        if (st.typeAnnotation && (annotationRecord?.annotationInfo?.hasEnv || annotationRecord?.annotationInfo?.hasCustomEnv)) {
+            if (!arkts.hasModifierFlag(st, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY)) {
+                st.modifierFlags |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_READONLY;
             }
         }
-        return st;
     }
 
     /**
@@ -386,8 +371,8 @@ export class factory {
         typeParameters?: arkts.TSTypeParameterInstantiation
     ): arkts.TSClassImplements {
         return arkts.factory.createTSClassImplements(
-            arkts.factory.createTypeReference(
-                arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier(interfaceName))
+            arkts.factory.createETSTypeReference(
+                arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier(interfaceName))
             ),
             typeParameters
         );
@@ -445,10 +430,10 @@ export class factory {
             return arkts.factory.updateInterfaceDeclaration(
                 newNode,
                 newNode.extends,
-                newNode.id,
+                newNode.id?.clone(),
                 newNode.typeParams,
                 arkts.factory.updateInterfaceBody(newNode.body!, [
-                    ...interfaceBody,
+                    ...interfaceBody.map(n => n.clone()),
                     factory.createPropertyInInterface(
                         CustomDialogNames.BASE_COMPONENT,
                         factory.createTypeReferenceFromString(CustomDialogNames.EXTENDABLE_COMPONENT)
@@ -466,7 +451,7 @@ export class factory {
      *
      * @param method method definition node
      */
-    static generateMemberExpression(object: arkts.AstNode, property: string, optional = false): arkts.MemberExpression {
+    static generateMemberExpression(object: arkts.Expression, property: string, optional = false): arkts.MemberExpression {
         return arkts.factory.createMemberExpression(
             object,
             arkts.factory.createIdentifier(property),
@@ -482,10 +467,11 @@ export class factory {
     static createParameterDeclaration(
         keyName: string,
         typeName: string,
-        initializers?: arkts.AstNode
+        initializers?: arkts.Expression
     ): arkts.ETSParameterExpression {
-        return arkts.factory.createParameterDeclaration(
+        return arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(keyName, this.createTypeReferenceFromString(typeName)),
+            false,
             initializers
         );
     }
@@ -496,9 +482,10 @@ export class factory {
     static createClassStaticBlock(): arkts.ClassStaticBlock {
         return arkts.factory.createClassStaticBlock(
             arkts.factory.createFunctionExpression(
+                arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
                 factory.createScriptFunction({
                     key: arkts.factory.createIdentifier(BuiltInNames.DEFAULT_STATIC_BLOCK_NAME),
-                    body: arkts.factory.createBlock([]),
+                    body: arkts.factory.createBlockStatement([]),
                     modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC,
                     flags:
                         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_STATIC_BLOCK |
@@ -515,7 +502,7 @@ export class factory {
         const optionsHasMember: arkts.ClassProperty = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(optionsHasField(name)),
             undefined,
-            arkts.factory.createPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
+            arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_BOOLEAN),
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
             false
         );
@@ -529,14 +516,15 @@ export class factory {
     static createOptionalCall(
         callee: arkts.Expression,
         typeArgs: readonly arkts.TypeNode[] | undefined,
-        args: readonly arkts.AstNode[] | undefined,
+        args: readonly arkts.Expression[] | undefined,
         isLowered?: boolean,
     ): arkts.Expression {
+        const typeParams = typeArgs && typeArgs.length > 0 ? arkts.factory.createTSTypeParameterInstantiation(typeArgs) : undefined;
         if (!isLowered) {
-            return arkts.factory.createCallExpression(callee, typeArgs, args, true);
+            return arkts.factory.createCallExpression(callee, args ?? [], typeParams, true, false);
         }
         const id = GenSymGenerator.getInstance().id();
-        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), typeArgs, args);
+        const alternate = arkts.factory.createCallExpression(arkts.factory.createIdentifier(id), args ?? [], typeParams, false, false);
         const statements: arkts.Statement[] = [
             factory.generateLetVariableDecl(arkts.factory.createIdentifier(id), callee),
             factory.generateTernaryExpression(id, alternate),
@@ -550,9 +538,8 @@ export class factory {
      * @param left left expression.
      * @param right right expression.
      */
-    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.AstNode): arkts.VariableDeclaration {
+    static generateLetVariableDecl(left: arkts.Identifier, right: arkts.Expression): arkts.VariableDeclaration {
         return arkts.factory.createVariableDeclaration(
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             arkts.Es2pandaVariableDeclarationKind.VARIABLE_DECLARATION_KIND_LET,
             [
                 arkts.factory.createVariableDeclarator(
@@ -585,29 +572,134 @@ export class factory {
     /**
      * find arkts.ObjectExpression type from its declaration.
      */
-    static findObjectType(obj: arkts.ObjectExpression): arkts.TypeNode | undefined {
+    static findObjectType(obj: arkts.ObjectExpression, localImportInfos: LocalImportInfo[]): arkts.TypeNode | undefined {
         const decl = arkts.getPeerObjectDecl(obj.peer);
         if (!decl) {
             return undefined;
         }
+        const localType = this.findSafeLocalTypeFromTypeRefDecl(decl, localImportInfos);
+        if (!localType) {
+            return undefined;
+        }
+        return localType;
+    }
+
+    /**
+     * Find local type that can be imported from the ETSTypeReference's declaration ASTNode in declaration file.
+     * 
+     * @param decl The ETSTypeReference's declaration ASTNode in declaration file.
+     * @param localImportInfos The array for collecting the local imports.
+     * @param typeParams The local TSTypeParameterInstantiation ASTNode.
+     * @returns The local type ASTNode.
+     */
+    static findSafeLocalTypeFromTypeRefDecl(
+        decl: arkts.AstNode | undefined, 
+        localImportInfos: LocalImportInfo[],
+        typeParams?: arkts.TSTypeParameterInstantiation
+    ): arkts.TypeNode | undefined {
+        if (decl === undefined) {
+            return undefined;
+        }
         let typeName: string | undefined;
-        if (arkts.isClassDefinition(decl)) {
+        if (arkts.isClassDefinition(decl) && decl.typeParams === undefined) {
             typeName = decl.ident?.name;
-        } else if (arkts.isTSInterfaceDeclaration(decl)) {
+        } else if (arkts.isTSInterfaceDeclaration(decl) && decl.typeParams === undefined) {
             typeName = decl.id?.name;
-        } else if (arkts.isTSTypeAliasDeclaration(decl)) {
+        } else if (arkts.isTSTypeAliasDeclaration(decl) && decl.typeParams === undefined) {
             typeName = decl.id?.name;
         }
         if (!typeName) {
             return undefined;
         }
-        const declModuleName = arkts.getProgramFromAstNode(decl)?.moduleName;
-        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        if (!!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
-            const localTypeName = `${typeName}_${GenSymGenerator.getInstance().id(typeName)}`;
-            ImportCollector.getInstance().collectLocalImport(typeName, declModuleName, localTypeName);
-            return this.createTypeReferenceFromString(localTypeName);
+        const localName = this.addSymbolToLocalImport(decl, typeName, localImportInfos);
+        return this.createTypeReferenceFromString(localName, typeParams);
+    }
+
+    /**
+     * Find local type that can be imported from the current type in declaration file.
+     * 
+     * @param type The given type ASTNode in declaration file.
+     * @param localImportInfos The array for collecting the local imports.
+     * @returns The local type ASTNode.
+     */
+    static findSafeLocalType(type: arkts.TypeNode | undefined, localImportInfos: LocalImportInfo[]): arkts.TypeNode | undefined {
+        if (!type) {
+            return undefined;
         }
-        return this.createTypeReferenceFromString(typeName);
+        if (arkts.isTSArrayType(type)) {
+            const safeLocalType = this.findSafeLocalType(type.elementType, localImportInfos);
+            if (safeLocalType === undefined) {
+                return undefined;
+            }
+            return arkts.factory.createTSArrayType(safeLocalType);
+        }
+        if (arkts.isETSTuple(type)) {
+            const tupleTypeList: arkts.TypeNode[] = [];
+            for (const tupleType of type.tupleTypeAnnotationsList) {
+                const safeLocalType = this.findSafeLocalType(tupleType, localImportInfos);
+                if (safeLocalType === undefined) {
+                    return undefined;
+                }
+                tupleTypeList.push(safeLocalType);
+            }
+            return arkts.factory.createETSTuple(tupleTypeList);
+        }
+        if (arkts.isETSUnionType(type)) {
+            const unionTypeList: arkts.TypeNode[] = [];
+            for (const unionType of type.types) {
+                const safeLocalType = this.findSafeLocalType(unionType, localImportInfos);
+                if (safeLocalType === undefined) {
+                    return undefined;
+                }
+                unionTypeList.push(safeLocalType);
+            }
+            return arkts.factory.createETSUnionType(unionTypeList);
+        }
+        if (arkts.isETSTypeReference(type) && !!type.part && arkts.isETSTypeReferencePart(type.part)) {
+            const part = type.part;
+            let typeParams = part.typeParams;
+            if (typeParams !== undefined) {
+                const params: arkts.TypeNode[] = [];
+                for (const paramType of typeParams.params) {
+                    const safeLocalType = this.findSafeLocalType(paramType, localImportInfos);
+                    if (safeLocalType === undefined) {
+                        return undefined;
+                    }
+                    params.push(safeLocalType);
+                }
+                typeParams = arkts.factory.createTSTypeParameterInstantiation(params);
+            }
+            const nameNode = part.name;
+            if (!nameNode || !arkts.isIdentifier(nameNode)) {
+                return undefined;
+            }
+            const decl = arkts.getPeerIdentifierDecl(nameNode.peer);
+            return this.findSafeLocalTypeFromTypeRefDecl(decl, localImportInfos, typeParams);
+        }
+        return type.clone();
+    }
+
+    /**
+     * Add symbol to import from the corresponding declaration file.
+     * 
+     * @param symbol Declaration ASTNode in declaration file.
+     * @param symbolName symbol name that should be imported.
+     * @param localImportInfos The array for collecting the local imports.
+     * @returns local name used in the current file.
+     */
+    static addSymbolToLocalImport(symbol: arkts.AstNode, symbolName: string, localImportInfos: LocalImportInfo[]): string {
+        const declModuleName = arkts.getProgramFromAstNode(symbol)?.moduleName;
+        const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
+        const sourceName = ImportCollector.getInstance().getLocalSource(symbolName) 
+            ?? arkts.getProgramFromAstNode(symbol)?.relativeFilePath;
+        if (!!sourceName && !!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
+            const localTypeName = ImportCollector.getInstance().getLocal(symbolName) 
+                ?? `${symbolName}_${GenSymGenerator.getInstance().id(symbolName)}`;
+            const localSource = removeRelativePathSuffix(sourceName);
+            ImportCollector.getInstance().addToLocal(symbolName, localSource, localTypeName);
+            localImportInfos.push({ symbolName, localSource, localTypeName });
+            return localTypeName;
+        }
+        return symbolName;
     }
 }

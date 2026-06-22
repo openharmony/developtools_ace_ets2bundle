@@ -92,7 +92,7 @@ export class MemberExpression extends Expression {
     }
 
     get optional(): boolean {
-        return false; // todo: no corresponding method in es2panda
+        return global.generatedEs2panda._MaybeOptionalExpressionIsOptionalConst(global.context, this.peer);
     }
 
     /** @deprecated */

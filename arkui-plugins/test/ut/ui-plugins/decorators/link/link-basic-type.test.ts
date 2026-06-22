@@ -68,26 +68,35 @@ function main() {}
     if (({let gensym___184416899 = initializers;
     (((gensym___184416899) == (null)) ? undefined : gensym___184416899.__options_has_linkVar1)})) {
       this.__backing_linkVar1 = STATE_MGMT_FACTORY.makeLink<string>(this, "linkVar1", initializers!.__backing_linkVar1!);
-    };
+    }
     if (({let gensym___82966591 = initializers;
     (((gensym___82966591) == (null)) ? undefined : gensym___82966591.__options_has_linkVar2)})) {
       this.__backing_linkVar2 = STATE_MGMT_FACTORY.makeLink<number>(this, "linkVar2", initializers!.__backing_linkVar2!);
-    };
+    }
     if (({let gensym___55498955 = initializers;
     (((gensym___55498955) == (null)) ? undefined : gensym___55498955.__options_has_linkVar3)})) {
       this.__backing_linkVar3 = STATE_MGMT_FACTORY.makeLink<boolean>(this, "linkVar3", initializers!.__backing_linkVar3!);
-    };
+    }
     if (({let gensym___231322030 = initializers;
     (((gensym___231322030) == (null)) ? undefined : gensym___231322030.__options_has_linkVar4)})) {
       this.__backing_linkVar4 = STATE_MGMT_FACTORY.makeLink<undefined>(this, "linkVar4", initializers!.__backing_linkVar4!);
-    };
+    }
     if (({let gensym___2576517 = initializers;
     (((gensym___2576517) == (null)) ? undefined : gensym___2576517.__options_has_linkVar5)})) {
       this.__backing_linkVar5 = STATE_MGMT_FACTORY.makeLink<null>(this, "linkVar5", initializers!.__backing_linkVar5!);
-    };
+    }
   }
 
   public __updateStruct(initializers: (__Options_LinkParent | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_LinkParent | undefined)): void {
+    this.__backing_linkVar1!.resetOnReuse(initializers!.__backing_linkVar1!);
+    this.__backing_linkVar2!.resetOnReuse(initializers!.__backing_linkVar2!);
+    this.__backing_linkVar3!.resetOnReuse(initializers!.__backing_linkVar3!);
+    this.__backing_linkVar4!.resetOnReuse(initializers!.__backing_linkVar4!);
+    this.__backing_linkVar5!.resetOnReuse(initializers!.__backing_linkVar5!);
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: LinkParent)=> void) | undefined), initializers: ((()=> __Options_LinkParent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<LinkParent, __Options_LinkParent>(style, ((): LinkParent => {
@@ -158,27 +167,24 @@ function main() {}
   }
 }
 
-@Component() interface __Options_LinkParent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar1', '(string | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar1', '(LinkSourceType<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar1', '(boolean | undefined)')}
+@Component() class __Options_LinkParent {
+  @Link() public linkVar1: string;
+  public __backing_linkVar1?: LinkSourceType<string>;
+  public __options_has_linkVar1?: boolean;
+  @Link() public linkVar2: number;
+  public __backing_linkVar2?: LinkSourceType<number>;
+  public __options_has_linkVar2?: boolean;
+  @Link() public linkVar3: boolean;
+  public __backing_linkVar3?: LinkSourceType<boolean>;
+  public __options_has_linkVar3?: boolean;
+  @Link() public linkVar4: undefined;
+  public __backing_linkVar4?: LinkSourceType<undefined>;
+  public __options_has_linkVar4?: boolean;
+  @Link() public linkVar5: null;
+  public __backing_linkVar5?: LinkSourceType<null>;
+  public __options_has_linkVar5?: boolean;
+  public constructor() {}
 
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar2', '(number | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar2', '(LinkSourceType<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar3', '(boolean | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar3', '(LinkSourceType<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar4', '(undefined | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar4', '(LinkSourceType<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'linkVar5', '(null | undefined)', [dumpAnnotation('Link')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_linkVar5', '(LinkSourceType<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_linkVar5', '(boolean | undefined)')}
-  
 }
 `;
 

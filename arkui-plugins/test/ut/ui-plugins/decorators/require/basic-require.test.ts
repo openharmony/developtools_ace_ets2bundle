@@ -62,21 +62,21 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
   
   @State() public state1: boolean = false;
   
-  @Require() public select100!: string;
+  @Require() public select100: string;
   
-  @Require() @State() public select0!: number;
+  @Require() @State() public select0: number;
   
-  @Require() @State() public select3?: (number | null);
+  @Require() @State() public select3: (number | null);
   
-  @Require() @State() public select4?: undefined;
+  @Require() @State() public select4: undefined;
   
-  @Require() @PropRef() public select1!: string;
+  @Require() @PropRef() public select1: string;
   
-  @Require() @Provide({alias:"15"}) public select2!: string[];
+  @Require() @Provide({alias:"15"}) public select2: string[];
   
-  @Require() @Provide({alias:"t"}) public select6?: (string[] | undefined | string);
+  @Require() @Provide({alias:"t"}) public select6: (string[] | undefined | string);
   
-  @Require() @BuilderParam() public builder!: (()=> void);
+  @Require() @BuilderParam() public builder: (()=> void);
 
   public build() {}
 
@@ -92,7 +92,7 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
     throw new Error("Declare interface");
   }
 
-  @Require() @Param() public select1!: string;
+  @Require() @Param() public select1: string;
 
   public build() {}
 
@@ -100,45 +100,43 @@ import { State as State, Require as Require, PropRef as PropRef, Provide as Prov
 
 }
 
-@Component() interface __Options_MyStateSample {
-  ${ignoreNewLines(`
-  hello?: string;
-  __options_has_hello?: boolean;
-  @State() state1?: boolean;
-  @State() __backing_state1?: boolean;
-  __options_has_state1?: boolean;
-  @Require() select100: string;
-  __options_has_select100?: boolean;
-  @State() @Require() select0: number;
-  @State() __backing_select0?: number;
-  __options_has_select0?: boolean;
-  @State() @Require() select3: (number | null);
-  @State() __backing_select3?: (number | null);
-  __options_has_select3?: boolean;
-  @State() @Require() select4: undefined;
-  @State() __backing_select4?: undefined;
-  __options_has_select4?: boolean;
-  @PropRef() @Require() select1: string;
-  @PropRef() __backing_select1?: string;
-  __options_has_select1?: boolean;
-  @Provide({alias:"15"}) @Require() select2: string[];
-  @Provide({alias:"15"}) __backing_select2?: string[];
-  __options_has_select2?: boolean;
-  @Provide({alias:"t"}) @Require() select6: (string[] | undefined | string);
-  @Provide({alias:"t"}) __backing_select6?: (string[] | undefined | string);
-  __options_has_select6?: boolean;
-  @BuilderParam() @Require() builder: (()=> void);
-  __options_has_builder?: boolean;
-  `)}
+@Component() class __Options_MyStateSample {
+  public hello?: string;
+  public __options_has_hello?: boolean;
+  @State() public state1?: boolean;
+  @State() public __backing_state1?: boolean;
+  public __options_has_state1?: boolean;
+  @Require() public select100: string;
+  public __options_has_select100?: boolean;
+  @Require() @State() public select0: number;
+  @State() public __backing_select0?: number;
+  public __options_has_select0?: boolean;
+  @Require() @State() public select3: (number | null);
+  @State() public __backing_select3?: (number | null);
+  public __options_has_select3?: boolean;
+  @Require() @State() public select4: undefined;
+  @State() public __backing_select4?: undefined;
+  public __options_has_select4?: boolean;
+  @Require() @PropRef() public select1: string;
+  @PropRef() public __backing_select1?: string;
+  public __options_has_select1?: boolean;
+  @Require() @Provide({alias:"15"}) public select2: string[];
+  @Provide({alias:"15"}) public __backing_select2?: string[];
+  public __options_has_select2?: boolean;
+  @Require() @Provide({alias:"t"}) public select6: (string[] | undefined | string);
+  @Provide({alias:"t"}) public __backing_select6?: (string[] | undefined | string);
+  public __options_has_select6?: boolean;
+  @Require() @BuilderParam() public builder: (()=> void);
+  public __options_has_builder?: boolean;
+  public constructor() {}
   
 }
 
-@ComponentV2() interface __Options_V2222 {
-  ${ignoreNewLines(`
-  @Param() @Require() select1: string;
-  @Param() __backing_select1?: string;
-  __options_has_select1?: boolean;
-  `)}
+@ComponentV2() class __Options_V2222 {
+  @Require() @Param() public select1: string;
+  @Param() public __backing_select1?: string;
+  public __options_has_select1?: boolean;
+  public constructor() {}
   
 }
 `;
@@ -181,7 +179,7 @@ function main() {}
     this.__backing_state1 = STATE_MGMT_FACTORY.makeState<boolean>(this, "state1", ((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)));
     this.__backing_select100 = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.select100)})) ?? (undefined));
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.select100)})) ?? (undefined));
     this.__backing_select0 = STATE_MGMT_FACTORY.makeState<number>(this, "select0", (initializers!.select0 as number));
     this.__backing_select3 = STATE_MGMT_FACTORY.makeState<(number | null)>(this, "select3", (initializers!.select3 as (number | null)));
     this.__backing_select4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "select4", (initializers!.select4 as undefined));
@@ -189,8 +187,8 @@ function main() {}
     this.__backing_select2 = STATE_MGMT_FACTORY.makeProvide<Array<string>>(this, "select2", "15", (initializers!.select2 as Array<string>), false);
     this.__backing_select6 = STATE_MGMT_FACTORY.makeProvide<(Array<string> | undefined | string)>(this, "select6", "t", (initializers!.select6 as (Array<string> | undefined | string)), false);
     this.__backing_builder = ((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builder)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builder)})) ?? (undefined))))
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.builder)})) ?? (content))) ?? (((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.builder)})) ?? (undefined))));
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {
@@ -198,6 +196,17 @@ function main() {}
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_select1)})) {
       this.__backing_select1!.update((initializers!.select1 as string));
     }
+  }
+
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_state1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)));
+    this.__backing_select0!.resetOnReuse((initializers!.select0 as number));
+    this.__backing_select3!.resetOnReuse((initializers!.select3 as (number | null)));
+    this.__backing_select4!.resetOnReuse((initializers!.select4 as undefined));
+    this.__backing_select1!.resetOnReuse((initializers!.select1 as string));
+    this.__backing_select2!.resetOnReuse((initializers!.select2 as Array<string>));
+    this.__backing_select6!.resetOnReuse((initializers!.select6 as (Array<string> | undefined | string)));
   }
 
   @MemoIntrinsic() 
@@ -303,7 +312,7 @@ function main() {}
     this.__backing_select6!.set(value);
   }
 
-  private __backing_builder?: @Memo() (()=> void);
+  private __backing_builder?: ((()=> void) | undefined);
 
   public get builder(): @Memo() (()=> void) {
     return this.__backing_builder!;
@@ -369,50 +378,43 @@ function main() {}
 
 }
 
-@Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'hello', '(string | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_hello', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'state1', '(boolean | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_state1', '(IStateDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_state1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select100', 'string', [dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select100', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select0', 'number', [dumpAnnotation('State'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select0', '(IStateDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select0', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select3', '(number | null)', [dumpAnnotation('State'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select3', '(IStateDecoratedVariable<(number | null)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select4', 'undefined', [dumpAnnotation('State'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select4', '(IStateDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', 'string', [dumpAnnotation('PropRef'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IPropRefDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select2', 'Array<string>', [dumpAnnotation('Provide', { alias: "15", allowOverride: false }), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select2', '(IProvideDecoratedVariable<Array<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select6', '(Array<string> | undefined | string)', [dumpAnnotation('Provide', { alias: "t", allowOverride: false }), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select6', '(IProvideDecoratedVariable<(Array<string> | undefined | string)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'builder', '@Memo() (()=> void)', [dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_builder', '(boolean | undefined)')}
-  
+@Component() class __Options_MyStateSample {
+    public hello?: string;
+    public __options_has_hello?: boolean;
+    @State() public state1?: boolean;
+    public __backing_state1?: IStateDecoratedVariable<boolean>;
+    public __options_has_state1?: boolean;
+    @Require() public select100: string;
+    public __options_has_select100?: boolean;
+    @Require() @State() public select0: number;
+    public __backing_select0?: IStateDecoratedVariable<number>;
+    public __options_has_select0?: boolean;
+    @Require() @State() public select3: (number | null);
+    public __backing_select3?: IStateDecoratedVariable<(number | null)>;
+    public __options_has_select3?: boolean;
+    @Require() @State() public select4: undefined;
+    public __backing_select4?: IStateDecoratedVariable<undefined>;
+    public __options_has_select4?: boolean;
+    @Require() @PropRef() public select1: string;
+    public __backing_select1?: IPropRefDecoratedVariable<string>;
+    public __options_has_select1?: boolean;
+    @Require() @Provide({alias:"15"}) public select2: Array<string>;
+    public __backing_select2?: IProvideDecoratedVariable<Array<string>>;
+    public __options_has_select2?: boolean;
+    @Require() @Provide({alias:"t"}) public select6: (Array<string> | undefined | string);
+    public __backing_select6?: IProvideDecoratedVariable<(Array<string> | undefined | string)>;
+    public __options_has_select6?: boolean;
+    @Require() public builder: (()=> void);
+    public __options_has_builder?: boolean;
+    public constructor() {}
+    
 }
 
-@ComponentV2() interface __Options_V2222 {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'select1', 'string', [dumpAnnotation('Param'), dumpAnnotation('Require')], [], false)}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_select1', '(IParamDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_select1', '(boolean | undefined)')}
+@ComponentV2() class __Options_V2222 {
+    @Require() @Param() public select1: string;
+    public __backing_select1?: IParamDecoratedVariable<string>;
+    public __options_has_select1?: boolean;
+    public constructor() {}
   
 }
 `;

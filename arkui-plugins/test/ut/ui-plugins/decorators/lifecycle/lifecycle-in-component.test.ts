@@ -94,11 +94,9 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index();
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
@@ -110,8 +108,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/lifecycle/lifecycle-in-component",
   integratedHsp: "false",
 } as NavInterface))
-@Entry() @Component() interface __Options_Index {
-  
+@Entry() @Component() class __Options_Index {
+  public constructor() {}
 }
 `;
 
@@ -154,7 +152,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/decorators/lifecycle/lifecycle-in-component",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.myInit();
     const __myAppear__Internal = this.myAppear;
@@ -182,6 +180,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -230,17 +230,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
-  
+@Entry() @Component() class __Options_Index {
+  public constructor() {}
 }
 `;
 

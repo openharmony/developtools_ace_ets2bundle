@@ -22,7 +22,8 @@ import {
     getIdentifierName,
     getClassPropertyAnnotationNames,
     PresetDecorators,
-    $_INVOKE, COMPONENT_BUILDER
+    $_INVOKE, COMPONENT_BUILDER,
+    isStructClassDeclaration
 } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 
@@ -58,7 +59,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         };
     }
 
-    public checked(node: arkts.StructDeclaration): void {
+    public checked(node: arkts.ETSStructDeclaration): void {
         this.checkVariableInitializationViaConstructor(node);
         this.checkVariableInitializationWithDecorator(node);
     }
@@ -95,7 +96,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         if (!symbol || !arkts.isMethodDefinition(symbol)) {
             return false;
         }
-        return symbol.scriptFunction.annotations.some(annotation => {
+        return symbol.function?.annotations?.some(annotation => {
             return annotation.expr && arkts.isIdentifier(annotation.expr) &&
                 annotation.expr.name === COMPONENT_BUILDER;
         }) || this.isDynStruct(symbol);
@@ -103,32 +104,32 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
 
     isDynStruct(symbol: arkts.AstNode): boolean {
         const fileManager: FileManager = FileManager.getInstance();
-        const path: string = arkts.getProgramFromAstNode(symbol)?.absName;
+        const path: string = arkts.getProgramFromAstNode(symbol)?.absoluteName;
         const version: string = LANGUAGE_VERSION.ARKTS_1_1;
         return fileManager.getLanguageVersionByFilePath(path) === version;
     }
 
     private checkVariableInitializationViaConstructor(node: arkts.AstNode): void {
-        if (!arkts.isCallExpression(node) || !node.expression) {
+        if (!arkts.isCallExpression(node) || !node.callee) {
             return;
         }
-        if (!arkts.isIdentifier(node.expression) && !arkts.isMemberExpression(node.expression)) {
+        if (!arkts.isIdentifier(node.callee) && !arkts.isMemberExpression(node.callee)) {
             return;
         }
         let structName: string = '';
         let structDecl: arkts.AstNode | undefined = undefined;
-        if (arkts.isMemberExpression(node.expression)) {
-            if (!this.isComponentBuilder(node.expression) ||
-                !arkts.isIdentifier(node.expression.object)) {
+        if (arkts.isMemberExpression(node.callee)) {
+            if (!this.isComponentBuilder(node.callee) ||
+                !arkts.isIdentifier(node.callee.object)) {
                 return;
             }
-            structName = node.expression.object.name;
-            structDecl = arkts.getDecl(node.expression.object);
+            structName = node.callee.object.name;
+            structDecl = arkts.getDecl(node.callee.object);
         } else {
-            structName = getIdentifierName(node.expression);
-            structDecl = arkts.getDecl(node.expression);
+            structName = getIdentifierName(node.callee);
+            structDecl = arkts.getDecl(node.callee);
         }
-        if (!structDecl) {
+        if (!structDecl || !structDecl.parent || !isStructClassDeclaration(structDecl.parent)) {
             return;
         }
         const props: string[] = this.getChildKeyNameArray(node);
@@ -228,12 +229,12 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
 
     private checkVariableInitializationWithDecorator(node: arkts.AstNode): void {
         if (!arkts.isCallExpression(node) ||
-            !node.expression ||
-            !arkts.isMemberExpression(node.expression) ||
-            !this.isDynStructForVerifyDecorator(node.expression)) {
+            !node.callee ||
+            !arkts.isMemberExpression(node.callee) ||
+            !this.isDynStructForVerifyDecorator(node.callee)) {
             return;
         }
-        const parentNode: arkts.AstNode | undefined = this.getParentNode(node);
+        const parentNode = this.getParentNode(node);
         if (!parentNode) {
           return;
         }
@@ -250,16 +251,16 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         const parentStructDecorator: string =
             isComponentV2InSta ? PresetDecorators.COMPONENT_V2 : PresetDecorators.COMPONENT_V1;
         let structDecl: arkts.AstNode | undefined = undefined;
-        if (node.expression.object && arkts.isIdentifier(node.expression.object)) {
-            structDecl = arkts.getDecl(node.expression.object);
+        if (node.callee.object && arkts.isIdentifier(node.callee.object)) {
+            structDecl = arkts.getDecl(node.callee.object);
         }
-        if (!structDecl) {
+        if (!structDecl || !arkts.isClassDefinition(structDecl)) {
             return;
         }
-        const isComponentV2InDyn = structDecl.annotations.some((annotation) =>
+        const isComponentV2InDyn = structDecl.annotations?.some((annotation) =>
             arkts.isIdentifier(annotation.expr) && annotation.expr.name === PresetDecorators.COMPONENT_V2
         );
-        const childStructName = node.expression.object.name;
+        const childStructName = (node.callee.object! as arkts.Identifier).name;
         const childStructDecorator: string =
             isComponentV2InDyn ? PresetDecorators.COMPONENT_V2 : PresetDecorators.COMPONENT_V1;
         if ((isComponentV2InSta && !isComponentV2InDyn) ||
@@ -268,7 +269,7 @@ class VariableInitializationViaComponentConstructorRule extends AbstractUISyntax
         }
     }
 
-    private getParentNode(node: arkts.AstNode): arkts.classDeclaration | undefined {
+    private getParentNode(node: arkts.AstNode): arkts.ClassDeclaration | undefined {
         if (arkts.isClassDeclaration(node)) {
             return node;
         }

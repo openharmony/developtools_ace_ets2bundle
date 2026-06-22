@@ -72,11 +72,9 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample();
   }
-
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 
 }
@@ -89,8 +87,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   integratedHsp: "false",
 } as NavInterface))
 
-@Entry() @Component() interface __Options_MyStateSample {
-  
+@Entry() @Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

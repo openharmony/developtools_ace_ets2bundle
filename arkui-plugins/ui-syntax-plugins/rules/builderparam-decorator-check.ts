@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { getIdentifierName, PresetDecorators, BUILD_NAME, findDecorator } from '../utils';
+import { getIdentifierName, PresetDecorators, findDecorator } from '../utils';
 import { AbstractUISyntaxRule } from './ui-syntax-rule';
 import { FileManager } from '../../common/file-manager';
 import { LANGUAGE_VERSION } from '../../common/predefines';
@@ -99,16 +99,16 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
     private checkComponentInitializeForMultiFile(
         node: arkts.CallExpression,
     ): void {
-        if (!node.expression) {
+        if (!node.callee) {
             return;
         }
         let structName: string | null = null;
-        let targetNode = node.expression;
-        if (arkts.isIdentifier(node.expression)) {
-            structName = getIdentifierName(node.expression);
-        } else if (arkts.isMemberExpression(node.expression) && arkts.isIdentifier(node.expression.object)) {
-            structName = getIdentifierName(node.expression.object);
-            targetNode = node.expression.object;
+        let targetNode = node.callee;
+        if (arkts.isIdentifier(node.callee)) {
+            structName = getIdentifierName(node.callee);
+        } else if (arkts.isMemberExpression(node.callee) && arkts.isIdentifier(node.callee.object)) {
+            structName = getIdentifierName(node.callee.object);
+            targetNode = node.callee.object;
         } else {
             return;
         }
@@ -180,7 +180,7 @@ class BuilderParamDecoratorCheckRule extends AbstractUISyntaxRule {
         } else {
             const program = arkts.getProgramFromAstNode(node);
             const fileManager = FileManager.getInstance();
-            const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absName) === LANGUAGE_VERSION.ARKTS_1_1;
+            const isFrom1_1 = fileManager.getLanguageVersionByFilePath(program.absoluteName) === LANGUAGE_VERSION.ARKTS_1_1;
             if (isFrom1_1 && builderParamProperties.length !== 1) {
                 this.report({
                     node: node,

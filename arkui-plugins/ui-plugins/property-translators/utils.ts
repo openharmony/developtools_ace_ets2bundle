@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { ImportCollector } from '../../common/import-collector';
-import { isDecoratorAnnotation } from '../../common/arkts-utils';
+import { filterDefined, isDecoratorAnnotation } from '../../common/arkts-utils';
 import {
     DecoratorNames,
     StateManagementTypes,
@@ -24,14 +24,28 @@ import {
     EnvInternalProperty,
     NodeCacheNames,
     CustomDialogNames,
+    REQUIRED_ANNOTATIONS,
+    DECORATOR_TYPE_MAP,
 } from '../../common/predefines';
 import {
     addMemoAnnotation,
     findCanAddMemoFromParameter,
     findCanAddMemoFromTypeAnnotation,
 } from '../../collectors/memo-collectors/utils';
-import { getValueInObjectAnnotation } from '../utils';
+import { getStructNameFromOptionsName, getValueInObjectAnnotation } from '../utils';
 import { ReturnTransformer } from './return-transformer';
+import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
+import { StructPropertyAnnotationInfo, StructPropertyAnnotationRecord, StructPropertyAnnotations } from '../../collectors/ui-collectors/records';
+import { AnnotationRecord } from '../../collectors/ui-collectors/records/annotations/base';
+
+export interface PropertyOptionalFieldOptions {
+    name: string;
+    propertyType: arkts.TypeNode | undefined,
+    modifiers: arkts.Es2pandaModifierFlags,
+    stateMangementType?: StateManagementTypes | undefined;
+    needMemo?: boolean;
+    isRequired?: boolean;
+}
 
 export interface DecoratorInfo {
     annotation: arkts.AnnotationUsage;
@@ -41,6 +55,12 @@ export interface DecoratorInfo {
 export interface OptionalMemberInfo {
     isCall?: boolean;
     isNumeric?: boolean;
+    isNonNull?: boolean;
+}
+
+export interface InitializeValueOptions {
+    isRequired?: boolean;
+    isWatched?: boolean;
 }
 
 export function removeDecorator(
@@ -49,8 +69,8 @@ export function removeDecorator(
     ignoreDecl?: boolean
 ): void {
     if (arkts.isMethodDefinition(property)) {
-        property.scriptFunction.setAnnotations(
-            property.scriptFunction.annotations.filter(
+        property.function!.setAnnotations(
+            property.function!.annotations.filter(
                 (anno) => !isDecoratorAnnotation(anno, decoratorName, ignoreDecl)
             )
         );
@@ -62,7 +82,7 @@ export function removeDecorator(
 }
 
 export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeNode | undefined {
-    const body = method.scriptFunction.body;
+    const body = method.function?.body;
     if (!body || !arkts.isBlockStatement(body) || body.statements.length <= 0) {
         return undefined;
     }
@@ -75,7 +95,7 @@ export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeN
     } else if (typeArray.length === 1) {
         returnType = typeArray.at(0);
     } else {
-        returnType = arkts.factory.createUnionType(typeArray);
+        returnType = arkts.factory.createETSUnionType(typeArray);
     }
     returnTransformer.reset();
     return returnType?.clone();
@@ -90,7 +110,7 @@ export function hasDecoratorName(
     decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+        return property.function!.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
     }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName, true));
 }
@@ -105,7 +125,7 @@ export function hasDecorator(
     decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
+        return property.function!.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
     }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
@@ -114,6 +134,7 @@ export function hasDecorator(
  * Determine whether the node `<st>` is decorated by decorators that need initializing without assignment.
  *
  * @param st class property node
+ * @deprecated
  */
 export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean {
     return (
@@ -125,8 +146,96 @@ export function needDefiniteOrOptionalModifier(st: arkts.ClassProperty): boolean
         (hasDecoratorName(st, DecoratorNames.EVENT) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.REQUIRE) && !st.value) ||
         (hasDecoratorName(st, DecoratorNames.BUILDER_PARAM) && !st.value) ||
-        (hasDecoratorName(st, DecoratorNames.ENV))
+        (hasDecoratorName(st, DecoratorNames.ENV)) ||
+        (hasDecoratorName(st, DecoratorNames.CUSTOM_ENV))
     );
+}
+
+/**
+ * Determine whether the node `<st>` is decorated by decorators that need initializing without assignment.
+ *
+ * @param st class property node
+ * @param annotationRecord annotation collection record
+ */
+export function needInitializeWithoutAssignmentFromInfo(
+    st: arkts.ClassProperty, 
+    annotationRecord: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): boolean {
+    const annotationInfo = annotationRecord?.annotationInfo;
+    if (
+        !annotationInfo ||
+        Object.keys(annotationInfo).length === 0 ||
+        annotationInfo.hasPropRef ||
+        annotationInfo.hasParam ||
+        annotationInfo.hasEvent ||
+        annotationInfo.hasRequire ||
+        annotationInfo.hasBuilderParam
+    ) {
+        return !st.value;
+    }
+    if (
+        annotationInfo.hasLink || 
+        annotationInfo.hasConsume || 
+        annotationInfo.hasObjectLink || 
+        annotationInfo.hasEnv
+    ) {
+        return true;
+    }
+    return false;
+}
+
+export function parseStructPropertyAnnotations(
+    property: arkts.ClassProperty
+): AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined {
+    const record = new StructPropertyAnnotationRecord({ shouldIgnoreDecl: true });
+    property.annotations.forEach((anno) => {
+        record.collect(anno);
+    });
+    return record.toRecord();
+}
+
+export function checkIsRequiredPropertyFromAnnotationInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): boolean {
+    if (!info || !info.annotationInfo) {
+        return false;
+    }
+    const annotationInfo = info.annotationInfo;
+    return Object.keys(annotationInfo).length === 0 || REQUIRED_ANNOTATIONS.some(
+        (decoratorName: string) => annotationInfo[`has${decoratorName}`]
+    );
+}
+
+export function collectAnnotationsFromInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): arkts.AnnotationUsage[] {
+    if (!info || !info.annotations) {
+        return [];
+    }
+    const annotations: arkts.AnnotationUsage[] = [];
+    Object.keys(info.annotations).forEach((key: string) => {
+        const annotation = info.annotations?.[key];
+        if (annotation !== undefined) {
+            annotations.push(annotation.clone())
+        }
+    });
+    return annotations;
+}
+
+export function collectAnnotationForBackingFromInfo(
+    info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
+): arkts.AnnotationUsage[] {
+    if (!info || !info.annotations) {
+        return [];
+    }
+    const annotations: arkts.AnnotationUsage[] = [];
+    Object.keys(info.annotations).forEach((key: string) => {
+        const annotation = info.annotations?.[key];
+        if (DECORATOR_TYPE_MAP.has(key as DecoratorNames) && annotation !== undefined) {
+            annotations.push(annotation.clone())
+        }
+    });
+    return annotations;
 }
 
 export function findDecoratorByName(
@@ -134,7 +243,7 @@ export function findDecoratorByName(
     decoratorName: DecoratorNames | string
 ): arkts.AnnotationUsage | undefined {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
+        return property.function!.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
     }
     return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName, true));
 }
@@ -144,11 +253,14 @@ export function findDecorator(
     decoratorName: DecoratorNames
 ): arkts.AnnotationUsage | undefined {
     if (arkts.isMethodDefinition(property)) {
-        return property.scriptFunction.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
+        return property.function!.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
     }
     return property.annotations.find((anno) => isDecoratorAnnotation(anno, decoratorName));
 }
 
+/**
+ * @deprecated
+ */
 export function findDecoratorInfos(
     property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition
 ): DecoratorInfo[] {
@@ -174,28 +286,30 @@ export function createGetter(
     returns: arkts.Expression,
     isMemoCached: boolean = false,
     isStatic: boolean = false,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
     const returnType: arkts.TypeNode | undefined = type?.clone();
-    const body = arkts.factory.createBlock([arkts.factory.createReturnStatement(returns)]);
+    const body = arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(returns)]);
     const modifiers = isStatic
         ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
-        arkts.FunctionSignature.createFunctionSignature(undefined, [], returnType, false),
+        undefined, [], returnType, false,
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_GETTER,
-        modifiers
+        modifiers,
+        arkts.factory.createIdentifier(name),
+        undefined
     );
     const method = arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET,
         arkts.factory.createIdentifier(name),
-        scriptFunction,
+        arkts.factory.createFunctionExpression(undefined, scriptFunction),
         modifiers,
         false
     );
     if (!!returnType && isMemoCached) {
-        arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnType, metadata);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(returnType, metadata);
     }
     return method;
 }
@@ -204,20 +318,21 @@ export function createSetter(
     name: string,
     type: arkts.TypeNode | undefined,
     left: arkts.Expression,
-    right: arkts.AstNode,
+    right: arkts.Expression,
     needMemo: boolean = false
 ): arkts.MethodDefinition {
-    const body = arkts.factory.createBlock([
+    const body = arkts.factory.createBlockStatement([
         arkts.factory.createExpressionStatement(
             arkts.factory.createAssignmentExpression(
                 left,
-                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-                right
+                right,
+                arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
             )
         ),
     ]);
-    const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+    const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
         arkts.factory.createIdentifier('value', type?.clone()),
+        false,
         undefined
     );
     if (needMemo && findCanAddMemoFromParameter(param).canAddMemo) {
@@ -225,15 +340,17 @@ export function createSetter(
     }
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
-        arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
+        undefined, [param], undefined, false,
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
+        arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+        arkts.factory.createIdentifier(name),
+        undefined
     );
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        scriptFunction,
+        arkts.factory.createFunctionExpression(undefined, scriptFunction),
         arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
         false
     );
@@ -245,9 +362,10 @@ export function createSetter2(
     statement: arkts.AstNode,
     isStatic: boolean = false
 ): arkts.MethodDefinition {
-    const body = arkts.factory.createBlock([statement]);
-    const param: arkts.ETSParameterExpression = arkts.factory.createParameterDeclaration(
+    const body = arkts.factory.createBlockStatement([statement as arkts.Statement]);
+    const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
         arkts.factory.createIdentifier('value', type?.clone()),
+        false,
         undefined
     );
     const modifiers = isStatic
@@ -255,15 +373,17 @@ export function createSetter2(
         : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
     const scriptFunction = arkts.factory.createScriptFunction(
         body,
-        arkts.FunctionSignature.createFunctionSignature(undefined, [param], undefined, false),
+        undefined, [param], undefined, false,
         arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_SETTER,
-        modifiers
+        modifiers,
+        arkts.factory.createIdentifier(name),
+        undefined
     );
 
     return arkts.factory.createMethodDefinition(
         arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_SET,
         arkts.factory.createIdentifier(name),
-        scriptFunction,
+        arkts.factory.createFunctionExpression(undefined, scriptFunction),
         modifiers,
         false
     );
@@ -359,7 +479,7 @@ export function getValueInEnvAnnotation(node: arkts.ClassProperty): EnvOptions |
     return undefined;
 }
 
-export function generateGetOrSetCall(beforCall: arkts.AstNode, type: GetSetTypes) {
+export function generateGetOrSetCall(beforCall: arkts.Expression, type: GetSetTypes) {
     return arkts.factory.createCallExpression(
         arkts.factory.createMemberExpression(
             beforCall,
@@ -368,14 +488,16 @@ export function generateGetOrSetCall(beforCall: arkts.AstNode, type: GetSetTypes
             false,
             false
         ),
+        type === 'set' ? [arkts.factory.createIdentifier('value')] : [],
         undefined,
-        type === 'set' ? [arkts.factory.createIdentifier('value')] : undefined,
-        undefined
+        false,
+        false
     );
 }
 
 export function generateToRecord(newName: string, originalName: string): arkts.Property {
-    return arkts.Property.createProperty(
+    return arkts.Property.create1Property(
+        arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
         arkts.factory.createStringLiteral(originalName),
         arkts.factory.createBinaryExpression(
             arkts.factory.createMemberExpression(
@@ -386,13 +508,15 @@ export function generateToRecord(newName: string, originalName: string): arkts.P
                 false
             ),
             arkts.ETSNewClassInstanceExpression.createETSNewClassInstanceExpression(
-                arkts.factory.createTypeReference(
-                    arkts.factory.createTypeReferencePart(arkts.factory.createIdentifier('Object'))
+                arkts.factory.createETSTypeReference(
+                    arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Object'))
                 ),
                 []
             ),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-        )
+        ),
+        false,
+        false
     );
 }
 
@@ -458,11 +582,11 @@ export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | un
 }
 
 function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | undefined {
-    const decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(node.property.peer);
+    const decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(node.property!.peer);
     if (!decl || !arkts.isClassProperty(decl) || !decl.value || !arkts.isETSNewClassInstanceExpression(decl.value)) {
         return undefined;
     }
-    const args: readonly arkts.Expression[] = decl.value.getArguments;
+    const args: readonly arkts.Expression[] = decl.value.arguments;
     if (args.length >= 2 && arkts.isStringLiteral(args[1])) {
         return args[1].str;
     }
@@ -472,11 +596,11 @@ function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | und
 export function findCachedMemoMetadata(
     node: arkts.AstNode,
     shouldWrapType: boolean = true
-): arkts.AstNodeCacheValueMetadata | undefined {
-    if (!arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
+): AstNodeCacheValueMetadata | undefined {
+    if (!NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(node)) {
         return undefined;
     }
-    const metadata = arkts.NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata ?? {};
+    const metadata = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata ?? {};
     if (!!shouldWrapType) {
         metadata.isWithinTypeParams = true;
     }

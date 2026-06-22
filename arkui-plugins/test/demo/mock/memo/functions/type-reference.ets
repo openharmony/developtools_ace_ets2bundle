@@ -17,11 +17,11 @@ import { Memo } from 'arkui.incremental.annotation';
 
 @Memo type ItemBuilder<T> = (item: Item<T>) => void;
 
-interface Item<T> {
+export interface Item<T> {
   item: T;
 }
 
-interface Attribute<T> {
+export interface Attribute<T> {
   @Memo each<T>(@Memo itemGenerator: ItemBuilder<T>): Attribute<T>;
 }
 

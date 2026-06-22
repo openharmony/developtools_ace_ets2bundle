@@ -77,13 +77,15 @@ class Data {
   }
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1)
-    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1))
+    this.__backing_storageLink = STATE_MGMT_FACTORY.makeStorageLink<number>(this, "PropA", "storageLink", 1);
+    this.__backing_storageLinkObject = STATE_MGMT_FACTORY.makeStorageLink<Data>(this, "PropB", "storageLinkObject", new Data(1));
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -155,22 +157,20 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     Index._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_Index {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLink', '(number | undefined)', [dumpAnnotation('StorageLink', { value: "PropA" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLink', '(IStorageLinkDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLink', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'storageLinkObject', '(Data | undefined)', [dumpAnnotation('StorageLink', { value: "PropB" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_storageLinkObject', '(IStorageLinkDecoratedVariable<Data> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_storageLinkObject', '(boolean | undefined)')}
+@Entry() @Component() class __Options_Index {
+  @StorageLink({value:"PropA"}) public storageLink?: number;
+  public __backing_storageLink?: IStorageLinkDecoratedVariable<number>;
+  public __options_has_storageLink?: boolean;
+  @StorageLink({value:"PropB"}) public storageLinkObject?: Data;
+  public __backing_storageLinkObject?: IStorageLinkDecoratedVariable<Data>;
+  public __options_has_storageLinkObject?: boolean;
+  public constructor() {}
   
 }
 `;

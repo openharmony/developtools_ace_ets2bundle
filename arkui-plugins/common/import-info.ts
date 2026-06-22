@@ -16,9 +16,9 @@ import * as arkts from '@koalaui/libarkts';
 import { SuggestionOptions } from './log-collector';
 
 export function findFirstStmtPosition(program: arkts.Program): arkts.SourcePosition {
-    const scriptFile = program.astNode;
-    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements || scriptFile.statements.length === 0) {
-        return arkts.SourcePosition.create(0, 0);
+    const scriptFile = program.ast;
+    if (!arkts.isETSModule(scriptFile) || !scriptFile.statements || scriptFile.statements.length === 0) {
+        return arkts.createSourcePosition(0, 0);
     }
     return scriptFile.statements[0].endPosition;
 }
@@ -29,12 +29,12 @@ export interface ImportInfo {
     lastImportNode?: arkts.ImportDeclaration;
 }
 
-export function collectFileImports(scriptFile: arkts.EtsScript): ImportInfo {
+export function collectFileImports(scriptFile: arkts.ETSModule): ImportInfo {
     const importedNames = new Set<string>();
     let arkUIImportNode: arkts.ImportDeclaration | undefined;
     let lastImportNode: arkts.ImportDeclaration | undefined;
 
-    if (!arkts.isEtsScript(scriptFile) || !scriptFile.statements) {
+    if (!arkts.isETSModule(scriptFile) || !scriptFile.statements) {
         return { importedNames, arkUIImportNode, lastImportNode };
     }
     for (const stmt of scriptFile.statements) {
@@ -87,8 +87,8 @@ function getIdentifierName(node: arkts.AstNode): string {
 }
 
 export function collectFileImportsByProgram(program: arkts.Program): ImportInfo {
-    const scriptFile = program.astNode;
-    if (!arkts.isEtsScript(scriptFile)) {
+    const scriptFile = program.ast;
+    if (!arkts.isETSModule(scriptFile)) {
         return { importedNames: new Set<string>(), arkUIImportNode: undefined, lastImportNode: undefined };
     }
     return collectFileImports(scriptFile);

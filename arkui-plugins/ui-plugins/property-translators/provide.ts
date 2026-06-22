@@ -31,9 +31,9 @@ import {
 } from './utils';
 import {
     BasePropertyTranslator,
-    InterfacePropertyCachedTranslator,
-    InterfacePropertyTranslator,
-    InterfacePropertyTypes,
+    InnerClassPropertyCachedTranslator,
+    InnerClassPropertyTranslator,
+    InnerClassPropertyTypes,
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
@@ -41,37 +41,38 @@ import {
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
-import { CustomComponentInterfacePropertyInfo } from '../../collectors/ui-collectors/records';
+import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyValueCache } from '../memo-collect-cache';
+import { AstNodeCacheValueMetadata } from '../../common/node-cache';
 
 function initializeStructWithProvideProperty(
     this: BasePropertyTranslator,
     newName: string,
     originalName: string,
-    metadata?: arkts.AstNodeCacheValueMetadata
+    metadata?: AstNodeCacheValueMetadata
 ): arkts.Statement | undefined {
     if (!this.stateManagementType || !this.makeType) {
         return undefined;
     }
     const options: undefined | ProvideOptions = getValueInProvideAnnotation(this.property);
-    const alias = options?.alias ?? arkts.factory.create1StringLiteral(originalName);
+    const alias = options?.alias ?? arkts.factory.createStringLiteral(originalName);
     const allowOverride = options?.allowOverride ?? arkts.factory.createBooleanLiteral(false);
     const initializePropertyValue = this.property.value;
     const initializePropertyType = this.propertyType?.clone();
     const args: arkts.Expression[] = [
-        arkts.factory.create1StringLiteral(originalName),
+        arkts.factory.createStringLiteral(originalName),
         alias,
         factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
         allowOverride,
     ];
-    if (this.hasWatch) {
+    if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
     const stateManagementCallType = this.propertyType?.clone();
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION,
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata)
+        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!initializePropertyValue) {
@@ -87,6 +88,9 @@ function initializeStructWithProvideProperty(
     return arkts.factory.createExpressionStatement(assign);
 }
 
+/**
+ * @deprecated
+ */
 export class ProvideTranslator extends PropertyTranslator {
     protected stateManagementType: StateManagementTypes = StateManagementTypes.PROVIDE_DECORATED;
     protected makeType: StateManagementTypes = StateManagementTypes.MAKE_PROVIDE;
@@ -100,13 +104,18 @@ export class ProvideTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
-        this.hasWatch = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
+        const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
+        this.initializeOptions = {
+            isWatched,
+            isRequired
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
@@ -122,30 +131,55 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
+    protected hasResetOnReuse: boolean = true;
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
-        this.hasWatch = this.propertyInfo.annotationInfo?.hasWatch;
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
+        const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
+        this.initializeOptions = {
+            isWatched,
+            isRequired
+        };
     }
 
     initializeStruct(
         newName: string,
         originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
+        metadata?: AstNodeCacheValueMetadata
     ): arkts.Statement | undefined {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
+
+    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+        const propertyValue = this.property.value?.clone();
+        const propertyType = this.propertyType?.clone();
+        const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+        if (this.isMemoShouldUpdate) {
+            if (!!propertyValue) {
+                const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
+                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue });
+            }
+            if (!!propertyType) {
+                PropertyValueCache.getInstance().collect({ value: propertyType });
+            }
+        }
+        return factory.createResetOnReuseStmt(newName, arg);
+    }
 }
 
-export class ProvideInterfaceTranslator<T extends InterfacePropertyTypes> extends InterfacePropertyTranslator<T> {
+/**
+ * @deprecated
+ */
+export class ProvideInnerClassTranslator<T extends InnerClassPropertyTypes> extends InnerClassPropertyTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROVIDE;
 
     /**
      * @deprecated
      */
-    static canBeTranslated(node: arkts.AstNode): node is InterfacePropertyTypes {
+    static canBeTranslated(node: arkts.AstNode): node is InnerClassPropertyTypes {
         if (arkts.isMethodDefinition(node)) {
-            return checkIsNameStartWithBackingField(node.name) && hasDecorator(node, DecoratorNames.PROVIDE);
+            return checkIsNameStartWithBackingField(node.id) && hasDecorator(node, DecoratorNames.PROVIDE);
         } else if (arkts.isClassProperty(node)) {
             return checkIsNameStartWithBackingField(node.key) && hasDecorator(node, DecoratorNames.PROVIDE);
         }
@@ -153,18 +187,15 @@ export class ProvideInterfaceTranslator<T extends InterfacePropertyTypes> extend
     }
 }
 
-export class ProvideCachedInterfaceTranslator<
-    T extends InterfacePropertyTypes,
-> extends InterfacePropertyCachedTranslator<T> {
+export class ProvideCachedInnerClassTranslator<
+    T extends InnerClassPropertyTypes,
+> extends InnerClassPropertyCachedTranslator<T> {
     protected decorator: DecoratorNames = DecoratorNames.PROVIDE;
 
-    /**
-     * @deprecated
-     */
     static canBeTranslated(
         node: arkts.AstNode,
-        metadata?: CustomComponentInterfacePropertyInfo
-    ): node is InterfacePropertyTypes {
+        metadata?: CustomComponentInnerClassPropertyInfo
+    ): node is InnerClassPropertyTypes {
         return !!metadata?.name?.startsWith(StateManagementTypes.BACKING) && !!metadata.annotationInfo?.hasProvide;
     }
 }

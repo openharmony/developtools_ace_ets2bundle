@@ -38,7 +38,8 @@ import {
   IS_REUSABLE_,
   GET_ATTRIBUTE,
   COMPONENT_ENV_DECORATOR,
-  COMPONENT_REQUIRE_DECORATOR
+  COMPONENT_REQUIRE_DECORATOR,
+  COMPONENT_CUSTOM_ENV_DECORATOR
 } from './pre_define';
 import constantDefine from './constant_define';
 import createAstNodeUtils from './create_ast_node_utils';
@@ -51,7 +52,10 @@ import {
   getEntryNameFunction,
   FreezeParamType,
   decoratorAssignParams,
-  processComponentReusePool
+  processComponentReusePool,
+  decoratorAssignParamsForReusable,
+  decoratorComponentParamForReusable,
+  ComponentParamType
 } from './process_component_class';
 import { isReuseInV2 } from './process_custom_component';
 import { judgeBuilderParamAssignedByBuilder } from './process_component_member';
@@ -62,10 +66,16 @@ import {
   checkEnvType,
   validateEnvType,
   checkEnvDecoratorExp,
-  EnvTypeName
+  EnvTypeName,
+  ENV_ARG_STATUS,
+  preCheckEnvDecoratorArg,
+  checkNonSystemEnvDecoratorExp,
+  CustomEnvTypeName,
+  checkCustomEnvType,
+  checkCustomEnvDecoratorExp
 } from './validate_ui_syntax';
 import logMessageCollection from './log_message_collection';
-import { globalProgram } from '../main';
+import { globalProgram, partialUpdateConfig } from '../main';
 
 export class ParamDecoratorInfo {
   initializer: ts.Expression;
@@ -199,9 +209,12 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
   const addStatementsInResetOnReuse: ts.Statement[] = [];
   const paramStatementsInStateVarsMethod: ts.Statement[] = [];
   const structDecorators: readonly ts.Decorator[] = ts.getAllDecorators(node);
-  const freezeParam: FreezeParamType = { componentFreezeParam: undefined };
-  decoratorAssignParams(structDecorators, context, freezeParam);
+  const componentParamType: ComponentParamType = { componentFreezeParam: undefined, memOptParam: undefined };
+  decoratorAssignParams(structDecorators, context, componentParamType);
   traverseStructInfo(structInfo, addStatementsInConstructor, paramStatementsInStateVarsMethod, addStatementsInResetOnReuse);
+  if (partialUpdateConfig.partialUpdateMode && decoratorAssignParamsForReusable(structDecorators, context, componentParamType)) {
+    addStatementsInConstructor.push(...decoratorComponentParamForReusable(componentParamType));
+  }
   node.members.forEach((member: ts.ClassElement) => {
     if (ts.isGetAccessor(member) && member.modifiers?.some(isComputedDecorator) && member.name &&
       ts.isIdentifier(member.name)) {
@@ -210,7 +223,7 @@ function processStructMembersV2(node: ts.StructDeclaration, context: ts.Transfor
       validateComputedGetter(symbol, log);
     }
     if (ts.isConstructorDeclaration(member)) {
-      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, freezeParam);
+      processStructConstructorV2(node.members, newMembers, addStatementsInConstructor, componentParamType);
       createResetStateVarsOnReuse(structInfo, newMembers, addStatementsInResetOnReuse);
       return;
     } else if (ts.isPropertyDeclaration(member)) {
@@ -358,14 +371,25 @@ function processComponentProperty(member: ts.PropertyDeclaration, structInfo: St
     checkEnvInitializerV2(member, log);
     const envDecorator: ts.Decorator | undefined = decorators.find(decorator => getDecoratorName(decorator) === COMPONENT_ENV_DECORATOR);
     const propertyType: ts.Type | undefined = CurrentProcessFile.getChecker()?.getTypeAtLocation?.(member);
-    const envTypeName: EnvTypeName = { currentTypeName: '' };
-    if (propertyType && !checkEnvType(propertyType, envTypeName)) {
+    const envTypeName: EnvTypeName = { currentTypeName: '', envArgStatus: ENV_ARG_STATUS.SYSTEM_PROPERTIES };
+    envDecorator && preCheckEnvDecoratorArg(envDecorator, envTypeName);
+    if (envTypeName.envArgStatus === ENV_ARG_STATUS.WRITABLE_SYSTEM_ENV ||
+      envTypeName.envArgStatus === ENV_ARG_STATUS.READONLY_SYSTEM_ENV) {
+      checkNonSystemEnvDecoratorExp(envDecorator, member.type);
+    } else if (propertyType && !checkEnvType(propertyType, envTypeName)) {
       validateEnvType(member);
     } else if (propertyType && envDecorator) {
       checkEnvDecoratorExp(envDecorator, envTypeName.currentTypeName);
     }
   }
   if (structInfo.customEnvDecoratorSet.has(propName)) {
+    const customEnvDecorator: ts.Decorator | undefined =
+      decorators.find(decorator => getDecoratorNameFromAst(decorator) === COMPONENT_CUSTOM_ENV_DECORATOR);
+    const customEnvTypeNames: CustomEnvTypeName = { currentTypeNames: [] };
+    checkCustomEnvType(member.type, customEnvTypeNames);
+    if (customEnvDecorator) {
+      checkCustomEnvDecoratorExp(customEnvDecorator, customEnvTypeNames.currentTypeNames);
+    }
     return ts.factory.updatePropertyDeclaration(member,
       ts.concatenateDecoratorsAndModifiers(decorators, ts.getModifiers(member)),
       member.name, member.questionToken, member.type, member.initializer);
@@ -526,6 +550,32 @@ export function getDecoratorName(decorator: ts.Decorator): string {
   return decorator.getText().replace(/\([^\(\)]*\)/, '').trim();
 }
 
+export function getDecoratorNameFromAst(
+  decorator: ts.Decorator
+): string {
+  function getIdentifierName(node: ts.Node): string {
+    if (ts.isIdentifier(node)) {
+      return `@` + node.text;
+    }
+    if (ts.isPropertyAccessExpression(node)) {
+      return getIdentifierName(node.name);
+    }
+    return '';
+  }
+
+  try {
+    const expr: ts.Exprssion = decorator.expression;
+
+    if (ts.isCallExpression(expr)) {
+      return getIdentifierName(expr.expression);
+    }
+
+    return getIdentifierName(expr);
+  } catch (err) {
+    return '';
+  }
+}
+
 function parsePropertyModifiers(propName: string, structInfo: StructInfo,
   modifiers: readonly ts.Modifier[]): void {
   if (modifiers && modifiers.length) {
@@ -557,6 +607,9 @@ const decoratorsFunc: Record<string, Function> = {
   'Provider': parseProviderDecorator,
   'Consumer': parseConsumerDecorator,
   'Env': parseEnvDecorator,
+};
+
+const astDecoratorsFunc: Record<string, Function> = {
   'CustomEnv': parseCustomEnvDecorator,
 };
 
@@ -567,8 +620,13 @@ function parsePropertyDecorator(member: ts.PropertyDeclaration, decorators: read
   for (let i = 0; i < decorators.length; i++) {
     const originalName: string = getDecoratorName(decorators[i]);
     const name: string = originalName.replace('@', '').trim();
+    const originAstName: string = getDecoratorNameFromAst(decorators[i]);
+    const astName: string = originAstName.replace('@', '').trim();
     if (decoratorsFunc[name]) {
       decoratorsFunc[name](propertyDecorator, member, structInfo);
+    }
+    if (astDecoratorsFunc[astName]) {
+      astDecoratorsFunc[astName](propertyDecorator, member, structInfo);
     }
     if (constantDefine.COMPONENT_MEMBER_DECORATOR_V2.includes(originalName) ||
       originalName === constantDefine.DECORATOR_BUILDER_PARAM ||

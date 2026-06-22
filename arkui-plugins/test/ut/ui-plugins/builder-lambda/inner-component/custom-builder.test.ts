@@ -52,6 +52,8 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -111,7 +113,8 @@ function main() {}
   }
 }
 
-@Component() interface __Options_MyStateSample {
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 
@@ -156,6 +159,8 @@ function main() {}
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -316,8 +321,8 @@ function main() {}
 
 }
 
-@Component() interface __Options_MyStateSample {
-  
+@Component() class __Options_MyStateSample {
+  public constructor() {}
 }
 `;
 

@@ -83,6 +83,8 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ImportStruct, __Options_ImportStruct>(style, ((): ImportStruct => {
@@ -101,7 +103,7 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
     ForEachImpl(@Memo() ((instance: ForEachAttribute): void => {
       instance.setForEachOptions((() => {
         return globalBuilderArr;
-      }), ((item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((item: WrappedBuilder<MyBuilderFuncType>) => {
         item.builder(\"hello world\", 39);
       }), undefined);
       return;
@@ -124,7 +126,8 @@ function yourBuilder(@MemoSkip() value: string, @MemoSkip() size: number) {
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component() class __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 
@@ -215,6 +218,8 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_ImportStruct | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ImportStruct)=> void) | undefined), initializers: ((()=> __Options_ImportStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -245,7 +250,7 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
       }
       __memo_parameter_instance.value.setForEachOptions((() => {
         return globalBuilderArr;
-      }), ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
+      }), @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, item: WrappedBuilder<MyBuilderFuncType>) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 1);
         const __memo_parameter_item = __memo_scope.param(0, item);
         if (__memo_scope.unchanged) {
@@ -312,7 +317,8 @@ function yourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 }
 
-@Component() interface __Options_ImportStruct {
+@Component() class __Options_ImportStruct {
+  public constructor() {}
 }
 `;
 

@@ -163,26 +163,23 @@ function main() {}
   }
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(string | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IParamDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(number | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IParamDecoratedVariable<number> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(boolean | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IParamDecoratedVariable<boolean> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(undefined | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IParamDecoratedVariable<undefined> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(null | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IParamDecoratedVariable<null> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Param() public paramVar1?: string;
+  public __backing_paramVar1?: IParamDecoratedVariable<string>;
+  public __options_has_paramVar1?: boolean;
+  @Param() public paramVar2?: number;
+  public __backing_paramVar2?: IParamDecoratedVariable<number>;
+  public __options_has_paramVar2?: boolean;
+  @Param() public paramVar3?: boolean;
+  public __backing_paramVar3?: IParamDecoratedVariable<boolean>;
+  public __options_has_paramVar3?: boolean;
+  @Param() public paramVar4?: undefined;
+  public __backing_paramVar4?: IParamDecoratedVariable<undefined>;
+  public __options_has_paramVar4?: boolean;
+  @Param() public paramVar5?: null;
+  public __backing_paramVar5?: IParamDecoratedVariable<null>;
+  public __options_has_paramVar5?: boolean;
+  public constructor() {}
   
 }
 `;

@@ -71,6 +71,8 @@ function main() {}
   public __initializeStruct(initializers: (__Options_NavDestinationStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_NavDestinationStruct | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_NavDestinationStruct | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: NavDestinationStruct)=> void) | undefined), initializers: ((()=> __Options_NavDestinationStruct) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -113,8 +115,8 @@ function main() {}
   }
 }
 
-@Component() interface __Options_NavDestinationStruct {
-  
+@Component() class __Options_NavDestinationStruct {
+  public constructor() {}
 }
 `;
 

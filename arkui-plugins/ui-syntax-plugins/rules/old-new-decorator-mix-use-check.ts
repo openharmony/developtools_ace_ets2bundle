@@ -48,17 +48,17 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
         };
     }
 
-    public parsed(node: arkts.StructDeclaration | arkts.ClassDeclaration): void {
-        if (arkts.isStructDeclaration(node)) {
+    public parsed(node: arkts.ETSStructDeclaration | arkts.ClassDeclaration): void {
+        if (arkts.isETSStructDeclaration(node)) {
             this.handleStructDeclaration(node);
         }
     }
 
-    private handleStructDeclaration(node: arkts.StructDeclaration): void {
+    private handleStructDeclaration(node: arkts.ETSStructDeclaration): void {
         // Gets the decorator version of a custom component
         const componentV2Decorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V2);
         const componentDecorator = getAnnotationUsage(node, PresetDecorators.COMPONENT_V1);
-        node.definition.body.forEach((property) => {
+        node.definition?.body.forEach((property) => {
             if (!arkts.isClassProperty(property)) {
                 return;
             }
@@ -119,7 +119,7 @@ class OldNewDecoratorMixUseCheckRule extends AbstractUISyntaxRule {
     }
 
     private reportErrorAndAddDecorator(
-        structNode: arkts.StructDeclaration,
+        structNode: arkts.ETSStructDeclaration,
         errorDecorator: arkts.AnnotationUsage,
     ): void {
         const propertyDecoratorName = getAnnotationName(errorDecorator);

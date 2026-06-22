@@ -279,50 +279,41 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar1', '(Per | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar1', '(ILocalDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar2', '(Array<number> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar2', '(ILocalDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar3', '(StateType | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar3', '(ILocalDecoratedVariable<StateType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar4', '(Set<string> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar4', '(ILocalDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar5', '(ILocalDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar6', '(Array<Per> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar6', '(ILocalDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar7', '(Array<Per> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar7', '(ILocalDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar9', '(Date | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar9', '(ILocalDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar10', '(ILocalDecoratedVariable<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar11', '((string | number) | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar11', '(ILocalDecoratedVariable<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'localVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Local')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_localVar12', '(ILocalDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_localVar12', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Local() public localVar1?: Per;
+  public __backing_localVar1?: ILocalDecoratedVariable<Per>;
+  public __options_has_localVar1?: boolean;
+  @Local() public localVar2?: Array<number>;
+  public __backing_localVar2?: ILocalDecoratedVariable<Array<number>>;
+  public __options_has_localVar2?: boolean;
+  @Local() public localVar3?: StateType;
+  public __backing_localVar3?: ILocalDecoratedVariable<StateType>;
+  public __options_has_localVar3?: boolean;
+  @Local() public localVar4?: Set<string>;
+  public __backing_localVar4?: ILocalDecoratedVariable<Set<string>>;
+  public __options_has_localVar4?: boolean;
+  @Local() public localVar5?: Array<boolean>;
+  public __backing_localVar5?: ILocalDecoratedVariable<Array<boolean>>;
+  public __options_has_localVar5?: boolean;
+  @Local() public localVar6?: Array<Per>;
+  public __backing_localVar6?: ILocalDecoratedVariable<Array<Per>>;
+  public __options_has_localVar6?: boolean;
+  @Local() public localVar7?: Array<Per>;
+  public __backing_localVar7?: ILocalDecoratedVariable<Array<Per>>;
+  public __options_has_localVar7?: boolean;
+  @Local() public localVar9?: Date;
+  public __backing_localVar9?: ILocalDecoratedVariable<Date>;
+  public __options_has_localVar9?: boolean;
+  @Local() public localVar10?: Map<number, Per>;
+  public __backing_localVar10?: ILocalDecoratedVariable<Map<number, Per>>;
+  public __options_has_localVar10?: boolean;
+  @Local() public localVar11?: (string | number);
+  public __backing_localVar11?: ILocalDecoratedVariable<(string | number)>;
+  public __options_has_localVar11?: boolean;
+  @Local() public localVar12?: (Set<string> | Per);
+  public __backing_localVar12?: ILocalDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_localVar12?: boolean;
+  public constructor() {}
   
 }
 `;

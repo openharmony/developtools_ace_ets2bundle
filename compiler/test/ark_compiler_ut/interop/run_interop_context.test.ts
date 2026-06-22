@@ -17,7 +17,7 @@ import { expect } from 'chai';
 import mocha from 'mocha';
 import path from 'path';
 
-import { DeclfileProductor, run } from '../../../lib/fast_build/ark_compiler/interop/run_declgen_standalone';
+import { InteropContext, run } from '../../../lib/fast_build/ark_compiler/interop/run_interop_context';
 import { toUnixPath } from '../../../lib/utils';
 import { FileManager } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 
@@ -39,8 +39,8 @@ export interface ArkTSEvolutionModule {
 }
 
 
-mocha.describe('DeclfileProductor', () => {
-    let declFileProductor: DeclfileProductor;
+mocha.describe('InteropContext', () => {
+    let interopContext: InteropContext;
     mocha.before(() => {
         FileManager.cleanFileManagerObject();
         const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
@@ -104,8 +104,8 @@ mocha.describe('DeclfileProductor', () => {
                 bundleName: 'com.project'
             }
         } as any;
-        DeclfileProductor.init(params);
-        declFileProductor = DeclfileProductor.getInstance();
+        InteropContext.init();
+        interopContext = InteropContext.getInstance();
     });
 
     mocha.it('1-1: add ets decl files', () => {
@@ -126,13 +126,13 @@ mocha.describe('DeclfileProductor', () => {
         }
         const filePath = '/path/to/project/entry/src/main/ets/dynamic1.ets';
 
-        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
+        interopContext.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic1';
-        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
+        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath!, expectedProjectFilePath + '.d.ets'));
         const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic1&`;
 
-        const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
+        const config = interopContext['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
         expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
     });
@@ -155,13 +155,13 @@ mocha.describe('DeclfileProductor', () => {
         }
         const filePath = '/path/to/project/har1/src/main/ets/dynamic2.js';
 
-        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
+        interopContext.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic2';
-        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
+        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath!, expectedProjectFilePath + '.d.ets'));
         const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic2&`;
         
-        const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
+        const config = interopContext['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
         expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
     });
@@ -183,13 +183,13 @@ mocha.describe('DeclfileProductor', () => {
             moduleType: 'shared'
         };
         const filePath = '/path/to/project/hsp1/src/main/ets/dynamic3.ets';
-        declFileProductor.addDeclFilesConfig(filePath, moduleInfo);
+        interopContext.addDeclFilesConfig(filePath, moduleInfo);
 
         const expectedProjectFilePath = 'src/main/ets/dynamic3';
-        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath, expectedProjectFilePath + '.d.ets'));
+        const expectedDeclPath = toUnixPath(path.join(moduleInfo.declgenV2OutPath!, expectedProjectFilePath + '.d.ets'));
         const expectedOhmUrl = `@normalized:N&&&${moduleInfo.packageName}/src/main/ets/dynamic3&`;
         
-        const config = declFileProductor['pkgDeclFilesConfig'][moduleInfo.packageName];
+        const config = interopContext['pkgDeclFilesConfig'][moduleInfo.packageName];
         expect(config.files[expectedProjectFilePath].ohmUrl === expectedOhmUrl).to.be.true;
         expect(config.files[expectedProjectFilePath].declPath === expectedDeclPath).to.be.true;
     });

@@ -80,7 +80,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/style-optimization",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
+@Entry() @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_StyleOptimization | undefined), @Memo() content: ((()=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_StyleOptimization | undefined)): void {}
@@ -122,17 +122,15 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     StyleOptimization._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
-  
+@Entry() @Component() class __Options_StyleOptimization {
+  public constructor() {}
 }
 `;
 
@@ -177,7 +175,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/builder-lambda/style-optimization",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
+@Entry() @Component() final struct StyleOptimization extends CustomComponent<StyleOptimization, __Options_StyleOptimization> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_StyleOptimization | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {}
   
   public __updateStruct(initializers: (__Options_StyleOptimization | undefined)): void {}
@@ -264,17 +262,15 @@ class __EntryWrapper extends EntryPoint {
       return;
     }
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_StyleOptimization {
-  
+@Entry() @Component() class __Options_StyleOptimization {
+  public constructor() {}
 }
 `;
 

@@ -83,6 +83,25 @@ function main() {}
 
   public __updateStruct(initializers: (__Options_Ancestors | undefined)): void {}
 
+  public resetStateVarsOnReuse(initializers: (__Options_Ancestors | undefined)): void {
+    this.__backing_count!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? ("Child0")));
+    this.__backing_count1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count1)})) ?? ("Child1")));
+    this.__backing_count2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count2)})) ?? ("Child2")));
+    this.__backing_count3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count3)})) ?? ("Child3")));
+    this.__backing_count4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count4)})) ?? ("Child4")));
+    this.__backing_count5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count5)})) ?? ("Child5")));
+    this.__backing_count6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count6)})) ?? ("Child6")));
+    this.__backing_count7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count7)})) ?? ("Child7")));
+  }
+
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Ancestors)=> void) | undefined), initializers: ((()=> __Options_Ancestors) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<Ancestors, __Options_Ancestors>(style, ((): Ancestors => {
@@ -186,38 +205,32 @@ function main() {}
   }
 }
 
-@Component() interface __Options_Ancestors {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "count", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count1', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov1", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count1', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count2', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov2", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count2', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count3', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "prov3", allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count3', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count4', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: false, alias: "count4" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count4', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count5', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { allowOverride: true, alias: "count5" })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count5', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count6', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: true })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count6', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'count7', '((string | undefined) | undefined)', [dumpAnnotation('Provide', { alias: "", allowOverride: false })])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_count7', '(IProvideDecoratedVariable<(string | undefined)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_count7', '(boolean | undefined)')}
+@Component() class __Options_Ancestors {
+  @Provide() public count?: (string | undefined);
+  public __backing_count?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count?: boolean;
+  @Provide({alias:"prov1"}) public count1?: (string | undefined);
+  public __backing_count1?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count1?: boolean;
+  @Provide({alias:"prov2",allowOverride:false}) public count2?: (string | undefined);
+  public __backing_count2?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count2?: boolean;
+  @Provide({alias:"prov3",allowOverride:true}) public count3?: (string | undefined);
+  public __backing_count3?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count3?: boolean;
+  @Provide({allowOverride:false}) public count4?: (string | undefined);
+  public __backing_count4?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count4?: boolean;
+  @Provide({allowOverride:true}) public count5?: (string | undefined);
+  public __backing_count5?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count5?: boolean;
+  @Provide({alias:"",allowOverride:true}) public count6?: (string | undefined);
+  public __backing_count6?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count6?: boolean;
+  @Provide({alias:""}) public count7?: (string | undefined);
+  public __backing_count7?: IProvideDecoratedVariable<(string | undefined)>;
+  public __options_has_count7?: boolean;
+  public constructor() {}
   
 }
 `;

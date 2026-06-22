@@ -96,7 +96,7 @@ export class MetaDataCollector {
         if (!program) {
             return undefined;
         }
-        if (this.importsInfoCache && this.fileAbsName === program.absName) {
+        if (this.importsInfoCache && this.fileAbsName === program.absoluteName) {
             return this.importsInfoCache;
         }
         this.importsInfoCache = collectFileImportsByProgram(program);

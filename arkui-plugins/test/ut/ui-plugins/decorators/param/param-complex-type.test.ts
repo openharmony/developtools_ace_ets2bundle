@@ -321,54 +321,44 @@ final class StateType extends BaseEnum<int> {
 
 }
 
-@ComponentV2() interface __Options_Parent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar1', '(Per | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar1', '(IParamDecoratedVariable<Per> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar1', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar2', '(Array<number> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar2', '(IParamDecoratedVariable<Array<number>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar2', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar3', '(StateType | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar3', '(IParamDecoratedVariable<StateType> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar3', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar4', '(Set<string> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar4', '(IParamDecoratedVariable<Set<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar4', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar5', '(Array<boolean> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar5', '(IParamDecoratedVariable<Array<boolean>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar5', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar6', '(Array<Per> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar6', '(IParamDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar6', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar7', '(Array<Per> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar7', '(IParamDecoratedVariable<Array<Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar7', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar8', '(((sr: string)=> void) | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar8', '(IParamDecoratedVariable<((sr: string)=> void)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar8', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar9', '(Date | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar9', '(IParamDecoratedVariable<Date> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar9', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar10', '(Map<number, Per> | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar10', '(IParamDecoratedVariable<Map<number, Per>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar10', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar11', '((string | number) | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar11', '(IParamDecoratedVariable<(string | number)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar11', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'paramVar12', '((Set<string> | Per) | undefined)', [dumpAnnotation('Param')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_paramVar12', '(IParamDecoratedVariable<(Set<string> | Per)> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_paramVar12', '(boolean | undefined)')}
+@ComponentV2() class __Options_Parent {
+  @Param() public paramVar1?: Per;
+  public __backing_paramVar1?: IParamDecoratedVariable<Per>;
+  public __options_has_paramVar1?: boolean;
+  @Param() public paramVar2?: Array<number>;
+  public __backing_paramVar2?: IParamDecoratedVariable<Array<number>>;
+  public __options_has_paramVar2?: boolean;
+  @Param() public paramVar3?: StateType;
+  public __backing_paramVar3?: IParamDecoratedVariable<StateType>;
+  public __options_has_paramVar3?: boolean;
+  @Param() public paramVar4?: Set<string>;
+  public __backing_paramVar4?: IParamDecoratedVariable<Set<string>>;
+  public __options_has_paramVar4?: boolean;
+  @Param() public paramVar5?: Array<boolean>;
+  public __backing_paramVar5?: IParamDecoratedVariable<Array<boolean>>;
+  public __options_has_paramVar5?: boolean;
+  @Param() public paramVar6?: Array<Per>;
+  public __backing_paramVar6?: IParamDecoratedVariable<Array<Per>>;
+  public __options_has_paramVar6?: boolean;
+  @Param() public paramVar7?: Array<Per>;
+  public __backing_paramVar7?: IParamDecoratedVariable<Array<Per>>;
+  public __options_has_paramVar7?: boolean;
+  @Param() public paramVar8?: (((sr: string)=> void) | undefined);
+  public __backing_paramVar8?: IParamDecoratedVariable<(((sr: string)=> void) | undefined)>;
+  public __options_has_paramVar8?: boolean;
+  @Param() public paramVar9?: Date;
+  public __backing_paramVar9?: IParamDecoratedVariable<Date>;
+  public __options_has_paramVar9?: boolean;
+  @Param() public paramVar10?: Map<number, Per>;
+  public __backing_paramVar10?: IParamDecoratedVariable<Map<number, Per>>;
+  public __options_has_paramVar10?: boolean;
+  @Param() public paramVar11?: (string | number);
+  public __backing_paramVar11?: IParamDecoratedVariable<(string | number)>;
+  public __options_has_paramVar11?: boolean;
+  @Param() public paramVar12?: (Set<string> | Per);
+  public __backing_paramVar12?: IParamDecoratedVariable<(Set<string> | Per)>;
+  public __options_has_paramVar12?: boolean;
+  public constructor() {}
   
 }
 `;

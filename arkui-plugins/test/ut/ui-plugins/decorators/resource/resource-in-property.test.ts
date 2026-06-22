@@ -87,6 +87,7 @@ function main() {}
     })));
   }
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_ResourceComponent | undefined)): void {}
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ResourceComponent)=> void) | undefined), initializers: ((()=> __Options_ResourceComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<ResourceComponent, __Options_ResourceComponent>(style, ((): ResourceComponent => {
@@ -120,7 +121,7 @@ function main() {}
   public set varOne(value: (Resource | string)) {
     this.__backing_varOne = value;
   }
-  private __backing_lambdaOne?: (()=> void);
+  private __backing_lambdaOne?: ((()=> void) | undefined);
   public get lambdaOne(): (()=> void) {
     return (this.__backing_lambdaOne as (()=> void));
   }
@@ -159,18 +160,16 @@ function main() {}
 
 }
 
-@Component() interface __Options_ResourceComponent {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str', '(Resource | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'icon', '(Resource | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_icon', '(boolean | undefined)')}
-  
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'varOne', '((Resource | string) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_varOne', '(boolean | undefined)')}
-
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'lambdaOne', '((()=> void) | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_lambdaOne', '(boolean | undefined)')}
+@Component() class __Options_ResourceComponent {
+  public str?: Resource;
+  public __options_has_str?: boolean;
+  public icon?: Resource;
+  public __options_has_icon?: boolean;
+  public varOne?: (Resource | string);
+  public __options_has_varOne?: boolean;
+  public lambdaOne?: ((()=> void) | undefined);
+  public __options_has_lambdaOne?: boolean;
+  public constructor() {}
 }
 `;
 

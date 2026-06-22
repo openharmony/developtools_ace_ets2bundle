@@ -14,6 +14,7 @@
  */
 
 import type { Plugins, PluginState, ProjectConfig } from '../../common/plugin-context';
+import { AstNodePointer } from '../../common/safe-types';
 
 export type PluginTesterId = string | `${string}:${string}`;
 
@@ -82,7 +83,7 @@ export interface JobInfo {
     buildConfig?: BuildConfig;
     projectConfig?: ProjectConfig;
     plugins?: Plugins[];
-    globalContextPtr?: number;
+    globalContextPtr?: AstNodePointer;
     stopAfter?: PluginState;
     filePaths?: string[];
 }

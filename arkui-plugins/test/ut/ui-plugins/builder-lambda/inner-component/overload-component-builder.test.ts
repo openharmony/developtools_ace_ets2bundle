@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -80,9 +80,10 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     integratedHsp: \"false\",
 } as NavInterface));
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
+@Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {}
     public __updateStruct(initializers: (__Options_A | undefined)): void {}
+    public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {}
      @MemoIntrinsic() 
      public static _invoke(style: (@Memo() ((instance: A)=> void) | undefined), initializers: ((()=> __Options_A) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
         CustomComponent._invokeImpl<A, __Options_A>(style, ((): A => {
@@ -120,13 +121,13 @@ class __EntryWrapper extends EntryPoint {
         A._invoke(undefined, undefined, undefined, undefined, undefined);
     }
     public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
-    EntryPoint.RegisterNamedRouter(routerName, instance, param);
-  }
-
-  public constructor() {}
+        EntryPoint.RegisterNamedRouter(routerName, instance, param);
+    }
+    public constructor() {}
 }
 
-@Entry({useSharedStorage:false,storage:\"\",routeName:\"\"}) @Component() interface __Options_A {
+@Entry() @Component() class __Options_A {
+    public constructor() {}
 }
 `;
 
@@ -150,7 +151,7 @@ export declare function FakeComponent(@Memo() content_?: (()=> void)): FakeCompo
 @Memo() 
 export declare function FakeComponentImpl(style: (@Memo() ((instance: FakeComponentAttribute)=> void) | undefined), content?: @Memo() (()=> void)): void
 
-interface FakeOptions {
+export interface FakeOptions {
     get str(): (string | undefined) {
     return undefined;
     }
@@ -159,7 +160,7 @@ interface FakeOptions {
     }
 }
 
-interface FakeComponentAttribute {
+export interface FakeComponentAttribute {
   setFakeComponentOptions(options?: FakeOptions): this
   setFakeComponentOptions(): this
   setFakeComponentOptions(str: string): this

@@ -89,7 +89,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   pageFullPath: "test/demo/mock/double-dollar/double-dollar-non-ui",
   integratedHsp: "false",
 } as NavInterface));
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
+@Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_str1 = STATE_MGMT_FACTORY.makeState<string>(this, "str1", ((({let gensym___147578113 = initializers;
     (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("Hello World")));
@@ -102,6 +102,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
+  public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
+    this.__backing_str1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str1)})) ?? ("Hello World")));
+    this.__backing_str2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str2)})) ?? ("Hello")));
+    this.__backing_newStr!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newStr)})) ?? (makeBindable(this.str1, ((value) => {
+      this.str1 = value;
+    })))));
+  }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(style, ((): MyStateSample => {
@@ -192,25 +202,24 @@ class __EntryWrapper extends EntryPoint {
   public entry(): void {
     MyStateSample._invoke(undefined, undefined, undefined, undefined, undefined);
   }
-  
   public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
     EntryPoint.RegisterNamedRouter(routerName, instance, param);
   }
-
   public constructor() {}
   
 }
 
-@Entry({useSharedStorage:false,storage:"",routeName:""}) @Component() interface __Options_MyStateSample {
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str1', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str1', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str1', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'str2', '(string | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_str2', '(IStateDecoratedVariable<string> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_str2', '(boolean | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, 'newStr', '(Bindable<string> | undefined)', [dumpAnnotation('State')])}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__backing_newStr', '(IStateDecoratedVariable<Bindable<string>> | undefined)')}
-  ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_newStr', '(boolean | undefined)')}
+@Entry() @Component() class __Options_MyStateSample {
+  @State() public str1?: string;
+  public __backing_str1?: IStateDecoratedVariable<string>;
+  public __options_has_str1?: boolean;
+  @State() public str2?: string;
+  public __backing_str2?: IStateDecoratedVariable<string>;
+  public __options_has_str2?: boolean;
+  @State() public newStr?: Bindable<string>;
+  public __backing_newStr?: IStateDecoratedVariable<Bindable<string>>;
+  public __options_has_newStr?: boolean;
+  public constructor() {}
 
 }
 `;

@@ -224,7 +224,7 @@ export function createStaticComponentOptions(
             ts.factory.createIdentifier('result'),
             propertyName
           ),
-          initializer
+          cloneExpressionClean(initializer)
         )
       ));
       propertyAssignments.push(ts.factory.createExpressionStatement(
@@ -301,7 +301,7 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
       [
         ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(
-            initializer,
+            cloneExpressionClean(initializer),
             ts.factory.createIdentifier(BUILDER_ATTR_BIND)
           ),
           undefined,
@@ -333,6 +333,49 @@ function transformBuilderParam(initializer: ts.Expression): ts.ArrowFunction {
   );
 }
 
+function cloneExpressionClean(node: ts.Expression): ts.Expression {
+  if (ts.isPropertyAccessExpression(node)) {
+    return ts.factory.createPropertyAccessExpression(
+      cloneExpressionClean(node.expression) as ts.Expression,
+      ts.factory.createIdentifier(node.name.text)
+    );
+  }
+
+  if (ts.isIdentifier(node)) {
+    return ts.factory.createIdentifier(node.text);
+  }
+
+  if (ts.isNumericLiteral(node)) {
+    return ts.factory.createNumericLiteral(node.text);
+  }
+
+  if (ts.isStringLiteral(node)) {
+    return ts.factory.createStringLiteral(node.text);
+  }
+
+  if (node.kind === ts.SyntaxKind.TrueKeyword) {
+    return ts.factory.createTrue();
+  }
+
+  if (node.kind === ts.SyntaxKind.FalseKeyword) {
+    return ts.factory.createFalse();
+  }
+
+  if (node.kind === ts.SyntaxKind.NullKeyword) {
+    return ts.factory.createNull();
+  }
+  
+  if (ts.isToken(node) && node.kind === ts.SyntaxKind.UndefinedKeyword) {
+    return ts.factory.createIdentifier('undefined');
+  }
+
+  if (node.kind === ts.SyntaxKind.ThisKeyword) {
+    return ts.factory.createThis();
+  }
+
+  return node;
+}
+
 /**
  * 
  * @param initializer some statemanagment decorated member, e.g.: this.xxx
@@ -353,9 +396,8 @@ function transformLink(initializer: ts.Expression): ts.CallExpression {
  */
 function getStateVar(node: ts.Expression): ts.Expression {
   if (ts.isPropertyAccessExpression(node) && node.expression.kind === ts.SyntaxKind.ThisKeyword) {
-    return ts.factory.updatePropertyAccessExpression(
-      node,
-      node.expression,
+    return ts.factory.createPropertyAccessExpression(
+      ts.factory.createThis(),
       ts.factory.createIdentifier(`__${node.name.getText()}`)
     )
   }

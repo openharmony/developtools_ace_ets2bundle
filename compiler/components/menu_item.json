@@ -11,6 +11,7 @@
     "contentFont",
     "contentFontColor",
     "labelFont",
-    "labelFontColor"
+    "labelFontColor",
+    "subMenuBuilder"
   ]
 }

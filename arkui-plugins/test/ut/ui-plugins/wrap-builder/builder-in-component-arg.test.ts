@@ -77,6 +77,8 @@ class TimeTable {
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_ListItemGroupExample | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ListItemGroupExample)=> void) | undefined), initializers: ((()=> __Options_ListItemGroupExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -129,10 +131,10 @@ class TimeTable {
   }
 }
 
-@Component() interface __Options_ListItemGroupExample {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
-
+@Component() class __Options_ListItemGroupExample {
+  public timetable?: TimeTable;
+  public __options_has_timetable?: boolean;
+  public constructor() {}
 }
 `;
 
@@ -181,6 +183,8 @@ class TimeTable {
   }
   
   public __updateStruct(initializers: (__Options_ListItemGroupExample | undefined)): void {}
+
+  public resetStateVarsOnReuse(initializers: (__Options_ListItemGroupExample | undefined)): void {}
   
   @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: ListItemGroupExample)=> void) | undefined), initializers: ((()=> __Options_ListItemGroupExample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
@@ -289,10 +293,10 @@ class TimeTable {
   }
 }
 
-@Component() interface __Options_ListItemGroupExample {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'timetable', '(TimeTable | undefined)')}
-    ${dumpGetterSetter(GetSetDumper.BOTH, '__options_has_timetable', '(boolean | undefined)')}
-  
+@Component() class __Options_ListItemGroupExample {
+  public timetable?: TimeTable;
+  public __options_has_timetable?: boolean;
+  public constructor() {}
 }
 `;
 

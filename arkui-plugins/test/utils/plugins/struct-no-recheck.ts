@@ -18,6 +18,7 @@ import { PluginContext, Plugins } from '../../../common/plugin-context';
 import { ProgramVisitor } from '../../../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES } from '../../../common/predefines';
 import { StructTransformer } from '../../../ui-plugins/struct-translators/struct-transformer';
+import { TestGlobal } from './global';
 
 /**
  * AfterCheck struct transform with no recheck AST.
@@ -25,13 +26,13 @@ import { StructTransformer } from '../../../ui-plugins/struct-translators/struct
  */
 export const structNoRecheck: Plugins = {
     name: 'struct-no-recheck',
-    checked(this: PluginContext): arkts.EtsScript | undefined {
-        let script: arkts.EtsScript | undefined;
+    checked(this: PluginContext): arkts.ETSModule | undefined {
+        let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            script = program.astNode;
-            const structTransformer = new StructTransformer(this.getProjectConfig(), global.RESOURCE_PATH);
+            script = program.ast as arkts.ETSModule;
+            const structTransformer = new StructTransformer(this.getProjectConfig(), (global as TestGlobal).RESOURCE_PATH);
             const programVisitor = new ProgramVisitor({
                 pluginName: structNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,
@@ -40,7 +41,7 @@ export const structNoRecheck: Plugins = {
                 pluginContext: this,
             });
             program = programVisitor.programVisitor(program);
-            script = program.astNode;
+            script = program.ast as arkts.ETSModule;
             return script;
         }
         return script;

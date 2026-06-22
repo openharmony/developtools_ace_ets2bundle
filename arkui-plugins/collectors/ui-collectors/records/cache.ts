@@ -121,7 +121,7 @@ export class RecordCache<T extends BaseRecord<arkts.AstNode, Record<string, unkn
      * Get all cache keys (in order of most recently used)
      * @returns Array of keys
      */
-    public keys(): string[] {
+    public keys(): AstNodePointer[] {
         return Array.from(this.cache.keys()).reverse();
     }
 
@@ -137,7 +137,7 @@ export class RecordCache<T extends BaseRecord<arkts.AstNode, Record<string, unkn
      * Get all cache entries (in order of most recently used)
      * @returns Array of [key, value] pairs
      */
-    public entries(): [string, T][] {
+    public entries(): [AstNodePointer, T][] {
         return Array.from(this.cache.entries()).reverse();
     }
 

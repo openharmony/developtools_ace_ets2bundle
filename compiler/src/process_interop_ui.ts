@@ -38,7 +38,7 @@ export function isStructDeclaration(node: ts.Node): boolean {
   return ts.isStructDeclaration(node);
 }
 
-class HandleUIImports {
+export class HandleUIImports {
   private context: ts.TransformationContext;
   private typeChecker: ts.TypeChecker;
   private readonly output: string | undefined;
@@ -51,9 +51,9 @@ class HandleUIImports {
 
   private readonly trueSymbolAtLocationCache = new Map<ts.Node, ts.Symbol | null>();
 
-  constructor(program: ts.Program, context: ts.TransformationContext, output?: string | undefined) {
+  constructor(typeChecker: ts.TypeChecker, context: ts.TransformationContext, output?: string | undefined) {
     this.context = context;
-    this.typeChecker = program.getTypeChecker();
+    this.typeChecker = typeChecker;
     this.output = output;
   }
 
@@ -94,27 +94,81 @@ class HandleUIImports {
     const result = ts.visitEachChild(node, this.visitNode.bind(this), this.context);
 
     if (ts.isIdentifier(result) && !this.shouldSkipIdentifier(result)) {
+      const component = ['Component', 'Reusable', 'ComponentV2', 'ReusableV2'];
+      if (component.includes(result.text)) {
+        this.interfacesNeedToImport.add('LocalStorage');
+      }
       this.interfacesNeedToImport.add(result.text);
     } else if (ts.isSourceFile(result)) {
       return this.addUIImports(result);
     }
 
-    if (ts.isMethodDeclaration(result) && !result.type) {
-      const voidTypeAnnotation = ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
-      return ts.factory.updateMethodDeclaration(
-        result,
-        result.modifiers,
-        result.asteriskToken,
-        result.name,
-        result.questionToken,
-        result.typeParameters,
-        result.parameters,
-        voidTypeAnnotation,
-        result.body
-      );
+    if (ts.isMethodDeclaration(result)) {
+      return this.transformMethodDeclaration(result);
     }
 
     return result;
+  }
+
+  private transformMethodDeclaration(node: ts.MethodDeclaration): ts.MethodDeclaration {
+    const { decorators, updated: decoratorsUpdated } = this.transformMonitorDecorator(ts.getAllDecorators(node));
+    const needsType = !node.type;
+
+    if (!decoratorsUpdated && !needsType) {
+      return node;
+    }
+
+    const type = needsType ? ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword) : node.type;
+
+    return ts.factory.updateMethodDeclaration(
+      node,
+      decoratorsUpdated ? decorators as ts.NodeArray<ts.Decorator> : node.modifiers,
+      node.asteriskToken,
+      node.name,
+      node.questionToken,
+      node.typeParameters,
+      node.parameters,
+      type,
+      node.body
+    );
+  }
+
+  private transformMonitorDecorator(decorators: readonly ts.Decorator[] | undefined): {
+    decorators: ts.NodeArray<ts.Decorator> | undefined;
+    updated: boolean;
+  } {
+    if (!decorators || decorators.length === 0) {
+      return { decorators: undefined, updated: false };
+    }
+
+    let updated = false;
+    const newDecorators = decorators.map(decorator => {
+      const expr = decorator.expression;
+      if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
+        return decorator;
+      }
+      if (expr.expression.text !== 'Monitor') {
+        return decorator;
+      }
+      if (expr.arguments.length === 1 && ts.isArrayLiteralExpression(expr.arguments[0])) {
+        return decorator;
+      }
+
+      updated = true;
+      const arrayLiteral = ts.factory.createArrayLiteralExpression([...expr.arguments]);
+      const newCall = ts.factory.updateCallExpression(
+        expr,
+        expr.expression,
+        expr.typeArguments,
+        [arrayLiteral]
+      );
+      return ts.factory.updateDecorator(decorator, newCall);
+    });
+
+    return {
+      decorators: updated ? ts.factory.createNodeArray(newDecorators) : undefined,
+      updated
+    };
   }
 
   private handleImportBuilder(node: ts.Node): void {
@@ -139,7 +193,6 @@ class HandleUIImports {
     const dynamicImportSpecifiers: ts.ImportSpecifier[] = [];
     const compImportSpecifiers: ts.ImportSpecifier[] = [];
     const stateImportSpecifiers: ts.ImportSpecifier[] = [];
-    this.interfacesNeedToImport.add('LocalStorage');
     this.interfacesNeedToImport.forEach((interfaceName) => {
       if (this.importedInterfaces.has(interfaceName)) {
         return;
@@ -316,7 +369,7 @@ class HandleUIImports {
 
 /*
  * process interop ui
- *
+ * @deprecated use declgen stages.
  * @param program - the ts.Program instance of the current compilation
  */
 export function createCustomTransformer(
@@ -324,7 +377,7 @@ export function createCustomTransformer(
 ): (ctx: ts.TransformationContext) => (sourceFile: ts.SourceFile) => ts.SourceFile {
   return (ctx) => {
     return (sourceFile: ts.SourceFile) => {
-      const handleUIImports = new HandleUIImports(program, ctx);
+      const handleUIImports = new HandleUIImports(program.getTypeChecker(), ctx);
       return handleUIImports.createCustomTransformer(sourceFile);
     }
   }
@@ -362,7 +415,10 @@ function getSourceFiles(program: ts.Program, filePaths: string[]): ts.SourceFile
   const sourceFiles: ts.SourceFile[] = [];
 
   filePaths.forEach(filePath => {
-    sourceFiles.push(program.getSourceFile(filePath));
+    const sourceFile = program.getSourceFile(filePath);
+    if (sourceFile) {
+      sourceFiles.push(sourceFile);
+    }
   });
   return sourceFiles;
 }
@@ -380,7 +436,7 @@ export function processInteropUI(path: string, outPath = ''): void {
 
   const createTransformer = (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
     return (sourceFile: ts.SourceFile) => {
-      const handleUIImports = new HandleUIImports(program, ctx, outPath);
+      const handleUIImports = new HandleUIImports(program.getTypeChecker(), ctx, outPath);
       return handleUIImports.createCustomTransformer(sourceFile);
     }
   }
