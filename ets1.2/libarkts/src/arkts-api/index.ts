@@ -31,6 +31,7 @@ export * from './peers/Config';
 export * from './peers/Context';
 export * from './peers/ExternalSource';
 export * from './peers/Options';
+export * from './peers/Resolver';
 export * from './node-utilities/ArkTsConfig';
 export * from './peers/ImportPathManager';
 export * from './static/globalUtils';

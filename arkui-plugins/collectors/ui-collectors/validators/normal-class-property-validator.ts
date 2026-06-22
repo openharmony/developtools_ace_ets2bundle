@@ -22,6 +22,7 @@ import {
     checkObservedV2TraceUsageValidation,
     checkOldNewDecoratorMixUse,
     checkOnceDecorator,
+    checkMonitorDecorator,
     checkTrackDecorator,
     checkValidateDecoratorTarget,
 } from './rules';
@@ -40,5 +41,6 @@ export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassPrope
         checkComputedDecorator.bind(this)(node);
         checkOldNewDecoratorMixUse.bind(this)(node);
         checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkMonitorDecorator.bind(this)(node);
     }
 }

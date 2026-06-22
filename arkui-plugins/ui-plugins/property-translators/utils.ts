@@ -184,16 +184,6 @@ export function needInitializeWithoutAssignmentFromInfo(
     return false;
 }
 
-export function parseStructPropertyAnnotations(
-    property: arkts.ClassProperty
-): AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined {
-    const record = new StructPropertyAnnotationRecord({ shouldIgnoreDecl: true });
-    property.annotations.forEach((anno) => {
-        record.collect(anno);
-    });
-    return record.toRecord();
-}
-
 export function checkIsRequiredPropertyFromAnnotationInfo(
     info: AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined
 ): boolean {
@@ -533,64 +523,6 @@ export function isCustomDialogController(type: arkts.TypeNode): boolean {
         arkts.isIdentifier(type.part.name) &&
         type.part.name.name === CustomDialogNames.CUSTOM_DIALOG_CONTROLLER
     );
-}
-
-export function getValueInMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
-    const monitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
-        return (
-            anno.expr &&
-            arkts.isIdentifier(anno.expr) &&
-            anno.expr.name === DecoratorNames.MONITOR &&
-            anno.properties.length === 1
-        );
-    });
-    if (!monitorAnno) {
-        return undefined;
-    }
-    return getArrayFromAnnoProperty(monitorAnno.properties.at(0)!);
-}
-
-export function getValueInSyncMonitorAnnotation(annotations: readonly arkts.AnnotationUsage[]): string[] | undefined {
-    const syncMonitorAnno: arkts.AnnotationUsage | undefined = annotations.find((anno: arkts.AnnotationUsage) => {
-        return (
-            anno.expr &&
-            arkts.isIdentifier(anno.expr) &&
-            anno.expr.name === DecoratorNames.SYNC_MONITOR &&
-            anno.properties.length === 1
-        );
-    });
-    if (!syncMonitorAnno) {
-        return undefined;
-    }
-    return getArrayFromAnnoProperty(syncMonitorAnno.properties.at(0)!);
-}
-
-export function getArrayFromAnnoProperty(property: arkts.AstNode): string[] | undefined {
-    if (!arkts.isClassProperty(property) || !property.value || !arkts.isArrayExpression(property.value)) {
-        return undefined;
-    }
-    const resArr: string[] = [];
-    property.value.elements.forEach((item: arkts.Expression) => {
-        if (arkts.isStringLiteral(item)) {
-            resArr.push(item.str);
-        } else if (arkts.isMemberExpression(item)) {
-            const res: string | undefined = getMonitorStrFromMemberExpr(item);
-            !!res && resArr.push(res);
-        }
-    });
-    return resArr;
-}
-
-function getMonitorStrFromMemberExpr(node: arkts.MemberExpression): string | undefined {
-    const decl: arkts.AstNode | undefined = arkts.getPeerIdentifierDecl(node.property!.peer);
-    if (!decl || !arkts.isClassProperty(decl) || !decl.value || !arkts.isETSNewClassInstanceExpression(decl.value)) {
-        return undefined;
-    }
-    const args: readonly arkts.Expression[] = decl.value.arguments;
-    if (args.length >= 2 && arkts.isStringLiteral(args[1])) {
-        return args[1].str;
-    }
-    return undefined;
 }
 
 export function findCachedMemoMetadata(

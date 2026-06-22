@@ -49,9 +49,12 @@ import {
     StructMethodInfo,
     StructPropertyInfo,
     StructAnnotationInfo,
-    InsightIntentClassInfo
+    InsightIntentClassInfo,
+    StructPropertyAnnotations,
+    StructPropertyAnnotationInfo,
+    StructPropertyAnnotationRecord
 } from './records';
-import { AnnotationInfo, Annotations } from './records/annotations/base';
+import { AnnotationInfo, AnnotationRecord, Annotations } from './records/annotations/base';
 
 export function checkCanCollectNormalClassFromInfo(info: NormalClassInfo, externalSourceName?: string): boolean {
     if (checkIsObservedClassFromInfo(info)) {
@@ -445,4 +448,15 @@ export function collectStructPropertyInfos(
     }
     const structPropertyInfos = rootCallInfo.structPropertyInfos ?? callInfo.structPropertyInfos ?? [];
     return filterDefined(structPropertyInfos.map((info) => info[1]));
+}
+
+export function parseStructPropertyAnnotations(
+    property: arkts.ClassProperty,
+    shouldIgnoreDecl?: boolean
+): AnnotationRecord<StructPropertyAnnotations, StructPropertyAnnotationInfo> | undefined {
+    const record = new StructPropertyAnnotationRecord({ shouldIgnoreDecl: !!shouldIgnoreDecl });
+    property.annotations.forEach((anno) => {
+        record.collect(anno);
+    });
+    return record.toRecord();
 }

@@ -35,6 +35,7 @@ import {
     AnnotationAllowed,
     DiagnosticInfo,
     DiagnosticKind,
+    Expression,
     Identifier,
     isConditionalExpression,
     SourcePosition,
@@ -496,4 +497,10 @@ export function jumpFromETSTypeReferenceToTSTypeAliasDeclarationTypeAnnotation(n
 
 export function getAnnotationDeclarationProperties(node: AnnotationUsage): ClassProperty[] {
     return unpackNodeArray(global.es2panda._GetAnnotationDeclarationProperties(global.context, passNode(node)));
+}
+
+export function findSuperClassByName(classInstance: ClassDefinition, baseClassName: string): Expression | undefined {
+    return unpackNode(
+        global.es2panda._ClassDefinitionFindSuperClassByName(global.context, classInstance.peer, baseClassName)
+    );
 }
