@@ -124,7 +124,6 @@ import {
 } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
 
-const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
 export class factory {
     /**
@@ -1411,7 +1410,7 @@ export class factory {
                 UIFactory.createTypeReferenceFromString(StateManagementTypes.SUBSCRIBED_WATCHES)
             ),
         ];
-        if (isObservedV2 && isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION)) {
+        if (isObservedV2 && isSdkVersionAtLeast(APIVersions.API_26)) {
             implementsArr.push(arkts.TSClassImplements.createTSClassImplements(
                 UIFactory.createTypeReferenceFromString(StateManagementTypes.OBSERVED_ANY_PROP)
             ));
@@ -1479,7 +1478,7 @@ export class factory {
         );
         return ObservedAnno.isObservedV2
             ? returnNodes.concat(
-                ...(isSdkVersionAtLeast(OBSERVED_ANY_PROP_MIN_VERSION) ? [this.createAddRefAnyPropMethod(definition, isDecl)] : []),
+                ...(isSdkVersionAtLeast(APIVersions.API_26) ? [this.createAddRefAnyPropMethod(definition, isDecl)] : []),
                 this.transformObservedV2Constuctor(definition, classScopeInfo.className)
             )
             : returnNodes;
@@ -2219,7 +2218,7 @@ export class factory {
     static createComponentFactoryParameter(
         structName: string,
         factoryParams: arkts.Expression[],
-        isFromCustomDialog: boolean
+        isFromCustomDialog: boolean | undefined
     ): arkts.ArrowFunctionExpression {
         const newComponentInstance: arkts.ETSNewClassInstanceExpression =
             arkts.factory.createETSNewClassInstanceExpression(

@@ -56,6 +56,7 @@ import {
     ReuseNames,
     CustomComponentNames,
     LogType,
+    ReusableOptions,
     APIVersions,
     APIComparison,
     StateManagementTypes,
@@ -97,6 +98,8 @@ export class ComponentTransformer extends AbstractVisitor {
         hasComponentV2: false,
         hasCustomDialog: false,
         hasCustomLayout: false,
+        hasReusable: false,
+        hasReusableV2: false
     };
     private importCollector: ImportCollector;
 
@@ -127,6 +130,8 @@ export class ComponentTransformer extends AbstractVisitor {
             hasComponentV2: false,
             hasCustomDialog: false,
             hasCustomLayout: false,
+            hasReusable: false,
+            hasReusableV2: false
         };
     }
 
@@ -255,6 +260,9 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         if (this.componentType.hasCustomLayout) {
             this._collectImportFromCustomComponentSource(CustomComponentNames.LAYOUT_CALLBACKS);
+        }
+        if (this.componentType.hasReusable || this.componentType.hasReusableV2) {
+            this._collectImportFromCustomComponentSource(ReusableOptions.REUSABLE_MEM_OPT_STRATEGY);
         }
         if (this.entryAnnoInfo.length > 0) {
             this._collectImportFromEntrySource(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);

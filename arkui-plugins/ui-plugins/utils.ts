@@ -170,6 +170,8 @@ export type ComponentType = {
     hasComponentV2: boolean;
     hasCustomDialog: boolean;
     hasCustomLayout: boolean;
+    hasReusable: boolean;
+    hasReusableV2: boolean;
 };
 
 export type ClassInfo = {
@@ -422,6 +424,11 @@ export function isCustomDialogControllerOptions(
 }
 
 export function getComponentExtendsName(annotations: CustomComponentAnontations, componentType: ComponentType): string {
+    if (!!annotations.reusable) {
+        componentType.hasReusable ||= true;
+    } else if (!!annotations.reusableV2) {
+        componentType.hasReusableV2 ||= true;
+    }
     if (!!annotations.customLayout) {
         componentType.hasCustomLayout ||= true;
     }

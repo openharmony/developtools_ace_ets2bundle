@@ -122,9 +122,7 @@ export enum StructDecoratorNames {
     RESUABLE_V2 = 'ReusableV2',
     CUSTOM_LAYOUT = 'CustomLayout',
     CUSTOMDIALOG = 'CustomDialog',
-    PREVIEW = 'Preview',
-    REUSABLE = 'Reusable',
-    REUSABLE_V2 = 'ReusableV2'
+    PREVIEW = 'Preview'
 }
 
 export enum EntryWrapperNames {
@@ -651,6 +649,11 @@ export enum GlobalReusePoolNames {
 
 export enum EnvInternalProperty {
     ENV_VALUE = 'value'
+}
+
+export enum ReusableOptions {
+    REUSABLE_MEM_OPT_STRATEGY = 'ReusableMemOptStrategy',
+    MEMORY_OPT_STRATEGY = 'memoryOptimizationStrategy'
 }
 
 export enum APIVersions {

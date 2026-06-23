@@ -686,9 +686,7 @@ export function isSafeType(type: arkts.TypeNode | undefined): boolean {
     return true;
 }
 
-const DEBUG_LINE_MIN_VERSION = 24;
-
-export function isSdkVersionAtLeast(targetVersion: number): boolean {
+export function isSdkVersionAtLeast(targetVersion: APIVersions): boolean {
     const projectConfig = MetaDataCollector.getInstance().projectConfig;
     const compatibleSdkVersion = projectConfig?.compatibleSdkVersion;
     return compatibleSdkVersion !== undefined && compatibleSdkVersion >= targetVersion;
@@ -702,7 +700,7 @@ export function isDebugMode(): boolean {
 export function isDebugLineEnabled(): boolean {
     const projectConfig = MetaDataCollector.getInstance().projectConfig;
     const isDebugMode = projectConfig?.debugLine === true;
-    return isSdkVersionAtLeast(DEBUG_LINE_MIN_VERSION) && isDebugMode;
+    return isSdkVersionAtLeast(APIVersions.API_24) && isDebugMode;
 }
 
 export function builderLambdaMethodDeclType(
