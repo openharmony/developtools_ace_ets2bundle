@@ -49,7 +49,7 @@ export function processJsCodeLazyImport(id: string, code: string,
   const eventProcessJsCodeLazyImport: CompileEvent = createAndStartEvent(parentEvent, 'process Js code lazy import');
   let sourceNode: ts.SourceFile = ts.createSourceFile(id, code, ts.ScriptTarget.ES2021, true, ts.ScriptKind.JS);
   if (autoLazyImport) {
-    sourceNode = transformLazyImport(metaInfo, sourceNode, autoLazyFilter, eventProcessJsCodeLazyImport);
+    sourceNode = transformLazyImport(metaInfo, sourceNode, autoLazyFilter, undefined, eventProcessJsCodeLazyImport);
   }
   lazyImportReExportCheck(sourceNode, reExportCheckMode, eventProcessJsCodeLazyImport);
   code = autoLazyImport ? ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printFile(sourceNode) : code;
