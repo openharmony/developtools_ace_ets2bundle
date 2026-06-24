@@ -685,7 +685,7 @@ function checkCrossplatformValue(
   node?: ts.Node,
   declaration?: ts.Declaration
 ): boolean {
-  const mergingCommentHandle = checkCrossplatformMergeValue(jsDocTags, config, node);
+  const mergingCommentHandle = checkCrossplatformValueMerge(jsDocTags, config, node, declaration);
   if (!crossplatformDepsConfig) {
     return mergingCommentHandle;
   }
@@ -702,9 +702,9 @@ function checkCrossplatformValue(
 
   const functionKey: string = getApiPathFromNode(declaration);
   for (let i = 0; i < depsConfig.length; i++) {
-    const config: CrossplatformConfig = depsConfig[i];
-    if (config.function === functionKey) {
-      collectCrossplatformExternalModule(node, config);
+    const configInner: CrossplatformConfig = depsConfig[i];
+    if (configInner.function === functionKey) {
+      collectCrossplatformExternalModule(node, configInner);
       return mergingCommentHandle;
     }
   }
@@ -1896,7 +1896,7 @@ export function checkStageModuleValue(jsDocTags: readonly ts.JSDocTag[], config:
  * @param {ts.Declaration} [declaration] - Optional declaration containing the JSDoc tags.
  * @returns {boolean} - Returns true if the Cross-Platform value is valid; otherwise, returns false.
  */
-export function checkCrossplatformMergeValue(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
+export function checkCrossplatformValueMerge(jsDocTags: readonly ts.JSDocTag[], config: ts.JsDocNodeCheckConfigItem, node?: ts.Node, declaration?: ts.Declaration): boolean {
   // Find the JSDoc tag with CROSSPLATFORM_TAG_CHECK_NAME
   const jsDocTag: ts.JSDocTag = jsDocTags.find((item: ts.JSDocTag) => {
     return item.tagName.getText() === CROSSPLATFORM_TAG_CHECK_NAME;
