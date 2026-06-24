@@ -50,6 +50,9 @@ enum ArrayTypes {
     Map = 'Map',
     Set = 'Set',
     Date = 'Date',
+    ObservedArray = 'ObservedArray',
+    ObservedMap = 'ObservedMap',
+    ObservedSet = 'ObservedSet'
 }
 
 enum PathInvalidReason {
@@ -707,7 +710,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
 
         // Dispatch by type
-        if (this.isMapOrSetType(typeName)) {
+        if (
+            this.isMapOrSetType(typeName) ||
+            (rest.length > 0 && rest[0] === 'size' && this.resolvesToMapOrSet(typeName))
+        ) {
             return this.validateMapSetAccess(
                 typeName, rest, context, firstSegment, isGetMethod, firstSegmentIsStateVariable
             );
@@ -997,7 +1003,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return { isArraySubclass: false };
         }
         const partName = superNode.part?.name;
-        if (partName !== undefined && arkts.isIdentifier(partName) && partName.name === ArrayTypes.Array) {
+        if (
+            partName !== undefined && arkts.isIdentifier(partName) &&
+            (partName.name === ArrayTypes.Array || partName.name === ArrayTypes.ObservedArray)
+        ) {
             const elementTypeName = this.extractElementTypeFromSuper(node);
             return { isArraySubclass: true, elementTypeName };
         }
@@ -1137,7 +1146,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
                 return { valid: false, isPropertyNotExists: true };
             }
 
-            if (this.isMapOrSetType(name)) {
+            if (
+                this.isMapOrSetType(name) ||
+                (segments.length > 0 && segments[0] === 'size' && this.resolvesToMapOrSet(name))
+            ) {
                 return this.validateUnionMapSetMember(name, segments);
             }
 
@@ -1889,7 +1901,10 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
         if (arkts.isETSTypeReference(typeNode)) {
             const typeName = typeNode.part?.name;
-            if (typeName && arkts.isIdentifier(typeName) && typeName.name === ArrayTypes.Array) {
+            if (
+                typeName && arkts.isIdentifier(typeName) &&
+                (typeName.name === ArrayTypes.Array || typeName.name === ArrayTypes.ObservedArray)
+            ) {
                 return true;
             }
         }
@@ -1901,7 +1916,24 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private isMapOrSetType(typeName: string): boolean {
-        return typeName === ArrayTypes.Map || typeName === ArrayTypes.Set;
+        return typeName === ArrayTypes.Map || typeName === ArrayTypes.Set ||
+            typeName === ArrayTypes.ObservedMap || typeName === ArrayTypes.ObservedSet;
+    }
+
+    private resolvesToMapOrSet(typeName: string): boolean {
+        if (this.isMapOrSetType(typeName)) {
+            return true;
+        }
+        const node = this.collectNode.get(typeName);
+        if (!node || !arkts.isClassDeclaration(node) ||
+            !node.definition?.super || !arkts.isETSTypeReference(node.definition.super)) {
+            return false;
+        }
+        const partName = node.definition.super.part?.name;
+        if (!partName || !arkts.isIdentifier(partName)) {
+            return false;
+        }
+        return this.resolvesToMapOrSet(partName.name);
     }
 
     private getArrayDimensionByType(typeNode: arkts.AstNode): ArrayDimension {
@@ -1949,7 +1981,7 @@ class SyncMonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return { dimensionDelta: 0, nextElement: null, elementTypeName: '' };
         }
         const name = partName.name;
-        if (name === ArrayTypes.Array) {
+        if (name === ArrayTypes.Array || name === ArrayTypes.ObservedArray) {
             const typeArgs = current.part?.typeParams;
             if (typeArgs && typeArgs.params && typeArgs.params.length > 0) {
                 return { dimensionDelta: 1, nextElement: typeArgs.params[0], elementTypeName: '' };
