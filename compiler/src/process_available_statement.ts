@@ -280,193 +280,24 @@ function collectIdentifiers(node: ts.Node, names: Set<string>): void {
  *   }
  */
 export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
-  const eParam = ts.factory.createParameterDeclaration(
-    undefined, undefined,
-    ts.factory.createIdentifier('e'), undefined, undefined, undefined
-  );
-  const tParam = ts.factory.createParameterDeclaration(
-    undefined, undefined,
-    ts.factory.createIdentifier('t'), undefined, undefined, undefined
-  );
+  const content: string = `function ${MOCK_FUNCTION_NAME}(e, t) {
+    var r, i;
+    return 'number' == typeof t
+      ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
+      : 'string' == typeof t &&
+          !!(t = t.match(/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/)) &&
+          ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
+          e.distributionOSApiVersion > i;
+  }`;
+  const sourceFile = ts.createSourceFile('', content, ts.ScriptTarget.Latest, true);
+  stripRanges(sourceFile);
+  return sourceFile.statements[0] as ts.FunctionDeclaration;
+}
 
-  const regex = ts.factory.createRegularExpressionLiteral(
-    '/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/'
-  );
-
-  const iNode = ts.factory.createIdentifier('i');
-  const rNode = ts.factory.createIdentifier('r');
-  const tNode = ts.factory.createIdentifier('t');
-  const eNode = ts.factory.createIdentifier('e');
-
-  const numberBranch = ts.factory.createBinaryExpression(
-    ts.factory.createPrefixUnaryExpression(
-      ts.SyntaxKind.ExclamationToken,
-      ts.factory.createParenthesizedExpression(
-        ts.factory.createBinaryExpression(
-          ts.factory.createBinaryExpression(
-            ts.factory.createBinaryExpression(
-              tNode,
-              ts.factory.createToken(ts.SyntaxKind.LessThanToken),
-              ts.factory.createNumericLiteral(1)
-            ),
-            ts.factory.createToken(ts.SyntaxKind.BarBarToken),
-            ts.factory.createBinaryExpression(
-              ts.factory.createNumericLiteral(99),
-              ts.factory.createToken(ts.SyntaxKind.LessThanToken),
-              tNode
-            )
-          ),
-          ts.factory.createToken(ts.SyntaxKind.BarBarToken),
-          ts.factory.createPrefixUnaryExpression(
-            ts.SyntaxKind.ExclamationToken,
-            eNode
-          )
-        )
-      )
-    ),
-    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-    ts.factory.createBinaryExpression(
-      ts.factory.createPropertyAccessExpression(eNode, 'sdkApiVersion'),
-      ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-      tNode
-    )
-  );
-
-  const commaExpr = ts.factory.createParenthesizedExpression(
-    ts.factory.createBinaryExpression(
-      ts.factory.createBinaryExpression(
-        ts.factory.createBinaryExpression(
-          ts.factory.createBinaryExpression(
-            ts.factory.createBinaryExpression(
-              iNode,
-              ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-              ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(1))
-            ),
-            ts.factory.createToken(ts.SyntaxKind.CommaToken),
-            ts.factory.createBinaryExpression(
-              rNode,
-              ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-              ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(2))
-            )
-          ),
-          ts.factory.createToken(ts.SyntaxKind.CommaToken),
-          ts.factory.createBinaryExpression(
-            tNode,
-            ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-            ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(3))
-          )
-        ),
-        ts.factory.createToken(ts.SyntaxKind.CommaToken),
-        ts.factory.createBinaryExpression(
-          iNode,
-          ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-          ts.factory.createBinaryExpression(
-            ts.factory.createBinaryExpression(
-              ts.factory.createBinaryExpression(
-                ts.factory.createNumericLiteral('1e4'),
-                ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
-                ts.factory.createCallExpression(
-                  ts.factory.createIdentifier('Number'), undefined, [iNode]
-                )
-              ),
-              ts.factory.createToken(ts.SyntaxKind.PlusToken),
-              ts.factory.createBinaryExpression(
-                ts.factory.createNumericLiteral(100),
-                ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
-                ts.factory.createCallExpression(
-                  ts.factory.createIdentifier('Number'), undefined, [rNode]
-                )
-              )
-            ),
-            ts.factory.createToken(ts.SyntaxKind.PlusToken),
-            ts.factory.createCallExpression(
-              ts.factory.createIdentifier('Number'), undefined, [tNode]
-            )
-          )
-        )
-      ),
-      ts.factory.createToken(ts.SyntaxKind.CommaToken),
-      ts.factory.createPrefixUnaryExpression(
-        ts.SyntaxKind.ExclamationToken,
-        ts.factory.createPrefixUnaryExpression(
-          ts.SyntaxKind.ExclamationToken,
-          eNode
-        )
-      )
-    )
-  );
-
-  const stringBranch = ts.factory.createBinaryExpression(
-    ts.factory.createBinaryExpression(
-      ts.factory.createBinaryExpression(
-        ts.factory.createBinaryExpression(
-          ts.factory.createStringLiteral('string'),
-          ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
-          ts.factory.createTypeOfExpression(tNode)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-        ts.factory.createPrefixUnaryExpression(
-          ts.SyntaxKind.ExclamationToken,
-          ts.factory.createPrefixUnaryExpression(
-            ts.SyntaxKind.ExclamationToken,
-            ts.factory.createParenthesizedExpression(
-              ts.factory.createBinaryExpression(
-                tNode,
-                ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-                ts.factory.createCallExpression(
-                  ts.factory.createPropertyAccessExpression(tNode, 'match'),
-                  undefined, [regex]
-                )
-              )
-            )
-          )
-        )
-      ),
-      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-      commaExpr
-    ),
-    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-    ts.factory.createBinaryExpression(
-      ts.factory.createPropertyAccessExpression(eNode, 'distributionOSApiVersion'),
-      ts.factory.createToken(ts.SyntaxKind.GreaterThanToken),
-      iNode
-    )
-  );
-
-  const body = ts.factory.createBlock([
-    ts.factory.createVariableStatement(
-      undefined,
-      ts.factory.createVariableDeclarationList(
-        [
-          ts.factory.createVariableDeclaration(rNode, undefined, undefined, undefined),
-          ts.factory.createVariableDeclaration(iNode, undefined, undefined, undefined)
-        ],
-        ts.NodeFlags.None
-      )
-    ),
-    ts.factory.createReturnStatement(
-      ts.factory.createConditionalExpression(
-        ts.factory.createBinaryExpression(
-          ts.factory.createStringLiteral('number'),
-          ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
-          ts.factory.createTypeOfExpression(tNode)
-        ),
-        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-        numberBranch,
-        ts.factory.createToken(ts.SyntaxKind.ColonToken),
-        stringBranch
-      )
-    )
-  ]);
-
-  return ts.factory.createFunctionDeclaration(
-    undefined, undefined,
-    ts.factory.createIdentifier(MOCK_FUNCTION_NAME),
-    undefined,
-    [eParam, tParam],
-    undefined,
-    body
-  );
+function stripRanges(node: ts.Node): void {
+  node.pos = -1;
+  node.end = -1;
+  ts.forEachChild(node, stripRanges);
 }
 
 /**

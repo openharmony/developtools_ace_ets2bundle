@@ -228,7 +228,7 @@ export function processUISyntax(program: ts.Program, ut = false,
           node = ts.visitEachChild(node, processResourceNode, context);
           const statements: ts.Statement[] = Array.from(node.statements);
           if (needsAvailableHelper) {
-            statements.unshift(createHelperFunctionDeclaration());
+            statements.push(createHelperFunctionDeclaration());
           }
           insertImportModuleNode(statements, hasUseResource);
           node = ts.factory.updateSourceFile(node, statements);
@@ -259,7 +259,7 @@ export function processUISyntax(program: ts.Program, ut = false,
         GLOBAL_STYLE_FUNCTION.clear();
         const statements: ts.Statement[] = Array.from(node.statements);
         if (needsAvailableHelper) {
-          statements.unshift(createHelperFunctionDeclaration());
+          statements.push(createHelperFunctionDeclaration());
         }
         if (!partialUpdateConfig.partialUpdateMode) {
           generateId(statements, node);
