@@ -110,6 +110,7 @@ export const SDK_CONSTANTS = {
   OPEN_SOURCE_DEVICE_INFO: 'sdkApiVersion',
   OPEN_SOURCE_APIAVAILABLE_INFO: 'apiAvailable',
   OPEN_SOURCE_RUNTIME: 'OpenHarmony',
+  DEVICE_INFO_NAME: 'deviceInfo',
   DEVICE_INFO_PACKAGE: '@ohos.deviceInfo.d.ts'
 } as const;
 

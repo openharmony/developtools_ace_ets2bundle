@@ -14,199 +14,459 @@
  */
 
 import ts from 'typescript';
-import { DISTRIBUTE_API_VERSION_FUNCTION_NAME, SDK_API_VERSION_FUNCTION_NAME } from './pre_define';
+
+const MOCK_FUNCTION_NAME = '__mockApiAvailable';
+const TARGET_FUNCTION_NAME = 'apiAvailable';
 
 /**
- * Process API Available calls and convert them into version comparison expressions
- * @param node Call Expression Node to process
- * @returns Transformed expression if it's an API Available statement, otherwise returns the original node
+ * Process API Available calls and references, converting them to mock function calls or closures.
+ * @param node Node to process
+ * @returns Transformed node if it's an API Available statement, undefined otherwise
  */
-export function processAvailableStatement(node: ts.CallExpression): ts.CallExpression | ts.BinaryExpression {
+export function processAvailableStatement(node: ts.Node): ts.Node | undefined {
   if (ts.isCallExpression(node)) {
-    const args: ts.NodeArray<ts.Expression> = node.arguments;
-    if (!args || args.length !== 1) {
-      return node;
+    return transformCallExpression(node);
+  }
+  if (ts.isPropertyAccessExpression(node) && node.name.text === TARGET_FUNCTION_NAME) {
+    return transformReference(node);
+  }
+  return undefined;
+}
+
+function transformCallExpression(node: ts.CallExpression): ts.Node | undefined {
+  if (!isApiAvailableExpression(node.expression)) {
+    return undefined;
+  }
+
+  const chain = extractCallChain(node.expression);
+  if (!chain) {
+    return undefined;
+  }
+
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier(MOCK_FUNCTION_NAME),
+    undefined,
+    [chain, ...node.arguments]
+  );
+}
+
+function isUnderTypeOfExpression(node: ts.Node): boolean {
+  let current = node.parent;
+  while (current) {
+    if (ts.isTypeOfExpression(current)) {
+      return true;
     }
-    const arg: ts.Expression = args[0];
-    if (ts.isNumericLiteral(arg) || ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
-      return transformAvailableStatement(node, arg);
+    if (ts.isParenthesizedExpression(current) || ts.isNonNullExpression(current) ||
+      ts.isAsExpression(current) || ts.isTypeAssertionExpression(current)) {
+      current = current.parent;
+      continue;
     }
+    break;
+  }
+  return false;
+}
+
+function isAssignmentTarget(node: ts.Node): boolean {
+  let current: ts.Node = node;
+  while (current.parent && (ts.isParenthesizedExpression(current.parent) || ts.isNonNullExpression(current.parent) ||
+    ts.isAsExpression(current.parent) || ts.isTypeAssertionExpression(current.parent))) {
+    current = current.parent;
+  }
+  return !!(current.parent && ts.isBinaryExpression(current.parent) && current.parent.left === current &&
+    current.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+    current.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment);
+}
+
+function transformReference(node: ts.Node): ts.Node | undefined {
+  if (node.parent && ts.isCallExpression(node.parent) && node.parent.expression === node) {
+    return undefined;
+  }
+
+  if (isAssignmentTarget(node)) {
+    return undefined;
+  }
+
+  if (isUnderTypeOfExpression(node)) {
+    return undefined;
+  }
+
+  const chain = extractCallChain(node);
+  if (!chain) {
+    return undefined;
+  }
+
+  return ts.factory.createParenthesizedExpression(createClosureArrowFunction(chain));
+}
+
+function isApiAvailableExpression(expr: ts.Expression): boolean {
+  if (ts.isNonNullExpression(expr) || ts.isParenthesizedExpression(expr) ||
+    ts.isAsExpression(expr) || ts.isTypeAssertionExpression(expr)) {
+    return isApiAvailableExpression(expr.expression);
+  }
+  if (ts.isPropertyAccessExpression(expr)) {
+    return expr.name.text === TARGET_FUNCTION_NAME;
+  }
+  return false;
+}
+
+function extractCallChain(node: ts.Node): ts.Expression | null {
+  if (ts.isPropertyAccessExpression(node)) {
+    if (node.name.text === TARGET_FUNCTION_NAME) {
+      return cloneExpression(node.expression);
+    }
+    if (node.questionDotToken) {
+      return ts.factory.createPropertyAccessChain(
+        extractCallChain(node.expression),
+        node.questionDotToken,
+        node.name
+      );
+    }
+    return ts.factory.createPropertyAccessExpression(
+      extractCallChain(node.expression),
+      node.name
+    );
+  }
+  if (ts.isElementAccessExpression(node)) {
+    if (ts.isStringLiteral(node.argumentExpression) && node.argumentExpression.text === TARGET_FUNCTION_NAME) {
+      return cloneExpression(node.expression);
+    }
+    if (node.questionDotToken) {
+      return ts.factory.createElementAccessChain(
+        extractCallChain(node.expression),
+        node.questionDotToken,
+        node.argumentExpression
+      );
+    }
+    return ts.factory.createElementAccessExpression(
+      extractCallChain(node.expression),
+      node.argumentExpression
+    );
+  }
+  if (ts.isNonNullExpression(node)) {
+    return extractCallChain(node.expression);
+  }
+  if (ts.isParenthesizedExpression(node)) {
+    return ts.factory.createParenthesizedExpression(
+      extractCallChain(node.expression)
+    );
+  }
+  if (ts.isAsExpression(node)) {
+    return ts.factory.createAsExpression(
+      extractCallChain(node.expression),
+      node.type
+    );
+  }
+  if (ts.isTypeAssertionExpression(node)) {
+    return ts.factory.createTypeAssertion(
+      node.type,
+      extractCallChain(node.expression)
+    );
+  }
+  if (ts.isIdentifier(node)) {
+    return ts.factory.createIdentifier(node.text);
+  }
+  return node as ts.Expression;
+}
+
+function cloneExpression(node: ts.Expression): ts.Expression {
+  if (ts.isPropertyAccessExpression(node)) {
+    if (node.questionDotToken) {
+      return ts.factory.createPropertyAccessChain(
+        cloneExpression(node.expression),
+        node.questionDotToken,
+        node.name
+      );
+    }
+    return ts.factory.createPropertyAccessExpression(
+      cloneExpression(node.expression),
+      node.name
+    );
+  }
+  if (ts.isElementAccessExpression(node)) {
+    if (node.questionDotToken) {
+      return ts.factory.createElementAccessChain(
+        cloneExpression(node.expression),
+        node.questionDotToken,
+        node.argumentExpression
+      );
+    }
+    return ts.factory.createElementAccessExpression(
+      cloneExpression(node.expression),
+      node.argumentExpression
+    );
+  }
+  if (ts.isNonNullExpression(node)) {
+    return ts.factory.createNonNullExpression(
+      cloneExpression(node.expression)
+    );
+  }
+  if (ts.isParenthesizedExpression(node)) {
+    return ts.factory.createParenthesizedExpression(
+      cloneExpression(node.expression)
+    );
+  }
+  if (ts.isAsExpression(node)) {
+    return ts.factory.createAsExpression(
+      cloneExpression(node.expression),
+      node.type
+    );
+  }
+  if (ts.isTypeAssertionExpression(node)) {
+    return ts.factory.createTypeAssertion(
+      node.type,
+      cloneExpression(node.expression)
+    );
+  }
+  if (ts.isIdentifier(node)) {
+    return ts.factory.createIdentifier(node.text);
   }
   return node;
 }
 
-/**
- * Transform expression by replacing 'available' method with version property
- * This method recursively traverses the expression tree and creates new nodes
- * @param expression The expression to transform
- * @param apiVersionFunctionName The target version property name (sdkApiVersion or distributionOSApiVersion)
- * @return Transformed expression
- */
-function transformExpression(
-  expression: ts.Expression,
-  apiVersionFunctionName: string
-): ts.Expression | null {
-  if (ts.isNonNullExpression(expression)) {
-    // Handle non-null assertion - preserve and apply to transformed expression
-    const transformed = transformExpression(expression.expression, apiVersionFunctionName);
-    if (!transformed) {
-      return null;
-    }
-    return ts.factory.createNonNullExpression(transformed);
-  } else if (ts.isParenthesizedExpression(expression)) {
-    // Handle parenthesized expression - preserve and apply to transformed expression
-    const transformed = transformExpression(expression.expression, apiVersionFunctionName);
-    if (!transformed) {
-      return null;
-    }
-    return ts.factory.createParenthesizedExpression(transformed);
-  } else if (ts.isPropertyAccessExpression(expression)) {
-    // Handle property access expression
-    return transformPropertyAccessExpression(expression, apiVersionFunctionName);
-  } else if (ts.isElementAccessExpression(expression)) {
-    // Handle element access expression
-    return transformElementAccessExpression(expression, apiVersionFunctionName);
-  } else {
-    // Other expression types are not handled
-    return null;
-  }
-}
+function createClosureArrowFunction(chain: ts.Expression): ts.ArrowFunction {
+  const paramName = generateUniqueParamName(chain);
+  const versionParam = ts.factory.createIdentifier(paramName);
+  const mockCall = ts.factory.createCallExpression(
+    ts.factory.createIdentifier(MOCK_FUNCTION_NAME),
+    undefined,
+    [cloneExpression(chain), versionParam]
+  );
 
-/**
- * Transform property access expression by replacing 'available' with version property name
- * Supports both regular property access and optional chaining
- * @param expression The property access expression to transform
- * @param apiVersionFunctionName The target version property name
- * @return Transformed property access expression or null if transformation fails
- */
-function transformPropertyAccessExpression(
-  expression: ts.PropertyAccessExpression,
-  apiVersionFunctionName: string
-): ts.Expression | null {
-  if (ts.isPropertyAccessChain(expression)) {
-    return ts.factory.createPropertyAccessChain(
-      expression.expression,
-      expression.questionDotToken,
-      apiVersionFunctionName
-    );
-  }
-  return ts.factory.createPropertyAccessExpression(
-    expression.expression,
-    apiVersionFunctionName
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [ts.factory.createParameterDeclaration(
+      undefined,
+      undefined,
+      versionParam
+    )],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    mockCall
   );
 }
 
-/**
- * Transform element access expression by replacing 'available' with version property name
- * Supports both regular element access and optional chaining
- * @param expression The element access expression to transform
- * @param apiVersionFunctionName The target version property name
- * @return Transformed element access expression or null if transformation fails
- */
-function transformElementAccessExpression(
-  expression: ts.ElementAccessExpression,
-  apiVersionFunctionName: string
-): ts.Expression | null {
-  if (ts.isElementAccessChain(expression)) {
-    return ts.factory.createElementAccessChain(
-      expression.expression,
-      expression.questionDotToken,
-      ts.factory.createStringLiteral(apiVersionFunctionName)
-    );
+function generateUniqueParamName(chain: ts.Expression): string {
+  const usedNames = new Set<string>();
+  collectIdentifiers(chain, usedNames);
+  if (!usedNames.has('v')) {
+    return 'v';
   }
-  return ts.factory.createElementAccessExpression(
-    expression.expression,
-    ts.factory.createStringLiteral(apiVersionFunctionName)
+  let i = 0;
+  while (usedNames.has('v' + i)) {
+    i++;
+  }
+  return 'v' + i;
+}
+
+function collectIdentifiers(node: ts.Node, names: Set<string>): void {
+  if (ts.isIdentifier(node)) {
+    names.add(node.text);
+  }
+  ts.forEachChild(node, child => collectIdentifiers(child, names));
+}
+
+/**
+ * Create the __mockApiAvailable helper function declaration.
+ * Generates:
+ *   function __mockApiAvailable(e, t) {
+ *   var r, i;
+ *   return 'number' == typeof t
+ *     ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
+ *     : 'string' == typeof t &&
+ *         !!(t = t.match(/^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/)) &&
+ *         ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
+ *         e.distributionOSApiVersion > i;
+ *   }
+ */
+export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
+  const eParam = ts.factory.createParameterDeclaration(
+    undefined, undefined,
+    ts.factory.createIdentifier('e'), undefined, undefined, undefined
   );
-}
-
-/**
- * Validate numeric version value
- *
- * @param text Numeric text to validate
- * @return true if valid (1-25), false otherwise
- */
-function isValidNumericVersion(text: string): boolean {
-  if (!/^(?:[1-9]\d?)$/.test(text)) {
-    return false;
-  }
-  const numValue: number = parseInt(text, 10);
-  return !isNaN(numValue) && numValue > 0 && numValue < 26;
-}
-
-/**
- * Process and validate string version argument
- * @param arg String or template literal argument
- * @return Numeric literal or null if invalid
- */
-function processStringVersionArg(arg: ts.StringLiteral | ts.NoSubstitutionTemplateLiteral): ts.NumericLiteral | null {
-  const versionText: string = arg.text;
-  if (!versionText || versionText.trim() === '') {
-    return null;
-  }
-  const convertVersion: number = Number(convertToDistributeVersion(versionText));
-  if (isNaN(convertVersion)) {
-    return null;
-  }
-  return ts.factory.createNumericLiteral(convertVersion);
-}
-
-/**
- * Transform API Available call into a version comparison expression
- * @param node Call Expression Node
- * @param arg Version argument
- * @return Transformed expression
- */
-function transformAvailableStatement(node: ts.CallExpression, arg: ts.Expression):
-  ts.CallExpression | ts.BinaryExpression {
-  if (!ts.isCallExpression(node)) {
-    return node;
-  }
-
-  let apiVersionFunctionName: string = '';
-  let processedArg: ts.Expression;
-
-  if (ts.isNumericLiteral(arg)) {
-    apiVersionFunctionName = SDK_API_VERSION_FUNCTION_NAME;
-    if (!isValidNumericVersion(arg.getText())) {
-      return node;
-    }
-    processedArg = arg;
-  } else if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
-    apiVersionFunctionName = DISTRIBUTE_API_VERSION_FUNCTION_NAME;
-    const numericLiteral: ts.NumericLiteral | null = processStringVersionArg(arg);
-    if (!numericLiteral) {
-      return node;
-    }
-    processedArg = numericLiteral;
-  } else {
-    return node;
-  }
-
-  const transformedExpr: ts.Expression | null = transformExpression(node.expression, apiVersionFunctionName);
-  if (!transformedExpr) {
-    return node;
-  }
-
-  // Create binary comparison expression
-  const binaryExpr = ts.factory.createBinaryExpression(
-    transformedExpr,
-    ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
-    processedArg
+  const tParam = ts.factory.createParameterDeclaration(
+    undefined, undefined,
+    ts.factory.createIdentifier('t'), undefined, undefined, undefined
   );
 
-  return binaryExpr;
-}
+  const regex = ts.factory.createRegularExpressionLiteral(
+    '/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/'
+  );
 
-/**
- * Convert point based versions to numerical versions
- * @param version Pointwise Version String
- * @returns numerical version string
- */
-function convertToDistributeVersion(version: string): string {
-  return version.replace(/\'/g, '').replace(/^(\d+)\.(\d+)\.(\d+)(\(\d+\))?$/, (match, x, y, z) => {
-    return x + y.padStart(2, '0') + z.padStart(2, '0');
-  });
+  const iNode = ts.factory.createIdentifier('i');
+  const rNode = ts.factory.createIdentifier('r');
+  const tNode = ts.factory.createIdentifier('t');
+  const eNode = ts.factory.createIdentifier('e');
+
+  const numberBranch = ts.factory.createBinaryExpression(
+    ts.factory.createPrefixUnaryExpression(
+      ts.SyntaxKind.ExclamationToken,
+      ts.factory.createParenthesizedExpression(
+        ts.factory.createBinaryExpression(
+          ts.factory.createBinaryExpression(
+            ts.factory.createBinaryExpression(
+              tNode,
+              ts.factory.createToken(ts.SyntaxKind.LessThanToken),
+              ts.factory.createNumericLiteral(1)
+            ),
+            ts.factory.createToken(ts.SyntaxKind.BarBarToken),
+            ts.factory.createBinaryExpression(
+              ts.factory.createNumericLiteral(99),
+              ts.factory.createToken(ts.SyntaxKind.LessThanToken),
+              tNode
+            )
+          ),
+          ts.factory.createToken(ts.SyntaxKind.BarBarToken),
+          ts.factory.createPrefixUnaryExpression(
+            ts.SyntaxKind.ExclamationToken,
+            eNode
+          )
+        )
+      )
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(eNode, 'sdkApiVersion'),
+      ts.factory.createToken(ts.SyntaxKind.GreaterThanEqualsToken),
+      tNode
+    )
+  );
+
+  const commaExpr = ts.factory.createParenthesizedExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createBinaryExpression(
+          ts.factory.createBinaryExpression(
+            ts.factory.createBinaryExpression(
+              iNode,
+              ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+              ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(1))
+            ),
+            ts.factory.createToken(ts.SyntaxKind.CommaToken),
+            ts.factory.createBinaryExpression(
+              rNode,
+              ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+              ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(2))
+            )
+          ),
+          ts.factory.createToken(ts.SyntaxKind.CommaToken),
+          ts.factory.createBinaryExpression(
+            tNode,
+            ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+            ts.factory.createElementAccessExpression(tNode, ts.factory.createNumericLiteral(3))
+          )
+        ),
+        ts.factory.createToken(ts.SyntaxKind.CommaToken),
+        ts.factory.createBinaryExpression(
+          iNode,
+          ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+          ts.factory.createBinaryExpression(
+            ts.factory.createBinaryExpression(
+              ts.factory.createBinaryExpression(
+                ts.factory.createNumericLiteral('1e4'),
+                ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
+                ts.factory.createCallExpression(
+                  ts.factory.createIdentifier('Number'), undefined, [iNode]
+                )
+              ),
+              ts.factory.createToken(ts.SyntaxKind.PlusToken),
+              ts.factory.createBinaryExpression(
+                ts.factory.createNumericLiteral(100),
+                ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
+                ts.factory.createCallExpression(
+                  ts.factory.createIdentifier('Number'), undefined, [rNode]
+                )
+              )
+            ),
+            ts.factory.createToken(ts.SyntaxKind.PlusToken),
+            ts.factory.createCallExpression(
+              ts.factory.createIdentifier('Number'), undefined, [tNode]
+            )
+          )
+        )
+      ),
+      ts.factory.createToken(ts.SyntaxKind.CommaToken),
+      ts.factory.createPrefixUnaryExpression(
+        ts.SyntaxKind.ExclamationToken,
+        ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.ExclamationToken,
+          eNode
+        )
+      )
+    )
+  );
+
+  const stringBranch = ts.factory.createBinaryExpression(
+    ts.factory.createBinaryExpression(
+      ts.factory.createBinaryExpression(
+        ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral('string'),
+          ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+          ts.factory.createTypeOfExpression(tNode)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+        ts.factory.createPrefixUnaryExpression(
+          ts.SyntaxKind.ExclamationToken,
+          ts.factory.createPrefixUnaryExpression(
+            ts.SyntaxKind.ExclamationToken,
+            ts.factory.createParenthesizedExpression(
+              ts.factory.createBinaryExpression(
+                tNode,
+                ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+                ts.factory.createCallExpression(
+                  ts.factory.createPropertyAccessExpression(tNode, 'match'),
+                  undefined, [regex]
+                )
+              )
+            )
+          )
+        )
+      ),
+      ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+      commaExpr
+    ),
+    ts.factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    ts.factory.createBinaryExpression(
+      ts.factory.createPropertyAccessExpression(eNode, 'distributionOSApiVersion'),
+      ts.factory.createToken(ts.SyntaxKind.GreaterThanToken),
+      iNode
+    )
+  );
+
+  const body = ts.factory.createBlock([
+    ts.factory.createVariableStatement(
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [
+          ts.factory.createVariableDeclaration(rNode, undefined, undefined, undefined),
+          ts.factory.createVariableDeclaration(iNode, undefined, undefined, undefined)
+        ],
+        ts.NodeFlags.None
+      )
+    ),
+    ts.factory.createReturnStatement(
+      ts.factory.createConditionalExpression(
+        ts.factory.createBinaryExpression(
+          ts.factory.createStringLiteral('number'),
+          ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+          ts.factory.createTypeOfExpression(tNode)
+        ),
+        ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+        numberBranch,
+        ts.factory.createToken(ts.SyntaxKind.ColonToken),
+        stringBranch
+      )
+    )
+  ]);
+
+  return ts.factory.createFunctionDeclaration(
+    undefined, undefined,
+    ts.factory.createIdentifier(MOCK_FUNCTION_NAME),
+    undefined,
+    [eParam, tParam],
+    undefined,
+    body
+  );
 }
 
 /**

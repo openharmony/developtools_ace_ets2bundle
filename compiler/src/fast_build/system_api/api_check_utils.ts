@@ -2583,46 +2583,44 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     return result;
   }
 
-  const sourceFile: ts.SourceFile = node.getSourceFile();
-  if (sourceFile && sourceFile.fileName) {
-    const fileName: string = sourceFile.fileName;
-    if (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) {
-      const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_TS_FILE_ERROR)?.code}#${APIAVAILABLE_TS_FILE_ERROR}`;
-      result.valid = false;
+  if (ts.isStringLiteral(node.arguments[0]) ||
+    ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
+    isnumericLiteral(node.arguments[0])) {
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
+    const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
+    const sinceValue: string = node.arguments[0].getText().trim();
+    const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
+    const sincePoint: string[] = sinceFormat.split('.');
+    if (!compatibileReg.test(sinceFormat)) {
       result.message = diagnosticMessage;
+      result.valid = false;
       return result;
     }
-  }
-
-  const apiAvailableRegex = /\.apiAvailable\b/g;
-  let nodeText: string = node.getText() || node.getFullText();
-  const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
-  if (!apiAvailableRegex.test(nodeText)) {
-    result.message = diagnosticMessage;
-    result.valid = false;
-    return result;
-  }
-
-  const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
-  const sinceValue: string = node.arguments[0].getText().trim();
-  const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
-  const sincePoint: string[] = sinceFormat.split('.');
-  if (!compatibileReg.test(sinceFormat)) {
-    result.message = diagnosticMessage;
-    result.valid = false;
-    return result;
-  }
-  const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
-  if (isSinceVersionType) {
-    result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
-  } else {
-    if (!checkIntegerMoreVersion(sinceFormat)) {
-      result.message = diagnosticMessage;
-      result.valid = false;
+    const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
+    if (isSinceVersionType) {
+      result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
+    } else {
+      if (!checkIntegerMoreVersion(sinceFormat)) {
+        result.message = diagnosticMessage;
+        result.valid = false;
+      }
     }
   }
 
   return result;
+}
+
+function isnumericLiteral(node: ts.Node): boolean {
+  if (ts.isNumericLiteral(node)) {
+    return true;
+  }
+
+  if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
+    return node.operator === ts.SyntaxKind.MinusToken ||
+      node.operator === ts.SyntaxKind.PlusToken;
+  }
+
+  return false;
 }
 
 function checkApiAvailableCache(node: ts.Node): boolean {
@@ -2889,17 +2887,35 @@ function getSinceDiagnosticType(sinceErrorLevel?: string): ts.DiagnosticCategory
  * @param node Call expression node
  * @returns true if it's an apiAvailable statement, false otherwise
  */
-export function isApiAvailableStatement(node: ts.CallExpression): boolean {
+export function isApiAvailableStatement(node: ts.Node): boolean {
+  if (!ts.isCallExpression(node) && !ts.isPropertyAccessExpression(node)) {
+    return false;
+  }
   const checker: ts.TypeChecker | undefined = CurrentProcessFile.getChecker();
   if (checker) {
-    const type: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(node.expression));
-    if (Array.isArray(type)) {
+    const availableNode: ts.LeftHandSideExpression = ts.isPropertyAccessExpression(node) ? node : node.expression;
+    const deviceInfoNode: ts.Expression = getExpression(availableNode);
+    const availableType: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(availableNode));
+    const deviceInfoType: ts.Type | ts.Type[] = findNonNullType(checker.getTypeAtLocation(deviceInfoNode));
+    if (Array.isArray(availableType) || Array.isArray(deviceInfoType)) {
       return false;
     }
-    if (type.symbol && type.symbol.valueDeclaration?.name?.escapedText) {
-      const symbolFileName: string = type.symbol.valueDeclaration.getSourceFile().fileName;
-      const symbolName: string = type.symbol.valueDeclaration.name.escapedText.toString();
-      if (symbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) && symbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO) {
+    if (
+      availableType.symbol &&
+      availableType.symbol.valueDeclaration?.name?.escapedText &&
+      deviceInfoType.symbol &&
+      deviceInfoType.symbol.valueDeclaration?.name?.escapedText
+    ) {
+      const availableSymbolFileName: string = availableType.symbol.valueDeclaration.getSourceFile().fileName;
+      const availableSymbolName: string = availableType.symbol.valueDeclaration.name.escapedText.toString();
+      const deviceInfoSymbolFileName: string = deviceInfoType.symbol.valueDeclaration.getSourceFile().fileName;
+      const deviceInfoSymbolName: string = deviceInfoType.symbol.valueDeclaration.name.escapedText.toString();
+      if (
+        availableSymbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) &&
+        availableSymbolName === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO &&
+        deviceInfoSymbolFileName.endsWith(SDK_CONSTANTS.DEVICE_INFO_PACKAGE) &&
+        deviceInfoSymbolName === SDK_CONSTANTS.DEVICE_INFO_NAME
+      ) {
         return true;
       }
     }
@@ -2907,6 +2923,26 @@ export function isApiAvailableStatement(node: ts.CallExpression): boolean {
   return false;
 }
 
+function getExpression(node: ts.Expression): ts.Expression {
+  if (ts.isIdentifier(node)) {
+    return node;
+  }
+  if (ts.isPropertyAccessExpression(node) ||
+    ts.isElementAccessExpression(node) ||
+    ts.isCallExpression(node)) {
+    return node.expression;
+  }
+  if (ts.isNonNullExpression(node)) {
+    return getExpression(node.expression);
+  }
+  if (ts.isParenthesizedExpression(node)) {
+    return getExpression(node.expression);
+  }
+  if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) {
+    return getExpression(node.expression);
+  }
+  return node;
+}
 
 /**
  * Check if the call expression is an apiAvailable statement

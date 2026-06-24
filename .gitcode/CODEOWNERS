@@ -48,3 +48,9 @@ koala_integration.gni @VictorS67
 /compiler/src/process_source_file.ts @klooer
 /compiler/src/resolve_ohm_url.ts @klooer
 /compiler/test/ark_compiler_ut/ @klooer
+
+# Code owners for sdk check
+
+[sdk]
+/compiler/src/process_available_statement.ts @wanghanghui @majiajun518
+/compiler/src/fast_build/system_api/ @wanghanghui @majiajun518
