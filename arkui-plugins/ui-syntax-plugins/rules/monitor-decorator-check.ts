@@ -89,7 +89,10 @@ enum ArrayTypes {
     Array = 'Array',
     Map = 'Map',
     Set = 'Set',
-    Date = 'Date'
+    Date = 'Date',
+    ObservedArray = 'ObservedArray',
+    ObservedMap = 'ObservedMap',
+    ObservedSet = 'ObservedSet'
 }
 
 class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
@@ -839,7 +842,9 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return false;
         }
 
-        const isMapOrSet = this.isMapType(firstSegmentTypeName) || this.isSetType(firstSegmentTypeName);
+        const isMapOrSet = this.isMapOrSetType(firstSegmentTypeName) ||
+            (memberSegments.length > 0 && memberSegments[0] === 'size' &&
+            this.resolvesToMapOrSet(firstSegmentTypeName));
         if (!isMapOrSet) {
             return false;
         }
@@ -995,7 +1000,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return false;
         }
         const superName = node.definition.super.part?.name;
-        return !!(superName && arkts.isIdentifier(superName) && superName.name === ArrayTypes.Array);
+        if (!superName || !arkts.isIdentifier(superName)) {
+            return false;
+        }
+        return superName.name === ArrayTypes.Array || superName.name === ArrayTypes.ObservedArray;
     }
 
     private getArrayElementTypeName(node: arkts.ClassDeclaration): string | undefined {
@@ -1134,7 +1142,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
         if (arkts.isETSTypeReference(typeNode)) {
             const typeName = typeNode.part?.name;
-            if (typeName && arkts.isIdentifier(typeName) && typeName.name === ArrayTypes.Array) {
+            if (
+                typeName && arkts.isIdentifier(typeName) &&
+                (typeName.name === ArrayTypes.Array || typeName.name === ArrayTypes.ObservedArray)
+            ) {
                 return true;
             }
         }
@@ -1155,7 +1166,10 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         }
         if (arkts.isETSTypeReference(typeNode)) {
             const typeName = typeNode.part?.name;
-            if (typeName && arkts.isIdentifier(typeName) && typeName.name === ArrayTypes.Array) {
+            if (
+                typeName && arkts.isIdentifier(typeName) &&
+                (typeName.name === ArrayTypes.Array || typeName.name === ArrayTypes.ObservedArray)
+            ) {
                 const typeParams = typeNode.part?.typeParams;
                 if (typeParams && typeParams.params && typeParams.params.length > 0) {
                     return typeParams.params[0];
@@ -2255,7 +2269,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private checkMapSetSize(currentType: string, element: string, remainingPath: string[]): boolean | null {
-        const isMapOrSet = this.isMapType(currentType) || this.isSetType(currentType);
+        const isMapOrSet = this.resolvesToMapOrSet(currentType);
         if (isMapOrSet && element === 'size') {
             return remainingPath.length === 0;
         }
@@ -2263,11 +2277,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
     }
 
     private isMapType(typeName: string): boolean {
-        return typeName === ArrayTypes.Map;
+        return typeName === ArrayTypes.Map || typeName === ArrayTypes.ObservedMap;
     }
 
     private isSetType(typeName: string): boolean {
-        return typeName === ArrayTypes.Set;
+        return typeName === ArrayTypes.Set || typeName === ArrayTypes.ObservedSet;
     }
 
     private findPropTypeInParentClass(node: arkts.AstNode, element: string): string | undefined {
@@ -2284,7 +2298,7 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
         variableArray: string[],
         currentIndex: number
     ): boolean {
-        const isMapOrSetSize = (this.isMapType(currentFather) || this.isSetType(currentFather)) && element === 'size';
+        const isMapOrSetSize = this.resolvesToMapOrSet(currentFather) && element === 'size';
         if (!isMapOrSetSize) {
             return false;
         }
@@ -2468,7 +2482,11 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
             return this.handleUnionTypeFather(node, element, variableArray, i, newFather);
         }
 
-        if (this.isMapOrSetType(newFather) && i < variableArray.length - 1) {
+        if (
+            (this.isMapOrSetType(newFather) ||
+                (variableArray[i + 1] === 'size' && this.resolvesToMapOrSet(newFather))) &&
+            i < variableArray.length - 1
+        ) {
             return this.handleMapSetTypeFather(newFather, variableArray, i);
         }
 
@@ -2540,6 +2558,22 @@ class MonitorDecoratorCheckRule extends AbstractUISyntaxRule {
 
     private isMapOrSetType(typeName: string): boolean {
         return this.isMapType(typeName) || this.isSetType(typeName);
+    }
+
+    private resolvesToMapOrSet(typeName: string): boolean {
+        if (this.isMapOrSetType(typeName)) {
+            return true;
+        }
+        const node = this.collectNode.get(typeName);
+        if (!node || !arkts.isClassDeclaration(node) ||
+            !node.definition?.super || !arkts.isETSTypeReference(node.definition.super)) {
+            return false;
+        }
+        const partName = node.definition.super.part?.name;
+        if (!partName || !arkts.isIdentifier(partName)) {
+            return false;
+        }
+        return this.resolvesToMapOrSet(partName.name);
     }
 
     private handleUnionTypeWithArrayIndex(
