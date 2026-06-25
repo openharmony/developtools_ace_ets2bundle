@@ -26,6 +26,7 @@ export {
     passNodeArray,
     passStringArray,
     unpackNode,
+    unpackConstructable,
     unpackString,
     updateNodeByNode,
     unpackNativeObjectArray,

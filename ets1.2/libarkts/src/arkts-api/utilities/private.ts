@@ -55,6 +55,13 @@ export function unpackNode<T extends AstNode>(peer: KNativePointer, typeHint?: E
     return nodeFrom<T>(peer, typeHint);
 }
 
+export function unpackConstructable<T>(peer: KNativePointer, construct: new (peer: KNativePointer) => T): T | undefined {
+    if (peer === nullptr) {
+        return undefined
+    }
+    return new construct(peer)
+}
+
 export function passNode(node: ArktsObject | undefined): KNativePointer {
     return node?.peer ?? nullptr;
 }

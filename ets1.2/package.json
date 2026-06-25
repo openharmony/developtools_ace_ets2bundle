@@ -10,12 +10,12 @@
   },
   "overrides": {
     "@idlizer/arktscgen": {
-      "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-10.tgz"
+      "@idlizer/core": "./libarkts/packages/core-2.2.2-arktscgen-1.tgz"
     }
   },
   "devDependencies": {
-    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.1.10-arktscgen-10.tgz",
-    "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-10.tgz",
+    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.2.2-arktscgen-1.tgz",
+    "@idlizer/core": "./libarkts/packages/core-2.2.2-arktscgen-1.tgz",
     "@koalaui/interop": "./interop",
     "@koalaui/libarkts": "./libarkts",
     "@rollup/plugin-commonjs": "^25.0.0",
