@@ -23,7 +23,7 @@ import {
     InteropInternalNames,
     GLOBAL_ANNOTATION_MODULE
 } from './predefines';
-import { DecoratorNames } from '../../common/predefines';
+import { DECLGEN_V2, DecoratorNames } from '../../common/predefines';
 // import { BuilderLambdaNames } from '../utils';
 import { ImportCollector } from '../../common/import-collector';
 
@@ -334,4 +334,20 @@ export function hasDecoratorInterop(
         return property.function.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
     }
     return property.annotations.some((anno) => isDecoratorAnnotation(anno, decoratorName as DecoratorNames));
+}
+
+export function getDeclOriPath(declRelativePath: string | undefined): string | undefined {
+    if (!declRelativePath) {
+        return undefined;
+    }
+    const parts = declRelativePath.split('/');
+    const index = parts.indexOf(DECLGEN_V2);
+    if (index === -1) {
+        throw Error('Invalid path: no declgenV2 found');
+    }
+    const resultParts = [
+        parts[0],
+        ...parts.slice(index + 1)
+    ];
+    return resultParts.join('/');
 }

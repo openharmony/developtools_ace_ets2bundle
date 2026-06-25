@@ -28,6 +28,7 @@ import { MetaDataCollector } from '../common/metadata-collector';
 import { ImportCollector } from '../common/import-collector';
 import { hasDecoratorName, needInitializeWithoutAssignmentFromInfo } from './property-translators/utils';
 import { addMemoAnnotation } from '../collectors/memo-collectors/utils';
+import { getDeclOriPath } from './interop/utils';
 import { removeRelativePathSuffix } from '../common/arkts-utils';
 import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
 import { StructPropertyAnnotationInfo, StructPropertyAnnotations } from '../collectors/ui-collectors/records';
@@ -688,10 +689,14 @@ export class factory {
      * @returns local name used in the current file.
      */
     static addSymbolToLocalImport(symbol: arkts.AstNode, symbolName: string, localImportInfos: LocalImportInfo[]): string {
-        const declModuleName = arkts.getProgramFromAstNode(symbol)?.moduleName;
+        const declProgram = arkts.getProgramFromAstNode(symbol);
+        const declModuleName = declProgram?.moduleName;
         const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        const sourceName = ImportCollector.getInstance().getLocalSource(symbolName) 
-            ?? arkts.getProgramFromAstNode(symbol)?.relativeFilePath;
+        const sourceName =
+            ImportCollector.getInstance().getLocalSource(symbolName) ??
+            (declProgram?.isDeclForDynamicStaticInterop
+                ? getDeclOriPath(declProgram?.relativeFilePath)
+                : declProgram?.relativeFilePath);
         if (!!sourceName && !!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
             const localTypeName = ImportCollector.getInstance().getLocal(symbolName) 
                 ?? `${symbolName}_${GenSymGenerator.getInstance().id(symbolName)}`;
