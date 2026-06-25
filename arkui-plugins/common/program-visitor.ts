@@ -23,6 +23,8 @@ import { ProgramSkipper } from './program-skipper';
 import { FileManager } from './file-manager';
 import { LANGUAGE_VERSION } from './predefines';
 import { AstNodePointer } from './safe-types';
+import { InsightIntentCollector } from '../ui-plugins/insight-intent/insight-intent-collector';
+import { MetaDataCollector } from './metadata-collector';
 
 export interface ProgramVisitorOptions extends VisitorOptions {
     pluginName: string;
@@ -167,6 +169,12 @@ export class ProgramVisitor extends AbstractVisitor {
             if (currProgram.peer !== program.peer) {
                 const name: string = this.filenames.get(currProgram.peer)!;
                 const cachePath: string | undefined = this.pluginContext?.getProjectConfig()?.cachePath;
+                if (MetaDataCollector.getInstance().shouldHandleInsightIntent) {
+                    InsightIntentCollector.getInstance().recordCompiledFile(
+                        currProgram.absoluteName,
+                        currProgram.relativeFilePath
+                    );
+                }
                 if (
                     this.pluginContext &&
                     'getFileManager' in this.pluginContext &&
