@@ -37,7 +37,6 @@ import {
 } from './validate_ui_syntax';
 import {
   INNER_COMPONENT_MEMBER_DECORATORS,
-  COMPONENT_DECORATORS_PARAMS,
   COMPONENT_BUILD_FUNCTION,
   STYLE_ADD_DOUBLE_DOLLAR,
   $$,
@@ -58,7 +57,6 @@ import {
   COMPONENT_LOCAL_BUILDER_DECORATOR
 } from './pre_define';
 import {
-  INNER_COMPONENT_NAMES,
   JS_BIND_COMPONENTS,
   BUILDIN_STYLE_NAMES
 } from './component_map';
@@ -118,7 +116,7 @@ import { DIAGNOSTIC_SDK_CODE_MAP, SdkHvigorErrorInfo } from './fast_build/system
 import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 import {
   getArkTSEvoDeclFilePath,
-  redirectToDeclFileForInterop
+  queryDeclFileForInterop,
 } from './fast_build/ark_compiler/interop/process_arkts_evolution';
 import {
   FileManager,
@@ -129,6 +127,7 @@ import {
   ARKTS_1_1,
   ARKTS_1_2
 } from './fast_build/ark_compiler/interop/pre_define';
+import { DeclFileItem } from './fast_build/ark_compiler/interop/type';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -1483,6 +1482,8 @@ export function isOhExport(packageName: string | undefined, resolvedFileName: st
   return exportPaths.has(resolvedFileName);
 }
 
+export const declFilesCache: Map<string, DeclFileItem> = new Map();
+
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
   const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
@@ -1506,18 +1507,24 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
             resolvedModules.push(result.resolvedModule);
           }
         } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName)) {
-          // When result has a value and the path parsed is the source code file path of module 1.2,
-          // the parsing result needs to be modified to the decl path of module 1.2
-          const resolvedFileVersion = FileManager.getInstance().getLanguageVersionByFilePath(result.resolvedModule.resolvedFileName)?.languageVersion;
-          const queryResult = redirectToDeclFileForInterop(result.resolvedModule.resolvedFileName);
-          if (queryResult) {
-            resolvedModules.push(queryResult);
-          } else if (languageVersion === ARKTS_1_1 && resolvedFileVersion === ARKTS_1_2) {
-            interopDeclNotFoundModules.add(moduleName);
-            resolvedModules.push(null);
+          const sourceFilePath = result.resolvedModule.resolvedFileName;
+          let moduleItem: ts.ResolvedModuleFull | null | undefined;
+          let cacheItem: DeclFileItem | undefined = declFilesCache.get(sourceFilePath);
+          if (cacheItem) {
+            // hit cache
+            cacheItem.cnt += 1;
+            moduleItem = cacheItem.module;
           } else {
-            resolvedModules.push(result.resolvedModule);
+            // query sourceFilePath first time
+            let queryResult = queryDeclFileForInterop(sourceFilePath, moduleName, languageVersion, result.resolvedModule, interopDeclNotFoundModules);
+            moduleItem = queryResult;
+            declFilesCache.set(sourceFilePath, {
+              module: moduleItem,
+              cnt: 1
+            });
           }
+
+          resolvedModules.push(moduleItem);
         } else {
           resolvedModules.push(result.resolvedModule);
         }
@@ -2270,6 +2277,7 @@ export function resetEtsCheck(): void {
   warnCheckerResult.count = 0;
   resolvedModulesCache.clear();
   interopDeclNotFoundModules.clear();
+  declFilesCache.clear();
   dollarCollection.clear();
   extendCollection.clear();
   newExtendCollection.clear();
