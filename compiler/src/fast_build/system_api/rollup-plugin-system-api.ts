@@ -39,7 +39,7 @@ import {
 import { appComponentCollection } from '../../ets_checker';
 import { hasTsNoCheckOrTsIgnoreFiles } from '../ark_compiler/utils';
 import { shouldEmitJsFlagById } from '../ets_ui/rollup-plugin-ets-typescript';
-import { MergeCrossplatformModuleType } from './api_check_define';
+import { MergeCrossplatformModuleType, CrossplatformModuleData } from './api_check_define';
 
 const filterCrossplatform: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts|js)$/);
 const filter: (id: string) => boolean = createFilter(/(?<!\.d)\.(ets|ts)$/);
@@ -313,30 +313,31 @@ function mergeModuleOrComponentCollection(type: MergeCrossplatformModuleType): v
       collectExternalModuleCollection(crossPath, crossData, appImportModuleCollection, type);
     }
   }
-  function collectExternalModuleCollection(mapKey: string, mapData: any, targetMap: Map<string, Set<string>>,
-    type: MergeCrossplatformModuleType): void {
-    // Check if there are entries with the same path
-    let matchedKey: string | undefined;
-    for (const [appPath] of targetMap.entries()) {
-      if (isSamePath(appPath, mapKey)) {
-        matchedKey = appPath;
-        break;
-      }
-    }
+}
 
-    // If a matching path is found, merge module and component
-    if (matchedKey) {
-      const targetSet = targetMap.get(matchedKey);
-      if (targetSet) {
-        for (const moduleItem of mapData[type]) {
-          targetSet.add(moduleItem);
-        }
-      }
-    } else {
-      // If no match is found, add a key value pair in targetMap
-      // Use the original format of crossPath as the key, or you can standardize the format
-      const newSet = new Set<string>(mapData[type]);
-      targetMap.set(mapKey, newSet);
+function collectExternalModuleCollection(mapKey: string, mapData: CrossplatformModuleData, targetMap: Map<string, Set<string>>,
+  type: MergeCrossplatformModuleType): void {
+  // Check if there are entries with the same path
+  let matchedKey: string | undefined;
+  for (const [appPath] of targetMap.entries()) {
+    if (isSamePath(appPath, mapKey)) {
+      matchedKey = appPath;
+      break;
     }
+  }
+
+  // If a matching path is found, merge module and component
+  if (matchedKey) {
+    const targetSet = targetMap.get(matchedKey);
+    if (targetSet && mapData[type]) {
+      for (const moduleItem of mapData[type]) {
+        targetSet.add(moduleItem);
+      }
+    }
+  } else {
+    // If no match is found, add a key value pair in targetMap
+    // Use the original format of crossPath as the key, or you can standardize the format
+    const newSet = new Set<string>(mapData[type]);
+    targetMap.set(mapKey, newSet);
   }
 }

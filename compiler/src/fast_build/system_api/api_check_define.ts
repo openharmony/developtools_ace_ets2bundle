@@ -355,3 +355,11 @@ export enum MergeCrossplatformModuleType {
   MODULE = 'module',
   COMPONENT = 'component'
 }
+
+/**
+ * Type of merge crossplatform configData
+ */
+export interface CrossplatformModuleData{
+  module:string[],
+  component:string[]
+}

@@ -234,7 +234,7 @@ export class SdkComparisonHelper {
     }
     return true;
   }
-  
+
   /**
    * Extracts comparison parts from a binary expression and resolves declaration values.
    *
