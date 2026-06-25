@@ -115,8 +115,8 @@ import { AvailableAnnotationChecker } from './api_checker/available_version_chec
 import { SinceWarningSuppressor } from './api_validator/since_warning_suppressor';
 import { AvailableWarningSuppressor } from './api_validator/available_warning_suppressor';
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
-import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 import { SDK_CONSTANTS } from './api_validator/api_validate_node';
+import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
 
 /**
  * bundle info
@@ -1596,7 +1596,7 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
  * @param retype - The retry type name.
  * @returns Returns the regex from external plugins.
  */
-function getBuildVersionRegex(tag, functionType) {
+function getBuildVersionRegex(tag, functionType) : RegExp | undefined {
   const tagName = `${projectConfig.runtimeOS}/${tag}/${functionType}`;
   const externalCheckers = externalApiCheckPlugin.get(tagName);
   if (!externalCheckers || externalCheckers.length === 0) {
@@ -2185,14 +2185,14 @@ export function comparePointVersion(firstVersion: string, secondVersion: string)
 interface PlaceholderConfig {
   codes: string[];
   placeholder: string;
-  extractValue: (cause: string, context?: any) => string | null;
+  extractValue: (cause: string) => string | null;
 }
 
 const PLACEHOLDER_HANDLERS: PlaceholderConfig[] = [
   {
     codes: ['11706011', '11706012'],
     placeholder: '$ApiVersion',
-    extractValue: (cause: string) => {
+    extractValue: (cause: string): string | null => {
       const match = cause.match(/version\s+([\S+.]+(?=\. However,))/i);
       return match ? match[1].trim() : null;
     }
