@@ -85,6 +85,7 @@ interface FileUnit {
 }
 
 type FileUnitMap = Map<string, FileUnit>;
+type ModuleResolutionResult = ts.ResolvedModuleFull | undefined;
 
 function buildFullFileMap(dependentModuleMap: Map<string, ArkTSEvolutionModule>): FileUnitMap {
   const fileMap = new Map<string, FileUnit>();
@@ -370,7 +371,12 @@ export class DeclfileProductor {
     DeclfileProductor.sdkConfigs = [...DeclfileProductor.defaultSdkConfigs];
   }
 
-  resolveSdkAliasModule(moduleName: string, containingFile: string, fileUnitMap: FileUnitMap): ts.ResolvedModuleFull | null {
+  resolveSdkAliasModule(
+    moduleName: string,
+    containingFile: string,
+    fileUnitMap: FileUnitMap,
+    resolutionHost: ts.ModuleResolutionHost
+  ): ts.ResolvedModuleFull | null {
     const packageName = fileUnitMap.get(toUnixPath(containingFile))?.moduleName;
     if (!packageName) {
       return null;
@@ -387,68 +393,79 @@ export class DeclfileProductor {
       return null;
     }
     const originalModuleName = originalModuleAlias.originalAPIName;
-    return resolveInteropSdkModule(originalModuleName);
+    return resolveInteropSdkModule(originalModuleName, resolutionHost);
   }
 
-  getModuleNamesResolver(fileMap: FileUnitMap): (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[] {
+  getModuleNamesResolver(fileMap: FileUnitMap): (moduleName: string[], containingFile: string) => ModuleResolutionResult[] {
     const self = this;
-    const moduleResolutionCache = new Map<string, ts.ResolvedModuleFull | undefined>();
+    const moduleResolutionCache = new Map<string, ModuleResolutionResult[]>();
+    const cachedModuleResolutionHost = createCachedModuleResolutionHost();
+    const tsResolutionCache = ts.createModuleResolutionCache(
+      DeclfileProductor.projectPath || ts.sys.getCurrentDirectory(),
+      getCanonicalFileName,
+      DeclfileProductor.compilerOptions
+    );
 
-    function getModuleResolutionCacheKey(moduleName: string, containingFile: string): string {
-      return `${toUnixPath(containingFile)}\x00${moduleName}`;
+    function getModuleResolutionCacheKey(moduleNames: string[], containingFile: string): string {
+      return `${toUnixPath(containingFile)}\x00${moduleNames.join('\x00')}`;
     }
 
-    function resolveModuleName(moduleName: string, containingFile: string): ts.ResolvedModuleFull | undefined {
+    function resolveModuleName(moduleName: string, containingFile: string): ModuleResolutionResult {
       let resolvedModule: ts.ResolvedModuleFull | null = null;
 
-      resolvedModule = resolveWithDefault(moduleName, containingFile);
+      resolvedModule = resolveWithDefault(
+        moduleName,
+        containingFile,
+        cachedModuleResolutionHost,
+        tsResolutionCache
+      );
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      resolvedModule = resolveSdkModule(moduleName);
+      resolvedModule = resolveSdkModule(moduleName, cachedModuleResolutionHost);
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      resolvedModule = self.resolveSdkAliasModule(moduleName, containingFile, fileMap);
+      resolvedModule = self.resolveSdkAliasModule(moduleName, containingFile, fileMap, cachedModuleResolutionHost);
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      resolvedModule = resolveStaticInteropSdkModule(moduleName);
+      resolvedModule = resolveStaticInteropSdkModule(moduleName, cachedModuleResolutionHost);
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      resolvedModule = resolveEtsModule(moduleName, containingFile);
+      resolvedModule = resolveEtsModule(moduleName, containingFile, cachedModuleResolutionHost);
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      resolvedModule = resolveTsModule(moduleName, containingFile);
+      resolvedModule = resolveTsModule(moduleName, containingFile, cachedModuleResolutionHost);
       if (resolvedModule) {
         return resolvedModule;
       }
 
-      return resolveOtherModule(moduleName, containingFile) ?? undefined;
+      return resolveOtherModule(moduleName, containingFile, cachedModuleResolutionHost) ?? undefined;
     }
 
-    function resolveModuleNames(moduleNames: string[], containingFile: string): (ts.ResolvedModuleFull | undefined)[] {
-      const resolvedModules: (ts.ResolvedModuleFull | undefined)[] = [];
+    function resolveModuleNames(moduleNames: string[], containingFile: string): ModuleResolutionResult[] {
+      const cacheKey = getModuleResolutionCacheKey(moduleNames, containingFile);
+      const cachedResolvedModules = moduleResolutionCache.get(cacheKey);
+      if (cachedResolvedModules) {
+        return cachedResolvedModules;
+      }
+
+      const resolvedModules: ModuleResolutionResult[] = [];
 
       for (const moduleName of moduleNames) {
-        const cacheKey = getModuleResolutionCacheKey(moduleName, containingFile);
-        if (moduleResolutionCache.has(cacheKey)) {
-          resolvedModules.push(moduleResolutionCache.get(cacheKey));
-          continue;
-        }
-
         const resolvedModule = resolveModuleName(moduleName, containingFile);
-        moduleResolutionCache.set(cacheKey, resolvedModule);
         resolvedModules.push(resolvedModule);
       }
 
+      moduleResolutionCache.set(cacheKey, resolvedModules);
       return resolvedModules;
     }
 
@@ -456,21 +473,34 @@ export class DeclfileProductor {
   }
 }
 
-function resolveWithDefault(moduleName: string, containingFile: string): ts.ResolvedModuleFull | null {
+function resolveWithDefault(
+  moduleName: string,
+  containingFile: string,
+  resolutionHost: ts.ModuleResolutionHost,
+  resolutionCache: ts.ModuleResolutionCache
+): ts.ResolvedModuleFull | null {
   const result = ts.resolveModuleName(
     moduleName,
     containingFile,
     DeclfileProductor.compilerOptions,
-    moduleResolutionHost
+    resolutionHost,
+    resolutionCache
   );
-  if (!result.resolvedModule) {
+  return getResolvedModuleFromDefaultResolution(result, resolutionHost);
+}
+
+function getResolvedModuleFromDefaultResolution(
+  result: ts.ResolvedModuleWithFailedLookupLocations | undefined,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
+  if (!result?.resolvedModule) {
     return null;
   }
 
   const resolvedFileName = result.resolvedModule.resolvedFileName;
   if (resolvedFileName && path.extname(resolvedFileName) === EXTNAME_JS) {
     const resultDETSPath = resolvedFileName.replace(EXTNAME_JS, EXTNAME_D_ETS);
-    if (ts.sys.fileExists(resultDETSPath)) {
+    if (resolutionHost.fileExists(resultDETSPath)) {
       return getResolveModule(resultDETSPath, EXTNAME_D_ETS);
     }
   }
@@ -478,16 +508,23 @@ function resolveWithDefault(moduleName: string, containingFile: string): ts.Reso
   return result.resolvedModule;
 }
 
-function resolveEtsModule(moduleName: string, containingFile: string): ts.ResolvedModuleFull | null {
+function resolveEtsModule(
+  moduleName: string,
+  containingFile: string,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
   if (!/\.ets$/.test(moduleName) || /\.d\.ets$/.test(moduleName)) {
     return null;
   }
 
   const modulePath = path.resolve(path.dirname(containingFile), moduleName);
-  return ts.sys.fileExists(modulePath) ? getResolveModule(modulePath, '.ets') : null;
+  return resolutionHost.fileExists(modulePath) ? getResolveModule(modulePath, '.ets') : null;
 }
 
-function resolveStaticInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
+function resolveStaticInteropSdkModule(
+  moduleName: string,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
   const prefixRegex = new RegExp(`^static@(${DeclfileProductor.sdkConfigPrefix})\\.`, 'i');
   if (!prefixRegex.test(moduleName.trim())) {
     return null;
@@ -504,7 +541,7 @@ function resolveStaticInteropSdkModule(moduleName: string): ts.ResolvedModuleFul
     const isDETS: boolean = resolveModuleInfo.isEts;
 
     const moduleKey = actualModuleName + (isDETS ? '.d.ets' : '.d.ts');
-    if (DeclfileProductor.systemModules.includes(moduleKey) && ts.sys.fileExists(modulePath)) {
+    if (DeclfileProductor.systemModules.includes(moduleKey) && resolutionHost.fileExists(modulePath)) {
       return getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts');
     }
   }
@@ -512,7 +549,10 @@ function resolveStaticInteropSdkModule(moduleName: string): ts.ResolvedModuleFul
   return null;
 }
 
-function resolveInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
+function resolveInteropSdkModule(
+  moduleName: string,
+  resolutionHost: ts.ModuleResolutionHost = moduleResolutionHost
+): ts.ResolvedModuleFull | null {
   const prefixRegex = new RegExp(`^@(${DeclfileProductor.sdkConfigPrefix})\\.`, 'i');
   if (!prefixRegex.test(moduleName.trim())) {
     return null;
@@ -524,7 +564,7 @@ function resolveInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | nu
     const isDETS: boolean = resolveModuleInfo.isEts;
 
     const moduleKey = moduleName + (isDETS ? '.d.ets' : '.d.ts');
-    if (DeclfileProductor.systemModules.includes(moduleKey) && ts.sys.fileExists(modulePath)) {
+    if (DeclfileProductor.systemModules.includes(moduleKey) && resolutionHost.fileExists(modulePath)) {
       return getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts');
     }
   }
@@ -532,7 +572,10 @@ function resolveInteropSdkModule(moduleName: string): ts.ResolvedModuleFull | nu
   return null;
 }
 
-function resolveSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
+function resolveSdkModule(
+  moduleName: string,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
   const prefixRegex = new RegExp(`^@(${DeclfileProductor.sdkConfigPrefix})\\.`, 'i');
   if (!prefixRegex.test(moduleName.trim())) {
     return null;
@@ -544,7 +587,7 @@ function resolveSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
     const isDETS: boolean = resolveModuleInfo.isEts;
 
     const moduleKey = moduleName + (isDETS ? '.d.ets' : '.d.ts');
-    if (DeclfileProductor.systemModules.includes(moduleKey) && ts.sys.fileExists(modulePath)) {
+    if (DeclfileProductor.systemModules.includes(moduleKey) && resolutionHost.fileExists(modulePath)) {
       return getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts');
     }
   }
@@ -552,16 +595,24 @@ function resolveSdkModule(moduleName: string): ts.ResolvedModuleFull | null {
   return null;
 }
 
-function resolveTsModule(moduleName: string, containingFile: string): ts.ResolvedModuleFull | null {
+function resolveTsModule(
+  moduleName: string,
+  containingFile: string,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
   if (!/\.ts$/.test(moduleName)) {
     return null;
   }
 
   const modulePath = path.resolve(path.dirname(containingFile), moduleName);
-  return ts.sys.fileExists(modulePath) ? getResolveModule(modulePath, '.ts') : null;
+  return resolutionHost.fileExists(modulePath) ? getResolveModule(modulePath, '.ts') : null;
 }
 
-function resolveOtherModule(moduleName: string, containingFile: string): ts.ResolvedModuleFull | null {
+function resolveOtherModule(
+  moduleName: string,
+  containingFile: string,
+  resolutionHost: ts.ModuleResolutionHost
+): ts.ResolvedModuleFull | null {
   const apiModulePath = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
   const systemDETSModulePath = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
   const kitModulePath = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
@@ -577,19 +628,19 @@ function resolveOtherModule(moduleName: string, containingFile: string): ts.Reso
     moduleName.endsWith('.d.ets') ? moduleName : moduleName + EXTNAME_D_ETS
   );
 
-  if (ts.sys.fileExists(apiModulePath)) {
+  if (resolutionHost.fileExists(apiModulePath)) {
     return getResolveModule(apiModulePath, '.d.ts');
-  } else if (ts.sys.fileExists(systemDETSModulePath)) {
+  } else if (resolutionHost.fileExists(systemDETSModulePath)) {
     return getResolveModule(systemDETSModulePath, '.d.ets');
-  } else if (ts.sys.fileExists(kitModulePath)) {
+  } else if (resolutionHost.fileExists(kitModulePath)) {
     return getResolveModule(kitModulePath, '.d.ts');
-  } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
+  } else if (resolutionHost.fileExists(kitSystemDETSModulePath)) {
     return getResolveModule(kitSystemDETSModulePath, '.d.ets');
-  } else if (ts.sys.fileExists(jsModulePath)) {
+  } else if (resolutionHost.fileExists(jsModulePath)) {
     return getResolveModule(jsModulePath, '.js');
-  } else if (ts.sys.fileExists(fileModulePath)) {
+  } else if (resolutionHost.fileExists(fileModulePath)) {
     return getResolveModule(fileModulePath, '.js');
-  } else if (ts.sys.fileExists(DETSModulePath)) {
+  } else if (resolutionHost.fileExists(DETSModulePath)) {
     return getResolveModule(DETSModulePath, '.d.ets');
   } else {
     const srcIndex = DeclfileProductor.projectPath.indexOf('src' + path.sep + 'main');
@@ -598,7 +649,7 @@ function resolveOtherModule(moduleName: string, containingFile: string): ts.Reso
         DeclfileProductor.projectPath.substring(0, srcIndex),
         moduleName + path.sep + 'index' + EXTNAME_D_ETS
       );
-      if (ts.sys.fileExists(DETSModulePathFromModule)) {
+      if (resolutionHost.fileExists(DETSModulePathFromModule)) {
         return getResolveModule(DETSModulePathFromModule, '.d.ets');
       }
     }
@@ -634,22 +685,82 @@ function getRelativePath(filePath: string, pkgPath: string): string {
   return projectFilePath;
 }
 
-const moduleResolutionHost: ts.ModuleResolutionHost = {
-  fileExists: (fileName: string): boolean => {
-    let exists = ts.sys.fileExists(fileName);
-    if (exists === undefined) {
-      exists = ts.sys.fileExists(fileName);
-    }
-    return exists;
-  },
+function getCanonicalFileName(fileName: string): string {
+  return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+}
 
-  readFile(fileName: string): string | undefined {
-    return ts.sys.readFile(fileName);
-  },
-  realpath(path: string): string {
-    return ts.sys.realpath!(path);
-  },
-  trace(s: string): void {
-    console.info(s);
-  }
-};
+function getFileSystemCacheKey(fileName: string): string {
+  return getCanonicalFileName(toUnixPath(fileName));
+}
+
+function createCachedModuleResolutionHost(): ts.ModuleResolutionHost {
+  const fileExistsCache = new Map<string, boolean>();
+  const directoryExistsCache = new Map<string, boolean>();
+  const readFileCache = new Map<string, string | undefined>();
+  const realpathCache = new Map<string, string>();
+  const getDirectoriesCache = new Map<string, string[]>();
+
+  return {
+    fileExists(fileName: string): boolean {
+      const cacheKey = getFileSystemCacheKey(fileName);
+      if (fileExistsCache.has(cacheKey)) {
+        return fileExistsCache.get(cacheKey)!;
+      }
+      const exists = ts.sys.fileExists(fileName);
+      fileExistsCache.set(cacheKey, exists);
+      return exists;
+    },
+
+    readFile(fileName: string): string | undefined {
+      const cacheKey = getFileSystemCacheKey(fileName);
+      if (readFileCache.has(cacheKey)) {
+        return readFileCache.get(cacheKey);
+      }
+      const content = ts.sys.readFile(fileName);
+      readFileCache.set(cacheKey, content);
+      return content;
+    },
+
+    directoryExists(directoryName: string): boolean {
+      const cacheKey = getFileSystemCacheKey(directoryName);
+      if (directoryExistsCache.has(cacheKey)) {
+        return directoryExistsCache.get(cacheKey)!;
+      }
+      const exists = ts.sys.directoryExists ? ts.sys.directoryExists(directoryName) : fs.existsSync(directoryName);
+      directoryExistsCache.set(cacheKey, exists);
+      return exists;
+    },
+
+    realpath(filePath: string): string {
+      const cacheKey = getFileSystemCacheKey(filePath);
+      if (realpathCache.has(cacheKey)) {
+        return realpathCache.get(cacheKey)!;
+      }
+      const realPath = ts.sys.realpath ? ts.sys.realpath(filePath) : filePath;
+      realpathCache.set(cacheKey, realPath);
+      return realPath;
+    },
+
+    getCurrentDirectory(): string {
+      return DeclfileProductor.projectPath || ts.sys.getCurrentDirectory();
+    },
+
+    getDirectories(directoryName: string): string[] {
+      const cacheKey = getFileSystemCacheKey(directoryName);
+      if (getDirectoriesCache.has(cacheKey)) {
+        return getDirectoriesCache.get(cacheKey)!;
+      }
+      const directories = ts.sys.getDirectories ? ts.sys.getDirectories(directoryName) : [];
+      getDirectoriesCache.set(cacheKey, directories);
+      return directories;
+    },
+
+    trace(s: string): void {
+      console.info(s);
+    },
+
+    useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames
+  };
+}
+
+const moduleResolutionHost: ts.ModuleResolutionHost = createCachedModuleResolutionHost();
