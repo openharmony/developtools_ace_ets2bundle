@@ -297,7 +297,7 @@ function replaceKitModules(): void {
  */
 function isSamePath(targetPath: string, currentPath: string): boolean {
   // Convert to a standardized format uniformly
-  const normalize = (p: string) => path.normalize(p).replace(/\\/g, '/');
+  const normalize = (p: string):string => path.normalize(p).replace(/\\/g, '/');
   return normalize(targetPath) === normalize(currentPath);
 }
 
