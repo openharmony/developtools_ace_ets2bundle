@@ -61,8 +61,8 @@ class ComputedDecoratorCheckRule extends AbstractUISyntaxRule {
                 return;
             }
 
-            if (arkts.isMethodDefinition(member)) {
-                const methodName = getIdentifierName(member);
+            if (arkts.isMethodDefinition(member) && member.id) {
+                const methodName = getIdentifierName(member.id);
                 computedDecorator = findDecorator(member.function!, PresetDecorators.COMPUTED);
 
                 this.validateComputedMethodKind(member, computedDecorator, methodName);

@@ -21,10 +21,14 @@ import {
     checkCustomDialogMissingController,
     checkEntryStructNoExport,
     checkGlobalReuse,
+    checkLifecycleDecorator,
     checkMainPagesEntry,
     checkNoDuplicatePreview,
     checkNoSameAsBuiltInAttribute,
+    checkObservedV2TraceUsageValidation,
     checkReusableV2Decorator,
+    checkValidateDecoratorTarget,
+    checkWatchDecoratorFunction,
     resetMainPagesEntry,
     resetNoDuplicatePreview,
 } from './rules';
@@ -40,10 +44,14 @@ export class StructValidator extends BaseValidator<arkts.ClassDeclaration, Custo
         checkReusableV2Decorator.bind(this)(node);
         checkComponentV2Mix.bind(this)(node);
         checkCustomDialogMissingController.bind(this)(node);
+        checkWatchDecoratorFunction.bind(this)(node);
         checkNoSameAsBuiltInAttribute.bind(this)(node);
         checkEntryStructNoExport.bind(this)(node);
         checkGlobalReuse.bind(this)(node);
         checkMainPagesEntry.bind(this)(node);
         checkNoDuplicatePreview.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        checkLifecycleDecorator.bind(this)(node);
     }
 }

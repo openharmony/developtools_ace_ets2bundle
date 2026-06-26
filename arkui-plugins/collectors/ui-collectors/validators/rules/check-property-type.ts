@@ -34,7 +34,7 @@ const SimpleTypesUnSupported = [
 
 const ARRAY_TYPES = ['Array', 'Map', 'Set', 'Date'];
 
-const PropErrorType = ['Any'];
+const PropErrorType = ['Any', 'unknown'];
 
 /**
  * 校验规则：用于检验特定装饰器的类型。
@@ -94,6 +94,9 @@ function validateBuilderParamInit(
     if (!metadata.annotationInfo?.hasBuilderParam || !node.value || !node.key) {
         return;
     }
+    if (arkts.isArrowFunctionExpression(node.value)) {
+        return;
+    }
     const methodIdentifier = extractMethodIdentifier(node.value);
     const isMethodWithBuilder = methodIdentifier ? isMethodOrFunctionWithBuilderDecorator(methodIdentifier) : undefined;
     if (!methodIdentifier || isMethodWithBuilder === false) {
@@ -149,7 +152,7 @@ function validateObjectLinkPropertyType(
         this.report({
             node: annotationIdentifier,
             level: LogType.ERROR,
-            message: `'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed'`,
+            message: `'@ObjectLink' cannot be used with this type. Apply it only to classes decorated by '@Observed'.`,
         });
     }
     if (arkts.isETSUnionType(propertyType)) {
@@ -187,11 +190,19 @@ function typeNodeIsAnyAndBigint(member: arkts.TypeNode): boolean | undefined {
 }
 
 function isMethodOrFunctionWithBuilderDecorator(node: arkts.Identifier): boolean {
-    const methodDecl = arkts.getPeerIdentifierDecl(node.peer);
+    const decl = arkts.getPeerIdentifierDecl(node.peer);
+    if (!decl) {
+        return false;
+    }
     if (
-        methodDecl &&
-        arkts.isMethodDefinition(methodDecl) &&
-        getAnnotationUsageByName(methodDecl.function!.annotations, DecoratorNames.BUILDER)
+        arkts.isMethodDefinition(decl) &&
+        getAnnotationUsageByName(decl.function!.annotations, DecoratorNames.BUILDER)
+    ) {
+        return true;
+    }
+    if (
+        arkts.isFunctionDeclaration(decl) &&
+        getAnnotationUsageByName(decl.annotations, DecoratorNames.BUILDER)
     ) {
         return true;
     }
@@ -236,7 +247,7 @@ function areAllUnionMembersValid(unionType: arkts.ETSUnionType): boolean {
             ) {
                 return false;
             }
-            if (checkTypeClassWithObservedV2(propertyTypeIdentifier) || ARRAY_TYPES.includes(propertyTypeName)) {
+            if (checkTypeClassWithObservedV2(propertyTypeIdentifier) === false || ARRAY_TYPES.includes(propertyTypeName)) {
                 isValidType = true;
             }
         } else if (

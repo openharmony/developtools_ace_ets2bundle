@@ -17,13 +17,25 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { FunctionInfo } from '../records';
 import {
+    checkLifecycleDecorator,
     checkTrackDecorator,
     checkComponentV2StateUsage,
+    checkConsumerProviderDecorator,
+    checkNoVariablesChangeInBuild,
+    checkObservedV2TraceUsageValidation,
+    checkOneDecoratorOnFunctionMethod,
+    checkValidateDecoratorTarget,
 } from './rules';
 
 export class FunctionValidator extends BaseValidator<arkts.MethodDefinition, FunctionInfo> {
     reportIfViolated(node: arkts.MethodDefinition): void {
+        checkLifecycleDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
         checkComponentV2StateUsage.bind(this)(node);
+        checkOneDecoratorOnFunctionMethod.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkConsumerProviderDecorator.bind(this)(node);
+        checkNoVariablesChangeInBuild.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
     }
 }

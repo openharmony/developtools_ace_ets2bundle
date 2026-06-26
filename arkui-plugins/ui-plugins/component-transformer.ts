@@ -18,6 +18,7 @@ import { AbstractVisitor, VisitorOptions } from '../common/abstract-visitor';
 import {
     getCustomComponentOptionsName,
     CustomComponentInfo,
+    CustomComponentAnontations,
     collectCustomComponentScopeInfo,
     isComponentStruct,
     isCustomDialogControllerOptions,
@@ -64,7 +65,12 @@ import {
 } from '../common/predefines';
 import { ImportCollector } from '../common/import-collector';
 import { MetaDataCollector } from '../common/metadata-collector';
-import { LogCollector } from '../common/log-collector';
+import {
+    LogCollector,
+    createSuggestion,
+    getPositionRangeFromAnnotation,
+    getPositionRangeFromNode,
+} from '../common/log-collector';
 import { NamespaceProcessor } from './namespace-processor';
 import { AstNodePointer } from '../common/safe-types';
 import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
@@ -142,6 +148,13 @@ export class ComponentTransformer extends AbstractVisitor {
         const info: ScopeInfo | undefined = collectCustomComponentScopeInfo(node);
         if (info) {
             this.scopeInfos.push(info);
+        } else {
+            // info is undefined means the struct lacks @Component, @ComponentV2, or @CustomDialog
+            LogCollector.getInstance().collectLogInfo({
+                node: node,
+                message: `Annotation '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct '${node.definition.ident.name}'.`,
+                level: LogType.ERROR,
+            });
         }
     }
 
@@ -349,6 +362,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 });
                 return node;
             }
+            this.validateBuildMethod(node, className);
             const innerClassFields: arkts.AstNode[] = [];
             definition.body.forEach((it) => {
                 if (!arkts.isClassProperty(it)) {
@@ -368,10 +382,12 @@ export class ComponentTransformer extends AbstractVisitor {
         NamespaceProcessor.getInstance().addInnerClassToCurrentNamespace(customComponentInnerClass);
 
         if (!!scopeInfo.annotations?.entry) {
+            this.validateEntryParams(scopeInfo.annotations);
             this.entryAnnoInfo.push({
                 name: className,
                 startPosition: scopeInfo.annotations.entry.startPosition,
-                endPosition: scopeInfo.annotations.entry.endPosition
+                endPosition: scopeInfo.annotations.entry.endPosition,
+                annotation: scopeInfo.annotations.entry,
             });
             const routeName = getEntryRouteParam(definition);
             if (routeName && routeName.value) {
@@ -394,6 +410,76 @@ export class ComponentTransformer extends AbstractVisitor {
         } else {
             return arkts.factory.updateClassDeclaration(node, newDefinition);
         }
+    }
+
+    private validateBuildMethod(node: arkts.ETSStructDeclaration, className: string): void {
+        const buildMethods = node.definition!.body.filter((member): member is arkts.MethodDefinition => {
+            if (!arkts.isMethodDefinition(member)) {
+                return false;
+            }
+            return !!member.id && arkts.isIdentifier(member.id) && member.id.name === 'build';
+        });
+
+        if (buildMethods.length === 0) {
+            const position = arkts.createSourcePosition(node.endPosition.getIndex() - 1, node.endPosition.getLine());
+            LogCollector.getInstance().collectLogInfo({
+                node: node.definition?.ident ?? node,
+                message: `The struct '${className}' must have at least and at most one 'build' method.`,
+                level: LogType.ERROR,
+                suggestions: [createSuggestion('build() {\n}\n', position, position, `Add a build function to the custom component`)],
+            });
+            return;
+        }
+
+        if (buildMethods.length > 1) {
+            for (const buildMethod of buildMethods) {
+                LogCollector.getInstance().collectLogInfo({
+                    node: buildMethod.id ?? buildMethod,
+                    message: `The struct '${className}' must have at least and at most one 'build' method.`,
+                    level: LogType.ERROR,
+                    suggestions: [createSuggestion('', buildMethod.startPosition, buildMethod.endPosition, `Remove the duplicate build function`)],
+                });
+            }
+            return;
+        }
+
+        const buildMethod = buildMethods[0];
+        const params = buildMethod.function?.params ?? [];
+        if (params.length > 0) {
+            const firstParam = params[0];
+            const lastParam = params[params.length - 1];
+            for (const param of params) {
+                LogCollector.getInstance().collectLogInfo({
+                    node: param,
+                    message: `The 'build' method can not have arguments.`,
+                    level: LogType.ERROR,
+                    suggestions: [createSuggestion('', firstParam.startPosition, lastParam.endPosition, `Remove the parameters of the build function`)],
+                });
+            }
+        }
+    }
+
+    private validateEntryParams(annotations: CustomComponentAnontations): void {
+        const entryAnnotation = annotations.entry;
+        const componentV2Annotation = annotations.componentV2;
+        if (!entryAnnotation || !componentV2Annotation) {
+            return;
+        }
+        const hasInvalidParam = entryAnnotation.properties.some(
+            (property) =>
+                arkts.isClassProperty(property) &&
+                property.key &&
+                arkts.isIdentifier(property.key) &&
+                (property.key.name === 'storage' || property.key.name === 'useSharedStorage')
+        );
+        if (!hasInvalidParam) {
+            return;
+        }
+        LogCollector.getInstance().collectLogInfo({
+            node: entryAnnotation,
+            message: `The "@Entry" decorator that has "storage" or "useSharedStorage" parameters cannot be used together with the "@ComponentV2" decorator.`,
+            level: LogType.ERROR,
+        });
     }
 
     getSystemEnvKeyType(envKeyClass: string): string | undefined {
@@ -693,6 +779,24 @@ export class ComponentTransformer extends AbstractVisitor {
         return node;
     }
 
+    private checkDuplicateEntry(): void {
+        if (this.entryAnnoInfo.length <= 1) {
+            return;
+        }
+        for (const info of this.entryAnnoInfo) {
+            const annotation = info.annotation;
+            if (!annotation) {
+                continue;
+            }
+            LogCollector.getInstance().collectLogInfo({
+                node: annotation,
+                message: `A page can't contain more than one '@Entry' annotation.`,
+                level: LogType.ERROR,
+                suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the duplicate '@Entry' annotation.`)],
+            });
+        }
+    }
+
     visitETSModule(node: arkts.ETSModule): arkts.ETSModule {
         NamespaceProcessor.getInstance().enter();
         const isNamespace = node.isNamespace;
@@ -763,6 +867,10 @@ export class ComponentTransformer extends AbstractVisitor {
         if (!arkts.isETSModule(node)) {
             return node;
         }
-        return this.visitETSModule(node);
+        const newNode = this.visitETSModule(node);
+        this.checkDuplicateEntry();
+        LogCollector.getInstance().emitLogInfo();
+        LogCollector.getInstance().reset();
+        return newNode;
     }
 }

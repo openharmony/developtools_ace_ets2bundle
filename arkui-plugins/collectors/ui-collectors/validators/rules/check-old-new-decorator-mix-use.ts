@@ -19,6 +19,7 @@ import { StructPropertyInfo, NormalClassPropertyInfo } from '../../records';
 import { DecoratorNames, LogType, StructDecoratorNames } from '../../../../common/predefines';
 import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
 import { checkIsNormalClassPropertyFromInfo, checkIsStructPropertyFromInfo } from '../../utils';
+import { getAnnotationUsage } from '../utils';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
 export const checkOldNewDecoratorMixUse = performanceLog(
@@ -79,8 +80,16 @@ function checkOldNewDecoratorMixUseInStruct(
     const metadata = this.context ?? {};
     const fromComponent: boolean = !!metadata.structInfo?.annotationInfo?.hasComponent;
     const fromComponentV2: boolean = !!metadata.structInfo?.annotationInfo?.hasComponentV2;
+    const definitionPtr = metadata.structInfo?.definitionPtr;
+    let rawHasComponentV2 = false;
+    let rawHasComponent = false;
+    if (definitionPtr) {
+        const structDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
+        rawHasComponentV2 = !!getAnnotationUsage(structDef.annotations, StructDecoratorNames.COMPONENT_V2);
+        rawHasComponent = !!getAnnotationUsage(structDef.annotations, StructDecoratorNames.COMPONENT);
+    }
     // 新装饰器只能用于`@ComponentV2`组件
-    if (fromComponent && !fromComponentV2) {
+    if (fromComponent && !fromComponentV2 && !rawHasComponentV2) {
         const componentAnnotations = metadata.structInfo?.annotations?.[StructDecoratorNames.COMPONENT]!;
         newV2Annotations.forEach((decoratorName) => {
             const annotation = metadata.annotations?.[decoratorName];
@@ -100,7 +109,7 @@ function checkOldNewDecoratorMixUseInStruct(
         });
     }
     // 旧装饰器只能用于`@Component`组件
-    if (fromComponentV2 && !fromComponent) {
+    if (fromComponentV2 && !fromComponent && !rawHasComponent) {
         const componentV2Annotations = metadata.structInfo?.annotations?.[StructDecoratorNames.COMPONENT_V2]!;
         oldV1Annotations.forEach((decoratorName) => {
             const annotation = metadata.annotations?.[decoratorName];
@@ -126,6 +135,13 @@ function checkOldNewDecoratorMixUseInClass(
     classProperty: arkts.ClassProperty
 ): void {
     const metadata = this.context ?? {};
+    const definitionPtr = metadata.classInfo?.definitionPtr;
+    if (definitionPtr) {
+        const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
+        if (getAnnotationUsage(classDef.annotations, StructDecoratorNames.COMPONENT_V2)) {
+            return;
+        }
+    }
     notAllowedInClass.forEach((decoratorName) => {
         const annotation = metadata.ignoredAnnotations?.[decoratorName];
         if (!annotation) {

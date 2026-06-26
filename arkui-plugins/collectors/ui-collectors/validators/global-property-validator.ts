@@ -16,10 +16,14 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { GLobalPropertyInfo } from '../records';
-import { checkTrackDecorator } from './rules';
+import { checkConsumerProviderDecorator, checkLifecycleDecorator, checkObservedV2TraceUsageValidation, checkTrackDecorator, checkValidateDecoratorTarget } from './rules';
 
 export class GlobalPropertyValidator extends BaseValidator<arkts.ClassProperty, GLobalPropertyInfo> {
     reportIfViolated(node: arkts.ClassProperty): void {
+        checkLifecycleDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkConsumerProviderDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
     }
 }

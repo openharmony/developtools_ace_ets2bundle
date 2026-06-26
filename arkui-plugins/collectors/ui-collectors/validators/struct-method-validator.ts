@@ -18,11 +18,18 @@ import { BaseValidator } from './base';
 import { StructMethodInfo } from '../records';
 import {
     checkBuildRootNode,
+    checkComputedDecorator,
     checkComputedStateModification,
     checkComponentV2StateUsage,
+    checkConsumerProviderDecorator,
     checkCustomEnvDecorator,
+    checkLifecycleDecorator,
+    checkNoVariablesChangeInBuild,
+    checkObservedV2TraceUsageValidation,
+    checkOnceDecorator,
     checkStructPropertyDecorator,
     checkTrackDecorator,
+    checkValidateDecoratorTarget,
 } from './rules';
 
 export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition, StructMethodInfo> {
@@ -34,9 +41,17 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
 
         checkComponentV2StateUsage.bind(this)(node);
         checkCustomEnvDecorator.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
         checkBuildRootNode.bind(this)(node);
         checkComputedStateModification.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkConsumerProviderDecorator.bind(this)(node);
+        checkNoVariablesChangeInBuild.bind(this)(node);
+        checkLifecycleDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        const struct = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.structInfo!.definitionPtr!);
+        checkComputedDecorator.bind(this)(node, struct);
     }
 }

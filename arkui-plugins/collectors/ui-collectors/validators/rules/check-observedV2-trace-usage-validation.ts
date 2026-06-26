@@ -18,7 +18,6 @@ import { BaseValidator } from '../base';
 import type { ExtendedValidatorFunction, IntrinsicValidatorFunction } from '../safe-types';
 import {
     CustomComponentInfo,
-    FunctionInfo,
     GLobalPropertyInfo,
     NormalClassInfo,
     NormalClassMethodInfo,
@@ -27,6 +26,7 @@ import {
     StructMethodInfo,
     StructPropertyInfo,
 } from '../../records';
+
 import { DecoratorNames, LogType } from '../../../../common/predefines';
 import {
     createSuggestion,
@@ -40,8 +40,9 @@ import {
     checkIsStructMethodFromInfo,
     checkIsStructPropertyFromInfo,
 } from '../../../../collectors/ui-collectors/utils';
-import { getAnnotationUsageByName } from '../utils';
+import { getAnnotationUsage, getAnnotationUsageByName } from '../utils';
 import { checkIsCustomComponentFromInfo } from '../../../../collectors/ui-collectors/utils';
+
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
 export const checkObservedV2TraceUsageValidation = performanceLog(
@@ -49,20 +50,13 @@ export const checkObservedV2TraceUsageValidation = performanceLog(
     getPerfName([0, 0, 0, 0, 0], 'checkObservedV2TraceUsageValidation')
 );
 
-const OBSERVED_V2_DECORATOR_ERROR = `The '@ObservedV2' annotation can only be used in 'class'.`;
-const TRACE_DECORATOR_ERROR = `The '@Trace' annotation can only be used in 'class'.`;
-const TRACE_MEMBER_VARIABLE_ERROR = `The '@Trace' annotation can only decorate member 'variables' within a 'class' decorated with '@ObservedV2'.`;
-
-const REMOVE_OBSERVED_V2 = `Remove the @ObservedV2 annotation`;
-const REMOVE_TRACE = `Remove the @Trace annotation`;
-const ADD_OBSERVED_V2 = `Add @ObservedV2 annotation`;
-const CHANGE_OBSERVED = `Change @Observed to @ObservedV2`;
-
 /**
  * 校验规则：用于验证`@ObservedV2`、`@Trace`装饰器时需要遵循的具体约束和条件
- * 1. `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
- * 2. `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
- * 3. `@Trace` 只能用于被 `@ObservedV2` 装饰的类中的成员变量。
+ * 1. `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于 function、variable、type alias、interface、struct、property、method 上。
+ * 2. `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于 function、variable、type alias、interface、struct、property(struct/global)、method 上。
+ * 3. `@Trace` 装饰器只能用于装饰被 `@ObservedV2` 装饰的类中的成员变量，不能用于成员方法。
+ * 4. `@Trace` 装饰的成员变量所在 class 必须有 `@ObservedV2`，仅有 `@Observed` 时提示改为 `@ObservedV2`，都没有时提示添加 `@ObservedV2`。
+ * 5. 被 `@ObservedV2` 装饰的 class 必须至少包含一个 `@Trace` 成员变量。
  *
  * 校验等级：error
  */
@@ -86,11 +80,11 @@ function checkRuleInClassProperty<T extends arkts.AstNode = arkts.ClassProperty>
 ): void {
     const metadata = this.context ?? {};
     if (checkIsStructPropertyFromInfo(metadata)) {
-        checkInvalidObservedV2AndTraceInStructProperty.bind(this)(node);
+        checkInvalidObservedV2AndTraceInNonClassScope.bind(this)(node);
     } else if (checkIsNormalClassPropertyFromInfo(metadata)) {
         checkInvalidObservedV2AndTraceInClassProperty.bind(this)(node);
     } else {
-        checkInvalidObservedV2AndTraceInGlobalProperty.bind(this)(node);
+        checkInvalidObservedV2AndTraceInNonClassScope.bind(this)(node);
     }
 }
 
@@ -100,13 +94,11 @@ function checkRuleInMethodDefinition<T extends arkts.AstNode = arkts.ClassProper
 ): void {
     const metadata = this.context ?? {};
     if (checkIsStructMethodFromInfo(metadata)) {
-        checkInvalidObservedV2AndTraceInStructMethod.bind(this)(node);
-    }
-    if (checkIsNormalClassMethodFromInfo(metadata)) {
+        checkInvalidObservedV2AndTraceInNonClassScope.bind(this)(node);
+    } else if (checkIsNormalClassMethodFromInfo(metadata)) {
         checkInvalidObservedV2AndTraceInClassMethod.bind(this)(node);
-    }
-    if (checkIsGlobalFunctionFromInfo(metadata)) {
-        checkInvalidObservedV2AndTraceInFunction.bind(this)(node);
+    } else if (checkIsGlobalFunctionFromInfo(metadata)) {
+        checkInvalidObservedV2AndTraceInNonClassScope.bind(this)(node);
     }
 }
 
@@ -115,27 +107,48 @@ function checkRuleInClassDeclaration<T extends arkts.AstNode = arkts.ClassProper
     node: T
 ): void {
     const metadata = this.context ?? {};
-    if (checkIsCustomComponentFromInfo(metadata)) {
-        checkInvalidObservedV2AndTraceInStruct.bind(this)(node);
+    const isCustom = checkIsCustomComponentFromInfo(metadata);
+    if (isCustom) {
+        checkInvalidObservedV2AndTraceInNonClassScope.bind(this)(node);
     } else {
         checkInvalidTraceInClass.bind(this)(node);
     }
 }
 
-function checkInvalidObservedV2AndTraceInStructProperty<T extends arkts.AstNode = arkts.ClassProperty>(
-    this: BaseValidator<T, StructPropertyInfo>,
+function reportObservedV2OnlyInClass<T extends arkts.AstNode = arkts.AstNode>(
+    this: BaseValidator<T, StructPropertyInfo | GLobalPropertyInfo | NormalClassPropertyInfo | CustomComponentInfo | NormalClassInfo | NormalClassMethodInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
+    const metadata = this.context;
+    if (metadata?.ignoredAnnotationInfo?.hasObservedV2) {
+        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2];
+        if (observedV2Node) {
+            this.report({
+                node: observedV2Node,
+                level: LogType.ERROR,
+                message: `The '@ObservedV2' annotation can only be used in 'class'.`,
+                suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(observedV2Node), `Remove the @ObservedV2 annotation`)],
+            });
+        }
     }
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
+}
+
+function checkInvalidObservedV2AndTraceInNonClassScope<T extends arkts.AstNode = arkts.AstNode>(
+    this: BaseValidator<T, StructPropertyInfo | GLobalPropertyInfo | NormalClassPropertyInfo | CustomComponentInfo | NormalClassInfo>,
+    node: T
+): void {
+    reportObservedV2OnlyInClass.bind(this)(node);
+    const metadata = this.context;
+    if (metadata?.ignoredAnnotationInfo?.hasTrace) {
+        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE];
+        if (traceNode) {
+            this.report({
+                node: traceNode,
+                level: LogType.ERROR,
+                message: `The '@Trace' annotation can only be used in 'class'.`,
+                suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(traceNode), `Remove the @Trace annotation`)],
+            });
+        }
     }
 }
 
@@ -143,19 +156,20 @@ function checkInvalidObservedV2AndTraceInClassProperty<T extends arkts.AstNode =
     this: BaseValidator<T, NormalClassPropertyInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 只能用于被 `@ObservedV2` 装饰的类中的成员变量。
-    if (!metadata.ignoredAnnotationInfo?.hasTrace || metadata.classInfo?.annotationInfo?.hasObservedV2) {
+    reportObservedV2OnlyInClass.bind(this)(node);
+    const metadata = this.context;
+    if (!metadata?.ignoredAnnotationInfo?.hasTrace || metadata?.classInfo?.annotationInfo?.hasObservedV2) {
         return;
     }
-    const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-    if (!metadata.classInfo?.annotationInfo?.hasObserved) {
-        const definitionPtr = metadata.classInfo?.definitionPtr;
+    const definitionPtr = metadata?.classInfo?.definitionPtr;
+    if (definitionPtr) {
+        const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
+        if (getAnnotationUsage(classDef.annotations, DecoratorNames.OBSERVED_V2)) {
+            return;
+        }
+    }
+    const traceNode = metadata?.ignoredAnnotations?.[DecoratorNames.TRACE]!;
+    if (!metadata?.classInfo?.annotationInfo?.hasObserved) {
         if (!definitionPtr) {
             return;
         }
@@ -165,79 +179,46 @@ function checkInvalidObservedV2AndTraceInClassProperty<T extends arkts.AstNode =
             this.report({
                 node: traceNode,
                 level: LogType.ERROR,
-                message: TRACE_MEMBER_VARIABLE_ERROR,
+                message: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
                 suggestions: [createSuggestion(
                     `@${DecoratorNames.OBSERVED_V2}\n`,
                     startPosition,
                     startPosition,
-                    ADD_OBSERVED_V2
+                    `Add @ObservedV2 annotation`
                 )],
             });
         }
+        return;
     }
-    if (metadata.classInfo?.annotationInfo?.hasObserved) {
-        const observedNode = metadata.classInfo.annotations?.[DecoratorNames.OBSERVED]!;
-        this.report({
-            node: traceNode,
-            level: LogType.ERROR,
-            message: TRACE_MEMBER_VARIABLE_ERROR,
-            suggestions: [createSuggestion(
-                `${DecoratorNames.OBSERVED_V2}`,
-                ...getPositionRangeFromNode(observedNode),
-                CHANGE_OBSERVED
-            )],
-        });
-    }
-}
-
-function checkInvalidObservedV2AndTraceInStructMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
-    this: BaseValidator<T, StructMethodInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
-    }
-}
-
-function checkInvalidObservedV2AndTraceInFunction<T extends arkts.AstNode = arkts.MethodDefinition>(
-    this: BaseValidator<T, FunctionInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
-    }
+    const observedNode = metadata?.classInfo?.annotations?.[DecoratorNames.OBSERVED]!;
+    this.report({
+        node: traceNode,
+        level: LogType.ERROR,
+        message: `The '@Trace' annotation can only be used within a 'class' decorated with 'ObservedV2'.`,
+        suggestions: [createSuggestion(
+            `${DecoratorNames.OBSERVED_V2}`,
+            ...getPositionRangeFromNode(observedNode),
+            `Change @Observed to @ObservedV2`
+        )],
+    });
 }
 
 function checkInvalidObservedV2AndTraceInClassMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
     this: BaseValidator<T, NormalClassMethodInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 只能用于被 `@ObservedV2` 装饰的类中的成员变量。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_MEMBER_VARIABLE_ERROR, REMOVE_TRACE);
+    reportObservedV2OnlyInClass.bind(this)(node);
+    const metadata = this.context;
+    if (metadata?.ignoredAnnotationInfo?.hasTrace) {
+        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE];
+        if (traceNode) {
+            this.report({
+                node: traceNode,
+                level: LogType.ERROR,
+                message: `The '@Trace' annotation can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
+                suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(traceNode), `Remove the @Trace annotation`)],
+            });
+        }
     }
 }
 
@@ -245,53 +226,26 @@ function checkInvalidObservedV2AndTraceInInterface<T extends arkts.AstNode = ark
     this: BaseValidator<T, NormalInterfaceInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
     if (!arkts.isTSInterfaceDeclaration(node)) {
         return;
     }
     const observedV2Node = getAnnotationUsageByName(node.annotations, DecoratorNames.OBSERVED_V2);
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
     if (observedV2Node) {
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
+        this.report({
+            node: observedV2Node,
+            level: LogType.ERROR,
+            message: `The '@ObservedV2' annotation can only be used in 'class'.`,
+            suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(observedV2Node), `Remove the @ObservedV2 annotation`)],
+        });
     }
     const traceNode = getAnnotationUsageByName(node.annotations, DecoratorNames.TRACE);
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
     if (traceNode) {
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
-    }
-}
-
-function checkInvalidObservedV2AndTraceInGlobalProperty<T extends arkts.AstNode = arkts.ClassProperty>(
-    this: BaseValidator<T, GLobalPropertyInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
-    }
-}
-
-function checkInvalidObservedV2AndTraceInStruct<T extends arkts.AstNode = arkts.ClassDefinition>(
-    this: BaseValidator<T, CustomComponentInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    // `@ObservedV2` 装饰器只能作用在 `class` 上，不能用于function、interface、struct、property(struct/class/global)、method(struct/class)上。
-    if (metadata.ignoredAnnotationInfo?.hasObservedV2) {
-        const observedV2Node = metadata.ignoredAnnotations?.[DecoratorNames.OBSERVED_V2]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(observedV2Node, OBSERVED_V2_DECORATOR_ERROR, REMOVE_OBSERVED_V2);
-    }
-    // `@Trace` 装饰器必须定义在一个 `class` 内部，不能用于function、interface、struct、property(struct/global)、method(struct)上。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_DECORATOR_ERROR, REMOVE_TRACE);
+        this.report({
+            node: traceNode,
+            level: LogType.ERROR,
+            message: `The '@Trace' annotation can only be used in 'class'.`,
+            suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(traceNode), `Remove the @Trace annotation`)],
+        });
     }
 }
 
@@ -299,24 +253,41 @@ function checkInvalidTraceInClass<T extends arkts.AstNode = arkts.ClassDefinitio
     this: BaseValidator<T, NormalClassInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
-    // `@Trace` 只能用于被 `@ObservedV2` 装饰的类中的成员变量。
-    if (metadata.ignoredAnnotationInfo?.hasTrace) {
-        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE]!;
-        reportErrorWithRemoveAnnotationFix.bind(this)(traceNode, TRACE_MEMBER_VARIABLE_ERROR, REMOVE_TRACE);
+    const metadata = this.context;
+    if (metadata?.ignoredAnnotationInfo?.hasTrace) {
+        const traceNode = metadata.ignoredAnnotations?.[DecoratorNames.TRACE];
+        if (traceNode) {
+            this.report({
+                node: traceNode,
+                level: LogType.ERROR,
+                message: `The '@Trace' annotation can only decorate member variables within a 'class' decorated with '@ObservedV2'.`,
+                suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(traceNode), `Remove the @Trace annotation`)],
+            });
+        }
+    }
+    if (metadata?.annotationInfo?.hasObservedV2) {
+        checkObservedV2HasTraceProperty.bind(this)(node);
     }
 }
 
-function reportErrorWithRemoveAnnotationFix<T extends arkts.AstNode = arkts.ClassProperty>(
-    this: BaseValidator<T, StructPropertyInfo>,
-    errorNode: arkts.AnnotationUsage,
-    message: string,
-    fixTitle: string
+function checkObservedV2HasTraceProperty<T extends arkts.AstNode = arkts.ClassDefinition>(
+    this: BaseValidator<T, NormalClassInfo>,
+    node: T
 ): void {
-    this.report({
-        node: errorNode,
-        level: LogType.ERROR,
-        message: message,
-        suggestions: [createSuggestion(``, ...getPositionRangeFromAnnotation(errorNode), fixTitle)],
+    if (!arkts.isClassDeclaration(node) || !node.definition) {
+        return;
+    }
+    const hasTraceProperty = node.definition.body.some((member: arkts.AstNode): boolean => {
+        if (!arkts.isClassProperty(member)) {
+            return false;
+        }
+        return getAnnotationUsage(member.annotations, DecoratorNames.TRACE) !== undefined;
     });
+    if (!hasTraceProperty) {
+        this.report({
+            node: node.definition,
+            level: LogType.ERROR,
+            message: `A 'class' decorated with '@ObservedV2' must contain at least one property decorated with '@Trace'.`,
+        });
+    }
 }

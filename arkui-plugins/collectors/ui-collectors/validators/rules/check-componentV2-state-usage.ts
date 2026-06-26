@@ -24,7 +24,7 @@ import {
     FunctionInfo,
     NormalClassMethodInfo,
     NormalClassInfo,
-    CustomComponentInterfacePropertyInfo,
+    CustomComponentInnerClassPropertyInfo,
 } from '../../records';
 import { AstNodePointer } from '../../../../common/safe-types';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
@@ -135,7 +135,7 @@ function checkComponentV2StateUsageInStructCall<T extends arkts.AstNode = arkts.
 
 function reportForbiddenExternalInit<T extends arkts.AstNode = arkts.CallExpression>(
     this: BaseValidator<T, CallInfo>,
-    propertyInfos: [AstNodePointer, CustomComponentInterfacePropertyInfo | undefined][],
+    propertyInfos: [AstNodePointer, CustomComponentInnerClassPropertyInfo | undefined][],
     structName: string
 ): void {
     for (const propInfo of propertyInfos) {
@@ -154,7 +154,7 @@ function reportForbiddenExternalInit<T extends arkts.AstNode = arkts.CallExpress
     }
 }
 
-function getReportDecoratorName(propertyInfo: CustomComponentInterfacePropertyInfo | undefined): string | undefined {
+function getReportDecoratorName(propertyInfo: CustomComponentInnerClassPropertyInfo | undefined): string | undefined {
     if (propertyInfo?.annotationInfo?.hasLocal) {
         return `@${DecoratorNames.LOCAL}`;
     }

@@ -116,11 +116,11 @@ class StructV1DecoratorFunctionRule extends AbstractUISyntaxRule {
     private isUnionOfTypeOnlyFunction(unionType: arkts.ETSUnionType, visited: Set<string>): boolean {
         const types = unionType.types;
         for (const type of types) {
-            if (this.isFunctionType(type, new Set(visited))) {
-                return true;
+            if (!this.isFunctionType(type, new Set(visited))) {
+                return false;
             }
         }
-        return false;
+        return types.length > 0;
     }
 
     private reportIllegalFunctionError(member: arkts.ClassProperty): void {

@@ -15,19 +15,14 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
-import { coerceToAstNode } from '../utils';
 import type { ExtendedValidatorFunction, IntrinsicValidatorFunction } from '../safe-types';
 import {
     CallInfo,
     CustomComponentInnerClassPropertyInfo,
     CustomComponentInnerClassPropertyRecord,
-    NormalClassPropertyInfo,
     RecordBuilder,
-    StructMethodInfo,
     StructPropertyInfo,
-    NormalClassInfo,
 } from '../../records';
-import { checkIsNameStartWithBackingField } from '../../utils';
 import { DecoratorNames, LogType, StateManagementTypes } from '../../../../common/predefines';
 import {
     createSuggestion,
@@ -45,8 +40,7 @@ export const checkConsumerProviderDecorator = performanceLog(
  * 校验规则：
  *  1. `@Provider`/`@Consumer`只能用来修饰类成员属性（不能修饰方法、参数等）；
  *  2. 结构体成员变量不能被多个内置装饰器修饰；
- *  3. `@Provider`/`@Consumer`装饰器只能用于`struct`类型，而不能用于类（`class`）或其他类型；
- *  4. 自定义组件中的`@Provider`/`@Consumer`装饰的属性不能在父组件初始化（禁止指定初始值）。
+ *  3. 自定义组件中的`@Provider`/`@Consumer`装饰的属性不能在父组件初始化（禁止指定初始值）。
  *
  * 校验等级：error
  */
@@ -61,11 +55,11 @@ function _checkConsumerProviderDecorator(
     }
 }
 
-function checkConsumerProviderDecoratorInStructMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
-    this: BaseValidator<T, StructMethodInfo>,
+function checkConsumerProviderDecoratorOnNonProperty<T extends arkts.AstNode = arkts.AstNode>(
+    this: BaseValidator<T, Object>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
+    const metadata: any = this.context ?? {};
     // `@Provider`/`@Consumer`只能用来修饰类成员属性（不能修饰方法、参数等）；
     if (metadata.ignoredAnnotationInfo?.hasConsumer) {
         const annotation = metadata.ignoredAnnotations?.[DecoratorNames.CONSUMER]!;
@@ -92,25 +86,6 @@ function checkConsumerProviderDecoratorInProperty<T extends arkts.AstNode = arkt
     node: T
 ): void {
     const metadata = this.context ?? {};
-    //`@Provider`/`@Consumer`装饰器只能用于`struct`类型，而不能用于类（`class`）或其他类型；
-    if (!!metadata.classInfo && metadata.ignoredAnnotationInfo?.hasConsumer) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.CONSUMER]!;
-        this.report({
-            node: annotation,
-            message: `The '@${DecoratorNames.CONSUMER}' annotation can only be used with 'struct'.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
-    }
-    if (!!metadata.classInfo && metadata.ignoredAnnotationInfo?.hasProvider) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.PROVIDER]!;
-        this.report({
-            node: annotation,
-            message: `The '@${DecoratorNames.PROVIDER}' annotation can only be used with 'struct'.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
-    }
     // 结构体成员变量不能被多个内置装饰器修饰；
     let foundOther: arkts.AnnotationUsage | undefined;
     if (
@@ -148,13 +123,13 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
         return;
     }
     const structName = metadata.structDeclInfo.name;
-    const propertyInfos = metadata.structPropertyInfos ?? [];
+    const propertyInfos = metadata.structPropertyInfos ?? metadata.rootCallInfo?.structPropertyInfos ?? [];
     // 自定义组件中的`@Provider`/`@Consumer`装饰的属性不能在父组件初始化（禁止指定初始值）
     for (const propInfo of propertyInfos) {
         const propPtr = propInfo[0];
         const propertyInfo = propInfo[1];
         if (!propertyInfo?.name || propertyInfo.name.startsWith(StateManagementTypes.BACKING)) {
-            return;
+            continue;
         }
         const decoratorInfo = findConsumerOrProviderFromInterfacePropertyInfo(propertyInfo);
         if (!!decoratorInfo) {
@@ -163,46 +138,23 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
                 node: prop,
                 message: getForbiddenInitializationMessage(decoratorInfo.name, propertyInfo.name, structName),
                 level: LogType.ERROR,
-                suggestions: [createSuggestion('', ...getPositionRangeFromNode(node), `Remove the property`)],
+                suggestions: [createSuggestion('', ...getPositionRangeFromNode(prop), `Remove the property`)],
             });
         }
     }
 }
 
-function checkConsumerProviderDecoratorInNormalClass<T extends arkts.AstNode = arkts.ClassDeclaration>(
-    this: BaseValidator<T, NormalClassInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    //`@Provider`/`@Consumer`装饰器只能用于`struct`类型，而不能用于类（`class`）或其他类型；
-    if (metadata.ignoredAnnotationInfo?.hasConsumer) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.CONSUMER]!;
-        this.report({
-            node: annotation,
-            message: `The '@${DecoratorNames.CONSUMER}' annotation can only be used with 'struct'.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
-    }
-    if (metadata.ignoredAnnotationInfo?.hasProvider) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.PROVIDER]!;
-        this.report({
-            node: annotation,
-            message: `The '@${DecoratorNames.PROVIDER}' annotation can only be used with 'struct'.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
-    }
-}
-
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction | ExtendedValidatorFunction>([
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkConsumerProviderDecoratorInStructMethod],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkConsumerProviderDecoratorOnNonProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION, checkConsumerProviderDecoratorOnNonProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkConsumerProviderDecoratorInProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkConsumerProviderDecoratorInStructCall],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkConsumerProviderDecoratorInNormalClass],
 ]);
 
-type PropertyInfo = StructPropertyInfo & NormalClassPropertyInfo;
+type PropertyInfo = StructPropertyInfo;
 
 interface DecoratorInfo {
     name: string;
@@ -222,25 +174,6 @@ function findOtherDecoratorFromInfo(info: StructPropertyInfo, except: string): a
 function findConsumerOrProviderFromInterfacePropertyInfo(
     propertyInfo: CustomComponentInnerClassPropertyInfo
 ): DecoratorInfo | undefined {
-    if (propertyInfo?.annotationInfo?.hasConsumer) {
-        const annotation = propertyInfo.annotations?.[DecoratorNames.CONSUMER]!;
-        return { name: DecoratorNames.CONSUMER, annotation };
-    }
-    if (propertyInfo?.annotationInfo?.hasProvider) {
-        const annotation = propertyInfo.annotations?.[DecoratorNames.PROVIDER]!;
-        return { name: DecoratorNames.PROVIDER, annotation };
-    }
-    return undefined;
-}
-
-function findConsumerOrProviderFromInterfaceProperty(property: arkts.ClassProperty): DecoratorInfo | undefined {
-    const StructInnerClassPropRecord = RecordBuilder.build(CustomComponentInnerClassPropertyRecord, property, {
-        shouldIgnoreDecl: false,
-    });
-    if (!StructInnerClassPropRecord.isCollected) {
-        StructInnerClassPropRecord.collect(property);
-    }
-    const propertyInfo = StructInnerClassPropRecord.toRecord();
     if (propertyInfo?.annotationInfo?.hasConsumer) {
         const annotation = propertyInfo.annotations?.[DecoratorNames.CONSUMER]!;
         return { name: DecoratorNames.CONSUMER, annotation };

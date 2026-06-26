@@ -247,8 +247,8 @@ export enum DecoratorNames {
     COMPONENT_INACTIVE = 'ComponentInactive',
     LOCAL_STORAGE_PROP = 'LocalStorageProp',
     STORAGE_PROP = 'StorageProp',
-    REGULAR = 'Regular',
-    VARIABLE = 'Variable',
+    REGULAR = 'regular',
+    VARIABLE = 'variable',
     CUSTOM_ENV = 'CustomEnv',
 }
 

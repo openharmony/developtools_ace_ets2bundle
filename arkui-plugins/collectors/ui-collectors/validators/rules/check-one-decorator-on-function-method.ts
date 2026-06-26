@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
 import { FunctionInfo } from '../../records';
-import { DecoratorNames, LogType } from '../../../../common/predefines';
+import { DecoratorNames, LogType, StructDecoratorNames } from '../../../../common/predefines';
 import { createSuggestion, getPositionRangeFromAnnotation } from '../../../../common/log-collector';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
@@ -29,53 +29,66 @@ const PARAM_THIS_NAME = '=t';
 
 const REMOVE_ANNOTATION = `Remove the annotation`;
 
-/**
- * 校验规则：用于验证只能装饰函数的装饰器
- * 1. 只有`@Builder`和`@AnimatableExtend`装饰器可以装饰函数
- * 2. `@AnimatableExtend` 装饰器只能用于带有 `this` 参数的函数
- *
- * 校验等级：error
- */
+const UI_DECORATORS: Set<string> = new Set<string>([
+    ...Object.values(DecoratorNames),
+    ...Object.values(StructDecoratorNames),
+]);
+
 function _checkOneDecoratorOnFunctionMethod(
     this: BaseValidator<arkts.MethodDefinition, FunctionInfo>,
     node: arkts.MethodDefinition
 ): void {
     const metadata = this.context ?? {};
-    let ignoredAnnotationCount = 0;
-    //  只有`@Builder`和`@AnimatableExtend`装饰器可以装饰函数
-    for (const key in metadata.ignoredAnnotations) {
-        const annotationNode = metadata.ignoredAnnotations?.[key]!;
-        this.report({
-            node: annotationNode,
-            level: LogType.ERROR,
-            message: `A function can only be decorated by one of the '@AnimatableExtend' and '@Builder'.`,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotationNode), REMOVE_ANNOTATION)],
-        });
-        ignoredAnnotationCount++;
+    const annotations = node.function?.annotations;
+    if (!annotations || annotations.length === 0) {
+        return;
     }
-    //  只有`@Builder`和`@AnimatableExtend`装饰器可以装饰函数(同时装饰或有ignoredAnnotation时，Builder和AnimatableExtend自身也报错)
-    if (
-        (metadata.annotationInfo?.hasAnimatableExtend && metadata.annotationInfo?.hasBuilder) ||
-        ignoredAnnotationCount > 0
-    ) {
-        for (const key in metadata.annotations) {
-            const annotationNode = metadata.annotations?.[key]!;
+    if (metadata.annotationInfo?.hasAnimatableExtend && hasThisParameter(node.function!)) {
+        return;
+    }
+    const hasInvalidUIDecorator = annotations.some((annotation) => {
+        const decoratorName = getAnnotationName(annotation);
+        if (decoratorName === DecoratorNames.BUILDER) {
+            return false;
+        }
+        return UI_DECORATORS.has(decoratorName);
+    });
+    if (!hasInvalidUIDecorator) {
+        return;
+    }
+    reportInvalidDecorators.bind(this)(annotations);
+}
+
+function getAnnotationName(annotation: arkts.AnnotationUsage): string {
+    if (annotation.expr && arkts.isIdentifier(annotation.expr)) {
+        return annotation.expr.name;
+    }
+    return '';
+}
+
+function reportInvalidDecorators(
+    this: BaseValidator<arkts.MethodDefinition, FunctionInfo>,
+    annotations: readonly arkts.AnnotationUsage[]
+): void {
+    for (const annotation of annotations) {
+        const decoratorName = getAnnotationName(annotation);
+        if (!UI_DECORATORS.has(decoratorName)) {
+            continue;
+        }
+        if (decoratorName === DecoratorNames.BUILDER) {
             this.report({
-                node: annotationNode,
+                node: annotation,
                 level: LogType.ERROR,
-                message: `A function can only be decorated by one of the '@AnimatableExtend' and '@Builder'.`,
+                message: `A function can only be decorated by the 'Builder'.`,
+            });
+        } else {
+            this.report({
+                node: annotation,
+                level: LogType.ERROR,
+                message: `A function can only be decorated by the 'Builder'.`,
+                suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), REMOVE_ANNOTATION)],
             });
         }
-    }
-    //  `@AnimatableExtend` 装饰器只能用于带有 `this` 参数的函数
-    if (metadata.annotationInfo?.hasAnimatableExtend && !hasThisParameter(node.function!)) {
-        const annotationNode = metadata.annotations?.[DecoratorNames.ANIMATABLE_EXTEND]!;
-        this.report({
-            node: annotationNode,
-            level: LogType.ERROR,
-            message: `When a function is decorated with "@AnimatableExtend", the first parameter must be 'this'.`,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotationNode), REMOVE_ANNOTATION)],
-        });
     }
 }
 

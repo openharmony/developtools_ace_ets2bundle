@@ -63,10 +63,14 @@ export const checkEnvDecorator = performanceLog(
 
 /**
  * 校验规则：
- *  1. `@Env`装饰的属性类型必须是指定的类型或其子类；
- *  2. `@Env`装饰器的参数必须与属性类型匹配；
- *  3. 在`@Component`结构体中，`@Env`变量只能初始化常规（无装饰器）属性；
- *  4. 在`@ComponentV2`结构体中，`@Env`变量只能初始化`@Param`装饰的属性。
+ *  1. `@Env`和`@CustomEnv`只能用于`@Component`或`@ComponentV2`装饰的结构体中；
+ *  2. `@Env`装饰的属性不能指定默认值；
+ *  3. `@Env`装饰的属性类型必须是指定的类型或其子类；
+ *  4. `@Env`装饰器的参数必须与属性类型匹配；
+ *  5. `@Env`装饰器的字符串参数必须为`WritableEnvKey.<member>`或`ReadonlyEnvKey.<member>`格式；
+ *  6. `@Env`和`@CustomEnv`不能与其他状态管理装饰器组合使用；
+ *  7. 在`@Component`结构体中，`@Env`变量只能初始化常规（无装饰器）属性；
+ *  8. 在`@ComponentV2`结构体中，`@Env`和`@CustomEnv`变量只能初始化`@Param`装饰的属性。
  *
  * 校验等级：error
  */
@@ -213,10 +217,76 @@ function checkEnvInitForProperty<T extends arkts.AstNode = arkts.CallExpression>
     }
 }
 
+function checkEnvUsagePosition<T extends arkts.AstNode = arkts.ClassProperty>(
+    this: BaseValidator<T, StructPropertyInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    const annoInfo = metadata.annotationInfo;
+    if (!annoInfo) {
+        return;
+    }
+
+    const hasEnv = !!annoInfo.hasEnv;
+    const hasCustomEnv = !!annoInfo.hasCustomEnv;
+    if (!hasEnv && !hasCustomEnv) {
+        return;
+    }
+
+    const structAnnoInfo = metadata.structInfo?.annotationInfo;
+    const hasComponent = !!structAnnoInfo?.hasComponent;
+    const hasComponentV2 = !!structAnnoInfo?.hasComponentV2;
+    if (hasComponent || hasComponentV2) {
+        return;
+    }
+
+    const _node = coerceToAstNode<arkts.ClassProperty>(node);
+
+    if (hasEnv) {
+        this.report({
+            node: metadata.annotations?.[DecoratorNames.ENV] ?? _node,
+            level: LogType.ERROR,
+            message: `The '@Env' annotation can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
+        });
+    }
+
+    if (hasCustomEnv) {
+        this.report({
+            node: metadata.annotations?.[DecoratorNames.CUSTOM_ENV] ?? _node,
+            level: LogType.ERROR,
+            message: `The '@CustomEnv' annotation can only be used in structs decorated with either '@Component' or '@ComponentV2'.`,
+        });
+    }
+}
+
+function checkEnvDefaultValue<T extends arkts.AstNode = arkts.ClassProperty>(
+    this: BaseValidator<T, StructPropertyInfo>,
+    node: T
+): void {
+    const metadata = this.context ?? {};
+    const envDecorator = metadata.annotations?.[DecoratorNames.ENV];
+    if (!envDecorator) {
+        return;
+    }
+
+    const _node = coerceToAstNode<arkts.ClassProperty>(node);
+    if (!_node.value) {
+        return;
+    }
+
+    this.report({
+        node: envDecorator,
+        level: LogType.ERROR,
+        message: `The '@Env' property cannot be specified a default value.`,
+    });
+}
+
 function checkClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
     this: BaseValidator<T, StructPropertyInfo>,
     node: T
 ): void {
+    checkEnvUsagePosition.bind(this)(node);
+    checkEnvDefaultValue.bind(this)(node);
     checkEnvVariableType.bind(this)(node);
     checkEnvParamValue.bind(this)(node);
     checkDecoratorCombination.bind(this)(node);

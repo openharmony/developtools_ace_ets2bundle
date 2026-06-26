@@ -29,14 +29,18 @@ import {
 } from '../../records';
 import { DecoratorNames, LogType, StructDecoratorNames } from '../../../../common/predefines';
 import {
+    createSuggestion,
+    getPositionRangeFromAnnotation,
+} from '../../../../common/log-collector';
+import {
     checkIsGlobalFunctionFromInfo,
     checkIsNormalClassMethodFromInfo,
     checkIsNormalClassPropertyFromInfo,
     checkIsStructMethodFromInfo,
     checkIsStructPropertyFromInfo,
 } from '../../../../collectors/ui-collectors/utils';
-import { getAnnotationUsagesByName } from '../utils';
 import { checkIsCustomComponentFromInfo } from '../../../../collectors/ui-collectors/utils';
+import { getAnnotationUsage } from '../utils';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
 export const checkValidateDecoratorTarget = performanceLog(
@@ -44,16 +48,57 @@ export const checkValidateDecoratorTarget = performanceLog(
     getPerfName([0, 0, 0, 0, 0], 'checkValidateDecoratorTarget')
 );
 
-// Can only be used with decorators for struct
-const structOnlyAnnotations = [
-    StructDecoratorNames.REUSABLE,
-    StructDecoratorNames.REUSABLE_V2,
-    StructDecoratorNames.COMPONENT,
-    StructDecoratorNames.COMPONENT_V2,
+const ComponentDecorators = [
     StructDecoratorNames.ENTRY,
     StructDecoratorNames.PREVIEW,
+    StructDecoratorNames.COMPONENT,
+    StructDecoratorNames.COMPONENT_V2,
     StructDecoratorNames.CUSTOMDIALOG,
+    StructDecoratorNames.RESUABLE,
+    StructDecoratorNames.RESUABLE_V2,
 ];
+
+const ComponentMemberDecorators = [
+    DecoratorNames.STATE,
+    DecoratorNames.PROP_REF,
+    DecoratorNames.STORAGE_PROP_REF,
+    DecoratorNames.LOCAL_STORAGE_PROP_REF,
+    DecoratorNames.LINK,
+    DecoratorNames.OBJECT_LINK,
+    DecoratorNames.STORAGE_LINK,
+    DecoratorNames.LOCAL_STORAGE_LINK,
+    DecoratorNames.PROVIDE,
+    DecoratorNames.CONSUME,
+    DecoratorNames.WATCH,
+    DecoratorNames.BUILDER_PARAM,
+    DecoratorNames.REQUIRE,
+    DecoratorNames.EVENT,
+    DecoratorNames.CONSUMER,
+    DecoratorNames.PROVIDER,
+    DecoratorNames.ONCE,
+    DecoratorNames.LOCAL,
+    DecoratorNames.PARAM,
+    DecoratorNames.ENV,
+    DecoratorNames.CUSTOM_ENV,
+];
+
+const LifecycleDecorators = [
+    DecoratorNames.COMPONENT_INIT,
+    DecoratorNames.COMPONENT_APPEAR,
+    DecoratorNames.COMPONENT_BUILT,
+    DecoratorNames.COMPONENT_RECYCLE,
+    DecoratorNames.COMPONENT_REUSE,
+    DecoratorNames.COMPONENT_DISAPPEAR,
+    DecoratorNames.COMPONENT_ACTIVE,
+    DecoratorNames.COMPONENT_INACTIVE,
+];
+
+// Can only be used with decorators for struct
+const structOnlyAnnotations: Set<string> = new Set([
+    ...ComponentDecorators,
+    ...ComponentMemberDecorators,
+    ...LifecycleDecorators,
+]);
 
 // Can only be used with decorators for property
 const propertyOnlyAnnotations = [
@@ -126,25 +171,31 @@ function checkRuleInClassDeclaration<T extends arkts.AstNode = arkts.ClassProper
     node: T
 ): void {
     const metadata = this.context ?? {};
-    if (checkIsCustomComponentFromInfo(metadata)) {
+    if (checkIsCustomComponentFromInfo(metadata) || isRawCustomComponent(node)) {
         checkInvalidAnnotationInStruct.bind(this)(node);
     } else {
         checkInvalidAnnotationInClass.bind(this)(node);
     }
 }
 
+function isRawCustomComponent(node: arkts.AstNode): boolean {
+    if (!arkts.isClassDeclaration(node) || !node.definition) {
+        return false;
+    }
+    return isRawCustomComponentByDefinition(node.definition);
+}
+
+function isRawCustomComponentByDefinition(definition: arkts.ClassDefinition): boolean {
+    const annotations = definition.annotations;
+    return !!getAnnotationUsage(annotations, StructDecoratorNames.COMPONENT) ||
+        !!getAnnotationUsage(annotations, StructDecoratorNames.COMPONENT_V2) ||
+        !!getAnnotationUsage(annotations, StructDecoratorNames.CUSTOMDIALOG);
+}
+
 function checkInvalidAnnotationInStructProperty<T extends arkts.AstNode = arkts.ClassProperty>(
     this: BaseValidator<T, StructPropertyInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations exist in the StructProperty
-    structOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
 }
 
 function checkInvalidAnnotationInClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
@@ -152,17 +203,17 @@ function checkInvalidAnnotationInClassProperty<T extends arkts.AstNode = arkts.C
     node: T
 ): void {
     const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the ClassProperty
+    const definitionPtr = metadata.classInfo?.definitionPtr;
+    if (definitionPtr) {
+        const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
+        if (isRawCustomComponentByDefinition(classDef)) {
+            return;
+        }
+    }
     structOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
             reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
-    propertyOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotation);
         }
     });
 }
@@ -172,13 +223,6 @@ function checkInvalidAnnotationInStructMethod<T extends arkts.AstNode = arkts.Me
     node: T
 ): void {
     const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the StructMethod
-    structOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
     propertyOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
@@ -192,19 +236,44 @@ function checkInvalidAnnotationInFunction<T extends arkts.AstNode = arkts.Method
     node: T
 ): void {
     const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the Function
     structOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
             reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
         }
     });
-    propertyOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotation);
+    if (arkts.isMethodDefinition(node) && node.function?.body && arkts.isBlockStatement(node.function.body)) {
+        checkVariableDeclarationsInBody.bind(this)(node.function.body);
+    }
+}
+
+function checkVariableDeclarationsInBody<T extends arkts.AstNode>(
+    this: BaseValidator<T, Object>,
+    body: arkts.BlockStatement
+): void {
+    for (const stmt of body.statements) {
+        if (arkts.isVariableDeclaration(stmt)) {
+            validateAnnotationsSimple.bind(this)(stmt.annotations);
         }
-    });
+    }
+}
+
+function validateAnnotationsSimple<T extends arkts.AstNode>(
+    this: BaseValidator<T, Object>,
+    annotations: readonly arkts.AnnotationUsage[]
+): void {
+    if (!annotations) {
+        return;
+    }
+    for (const annotation of annotations) {
+        if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
+            continue;
+        }
+        const name = annotation.expr.name;
+        if (structOnlyAnnotations.has(name)) {
+            reportInvalidStructAnnotation.bind(this)(annotation, name);
+        }
+    }
 }
 
 function checkInvalidAnnotationInClassMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
@@ -212,62 +281,71 @@ function checkInvalidAnnotationInClassMethod<T extends arkts.AstNode = arkts.Met
     node: T
 ): void {
     const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the ClassMethod
+    const definitionPtr = metadata.classInfo?.definitionPtr;
+    if (definitionPtr) {
+        const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(definitionPtr);
+        if (isRawCustomComponentByDefinition(classDef)) {
+            return;
+        }
+    }
     structOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
             reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
         }
     });
-    propertyOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
+    if (arkts.isMethodDefinition(node) && node.function?.body && arkts.isBlockStatement(node.function.body)) {
+        checkVariableDeclarationsInBody.bind(this)(node.function.body);
+    }
 }
 
 function checkInvalidAnnotationInInterface<T extends arkts.AstNode = arkts.TSInterfaceDeclaration>(
     this: BaseValidator<T, NormalInterfaceInfo>,
     node: T
 ): void {
-    const metadata = this.context ?? {};
     if (!arkts.isTSInterfaceDeclaration(node)) {
         return;
     }
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the Interface
-    const invalidStructAnnotation = getAnnotationUsagesByName(node.annotations, structOnlyAnnotations);
-    invalidStructAnnotation.forEach((annotationUsage) => {
-        if (!annotationUsage || !annotationUsage.expr || !arkts.isIdentifier(annotationUsage.expr)) {
-            return;
+    validateAnnotations.bind(this)(node.annotations);
+    const body = node.body?.body;
+    if (!body) {
+        return;
+    }
+    for (const member of body) {
+        if (arkts.isClassProperty(member)) {
+            validateAnnotations.bind(this)(member.annotations);
+        } else if (arkts.isMethodDefinition(member)) {
+            if (member.function?.annotations) {
+                validateAnnotations.bind(this)(member.function.annotations);
+            }
         }
-        reportInvalidStructAnnotation.bind(this)(annotationUsage, annotationUsage.expr.name);
-    });
-    const invalidPropertyAnnotation = getAnnotationUsagesByName(node.annotations, propertyOnlyAnnotations);
-    invalidPropertyAnnotation.forEach((annotationUsage) => {
-        if (!annotationUsage || !annotationUsage.expr || !arkts.isIdentifier(annotationUsage.expr)) {
-            return;
+    }
+}
+
+function validateAnnotations<T extends arkts.AstNode>(
+    this: BaseValidator<T, NormalInterfaceInfo>,
+    annotations: readonly arkts.AnnotationUsage[]
+): void {
+    for (const annotation of annotations) {
+        if (!annotation.expr || !arkts.isIdentifier(annotation.expr)) {
+            continue;
         }
-        reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotationUsage.expr.name);
-    });
+        const name = annotation.expr.name;
+        if (structOnlyAnnotations.has(name)) {
+            reportInvalidStructAnnotation.bind(this)(annotation, name);
+        }
+    }
 }
 
 function checkInvalidAnnotationInGlobalProperty<T extends arkts.AstNode = arkts.ClassProperty>(
     this: BaseValidator<T, GLobalPropertyInfo>,
     node: T
 ): void {
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the GlobalProperty
     const metadata = this.context ?? {};
     structOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
             reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
-    propertyOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotation);
         }
     });
 }
@@ -291,17 +369,10 @@ function checkInvalidAnnotationInClass<T extends arkts.AstNode = arkts.ClassDefi
     node: T
 ): void {
     const metadata = this.context ?? {};
-    // Error if structOnlyAnnotations or propertyOnlyAnnotations exist in the Class
     structOnlyAnnotations.forEach((annotation) => {
         if (metadata.ignoredAnnotations?.[annotation]) {
             const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
             reportInvalidStructAnnotation.bind(this)(annotationUsage, annotation);
-        }
-    });
-    propertyOnlyAnnotations.forEach((annotation) => {
-        if (metadata.ignoredAnnotations?.[annotation]) {
-            const annotationUsage = metadata.ignoredAnnotations?.[annotation]!;
-            reportInvalidPropertyAnnotation.bind(this)(annotationUsage, annotation);
         }
     });
 }
@@ -316,6 +387,11 @@ function reportInvalidStructAnnotation<T extends arkts.AstNode>(
         node: errorNode,
         level: LogType.ERROR,
         message: `The '@${annotationName}' annotation can only be used with 'struct'.`,
+        suggestions: [createSuggestion(
+            ``,
+            ...getPositionRangeFromAnnotation(errorNode),
+            `Remove the annotation`
+        )],
     });
 }
 
@@ -328,6 +404,6 @@ function reportInvalidPropertyAnnotation<T extends arkts.AstNode>(
     this.report({
         node: errorNode,
         level: LogType.ERROR,
-        message: `'@${annotationName}' can not decorate the method.`,
+        message: `'@${annotationName}' can only decorate member property.`,
     });
 }
