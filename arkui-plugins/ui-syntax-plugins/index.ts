@@ -37,7 +37,7 @@ import { NodeCacheFactory } from '../common/node-cache';
 export function uiSyntaxLinterTransform(): Plugins {
     return {
         name: 'ui-syntax-plugin',
-        parsed: parsedTransform,
+        // parsed: parsedTransform,
         checked: collectAndLint,
         clean(): void {
             ProgramSkipper.clear();

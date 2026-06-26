@@ -25,6 +25,7 @@ import {
     checkMonitorDecorator,
     checkTrackDecorator,
     checkValidateDecoratorTarget,
+    checkSyncMonitorDecorator,
 } from './rules';
 
 export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassProperty, NormalClassPropertyInfo> {
@@ -42,5 +43,6 @@ export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassPrope
         checkOldNewDecoratorMixUse.bind(this)(node);
         checkObservedV2TraceUsageValidation.bind(this)(node);
         checkMonitorDecorator.bind(this)(node);
+        checkSyncMonitorDecorator.bind(this)(node);
     }
 }

@@ -31,6 +31,7 @@ import {
     checkTrackDecorator,
     checkValidateDecoratorTarget,
     checkMonitorDecorator,
+    checkSyncMonitorDecorator,
 } from './rules';
 
 export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition, StructMethodInfo> {
@@ -53,6 +54,7 @@ export class StructMethodValidator extends BaseValidator<arkts.MethodDefinition,
         checkLifecycleDecorator.bind(this)(node);
         checkObservedV2TraceUsageValidation.bind(this)(node);
         checkMonitorDecorator.bind(this)(node);
+        checkSyncMonitorDecorator.bind(this)(node);
         const struct = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.structInfo!.definitionPtr!);
         checkComputedDecorator.bind(this)(node, struct);
     }

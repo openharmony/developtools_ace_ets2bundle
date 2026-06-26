@@ -17,11 +17,13 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { CustomComponentInfo } from '../records';
 import {
-    checkMonitorDecorator
+    checkMonitorDecorator,
+    checkSyncMonitorDecorator
 } from './rules';
 
 export class StructPostVisitValidator extends BaseValidator<arkts.ClassDeclaration, CustomComponentInfo> {
     reportIfViolated(node: arkts.ClassDeclaration): void {
         checkMonitorDecorator.bind(this)(node);
+        checkSyncMonitorDecorator.bind(this)(node);
     }
 }

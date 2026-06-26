@@ -71,7 +71,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     // [ValidateDecoratorTargetRule, 'error'],
     // [WatchDecoratorFunctionRule, 'error'],
     // [StructV1DecoratorFunctionRule, 'error'],
-    [SyncMonitorDecoratorCheckRule, 'error'],
+    // [SyncMonitorDecoratorCheckRule, 'error'],
 ];
 
 export default rules;
