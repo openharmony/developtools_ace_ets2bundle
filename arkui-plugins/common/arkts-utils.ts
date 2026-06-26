@@ -28,6 +28,7 @@ import {
     APIComparison,
     APIVersions,
     ARKTS_FILE_EXTENSION_LIST,
+    ETSGLOBAL,
 } from './predefines';
 import {
     ApplicationMainPages,
@@ -40,8 +41,59 @@ import {
 } from './plugin-context';
 import { MetaDataCollector } from './metadata-collector';
 
-export function isExported(node: arkts.AstNode): boolean {
-    return node.isExport || node.isDefaultExport || node.hasExportAlias;
+export function expectNameInDeclarationAstNode(node: arkts.AstNode): string | undefined {
+    if (arkts.isIdentifier(node)) {
+        return node.name;
+    }
+    if (arkts.isClassDefinition(node)) {
+        return node.ident?.name;
+    }
+    if (arkts.isClassDeclaration(node)) {
+        return node.definition.ident?.name;
+    }
+    if (arkts.isETSStructDeclaration(node)) {
+        return node.definition.ident?.name;
+    }
+    if (arkts.isETSModule(node)) {
+        return node.ident?.name;
+    }
+    if (arkts.isFunctionDeclaration(node)) {
+        return node.function?.id?.name;
+    }
+    if (arkts.isVariableDeclarator(node)) {
+        const id = node.id;
+        return !!id && arkts.isIdentifier(id) ? id.name : undefined;
+    }
+    if (arkts.isTSEnumDeclaration(node)) {
+        return node.key?.name;
+    }
+    if (arkts.isTSInterfaceDeclaration(node)) {
+        return node.id?.name;
+    }
+    if (arkts.isTSEnumDeclaration(node)) {
+        return node.key?.name;
+    }
+    return undefined;
+}
+
+export function isExported(program: arkts.Program | undefined, node: arkts.AstNode): boolean {
+    const isSelfExported = node.isExport || node.isDefaultExport || node.hasExportAlias;
+    if (!!isSelfExported) {
+        return true;
+    }
+    const expectedName: string | undefined = expectNameInDeclarationAstNode(node);
+    return !!expectedName && arkts.programLocalNameIsExported(program, expectedName);
+}
+
+export function isNamespace(node: arkts.ETSModule | arkts.ClassDeclaration): boolean {
+    if (arkts.isETSModule(node)) {
+        return node.isNamespace;
+    }
+    return !!node.definition?.isNamespaceTransformed;
+}
+
+export function isETSGlobalClass(node: arkts.ClassDefinition | undefined): boolean {
+    return node?.ident?.name === ETSGLOBAL;
 }
 
 export function removeRelativePathSuffix(str: string, suffixes: string[] = ARKTS_FILE_EXTENSION_LIST): string {

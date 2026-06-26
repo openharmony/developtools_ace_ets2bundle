@@ -23,6 +23,7 @@ import {
     checkIsComponentAttributeInterfaceFromInfo,
     checkIsDialogControllerNewInstanceFromInfo,
     checkIsInsightIntentClassFromInfo,
+    checkIsClassCollectable,
 } from './utils';
 import {
     ArrowFunctionRecord,
@@ -55,6 +56,7 @@ import { ARKUI_IMPORT_PREFIX_NAMES, NodeCacheNames } from '../../common/predefin
 import { matchPrefix } from '../../common/arkts-utils';
 import { getPerfName } from '../../common/debug';
 import { NodeCacheFactory } from '../../common/node-cache';
+import { isExportWithinScope } from '../namespace-collector';
 
 export function findAndCollectUINodeInPreOrder(node: arkts.AstNode, metadata?: UICollectMetadata): void {
     const type = arkts.nodeType(node);
@@ -94,6 +96,9 @@ export function collectUINodeByTypeInPostOrder(
 
 export class CollectFactory {
     static findAndCollectClass(node: arkts.ClassDeclaration, metadata: UICollectMetadata): arkts.AstNode {
+        if (!checkIsClassCollectable(node, metadata)) {
+            return node;
+        }
         const isFromArkUI: boolean =
             !!metadata.externalSourceName && matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, metadata.externalSourceName);
         const structRecord = new CustomComponentRecord(metadata);
@@ -171,6 +176,10 @@ export class CollectFactory {
     }
 
     static findAndCollectInterface(node: arkts.TSInterfaceDeclaration, metadata: UICollectMetadata): arkts.AstNode {
+        if (metadata.isDeclaration && !isExportWithinScope(metadata.program, node)) {
+            return node;
+        }
+
         const normalInterfaceRecord = new NormalInterfaceRecord(metadata);
         normalInterfaceRecord.collect(node);
 
@@ -201,6 +210,9 @@ export class CollectFactory {
     }
 
     static findAndCollectCall(node: arkts.CallExpression, metadata: UICollectMetadata): arkts.AstNode {
+        if (metadata.isDeclaration) {
+            return node;
+        }
         CallRecordCollector.getInstance(metadata).withExternalSourceName(metadata.externalSourceName).collect(node);
         return node;
     }
@@ -219,6 +231,9 @@ export class CollectFactory {
         node: arkts.ArrowFunctionExpression,
         metadata: UICollectMetadata
     ): arkts.AstNode {
+        if (metadata.isDeclaration) {
+            return node;
+        }
         const arrowFunctionRecord = new ArrowFunctionRecord(metadata);
         arrowFunctionRecord.collect(node);
         const arrowFunctionInfo = arrowFunctionRecord.toRecord();
@@ -232,6 +247,9 @@ export class CollectFactory {
     }
 
     static findAndCollectProperty(node: arkts.Property, metadata: UICollectMetadata): arkts.AstNode {
+        if (metadata.isDeclaration) {
+            return node;
+        }
         const propertyRecord = new PropertyRecord(metadata);
         propertyRecord.collect(node);
         const propertyInfo = propertyRecord.toRecord();
@@ -247,6 +265,9 @@ export class CollectFactory {
         node: arkts.ETSNewClassInstanceExpression,
         metadata: UICollectMetadata
     ): arkts.AstNode {
+        if (metadata.isDeclaration) {
+            return node;
+        }
         const newClassInstanceRecord = new NewClassInstanceRecord(metadata);
         newClassInstanceRecord.collect(node);
         const newClassInstanceInfo = newClassInstanceRecord.toRecord();

@@ -51,6 +51,7 @@ import { factory as UIFactory } from '../ui-factory';
 import { CustomDialogControllerPropertyCache } from './cache/customDialogControllerPropertyCache';
 import { PropertyFactoryCallTypeCache, PropertyValueCache, PropertyValueInfo } from '../memo-collect-cache';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export interface BasePropertyTranslatorOptions {
     property: arkts.ClassProperty;
@@ -452,7 +453,7 @@ export abstract class MethodCacheTranslator extends BaseMethodTranslator {
     constructor(options: MethodCacheTranslatorOptions) {
         super(options);
         this.methodInfo = options.methodInfo;
-        this.isDecl = this.methodInfo.isDecl;
+        this.isDecl = MetaDataCollector.getInstance().isDeclaration || this.methodInfo.isDecl;
     }
 }
 
@@ -488,6 +489,9 @@ export abstract class BaseObservedPropertyTranslator implements IBaseObservedPro
 
     abstract translateMember(): arkts.AstNode[];
 
+    /**
+     * @ignore-declaration cannot enter in declaration mode
+     */
     backingField(originalName: string, newName: string): arkts.ClassProperty {
         const backingField = arkts.factory.createClassProperty(
             arkts.factory.createIdentifier(newName),
@@ -528,6 +532,9 @@ export abstract class BaseObservedPropertyTranslator implements IBaseObservedPro
         return backingField;
     }
 
+    /**
+     * @ignore-declaration connot enter in declaration mode
+     */
     metaField(originalName: string, newName: string): arkts.ClassProperty {
         collectStateManagementTypeImport(StateManagementTypes.MUTABLE_STATE_META);
         const metaName = this.isTracked
@@ -568,7 +575,8 @@ export abstract class ObservedPropertyTranslator extends BaseObservedPropertyTra
         super(options);
         this.classScopeInfo = options.classScopeInfo;
         this.hasImplement = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER);
-        this.isDecl = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        this.isDecl = MetaDataCollector.getInstance().isDeclaration ||
+ 	        arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     }
 
     translateMember(): arkts.AstNode[] {

@@ -112,10 +112,20 @@ export class NormalClassCollector extends AbstractVisitor {
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(classDecl, this._classRecord.toJSON());
     }
 
+    private checkIsCollectableClassElement(node: arkts.ClassProperty | arkts.MethodDefinition): boolean {
+        if (this.isDeclaration) {
+            return !arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE);
+        }
+        return true;
+    }
+
     private collectProperty(
         node: arkts.ClassProperty,
         withInfoCallback?: (node: arkts.ClassProperty, info: NormalClassPropertyInfo) => void
     ): void {
+        if (!this.checkIsCollectableClassElement(node)) {
+            return;
+        }
         const propertyRecord = new NormalClassPropertyRecord({
             classRecord: this._classRecord,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
@@ -178,6 +188,9 @@ export class NormalClassCollector extends AbstractVisitor {
     }
 
     private collectMethod(node: arkts.MethodDefinition): void {
+        if (!this.checkIsCollectableClassElement(node)) {
+            return;
+        }
         const methodRecord = new NormalClassMethodRecord({
             classRecord: this._classRecord,
             shouldIgnoreDecl: this.shouldIgnoreDecl,

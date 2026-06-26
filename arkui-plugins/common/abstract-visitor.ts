@@ -16,17 +16,20 @@
 import * as arkts from '@koalaui/libarkts';
 
 export interface VisitorOptions {
+    isDeclaration?: boolean;
     isExternal?: boolean;
     externalSourceName?: string;
     program?: arkts.Program;
 }
 
 export abstract class AbstractVisitor implements VisitorOptions {
+    public isDeclaration: boolean;
     public isExternal: boolean;
     public externalSourceName?: string;
     public program?: arkts.Program;
 
     constructor(options?: VisitorOptions) {
+        this.isDeclaration = options?.isDeclaration ?? false;
         this.isExternal = options?.isExternal ?? false;
         this.externalSourceName = options?.externalSourceName;
         this.program = options?.program;
@@ -43,6 +46,7 @@ export abstract class AbstractVisitor implements VisitorOptions {
 
     getOptions(): VisitorOptions {
         return {
+            isDeclaration: this.isDeclaration,
             isExternal: this.isExternal,
             externalSourceName: this.externalSourceName,
             program: this.program,

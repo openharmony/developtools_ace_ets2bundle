@@ -175,7 +175,7 @@ function transformExternalSources(
         }
         const programs = externalSource.programs;
         for (const program of programs) {
-            if (visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
+            if (!program.isBuiltSimultaneously || visitedPrograms.has(program.peer) || isHeaderFile(program.absoluteName)) {
                 continue;
             }
             const script = transformer.transform(program.ast) as arkts.ETSModule;

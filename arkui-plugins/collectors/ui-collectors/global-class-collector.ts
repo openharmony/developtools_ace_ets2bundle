@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
 import { ARKUI_BUILDER_SOURCE_NAME, NodeCacheNames } from '../../common/predefines';
+import { isExportWithinScope } from '../namespace-collector';
 import { FunctionInfo, FunctionRecord } from './records/function';
 import { FunctionValidator, GlobalPropertyValidator, ValidatorBuilder } from './validators';
 import { GLobalPropertyRecord } from './records';
@@ -83,6 +84,9 @@ export class GlobalClassCollector extends AbstractVisitor {
 
     visitor(node: arkts.ClassDeclaration): arkts.ClassDeclaration {
         node.definition?.body.forEach((st) => {
+            if (this.isDeclaration && !isExportWithinScope(this.program, st)) {
+                return;
+            }
             if (arkts.isMethodDefinition(st)) {
                 this.collectMethod(st);
                 st.overloads.forEach((method) => this.collectMethod(method));

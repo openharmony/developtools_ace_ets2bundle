@@ -21,6 +21,7 @@ import { CallRecord, CustomComponentInfo, StructMethodInfo, StructPropertyInfo }
 export interface UICollectMetadata extends VisitorOptions {
     shouldIgnoreDecl: boolean;
     shouldHandleInsightIntent: boolean;
+    isWithInNamespace?: boolean;
 }
 
 export interface StructCollectorInfo extends CustomComponentInfo {

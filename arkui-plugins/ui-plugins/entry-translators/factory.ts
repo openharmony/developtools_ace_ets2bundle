@@ -124,24 +124,33 @@ export class factory {
         return def;
     }
 
-    static generateConstructor(): arkts.MethodDefinition {
+    static generateConstructor(isDecl?: boolean): arkts.MethodDefinition {
         const key: arkts.Identifier = arkts.factory.createIdentifier('constructor');
-        const block = arkts.factory.createBlockStatement([]);
-        const entryScript = arkts.factory
-            .createScriptFunction(
-                block,
-                undefined, [], undefined, false,
-                arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR |
+        const block = isDecl ? undefined : arkts.factory.createBlockStatement([]);
+        let modifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
+            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR;
+        if (isDecl) {
+            modifier |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
+        const entryScript = arkts.factory.createScriptFunction(
+            block,
+            undefined, 
+            [], 
+            undefined, 
+            false,
+            arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR |
                 arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_IMPLICIT_SUPER_CALL_NEEDED,
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
-                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_CONSTRUCTOR,
-                key, undefined
-            );
+            modifier,
+            key, 
+            undefined
+        );
         const def = arkts.factory.createMethodDefinition(
             arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_CONSTRUCTOR,
             key.clone(),
             arkts.factory.createFunctionExpression(key.clone(), entryScript),
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            isDecl 
+                ? arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE
+                : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
             false
         );
         return def;

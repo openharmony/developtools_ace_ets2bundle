@@ -68,6 +68,13 @@ export class CustomComponentRecord extends BaseRecord<arkts.ClassDeclaration, Cu
         this._annotationRecord = new CustomComponentAnnotationRecord(options);
     }
 
+    get definition(): arkts.ClassDefinition | undefined {
+        if (!this.definitionPtr) {
+            return undefined;
+        }
+        return arkts.unpackNode<arkts.ClassDefinition>(this.definitionPtr);
+    }
+
     withIsFromArkUI(isFromArkUI: boolean): this {
         this.isChanged = this.isFromArkUI !== isFromArkUI;
         this.isFromArkUI = isFromArkUI;

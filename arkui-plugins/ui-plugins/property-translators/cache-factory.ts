@@ -36,6 +36,7 @@ import { SyncMonitorCacheTranslator } from './syncMonitor';
 import { PropertyRewriteCache } from './cache/propertyRewriteCache';
 import { ComputedCacheTranslator } from './computed';
 import { ComponentLifecycleCacheTranslator, ComponentLifecycleTranslator } from './componentLifecycle';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export class CacheFactory {
     /**
@@ -60,7 +61,7 @@ export class CacheFactory {
         if (!metadata.name || !getterSetterType) {
             return node;
         }
-        if (metadata.isDecl) {
+        if (MetaDataCollector.getInstance().isDeclaration || metadata.isDecl) {
             return node;
         }
         const rewriteOptions: IObservedTrackTranslator = {
@@ -128,7 +129,7 @@ export class CacheFactory {
         if (!metadata.name || !metadata.classInfo?.name || !getterSetterType) {
             return node;
         }
-        if (node.isStatic || metadata.isDecl) {
+        if (node.isStatic || MetaDataCollector.getInstance().isDeclaration || metadata.isDecl) {
             return node;
         }
         const rewriteOptions: IObservedV2TraceTranslator = {

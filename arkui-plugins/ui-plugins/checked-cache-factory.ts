@@ -94,7 +94,7 @@ import {
     InnerClassPropertyCachedTranslator,
     PropertyCachedTranslator,
 } from './property-translators/base';
-import { StructType } from './struct-translators/utils';
+import { checkIsDeclFromStructInfo, StructType } from './struct-translators/utils';
 import {
     classifyObservedClassPropertyFromInfo,
     classifyPropertyFromInfo,
@@ -128,7 +128,11 @@ export class RewriteFactory {
      * @internal
      */
     static rewriteStruct(node: arkts.ClassDeclaration, metadata: CustomComponentInfo): arkts.ClassDeclaration {
-        if (MetaDataCollector.getInstance().shouldHandleInsightIntent && checkIsInsightIntentClassFromInfo(metadata)) {
+        if (
+            !MetaDataCollector.getInstance().isDeclaration && 
+            MetaDataCollector.getInstance().shouldHandleInsightIntent && 
+            checkIsInsightIntentClassFromInfo(metadata)
+        ) {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentStruct'));
             InsightIntentHandler.getInstance().handleClass(node);
             arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 9, 3], 'InsightIntentStruct'));
@@ -219,6 +223,22 @@ export class RewriteFactory {
      * @internal
      */
     static rewriteStructProperty(node: arkts.ClassProperty, metadata: StructPropertyInfo): arkts.ClassProperty {
+        if (!metadata.structInfo) {
+ 	        return node;
+        }
+        if (checkIsDeclFromStructInfo(metadata.structInfo)) {
+            if (!!node.value) {
+                node.setValue(undefined);
+                if (
+                    !!metadata.modifiers && 
+                    !node.isImmediateInit &&
+                    (metadata.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL) !== arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL
+                ) {
+                    node.setIsImmediateInit();
+                }
+            }
+            return node;
+        }
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
         const propertyTranslator: PropertyCachedTranslator | undefined = classifyPropertyFromInfo(node, metadata);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
@@ -471,6 +491,9 @@ export class RewriteFactory {
         metadata: RecordInfo
     ): arkts.CallExpression {
         const _node = coerceToAstNode<arkts.CallExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const _metadata = metadata as CallInfo;
         if (checkIsCallFromLegacyBuilderFromInfo(_metadata)) {
             arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0], 'Legacy Builder call'));
@@ -530,6 +553,9 @@ export class RewriteFactory {
         metadata: RecordInfo
     ): arkts.ArrowFunctionExpression {
         const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const _metadata = metadata as ArrowFunctionExpressionRecordInfo;
         if (checkIsBuilderFromInfo(_metadata)) {
             return BuilderFactory.rewriteBuilderArrowFunction(_node);
@@ -539,6 +565,9 @@ export class RewriteFactory {
 
     static rewriteProperty<T extends arkts.AstNode = arkts.Property>(node: T, metadata: RecordInfo): arkts.Property {
         const _node = coerceToAstNode<arkts.Property>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const _metadata = metadata as PropertyRecordInfo;
         if (checkIsBuilderFromInfo(_metadata)) {
             return BuilderFactory.rewriteBuilderProperty(_node);
@@ -565,6 +594,9 @@ export class RewriteFactory {
         metadata: RecordInfo
     ): arkts.ETSNewClassInstanceExpression {
         const _node = coerceToAstNode<arkts.ETSNewClassInstanceExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const _metadata = metadata as ETSNewClassInstanceExpressionRecordInfo;
         if (checkIsDialogControllerNewInstanceFromInfo(_metadata)) {
             return StructFactory.transformCustomDialogController(_node) as arkts.ETSNewClassInstanceExpression;

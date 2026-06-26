@@ -57,7 +57,6 @@ import {
     getObjectInstanceDeclTypeMap,
     StructCalleeInfo,
 } from './utils';
-// import { hasDecorator, isDecoratorIntrinsicAnnotation } from '../property-translators/utils';
 import { checkIsNameStartWithBackingField, hasDecorator } from '../property-translators/utils';
 import { BuilderFactory } from './builder-factory';
 import { factory as MemoCollectFactory } from '../../collectors/memo-collectors/factory';

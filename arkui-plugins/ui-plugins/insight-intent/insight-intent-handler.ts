@@ -29,10 +29,10 @@ import {
 } from './insight-intent-collector';
 import { LogCollector } from '../../common/log-collector';
 import { MetaDataCollector } from '../../common/metadata-collector';
+import { isETSGlobalClass } from '../../common/arkts-utils';
 import { INSIGHT_INTENT_FILE_NAME, LogType, ObservedNames } from '../../common/predefines';
 import { ResourceSourceCache } from './resource-source-cache';
 import Ajv, { ErrorObject } from 'ajv';
-import { isEtsGlobalClass } from '../struct-translators/utils';
 
 declare const __dirname: string;
 
@@ -1109,7 +1109,7 @@ export class InsightIntentHandler {
      */
     nodeHandleEntry(node: arkts.ClassDeclaration): void {
         // 检查是否是ETSGLOBAL类，如果是则从中收集变量
-        if (isEtsGlobalClass(node)) {
+        if (isETSGlobalClass(node.definition)) {
             this.collectFromETSGlobal(node);
         }
         

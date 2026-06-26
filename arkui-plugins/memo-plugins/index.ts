@@ -26,6 +26,7 @@ import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
 import { ProgramSkipper } from "../common/program-skipper";
 import { NodeCacheFactory } from '../common/node-cache';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export function unmemoizeTransform(): Plugins {
     return {
@@ -114,6 +115,7 @@ function checkedProgramVisit(
             isFrameworkMode
         });
         program = programVisitor.programVisitor(program);
+        MetaDataCollector.getInstance().reset();
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).clear();
     }
     return program;

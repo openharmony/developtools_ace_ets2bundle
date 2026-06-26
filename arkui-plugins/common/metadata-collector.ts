@@ -23,6 +23,7 @@ export class MetaDataCollector {
     public projectConfig: ProjectConfig | undefined;
     public fileAbsName: string | undefined;
     public externalSourceName: string | undefined;
+    public isDeclaration: boolean | undefined;
     public routerInfo: Map<string, RouterInfo[]> = new Map<string, RouterInfo[]>();
     public loaderInfo: Partial<LoaderJson> | undefined;
     public componentsInfo: UIComponents | undefined;
@@ -103,11 +104,17 @@ export class MetaDataCollector {
         return this.importsInfoCache;
     }
 
+    setIsDeclaration(isDeclaration: boolean | undefined): this {
+        this.isDeclaration = isDeclaration;
+        return this;
+    }
+
     reset(): void {
         this.shouldHandleInsightIntent = true;
         this.projectConfig = undefined;
         this.fileAbsName = undefined;
         this.externalSourceName = undefined;
+        this.isDeclaration = undefined;
         this.routerInfo.clear();
         this.resourceInfo = undefined;
         this.componentsInfo = undefined;

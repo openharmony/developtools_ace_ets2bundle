@@ -26,7 +26,7 @@ import {
     isKnownMethodDefinition,
     isStatic,
 } from '../utils';
-import { withAPIVersion, expectName } from '../../common/arkts-utils';
+import { withAPIVersion, expectName, isETSGlobalClass } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
@@ -49,7 +49,6 @@ import {
 } from '../property-translators';
 import {
     CustomComponentScopeInfo,
-    isEtsGlobalClass,
     checkRawfileResource,
     generateResourceModuleName,
     generateResourceBundleName,
@@ -1373,7 +1372,7 @@ export class factory {
         if (!node.definition) {
             return node;
         }
-        if (isEtsGlobalClass(node)) {
+        if (isETSGlobalClass(node.definition)) {
             return this.transformETSGlobalClass(node, externalSourceName);
         }
         if (isCustomComponentInnerClass(node)) {
@@ -1978,10 +1977,15 @@ export class factory {
     /**
      * create `storage?: LocalStorage` in `$_invoke` static method.
      */
-    static createStorageParamInInvoke(): arkts.ETSParameterExpression {
-        ImportCollector.getInstance().collectSource(UIClass.LOCAL_STORAGE, ARKUI_LOCAL_STORAGE_SOURCE_NAME);
-        ImportCollector.getInstance().collectImport(UIClass.LOCAL_STORAGE);
-        const localStorageType = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
+    static createStorageParamInInvoke(isFromLegacy?: boolean): arkts.ETSParameterExpression {
+        let localStorageType: arkts.TypeNode;
+        if (!isFromLegacy) {
+            ImportCollector.getInstance().collectSource(UIClass.LOCAL_STORAGE, ARKUI_LOCAL_STORAGE_SOURCE_NAME);
+            ImportCollector.getInstance().collectImport(UIClass.LOCAL_STORAGE);
+            localStorageType = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
+        } else {
+            localStorageType = UIFactory.createTypeReferenceFromString(TypeNames.ANY);
+        }
         return UIFactory.createParameterWithType(BuilderLambdaNames.STORAGE_PARAM_NAME, localStorageType, true);
     }
 
@@ -2016,18 +2020,20 @@ export class factory {
     /**
      * create  `$_invoke` static method in struct
      */
-    static createInvokeMethod(structName: string, isDecl: boolean): arkts.MethodDefinition {
-        ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, ARKUI_BUILDER_SOURCE_NAME);
-        ImportCollector.getInstance().collectImport(
-            BuilderLambdaNames.ANNOTATION_NAME,
-            undefined,
-            arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
-        );
-        const componentBuilderAnno = annotation(BuilderLambdaNames.ANNOTATION_NAME);
+    static createInvokeMethod(structName: string, isDecl: boolean, isFromLegacy?: boolean): arkts.MethodDefinition {
+        if (!isFromLegacy) {
+            ImportCollector.getInstance().collectSource(BuilderLambdaNames.ANNOTATION_NAME, ARKUI_BUILDER_SOURCE_NAME);
+            ImportCollector.getInstance().collectImport(
+                BuilderLambdaNames.ANNOTATION_NAME,
+                undefined,
+                arkts.Es2pandaImportKinds.IMPORT_KINDS_ALL
+            );
+        }
+        const annotations = !isFromLegacy ? [annotation(BuilderLambdaNames.ANNOTATION_NAME)] : [];
         const initializerParam = this.createInitializerParamInInvoke(structName);
-        const storageParam = this.createStorageParamInInvoke();
+        const storageParam = this.createStorageParamInInvoke(isFromLegacy);
         const contentParam = this.createContentParamInInvoke();
-        const methodBody = isDecl
+        const body = isDecl
             ? undefined
             : arkts.factory.createBlockStatement([
                   arkts.factory.createThrowStatement(
@@ -2042,20 +2048,20 @@ export class factory {
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE |
               arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC
             : arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-        const returnType = UIFactory.createTypeReferenceFromString(structName);
+        const returnTypeAnnotation = UIFactory.createTypeReferenceFromString(structName);
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(BuilderLambdaNames.ORIGIN_METHOD_NAME),
             kind: arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD,
             function: {
                 key: arkts.factory.createIdentifier(BuilderLambdaNames.ORIGIN_METHOD_NAME),
-                body: methodBody,
+                body,
                 params: [initializerParam, storageParam, contentParam],
-                returnTypeAnnotation: returnType,
+                returnTypeAnnotation,
                 flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD,
-                modifiers: modifiers,
-                annotations: [componentBuilderAnno],
+                modifiers,
+                annotations,
             },
-            modifiers: modifiers,
+            modifiers,
         });
     }
 

@@ -36,6 +36,7 @@ import { ClassScopeInfo } from '../struct-translators/utils';
 import { factory } from './factory';
 import { factory as uiFactory } from '../ui-factory';
 import { ImportCollector } from '../../common/import-collector';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export function getterBodyWithObservedV2TraceProperty(
     this: IObservedV2TraceTranslator,
@@ -244,7 +245,8 @@ export class ObservedV2TraceTranslator extends ObservedPropertyTranslator implem
         this.hasImplement = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_SETTER);
         this.isTraced = hasDecorator(this.property, this.traceDecorator);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
-        this.isDecl = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        this.isDecl = MetaDataCollector.getInstance().isDeclaration ||
+ 	        arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         if (this.isStatic) {
             this.propertyModifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
         }
@@ -294,9 +296,10 @@ export class ObservedV2TraceCachedTranslator
         super(options);
         this.className = this.propertyInfo.classInfo?.name!;
         this.isTraced = !!this.propertyInfo.annotationInfo?.hasTrace;
+        this.isDecl = !!MetaDataCollector.getInstance().isDeclaration;
         if (!!this.propertyInfo.modifiers) {
             this.isStatic = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-            this.isDecl = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+            this.isDecl ||= (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
         if (this.isStatic) {
             this.propertyModifier = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;

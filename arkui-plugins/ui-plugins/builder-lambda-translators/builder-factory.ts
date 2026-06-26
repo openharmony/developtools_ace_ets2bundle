@@ -22,6 +22,7 @@ import { coerceToAstNode } from '../../common/arkts-utils';
 import { generateBuilderCompatible, addcompatibleComponentImport, isFromBuilder1_1 } from '../interop/builder-interop';
 import { NodeCacheFactory } from '../../common/node-cache';
 import { NodeCacheNames } from '../../common/predefines';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export class BuilderFactory {
     /**
@@ -34,11 +35,7 @@ export class BuilderFactory {
         let params = (_node.params as arkts.ETSParameterExpression[]).map((p) =>
             addMemoAnnotation(p, MemoNames.MEMO_SKIP_UI)
         );
-        let funcBody: arkts.AstNode | undefined = _node.body;
-        if (!funcBody || !arkts.isBlockStatement(funcBody)) {
-            return _node;
-        }
-        return UIFactory.updateScriptFunction(_node, { params, body: funcBody });
+        return UIFactory.updateScriptFunction(_node, { params });
     }
 
     /**
@@ -46,6 +43,9 @@ export class BuilderFactory {
      */
     static rewriteBuilderMethod<T extends arkts.AstNode = arkts.MethodDefinition>(node: T): arkts.MethodDefinition {
         const _node = coerceToAstNode<arkts.MethodDefinition>(node);
+        if (_node.kind === arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_GET) {
+            return _node;
+        }
         const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
         const newFuncExpr = arkts.factory.createFunctionExpression(newFunc.id?.clone(), newFunc);
         const result = arkts.factory.updateMethodDefinition(_node, _node.kind, _node.id, newFuncExpr, _node.modifierFlags, false, _node.overloads);
@@ -61,6 +61,9 @@ export class BuilderFactory {
      */
     static rewirteBuilderClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(node: T): arkts.ClassProperty {
         const _node = coerceToAstNode<arkts.ClassProperty>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const value = _node.value;
         if (!value || !arkts.isArrowFunctionExpression(value)) {
             return _node;
@@ -82,6 +85,9 @@ export class BuilderFactory {
      */
     static rewriteBuilderProperty<T extends arkts.AstNode = arkts.Property>(node: T): arkts.Property {
         const _node = coerceToAstNode<arkts.Property>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const value = _node.value;
         if (!value) {
             return _node;
@@ -105,6 +111,9 @@ export class BuilderFactory {
         node: T
     ): arkts.ArrowFunctionExpression {
         const _node = coerceToAstNode<arkts.ArrowFunctionExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
         return arkts.factory.updateArrowFunctionExpression(_node, newFunc, _node.annotations);
     }
@@ -116,6 +125,9 @@ export class BuilderFactory {
         node: T
     ): arkts.ETSParameterExpression {
         const _node = coerceToAstNode<arkts.ETSParameterExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const initializer = _node.initializer;
         if (!initializer || !arkts.isArrowFunctionExpression(initializer)) {
             return _node;
@@ -129,6 +141,9 @@ export class BuilderFactory {
      */
     static rewriteBuilderCall<T extends arkts.AstNode = arkts.CallExpression>(node: T): arkts.CallExpression {
         const _node = coerceToAstNode<arkts.CallExpression>(node);
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return _node;
+        }
         const args = _node.arguments;
         if (args.length !== 1) {
             return _node;

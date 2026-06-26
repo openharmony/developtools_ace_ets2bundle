@@ -26,6 +26,7 @@ import {
     GlobalReusePoolNames,
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
+import { MetaDataCollector } from '../common/metadata-collector';
 import { hasDecorator } from './property-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { getDeclOriPath } from './interop/utils';
@@ -169,6 +170,7 @@ export type StructAnnoationInfo = {
 };
 
 export type ComponentType = {
+    hasEntry: boolean;
     hasComponent: boolean;
     hasComponentV2: boolean;
     hasCustomDialog: boolean;
@@ -220,7 +222,8 @@ export function collectCustomComponentScopeInfo(
         return undefined;
     }
     const isStruct = definition.isFromStruct || arkts.isETSStructDeclaration(node);
-    const isDecl: boolean = arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+    const isDecl: boolean = MetaDataCollector.getInstance().isDeclaration ||
+        arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
     const isCustomComponentClass = !isStruct && isDecl && isBaseComponentClass(definition.ident.name);
     const shouldIgnoreDecl = isStruct || isDecl;
     if (!isStruct && !isCustomComponentClass) {
@@ -431,6 +434,9 @@ export function getComponentExtendsName(annotations: CustomComponentAnontations,
         componentType.hasReusable ||= true;
     } else if (!!annotations.reusableV2) {
         componentType.hasReusableV2 ||= true;
+    }
+    if (!!annotations.entry) {
+        componentType.hasEntry ||= true;
     }
     if (!!annotations.customLayout) {
         componentType.hasCustomLayout ||= true;
