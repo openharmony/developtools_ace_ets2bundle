@@ -20,8 +20,8 @@ import { GlobalReusePoolNames, LogType, StructDecoratorNames } from '../../../..
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
 const REUSABLE_DECORATOR_NAMES: Set<string> = new Set([
-    StructDecoratorNames.REUSABLE,
-    StructDecoratorNames.REUSABLE_V2,
+    StructDecoratorNames.RESUABLE,
+    StructDecoratorNames.RESUABLE_V2,
 ]);
 
 export const checkGlobalReuse = performanceLog(

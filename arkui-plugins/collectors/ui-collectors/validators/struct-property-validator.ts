@@ -19,17 +19,28 @@ import { StructPropertyInfo } from '../records';
 import {
     checkComponentComponentV2MixUse,
     checkComponentV2StateUsage,
+    checkComputedDecorator,
+    checkConsumerProviderDecorator,
     checkEntryLocalStorage,
     checkDecoratedPropertyType,
     checkEnvDecorator,
+    checkLifecycleDecorator,
     checkObservedObservedV2,
+    checkObservedV2TraceUsageValidation,
+    checkOnceDecorator,
+    checkStructAttributeNoType,
     checkStructPropertyDecorator,
+    checkStructV1DecoratorFunction,
     checkPropertyModifiers,
+    checkPropertyType,
     checkRequireDecoratorRegular,
     checkTrackDecorator,
     checkNoPropLinkObjectlinkInEntry,
+    checkOldNewDecoratorMixUse,
     checkWatchDecoratorRegular,
     checkStructPropertyOptional,
+    checkStructVariableInitialization,
+    checkValidateDecoratorTarget,
 } from './rules';
 
 export class StructPropertyValidator extends BaseValidator<arkts.ClassProperty, StructPropertyInfo> {
@@ -45,12 +56,23 @@ export class StructPropertyValidator extends BaseValidator<arkts.ClassProperty, 
         checkDecoratedPropertyType.bind(this)(node);
         checkEnvDecorator.bind(this)(node);
         checkObservedObservedV2.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
+        checkStructAttributeNoType.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
+        checkStructV1DecoratorFunction.bind(this)(node);
         checkPropertyModifiers.bind(this)(node);
         checkRequireDecoratorRegular.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
         checkNoPropLinkObjectlinkInEntry.bind(this)(node);
+        checkOldNewDecoratorMixUse.bind(this)(node);
         checkWatchDecoratorRegular.bind(this)(node);
         checkStructPropertyOptional.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkConsumerProviderDecorator.bind(this)(node);
+        checkComputedDecorator.bind(this)(node);
+        checkStructVariableInitialization.bind(this)(node);
+        checkPropertyType.bind(this)(node);
+        checkLifecycleDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
     }
 }

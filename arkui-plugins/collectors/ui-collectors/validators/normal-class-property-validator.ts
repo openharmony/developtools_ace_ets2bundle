@@ -17,7 +17,13 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassPropertyInfo } from '../records';
 import {
+    checkComputedDecorator,
+    checkLifecycleDecorator,
+    checkObservedV2TraceUsageValidation,
+    checkOldNewDecoratorMixUse,
+    checkOnceDecorator,
     checkTrackDecorator,
+    checkValidateDecoratorTarget,
 } from './rules';
 
 export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassProperty, NormalClassPropertyInfo> {
@@ -27,6 +33,12 @@ export class NormalClassPropertyValidator extends BaseValidator<arkts.ClassPrope
             return;
         }
 
+        checkLifecycleDecorator.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkComputedDecorator.bind(this)(node);
+        checkOldNewDecoratorMixUse.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
     }
 }

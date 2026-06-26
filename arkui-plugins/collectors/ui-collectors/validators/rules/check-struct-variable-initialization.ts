@@ -27,7 +27,8 @@ export const checkStructVariableInitialization = performanceLog(
 /**
  * 校验规则：用于验证装饰器修饰变量时需要遵循的本地初始化约束。
  * 1.`@Link`、和 `@ObjectLink` 修饰的变量不能在本地初始化。
- * 2.`@State`、`@StorageLink`、`@StoragePropRef`、`@LocalStorageLink`、`@StoragePropRef` 和 `@Provide` 修饰的变量必须在本地初始化(类型校验已拦截，本规则不做处理)
+ * 2.`@State`、`@StorageLink`、`@StoragePropRef`、`@LocalStorageLink` 和 `@Provide` 修饰的变量必须在本地初始化。
+ * 3.`@State` 和 `@Provide` 与 `@Require` 配合使用时，允许不初始化。
  *
  * 校验等级：error
  */
@@ -36,25 +37,47 @@ function _checkStructVariableInitialization(
     classProperty: arkts.ClassProperty
 ): void {
     const metadata = this.context ?? {};
-    if (!metadata.structInfo || !metadata.annotations) {
+    if (!metadata.structInfo || !metadata.annotations || !metadata.annotationInfo) {
         return;
     }
-    let annotationName: string = '';
-    let cannotInitAnnotation: arkts.AnnotationUsage | undefined = undefined;
-    for (const annotationKey in metadata.annotations) {
-        if (annotationKey !== DecoratorNames.LINK && annotationKey !== DecoratorNames.OBJECT_LINK) {
+
+    const hasValue = !!classProperty.value;
+    const hasRequire = !!metadata.annotationInfo.hasRequire;
+
+    const cannotInitDecorators = [DecoratorNames.LINK, DecoratorNames.OBJECT_LINK];
+    for (const decoratorName of cannotInitDecorators) {
+        const annotation = metadata.annotations[decoratorName];
+        if (annotation && hasValue) {
+            this.report({
+                node: annotation,
+                level: LogType.ERROR,
+                message: `The '@${decoratorName}' property cannot be specified a default value.`,
+            });
+        }
+    }
+
+    const requireCanReleaseMandatoryDecorators = [DecoratorNames.STATE, DecoratorNames.PROVIDE];
+    const mustInitializeDecorators = [
+        DecoratorNames.STATE,
+        DecoratorNames.STORAGE_LINK,
+        DecoratorNames.STORAGE_PROP_REF,
+        DecoratorNames.LOCAL_STORAGE_LINK,
+        DecoratorNames.PROVIDE,
+    ];
+    for (const decoratorName of mustInitializeDecorators) {
+        const annotation = metadata.annotations[decoratorName];
+        if (!annotation) {
             continue;
         }
-        annotationName = annotationKey;
-        cannotInitAnnotation = metadata.annotations[annotationKey];
-        break;
-    }
-    // `@Link`、和 `@ObjectLink` 修饰的变量不能在本地初始化。
-    if (cannotInitAnnotation && classProperty.value && annotationName !== '') {
-        this.report({
-            node: cannotInitAnnotation,
-            level: LogType.ERROR,
-            message: `The '@${annotationName}' property cannot be specified a default value.`,
-        });
+        if (hasRequire && requireCanReleaseMandatoryDecorators.includes(decoratorName)) {
+            continue;
+        }
+        if (!hasValue) {
+            this.report({
+                node: annotation,
+                level: LogType.ERROR,
+                message: `The '@${decoratorName}' property must be specified a default value.`,
+            });
+        }
     }
 }

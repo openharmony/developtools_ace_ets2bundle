@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
-import { coerceToAstNode } from '../utils';
+import { coerceToAstNode, getAnnotationUsage } from '../utils';
 import type { ExtendedValidatorFunction, IntrinsicValidatorFunction } from '../safe-types';
 import {
     CallInfo,
@@ -85,11 +85,12 @@ function checkComputedDecoratorInMethod<
         return;
     }
     const computedAnnotation = metadata.annotations?.[DecoratorNames.COMPUTED]!;
-    if (!checkIsGetterMethod(method, metadata)) {
+    const isGetter = checkIsGetterMethod(method, metadata);
+    if (!isGetter) {
         // `@Computed`装饰器只能用来装饰获取器（即`getter`方法）
         this.report({
             node: computedAnnotation,
-            message: `@${DecoratorNames.COMPUTED} can only decorate 'GetAccessor'.`,
+            message: `'@Computed' can only decorate 'GetAccessor'.`,
             level: LogType.ERROR,
             suggestions: [createSuggestion(
                 '',
@@ -97,21 +98,29 @@ function checkComputedDecoratorInMethod<
                 `Remove the annotation`
             )],
         });
-    } else if (!checkIsFromObervedV2InNormalClass(metadata) && !!classDef?.parent) {
+    }
+    // `@Computed`装饰器在已经被`@ObservedV2`装饰器装饰的类`class`中的成员方法上使用（仅对 getter）
+    if (isGetter && !checkIsFromObervedV2InNormalClass(metadata) && !!classDef?.parent) {
+        if (getAnnotationUsage(classDef.annotations, DecoratorNames.OBSERVED_V2)) {
+            return;
+        }
         const observed = metadata.classInfo?.annotations?.[DecoratorNames.OBSERVED];
-        // `@Computed`装饰器在已经被`@ObservedV2`装饰器装饰的类`class`中的成员方法上使用
         if (observed) {
             reportChangeToObservedV2.bind(this)(observed, computedAnnotation);
         } else {
             reportAddObservedV2.bind(this)(classDef.parent, computedAnnotation);
         }
-    } else if (
-        !checkIsFromComponentV2InStruct(metadata) &&
-        !!classDef?.parent &&
-        metadata.structInfo?.annotationInfo?.hasComponent
-    ) {
-        // `@Computed`装饰器在已经被`@ComponentV2`装饰器修饰的结构体`struct`中使用
-        reportChangeToComponentV2.bind(this)(computedAnnotation, metadata);
+    }
+    // `@Computed`装饰器在已经被`@ComponentV2`装饰器修饰的结构体`struct`中使用（对所有 @Computed 方法）
+    if (!checkIsFromComponentV2InStruct(metadata) && !!classDef?.parent) {
+        if (getAnnotationUsage(classDef.annotations, StructDecoratorNames.COMPONENT_V2)) {
+            return;
+        }
+        if (metadata.structInfo?.annotationInfo?.hasComponent) {
+            reportChangeToComponentV2.bind(this)(computedAnnotation, metadata);
+        } else {
+            reportAddComponentV2.bind(this)(classDef.parent, computedAnnotation);
+        }
     }
 }
 
@@ -128,7 +137,7 @@ function checkComputedDecoratorInProperty<T extends arkts.AstNode = arkts.ClassP
     // `@Computed`装饰器只能用来装饰获取器（即`getter`方法）
     this.report({
         node: computedAnnotation,
-        message: `@${DecoratorNames.COMPUTED} can only decorate 'GetAccessor'.`,
+        message: `'@Computed' can only decorate 'GetAccessor'.`,
         level: LogType.ERROR,
         suggestions: [createSuggestion(
             '',
@@ -146,8 +155,13 @@ function checkComputedDecoratorInStructCall<T extends arkts.AstNode = arkts.Call
     if (!metadata.structDeclInfo?.name) {
         return;
     }
-    const call = coerceToAstNode<arkts.CallExpression>(node);
-    const optionsArg = call.arguments.at(1); // Options is the second argument of a custom component call.
+    const rootCallPtr = metadata.rootCallInfo?.ptr;
+    const call = rootCallPtr
+        ? arkts.unpackNonNullableNode<arkts.CallExpression>(rootCallPtr)
+        : coerceToAstNode<arkts.CallExpression>(node);
+    const optionsArg = call.arguments.find((arg) => {
+        return arkts.isObjectExpression(arg);
+    });
     if (!optionsArg || !arkts.isObjectExpression(optionsArg)) {
         return;
     }
@@ -265,13 +279,33 @@ function reportChangeToComponentV2(
     const fixTitle = `Change @Component to @ComponentV2`;
     const componentAnnotation = metadata.structInfo?.annotations?.[StructDecoratorNames.COMPONENT]!;
     const suggestions = [createSuggestion(
-        `@${StructDecoratorNames.COMPONENT_V2}`,
+        `${StructDecoratorNames.COMPONENT_V2}`,
         ...getPositionRangeFromNode(componentAnnotation),
         fixTitle
     )];
     this.report({
         node: node,
-        message: `The '@Computed' annotation can only be used in a 'struct' decorated with ComponentV2.`,
+        message: `The '@Computed' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
+        level: LogType.ERROR,
+        suggestions: suggestions,
+    });
+}
+
+function reportAddComponentV2(
+    this: BaseValidator<arkts.AstNode, Object>,
+    position: arkts.AstNode,
+    node: arkts.AnnotationUsage
+): void {
+    const fixTitle = `Add @${StructDecoratorNames.COMPONENT_V2} annotation`;
+    const suggestions = [createSuggestion(
+        `@${StructDecoratorNames.COMPONENT_V2}\n`,
+        position.startPosition,
+        position.startPosition,
+        fixTitle,
+    )];
+    this.report({
+        node: node,
+        message: `The '@Computed' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
         level: LogType.ERROR,
         suggestions: suggestions,
     });
@@ -301,9 +335,9 @@ function reportAddObservedV2(
     position: arkts.AstNode,
     node: arkts.AnnotationUsage
 ): void {
-    const fixTitle = `Add @ObservedV2 decorator`;
+    const fixTitle = `Add @${DecoratorNames.OBSERVED_V2} annotation`;
     const suggestions = [createSuggestion(
-        `${DecoratorNames.OBSERVED_V2}`,
+        `@${DecoratorNames.OBSERVED_V2}\n`,
         position.startPosition,
         position.startPosition,
         fixTitle,

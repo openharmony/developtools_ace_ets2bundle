@@ -93,6 +93,13 @@ function _checkConstructParameter(
     });
 }
 
+function formatAnnotationForMessage(name: string): string {
+    if (name === DecoratorNames.REGULAR || name === DecoratorNames.VARIABLE) {
+        return name;
+    }
+    return '@' + name;
+}
+
 export function checkAndReportError(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
     initializerAnnotations: string[],
@@ -111,10 +118,12 @@ export function checkAndReportError(
             if (!initializerAnnotations.includes(cannotInitializeAnnotationName)) {
                 return;
             }
+            annotationName = formatAnnotationForMessage(annotationName);
+            initializerName = formatAnnotationForMessage(cannotInitializeAnnotationName);
             this.report({
                 node: property,
                 level: LogType.ERROR,
-                message: `The '${annotationName}' property '${initializerName}' cannot be assigned to the '${cannotInitializeAnnotationName}' property '${parameterName}'.`,
+                message: `The '${annotationName}' property '${parameterName}' cannot be assigned to the '${initializerName}' property '${initializerName}'.`,
             });
         });
     });
@@ -126,7 +135,7 @@ export function checkAndReportError(
         this.report({
             node: property,
             level: LogType.ERROR,
-            message: `'@Builder' function '${initializerName}' can only initialize '@BuilderParam' attribute.`,
+            message: `'@Builder' function '${parameterName}' can only initialize '@BuilderParam' attribute.`,
         });
     }
     // 当`@BuilderParam`属性被非`@Builder`函数或方法初始化时报错

@@ -15,7 +15,8 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from '../base';
-import { CallInfo } from '../../records';
+import { CallInfo, CustomComponentInfo } from '../../records';
+import { ChainingCallDataSource } from '../../chaining-call-data-source';
 import { LogType } from '../../../../common/predefines';
 import { createSuggestion, getPositionRangeFromNode } from '../../../../common/log-collector';
 import { getPerfName, performanceLog } from '../../../../common/debug';
@@ -45,14 +46,32 @@ const CHANGE_REUSE_ID_TO_REUSE = `Change reuseId to reuse`;
  */
 function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo>, node: arkts.CallExpression): void {
     const metadata = this.context ?? {};
-    if (!metadata.structDeclInfo || !metadata.fromStructInfo) {
+    const structDeclInfo = metadata.rootCallInfo?.structDeclInfo ?? metadata.structDeclInfo;
+    const fromStructInfo = metadata.rootCallInfo?.fromStructInfo ?? metadata.fromStructInfo;
+    if (!structDeclInfo || !fromStructInfo) {
         return;
     }
-    const decoratedNode = extractReusePropertyNode(node);
-    if (!decoratedNode) {
+    const chains = metadata.chainingCallInfos ?? metadata.rootCallInfo?.chainingCallInfos;
+    if (!chains) {
         return;
     }
-    const definitionPtr = metadata.structDeclInfo.definitionPtr;
+    const chainingDataSource = ChainingCallDataSource.getInstance();
+    let reuseChainIdx = -1;
+    for (let idx = 0; idx < chains.length; idx++) {
+        const callName = chains[idx]?.callName;
+        if (callName === ReuseConstants.REUSE || callName === ReuseConstants.REUSE_ID) {
+            reuseChainIdx = idx;
+            break;
+        }
+    }
+    if (reuseChainIdx < 0) {
+        return;
+    }
+    const reuseChainCall = chainingDataSource.chainingCalls.at(reuseChainIdx);
+    if (!reuseChainCall) {
+        return;
+    }
+    const definitionPtr = structDeclInfo.definitionPtr;
     if (!definitionPtr) {
         return;
     }
@@ -60,35 +79,36 @@ function _checkReuseAttribute(this: BaseValidator<arkts.CallExpression, CallInfo
     if (!structDefinition || !structDefinition.parent || !arkts.isClassDeclaration(structDefinition.parent)) {
         return;
     }
-    checkReuseAttributeRule.bind(this)(metadata, node, decoratedNode);
-}
-
-function extractReusePropertyNode(node: arkts.CallExpression): arkts.Identifier | undefined {
-    if (
-        !arkts.isMemberExpression(node.callee) ||
-        !node.callee.property ||
-        !arkts.isCallExpression(node.callee.object)
-    ) {
-        return undefined;
-    }
-    const property = node.callee.property;
-    return arkts.isIdentifier(property) ? property : undefined;
+    const reusePropertyNameNode = getReusePropertyNameNode(reuseChainCall);
+    checkReuseAttributeRule.bind(this)(structDeclInfo, node, chains[reuseChainIdx]!.callName!, reusePropertyNameNode);
 }
 
 function checkReuseAttributeRule(
     this: BaseValidator<arkts.CallExpression, CallInfo>,
-    metadata: CallInfo,
-    node: arkts.CallExpression,
-    decoratedNode: arkts.Identifier
+    structDeclInfo: CustomComponentInfo,
+    reuseCallNode: arkts.CallExpression,
+    propertyName: string,
+    reusePropertyNameNode: arkts.AstNode | undefined
 ): void {
-    const annoInfo = metadata.structDeclInfo?.annotationInfo;
+    const annoInfo = structDeclInfo.annotationInfo;
+    if (!annoInfo) {
+        return;
+    }
     const hasComponentV2AndReusableV2 = !!annoInfo?.hasComponentV2 && !!annoInfo.hasReusableV2;
-    if (decoratedNode.name === ReuseConstants.REUSE && !hasComponentV2AndReusableV2) {
-        reportInvalidReuseUsage.bind(this)(node, decoratedNode);
+    const targetNode = reusePropertyNameNode ?? reuseCallNode;
+    if (propertyName === ReuseConstants.REUSE && !hasComponentV2AndReusableV2) {
+        reportInvalidReuseUsage.bind(this)(reuseCallNode, targetNode);
     }
-    if (decoratedNode.name === ReuseConstants.REUSE_ID && hasComponentV2AndReusableV2) {
-        reportInvalidReuseIdUsage.bind(this)(node, decoratedNode);
+    if (propertyName === ReuseConstants.REUSE_ID && hasComponentV2AndReusableV2) {
+        reportInvalidReuseIdUsage.bind(this)(reuseCallNode, targetNode);
     }
+}
+
+function getReusePropertyNameNode(reuseChainCall: arkts.CallExpression): arkts.AstNode | undefined {
+    if (!arkts.isMemberExpression(reuseChainCall.callee)) {
+        return undefined;
+    }
+    return reuseChainCall.callee.property;
 }
 
 function reportInvalidReuseUsage(

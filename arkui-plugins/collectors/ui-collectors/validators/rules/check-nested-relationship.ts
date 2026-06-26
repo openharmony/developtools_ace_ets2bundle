@@ -68,7 +68,7 @@ function _checkNestedRelationship(
     }
     // Check whether the current node is an atomic component
     if (componentsInfo.atomicComponents.includes(metadata.declName)) {
-        // checkNoChildComponent.bind(this)(node.callee, metadata.declName);
+        checkNoChildComponent.bind(this)(node.callee, metadata.declName);
     }
 }
 

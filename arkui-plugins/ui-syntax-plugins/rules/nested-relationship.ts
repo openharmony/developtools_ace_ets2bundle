@@ -42,9 +42,9 @@ class NestedRelationshipRule extends AbstractUISyntaxRule {
     }
     
     public parsed(node: arkts.ETSStructDeclaration): void {
-        // this.checkValidParentComponent(node);
-        // this.checkValidChildComponent(node);
-        // this.checkSingleChildComponent(node);
+        this.checkValidParentComponent(node);
+        this.checkValidChildComponent(node);
+        this.checkSingleChildComponent(node);
         this.checkNoChildComponent(node);
     }
 

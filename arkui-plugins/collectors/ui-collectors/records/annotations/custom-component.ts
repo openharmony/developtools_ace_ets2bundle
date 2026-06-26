@@ -75,7 +75,7 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
             this.updateAnnotations(anno, name);
             return;
         }
-        super.updateAnnotations(anno, name);
+        super.updateIgnoreAnnotations(anno, name);
     }
 
     updateAnnotationInfoByName(info: StructAnnotationInfo, name: string | undefined): StructAnnotationInfo {

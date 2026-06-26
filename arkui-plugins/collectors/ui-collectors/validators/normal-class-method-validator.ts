@@ -17,10 +17,16 @@ import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassMethodInfo } from '../records';
 import {
+    checkComputedDecorator,
     checkComputedStateModification,
+    checkConsumerProviderDecorator,
+    checkLifecycleDecorator,
+    checkObservedV2TraceUsageValidation,
+    checkOnceDecorator,
     checkStructPropertyDecorator,
     checkTrackDecorator,
     checkComponentV2StateUsage,
+    checkValidateDecoratorTarget,
 } from './rules';
 
 export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefinition, NormalClassMethodInfo> {
@@ -30,9 +36,16 @@ export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefini
             return;
         }
 
+        checkLifecycleDecorator.bind(this)(node);
+        checkOnceDecorator.bind(this)(node);
         checkTrackDecorator.bind(this)(node);
         checkStructPropertyDecorator.bind(this)(node);
         checkComponentV2StateUsage.bind(this)(node);
         checkComputedStateModification.bind(this)(node);
+        checkValidateDecoratorTarget.bind(this)(node);
+        checkConsumerProviderDecorator.bind(this)(node);
+        checkObservedV2TraceUsageValidation.bind(this)(node);
+        const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.classInfo!.definitionPtr!);
+        checkComputedDecorator.bind(this)(node, classDef);
     }
 }

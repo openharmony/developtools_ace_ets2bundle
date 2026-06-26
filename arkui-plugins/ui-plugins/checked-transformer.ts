@@ -146,6 +146,7 @@ export class CheckedTransformer extends AbstractVisitor {
             }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
+            LogCollector.getInstance().reset();
         }
         return node;
     }
@@ -230,6 +231,7 @@ export class CheckedTransformer extends AbstractVisitor {
             }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);
             LogCollector.getInstance().emitLogInfo();
+            LogCollector.getInstance().reset();
             return newScript;
         }
         return node;

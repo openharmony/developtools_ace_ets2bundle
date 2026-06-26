@@ -32,6 +32,7 @@ export type EntryAnnoInfo = {
     startPosition: arkts.SourcePosition;
     endPosition: arkts.SourcePosition;
     name: string;
+    annotation?: arkts.AnnotationUsage;
 };
 
 export type LocalImportInfo = {

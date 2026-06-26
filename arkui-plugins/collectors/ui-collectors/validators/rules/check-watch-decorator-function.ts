@@ -77,36 +77,27 @@ function validateWatchDecorator(
     methodNames: string[],
     watchDecorator: arkts.AnnotationUsage | undefined
 ): void {
-    member.annotations.forEach((annotation) => {
-        if (!annotation.expr || !arkts.isIdentifier(annotation.expr) || annotation.expr.name !== DecoratorNames.WATCH) {
+    if (!watchDecorator) {
+        return;
+    }
+    watchDecorator.properties.forEach((element) => {
+        if (!arkts.isClassProperty(element) || !element.value || !arkts.isStringLiteral(element.value)) {
             return;
         }
-        annotation.properties.forEach((element) => {
-            if (!arkts.isClassProperty(element)) {
-                return;
-            }
-            if (!element.value) {
-                return;
-            }
-            if (!arkts.isStringLiteral(element.value)) {
-                return;
-            }
-            const parameterName = element.value.str;
-            if (!watchDecorator || !parameterName || methodNames.includes(parameterName)) {
-                return;
-            }
-            // `@Watch` 必须指向已存在的方法名，即`@Watch` 装饰的参数必须是自定义组件中某个函数的回调方法
-            this.report({
-                node: watchDecorator,
-                level: LogType.ERROR,
-                message: `'@watch' cannot be used with '${parameterName}'. Apply it only to parameters that correspond to existing methods.`,
-                suggestions: [createSuggestion(
-                    `\n${parameterName}(){\n}`,
-                    member.endPosition,
-                    member.endPosition,
-                    `Add a watch function to the custom component`
-                )],
-            });
+        const parameterName = element.value.str;
+        if (!parameterName || methodNames.includes(parameterName)) {
+            return;
+        }
+        this.report({
+            node: watchDecorator,
+            level: LogType.ERROR,
+            message: `'@watch' cannot be used with '${parameterName}'. Apply it only to parameters that correspond to existing methods.`,
+            suggestions: [createSuggestion(
+                `\n${parameterName}(){\n}`,
+                member.endPosition,
+                member.endPosition,
+                `Add a watch function to the custom component`
+            )],
         });
     });
 }

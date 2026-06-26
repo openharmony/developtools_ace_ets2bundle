@@ -25,6 +25,7 @@ import {
     checkIsStructMethodFromInfo,
     checkIsStructPropertyFromInfo,
 } from '../../../../collectors/ui-collectors/utils';
+import { getAnnotationUsage } from '../utils';
 import { getPerfName, performanceLog } from '../../../../common/debug';
 
 export const checkOnceDecorator = performanceLog(
@@ -34,17 +35,26 @@ export const checkOnceDecorator = performanceLog(
 
 const INVALID_MEMBER_DECORATE = `'@Once' can only decorate member property.`;
 const INVALID_WITHOUT_PARAM = `When a variable decorated with '@Once', it must also be decorated with '@Param'.`;
-const INVALID_NOT_IN_STRUCT = `The '@Once' annotation can only be used with 'struct'.`;
 
 const REMOVE_ANNOTATION = `Remove the annotation`;
 const ADD_PARAM_ANNOTATION = `Add @Param annotation`;
+
+function hasRawParamAnnotation(node: arkts.AstNode): boolean {
+    if (arkts.isClassProperty(node)) {
+        return !!getAnnotationUsage(node.annotations, DecoratorNames.PARAM);
+    }
+    if (arkts.isMethodDefinition(node) && node.function) {
+        return !!getAnnotationUsage(node.function.annotations, DecoratorNames.PARAM);
+    }
+    return false;
+}
 
 /**
  * 校验规则：用于验证`@Once` 装饰器时需要遵循的具体约束和条件
  * 1.`@Once` 装饰器用在使用了 `@ComponentV2` 装饰的 `struct` 中(已由check-old-new-decorator-mix-use校验)
  * 2.`@Once` 只能装饰成员属性
  * 3.使用 `@Once` 必须同时使用 `@Param`
- * 4.`@Once` 只能在 `struct` 中使用
+ * 4.`@Once` 只能在 `struct` 中使用(已由validate-decorator-target校验)
  *
  * 校验等级：error
  */
@@ -87,6 +97,9 @@ function checkOnceInStructMethod<T extends arkts.AstNode = arkts.MethodDefinitio
     }
     // 使用 `@Once` 必须同时使用 `@Param`
     if (!metadata.ignoredAnnotationInfo?.hasParam) {
+        if (hasRawParamAnnotation(node)) {
+            return;
+        }
         reportOnceWithoutParam.bind(this)(onceAnnotation);
     } else {
         // `@Once` 只能装饰成员属性
@@ -108,10 +121,10 @@ function checkOnceInClassMethod<T extends arkts.AstNode = arkts.MethodDefinition
     }
     // 使用 `@Once` 必须同时使用 `@Param`
     if (!metadata.ignoredAnnotationInfo?.hasParam) {
+        if (hasRawParamAnnotation(node)) {
+            return;
+        }
         reportOnceWithoutParam.bind(this)(onceAnnotation);
-    } else {
-        // `@Once` 只能在 `struct` 中使用
-        reportErrorWithDeleteFix.bind(this)(onceAnnotation, INVALID_NOT_IN_STRUCT);
     }
 }
 
@@ -142,6 +155,9 @@ function checkOnceInStructProperty<T extends arkts.AstNode = arkts.ClassProperty
     }
     // 使用 `@Once` 必须同时使用 `@Param`
     if (!metadata.annotationInfo?.hasParam) {
+        if (hasRawParamAnnotation(node)) {
+            return;
+        }
         reportOnceWithoutParam.bind(this)(onceAnnotation);
     }
 }
@@ -160,10 +176,10 @@ function checkOnceInClassProperty<T extends arkts.AstNode = arkts.ClassProperty>
     }
     // 使用 `@Once` 必须同时使用 `@Param`
     if (!metadata.ignoredAnnotationInfo?.hasParam) {
+        if (hasRawParamAnnotation(node)) {
+            return;
+        }
         reportOnceWithoutParam.bind(this)(onceAnnotation);
-    } else {
-        // `@Once` 只能在 `struct` 中使用
-        reportErrorWithDeleteFix.bind(this)(onceAnnotation, INVALID_NOT_IN_STRUCT);
     }
 }
 

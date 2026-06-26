@@ -19,9 +19,13 @@ import {
     checkBuilderParam,
     checkComponentV2StateUsage,
     checkComponentComponentV2Init,
+    checkComputedDecorator,
+ 	checkConsumerProviderDecorator,
     checkConstructPrivateParameter,
+    checkConstructParameter,
     checkSpecificComponentChildren,
     checkConstructParameterLiteral,
+    checkConstructParameterLinkSourceData,
     checkVariableInitializationPassing,
     checkWrapBuilder,
     checkUIConsistent,
@@ -30,6 +34,9 @@ import {
     checkNoChildInButton,
     checkNoDuplicateId,
     checkEnvDecorator,
+    checkStaticParamRequire,
+    checkReuseAttribute,
+    checkObjectLinkUseLiteral,
     resetNoDuplicateId,
 } from './rules';
 import { CallInfo } from '../records';
@@ -77,6 +84,8 @@ function canCollectLegacyCallFromInfo(info: CallInfo): boolean {
 function reportInStructCall(this: CallValidator, node: arkts.CallExpression, metadata: CallInfo): void {
     checkComponentV2StateUsage.bind(this)(node);
     checkConstructParameterLiteral.bind(this)(node);
+    checkConstructParameter.bind(this)(node);
+    checkConstructParameterLinkSourceData.bind(this)(node);
     checkAttributeNoInvoke.bind(this)(node);
     checkEnvDecorator.bind(this)(node);
 
@@ -84,7 +93,12 @@ function reportInStructCall(this: CallValidator, node: arkts.CallExpression, met
     checkBuilderParam.bind(this)(node, struct);
     checkComponentComponentV2Init.bind(this)(node, struct);
     checkConstructPrivateParameter.bind(this)(struct);
+    checkStaticParamRequire.bind(this)(struct);
+ 	checkReuseAttribute.bind(this)(node);
     checkVariableInitializationPassing.bind(this)(node, struct);
+    checkObjectLinkUseLiteral.bind(this)(node);
+    checkComputedDecorator.bind(this)(node);
+    checkConsumerProviderDecorator.bind(this)(node);
 }
 
 /**
