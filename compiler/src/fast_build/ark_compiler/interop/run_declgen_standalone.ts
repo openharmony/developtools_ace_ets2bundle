@@ -392,52 +392,61 @@ export class DeclfileProductor {
 
   getModuleNamesResolver(fileMap: FileUnitMap): (moduleName: string[], containingFile: string) => (ts.ResolvedModuleFull | undefined)[] {
     const self = this;
+    const moduleResolutionCache = new Map<string, ts.ResolvedModuleFull | undefined>();
+
+    function getModuleResolutionCacheKey(moduleName: string, containingFile: string): string {
+      return `${toUnixPath(containingFile)}\x00${moduleName}`;
+    }
+
+    function resolveModuleName(moduleName: string, containingFile: string): ts.ResolvedModuleFull | undefined {
+      let resolvedModule: ts.ResolvedModuleFull | null = null;
+
+      resolvedModule = resolveWithDefault(moduleName, containingFile);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      resolvedModule = resolveSdkModule(moduleName);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      resolvedModule = self.resolveSdkAliasModule(moduleName, containingFile, fileMap);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      resolvedModule = resolveStaticInteropSdkModule(moduleName);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      resolvedModule = resolveEtsModule(moduleName, containingFile);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      resolvedModule = resolveTsModule(moduleName, containingFile);
+      if (resolvedModule) {
+        return resolvedModule;
+      }
+
+      return resolveOtherModule(moduleName, containingFile) ?? undefined;
+    }
 
     function resolveModuleNames(moduleNames: string[], containingFile: string): (ts.ResolvedModuleFull | undefined)[] {
       const resolvedModules: (ts.ResolvedModuleFull | undefined)[] = [];
 
       for (const moduleName of moduleNames) {
-        let resolvedModule: ts.ResolvedModuleFull | null = null;
-
-        resolvedModule = resolveWithDefault(moduleName, containingFile);
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
+        const cacheKey = getModuleResolutionCacheKey(moduleName, containingFile);
+        if (moduleResolutionCache.has(cacheKey)) {
+          resolvedModules.push(moduleResolutionCache.get(cacheKey));
           continue;
         }
 
-        resolvedModule = resolveSdkModule(moduleName);
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
-          continue;
-        }
-
-        resolvedModule = self.resolveSdkAliasModule(moduleName, containingFile, fileMap);
-
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
-          continue;
-        }
-
-        resolvedModule = resolveStaticInteropSdkModule(moduleName);
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
-          continue;
-        }
-
-        resolvedModule = resolveEtsModule(moduleName, containingFile);
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
-          continue;
-        }
-
-        resolvedModule = resolveTsModule(moduleName, containingFile);
-        if (resolvedModule) {
-          resolvedModules.push(resolvedModule);
-          continue;
-        }
-
-        resolvedModule = resolveOtherModule(moduleName, containingFile);
-        resolvedModules.push(resolvedModule ?? undefined);
+        const resolvedModule = resolveModuleName(moduleName, containingFile);
+        moduleResolutionCache.set(cacheKey, resolvedModule);
+        resolvedModules.push(resolvedModule);
       }
 
       return resolvedModules;
