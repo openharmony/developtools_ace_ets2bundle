@@ -8,14 +8,8 @@
     "regenerate:libarkts": "npm run regenerate --prefix libarkts",
     "compile:js:libarkts": "npm run compile:js:lib --prefix libarkts"
   },
-  "overrides": {
-    "@idlizer/arktscgen": {
-      "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-10.tgz"
-    }
-  },
   "devDependencies": {
-    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.1.10-arktscgen-10.tgz",
-    "@idlizer/core": "./libarkts/packages/core-2.1.10-arktscgen-10.tgz",
+    "@idlizer/arktscgen": "./libarkts/packages/arktscgen-2.2.2-arktscgen-2.tgz",
     "@koalaui/interop": "./interop",
     "@koalaui/libarkts": "./libarkts",
     "@rollup/plugin-commonjs": "^25.0.0",
