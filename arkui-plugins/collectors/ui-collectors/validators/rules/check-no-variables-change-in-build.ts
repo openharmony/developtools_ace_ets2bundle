@@ -382,7 +382,7 @@ function isInEventHandlerCallback(node: arkts.AstNode): boolean {
         }
         current = current.parent;
     }
-    return arrowCount > 1;
+    return arrowCount >= 1;
 }
 
 function getLeftSide(node: arkts.AstNode): arkts.AstNode | undefined {
