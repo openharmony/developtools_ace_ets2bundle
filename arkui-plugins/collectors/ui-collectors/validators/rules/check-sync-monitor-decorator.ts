@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,23 +52,23 @@ import {
     PropertyPathTreeBuilder, 
     resolvePropertyPath 
 } from '../../../../common/path-resolvers';
-import { MetaDataCollector } from '../../../../common/metadata-collector';
 
-export const checkMonitorDecorator = performanceLog(
-    _checkMonitorDecorator,
-    getPerfName([0, 0, 0, 0, 0], 'checkMonitorDecorator')
+export const checkSyncMonitorDecorator = performanceLog(
+    _checkSyncMonitorDecorator,
+    getPerfName([0, 0, 0, 0, 0], 'checkSyncMonitorDecorator')
 );
 
 /**
- * 校验规则：用于验证`@Monitor` 装饰器约束条件
- * 1. `@Monitor`不能与其他内置装饰器一起使用
- * 2. `@Monitor`装饰器只能在被`@ComponentV2`装饰的`struct`中使用
- * 3. `@Monitor`装饰器只能用来装饰方法
- * 4. `@Monitor`装饰器只能用于被`@ObservedV2`装饰的类中的成员方法上
+ * 校验规则：用于验证`@SyncMonitor` 装饰器约束条件
+ * 1. `@SyncMonitor`不能与其他内置装饰器一起使用
+ * 2. `@SyncMonitor`装饰器只能在被`@ComponentV2`装饰的`struct`中使用
+ * 3. `@SyncMonitor`装饰器只能用来装饰方法
+ * 4. `@SyncMonitor`装饰器只能用于被`@ObservedV2`装饰的类中的成员方法上
+ * 5. `@SyncMonitor`装饰器支持通配符场景下通配符写法必须合法
  *
  * 校验等级：error
  */
-function _checkMonitorDecorator(this: BaseValidator<arkts.AstNode, Object>, node: arkts.AstNode): void {
+function _checkSyncMonitorDecorator(this: BaseValidator<arkts.AstNode, Object>, node: arkts.AstNode): void {
     const nodeType = arkts.nodeType(node);
     if (checkByType.has(nodeType)) {
         checkByType.get(nodeType)!.bind(this)(node);
@@ -76,12 +76,12 @@ function _checkMonitorDecorator(this: BaseValidator<arkts.AstNode, Object>, node
 }
 
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction | ExtendedValidatorFunction>([
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkMonitorDecoratorInMethodDefinition],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkMonitorDecoratorInClassProperty],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkMonitorValidPathStrings]
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkSyncMonitorDecoratorInMethodDefinition],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkSyncMonitorDecoratorInClassProperty],
+    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkSyncMonitorValidPathStrings]
 ]);
 
-function checkMonitorValidPathStrings<T extends arkts.AstNode = arkts.ClassDeclaration>(
+function checkSyncMonitorValidPathStrings<T extends arkts.AstNode = arkts.ClassDeclaration>(
     this: BaseValidator<T, NormalClassInfo |  CustomComponentInfo>,
     node: T
 ): void {
@@ -91,25 +91,32 @@ function checkMonitorValidPathStrings<T extends arkts.AstNode = arkts.ClassDecla
         return;
     }
     const allPathStringArrPairs = MonitorPathStringCache.getInstance().getAllPathStringPairs();
-    const compatibleSdkVersion: APIVersions = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion ?? APIVersions.API_20;
     for (const pair of allPathStringArrPairs) {
         const pathStringPairs: [arkts.AstNode, string][] = pair[1];
 
         pathStringPairs.forEach((pathStringPair) => {
             const propertyValue: arkts.AstNode = pathStringPair[0];
             const pathString: string = pathStringPair[1];
-            const result = resolvePropertyPath(definition, pathString, { enableWildcard: compatibleSdkVersion >= APIVersions.API_26 });
+            if (pathString.includes('*') && isWildcardPathInvalid(pathString)) {
+                this.report({
+                    node: propertyValue,
+                    message: `In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.`,
+                    level: LogType.ERROR,
+                });
+                return;
+            }
+            const result = resolvePropertyPath(definition, pathString, { enableWildcard: true });
             if (!result.fullyResolved && MonitorPathValidationCache.getInstance().getLogType(propertyValue) !== LogType.ERROR) {
                 MonitorPathValidationCache.getInstance().collect(propertyValue, LogType.ERROR);
                 this.report({
                     node: propertyValue,
-                    message: `The Monitor decorator needs to monitor the state variables that exist.`,
+                    message: `'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.`,
                     level: LogType.ERROR,
                 });
             } else {
                 const resolvedPaths = result.getAllResultPaths();
                 resolvedPaths.forEach((path, i) => {
-                    checkMonitorObservableVariableInPath.bind(this)(propertyValue, path, result);
+                    checkSyncMonitorObservableVariableInPath.bind(this)(propertyValue, path, result);
                 })
             }
         });
@@ -119,7 +126,23 @@ function checkMonitorValidPathStrings<T extends arkts.AstNode = arkts.ClassDecla
     MonitorPathValidationCache.getInstance().clear();
 }
 
-function checkMonitorObservableVariableInPath<T extends arkts.AstNode = arkts.ClassDeclaration>(
+function isWildcardPathInvalid(path: string): boolean {
+    const segments = path.split('.');
+    const wildcardCount = segments.filter((s) => s === '*').length;
+    if (wildcardCount !== 1) {
+        return true;
+    }
+    const lastSegment = segments[segments.length - 1];
+    if (lastSegment !== '*') {
+        return true;
+    }
+    if (segments.length < 2) {
+        return true;
+    }
+    return false;
+}
+
+function checkSyncMonitorObservableVariableInPath<T extends arkts.AstNode = arkts.ClassDeclaration>(
     this: BaseValidator<T, NormalClassInfo | CustomComponentInfo>,
     propertyValue: arkts.AstNode,
     path: PropertyPathSegmentResult[],
@@ -133,7 +156,7 @@ function checkMonitorObservableVariableInPath<T extends arkts.AstNode = arkts.Cl
             MonitorPathValidationCache.getInstance().collect(propertyValue, LogType.WARN);
             this.report({
                 node: propertyValue,
-                message: `The Monitor decorator needs to monitor the state variables that exist.`,
+                message: `'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.`,
                 level: LogType.WARN,
             });
         }
@@ -148,7 +171,7 @@ function checkMonitorObservableVariableInPath<T extends arkts.AstNode = arkts.Cl
         MonitorPathValidationCache.getInstance().collect(propertyValue, LogType.WARN);
         this.report({
             node: propertyValue,
-            message: `The Monitor decorator needs to monitor the state variables that exist.`,
+            message: `'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.`,
             level: LogType.WARN,
         });
     }
@@ -254,12 +277,12 @@ function checkIsCurrentPropertyObservable(
     return false;
 }
 
-function checkMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts.MethodDefinition>(
+function checkSyncMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts.MethodDefinition>(
     this: BaseValidator<T, NormalClassMethodInfo | StructMethodInfo>,
     node: T
 ): void {
     const metadata = this.context ?? {};
-    const monitorUsage = metadata.annotations?.Monitor;
+    const monitorUsage = metadata.annotations?.SyncMonitor;
     if (!monitorUsage) {
         return;
     }
@@ -273,14 +296,15 @@ function checkMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts
 
     let isUsedInValidContext: boolean = true;
     if (checkIsStructMethodFromInfo(metadata)) {
-        isUsedInValidContext &&= checkMonitorInComponentV2Struct.bind(this)(monitorUsage);
+        isUsedInValidContext &&= checkSyncMonitorInComponentV2Struct.bind(this)(monitorUsage);
     }
     if (checkIsNormalClassMethodFromInfo(metadata)) {
-        isUsedInValidContext &&= checkMonitorInObservedV2Class.bind(this)(monitorUsage);
+        isUsedInValidContext &&= checkSyncMonitorInObservedV2Class.bind(this)(monitorUsage);
     }
     if (isUsedInValidContext) {
         MonitorPathStringCache.getInstance().collect(monitorUsage, pathStringPairs);
     }
+
     const annotationNumOfMethod = countAnnotationOfMethod(metadata);
     const otherAnnotation: arkts.AnnotationUsage | undefined = findOtherAnnotation(metadata);
     if (annotationNumOfMethod <= 1 || !otherAnnotation) {
@@ -295,7 +319,7 @@ function checkMonitorDecoratorInMethodDefinition<T extends arkts.AstNode = arkts
     });
 }
 
-function checkMonitorInComponentV2Struct<T extends arkts.AstNode = arkts.MethodDefinition>(
+function checkSyncMonitorInComponentV2Struct<T extends arkts.AstNode = arkts.MethodDefinition>(
     this: BaseValidator<T, StructMethodInfo>,
     monitorUsage: arkts.AnnotationUsage
 ): boolean {
@@ -308,7 +332,7 @@ function checkMonitorInComponentV2Struct<T extends arkts.AstNode = arkts.MethodD
     if (componentUsage) {
         this.report({
             node: monitorUsage,
-            message: `The '@Monitor' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
+            message: `The '@SyncMonitor' annotation can only be used in a 'struct' decorated with '@ComponentV2'.`,
             level: LogType.ERROR,
             suggestions: [createSuggestion(
                 `${StructDecoratorNames.COMPONENT_V2}`,
@@ -321,7 +345,7 @@ function checkMonitorInComponentV2Struct<T extends arkts.AstNode = arkts.MethodD
     return true;
 }
 
-function checkMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDefinition>(
+function checkSyncMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDefinition>(
     this: BaseValidator<T, NormalClassMethodInfo>,
     monitorUsage: arkts.AnnotationUsage
 ): boolean {
@@ -334,7 +358,7 @@ function checkMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDef
     if (observedUsage) {
         this.report({
             node: monitorUsage,
-            message: `The '@Monitor' can decorate only member 'method' within a 'class' decorated with '@ObservedV2'.`,
+            message: `The '@SyncMonitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
             level: LogType.ERROR,
             suggestions: [createSuggestion(
                 `${DecoratorNames.OBSERVED_V2}`,
@@ -352,7 +376,7 @@ function checkMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDef
     this.report({
         node: monitorUsage,
         level: LogType.ERROR,
-        message: `The '@Monitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
+        message: `The '@SyncMonitor' can decorate only member method within a 'class' decorated with @ObservedV2.`,
         suggestions: [createSuggestion(
             `@${DecoratorNames.OBSERVED_V2}\n`,
             classDeclaration.startPosition,
@@ -363,24 +387,24 @@ function checkMonitorInObservedV2Class<T extends arkts.AstNode = arkts.MethodDef
     return false;
 }
 
-function checkMonitorDecoratorInClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
+function checkSyncMonitorDecoratorInClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
     this: BaseValidator<T, StructPropertyInfo | NormalClassPropertyInfo>,
     node: T
 ): void {
     const metadata = this.context ?? {};
-    const monitorUsage = metadata.ignoredAnnotations?.Monitor;
+    const monitorUsage = metadata.ignoredAnnotations?.SyncMonitor;
     if (!monitorUsage) {
         return;
     }
 
     this.report({
         node: monitorUsage,
-        message: `@Monitor can only decorate method.`,
+        message: `@SyncMonitor can only decorate method.`,
         level: LogType.ERROR,
             suggestions: [createSuggestion(
                 ``,
                 ...getPositionRangeFromAnnotation(monitorUsage),
-                `Remove the @Monitor annotation`
+                `Remove the @SyncMonitor annotation`
             )],
 
     });

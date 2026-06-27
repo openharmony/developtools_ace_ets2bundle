@@ -16,7 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import { BaseValidator } from './base';
 import { NormalClassInfo } from '../records';
-import { checkMonitorDecorator } from './rules';
+import { checkMonitorDecorator, checkSyncMonitorDecorator } from './rules';
 
 export class NormalClassPostVisitValidator extends BaseValidator<arkts.ClassDeclaration, NormalClassInfo> {
     reportIfViolated(node: arkts.ClassDeclaration): void {
@@ -48,4 +48,5 @@ function reportInNormalClass(
     metadata: NormalClassInfo
 ): void {
     checkMonitorDecorator.bind(this)(node);
+    checkSyncMonitorDecorator.bind(this)(node);
 }

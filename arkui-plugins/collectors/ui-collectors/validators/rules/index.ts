@@ -65,6 +65,7 @@ export * from './check-struct-property-decorator';
 export * from './check-struct-property-optional';
 export * from './check-struct-v1-decorator-function';
 export * from './check-struct-variable-initialization';
+export * from './check-sync-monitor-decorator';
 export * from './check-track-decorator';
 export * from './check-ui-consistent';
 export * from './check-validate-build-in-struct';

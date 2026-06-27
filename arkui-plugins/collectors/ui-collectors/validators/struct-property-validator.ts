@@ -42,6 +42,7 @@ import {
     checkStructVariableInitialization,
     checkValidateDecoratorTarget,
     checkMonitorDecorator,
+    checkSyncMonitorDecorator,
 } from './rules';
 
 export class StructPropertyValidator extends BaseValidator<arkts.ClassProperty, StructPropertyInfo> {
@@ -76,5 +77,6 @@ export class StructPropertyValidator extends BaseValidator<arkts.ClassProperty, 
         checkLifecycleDecorator.bind(this)(node);
         checkObservedV2TraceUsageValidation.bind(this)(node);
         checkMonitorDecorator.bind(this)(node);
+        checkSyncMonitorDecorator.bind(this)(node);
     }
 }

@@ -28,6 +28,7 @@ import {
     checkComponentV2StateUsage,
     checkValidateDecoratorTarget,
     checkMonitorDecorator,
+    checkSyncMonitorDecorator,
 } from './rules';
 
 export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefinition, NormalClassMethodInfo> {
@@ -47,6 +48,7 @@ export class NormalClassMethodValidator extends BaseValidator<arkts.MethodDefini
         checkConsumerProviderDecorator.bind(this)(node);
         checkObservedV2TraceUsageValidation.bind(this)(node);
         checkMonitorDecorator.bind(this)(node);
+        checkSyncMonitorDecorator.bind(this)(node);
         const classDef = arkts.unpackNonNullableNode<arkts.ClassDefinition>(metadata.classInfo!.definitionPtr!);
         checkComputedDecorator.bind(this)(node, classDef);
     }
