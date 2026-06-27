@@ -233,6 +233,25 @@ export class Es2pandaNativeModule {
     _MemoryTrackerPrintCurrent(context: KNativePointer): void {
         throw new Error('Not implemented');
     }
+
+    _ResolveClassPropertyTypes(context: KNativePointer, property: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _ResolveClassDefinitionProperties(context: KNativePointer, classDef: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _ResolveTSInterfaceDeclarationProperties(context: KNativePointer, interfaceDecl: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _ResolveMethodDefinitionTypes(context: KNativePointer, method: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _ResolveArrayLikeType(context: KNativePointer, typeNode: KNativePointer): KNativePointer {
+        throw new Error('Not implemented');
+    }
+    _ClassDefinitionFindSuperClassByName(context: KNativePointer, classInstance: KNativePointer, baseClassName: KStringPtr): KNativePointer {
+        throw new Error('Not implemented');
+    }
 }
 
 export function findNativeModule(): string {

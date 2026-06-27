@@ -41,7 +41,7 @@ import {
 import { ProjectConfig } from '../common/plugin-context';
 import { findNavigationModuleInfo, getEntryRouteParam } from './entry-translators/utils';
 import { factory as EntryFactory } from './entry-translators/factory';
-import { hasDecoratorName, findDecoratorInfos, DecoratorInfo, parseStructPropertyAnnotations, checkIsRequiredPropertyFromAnnotationInfo, collectAnnotationsFromInfo, collectAnnotationForBackingFromInfo } from './property-translators/utils';
+import { hasDecoratorName, checkIsRequiredPropertyFromAnnotationInfo, collectAnnotationsFromInfo, collectAnnotationForBackingFromInfo } from './property-translators/utils';
 import { factory as UIFactory } from './ui-factory';
 import { factory as PropertyFactory } from './property-translators/factory';
 import { factory as StructFactory } from './struct-translators/factory';
@@ -75,6 +75,7 @@ import { NamespaceProcessor } from './namespace-processor';
 import { AstNodePointer } from '../common/safe-types';
 import { AnnotationRecord } from '../collectors/ui-collectors/records/annotations/base';
 import { StructPropertyAnnotationInfo, StructPropertyAnnotations } from '../collectors/ui-collectors/records';
+import { parseStructPropertyAnnotations } from '../collectors/ui-collectors/utils';
 
 export interface ComponentTransformerOptions extends VisitorOptions {
     arkui?: string;
@@ -368,7 +369,7 @@ export class ComponentTransformer extends AbstractVisitor {
                 if (!arkts.isClassProperty(it)) {
                     return;
                 }
-                const structPropAnnoRecord = parseStructPropertyAnnotations(it);
+                const structPropAnnoRecord = parseStructPropertyAnnotations(it, true);
                 structPropAnnoMap.set(it.peer, structPropAnnoRecord);
                 innerClassFields.push(...this.createInterfaceInnerMember(it, structPropAnnoRecord));
             })

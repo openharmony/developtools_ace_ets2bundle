@@ -23,7 +23,7 @@ import {
 } from './records';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
 import { BuilderLambdaNames, CustomComponentNames, NodeCacheNames } from '../../common/predefines';
-import { StructMethodValidator, StructPropertyValidator, ValidatorBuilder } from './validators';
+import { StructMethodValidator, StructPostVisitValidator, StructPropertyValidator, ValidatorBuilder } from './validators';
 import { checkIsCustomComponentFromInfo } from './utils';
 import { BaseRecord } from './records/base';
 import { NodeCacheFactory } from '../../common/node-cache';
@@ -180,6 +180,7 @@ export class StructCollector extends AbstractVisitor {
             }
         });
         this.collectRememberedProperties();
+        ValidatorBuilder.build(StructPostVisitValidator).checkIsViolated(node, this._structRecord.toRecord());
         return node;
     }
 }

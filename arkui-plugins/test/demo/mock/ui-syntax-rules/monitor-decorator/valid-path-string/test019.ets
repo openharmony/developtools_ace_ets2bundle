@@ -1,0 +1,84 @@
+/*
+ * Copyright (C) 2026 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { 
+  Text, 
+  Column, 
+  ComponentV2, 
+  Entry, 
+  Button, 
+  ClickEvent 
+} from "@ohos.arkui.component"
+import { 
+  State, 
+  Link, 
+  PropRef, 
+  Monitor, 
+  ObservedV2, 
+  Trace, 
+  Local,
+  Computed
+} from "@ohos.arkui.stateManagement"
+
+@ObservedV2
+class Persion {
+  @Trace tag: string = '';
+}
+
+@ObservedV2
+class ArrayOfPersion1 extends Array<Persion> {
+  @Trace tag: string = '';
+}
+
+@ObservedV2
+class MapOfPersion1 extends Map<string, Persion> {
+  @Trace tag: string = '';
+}
+
+@ObservedV2
+class SetOfPersion1 extends Set<Persion> {
+  @Trace tag: string = '';
+}
+
+@ObservedV2
+class TestArray<T extends Persion> extends Array<T> {
+  @Trace tag: string = '';
+} 
+
+@Entry
+@ComponentV2
+struct MyStateSample {
+  @Local persion1: ArrayOfPersion1 = new ArrayOfPersion1();
+  @Local map1: MapOfPersion1 = new MapOfPersion1();
+  @Local set1: SetOfPersion1 = new SetOfPersion1();
+  @Local test: TestArray<Persion> = new TestArray<Persion>();
+
+  @Monitor(['persion1.0.tag']) // OK
+  test1(): void {}
+
+  @Monitor(['persion1.length']) // OK
+  test2(): void {}
+
+  @Monitor(['map1.size']) // OK
+  test3(): void {}
+
+  @Monitor(['set1.size']) // OK
+  test4(): void {}
+
+  @Monitor(['test.0.tag']) // WARNING
+  test5(): void {}
+
+  build() {}
+}

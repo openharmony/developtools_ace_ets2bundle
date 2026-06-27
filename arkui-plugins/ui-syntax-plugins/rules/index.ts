@@ -52,7 +52,7 @@ const rules: Array<UISyntaxRule | UISyntaxRuleConfig> = [
     // [EntryComponentV2InvalidParamsRule, 'error'],
     // [EnvDecoratorCheckRule, 'error'],
     // [LifecycleDecoratorCheckRule, 'error'],
-    [MonitorDecoratorCheckRule, 'error'],
+    // [MonitorDecoratorCheckRule, 'error'],
     // [NestedRelationshipRule, 'error'],
     // [NoDuplicateEntryRule, 'error'],
     // [NoVariablesChangeInBuildRule, 'error'],

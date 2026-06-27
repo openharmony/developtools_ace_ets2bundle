@@ -33,12 +33,12 @@ export type NormalClassPropertyInfo = AnnotationRecord<
 };
 
 export interface NormalClassPropertyRecordOptions extends RecordOptions {
-    classRecord: NormalClassRecord;
+    classRecord?: NormalClassRecord;
 }
 
 export class NormalClassPropertyRecord extends BaseRecord<arkts.ClassProperty, NormalClassPropertyInfo> {
     private _annotationRecord: NormalClassPropertyAnnotationRecord;
-    private _classRecord: NormalClassRecord;
+    private _classRecord?: NormalClassRecord;
 
     protected name?: string;
     protected modifiers?: arkts.Es2pandaModifierFlags;
@@ -64,7 +64,7 @@ export class NormalClassPropertyRecord extends BaseRecord<arkts.ClassProperty, N
     refreshOnce(): void {
         let currInfo = this.info ?? {};
         const annotationRecord = this._annotationRecord.toRecord();
-        const classRecord = this._classRecord.toRecord();
+        const classRecord = this._classRecord?.toRecord();
         currInfo = {
             ...currInfo,
             ...(this.name && { name: this.name }),
@@ -77,7 +77,7 @@ export class NormalClassPropertyRecord extends BaseRecord<arkts.ClassProperty, N
 
     toJSON(): NormalClassPropertyInfo {
         this.refresh();
-        const classInfo = this._classRecord.toJSON();
+        const classInfo = this._classRecord?.toJSON();
         return {
             ...(this.info?.name && { name: this.info.name }),
             ...(this.info?.modifiers && { modifiers: this.info.modifiers }),

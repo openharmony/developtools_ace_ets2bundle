@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 #include <bitset>
+#include <unordered_set>
 
 #include "interop-types.h"
 #include "memoryTracker.h"
@@ -973,3 +974,1286 @@ KNativePointer impl_AstNodeFindOuterParent(KNativePointer contextPtr, KNativePoi
     return impl_AstNodeFindOuterParent(_context, parent, AstNodeType);
 }
 KOALA_INTEROP_3(AstNodeFindOuterParent, KNativePointer, KNativePointer, KNativePointer, KInt);
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+// AstNode Resolvers
+
+struct ClassPropertyResolver {
+    es2panda_Context* context;
+    es2panda_Impl* impl;
+    es2panda_AstNode* prop;
+    es2panda_AstNode* cls;
+    std::vector<es2panda_AstNode*> types;
+    std::unordered_set<es2panda_AstNode*> seenTypes;
+
+    ClassPropertyResolver(const ClassPropertyResolver&) = delete;
+    ClassPropertyResolver& operator=(const ClassPropertyResolver&) = delete;
+
+    ClassPropertyResolver(ClassPropertyResolver&& other) noexcept
+        : context(other.context),
+          impl(other.impl),
+          prop(other.prop),
+          cls(other.cls),
+          types(std::move(other.types)),
+          seenTypes(std::move(other.seenTypes))
+    {
+        // Leave source in a valid but empty state
+        other.context = nullptr;
+        other.impl = nullptr;
+        other.prop = nullptr;
+        other.cls = nullptr;
+    }
+
+    ClassPropertyResolver& operator=(ClassPropertyResolver&& other) noexcept
+    {
+        if (this != &other) {
+            context = other.context;
+            impl = other.impl;
+            prop = other.prop;
+            cls = other.cls;
+            types = std::move(other.types);
+            seenTypes = std::move(other.seenTypes);
+            // Leave source in a valid but empty state
+            other.context = nullptr;
+            other.impl = nullptr;
+            other.prop = nullptr;
+            other.cls = nullptr;
+        }
+        return *this;
+    }
+
+    ClassPropertyResolver(es2panda_Context* ctx, es2panda_AstNode* property, es2panda_AstNode* classDef)
+        : context(ctx), impl(nullptr), prop(property), cls(classDef)
+    {
+        // Validate context before getting impl
+        if (context != nullptr) {
+            impl = GetImpl();
+        }
+        // Only proceed if we have valid pointers
+        if (IsValid()) {
+            UnwrapTypeAnnotation();
+        }
+    }
+
+    ~ClassPropertyResolver() = default;
+
+    // Check if in valid state (not moved-from and properly initialized)
+    bool IsValid() const
+    {
+        return context != nullptr && impl != nullptr;
+    }
+
+    // Check if declaration is one of expected types
+    bool MatchType(es2panda_AstNode* declaration) const
+    {
+        if (declaration == nullptr || !IsValid()) {
+            return false;
+        }
+        auto type = impl->AstNodeTypeConst(context, declaration);
+        return type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_CLASS_DEFINITION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_INTERFACE_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_STRUCT_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_ENUM_DECLARATION;
+    }
+
+    // Helper: Get alias type annotation from ETSTypeReference
+    // Returns the type annotation if the type reference resolves to a type alias declaration, nullptr otherwise
+    es2panda_AstNode* GetAliasTypeAnnotationFromTypeReference(es2panda_AstNode* typeReference) const
+    {
+        if (!IsValid() || typeReference == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsETSTypeReference(typeReference)) {
+            return nullptr;
+        }
+        auto* part = impl->ETSTypeReferencePart(context, typeReference);
+        if (part == nullptr) {
+            return nullptr;
+        }
+        auto* name = impl->ETSTypeReferencePartName(context, part);
+        if (name == nullptr) {
+            return nullptr;
+        }
+        auto* declaration = impl->DeclarationFromIdentifier(context, name);
+        if (declaration == nullptr || !impl->IsTSTypeAliasDeclaration(declaration)) {
+            return nullptr;
+        }
+        return impl->TSTypeAliasDeclarationTypeAnnotationConst(context, declaration);
+    }
+
+    // Recursively unwrap type annotations to get direct types
+    void UnwrapTypeAnnotation(es2panda_AstNode* typeAnnotation = nullptr)
+    {
+        if (!IsValid() || prop == nullptr) {
+            return;
+        }
+        if (typeAnnotation == nullptr) {
+            // Get type annotation from class property
+            typeAnnotation = impl->ClassPropertyTypeAnnotationConst(context, prop);
+            if (typeAnnotation == nullptr) {
+                return;
+            }
+        }
+        auto nodeType = impl->AstNodeTypeConst(context, typeAnnotation);
+        // Handle ETSUnionType - flatten the union types
+        if (nodeType == Es2pandaAstNodeType::AST_NODE_TYPE_ETS_UNION_TYPE) {
+            size_t unionTypesLen = 0;
+            auto** unionTypes = impl->ETSUnionTypeIrTypesConst(context, typeAnnotation, &unionTypesLen);
+            if (unionTypes == nullptr) {
+                return;
+            }
+            for (size_t i = 0; i < unionTypesLen; i++) {
+                // Recursively unwrap each type in union
+                if (unionTypes[i] != nullptr) {
+                    UnwrapTypeAnnotation(unionTypes[i]);
+                }
+            }
+            return;
+        }
+        // Handle ETSTypeReference - resolve to declaration
+        if (impl->IsETSTypeReference(typeAnnotation)) {
+            auto aliasTypeAnnotation = GetAliasTypeAnnotationFromTypeReference(typeAnnotation);
+            if (aliasTypeAnnotation != nullptr) {
+                UnwrapTypeAnnotation(aliasTypeAnnotation);
+                return;
+            }
+        }
+        // Handle TSTypeAliasDeclaration - resolve to its type annotation
+        if (impl->IsTSTypeAliasDeclaration(typeAnnotation)) {
+            auto aliasTypeAnnotation = impl->TSTypeAliasDeclarationTypeAnnotationConst(context, typeAnnotation);
+            if (aliasTypeAnnotation != nullptr) {
+                UnwrapTypeAnnotation(aliasTypeAnnotation);
+                return;
+            }
+        }
+        // If we've reached a direct type (not union/alias), add it (check duplicates)
+        if (typeAnnotation != nullptr && seenTypes.find(typeAnnotation) == seenTypes.end()) {
+            seenTypes.insert(typeAnnotation);
+            types.push_back(typeAnnotation);
+        }
+    }
+
+    // Get collected types (const accessor for interop use)
+    const std::vector<es2panda_AstNode*>& GetTypes() const
+    {
+        return types;
+    }
+
+    // Get number of collected types
+    size_t GetTypeCount() const
+    {
+        return types.size();
+    }
+};
+
+/* Resolves types from getter MethodDefinition (extracts return type annotation) */
+struct MethodDefinitionResolver {
+    es2panda_Context* context;
+    es2panda_Impl* impl;
+    es2panda_AstNode* method;
+    std::vector<es2panda_AstNode*> types;
+    std::unordered_set<es2panda_AstNode*> seenTypes;
+
+    MethodDefinitionResolver(const MethodDefinitionResolver&) = delete;
+    MethodDefinitionResolver& operator=(const MethodDefinitionResolver&) = delete;
+
+    MethodDefinitionResolver(MethodDefinitionResolver&& other) noexcept
+        : context(other.context),
+          impl(other.impl),
+          method(other.method),
+          types(std::move(other.types)),
+          seenTypes(std::move(other.seenTypes))
+    {
+        other.context = nullptr;
+        other.impl = nullptr;
+        other.method = nullptr;
+    }
+
+    MethodDefinitionResolver& operator=(MethodDefinitionResolver&& other) noexcept
+    {
+        if (this != &other) {
+            context = other.context;
+            impl = other.impl;
+            method = other.method;
+            types = std::move(other.types);
+            seenTypes = std::move(other.seenTypes);
+            other.context = nullptr;
+            other.impl = nullptr;
+            other.method = nullptr;
+        }
+        return *this;
+    }
+
+    MethodDefinitionResolver(es2panda_Context* ctx, es2panda_AstNode* methodDefinition)
+        : context(ctx), impl(nullptr), method(methodDefinition)
+    {
+        if (context != nullptr) {
+            impl = GetImpl();
+        }
+        if (IsValid()) {
+            UnwrapTypeAnnotation();
+        }
+    }
+
+    ~MethodDefinitionResolver() = default;
+
+    bool IsValid() const
+    {
+        return context != nullptr && impl != nullptr;
+    }
+
+    // Check if declaration is one of expected types
+    bool MatchType(es2panda_AstNode* declaration) const
+    {
+        if (declaration == nullptr || !IsValid()) {
+            return false;
+        }
+        auto type = impl->AstNodeTypeConst(context, declaration);
+        return type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_CLASS_DEFINITION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_INTERFACE_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_STRUCT_DECLARATION ||
+               type == Es2pandaAstNodeType::AST_NODE_TYPE_TS_ENUM_DECLARATION;
+    }
+
+    // Helper: Get alias type annotation from ETSTypeReference
+    // Returns the type annotation if the type reference resolves to a type alias declaration, nullptr otherwise
+    es2panda_AstNode* GetAliasTypeAnnotationFromTypeReference(es2panda_AstNode* typeReference) const
+    {
+        if (!IsValid() || typeReference == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsETSTypeReference(typeReference)) {
+            return nullptr;
+        }
+        auto* part = impl->ETSTypeReferencePart(context, typeReference);
+        if (part == nullptr) {
+            return nullptr;
+        }
+        auto* name = impl->ETSTypeReferencePartName(context, part);
+        if (name == nullptr) {
+            return nullptr;
+        }
+        auto* declaration = impl->DeclarationFromIdentifier(context, name);
+        if (declaration == nullptr || !impl->IsTSTypeAliasDeclaration(declaration)) {
+            return nullptr;
+        }
+        return impl->TSTypeAliasDeclarationTypeAnnotationConst(context, declaration);
+    }
+
+    // Recursively unwrap type annotations to get direct types
+    void UnwrapTypeAnnotation(es2panda_AstNode* typeAnnotation = nullptr)
+    {
+        if (!IsValid() || method == nullptr) {
+            return;
+        }
+        if (typeAnnotation == nullptr) {
+            // Get return type annotation from getter method's function
+            if (!impl->IsMethodDefinition(method)) {
+                return;
+            }
+            auto* func = impl->MethodDefinitionFunction(context, method);
+            if (func == nullptr) {
+                return;
+            }
+            typeAnnotation = impl->ScriptFunctionReturnTypeAnnotation(context, func);
+            if (typeAnnotation == nullptr) {
+                return;
+            }
+        }
+        auto nodeType = impl->AstNodeTypeConst(context, typeAnnotation);
+        // Handle ETSUnionType - flatten the union types
+        if (nodeType == Es2pandaAstNodeType::AST_NODE_TYPE_ETS_UNION_TYPE) {
+            size_t unionTypesLen = 0;
+            auto** unionTypes = impl->ETSUnionTypeIrTypesConst(context, typeAnnotation, &unionTypesLen);
+            if (unionTypes == nullptr) {
+                return;
+            }
+            for (size_t i = 0; i < unionTypesLen; i++) {
+                if (unionTypes[i] != nullptr) {
+                    UnwrapTypeAnnotation(unionTypes[i]);
+                }
+            }
+            return;
+        }
+        // Handle ETSTypeReference - resolve to declaration
+        if (impl->IsETSTypeReference(typeAnnotation)) {
+            auto aliasTypeAnnotation = GetAliasTypeAnnotationFromTypeReference(typeAnnotation);
+            if (aliasTypeAnnotation != nullptr) {
+                UnwrapTypeAnnotation(aliasTypeAnnotation);
+                return;
+            }
+        }
+        // Handle TSTypeAliasDeclaration - resolve to its type annotation
+        if (impl->IsTSTypeAliasDeclaration(typeAnnotation)) {
+            auto typeAlias = impl->TSTypeAliasDeclarationTypeAnnotationConst(context, typeAnnotation);
+            if (typeAlias != nullptr) {
+                UnwrapTypeAnnotation(typeAlias);
+                return;
+            }
+        }
+        if (typeAnnotation != nullptr && seenTypes.find(typeAnnotation) == seenTypes.end()) {
+            seenTypes.insert(typeAnnotation);
+            types.push_back(typeAnnotation);
+        }
+    }
+
+    // Get collected types (const accessor for interop use)
+    const std::vector<es2panda_AstNode*>& GetTypes() const
+    {
+        return types;
+    }
+
+    // Get number of collected types
+    size_t GetTypeCount() const
+    {
+        return types.size();
+    }
+};
+
+/* Resolves properties from ClassDefinition (handles inheritance from parent classes) */
+struct ClassDefinitionResolver {
+    es2panda_Context* context;
+    es2panda_Impl* impl;
+    es2panda_AstNode* classDef;
+    std::vector<es2panda_AstNode*> properties;
+    std::unordered_set<std::string> seenPropertyNames;
+
+    ClassDefinitionResolver(const ClassDefinitionResolver&) = delete;
+    ClassDefinitionResolver& operator=(const ClassDefinitionResolver&) = delete;
+
+    ClassDefinitionResolver(ClassDefinitionResolver&& other) noexcept
+        : context(other.context),
+          impl(other.impl),
+          classDef(other.classDef),
+          properties(std::move(other.properties)),
+          seenPropertyNames(std::move(other.seenPropertyNames))
+    {
+        // Leave source in a valid but empty state
+        other.context = nullptr;
+        other.impl = nullptr;
+        other.classDef = nullptr;
+    }
+
+    ClassDefinitionResolver& operator=(ClassDefinitionResolver&& other) noexcept
+    {
+        if (this != &other) {
+            context = other.context;
+            impl = other.impl;
+            classDef = other.classDef;
+            properties = std::move(other.properties);
+            seenPropertyNames = std::move(other.seenPropertyNames);
+            // Leave source in a valid but empty state
+            other.context = nullptr;
+            other.impl = nullptr;
+            other.classDef = nullptr;
+        }
+        return *this;
+    }
+
+    ClassDefinitionResolver(es2panda_Context* ctx, es2panda_AstNode* classDefinition)
+        : context(ctx), impl(nullptr), classDef(classDefinition)
+    {
+        // Validate context before getting impl
+        if (context != nullptr) {
+            impl = GetImpl();
+        }
+        // Only proceed if we have valid pointers
+        if (IsValid()) {
+            CollectProperties();
+        }
+    }
+
+    ~ClassDefinitionResolver() = default;
+
+    // Check if in valid state (not moved-from and properly initialized)
+    bool IsValid() const
+    {
+        return context != nullptr && impl != nullptr;
+    }
+
+    // Get property name from ClassProperty or MethodDefinition
+    const char* GetPropertyName(es2panda_AstNode* member) const
+    {
+        if (!IsValid() || member == nullptr) {
+            return nullptr;
+        }
+        const char* propName = nullptr;
+        if (impl->IsClassProperty(member)) {
+            // Handle ClassProperty
+            auto* key = impl->ClassElementKey(context, member);
+            if (key != nullptr && impl->IsIdentifier(key)) {
+                propName = impl->IdentifierNameConst(context, key);
+            }
+        } else if (impl->IsMethodDefinition(member)) {
+            // Handle MethodDefinition (getter methods)
+            // Only collect getter methods as properties
+            if (impl->MethodDefinitionIsGetterConst(context, member)) {
+                auto* key = impl->ClassElementKey(context, member);
+                if (key != nullptr && impl->IsIdentifier(key)) {
+                    propName = impl->IdentifierNameConst(context, key);
+                }
+            }
+        }
+        return propName;
+    }
+
+    // Helper: Collect properties from class body with proper deduplication
+    // Returns vector of properties with ClassProperty taking priority over getters for same name
+    std::vector<es2panda_AstNode*> CollectPropertiesFromClassBody(es2panda_AstNode* classDefinition)
+    {
+        std::vector<es2panda_AstNode*> classProperties;
+        if (!IsValid() || classDefinition == nullptr) {
+            return classProperties;
+        }
+        if (!impl->IsClassDefinition(classDefinition)) {
+            return classProperties;
+        }
+        size_t bodySize = 0;
+        auto** body = impl->ClassDefinitionBody(context, classDefinition, &bodySize);
+        if (body == nullptr) {
+            return classProperties;
+        }
+        // Map to track properties by name (ClassProperty takes priority over getters)
+        std::unordered_map<std::string, es2panda_AstNode*> propertyMap;
+        for (size_t i = 0; i < bodySize; i++) {
+            auto* member = body[i];
+            if (member == nullptr) {
+                continue;
+            }
+            // Only process ClassProperty and getter MethodDefinition
+            bool isPropertyMember = impl->IsClassProperty(member);
+            bool isGetterMethod = impl->IsMethodDefinition(member) &&
+                                 impl->MethodDefinitionIsGetterConst(context, member);
+            if (!isPropertyMember && !isGetterMethod) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            auto it = propertyMap.find(propNameStr);
+            if (it == propertyMap.end()) {
+                // First time seeing this property name
+                propertyMap[propNameStr] = member;
+            } else {
+                // Property name already exists
+                es2panda_AstNode* existing = it->second;
+                // If existing is a getter and new is a ClassProperty, replace it
+                // (ClassProperty has higher priority than getter on the same level)
+                if (impl->IsMethodDefinition(existing) && isPropertyMember) {
+                    it->second = member;
+                }
+                // If existing is a ClassProperty, keep it (don't replace with getter)
+                // If both are getters or both are properties, keep the first one seen
+            }
+        }
+
+        // Convert map to vector
+        for (const auto& entry : propertyMap) {
+            classProperties.push_back(entry.second);
+        }
+        return classProperties;
+    }
+
+    // Helper: Get the super class declaration from a class definition
+    // Returns the super class declaration if found and is a valid class definition, nullptr otherwise
+    es2panda_AstNode* GetSuperClassDeclaration(es2panda_AstNode* classDefinition)
+    {
+        if (!IsValid() || classDefinition == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsClassDefinition(classDefinition)) {
+            return nullptr;
+        }
+        auto* superClass = impl->ClassDefinitionSuper(context, classDefinition);
+        if (superClass == nullptr || !impl->IsETSTypeReference(superClass)) {
+            return nullptr;
+        }
+        auto* superPart = impl->ETSTypeReferencePart(context, superClass);
+        if (superPart == nullptr) {
+            return nullptr;
+        }
+        auto* superName = impl->ETSTypeReferencePartName(context, superPart);
+        if (superName == nullptr) {
+            return nullptr;
+        }
+        auto* superDecl = impl->DeclarationFromIdentifier(context, superName);
+        if (superDecl != nullptr && impl->IsClassDefinition(superDecl)) {
+            return superDecl;
+        }
+        return nullptr;
+    }
+
+    // Collect all class properties from ClassDefinition and parent classes
+    void CollectProperties()
+    {
+        if (!IsValid() || classDef == nullptr) {
+            return;
+        }
+        if (!impl->IsClassDefinition(classDef)) {
+            return;
+        }
+        size_t bodySize = 0;
+        auto** body = impl->ClassDefinitionBody(context, classDef, &bodySize);
+        if (body == nullptr) {
+            return;
+        }
+        // First, collect properties from parent classes (added if not overridden)
+        auto* superDecl = GetSuperClassDeclaration(classDef);
+        if (superDecl != nullptr) {
+            // Collect parent properties recursively
+            CollectPropertiesFrom(superDecl);
+        }
+        // Then, collect properties from this class (child overrides parent)
+        std::vector<es2panda_AstNode*> currProperties = CollectPropertiesFromClassBody(classDef);
+        for (auto* member : currProperties) {
+            if (member == nullptr) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            // Check if this property was already seen from a parent class
+            auto it = seenPropertyNames.find(propNameStr);
+            if (it == seenPropertyNames.end()) {
+                seenPropertyNames.insert(propNameStr);
+                properties.push_back(member);
+                continue;
+            }
+            // Property exists in parent, replace it with child's version
+            // Find and remove the parent's version
+            for (auto propIt = properties.begin(); propIt != properties.end(); ++propIt) {
+                const char* existingPropName = GetPropertyName(*propIt);
+                if (existingPropName != nullptr && propNameStr == existingPropName) {
+                    properties.erase(propIt);
+                    break;
+                }
+            }
+            seenPropertyNames.insert(propNameStr);
+            properties.push_back(member);
+        }
+    }
+
+    // Helper: Collect properties from specific class definition (for parent classes)
+    void CollectPropertiesFrom(es2panda_AstNode* classDefinition)
+    {
+        if (!IsValid() || classDefinition == nullptr) {
+            return;
+        }
+        if (!impl->IsClassDefinition(classDefinition)) {
+            return;
+        }
+        // First, recursively collect from this class's parent (if any)
+        auto* superDecl = GetSuperClassDeclaration(classDefinition);
+        if (superDecl != nullptr) {
+            CollectPropertiesFrom(superDecl);
+        }
+        // Then collect properties from this class using the helper method
+        // This ensures ClassProperty takes priority over getter methods within the same class
+        std::vector<es2panda_AstNode*> currentClassProperties = CollectPropertiesFromClassBody(classDefinition);
+        for (auto* member : currentClassProperties) {
+            if (member == nullptr) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            // Only add if not already seen (i.e., not overridden by child class)
+            if (seenPropertyNames.find(propNameStr) == seenPropertyNames.end()) {
+                seenPropertyNames.insert(propNameStr);
+                properties.push_back(member);
+            }
+        }
+    }
+
+    // Get the collected property pointers (for interop use)
+    const std::vector<es2panda_AstNode*>& GetProperties() const
+    {
+        return properties;
+    }
+};
+
+/* Resolves properties from TSInterfaceDeclaration (handles inheritance from parent interfaces) */
+struct TSInterfaceDeclarationResolver {
+    es2panda_Context* context;
+    es2panda_Impl* impl;
+    es2panda_AstNode* interfaceDecl;
+    std::vector<es2panda_AstNode*> properties;
+    std::unordered_set<std::string> seenPropertyNames;
+
+    TSInterfaceDeclarationResolver(const TSInterfaceDeclarationResolver&) = delete;
+    TSInterfaceDeclarationResolver& operator=(const TSInterfaceDeclarationResolver&) = delete;
+
+    TSInterfaceDeclarationResolver(es2panda_Context* ctx, es2panda_AstNode* interfaceDeclaration)
+        : context(ctx), impl(nullptr), interfaceDecl(interfaceDeclaration)
+    {
+        if (context != nullptr) {
+            impl = GetImpl();
+        }
+        if (IsValid()) {
+            CollectProperties();
+        }
+    }
+
+    ~TSInterfaceDeclarationResolver() = default;
+
+    bool IsValid() const
+    {
+        return context != nullptr && impl != nullptr;
+    }
+
+    // Get property name from ClassProperty or MethodDefinition
+    const char* GetPropertyName(es2panda_AstNode* member) const
+    {
+        if (!IsValid() || member == nullptr) {
+            return nullptr;
+        }
+
+        const char* propName = nullptr;
+
+        // Handle ClassProperty
+        if (impl->IsClassProperty(member)) {
+            auto* key = impl->ClassElementKey(context, member);
+            if (key != nullptr && impl->IsIdentifier(key)) {
+                propName = impl->IdentifierNameConst(context, key);
+            }
+        } else if (impl->IsMethodDefinition(member)) {
+            // Handle MethodDefinition (getter methods)
+            // Only collect getter methods as properties
+            if (impl->MethodDefinitionIsGetterConst(context, member)) {
+                auto* key = impl->ClassElementKey(context, member);
+                if (key != nullptr && impl->IsIdentifier(key)) {
+                    propName = impl->IdentifierNameConst(context, key);
+                }
+            }
+        }
+
+        return propName;
+    }
+
+    // Helper: Get interface declaration from TSInterfaceHeritage node
+    // Returns the interface declaration if found and valid, nullptr otherwise
+    es2panda_AstNode* GetInterfaceDeclarationFromHeritage(es2panda_AstNode* heritage) const
+    {
+        if (!IsValid() || heritage == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsTSInterfaceHeritage(heritage)) {
+            return nullptr;
+        }
+        auto* heritageExpr = impl->TSInterfaceHeritageExpr(context, heritage);
+        if (heritageExpr == nullptr || !impl->IsETSTypeReference(heritageExpr)) {
+            return nullptr;
+        }
+        auto* heritagePart = impl->ETSTypeReferencePart(context, heritageExpr);
+        if (heritagePart == nullptr) {
+            return nullptr;
+        }
+        auto* heritageName = impl->ETSTypeReferencePartName(context, heritagePart);
+        if (heritageName == nullptr) {
+            return nullptr;
+        }
+        auto* declaration = impl->DeclarationFromIdentifier(context, heritageName);
+        if (declaration != nullptr && impl->IsTSInterfaceDeclaration(declaration)) {
+            return declaration;
+        }
+        return nullptr;
+    }
+
+    // Helper: Collect properties from interface body with proper deduplication
+    // Returns vector of properties with ClassProperty taking priority over getters for same name
+    std::vector<es2panda_AstNode*> CollectPropertiesFromInterfaceBody(es2panda_AstNode* interfaceDeclaration)
+    {
+        std::vector<es2panda_AstNode*> interfaceProperties;
+        if (!IsValid() || interfaceDeclaration == nullptr) {
+            return interfaceProperties;
+        }
+        if (!impl->IsTSInterfaceDeclaration(interfaceDeclaration)) {
+            return interfaceProperties;
+        }
+        auto* body = impl->TSInterfaceDeclarationBody(context, interfaceDeclaration);
+        if (body == nullptr) {
+            return interfaceProperties;
+        }
+        size_t bodySize = 0;
+        auto** bodyMembers = impl->TSInterfaceBodyBodyConst(context, body, &bodySize);
+        if (bodyMembers == nullptr) {
+            return interfaceProperties;
+        }
+        // Map to track properties by name (ClassProperty takes priority over getters)
+        std::unordered_map<std::string, es2panda_AstNode*> propertyMap;
+        for (size_t i = 0; i < bodySize; i++) {
+            auto* member = bodyMembers[i];
+            if (member == nullptr) {
+                continue;
+            }
+            // Only process ClassProperty and getter MethodDefinition
+            bool isPropertyMember = impl->IsClassProperty(member);
+            bool isGetterMethod = impl->IsMethodDefinition(member) &&
+                                 impl->MethodDefinitionIsGetterConst(context, member);
+            if (!isPropertyMember && !isGetterMethod) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            auto it = propertyMap.find(propNameStr);
+            if (it == propertyMap.end()) {
+                // First time seeing this property name
+                propertyMap[propNameStr] = member;
+            } else {
+                // Property name already exists
+                es2panda_AstNode* existing = it->second;
+                // If existing is a getter and new is a ClassProperty, replace it
+                // (ClassProperty has higher priority than getter on the same level)
+                if (impl->IsMethodDefinition(existing) && isPropertyMember) {
+                    it->second = member;
+                }
+                // If existing is a ClassProperty, keep it (don't replace with getter)
+                // If both are getters or both are properties, keep the first one seen
+            }
+        }
+        // Convert map to vector
+        for (const auto& entry : propertyMap) {
+            interfaceProperties.push_back(entry.second);
+        }
+        return interfaceProperties;
+    }
+
+    // Collect all interface properties including getter methods
+    void CollectProperties()
+    {
+        if (!IsValid() || interfaceDecl == nullptr) {
+            return;
+        }
+        if (!impl->IsTSInterfaceDeclaration(interfaceDecl)) {
+            return;
+        }
+        // First, collect properties from extended interfaces (parent interfaces)
+        size_t extendsLen = 0;
+        auto** extends = impl->TSInterfaceDeclarationExtends(context, interfaceDecl, &extendsLen);
+        if (extends != nullptr) {
+            for (size_t i = 0; i < extendsLen; i++) {
+                auto* extendDecl = GetInterfaceDeclarationFromHeritage(extends[i]);
+                if (extendDecl != nullptr) {
+                    CollectPropertiesFrom(extendDecl);
+                }
+            }
+        }
+        // Then, collect properties from this interface using the helper method
+        // This ensures ClassProperty takes priority over getter methods within the same interface
+        std::vector<es2panda_AstNode*> interfaceProps = CollectPropertiesFromInterfaceBody(interfaceDecl);
+        for (auto* member : interfaceProps) {
+            if (member == nullptr) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            // Only add if not already seen (child interfaces override parent)
+            if (seenPropertyNames.find(propNameStr) == seenPropertyNames.end()) {
+                seenPropertyNames.insert(propNameStr);
+                properties.push_back(member);
+            }
+        }
+    }
+
+    // Helper to collect properties from a specific interface declaration
+    void CollectPropertiesFrom(es2panda_AstNode* interfaceDecl)
+    {
+        if (!IsValid() || interfaceDecl == nullptr) {
+            return;
+        }
+        if (!impl->IsTSInterfaceDeclaration(interfaceDecl)) {
+            return;
+        }
+        // Use the helper method to collect properties with proper deduplication
+        // This ensures ClassProperty takes priority over getter methods within the same interface
+        std::vector<es2panda_AstNode*> interfaceProps = CollectPropertiesFromInterfaceBody(interfaceDecl);
+        for (auto* member : interfaceProps) {
+            if (member == nullptr) {
+                continue;
+            }
+            const char* propName = GetPropertyName(member);
+            if (propName == nullptr) {
+                continue;
+            }
+            std::string propNameStr(propName);
+            // Only add if not already seen (child interfaces override parent)
+            if (seenPropertyNames.find(propNameStr) == seenPropertyNames.end()) {
+                seenPropertyNames.insert(propNameStr);
+                properties.push_back(member);
+            }
+        }
+    }
+
+    // Get the collected property pointers (for interop use)
+    const std::vector<es2panda_AstNode*>& GetProperties() const
+    {
+        return properties;
+    }
+};
+
+/**
+ * Resolves element type from array type node (supports T[] and Array<T> syntax).
+ * Unwraps type aliases and union types.
+ */
+struct ArrayTypeResolver {
+    es2panda_Context* context;
+    es2panda_Impl* impl;
+    es2panda_AstNode* typeNode;
+    es2panda_AstNode* elementType;
+    std::vector<es2panda_AstNode*> resolvedElementTypes;
+    std::unordered_set<es2panda_AstNode*> seenTypes;
+
+    ArrayTypeResolver(const ArrayTypeResolver&) = delete;
+    ArrayTypeResolver& operator=(const ArrayTypeResolver&) = delete;
+
+    ArrayTypeResolver(ArrayTypeResolver&& other) noexcept
+        : context(other.context),
+          impl(other.impl),
+          typeNode(other.typeNode),
+          elementType(other.elementType),
+          resolvedElementTypes(std::move(other.resolvedElementTypes)),
+          seenTypes(std::move(other.seenTypes))
+    {
+        other.context = nullptr;
+        other.impl = nullptr;
+        other.typeNode = nullptr;
+        other.elementType = nullptr;
+    }
+
+    ArrayTypeResolver& operator=(ArrayTypeResolver&& other) noexcept
+    {
+        if (this != &other) {
+            context = other.context;
+            impl = other.impl;
+            typeNode = other.typeNode;
+            elementType = other.elementType;
+            resolvedElementTypes = std::move(other.resolvedElementTypes);
+            seenTypes = std::move(other.seenTypes);
+            other.context = nullptr;
+            other.impl = nullptr;
+            other.typeNode = nullptr;
+            other.elementType = nullptr;
+        }
+        return *this;
+    }
+
+    ArrayTypeResolver(es2panda_Context* ctx, es2panda_AstNode* type)
+        : context(ctx), impl(nullptr), typeNode(type), elementType(nullptr)
+    {
+        if (context != nullptr) {
+            impl = GetImpl();
+        }
+        if (IsValid()) {
+            ResolveElementType();
+            // If we found an element type, unwrap it (handle type aliases and unions)
+            if (elementType != nullptr) {
+                UnwrapElementType(elementType);
+            }
+        }
+    }
+
+    ~ArrayTypeResolver() = default;
+
+    bool IsValid() const
+    {
+        return context != nullptr && impl != nullptr && typeNode != nullptr;
+    }
+
+    // Helper: Get alias type annotation from ETSTypeReference
+    // Returns the type annotation if the type reference resolves to a type alias declaration, nullptr otherwise
+    es2panda_AstNode* GetAliasTypeAnnotationFromTypeReference(es2panda_AstNode* typeReference) const
+    {
+        if (!IsValid() || typeReference == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsETSTypeReference(typeReference)) {
+            return nullptr;
+        }
+        auto* part = impl->ETSTypeReferencePart(context, typeReference);
+        if (part == nullptr) {
+            return nullptr;
+        }
+        auto* name = impl->ETSTypeReferencePartName(context, part);
+        if (name == nullptr) {
+            return nullptr;
+        }
+        auto* declaration = impl->DeclarationFromIdentifier(context, name);
+        if (declaration == nullptr || !impl->IsTSTypeAliasDeclaration(declaration)) {
+            return nullptr;
+        }
+        return impl->TSTypeAliasDeclarationTypeAnnotationConst(context, declaration);
+    }
+
+    // Helper: Get the element type parameter from Array<T> type reference
+    // Returns the first type parameter if this is an Array<T> type reference, nullptr otherwise
+    es2panda_AstNode* GetArrayElementTypeParam(es2panda_AstNode* typeReference) const
+    {
+        if (!IsValid() || typeReference == nullptr) {
+            return nullptr;
+        }
+        if (!impl->IsETSTypeReference(typeReference)) {
+            return nullptr;
+        }
+        auto* part = impl->ETSTypeReferencePart(context, typeReference);
+        if (part == nullptr) {
+            return nullptr;
+        }
+        auto* name = impl->ETSTypeReferencePartName(context, part);
+        if (name == nullptr || !impl->IsIdentifier(name)) {
+            return nullptr;
+        }
+        const char* nameStr = impl->IdentifierNameConst(context, name);
+        if (nameStr == nullptr || strcmp(nameStr, "Array") != 0) {
+            return nullptr;
+        }
+        auto* typeParams = impl->ETSTypeReferencePartTypeParams(context, part);
+        if (typeParams == nullptr) {
+            return nullptr;
+        }
+        // Get the first type parameter (the element type of Array<T>)
+        size_t paramsLen = 0;
+        auto** params = impl->TSTypeParameterInstantiationParamsConst(context, typeParams, &paramsLen);
+        if (params != nullptr && paramsLen > 0) {
+            return params[0];
+        }
+        return nullptr;
+    }
+
+    // Unwrap element type to handle type aliases and union types
+    void UnwrapElementType(es2panda_AstNode* type)
+    {
+        if (!IsValid() || type == nullptr) {
+            return;
+        }
+        // Prevent infinite recursion for circular type references
+        if (seenTypes.count(type) > 0) {
+            return;
+        }
+        seenTypes.insert(type);
+        auto nodeType = impl->AstNodeTypeConst(context, type);
+        // Handle ETSUnionType - flatten the union types
+        if (nodeType == Es2pandaAstNodeType::AST_NODE_TYPE_ETS_UNION_TYPE) {
+            size_t unionTypesLen = 0;
+            auto** unionTypes = impl->ETSUnionTypeIrTypesConst(context, type, &unionTypesLen);
+            if (unionTypes == nullptr) {
+                return;
+            }
+            for (size_t i = 0; i < unionTypesLen; i++) {
+                if (unionTypes[i] != nullptr) {
+                    UnwrapElementType(unionTypes[i]);
+                }
+            }
+            return;
+        }
+        // Handle ETSTypeReference - resolve to declaration
+        if (impl->IsETSTypeReference(type)) {
+            auto aliasTypeAnnotation = GetAliasTypeAnnotationFromTypeReference(type);
+            if (aliasTypeAnnotation != nullptr) {
+                UnwrapElementType(aliasTypeAnnotation);
+                return;
+            }
+        }
+        // Handle TSTypeAliasDeclaration - resolve to its type annotation
+        if (impl->IsTSTypeAliasDeclaration(type)) {
+            auto aliasTypeAnnotation = impl->TSTypeAliasDeclarationTypeAnnotationConst(context, type);
+            if (aliasTypeAnnotation != nullptr) {
+                UnwrapElementType(aliasTypeAnnotation);
+                return;
+            }
+        }
+        // If we've reached a direct type (not a union or alias), add it to the vector
+        resolvedElementTypes.push_back(type);
+    }
+
+    void ResolveElementType()
+    {
+        if (!IsValid()) {
+            return;
+        }
+        auto nodeType = impl->AstNodeTypeConst(context, typeNode);
+        // Handle TSArrayType (T[] syntax) - e.g., string[]
+        if (nodeType == Es2pandaAstNodeType::AST_NODE_TYPE_TS_ARRAY_TYPE) {
+            elementType = const_cast<es2panda_AstNode*>(impl->TSArrayTypeElementTypeConst(context, typeNode));
+            return;
+        }
+        // Handle ETSTypeReference with name "Array" (Array<T> syntax)
+        if (nodeType == Es2pandaAstNodeType::AST_NODE_TYPE_ETS_TYPE_REFERENCE) {
+            auto* elementTypeParam = GetArrayElementTypeParam(typeNode);
+            if (elementTypeParam != nullptr) {
+                elementType = const_cast<es2panda_AstNode*>(elementTypeParam);
+            }
+        }
+        // If not an array type, elementType remains nullptr
+    }
+
+    const std::vector<es2panda_AstNode*>& GetResolvedElementTypes() const
+    {
+        return resolvedElementTypes;
+    }
+};
+
+KNativePointer impl_ResolveClassPropertyTypes(KNativePointer contextPtr, KNativePointer propertyPtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _property = reinterpret_cast<es2panda_AstNode*>(propertyPtr);
+
+    // Validate input parameters
+    if (_context == nullptr || _property == nullptr) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Validate node is a class property
+    es2panda_Impl* impl = GetImpl();
+    if (impl == nullptr || !impl->IsClassProperty(_property)) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Use ClassPropertyResolver struct for safe type collection (handles null checks internally)
+    ClassPropertyResolver typeResolver(_context, _property, nullptr);
+
+    // Double-check struct is valid after construction (defensive programming)
+    if (!typeResolver.IsValid()) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Get collected types using accessor method
+    const auto& types = typeResolver.GetTypes();
+    return StageArena::CloneVector(types.data(), types.size());
+}
+KOALA_INTEROP_2(ResolveClassPropertyTypes, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ResolveClassDefinitionProperties(KNativePointer contextPtr, KNativePointer classDefPtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _classDef = reinterpret_cast<es2panda_AstNode*>(classDefPtr);
+
+    // Validate input parameters
+    if (_context == nullptr || _classDef == nullptr) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Validate node is a class definition
+    es2panda_Impl* impl = GetImpl();
+    if (impl == nullptr || !impl->IsClassDefinition(_classDef)) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Use ClassDefinitionResolver struct for safe property collection
+    ClassDefinitionResolver classResolver(_context, _classDef);
+
+    // Double-check the struct is valid after construction (defensive programming)
+    if (!classResolver.IsValid()) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Get collected properties using accessor method
+    const auto& properties = classResolver.GetProperties();
+
+    // Convert to format suitable for return to TypeScript
+    return StageArena::CloneVector(properties.data(), properties.size());
+}
+KOALA_INTEROP_2(ResolveClassDefinitionProperties, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ResolveTSInterfaceDeclarationProperties(KNativePointer contextPtr, KNativePointer interfaceDeclPtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _interfaceDecl = reinterpret_cast<es2panda_AstNode*>(interfaceDeclPtr);
+
+    // Validate input parameters
+    if (_context == nullptr || _interfaceDecl == nullptr) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Validate node is a TSInterfaceDeclaration
+    es2panda_Impl* impl = GetImpl();
+    if (impl == nullptr || !impl->IsTSInterfaceDeclaration(_interfaceDecl)) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Use TSInterfaceDeclarationResolver struct for safe property collection
+    TSInterfaceDeclarationResolver interfaceResolver(_context, _interfaceDecl);
+
+    if (!interfaceResolver.IsValid()) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Get collected properties using accessor method
+    const auto& properties = interfaceResolver.GetProperties();
+
+    // Convert to format suitable for return to TypeScript
+    return StageArena::CloneVector(properties.data(), properties.size());
+}
+KOALA_INTEROP_2(ResolveTSInterfaceDeclarationProperties, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ResolveMethodDefinitionTypes(KNativePointer contextPtr, KNativePointer methodPtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _method = reinterpret_cast<es2panda_AstNode*>(methodPtr);
+
+    // Validate input parameters
+    if (_context == nullptr || _method == nullptr) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Validate node is a method definition
+    es2panda_Impl* impl = GetImpl();
+    if (impl == nullptr || !impl->IsMethodDefinition(_method)) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Only handle getter methods
+    if (!impl->MethodDefinitionIsGetterConst(_context, _method)) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Use MethodDefinitionResolver struct for safe type collection
+    MethodDefinitionResolver typeResolver(_context, _method);
+
+    // Double-check the struct is valid after construction
+    if (!typeResolver.IsValid()) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Get collected types using accessor method
+    const auto& types = typeResolver.GetTypes();
+    return StageArena::CloneVector(types.data(), types.size());
+}
+KOALA_INTEROP_2(ResolveMethodDefinitionTypes, KNativePointer, KNativePointer, KNativePointer);
+
+KNativePointer impl_ResolveArrayLikeType(KNativePointer contextPtr, KNativePointer typeNodePtr)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _typeNode = reinterpret_cast<es2panda_AstNode*>(typeNodePtr);
+
+    if (_context == nullptr || _typeNode == nullptr) {
+        return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
+    }
+
+    // Use ArrayTypeResolver struct for safe type resolution
+    ArrayTypeResolver resolver(_context, _typeNode);
+
+    // Get the resolved element types (returns empty vector if not an array-like type)
+    const auto& types = resolver.GetResolvedElementTypes();
+    return StageArena::CloneVector(types.data(), types.size());
+}
+KOALA_INTEROP_2(ResolveArrayLikeType, KNativePointer, KNativePointer, KNativePointer);
+
+// Helper: Check if an ETSTypeReference's name matches the given target name
+static bool TypeReferenceNameEquals(es2panda_Impl* impl,
+    es2panda_Context* context,
+    es2panda_AstNode* typeReference,
+    const char* targetName)
+{
+    if (impl == nullptr || context == nullptr || typeReference == nullptr || targetName == nullptr) {
+        return false;
+    }
+    auto* part = impl->ETSTypeReferencePart(context, typeReference);
+    if (part == nullptr) {
+        return false;
+    }
+    auto* name = impl->ETSTypeReferencePartName(context, part);
+    if (name == nullptr || !impl->IsIdentifier(name)) {
+        return false;
+    }
+    const char* nameStr = impl->IdentifierNameConst(context, name);
+    if (nameStr == nullptr) {
+        return false;
+    }
+    return strcmp(nameStr, targetName) == 0;
+}
+
+// Helper: Get the super class declaration from a class definition (standalone version)
+static es2panda_AstNode* GetSuperClassDeclaration(es2panda_Impl* impl,
+    es2panda_Context* context,
+    es2panda_AstNode* classDefinition)
+{
+    if (impl == nullptr || context == nullptr || classDefinition == nullptr) {
+        return nullptr;
+    }
+    if (!impl->IsClassDefinition(classDefinition)) {
+        return nullptr;
+    }
+    auto* superClass = impl->ClassDefinitionSuper(context, classDefinition);
+    if (superClass == nullptr || !impl->IsETSTypeReference(superClass)) {
+        return nullptr;
+    }
+    auto* superPart = impl->ETSTypeReferencePart(context, superClass);
+    if (superPart == nullptr) {
+        return nullptr;
+    }
+    auto* superName = impl->ETSTypeReferencePartName(context, superPart);
+    if (superName == nullptr) {
+        return nullptr;
+    }
+    auto* superDecl = impl->DeclarationFromIdentifier(context, superName);
+    if (superDecl != nullptr && impl->IsClassDefinition(superDecl)) {
+        return superDecl;
+    }
+    return nullptr;
+}
+
+/**
+ * Find superClass expression in inheritance chain with given base class name.
+ * Returns the superClass ETSTypeReference expression (not ClassDefinition).
+ */
+KNativePointer impl_ClassDefinitionFindSuperClassByName(KNativePointer contextPtr,
+    KNativePointer classDefPtr,
+    KStringPtr& baseClassName)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(contextPtr);
+    const auto _classDef = reinterpret_cast<es2panda_AstNode*>(classDefPtr);
+    if (_context == nullptr || _classDef == nullptr) {
+        return nullptr;
+    }
+    es2panda_Impl* impl = GetImpl();
+    if (impl == nullptr) {
+        return nullptr;
+    }
+    // Validate node is a class definition
+    if (!impl->IsClassDefinition(_classDef)) {
+        return nullptr;
+    }
+    const auto targetName = getStringCopy(baseClassName);
+    // Start with the current class
+    es2panda_AstNode* currentClass = _classDef;
+    std::unordered_set<es2panda_AstNode*> visited;  // Prevent infinite loops for circular inheritance
+    while (currentClass != nullptr && visited.find(currentClass) == visited.end()) {
+        visited.insert(currentClass);
+        // Get superClass (parent class) - this is the "extends" clause
+        auto* superClass = impl->ClassDefinitionSuper(_context, currentClass);
+        if (superClass == nullptr || !impl->IsETSTypeReference(superClass)) {
+            break;
+        }
+        // Check if superClass name matches target
+        if (TypeReferenceNameEquals(impl, _context, superClass, targetName)) {
+            // Found! Return superClass expression (ETSTypeReference)
+            return superClass;
+        }
+        // Get super class declaration and continue traversal
+        auto* superDecl = GetSuperClassDeclaration(impl, _context, currentClass);
+        if (superDecl == nullptr) {
+            break;
+        }
+        // Continue with parent class
+        currentClass = superDecl;
+    }
+    return nullptr;
+}
+KOALA_INTEROP_3(ClassDefinitionFindSuperClassByName, KNativePointer, KNativePointer, KNativePointer, KStringPtr);

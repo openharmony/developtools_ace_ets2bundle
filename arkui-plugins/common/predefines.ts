@@ -15,9 +15,13 @@
 
 import * as path from 'path';
 
-export const LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
+export const EXTERNAL_SOURCE_ARKTS_BUILTIN: (string | RegExp)[] = [
     'std',
-    'escompat',
+    'escompat'
+];
+
+export const LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
+    ...EXTERNAL_SOURCE_ARKTS_BUILTIN,
     'security',
     'application',
     'permissions',
@@ -33,16 +37,14 @@ export const LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES: Array<string | RegExp> = [
 ];
 
 export const EXTERNAL_SOURCE_PREFIX_NAMES: (string | RegExp)[] = [
-    'std',
-    'escompat',
+    ...EXTERNAL_SOURCE_ARKTS_BUILTIN,
     /@arkts\..*/,
     '@ohos.pluginComponent',
     /@system\..*/,
 ];
 
 export const EXTERNAL_SOURCE_PREFIX_NAMES_FOR_FRAMEWORK: (string | RegExp)[] = [
-    'std',
-    'escompat',
+    ...EXTERNAL_SOURCE_ARKTS_BUILTIN,
     'global',
     /@arkts\..*/,
 ];

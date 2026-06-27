@@ -15,9 +15,11 @@
 
 export * from './call-validator';
 export * from './struct-validator';
+export * from './struct-post-visit-validator';
 export * from './struct-property-validator';
 export * from './struct-method-validator';
 export * from './normal-class-validator';
+export * from './normal-class-post-visit-validator';
 export * from './normal-class-method-validator';
 export * from './normal-class-property-validator';
 export * from './normal-interface-validator';

@@ -36,6 +36,14 @@ import {
     PropertyRecord,
     RecordCache,
 } from './records';
+import { 
+    NormalClassPostVisitValidator, 
+    NormalClassValidator, 
+    NormalInterfaceValidator, 
+    StructPostVisitValidator, 
+    StructValidator, 
+    ValidatorBuilder 
+} from './validators';
 import { StructCollector } from './struct-collector';
 import { GlobalClassCollector } from './global-class-collector';
 import { NormalClassCollector } from './normal-class-collector';
@@ -43,7 +51,6 @@ import { StructInnerClassCollector } from './struct-interface-collector';
 import { NormalInterfaceCollector } from './normal-interface-collector';
 import { CallRecordCollector } from './call-record-collector';
 import { UICollectMetadata } from './shared-types';
-import { NormalClassValidator, NormalInterfaceValidator, StructValidator, ValidatorBuilder } from './validators';
 import { ARKUI_IMPORT_PREFIX_NAMES, NodeCacheNames } from '../../common/predefines';
 import { matchPrefix } from '../../common/arkts-utils';
 import { getPerfName } from '../../common/debug';
@@ -158,6 +165,7 @@ export class CollectFactory {
         }
         const normalClassCollector = new NormalClassCollector({ ...metadata, classRecord });
         normalClassCollector.visitor(node);
+        ValidatorBuilder.build(NormalClassPostVisitValidator).checkIsViolated(node, normalClassInfo);
         normalClassCollector.reset();
         return node;
     }

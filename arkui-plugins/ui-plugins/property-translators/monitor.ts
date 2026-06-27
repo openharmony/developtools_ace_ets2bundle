@@ -19,12 +19,13 @@ import { expectName } from '../../common/arkts-utils';
 import { StateManagementTypes } from '../../common/predefines';
 import { checkIsStructMethodFromInfo } from '../../collectors/ui-collectors/utils';
 import { monitorField } from '../utils';
-import { collectStateManagementTypeImport, generateThisBacking, getValueInMonitorAnnotation } from './utils';
+import { collectStateManagementTypeImport, generateThisBacking } from './utils';
 import { BaseMethodTranslator, MethodCacheTranslator, MethodTranslator } from './base';
 import { factory as UIFactory } from '../ui-factory';
 import { MonitorCache, MonitorInfo } from './cache/monitorCache';
 import { PropertyCache } from './cache/propertyCache';
 import { factory } from './factory';
+import { findPathArrayFromMonitorAnnotation } from '../../common/annotation-utils';
 
 function fieldWithMonitorMethod(
     this: BaseMethodTranslator,
@@ -52,7 +53,9 @@ function monitorInfo(
     isFromStruct: boolean,
     paramsLength: number
 ): MonitorInfo {
-    const monitorItem: string[] | undefined = getValueInMonitorAnnotation(this.method.function.annotations);
+    const monitorItem: string[] | undefined = findPathArrayFromMonitorAnnotation(
+        this.method.function.annotations
+    );
     const monitorInfo: MonitorInfo = {
         monitorItem: monitorItem,
         originalName: originalName,
