@@ -83,4 +83,10 @@ export class IntentLogger {
     const message: string = typeof error === 'string' ? error : error.toString();
     throw new Error(message);
   }
+
+  returnErrorFileId(filePath?: string): void {
+    if (filePath) {
+      this.logger.debug(`Error file recorded: ${filePath}`);
+    }
+  }
 }
