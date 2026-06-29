@@ -15,6 +15,7 @@
 
 #include "memoryTracker.h"
 #include "interop-logging.h"
+#include <cstdlib>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -91,13 +92,13 @@ static void ParseMemoryStatusLine(const std::string& line, MemoryStats& stats)
 {
     std::smatch matches;
     if (std::regex_match(line, matches, VM_RSS_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-        stats.currentRss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        stats.currentRss = std::strtoull(matches[MATCH_GROUP_VALUE].str().c_str(), nullptr, 10);
         std::string unit = matches[MATCH_GROUP_UNIT].str();
         if (unit == UNIT_K) {
             stats.currentRss *= BYTES_PER_KB;
         }
     } else if (std::regex_match(line, matches, VM_SIZE_REGEX) && matches.size() >= MATCH_GROUP_SIZE) {
-        stats.currentVss = std::stoull(matches[MATCH_GROUP_VALUE].str());
+        stats.currentVss = std::strtoull(matches[MATCH_GROUP_VALUE].str().c_str(), nullptr, 10);
         std::string unit = matches[MATCH_GROUP_UNIT].str();
         if (unit == UNIT_K) {
             stats.currentVss *= BYTES_PER_KB;
