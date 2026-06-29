@@ -27,39 +27,31 @@
 
 #define NAPI_CDECL __cdecl
 
-#define NAPI_FUNCTIONS(op)                                                                                             \
-    op(napi_module_register) op(napi_create_function) op(napi_set_named_property) op(napi_create_string_utf8) op(      \
-        napi_add_env_cleanup_hook) op(napi_get_last_error_info) op(napi_get_value_bigint_int64)                        \
-        op(napi_get_value_bigint_uint64) op(napi_create_object) op(napi_get_arraybuffer_info) op(                      \
-            napi_create_bigint_uint64) op(napi_is_typedarray) op(napi_add_finalizer) op(napi_get_typedarray_info)      \
-            op(napi_set_property) op(napi_get_value_bool) op(napi_coerce_to_string) op(napi_get_value_uint32) op(      \
-                napi_get_value_int32) op(napi_throw) op(napi_get_cb_info) op(napi_create_error)                        \
-                op(napi_get_value_string_utf8) op(napi_define_properties) op(napi_delete_reference) op(                \
-                    napi_get_reference_value) op(napi_open_handle_scope) op(napi_close_handle_scope)                   \
-                    op(napi_open_escapable_handle_scope) op(napi_close_escapable_handle_scope) op(                     \
-                        napi_is_exception_pending) op(napi_create_type_error) op(napi_escape_handle)                   \
-                        op(napi_get_and_clear_last_exception) op(napi_fatal_error) op(napi_create_double) op(          \
-                            napi_typeof) op(napi_get_property) op(napi_get_named_property) op(napi_create_reference)   \
-                            op(napi_get_global) op(napi_has_property) op(napi_get_undefined) op(napi_get_value_double) \
-                                op(napi_close_callback_scope) op(napi_async_destroy) op(napi_call_function)            \
-                                    op(napi_get_value_external) op(napi_throw_error) op(napi_create_int32)             \
-                                        op(napi_create_external_arraybuffer) op(napi_create_typedarray)                \
-                                            op(napi_create_string_latin1) op(napi_create_async_work)                   \
-                                                op(napi_delete_async_work) op(napi_queue_async_work)                   \
-                                                    op(napi_resolve_deferred) op(napi_reject_deferred)                 \
-                                                        op(napi_create_promise) op(napi_create_threadsafe_function)    \
-                                                            op(napi_acquire_threadsafe_function) op(                   \
-                                                                napi_release_threadsafe_function)                      \
-                                                                op(napi_call_threadsafe_function) op(napi_is_dataview) \
-                                                                    op(napi_is_arraybuffer) op(napi_get_dataview_info) \
-                                                                        op(napi_get_value_int64) op(napi_get_boolean)  \
-                                                                            op(napi_create_uint32)                     \
-                                                                                op(napi_create_bigint_int64)           \
-                                                                                    op(napi_cancel_async_work)
+#define NAPI_FUNCTIONS(op) \
+    op(napi_module_register); op(napi_create_function); op(napi_set_named_property); op(napi_create_string_utf8); \
+    op(napi_add_env_cleanup_hook); op(napi_get_last_error_info); op(napi_get_value_bigint_int64); \
+    op(napi_get_value_bigint_uint64); op(napi_create_object); op(napi_get_arraybuffer_info); \
+    op(napi_create_bigint_uint64); op(napi_is_typedarray); op(napi_add_finalizer); op(napi_get_typedarray_info); \
+    op(napi_set_property); op(napi_get_value_bool); op(napi_coerce_to_string); op(napi_get_value_uint32); \
+    op(napi_get_value_int32); op(napi_throw); op(napi_get_cb_info); op(napi_create_error); \
+    op(napi_get_value_string_utf8); op(napi_define_properties); op(napi_delete_reference); \
+    op(napi_get_reference_value); op(napi_open_handle_scope); op(napi_close_handle_scope); \
+    op(napi_open_escapable_handle_scope); op(napi_close_escapable_handle_scope); op(napi_is_exception_pending); \
+    op(napi_create_type_error); op(napi_escape_handle); op(napi_get_and_clear_last_exception); op(napi_fatal_error); \
+    op(napi_create_double); op(napi_typeof); op(napi_get_property); op(napi_get_named_property); \
+    op(napi_create_reference); op(napi_get_global); op(napi_has_property); op(napi_get_undefined); \
+    op(napi_get_value_double); op(napi_close_callback_scope); op(napi_async_destroy); op(napi_call_function); \
+    op(napi_get_value_external); op(napi_throw_error); op(napi_create_int32); op(napi_create_external_arraybuffer); \
+    op(napi_create_typedarray); op(napi_create_string_latin1); op(napi_create_async_work); \
+    op(napi_delete_async_work); op(napi_queue_async_work); op(napi_resolve_deferred); op(napi_reject_deferred); \
+    op(napi_create_promise); op(napi_create_threadsafe_function); op(napi_acquire_threadsafe_function); \
+    op(napi_release_threadsafe_function); op(napi_call_threadsafe_function); op(napi_is_dataview); \
+    op(napi_is_arraybuffer); op(napi_get_dataview_info); op(napi_get_value_int64); op(napi_get_boolean); \
+    op(napi_create_uint32); op(napi_create_bigint_int64); op(napi_cancel_async_work)
 
-#define DECL_NAPI_IMPL(fn_name, ...) decltype(&fn_name) p_##fn_name;
+#define DECL_NAPI_IMPL(fn_name, ...) decltype(&fn_name) p_##fn_name
 
-NAPI_FUNCTIONS(DECL_NAPI_IMPL)
+NAPI_FUNCTIONS(DECL_NAPI_IMPL);
 
 // Module handle and failure flag used while resolving NAPI symbols.
 // LoadNapiFunctions() is guarded by a static flag, so these are written once.
@@ -79,7 +71,7 @@ static inline void ResolveNapiSymbol(const char* name, FnPtr& slot)
 
 // Only stringifies the symbol name and selects its global pointer slot;
 // no function-local variables are referenced from within the macro.
-#define GET_NAPI_IMPL_WRAP(fn_name) ResolveNapiSymbol(#fn_name, p_##fn_name);
+#define GET_NAPI_IMPL_WRAP(fn_name) ResolveNapiSymbol(#fn_name, p_##fn_name)
 
 bool LoadNapiFunctions()
 {
