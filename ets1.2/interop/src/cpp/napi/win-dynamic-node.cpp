@@ -61,6 +61,26 @@
 
 NAPI_FUNCTIONS(DECL_NAPI_IMPL)
 
+// Module handle and failure flag used while resolving NAPI symbols.
+// LoadNapiFunctions() is guarded by a static flag, so these are written once.
+static HMODULE g_napiHostModule = NULL;
+static bool g_napiResolveFailed = false;
+
+// Resolves a single NAPI symbol by name into its global pointer slot.
+template <typename FnPtr>
+static inline void ResolveNapiSymbol(const char* name, FnPtr& slot)
+{
+    FARPROC addr = GetProcAddress(g_napiHostModule, name);
+    if (addr == NULL) {
+        g_napiResolveFailed = true;
+    }
+    slot = reinterpret_cast<FnPtr>(addr);
+}
+
+// Only stringifies the symbol name and selects its global pointer slot;
+// no function-local variables are referenced from within the macro.
+#define GET_NAPI_IMPL_WRAP(fn_name) ResolveNapiSymbol(#fn_name, p_##fn_name);
+
 bool LoadNapiFunctions()
 {
     static bool isLoaded = false;
@@ -78,16 +98,11 @@ bool LoadNapiFunctions()
             return false;
         }
     }
-    bool apiLoadFailed = false;
-
-#define GET_NAPI_IMPL(fn_name, fnAddr, nodeMod, loadFailed) \
-    fnAddr = GetProcAddress(nodeMod, #fn_name);            \
-    if ((fnAddr) == NULL)                                    \
-        (loadFailed) = true;                                 \
-    p_##fn_name = (decltype(p_##fn_name))(fnAddr);
-#define GET_NAPI_IMPL_WRAP(fn_name) GET_NAPI_IMPL(fn_name, fn_addr, nodeModule, apiLoadFailed);
-    // Assign the addresses of the needed functions to the "p*" named pointers.
+    // Resolve the addresses of the needed functions into the "p*" named pointers.
+    g_napiHostModule = nodeModule;
+    g_napiResolveFailed = false;
     NAPI_FUNCTIONS(GET_NAPI_IMPL_WRAP);
+    bool apiLoadFailed = g_napiResolveFailed;
     // If any required APIs failed to load, return false
     if (apiLoadFailed)
         return false;
