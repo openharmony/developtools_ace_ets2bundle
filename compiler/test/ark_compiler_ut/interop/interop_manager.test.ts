@@ -1282,6 +1282,79 @@ mocha.describe('test matchModulePathByDeclgenPath edge cases', function () {
     expect(result).to.be.undefined;
     FileManager.cleanFileManagerObject();
   });
+
+  mocha.it('12-4: should match declgen path under custom cache directory', function () {
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    dependentModuleMap.set('remoteHar', {
+      language: ARKTS_1_2,
+      packageName: 'remoteHar',
+      moduleName: 'remoteHar',
+      modulePath: '/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar',
+      declgenV1OutPath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenV1',
+      declgenV2OutPath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenV2',
+      declgenBridgeCodePath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenBridgeCode',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/test/MyApplication16/application/build/declgen/remoteHar/cache',
+      byteCodeHarInfo: {}
+    });
+    FileManager.cleanFileManagerObject();
+    FileManager.initForTest(
+      dependentModuleMap,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      '/MyApplication16'
+    );
+
+    const filePath = '/test/MyApplication16/application/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
+    const moduleInfo = FileManager.matchModulePathByDeclgenPath(filePath);
+    expect(moduleInfo?.language).to.equal(ARKTS_1_2);
+    expect(moduleInfo?.packageName).to.equal('remoteHar');
+    FileManager.cleanFileManagerObject();
+  });
+
+  mocha.it('12-5: should match fallback declgen path by custom buildDir', function () {
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    dependentModuleMap.set('remoteHar', {
+      language: ARKTS_1_2,
+      packageName: 'remoteHar',
+      moduleName: 'remoteHar',
+      modulePath: '/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar',
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: '/test/MyApplication16/application/build/declgen/remoteHar/cache',
+      byteCodeHarInfo: {}
+    });
+    FileManager.cleanFileManagerObject();
+    FileManager.initForTest(
+      dependentModuleMap,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      '/MyApplication16'
+    );
+    FileManager.getInstance().setInteropConfig({
+      interopModuleInfo: new Map(),
+      projectConfig: {
+        projectTopDir: '/MyApplication16',
+        buildDir: '/test/MyApplication16/application/build'
+      }
+    });
+
+    const filePath = '/test/MyApplication16/application/build/declgen/remoteHar/declgenV1/remoteHar/Index.d.ets';
+    const moduleInfo = FileManager.matchModulePathByDeclgenPath(filePath);
+    expect(moduleInfo?.language).to.equal(ARKTS_1_2);
+    expect(moduleInfo?.packageName).to.equal('remoteHar');
+
+    const separateHvigorFilePath = '/test/MyApplication16/application/interop-declaration/remoteHar/Index.d.ets';
+    const separateHvigorModuleInfo = FileManager.matchModulePathByDeclgenPath(separateHvigorFilePath);
+    expect(separateHvigorModuleInfo?.language).to.equal(ARKTS_1_2);
+    expect(separateHvigorModuleInfo?.packageName).to.equal('remoteHar');
+    FileManager.cleanFileManagerObject();
+  });
 });
 
 mocha.describe('test queryOriginApiName - non-static alias via aliasConfig', function () {

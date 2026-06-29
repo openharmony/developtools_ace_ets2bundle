@@ -286,24 +286,40 @@ export class FileManager {
     if (!projectConfig) {
       return undefined;
     }
-    const projectRootDir = projectConfig['projectTopDir'];
     const sourcePath = toUnixPath(contentPath);
-    const declgenPath = toUnixPath(path.join(projectRootDir, 'build', 'declgen'));
-    const declgenPathSeparateHvigor = toUnixPath(path.join(projectRootDir, 'interop-declaration'));
-    if (!isSubPathOf(sourcePath, declgenPath) && !isSubPathOf(sourcePath, declgenPathSeparateHvigor)) {
-      return undefined;
-    }
-    const relativePath = toUnixPath(path.relative(declgenPath, sourcePath));
-    const pathSegments = relativePath.split('/');
-    if (pathSegments.length < 1) {
-      return undefined;
-    }
-    const harName = pathSegments[0];
+
     for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
-      if (harName === moduleInfo.packageName) {
+      const declgenOutPaths = [
+        moduleInfo.declgenV1OutPath,
+        moduleInfo.declgenV2OutPath,
+        moduleInfo.declgenBridgeCodePath
+      ];
+      if (declgenOutPaths.some(declgenOutPath => declgenOutPath && isSubPathOf(sourcePath, declgenOutPath))) {
         return moduleInfo;
       }
     }
+
+    const projectRootDir = projectConfig.projectTopDir;
+    const buildDir = projectConfig.buildDir;
+    const legacyDeclgenPaths = [
+      buildDir && toUnixPath(path.join(buildDir, 'declgen')),
+      buildDir && toUnixPath(path.join(buildDir, '..', 'interop-declaration')),
+      projectRootDir && toUnixPath(path.join(projectRootDir, 'build', 'declgen')),
+      projectRootDir && toUnixPath(path.join(projectRootDir, 'interop-declaration'))
+    ].filter(Boolean);
+    for (const declgenPath of legacyDeclgenPaths) {
+      if (!isSubPathOf(sourcePath, declgenPath)) {
+        continue;
+      }
+      const relativePath = toUnixPath(path.relative(declgenPath, sourcePath));
+      const harName = relativePath.split('/')[0];
+      for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+        if (harName === moduleInfo.packageName) {
+          return moduleInfo;
+        }
+      }
+    }
+
     return undefined;
   }
 
@@ -725,4 +741,3 @@ export function destroyInterop(): void {
   entryFileLanguageInfo.clear();
   mixCompile = false;
 }
-
