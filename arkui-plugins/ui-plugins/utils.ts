@@ -15,7 +15,7 @@
 
 import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
-import { matchPrefix } from '../common/arkts-utils';
+import { matchPrefix, removeRelativePathSuffix } from '../common/arkts-utils';
 import {
     ARKUI_IMPORT_PREFIX_NAMES,
     CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
@@ -27,6 +27,8 @@ import {
 } from '../common/predefines';
 import { DeclarationCollector } from '../common/declaration-collector';
 import { hasDecorator } from './property-translators/utils';
+import { ImportCollector } from '../common/import-collector';
+import { getDeclOriPath } from './interop/utils';
 
 export type EntryAnnoInfo = {
     startPosition: arkts.SourcePosition;
@@ -530,6 +532,28 @@ export function getValueInObjectAnnotation(
     );
     if (keyItem && arkts.isClassProperty(keyItem)) {
         return keyItem.value;
+    }
+    return undefined;
+}
+
+export function findLocalSourceNameToImport(
+    symbolName: string,
+    declModuleName: string | undefined,
+    declRelativePath: string | undefined,
+    isDeclForDynamicStaticInterop?: boolean
+): string | undefined {
+    const localSourceName: string | undefined = ImportCollector.getInstance().getLocalSource(symbolName);
+    if (!!localSourceName) {
+        return localSourceName;
+    }
+    if (isDeclForDynamicStaticInterop) {
+        return getDeclOriPath(declRelativePath);
+    }
+    if (!!declModuleName && !declModuleName.includes('/')) {
+        return declModuleName;
+    }
+    if (!!declRelativePath) {
+        return removeRelativePathSuffix(declRelativePath);
     }
     return undefined;
 }
