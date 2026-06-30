@@ -320,6 +320,7 @@ function copyFile(inputFile: string, outputFile: string): void {
     readStream.pipe(writeStream);
     readStream.on('close', function () {
       writeStream.end();
+      readStream.destroy();
     });
   } catch (err) {
     throw err.message;

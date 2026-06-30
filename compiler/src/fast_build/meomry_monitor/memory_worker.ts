@@ -273,9 +273,11 @@ class MemoryCollector {
     });
 
     stream.on('end', () => {
+      stream.destroy();
       parentPort!.postMessage({ action: 'memoryReport', requestId: requestId, report: report });
     });
     stream.on('error', (err) => {
+      stream.destroy();
       parentPort!.postMessage({ action: 'memoryReport', requestId: requestId, report: {} });
     });
   }
