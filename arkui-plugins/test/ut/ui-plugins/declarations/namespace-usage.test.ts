@@ -227,8 +227,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_ConstantStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_ConstantStruct | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (aNamespace.EXPORT_RESOURCE)) as Resource));
+    this.__backing_stateVar!.resetOnReuse(aNamespace.EXPORT_RESOURCE);
   }
   
   @MemoIntrinsic() 
@@ -288,8 +287,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_DialogStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_DialogStruct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 
@@ -403,8 +401,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_V1Struct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_V1Struct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 
@@ -1318,8 +1315,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_ConstantStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_ConstantStruct | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (aNamespace.EXPORT_RESOURCE)) as Resource));
+    this.__backing_stateVar!.resetOnReuse(aNamespace.EXPORT_RESOURCE);
   }
   
   @MemoIntrinsic() 
@@ -1398,8 +1394,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_DialogStruct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_DialogStruct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 
@@ -1567,8 +1562,7 @@ class SomeObV2ClassImpl extends aNamespace.ExportObservedV2Inherit {
   public __updateStruct(initializers: (__Options_V1Struct | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_V1Struct | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 

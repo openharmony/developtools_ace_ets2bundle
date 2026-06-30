@@ -196,8 +196,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_IDataSourcePrefetchingMethods | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_IDataSourcePrefetchingMethods | undefined)): void {
-    this.__backing_loadedCount!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.loadedCount)})) ?? ("0")) as string));
+    this.__backing_loadedCount!.resetOnReuse("0");
   }
 
   @MemoIntrinsic() 

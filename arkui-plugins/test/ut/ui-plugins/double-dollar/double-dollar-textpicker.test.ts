@@ -93,14 +93,10 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_tt!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.tt)})) ?? ("state var")) as string));
-    this.__backing_index!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.index)})) ?? (1)) as int));
-    this.__backing_select!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.select)})) ?? (0)) as int));
-    this.__backing_selectArr!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.selectArr)})) ?? ([0, 1, 2])) as Array<int>));
+    this.__backing_tt!.resetOnReuse("state var");
+    this.__backing_index!.resetOnReuse(1);
+    this.__backing_select!.resetOnReuse(0);
+    this.__backing_selectArr!.resetOnReuse([0, 1, 2]);
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

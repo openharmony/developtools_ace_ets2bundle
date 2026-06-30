@@ -103,14 +103,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_str1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str1)})) ?? ("Hello World")) as string));
-    this.__backing_str2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str2)})) ?? ("Hello")) as string));
-    this.__backing_newStr!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newStr)})) ?? (makeBindable(this.str1, ((value) => {
+    this.__backing_str1!.resetOnReuse("Hello World");
+    this.__backing_str2!.resetOnReuse("Hello");
+    this.__backing_newStr!.resetOnReuse(makeBindable(this.str1, ((value) => {
       this.str1 = value;
-    })))) as Bindable<string>));
+    })));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

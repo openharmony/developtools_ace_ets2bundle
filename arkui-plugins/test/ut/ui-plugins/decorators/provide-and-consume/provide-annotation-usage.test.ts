@@ -84,22 +84,14 @@ function main() {}
   public __updateStruct(initializers: (__Options_Ancestors | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Ancestors | undefined)): void {
-    this.__backing_count!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? ("Child0")) as (string | undefined)));
-    this.__backing_count1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count1)})) ?? ("Child1")) as (string | undefined)));
-    this.__backing_count2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count2)})) ?? ("Child2")) as (string | undefined)));
-    this.__backing_count3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count3)})) ?? ("Child3")) as (string | undefined)));
-    this.__backing_count4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count4)})) ?? ("Child4")) as (string | undefined)));
-    this.__backing_count5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count5)})) ?? ("Child5")) as (string | undefined)));
-    this.__backing_count6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count6)})) ?? ("Child6")) as (string | undefined)));
-    this.__backing_count7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count7)})) ?? ("Child7")) as (string | undefined)));
+    this.__backing_count!.resetOnReuse("Child0");
+    this.__backing_count1!.resetOnReuse("Child1");
+    this.__backing_count2!.resetOnReuse("Child2");
+    this.__backing_count3!.resetOnReuse("Child3");
+    this.__backing_count4!.resetOnReuse("Child4");
+    this.__backing_count5!.resetOnReuse("Child5");
+    this.__backing_count6!.resetOnReuse("Child6");
+    this.__backing_count7!.resetOnReuse("Child7");
   }
 
   @MemoIntrinsic() 

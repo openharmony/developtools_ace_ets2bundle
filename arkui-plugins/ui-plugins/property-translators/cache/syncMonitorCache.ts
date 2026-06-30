@@ -43,13 +43,13 @@ export class SyncMonitorCache {
         this._cache.clear();
     }
 
-    getCachedSyncMonitors(className: string): arkts.Statement[] {
+    getCachedSyncMonitors(className: string, definition?: arkts.ClassDefinition): arkts.Statement[] {
         if (!this._cache.has(className)) {
             return [];
         }
         return Object.entries(this._cache.get(className)!).map((item: [string, SyncMonitorInfo]) => {
             const { monitorItem, originalName, newName, isFromStruct, paramsLength } = item[1];
-            return factory.generateSyncMonitorAssignment(monitorItem, originalName, newName, isFromStruct, paramsLength);
+            return factory.generateSyncMonitorAssignment(monitorItem, originalName, newName, isFromStruct, paramsLength, definition);
         });
     }
 

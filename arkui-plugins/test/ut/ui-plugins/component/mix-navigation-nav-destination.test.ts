@@ -101,14 +101,10 @@ function main() {}
 
   public resetStateVarsOnReuse(initializers: (__Options_SubNavigation | undefined)): void {
     this.__backing_isPortrait!.resetOnReuse(initializers!.__backing_isPortrait!);
-    this.__backing_displayMode!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.displayMode)})) ?? (0)) as number));
-    this.__backing_primaryWidth!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryWidth)})) ?? ("50%")) as (number | string)));
-    this.__backing_primaryStack!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.primaryStack)})) ?? (new MyNavPathStack())) as MyNavPathStack));
-    this.__backing_secondaryStack!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.secondaryStack)})) ?? (new MyNavPathStack())) as MyNavPathStack));
+    this.__backing_displayMode!.resetOnReuse(0);
+    this.__backing_primaryWidth!.resetOnReuse("50%");
+    this.__backing_primaryStack!.resetOnReuse(new MyNavPathStack());
+    this.__backing_secondaryStack!.resetOnReuse(new MyNavPathStack());
   }
 
   @MemoIntrinsic() 
