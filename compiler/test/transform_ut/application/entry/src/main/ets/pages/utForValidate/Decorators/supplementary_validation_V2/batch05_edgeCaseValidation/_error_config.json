@@ -1,0 +1,204 @@
+{
+    "animatableExtendParams": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ],
+    "buildContentDeepValidation": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "'new Object()' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "builderInternalSyntax": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "'console.log('side effect in builder');' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "decoratorPlacementRules": [
+        {
+            "message": "Duplicate '@Monitor' decorators for method are not allowed.",
+            "type": "ERROR",
+            "code": "10905119"
+        },
+        {
+            "message": "'@State' can not decorate the method.",
+            "type": "ERROR",
+            "code": "10905112"
+        },
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "mixedV1V2Nesting": [],
+    "observedDeepValidation": [
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        },
+        {
+            "message": "A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905224"
+        },
+        {
+            "message": "A class decorated by '@ObservedV2' cannot inherit from a class decorated by '@Observed'.",
+            "type": "ERROR",
+            "code": "10905225"
+        },
+        {
+            "message": "A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.",
+            "type": "ERROR",
+            "code": "10905226"
+        }
+    ],
+    "paramEventCombinedRules": [
+        {
+            "message": "The property 'value' must specify a type.",
+            "type": "ERROR",
+            "code": "10905328"
+        }
+    ],
+    "resourceFormatValidation": [
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Unknown resource type 'unknown'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource source 'unknown'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "No such 'no_extension_file' resource in current module.",
+            "type": "ERROR",
+            "code": "10904333"
+        },
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource source 'wrong'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Unknown resource type 'color'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "sendableConcurrentValidation": [
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@Concurrent' can not be used on 'Generator' function declaration.",
+            "type": "ERROR",
+            "code": "10905122"
+        },
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        }
+    ],
+    "stateInitEdgeCases": [
+        {
+            "message": "The '@State' property 'controller' cannot be a 'CustomDialogController' object.",
+            "type": "ERROR",
+            "code": "10905308"
+        },
+        {
+            "message": "The '@StorageLink' property 'dataValue' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        },
+        {
+            "message": "The '@StorageProp' property 'propValue' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        },
+        {
+            "message": "The '@LocalStorageLink' property 'localValue' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "stylesUsageRestrictions": [
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        },
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        }
+    ]
+}
