@@ -1,0 +1,12 @@
+{
+    "provideConsumeMismatch": [],
+    "linkInitPatterns": [],
+    "storageDecorators": [],
+    "objectLinkPatterns": [],
+    "propTypeValidation": [],
+    "stateWithComplexTypes": [],
+    "consumeWithoutAlias": [],
+    "requirePropPatterns": [],
+    "v2ParamRequireRules": [],
+    "stateInitValues": []
+}

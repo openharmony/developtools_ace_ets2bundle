@@ -1,0 +1,63 @@
+{
+    "paramWithoutType": [
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "The property 'value' must specify a type.",
+            "type": "ERROR",
+            "code": "10905328"
+        }
+    ],
+    "eventValidation": [],
+    "monitorValidation": [
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
+        }
+    ],
+    "computedValidation": [
+        {
+            "message": "'@Computed' can only decorate 'GetAccessor'.",
+            "type": "ERROR",
+            "code": "10905116"
+        }
+    ],
+    "onceWithoutParam": [
+        {
+            "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905326"
+        }
+    ],
+    "builderParamV2": [],
+    "componentReuseV2": [
+        {
+            "message": "Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905370"
+        }
+    ],
+    "localBuilderRules": [
+        {
+            "message": "'@LocalBuilder' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        }
+    ],
+    "providerConsumerV2": [],
+    "syncMonitorPatterns": [
+        {
+            "message": "Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.",
+            "type": "ERROR",
+            "code": "10905365"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        }
+    ]
+}
