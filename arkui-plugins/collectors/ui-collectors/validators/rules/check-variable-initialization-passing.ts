@@ -189,6 +189,9 @@ function checkRegularPropertyInitFromInfo(property: arkts.ClassProperty, metadat
     if (!!metadata?.annotationInfo && Object.keys(metadata.annotationInfo).length > 0) {
         return false;
     }
+    if (arkts.hasModifierFlag(property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DEFINITE)) {
+        return false;
+    }
     return !property.value && !!property.typeAnnotation?.tsType?.definitelyNotETSNullish;
 }
 
