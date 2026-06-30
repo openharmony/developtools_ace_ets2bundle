@@ -1,0 +1,228 @@
+{
+    "buildMethodRestrictions": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "'this.items.push('c')' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        },
+        {
+            "message": "'this.count = 10' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        },
+        {
+            "message": "The 'regular' property 'new ObservedModel()' cannot be assigned to the '@ObjectLink' property 'modelData'.",
+            "type": "WARN"
+        }
+    ],
+    "componentChildRestrictions": [
+        {
+            "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "The 'ListItemGroup' component can only be nested in the 'List' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "In an '@Entry' decorated component, the 'build' method can have only one root node, which must be a container component.",
+            "type": "ERROR",
+            "code": "10905210"
+        }
+    ],
+    "extendFunctionValidation": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ],
+    "monitorComputedRules": [
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
+        }
+    ],
+    "observedClassValidation": [
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        },
+        {
+            "message": "The '@Param' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Local' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        }
+    ],
+    "provideConsumeDeepErrors": [
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "'@Computed' can only decorate 'GetAccessor'.",
+            "type": "ERROR",
+            "code": "10905116"
+        },
+        {
+            "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905326"
+        }
+    ],
+    "reusableDecoratorConflicts": [
+        {
+            "message": "'@ReusableV2' is only applicable to custom components decorated by '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905242"
+        },
+        {
+            "message": "The struct 'DualComponentDecorator' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        },
+        {
+            "message": "The struct 'DualReusableDecorator' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        },
+        {
+            "message": "The '@Reusable' and '@ReusableV2' decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
+        },
+        {
+            "message": "The struct 'ComponentV2WithCustomDialog' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        }
+    ],
+    "structDecoratorValidation": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'MissingDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'InvalidDecoratorStruct'.",
+            "type": "ERROR",
+            "code": "10905230"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'AnotherMissingDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'StateWithoutComponent'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "The struct 'InvalidDecoratorStruct' use invalid decorator.",
+            "type": "WARN"
+        },
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'InvalidDecoratorStruct'.",
+            "type": "WARN"
+        }
+    ],
+    "syncMonitorValidation": [
+        {
+            "message": "Only constant expressions are supported as parameters in '@SyncMonitor'. Variables are not allowed.",
+            "type": "ERROR",
+            "code": "10905365"
+        },
+        {
+            "message": "'@SyncMonitor' cannot observe non-existent variables or non-state variables, except in wildcard-based monitoring scenarios.",
+            "type": "ERROR",
+            "code": "10905366"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        },
+        {
+            "message": "In wildcard-based monitoring scenarios with '@SyncMonitor', the .* pattern must be placed at the end of the string.",
+            "type": "ERROR",
+            "code": "10905367"
+        }
+    ],
+    "v2EventBindingRules": [
+        {
+            "message": "The V1 decorator '@Provide' cannot be applied to a Function-type variable 'callback'.",
+            "type": "ERROR",
+            "code": "10905363"
+        },
+        {
+            "message": "The V1 decorator '@StorageLink' cannot be applied to a Function-type variable 'callback'.",
+            "type": "ERROR",
+            "code": "10905363"
+        }
+    ],
+    "v2ParamDecoratorErrors": [
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Link' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
+    ]
+}
