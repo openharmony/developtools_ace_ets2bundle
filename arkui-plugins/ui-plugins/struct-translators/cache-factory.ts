@@ -50,7 +50,7 @@ import { isSdkVersionAtLeast } from '../builder-lambda-translators/utils';
 import { addMemoAnnotation, MemoNames } from '../../collectors/memo-collectors/utils';
 import { getCustomComponentNameFromAnnotationInfo } from '../../collectors/ui-collectors/utils';
 import { InnerComponentInfoCache } from '../builder-lambda-translators/cache/innerComponentInfoCache';
-import { PropertyRewriteCache } from '../property-translators/cache/propertyRewriteCache';
+import { getPropertyRewriteKey, PropertyRewriteCache } from '../property-translators/cache/propertyRewriteCache';
 import { ComputedCache } from '../property-translators/cache/computedCache';
 import { MonitorCache } from '../property-translators/cache/monitorCache';
 import { SyncMonitorCache } from '../property-translators/cache/syncMonitorCache';
@@ -386,7 +386,14 @@ export class CacheFactory {
                 return [];
             }
             hasStaticBlock = arkts.isClassStaticBlock(child);
-            const nodes = PropertyRewriteCache.getInstance().getRewriteNodes(child.peer);
+            if (!arkts.isClassElement(child) || !child.key || !arkts.isIdentifier(child.key)) {
+                return [child];
+            }
+            const key: string = getPropertyRewriteKey(child, child.key.name);
+            if (PropertyRewriteCache.getInstance().isReleased(key)) {
+                return [];
+            }
+            const nodes = PropertyRewriteCache.getInstance().release(key).getRewriteNodes(key);
             if (nodes.length > 0) {
                 return nodes;
             }
@@ -852,7 +859,14 @@ export class CacheFactory {
                 hasConstructorToRewrite = true;
                 return [this.rewriteObservedV2Constuctor(child, className)];
             }
-            const nodes = PropertyRewriteCache.getInstance().getRewriteNodes(child.peer);
+            if (!arkts.isClassElement(child) || !child.key || !arkts.isIdentifier(child.key)) {
+                return [child];
+            }
+            const key: string = getPropertyRewriteKey(child, child.key.name);
+            if (PropertyRewriteCache.getInstance().isReleased(key)) {
+                return [];
+            }
+            const nodes = PropertyRewriteCache.getInstance().release(key).getRewriteNodes(key);
             if (nodes.length > 0) {
                 return nodes;
             }

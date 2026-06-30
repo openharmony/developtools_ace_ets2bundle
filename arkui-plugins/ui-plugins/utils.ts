@@ -549,7 +549,7 @@ export function findLocalSourceNameToImport(
     if (isDeclForDynamicStaticInterop) {
         return getDeclOriPath(declRelativePath);
     }
-    if (!!declModuleName && !declModuleName.includes('/')) {
+    if (!!declModuleName && matchPrefix(ARKUI_IMPORT_PREFIX_NAMES, declModuleName)) {
         return declModuleName;
     }
     if (!!declRelativePath) {

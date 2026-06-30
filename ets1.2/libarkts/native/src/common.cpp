@@ -1375,6 +1375,19 @@ struct ClassDefinitionResolver {
         return context != nullptr && impl != nullptr;
     }
 
+    bool IsGetterOrSetterMethod(es2panda_AstNode* member) const
+    {
+        if (!IsValid() || member == nullptr) {
+            return 0;
+        }
+        bool isGetterOrSetterMethod = impl->IsMethodDefinition(member) &&
+        (
+            impl->MethodDefinitionIsGetterConst(context, member) ||
+            impl->MethodDefinitionIsSetterConst(context, member)
+        );
+        return isGetterOrSetterMethod;
+    }
+
     // Get property name from ClassProperty or MethodDefinition
     const char* GetPropertyName(es2panda_AstNode* member) const
     {
@@ -1389,9 +1402,9 @@ struct ClassDefinitionResolver {
                 propName = impl->IdentifierNameConst(context, key);
             }
         } else if (impl->IsMethodDefinition(member)) {
-            // Handle MethodDefinition (getter methods)
-            // Only collect getter methods as properties
-            if (impl->MethodDefinitionIsGetterConst(context, member)) {
+            // Handle MethodDefinition (getter/setter methods)
+            // Only collect getter/setter methods as properties
+            if (IsGetterOrSetterMethod(member)) {
                 auto* key = impl->ClassElementKey(context, member);
                 if (key != nullptr && impl->IsIdentifier(key)) {
                     propName = impl->IdentifierNameConst(context, key);
@@ -1424,11 +1437,10 @@ struct ClassDefinitionResolver {
             if (member == nullptr) {
                 continue;
             }
-            // Only process ClassProperty and getter MethodDefinition
+            // Only process ClassProperty and getter/setter MethodDefinition
             bool isPropertyMember = impl->IsClassProperty(member);
-            bool isGetterMethod = impl->IsMethodDefinition(member) &&
-                                 impl->MethodDefinitionIsGetterConst(context, member);
-            if (!isPropertyMember && !isGetterMethod) {
+            bool isMethodMember = IsGetterOrSetterMethod(member);
+            if (!isPropertyMember && !isMethodMember) {
                 continue;
             }
             const char* propName = GetPropertyName(member);
@@ -1452,7 +1464,6 @@ struct ClassDefinitionResolver {
                 // If both are getters or both are properties, keep the first one seen
             }
         }
-
         // Convert map to vector
         for (const auto& entry : propertyMap) {
             classProperties.push_back(entry.second);
@@ -1627,9 +1638,9 @@ struct TSInterfaceDeclarationResolver {
                 propName = impl->IdentifierNameConst(context, key);
             }
         } else if (impl->IsMethodDefinition(member)) {
-            // Handle MethodDefinition (getter methods)
-            // Only collect getter methods as properties
-            if (impl->MethodDefinitionIsGetterConst(context, member)) {
+            // Handle MethodDefinition (getter/setter methods)
+            // Only collect getter/setter methods as properties
+            if (IsGetterOrSetterMethod(member)) {
                 auto* key = impl->ClassElementKey(context, member);
                 if (key != nullptr && impl->IsIdentifier(key)) {
                     propName = impl->IdentifierNameConst(context, key);
@@ -1669,6 +1680,19 @@ struct TSInterfaceDeclarationResolver {
         return nullptr;
     }
 
+    bool IsGetterOrSetterMethod(es2panda_AstNode* member) const
+    {
+        if (!IsValid() || member == nullptr) {
+            return 0;
+        }
+        bool isGetterOrSetterMethod = impl->IsMethodDefinition(member) &&
+        (
+            impl->MethodDefinitionIsGetterConst(context, member) ||
+            impl->MethodDefinitionIsSetterConst(context, member)
+        );
+        return isGetterOrSetterMethod;
+    }
+
     // Helper: Collect properties from interface body with proper deduplication
     // Returns vector of properties with ClassProperty taking priority over getters for same name
     std::vector<es2panda_AstNode*> CollectPropertiesFromInterfaceBody(es2panda_AstNode* interfaceDeclaration)
@@ -1696,11 +1720,10 @@ struct TSInterfaceDeclarationResolver {
             if (member == nullptr) {
                 continue;
             }
-            // Only process ClassProperty and getter MethodDefinition
+            // Only process ClassProperty and getter/setter MethodDefinition
             bool isPropertyMember = impl->IsClassProperty(member);
-            bool isGetterMethod = impl->IsMethodDefinition(member) &&
-                                 impl->MethodDefinitionIsGetterConst(context, member);
-            if (!isPropertyMember && !isGetterMethod) {
+            bool isMethodMember = IsGetterOrSetterMethod(member);
+            if (!isPropertyMember && !isMethodMember) {
                 continue;
             }
             const char* propName = GetPropertyName(member);
@@ -2117,8 +2140,11 @@ KNativePointer impl_ResolveMethodDefinitionTypes(KNativePointer contextPtr, KNat
         return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
     }
 
-    // Only handle getter methods
-    if (!impl->MethodDefinitionIsGetterConst(_context, _method)) {
+    // Only handle getter/setter methods
+    if (
+        !impl->MethodDefinitionIsGetterConst(_context, _method) &&
+        !impl->MethodDefinitionIsSetterConst(_context, _method)
+    ) {
         return StageArena::CloneVector(static_cast<es2panda_AstNode**>(nullptr), 0);
     }
 

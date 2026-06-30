@@ -13,14 +13,20 @@
  * limitations under the License.
  */
 import * as arkts from '@koalaui/libarkts';
-import { AstNodePointer } from '../../../common/safe-types';
+
+export function getPropertyRewriteKey(node: arkts.ClassElement, name: string): string {
+    const prefix: string = arkts.isClassProperty(node) ? "%%prop%%" : "%%other%%";
+    return `${prefix}${name}`;
+}
 
 export class PropertyRewriteCache {
-    private _cache: Map<AstNodePointer, arkts.AstNode[]>;
+    private _cache: Map<string, arkts.AstNode[]>;
+    private _releasedNames: Set<string>;
     private static instance: PropertyRewriteCache;
 
     private constructor() {
-        this._cache = new Map<AstNodePointer, arkts.AstNode[]>();
+        this._cache = new Map<string, arkts.AstNode[]>();
+        this._releasedNames = new Set<string>();
     }
 
     static getInstance(): PropertyRewriteCache {
@@ -32,15 +38,27 @@ export class PropertyRewriteCache {
 
     reset(): void {
         this._cache.clear();
+        this._releasedNames.clear();
     }
 
-    getRewriteNodes(ptr: AstNodePointer): arkts.AstNode[] {
-        return this._cache.get(ptr) ?? [];
+    getRewriteNodes(name: string): arkts.AstNode[] {
+        return this._cache.get(name) ?? [];
     }
 
-    collectRewriteNodes(ptr: AstNodePointer, nodes: arkts.AstNode[]): void {
-        const originProperties = this._cache.get(ptr) ?? [];
+    release(name: string): this {
+        if (this._cache.has(name)) {
+            this._releasedNames.add(name);
+        }
+        return this;
+    }
+
+    isReleased(name: string): boolean {
+        return this._releasedNames.has(name);
+    }
+
+    collectRewriteNodes(name: string, nodes: arkts.AstNode[]): void {
+        const originProperties = this._cache.get(name) ?? [];
         const newProperties = [...originProperties, ...nodes];
-        this._cache.set(ptr, newProperties);
+        this._cache.set(name, newProperties);
     }
 }

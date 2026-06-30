@@ -389,6 +389,8 @@ export abstract class PropertyCachedTranslator extends BasePropertyTranslator {
             const initializeStruct = this.initializeStruct(newName, originalName, metadata);
 
             if (initializeStruct) {
+                initializeStruct.startPosition = this.property.startPosition;
+                initializeStruct.endPosition = this.property.endPosition;
                 PropertyCache.getInstance().collectInitializeStruct(structName, [initializeStruct]);
                 PropertyCache.getInstance().setShouldMemoUpdateInitializeStruct(structName, !!this.isMemoShouldUpdate);
             }
