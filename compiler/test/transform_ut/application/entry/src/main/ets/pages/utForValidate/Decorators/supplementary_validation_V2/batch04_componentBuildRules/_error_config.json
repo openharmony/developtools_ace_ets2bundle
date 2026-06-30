@@ -1,0 +1,151 @@
+{
+    "componentSpecificChild": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "The component 'Grid' can only have the child component 'GridItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        },
+        {
+            "message": "The component 'Grid' can only have the child component 'GridItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        },
+        {
+            "message": "The component 'AlphabetIndexer' can't have any child.",
+            "type": "ERROR",
+            "code": "10905222"
+        }
+    ],
+    "computedTwoWayBind": [
+        {
+            "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
+            "type": "ERROR",
+            "code": "10905213"
+        },
+        {
+            "message": "A V2 component cannot be used with any member property decorated by '@Link' in a V1 component.",
+            "type": "ERROR",
+            "code": "10905213"
+        }
+    ],
+    "customDialogBuilderInit": [
+        {
+            "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
+            "type": "ERROR",
+            "code": "10905211"
+        }
+    ],
+    "forEachBuildRestrictions": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "The component 'Image' can't have any child.",
+            "type": "ERROR",
+            "code": "10905222"
+        },
+        {
+            "message": "The Button component with a label parameter can not have any child.",
+            "type": "ERROR",
+            "code": "10905202"
+        },
+        {
+            "message": "In an '@Entry' decorated component, the 'build' method can have only one root node, which must be a container component.",
+            "type": "ERROR",
+            "code": "10905210"
+        }
+    ],
+    "lifecycleMethodParams": [
+        {
+            "message": "Methods decorated with '@ComponentAppear' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905371"
+        },
+        {
+            "message": "Methods decorated with '@ComponentDisappear' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905371"
+        },
+        {
+            "message": "Methods decorated with '@ComponentInit' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905371"
+        },
+        {
+            "message": "Methods decorated with '@ComponentBuilt' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905371"
+        }
+    ],
+    "objectLinkNonObserved": [],
+    "propNonSimpleType": [],
+    "toggleChildRestrictions": [
+        {
+            "message": "When the component 'Toggle' set 'type' as 'Switch', it can't have any child.",
+            "type": "ERROR",
+            "code": "10905223"
+        },
+        {
+            "message": "When the component 'Toggle' set 'type' as 'Checkbox', it can't have any child.",
+            "type": "ERROR",
+            "code": "10905223"
+        },
+        {
+            "message": "When the component 'Toggle' set 'type' as 'Button', it can only have a single child component.",
+            "type": "ERROR",
+            "code": "10905221"
+        }
+    ],
+    "twoWayEventAssign": [
+        {
+            "message": "When the two-way binding syntax is used, the variable 'value' must be decorated with '@Param', and the '@Event' variable '$value' must be defined in the ChildComponent.",
+            "type": "ERROR",
+            "code": "10905319"
+        },
+        {
+            "message": "When the two-way binding syntax is used, the variable 'count' must be decorated with '@Param', and the '@Event' variable '$count' must be defined in the AnotherChild.",
+            "type": "ERROR",
+            "code": "10905319"
+        },
+        {
+            "message": "When the two-way binding syntax is used, the variable 'value' must be decorated with '@Param', and the '@Event' variable '$value' must be defined in the ChildComponent.",
+            "type": "ERROR",
+            "code": "10905319"
+        }
+    ],
+    "v2PropertyAssign": [
+        {
+            "message": "The type of the '@State' property can not be a class decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905348"
+        },
+        {
+            "message": "Property 'data' in the '@ComponentV2' component 'V2ChildComponent' is not allowed to be assigned value here.",
+            "type": "ERROR",
+            "code": "10905323"
+        }
+    ]
+}
