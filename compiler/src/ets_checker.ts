@@ -273,6 +273,13 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
   if (projectConfig.packageDir === 'oh_modules') {
     Object.assign(compilerOptions, { 'packageManagerType': 'ohpm' });
   }
+  // Keep the module resolution cache consistent with the current compilerOptions.
+  // Reuse the existing instance (updating its options) to retain shared sub-caches like packageJsonInfo.
+  if (moduleResolutionCache) {
+    moduleResolutionCache.update(compilerOptions);
+  } else {
+    moduleResolutionCache = ts.createModuleResolutionCache(process.cwd(), getCanonicalFileName, compilerOptions);
+  }
   readTsBuildInfoFileInCrementalMode(buildInfoPath, projectConfig);
 }
 
@@ -1406,6 +1413,11 @@ function checkNeedUpdateFiles(file: string, needUpdate: NeedUpdateFlag, alreadyC
 
 const fileExistsCache: Map<string, boolean> = new Map<string, boolean>();
 const dirExistsCache: Map<string, boolean> = new Map<string, boolean>();
+const getCanonicalFileName = (fileName: string): string =>
+  ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+// Caches module resolution results (per directory/module name) so that the same module specifier
+// imported from many files is only resolved once by tsc, greatly reducing redundant disk lookups.
+let moduleResolutionCache: ts.ModuleResolutionCache | undefined = undefined;
 const moduleResolutionHost: ts.ModuleResolutionHost = {
   fileExists: (fileName: string): boolean => {
     let exists = fileExistsCache.get(fileName);
@@ -1491,7 +1503,8 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
     !(cacheFileContent && cacheFileContent.length === moduleNames.length)) {
     for (const moduleName of moduleNames) {
-      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost);
+      const result = ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost,
+        moduleResolutionCache);
       if (result.resolvedModule && !isOhExport(result.resolvedModule?.packageId?.name, result.resolvedModule?.resolvedFileName)) {
         result.resolvedModule.isNotOhExport = true;
       }
@@ -2278,6 +2291,7 @@ export function resetEtsCheck(): void {
   filesBuildInfo.clear();
   fileExistsCache.clear();
   dirExistsCache.clear();
+  moduleResolutionCache?.clear();
   targetESVersionChanged = false;
   fileToIgnoreDiagnostics = undefined;
   maxMemoryInServiceChecker = 0;
