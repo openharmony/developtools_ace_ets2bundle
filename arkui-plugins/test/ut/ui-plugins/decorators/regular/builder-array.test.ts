@@ -61,7 +61,7 @@ function main() {}
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     this.__backing_builderArr = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderArr)})) ?? (new Array<@Builder() ((p1: string, p2: number)=> void)>()));
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderArr)})) ?? (new Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>()));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
@@ -77,16 +77,16 @@ function main() {}
   }
 
   @ComponentBuilder() 
-  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: (()=> void)): Child {
+  public static $_invoke(initializers?: __Options_Child, storage?: LocalStorage, @Builder() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): Child {
     throw new Error("Declare interface");
   }
 
-  private __backing_builderArr?: Array<@Builder() ((p1: string, p2: number)=> void)>;
-  public get builderArr(): Array<@Builder() ((p1: string, p2: number)=> void)> {
-    return (this.__backing_builderArr as Array<@Builder() ((p1: string, p2: number)=> void)>);
+  private __backing_builderArr?: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>;
+  public get builderArr(): Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)> {
+    return (this.__backing_builderArr as Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>);
   }
 
-  public set builderArr(value: Array<@Builder() ((p1: string, p2: number)=> void)>) {
+  public set builderArr(value: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>) {
     this.__backing_builderArr = value;
   }
 
@@ -111,7 +111,7 @@ function main() {}
 }
 
 @Component() class __Options_Child {
-  public builderArr?: Array<@Builder() ((p1: string, p2: number)=> void)>;
+  public builderArr?: Array<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, p1: string, p2: number)=> void)>;
   public __options_has_builderArr?: boolean;
   public constructor() {}
 }`;

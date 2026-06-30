@@ -51,6 +51,7 @@ export type BuilderLambdaDeclInfo = {
     params: readonly arkts.Expression[];
     returnType: arkts.TypeNode | undefined;
     superName?: string; // exists ONLY in CustonFunctionCall, referring to the name of the super class.
+    calleeName?: string; // exists ONLY in CustonFunctionCall, referring to the name of the callee class.
     moduleName?: string;
     hasReceiver?: boolean;
     isFromCommonMethod?: boolean;
@@ -993,7 +994,7 @@ export function findComponentAttributeInInterface(node: arkts.TSInterfaceDeclara
 /**
  * get set method name for components.
  */
-export function getDeclaredSetAttribtueMethodName(componentName: string): string {
+export function getDeclaredSetAttributeMethodName(componentName: string): string {
     return `set${componentName}Options`;
 }
 

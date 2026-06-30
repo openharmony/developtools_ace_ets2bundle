@@ -123,6 +123,8 @@ import {
     PropertyFactoryCallTypeCache
 } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
+import { useImprovedPlugin } from '../../common/use-improved-memo-plugin';
+import { MemoFunctionKind } from '../../memo-improved';
 
 
 export class factory {
@@ -949,7 +951,15 @@ export class factory {
             translatedMembers.push(...rewritedProperties);
         }
         if (!isCustomComponentClass) {
-            translatedMembers.push(factory.createInvokeImplMethod(className, scope));
+            const structInvokeMethod = factory.createInvokeImplMethod(className, scope)
+            if (useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
+                BuilderLambdaFactory.memoPluginContext.registerScriptFunction(structInvokeMethod.function,  MemoFunctionKind.INTRINSIC);
+                const original = body.find(it => arkts.isMethodDefinition(it) && it.id?.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) as arkts.MethodDefinition | undefined;
+                if (original && BuilderLambdaFactory.globalMemoPluginContext) {
+                    BuilderLambdaFactory.globalMemoPluginContext.registerAdditionalDeclarationRedirect(original.function!.peer, structInvokeMethod.function!.peer)
+                }
+            }
+            translatedMembers.push(structInvokeMethod);
         }
         const updateMembers: arkts.AstNode[] = body
             .filter((member) => !arkts.isClassProperty(member) && !isComputedMethod(member))
@@ -2216,6 +2226,9 @@ export class factory {
             false,
             false
         );
+        if (useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
+            BuilderLambdaFactory.memoPluginContext.registerCallExpression(intrinsicCall, { kind: MemoFunctionKind.MEMO, argumentsInfo: [false] })
+        }
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(intrinsicCall);
         return intrinsicCall;
     }

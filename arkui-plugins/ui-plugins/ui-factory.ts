@@ -15,8 +15,8 @@
 
 import * as arkts from '@koalaui/libarkts';
 import {
-    CustomComponentAnontations,
     findLocalSourceNameToImport,
+    CustomComponentAnnotations,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
     LocalImportInfo,
@@ -209,7 +209,8 @@ export class factory {
         original: arkts.ScriptFunction,
         config: Partial<ScriptFunctionConfiguration>
     ): arkts.ScriptFunction {
-        const newFunc: arkts.ScriptFunction = arkts.factory.updateScriptFunction(
+        // Needed for compile-infra memo
+        const newFunc: arkts.ScriptFunction = arkts.factory.inplaceUpdateScriptFunction(
             original,
             Object.hasOwn(config, 'body') ? config.body : original.body,
             config.typeParams ?? original.typeParams,
@@ -385,7 +386,7 @@ export class factory {
      *
      * @param method method definition node
      */
-    static generateImplementsForStruct(annotations: CustomComponentAnontations): arkts.TSClassImplements[] {
+    static generateImplementsForStruct(annotations: CustomComponentAnnotations): arkts.TSClassImplements[] {
         const implementsInfo: arkts.TSClassImplements[] = [];
         if (annotations.entry) {
             implementsInfo.push(factory.createClassImplements(CustomComponentNames.PAGE_LIFE_CYCLE));

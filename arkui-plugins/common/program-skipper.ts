@@ -385,3 +385,12 @@ export class ProgramSkipper {
         this._edges.clear();
     }
 }
+
+export type PROGRAM_SKIPPER_FUNCTION_TYPE = (program: arkts.Program | undefined) => boolean;
+export const PROGRAM_SKIPPER_FUNCTION_PARAMETER_NAME = "canSkipProgram";
+
+export function captureProgramSkipperToPluginContext(context: arkts.PluginContext) {
+    context.setParameter(PROGRAM_SKIPPER_FUNCTION_PARAMETER_NAME, (program: arkts.Program) => {
+        return ProgramSkipper.canSkipProgram(program)
+    })
+}

@@ -75,7 +75,7 @@ export abstract class BasePropertyTranslator {
 
     constructor(options: BasePropertyTranslatorOptions) {
         this.property = options.property;
-        this.propertyType = options.property.typeAnnotation?.clone();
+        this.propertyType = options.property.typeAnnotation;
         this.isMemoCached = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).has(options.property);
         this.isMemoShouldUpdate = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldUpdateByPeer(options.property.peer);
     }
@@ -109,7 +109,7 @@ export abstract class BasePropertyTranslator {
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {
         const field: arkts.ClassProperty = factory.createOptionalClassProperty({
             name: newName,
-            propertyType: this.property.typeAnnotation,
+            propertyType: this.propertyType,
             modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE,
             stateMangementType: this.stateManagementType
         });

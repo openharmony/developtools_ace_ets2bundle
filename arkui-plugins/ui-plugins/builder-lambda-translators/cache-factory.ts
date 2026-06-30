@@ -68,7 +68,7 @@ import {
     collectDeclInfoFromInfo,
     findReuseId,
     findThisMemberValueInExpression,
-    getDeclaredSetAttribtueMethodName,
+    getDeclaredSetAttributeMethodName,
     getStructCalleeInfoFromCallInfo,
     InstanceCallInfo,
     isDebugLineEnabled,
@@ -83,8 +83,13 @@ import { BindableFactory } from './bindable-factory';
 // import { BuilderParamPropertyCache, ConditionScopeInfoCache, InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 import { BuilderParamPropertyCache, InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
+import { GlobalMemoPluginContext, MemoFunctionKind, MemoPluginContext } from '../../memo-improved';
+import { useImprovedPlugin } from '../../common/use-improved-memo-plugin';
+import { hasBuilderAnnotationOnParameter } from '../../memo-improved/analysis/utils';
 
 export class CacheFactory {
+    static globalMemoPluginContext?: GlobalMemoPluginContext
+    
     /**
      * add declared set methods in `@ComponentBuilder` Attribute interface
      */
@@ -133,7 +138,7 @@ export class CacheFactory {
         info: InnerComponentFunctionInfo,
         componentName: string
     ): arkts.MethodDefinition {
-        const name = getDeclaredSetAttribtueMethodName(componentName);
+        const name = getDeclaredSetAttributeMethodName(componentName);
         const hasReceiver = !!info.hasReceiver;
         const params = info.paramRecords?.map((record) => TypeFactory.createParameterFromRecord(record)) ?? [];
         const typeParams = info.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
@@ -185,6 +190,12 @@ export class CacheFactory {
                 attributeName,
                 attributeTypeParams
             );
+            cache.getComponentRecord(name)?.forEach((info: InnerComponentFunctionInfo) => {
+                const peer = (info as ComponentRecord).functionPeer
+                if (peer) {
+                    BuilderLambdaFactory.globalMemoPluginContext?.registerAdditionalDeclarationRedirect(peer, componentImplMethod.function.peer)
+                }
+            })
             methods.push(componentImplMethod);
         });
         return methods;
@@ -201,6 +212,7 @@ export class CacheFactory {
         if (!metadata.name) {
             return node;
         }
+        const func: arkts.ScriptFunction = node.function;
         if (
             !isFromStruct 
                 && checkIsFunctionMethodDeclFromInfo(metadata) 
@@ -209,13 +221,12 @@ export class CacheFactory {
             withAPIVersion(
                 { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
                 (sdkVersion: APIVersions) => {
-                    InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
+                    InnerComponentInfoCache.getInstance().collect(metadata.name, { ...metadata.innerComponentInfo, functionPeer: func.peer } as ComponentRecord);
                 },
                 { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(metadata.name!) }
             );
             return node;
         }
-        const func: arkts.ScriptFunction = node.function;
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, checkIsFunctionMethodDeclFromInfo(metadata));
         const newNode = BuilderLambdaFactory.updateBuilderLambdaMethodDecl(
             node,
@@ -224,6 +235,7 @@ export class CacheFactory {
             replaceBuilderLambdaDeclMethodName(metadata.name),
             [...node.overloads]
         );
+        this.globalMemoPluginContext?.registerAdditionalDeclarationRedirect(func.peer, newNode.function.peer);
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
     }
@@ -316,6 +328,9 @@ export class CacheFactory {
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 0, 6], 'update builderLambda Call'));
         const newNode = arkts.factory.updateCallExpression(node, replace, filterDefined(args), leaf.typeParams);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 0, 6], 'update builderLambda Call'));
+        if (!declInfo.isFunctionCall && useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
+            BuilderLambdaFactory.memoPluginContext.registerCallExpression(newNode, { kind: MemoFunctionKind.MEMO, argumentsInfo: [false] })
+        }
         // ConditionScopeInfoCache.getInstance().updateAll().reset();
         InitialBuilderLambdaBodyCache.getInstance().updateAll().reset();
         BuilderParamPropertyCache.getInstance().updateAll().reset();
@@ -456,7 +471,9 @@ export class CacheFactory {
         let returnType: arkts.TypeNode | undefined;
         const expression = leaf.callee;
         if (arkts.isMemberExpression(expression) && !!expression.object && arkts.isIdentifier(expression.object)) {
-            returnType = UIFactory.createTypeReferenceFromString(expression.object.name);
+            returnType = UIFactory.createTypeReferenceFromString(
+                declInfo.calleeName !== undefined ? declInfo.calleeName : expression.object.name
+            );
         }
         const args: Array<arkts.Expression | undefined> = [];
         const modifiedArgs: (arkts.Expression | undefined)[] = [];
@@ -659,6 +676,10 @@ export class CacheFactory {
                     .get(param)?.metadata;
                 _arg.setAnnotations([annotation(MemoNames.MEMO_UI)]);
                 NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(_arg, metadata);
+            } else if (useImprovedPlugin) {
+                if (arkts.isETSParameterExpression(param) && hasBuilderAnnotationOnParameter(param)) {
+                    _arg.setAnnotations([annotation(MemoNames.MEMO_UI)]);
+                }
             }
             return _arg;
         }

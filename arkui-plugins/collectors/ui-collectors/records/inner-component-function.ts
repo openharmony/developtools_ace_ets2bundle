@@ -169,7 +169,7 @@ export function checkIsTrailingLambdaInLastParam(
  */
 export function isForEach(name: string | undefined, sourceName?: string): boolean {
     const externalSourceName = sourceName ?? MetaDataCollector.getInstance().externalSourceName;
-    return name === InnerComponentNames.FOR_EACH && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
+    return (name === InnerComponentNames.FOR_EACH || name == InnerComponentNames.FOR_EACH_IMPL) && externalSourceName === ARKUI_FOREACH_SOURCE_NAME;
 }
 
 /**

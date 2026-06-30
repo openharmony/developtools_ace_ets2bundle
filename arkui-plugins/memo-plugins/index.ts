@@ -26,6 +26,8 @@ import { SignatureTransformer } from './signature-transformer';
 import { InternalsTransformer } from './internal-transformer';
 import { ProgramSkipper } from "../common/program-skipper";
 import { NodeCacheFactory } from '../common/node-cache';
+import { pluginInit, useImprovedPlugin } from '../common/use-improved-memo-plugin';
+import * as memo from "../memo-improved"
 
 export function unmemoizeTransform(): Plugins {
     return {
@@ -39,7 +41,25 @@ export function unmemoizeTransform(): Plugins {
     };
 }
 
+function improvedCheckedProgramVisit(
+    program: arkts.Program,
+    pluginContext: arkts.PluginContext,
+    canSkipPhases: boolean = false,
+    isFrameworkMode: boolean = false
+): arkts.Program {
+    if (canSkipPhases) {
+        debugLog('[SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
+    } else {
+        debugLog('[CANT SKIP PHASE] phase: memo-checked, moduleName: ', program.moduleName);
+        memo.checkedTransform(pluginContext)
+        arkts.MemoNodeCache.getInstance().clear();
+    }
+    return program;
+}
+
 function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    pluginInit(this);
+
     Debugger.getInstance().phasesDebugLog('[MEMO PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerReset();
     arkts.Performance.getInstance().startMemRecord('Node:UIPlugin:Memo-AfterCheck');
@@ -52,7 +72,11 @@ function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
         const cachePath: string | undefined = this.getProjectConfig()?.cachePath;
         const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
         arkts.Performance.getInstance().createEvent('memo-checked');
-        program = checkedProgramVisit(program, this, false, isFrameworkMode);
+        if (useImprovedPlugin) {
+            program = improvedCheckedProgramVisit(program, this, false, isFrameworkMode);
+        } else {
+            program = checkedProgramVisit(program, this, false, isFrameworkMode);
+        }
         script = program.ast as arkts.ETSModule;
         arkts.Performance.getInstance().stopEvent('memo-checked', true);
         debugLog('[AFTER MEMO SCRIPT] script: ', script.dumpSrc());

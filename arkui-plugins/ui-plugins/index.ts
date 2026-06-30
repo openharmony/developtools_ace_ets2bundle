@@ -21,7 +21,7 @@ import { Plugins, PluginContext, ProjectConfig, loadBuildJson, initResourceInfo,
 import { ProgramVisitor } from '../common/program-visitor';
 import { EXTERNAL_SOURCE_PREFIX_NAMES, NodeCacheNames } from '../common/predefines';
 import { Debugger, debugLog, getDumpFileName } from '../common/debug';
-import { ProgramSkipper } from '../common/program-skipper';
+import { ProgramSkipper, captureProgramSkipperToPluginContext } from '../common/program-skipper';
 import { MetaDataCollector } from '../common/metadata-collector';
 import { GenSymGenerator } from '../common/gensym-generator';
 import { InsightIntentCollector } from './insight-intent/insight-intent-collector';
@@ -33,6 +33,7 @@ import { Collector } from '../collectors/collector';
 import { getSystemResourcePath } from './utils';
 import { ResourceSourceCache } from './insight-intent/resource-source-cache';
 import { NodeCacheFactory } from '../common/node-cache';
+import { pluginInit } from '../common/use-improved-memo-plugin';
 
 export function uiTransform(): Plugins {
     return {
@@ -49,6 +50,8 @@ export function uiTransform(): Plugins {
 }
 
 function parsedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    arkts.extendPluginContext(this);
+    captureProgramSkipperToPluginContext(this);
     Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER PARSED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Parse');
     arkts.Performance.getInstance().memoryTrackerReset();
@@ -105,6 +108,8 @@ function parsedProgramVisit(
 }
 
 function checkedTransform(this: PluginContext): arkts.ETSModule | undefined {
+    pluginInit(this);
+
     Debugger.getInstance().phasesDebugLog('[UI PLUGIN] AFTER CHECKED ENTER');
     arkts.Performance.getInstance().memoryTrackerPrintCurrent('ArkTS:Check');
     arkts.Performance.getInstance().memoryTrackerGetDelta('ArkTS:Check');
@@ -143,7 +148,7 @@ function checkedProgramVisit(
         debugLog('[SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
     } else {
         debugLog('[CANT SKIP PHASE] phase: ui-checked, moduleName: ', program.moduleName);
-        NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
+        // NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(false);
         const projectConfig: ProjectConfig | undefined = context.getProjectConfig();
         if (projectConfig && !projectConfig.appResource) {
             projectConfig.ignoreError = true;
@@ -159,9 +164,9 @@ function checkedProgramVisit(
         const visitors: AbstractVisitor[] = [];
         if (!NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected()) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollect(true);
-            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(true);
+            // NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollect(true);
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).shouldCollectUpdate(true);
-            NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
+            // NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).shouldCollectUpdate(true);
             const collector = new Collector({
                 shouldCollectUI: true,
                 shouldCollectMemo: true,
@@ -169,7 +174,7 @@ function checkedProgramVisit(
             });
             visitors.push(collector);
         }
-        const checkedTransformer = new CheckedTransformer({ useCache: true });
+        const checkedTransformer = new CheckedTransformer({ useCache: true }, context);
         visitors.push(checkedTransformer);
         const programVisitor = new ProgramVisitor({
             pluginName: uiTransform.name,
