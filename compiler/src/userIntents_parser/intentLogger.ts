@@ -86,7 +86,7 @@ export class IntentLogger {
 
   returnErrorFileId(filePath?: string): void {
     if (filePath) {
-      this.logger.debug(`Error file recorded: ${filePath}`);
+      this.logger.debug(`Error file`);
     }
   }
 }
