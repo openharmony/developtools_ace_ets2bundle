@@ -18,4 +18,17 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+# The last argument is the destination, all preceding arguments are sources.
+# Reject copying a file or directory onto itself.
+dest="${!#}"
+i=1
+while [ "$i" -lt "$#" ]; do
+    src="${!i}"
+    if [ "$src" = "$dest" ]; then
+        echo "Error: source and target must not be the same path ($src)" >&2
+        exit 1
+    fi
+    i=$((i + 1))
+done
+
 cp "$@"
