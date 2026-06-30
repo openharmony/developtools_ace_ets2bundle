@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import {
     CustomComponentAnontations,
+    findLocalSourceNameToImport,
     hasNullOrUndefinedType,
     hasPropertyInAnnotation,
     LocalImportInfo,
@@ -691,16 +692,13 @@ export class factory {
     static addSymbolToLocalImport(symbol: arkts.AstNode, symbolName: string, localImportInfos: LocalImportInfo[]): string {
         const declProgram = arkts.getProgramFromAstNode(symbol);
         const declModuleName = declProgram?.moduleName;
+        const declRelativePath = declProgram?.relativeFilePath;
+        const isDeclForDynamicStaticInterop = declProgram?.isDeclForDynamicStaticInterop;
         const currentModuleName = MetaDataCollector.getInstance().externalSourceName;
-        const sourceName =
-            ImportCollector.getInstance().getLocalSource(symbolName) ??
-            (declProgram?.isDeclForDynamicStaticInterop
-                ? getDeclOriPath(declProgram?.relativeFilePath)
-                : declProgram?.relativeFilePath);
-        if (!!sourceName && !!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
+        const localSource = findLocalSourceNameToImport(symbolName, declModuleName, declRelativePath, isDeclForDynamicStaticInterop);
+        if (!!localSource && !!declModuleName && !!currentModuleName && declModuleName !== currentModuleName) {
             const localTypeName = ImportCollector.getInstance().getLocal(symbolName) 
                 ?? `${symbolName}_${GenSymGenerator.getInstance().id(symbolName)}`;
-            const localSource = removeRelativePathSuffix(sourceName);
             ImportCollector.getInstance().addToLocal(symbolName, localSource, localTypeName);
             localImportInfos.push({ symbolName, localSource, localTypeName });
             return localTypeName;
