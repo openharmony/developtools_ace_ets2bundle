@@ -486,6 +486,18 @@ export const UT_VALIDATE_PAGES: string[] = [
   'Decorators/supplementary_validation/requireV2InV1Error',
   'Decorators/supplementary_validation/objectLinkV2InV1Error',
   // Restored 18 test cases - now triggering real errors
+  'Decorators/vaildate_ui_syntax/componentReuseCheck',
+  // Supplementary validation V2 test cases (batch01: error code coverage)
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/observedInheritanceConflicts2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/structValidationErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/resourceValidationErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/decoratorUsageRestrictions2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/componentMemberErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/uiBuildErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/structNamingErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/v2SpecificErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/envDecoratorErrors2',
+  'Decorators/supplementary_validation_V2/batch01_errorCodeCoverage/v1V2Incompatibility2'
 ]
 
 export const UT_VALIDATE_PAGES_JSBUNDLE: string[] = [
