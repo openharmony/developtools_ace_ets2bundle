@@ -47,10 +47,13 @@ export class BuilderFactory {
     static rewriteBuilderMethod<T extends arkts.AstNode = arkts.MethodDefinition>(node: T): arkts.MethodDefinition {
         const _node = coerceToAstNode<arkts.MethodDefinition>(node);
         const newFunc = BuilderFactory.rewriteBuilderScriptFunction(_node.function!);
-        // Needed for compile-infra memo
-        const value = _node.value as arkts.FunctionExpression;
-        const newFuncExpr = arkts.factory.updateFunctionExpression(value, value.id, newFunc);
-        return arkts.factory.updateMethodDefinition(_node, _node.kind, _node.id, newFuncExpr, _node.modifierFlags, false, _node.overloads);
+        const newFuncExpr = arkts.factory.createFunctionExpression(newFunc.id?.clone(), newFunc);
+        const result = arkts.factory.updateMethodDefinition(_node, _node.kind, _node.id, newFuncExpr, _node.modifierFlags, false, _node.overloads);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refresh(_node, result);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refreshUpdate(_node, result);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refresh(_node.function, result.function);
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).refreshUpdate(_node.function, result.function);
+        return result
     }
 
     /**

@@ -24,7 +24,6 @@ import { ImportCollector } from '../../../common/import-collector';
 import { DeclarationCollector } from '../../../common/declaration-collector';
 import { LogCollector } from '../../../common/log-collector';
 import { NodeCacheFactory } from '../../../common/node-cache';
-import { pluginInit } from '../../../common/use-improved-memo-plugin';
 
 /**
  * AfterCheck uiTransform with no recheck AST.
@@ -32,8 +31,6 @@ import { pluginInit } from '../../../common/use-improved-memo-plugin';
 export const uiNoRecheck: Plugins = {
     name: 'ui-no-recheck',
     checked(this: PluginContext): arkts.ETSModule | undefined {
-        pluginInit(this);
-
         let script: arkts.ETSModule | undefined;
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
@@ -49,7 +46,7 @@ export const uiNoRecheck: Plugins = {
                 .setShouldHandleInsightIntent(false);
             const checkedTransformer = new CheckedTransformer({
                 useCache: NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).isCollected(),
-            }, this);
+            });
             const programVisitor = new ProgramVisitor({
                 pluginName: uiNoRecheck.name,
                 state: arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED,

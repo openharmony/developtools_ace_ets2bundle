@@ -24,22 +24,6 @@ import { SignatureTransformer } from '../../../memo-plugins/signature-transforme
 import { FunctionTransformer } from '../../../memo-plugins/function-transformer';
 import { InternalsTransformer } from '../../../memo-plugins/internal-transformer';
 import { NodeCacheFactory } from '../../../common/node-cache';
-import { pluginInit, useImprovedPlugin } from '../../../common/use-improved-memo-plugin';
-import * as memo from "../../../memo-improved";
-
-function improvedCheckedProgramVisit(
-    program: arkts.Program,
-    pluginContext: arkts.PluginContext,
-    canSkipPhases: boolean = false,
-    isFrameworkMode: boolean = false
-): arkts.Program {
-    if (canSkipPhases) {
-    } else {
-        memo.checkedTransform(pluginContext)
-        arkts.MemoNodeCache.getInstance().clear();
-    }
-    return program;
-}
 
 /**
  * AfterCheck unmemoizeTransform with no recheck AST.
@@ -47,15 +31,10 @@ function improvedCheckedProgramVisit(
 export const memoNoRecheck: Plugins = {
     name: 'memo-no-recheck',
     checked(this: PluginContext): arkts.ETSModule | undefined {
-        pluginInit(this)
         const contextPtr = this.getContextPtr() ?? arkts.arktsGlobal.compilerContext?.peer;
         if (!!contextPtr) {
             const isFrameworkMode = !!this.getProjectConfig()?.frameworkMode;
             let program = arkts.getOrUpdateGlobalContext(contextPtr).program;
-            if (useImprovedPlugin) {
-                improvedCheckedProgramVisit(program, this)
-                return program.getAstCasted()
-            }
             let script = program.ast as arkts.ETSModule;
             const positionalIdTracker = new PositionalIdTracker(arkts.getFileName(), false);
             const parameterTransformer = new ParameterTransformer({

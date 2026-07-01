@@ -93,7 +93,7 @@ function checkedProgramVisit(
     const collector = new Collector({
         shouldCollectUI: true,
         shouldCollectMemo: true,
-        shouldCheckUISyntax: projectConfig.uiSyntaxPluginEnabled ?? false
+        shouldCheckUISyntax: true
     });
     const programVisitor = new ProgramVisitor({
         pluginName: uiSyntaxLinterTransform.name,

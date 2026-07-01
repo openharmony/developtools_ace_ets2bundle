@@ -33,7 +33,6 @@ export interface ComponentRecord {
     typeParameters?: TypeParameterTypeRecord[];
     hasRestParameter?: boolean;
     hasReceiver?: boolean;
-    functionPeer: arkts.KNativePointer;
 }
 
 interface ComponentAttributeInfo {
@@ -164,7 +163,6 @@ export class ComponentAttributeCache {
             typeParameters,
             hasRestParameter,
             hasReceiver,
-            functionPeer: node.function.peer
         };
         this.collectComponentRecord(name, componentRecord);
         this.collectHasLastTrailingLambda(name, hasLastTrailingLambda);

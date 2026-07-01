@@ -312,7 +312,7 @@ function main() {}
     this.__backing_select6!.set(value);
   }
 
-  private __backing_builder?: (@Memo() (()=> void) | undefined);
+  private __backing_builder?: ((()=> void) | undefined);
 
   public get builder(): @Memo() (()=> void) {
     return this.__backing_builder!;

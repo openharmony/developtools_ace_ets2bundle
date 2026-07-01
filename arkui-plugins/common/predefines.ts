@@ -178,8 +178,6 @@ export enum EntryParamNames {
 
 export enum InnerComponentNames {
     FOR_EACH = 'ForEach',
-    FOR_EACH_IMPL = 'ForEachImpl',
-    LAZY_FOR_EACH = 'LazyForEach',
     NAVIGATION = 'Navigation',
     NAV_DESTINATION = 'NavDestination',
 }

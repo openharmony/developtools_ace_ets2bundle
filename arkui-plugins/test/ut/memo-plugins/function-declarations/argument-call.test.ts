@@ -76,7 +76,7 @@ function memo_arg_call_with_lowering(__memo_context: __memo_context_type, __memo
 function args_with_default_values(__memo_context: __memo_context_type, __memo_id: __memo_id_type, gensym%%_<some_random_number>?: int, @Memo() gensym%%_<some_random_number>?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int), gensym%%_<some_random_number>?: int, arg4?: int): void {
     let arg1: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : 10);
     let arg2: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> int) = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
-        const __memo_scope = __memo_context.scope<Int>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<int>(((__memo_id) + (<some_random_number>)), 0);
         if (__memo_scope.unchanged) {
             return __memo_scope.cached;
         }
@@ -84,13 +84,13 @@ function args_with_default_values(__memo_context: __memo_context_type, __memo_id
     }));
     let arg3: int = (((gensym%%_<some_random_number>) !== (undefined)) ? gensym%%_<some_random_number> : arg1);
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 4);
-    const __memo_parameter_gensym%%_<some_random_number> = __memo_scope.param(0, arg1), __memo_parameter_gensym%%_<some_random_number> = __memo_scope.param(1, arg2), __memo_parameter_gensym%%_<some_random_number> = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4);
+    const __memo_parameter_arg1 = __memo_scope.param(0, arg1), __memo_parameter_arg2 = __memo_scope.param(1, arg2), __memo_parameter_arg3 = __memo_scope.param(2, arg3), __memo_parameter_arg4 = __memo_scope.param(3, arg4);
     if (__memo_scope.unchanged) {
         __memo_scope.cached;
         return;
     }
-    console.log(__memo_parameter_gensym%%_<some_random_number>.value, __memo_parameter_gensym%%_<some_random_number>.value, __memo_parameter_gensym%%_<some_random_number>.value, __memo_parameter_arg4.value);
-    console.log(__memo_parameter_gensym%%_<some_random_number>.value(__memo_context, ((__memo_id) + (<some_random_number>))));
+    console.log(__memo_parameter_arg1.value, __memo_parameter_arg2.value, __memo_parameter_arg3.value, __memo_parameter_arg4.value);
+    console.log(__memo_parameter_arg2.value(__memo_context, ((__memo_id) + (<some_random_number>))));
     {
         __memo_scope.recache();
         return;
