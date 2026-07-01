@@ -1,0 +1,51 @@
+{
+    "blankRestrictions": [],
+    "listItemRules": [
+        {
+            "message": "The 'ListItem' component can only be nested in the 'List,ListItemGroup' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "The component 'ListItemGroup' can only have the child component 'ListItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        },
+        {
+            "message": "The 'ListItemGroup' component can only be nested in the 'List' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        }
+    ],
+    "gridChildRules": [
+        {
+            "message": "The component 'Grid' can only have the child component 'GridItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        }
+    ],
+    "imageChildRules": [
+        {
+            "message": "The component 'Image' can't have any child.",
+            "type": "ERROR",
+            "code": "10905222"
+        }
+    ],
+    "buttonChildRules": [
+        {
+            "message": "The 'Button' component can have only one child component.",
+            "type": "ERROR",
+            "code": "10905220"
+        },
+        {
+            "message": "The Button component with a label parameter can not have any child.",
+            "type": "ERROR",
+            "code": "10905202"
+        }
+    ],
+    "swiperChildRules": [],
+    "panelChildRules": [],
+    "navigationRules": [],
+    "tabContentRules": [],
+    "customChildPassing": []
+}
