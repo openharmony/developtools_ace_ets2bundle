@@ -1,0 +1,56 @@
+{
+    "v2ComponentInV1": [],
+    "v1ComponentInV2": [],
+    "mixedStateTypes": [],
+    "componentReuseV1V2": [
+        {
+            "message": "The struct 'DualReusable' can not be decorated with '@ComponentV2' and '@Component', '@Reusable', '@CustomDialog' at the same time.",
+            "type": "ERROR",
+            "code": "10905229"
+        },
+        {
+            "message": "The '@Reusable' and '@ReusableV2' decoraotrs cannot be applied simultaneously.",
+            "type": "ERROR",
+            "code": "10905241"
+        }
+    ],
+    "v2WithV1Decorators": [
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
+    ],
+    "v1WithV2Decorators": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "observedV2InV1": [
+        {
+            "message": "The type of the '@State' property can not be a class decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905348"
+        }
+    ],
+    "observedInV2": [],
+    "deepNesting": [],
+    "foreachPatterns": []
+}
