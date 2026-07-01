@@ -1,0 +1,44 @@
+{
+    "extendWithMultipleArgs": [],
+    "animatableWithArgs": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ],
+    "stylesWithMultipleArgs": [
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        },
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        }
+    ],
+    "concurrentOnMethod": [
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        }
+    ],
+    "concurrentOnGenerator": [
+        {
+            "message": "'@Concurrent' can not be used on 'Generator' function declaration.",
+            "type": "ERROR",
+            "code": "10905122"
+        }
+    ],
+    "builderGlobalScope": [],
+    "localBuilderUsage": [],
+    "extendOnComponent": [],
+    "validBuilderChain": [],
+    "builderParamChain": []
+}
