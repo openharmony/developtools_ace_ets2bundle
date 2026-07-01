@@ -100,7 +100,7 @@ import {
     classifyPropertyFromInfo,
     classifyPropertyInInnerClassFromInfo,
 } from './property-translators';
-import { PropertyRewriteCache } from './property-translators/cache/propertyRewriteCache';
+import { getPropertyRewriteKey, PropertyRewriteCache } from './property-translators/cache/propertyRewriteCache';
 import { generateBuilderCompatible, insertCompatibleImport } from './interop/builder-interop';
 import { insertInteropComponentImports } from './interop/utils';
 import { generateArkUICompatible } from './interop/interop';
@@ -222,12 +222,12 @@ export class RewriteFactory {
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
         const propertyTranslator: PropertyCachedTranslator | undefined = classifyPropertyFromInfo(node, metadata);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
-        if (!propertyTranslator) {
+        if (!propertyTranslator || !metadata.name) {
             return node;
         }
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1, 2], 'rewriteMember'));
         const newNodes: arkts.AstNode[] = propertyTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(node.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(node, metadata.name), newNodes);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1, 2], 'rewriteMember'));
         return node;
     }
@@ -242,11 +242,11 @@ export class RewriteFactory {
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
         const propertyTranslator = classifyObservedClassPropertyFromInfo(node, metadata);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([1, 1, 1, 1], 'classifyPropertyFromInfo'));
-        if (!propertyTranslator) {
+        if (!propertyTranslator || !metadata.name) {
             return node;
         }
         const newNodes: arkts.AstNode[] = propertyTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(node.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(node, metadata.name), newNodes);
         return node;
     }
 

@@ -33,7 +33,7 @@ import {
 } from './observedV2Trace';
 import { MonitorCacheTranslator } from './monitor';
 import { SyncMonitorCacheTranslator } from './syncMonitor';
-import { PropertyRewriteCache } from './cache/propertyRewriteCache';
+import { getPropertyRewriteKey, PropertyRewriteCache } from './cache/propertyRewriteCache';
 import { ComputedCacheTranslator } from './computed';
 import { ComponentLifecycleCacheTranslator, ComponentLifecycleTranslator } from './componentLifecycle';
 
@@ -192,9 +192,12 @@ export class CacheFactory {
         method: arkts.MethodDefinition,
         metadata: StructMethodInfo | NormalClassMethodInfo
     ): arkts.MethodDefinition {
+        if (!metadata.name) {
+            return method;
+        }
         const monitorTranslator = new MonitorCacheTranslator({ method, methodInfo: metadata });
         const newNodes: arkts.AstNode[] = monitorTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(method, metadata.name), newNodes);
         return method;
     }
 
@@ -202,9 +205,12 @@ export class CacheFactory {
         method: arkts.MethodDefinition,
         metadata: StructMethodInfo | NormalClassMethodInfo
     ): arkts.MethodDefinition {
+        if (!metadata.name) {
+            return method;
+        }
         const syncMonitorTranslator = new SyncMonitorCacheTranslator({ method, methodInfo: metadata });
         const newNodes: arkts.AstNode[] = syncMonitorTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(method, metadata.name), newNodes);
         return method;
     }
 
@@ -212,9 +218,12 @@ export class CacheFactory {
         method: arkts.MethodDefinition,
         metadata: StructMethodInfo | NormalClassMethodInfo
     ): arkts.MethodDefinition {
+        if (!metadata.name) {
+            return method;
+        }
         const computedTranslator = new ComputedCacheTranslator({ method, methodInfo: metadata });
         const newNodes: arkts.AstNode[] = computedTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(method, metadata.name), newNodes);
         return method;
     }
 
@@ -222,9 +231,12 @@ export class CacheFactory {
         method: arkts.MethodDefinition,
         metadata: StructMethodInfo
     ): arkts.MethodDefinition {
+        if (!metadata.name) {
+            return method;
+        }
         const computedTranslator = new ComponentLifecycleCacheTranslator({ method, methodInfo: metadata });
         const newNodes: arkts.AstNode[] = computedTranslator.translateMember();
-        PropertyRewriteCache.getInstance().collectRewriteNodes(method.peer, newNodes);
+        PropertyRewriteCache.getInstance().collectRewriteNodes(getPropertyRewriteKey(method, metadata.name), newNodes);
         return method;
     }
 }
