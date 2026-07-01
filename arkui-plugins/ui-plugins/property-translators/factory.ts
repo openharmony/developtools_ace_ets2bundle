@@ -294,6 +294,20 @@ export class factory {
         }
     }
 
+    static addWatchFuncProperty(propName: string, property: arkts.ClassProperty): arkts.property | undefined {
+        const watchStr: string | undefined = getValueInAnnotation(property, DecoratorNames.WATCH);
+        if (watchStr) {
+            return arkts.factory.createProperty(
+                arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
+                arkts.factory.createIdentifier(propName),
+                factory.createWatchCallback(watchStr),
+                false,
+                false
+            );
+        }
+        return undefined;
+    }
+
     static createOptionalClassProperty(
         options: PropertyOptionalFieldOptions
     ): arkts.ClassProperty {
