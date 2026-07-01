@@ -111,7 +111,7 @@ export type SimpleArray<T> = (Array<T> | ReadonlyArray<T> | Readonly<Array<T>>);
 class Use {
   @Memo() 
   public test(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+    const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (228150357)), 0);
     if (__memo_scope.unchanged) {
       __memo_scope.cached;
       return;

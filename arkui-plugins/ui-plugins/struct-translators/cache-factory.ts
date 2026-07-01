@@ -81,8 +81,6 @@ import {
     PropertyFactoryCallTypeCache,
 } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
-import { useImprovedPlugin } from '../../common/use-improved-memo-plugin';
-import { MemoFunctionKind } from '../../memo-improved';
 
 const OBSERVED_ANY_PROP_MIN_VERSION = 26;
 
@@ -413,13 +411,6 @@ export class CacheFactory {
             const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata, propertyFields);
             addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             newStatements.push(structInvokeMethod);
-            if (useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
-                BuilderLambdaFactory.memoPluginContext.registerScriptFunction(structInvokeMethod.function,  MemoFunctionKind.INTRINSIC);
-                const original = body.find(it => arkts.isMethodDefinition(it) && it.id?.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) as arkts.MethodDefinition | undefined;
-                if (original && BuilderLambdaFactory.globalMemoPluginContext) {
-                    BuilderLambdaFactory.globalMemoPluginContext.registerAdditionalDeclarationRedirect(original.function!.peer, structInvokeMethod.function!.peer)
-                }
-            }
         }
         const newStaticBlock = !metadata.isDecl && !hasStaticBlock ? [UIFactory.createClassStaticBlock()] : [];
         const returnNodes: arkts.AstNode[] = collect(newStatements, ...transformedBody, newStaticBlock);
@@ -591,9 +582,6 @@ export class CacheFactory {
             false,
             false
         );
-        if (useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
-            BuilderLambdaFactory.memoPluginContext.registerCallExpression(intrinsicCall, { kind: MemoFunctionKind.MEMO, argumentsInfo: [false] })
-        }
         return intrinsicCall;
     }
 
@@ -726,13 +714,6 @@ export class CacheFactory {
         if (structType === StructType.STRUCT && !!metadata.isDecl) {
             const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata);
             addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
-            if (useImprovedPlugin && BuilderLambdaFactory.memoPluginContext) {
-                BuilderLambdaFactory.memoPluginContext.registerScriptFunction(structInvokeMethod.function,  MemoFunctionKind.INTRINSIC);
-                const original = definition.body?.find(it => arkts.isMethodDefinition(it) && it.id?.name === BuilderLambdaNames.ORIGIN_METHOD_NAME) as arkts.MethodDefinition | undefined;
-                if (original && BuilderLambdaFactory.globalMemoPluginContext) {
-                    BuilderLambdaFactory.globalMemoPluginContext.registerAdditionalDeclarationRedirect(original.function!.peer, structInvokeMethod.function!.peer)
-                }
-            }
             const newDefinitionStatements = [...definition.body, structInvokeMethod];
             definition.setBody(newDefinitionStatements);
             return node;

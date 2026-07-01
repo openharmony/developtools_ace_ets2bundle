@@ -27,7 +27,6 @@ import { AstNodeRevisitCache } from '../../common/cache/astNodeRevisitCache';
 import { AstNodePointer } from '../../common/safe-types';
 import { MemoFunctionCollector } from './function-collector';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
-import { disableMemoNodeCache } from "../../common/use-improved-memo-plugin";
 
 export enum MemoNames {
     MEMO = 'memo',
@@ -965,7 +964,7 @@ export function collectMemoFromCallExpression(node: arkts.CallExpression): boole
         isCollected = collectCallWithDeclaredClassProperty(node, decl);
     }
     if (isCollected && arkts.isTSAsExpression(node.callee) && node.callee.typeAnnotation) {
-        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)?.metadata?.hasBuilder;
+        const hasBuilder = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).get(node)!.metadata?.hasBuilder;
         NodeCacheFactory.getInstance()
             .getCache(NodeCacheNames.MEMO)
             .collect(node.callee.typeAnnotation, { hasBuilder });
@@ -1069,9 +1068,6 @@ export function collectMemoScriptFunctionBody(
     gensymCount: number,
     disableCollectReturn?: boolean
 ): void {
-    if (disableMemoNodeCache) {
-        return
-    }
     const collector = new MemoFunctionCollector();
     body.statements.forEach((st, index) => {
         if (index < gensymCount) {

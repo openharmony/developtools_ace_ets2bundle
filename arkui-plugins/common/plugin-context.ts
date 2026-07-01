@@ -16,26 +16,85 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as arkts from '@koalaui/libarkts';
+import { FileManager } from './file-manager';
 
 // This is the same plugin-context in the build-system.
-export class PluginContext extends arkts.PluginContextImpl {}
-export type DependentModuleConfig = arkts.DependentModuleConfig
-// export type ProjectConfig = arkts.ProjectConfig
-export type PluginHandlerFunction = arkts.PluginHandlerFunction;
-export type PluginHandlerObject = arkts.PluginHandlerObject;
-export type PluginHandler = arkts.PluginHandler;
-export type Plugins = arkts.Plugins
-export type PluginState = arkts.PluginState
-export type PluginExecutor = arkts.PluginExecutor
-export type BuildConfig = arkts.BuildConfig
+export class PluginContext {
+    private ast: arkts.ETSModule | undefined;
+    private program: arkts.Program | undefined;
+    private projectConfig: ProjectConfig | undefined;
+    private contextPtr:  arkts.KNativePointer | undefined;
+    private codingFilePath: string | undefined;
+    private fileManager: FileManager | undefined;
 
-export interface ProjectConfig extends arkts.ProjectConfig {
-    externalApiPaths: string[];
-    externalApiPath: string;
-    compatibleSdkVersion?: number;
-    debugLine?: boolean;
-    aceProfilePath?: string;// 获取意图7.0 缓存文件存放路径
-    uiSyntaxPluginEnabled?: boolean;
+    constructor() {
+        this.ast = undefined;
+        this.program = undefined;
+        this.projectConfig = undefined;
+        this.contextPtr = undefined;
+        this.codingFilePath = undefined;
+        this.fileManager = undefined;
+    }
+
+    public getFileManager(): FileManager | undefined {
+        return this.fileManager;
+    }
+
+    /**
+     * @deprecated
+     */
+    public setArkTSAst(ast: arkts.ETSModule): void {
+        this.ast = ast;
+    }
+
+    /**
+     * @deprecated
+     */
+    public getArkTSAst(): arkts.ETSModule | undefined {
+        return this.ast;
+    }
+
+    /**
+     * @deprecated
+     */
+    public setArkTSProgram(program: arkts.Program): void {
+        this.program = program;
+    }
+
+    /**
+     * @deprecated
+     */
+    public getArkTSProgram(): arkts.Program | undefined {
+        return this.program;
+    }
+
+    public setProjectConfig(projectConfig: ProjectConfig): void {
+        this.projectConfig = projectConfig;
+    }
+
+    public getProjectConfig(): ProjectConfig | undefined {
+        return this.projectConfig;
+    }
+
+    public setContextPtr(ptr: arkts.KNativePointer): void {
+        this.contextPtr = ptr;
+    }
+
+    public getContextPtr():  arkts.KNativePointer | undefined {
+        return this.contextPtr;
+    }
+
+    public setCodingFilePath(codingFilePath: string): void {
+        this.codingFilePath = codingFilePath;
+    }
+
+    public getCodingFilePath(): string | undefined {
+        return this.codingFilePath;
+    }
+
+    public isCoding(): boolean {
+        return this.codingFilePath !== undefined;
+    }
 }
 
 /**
@@ -274,6 +333,79 @@ function addRawfileResourceToSet(rawfileSet: Set<string>, file: string, resource
     } else {
         rawfileSet.add(file);
     }
+}
+
+export interface DependentModuleConfig {
+    packageName: string;
+    moduleName: string;
+    moduleType: string;
+    modulePath: string;
+    sourceRoots: string[];
+    entryFile: string;
+    language: string;
+    declFilesPath?: string;
+    dependencies?: string[];
+}
+
+export interface ProjectConfig {
+    bundleName: string;
+    moduleName: string;
+    cachePath: string;
+    dependentModuleList: DependentModuleConfig[];
+    appResource: string;
+    rawFileResource: string;
+    buildLoaderJson: string;
+    hspResourcesMap: boolean;
+    compileHar: boolean;
+    byteCodeHar: boolean;
+    uiTransformOptimization: boolean;
+    resetBundleName: boolean;
+    allowEmptyBundleName: boolean;
+    moduleType: string;
+    moduleRootPath: string;
+    aceModuleJsonPath: string;
+    ignoreError: boolean;
+    projectPath: string;
+    projectRootPath: string;
+    integratedHsp: boolean;
+    frameworkMode?: string;
+    externalApiPaths: string[];
+    externalApiPath: string;
+    compatibleSdkVersion?: number;
+    debugLine?: boolean;
+    aceProfilePath?: string;// 获取意图7.0 缓存文件存放路径
+}
+
+export type PluginHandlerFunction = () => void;
+
+export type PluginHandlerObject = {
+    order: 'pre' | 'post' | undefined;
+    handler: PluginHandlerFunction;
+};
+
+export type PluginHandler = PluginHandlerFunction | PluginHandlerObject;
+
+export interface Plugins {
+    name: string;
+    afterNew?: PluginHandler;
+    parsed?: PluginHandler;
+    scopeInited?: PluginHandler;
+    checked?: PluginHandler;
+    lowered?: PluginHandler;
+    asmGenerated?: PluginHandler;
+    binGenerated?: PluginHandler;
+    clean?: PluginHandler;
+}
+
+export type PluginState = keyof Omit<Plugins, 'name'>;
+
+export type PluginExecutor = {
+    name: string;
+    handler: PluginHandlerFunction;
+};
+
+export interface BuildConfig {
+    compileFiles: string[];
 }
 
 // RESOURCE TYPES

@@ -86,14 +86,14 @@ function main() {}
   }
   @Memo() 
   public customBuilder() {}
-  private __backing_customBuilderParam?: (@Memo() (()=> void) | undefined);
+  private __backing_customBuilderParam?: ((()=> void) | undefined);
   public get customBuilderParam(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() (()=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam1?: (@Memo() (()=> void) | undefined);
+  private __backing_customBuilderParam1?: ((()=> void) | undefined);
   public get customBuilderParam1(): @Memo() (()=> void) {
     return this.__backing_customBuilderParam1!;
   }
@@ -231,14 +231,14 @@ function main() {}
       return;
     }
   }
-  private __backing_customBuilderParam?: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_customBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get customBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam!;
   }
   public set customBuilderParam(value: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)) {
     this.__backing_customBuilderParam = value;
   }
-  private __backing_customBuilderParam1?: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_customBuilderParam1?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get customBuilderParam1(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_customBuilderParam1!;
   }

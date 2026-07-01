@@ -48,7 +48,7 @@ import {
     OptionsPropertyInfo,
     flatObjectExpressionToEntries,
     BuilderLambdaStyleBodyInfo,
-    getDeclaredSetAttributeMethodName,
+    getDeclaredSetAttribtueMethodName,
     getTransformedComponentName,
     findReuseId,
     getStructCalleeInfoFromCallee,
@@ -97,8 +97,6 @@ import { MetaDataCollector } from '../../common/metadata-collector';
 import { checkIsTrailingLambdaInLastParam, isForEach, isNavigationOrNavDestination } from '../../collectors/ui-collectors/records';
 import { InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
-import { GlobalMemoPluginContext, MemoFunctionKind, MemoPluginContext } from '../../memo-improved';
-import { useImprovedPlugin } from '../../common/use-improved-memo-plugin';
 
 interface CreateStyleLambdaArgumentOptions {
     shouldApplyAttribute?: boolean;
@@ -106,9 +104,6 @@ interface CreateStyleLambdaArgumentOptions {
 }
 
 export class factory {
-    static globalMemoPluginContext?: GlobalMemoPluginContext
-    static memoPluginContext?: MemoPluginContext
-
     /**
      * update `@ComponentBuilder` decorated method.
      */
@@ -123,8 +118,7 @@ export class factory {
         const ident: arkts.Identifier = node.id!;
         const name: string = ident.name;
         const isFunctionCall: boolean = name !== BuilderLambdaNames.ORIGIN_METHOD_NAME;
-        const funcParams: readonly arkts.ETSParameterExpression[] = func.getParamsCasted();
-        const newParams: arkts.Expression[] = [...prefixArgs, ...funcParams];
+        const newParams: arkts.Expression[] = [...prefixArgs, ...func.params];
         const updateFunc = arkts.factory
             .updateScriptFunction(
                 func,
@@ -138,7 +132,7 @@ export class factory {
                 newName ? arkts.factory.createIdentifier(newName) : func.id,
                 newAnno
             );
-        return  arkts.factory.updateMethodDefinition(
+        const updated =  arkts.factory.updateMethodDefinition(
             node,
             node.kind,
             newName ? arkts.factory.createIdentifier(newName) : node.id,
@@ -150,6 +144,8 @@ export class factory {
             false,
             overloads
         );
+        NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(updated.value!);
+        return updated;
     }
 
     /**
@@ -217,7 +213,7 @@ export class factory {
         name: string,
         hasReceiver?: boolean
     ): arkts.CallExpression {
-        const methodName = arkts.factory.createIdentifier(getDeclaredSetAttributeMethodName(name));
+        const methodName = arkts.factory.createIdentifier(getDeclaredSetAttribtueMethodName(name));
         if (!hasReceiver) {
             return arkts.factory.createCallExpression(
                 arkts.factory.createMemberExpression(
@@ -272,9 +268,6 @@ export class factory {
             lambdaBodyInfo.structEntryStroage = structInfo.structEntryStroage.str;
         }
         const lambdaBody = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
-        if (useImprovedPlugin && factory.memoPluginContext) {
-            factory.memoPluginContext.registerAdditionalIdentifier(lambdaBody)
-        }
         InitialBuilderLambdaBodyCache.getInstance().collect({ node: lambdaBody });
         if (isFunctionCall) {
             lambdaBodyInfo.lambdaBody = this.createComponentInitLambdaBody(lambdaBody, name, hasReceiver);
@@ -317,9 +310,6 @@ export class factory {
         );
         const debugLineStatement = sourceNode && !shouldSkipDebugLine ? factory.createDebugLineStatement(sourceNode) : undefined;
         const instanceIdentifier = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
-        if (useImprovedPlugin && factory.memoPluginContext) {
-            factory.memoPluginContext.registerAdditionalIdentifier(instanceIdentifier)
-        }
         InitialBuilderLambdaBodyCache.getInstance().collect({ node: instanceIdentifier });
         const applyAttributesFinish = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
@@ -389,9 +379,6 @@ export class factory {
         const column = sourceNode.startPosition.getCol();
         const locationString = `${formattedFilePath}(${line}:${column})`;
         const instanceIdentifier = arkts.factory.createIdentifier(BuilderLambdaNames.STYLE_ARROW_PARAM_NAME);
-        if (useImprovedPlugin && factory.memoPluginContext) {
-            factory.memoPluginContext.registerAdditionalIdentifier(instanceIdentifier)
-        }
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(instanceIdentifier);
         const debugLineStatement = arkts.factory.createExpressionStatement(
             arkts.factory.createCallExpression(
@@ -516,9 +503,7 @@ export class factory {
             func.flags,
             func.modifierFlags,
             func.id,
-            func.annotations,
-            func.getSignaturePointer(),
-            func.getPreferredReturnTypePointer(),
+            func.annotations
         );
         return arkts.factory.updateArrowFunctionExpression(arg, updateFunc, arg.annotations);
     }
@@ -838,10 +823,6 @@ export class factory {
     ): (arkts.Expression | undefined)[] {
         const filteredModifiedArgs = filterDefined(modifiedArgs);
         const sourceName: string | undefined = moduleName ?? MetaDataCollector.getInstance().externalSourceName;
-        // Handle 'NavDestinationImpl' and 'NavigationImpl' the same way
-        if (typeName && typeName.endsWith("Impl")) {
-            typeName = typeName.slice(0, -4);
-        }
         if (isNavigationOrNavDestination(typeName, sourceName)) {
             const isUserCreateStack = typeName === InnerComponentNames.NAVIGATION
                 ? filteredModifiedArgs.length > 0 && !arkts.isUndefinedLiteral(filteredModifiedArgs.at(0)!)
@@ -1023,33 +1004,15 @@ export class factory {
         if (!funcName) {
             return undefined;
         }
-        // arkts.factory.update* is needed for compiler-infra memo
         if (arkts.isIdentifier(node) && !!declInfo.moduleName) {
             ImportCollector.getInstance().collectSource(funcName, declInfo.moduleName);
             ImportCollector.getInstance().collectImport(funcName);
-            if (useImprovedPlugin) {
-                node.setName(funcName);
-                return node;
-            }
-            return arkts.factory.updateIdentifier(node, funcName);
+            return arkts.factory.createIdentifier(funcName);
         }
-        if (arkts.isMemberExpression(node) && arkts.isIdentifier(node.property)) {
-            let callee = node.object;
-            if (declInfo.superName !== undefined) {
-                declInfo.calleeName = arkts.isIdentifier(node.object) ? node.object.name : undefined;
-                callee = arkts.factory.createIdentifier(declInfo.superName);
-            }
-            if (useImprovedPlugin) {
-                if (declInfo.superName !== undefined && arkts.isIdentifier(node.object)) {
-                    node.object.setName(declInfo.superName);
-                }
-                node.property.setName(funcName);
-                return node;
-            }
-            return arkts.factory.updateMemberExpression(
-                node,
-                callee,
-                arkts.factory.updateIdentifier(node.property, funcName),
+        if (arkts.isMemberExpression(node)) {
+            return arkts.factory.createMemberExpression(
+                declInfo.superName !== undefined ? arkts.factory.createIdentifier(declInfo.superName) : node.object,
+                arkts.factory.createIdentifier(funcName),
                 arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS,
                 node.isComputed,
                 node.isOptional
@@ -1190,9 +1153,6 @@ export class factory {
         const isTrailingCall = leaf.isTrailingCall;
         const newNode = arkts.factory.updateCallExpression(node, replace, filterDefined(args), leaf.typeParams, node.isOptional, node.hasTrailingComma, node.trailingBlock);
         factory.setBuilderLambdaRange(isTrailingCall, newNode, node);
-        if (!declInfo.isFunctionCall && useImprovedPlugin && factory.memoPluginContext) {
-            factory.memoPluginContext.registerCallExpression(newNode, { kind: MemoFunctionKind.MEMO, argumentsInfo: [false] })
-        }
         InitialBuilderLambdaBodyCache.getInstance().updateAll().reset();
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newNode);
         return newNode;
@@ -1550,7 +1510,7 @@ export class factory {
      * generate declared set method from `ComponentRecord`
      */
     static createDeclaredSetMethodFromRecord(record: ComponentRecord): arkts.MethodDefinition {
-        const name = getDeclaredSetAttributeMethodName(record.name);
+        const name = getDeclaredSetAttribtueMethodName(record.name);
         const hasReceiver = !!record.hasReceiver;
         const params = record.paramRecords.map((record) => TypeFactory.createParameterFromRecord(record));
         const typeParams = record.typeParameters?.map((p) => TypeFactory.createTypeParameterFromRecord(p));
@@ -1668,7 +1628,6 @@ export class factory {
             modifiers,
         });
         addMemoAnnotation(newMethod.function);
-        factory.globalMemoPluginContext?.registerAdditionalDeclarationRedirect(record.functionPeer, newMethod.function.peer)
         NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(newMethod);
         return newMethod;
     }

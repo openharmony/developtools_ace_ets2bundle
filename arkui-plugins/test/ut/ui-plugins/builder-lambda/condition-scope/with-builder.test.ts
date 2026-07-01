@@ -198,7 +198,7 @@ function ParamBuilder(@Builder() @Memo() @MemoSkip() gensym%%_1?: (()=> void)): 
     throw new Error("Declare interface");
   }
 
-  private __backing_myBuilderParam?: (@Memo() (()=> void) | undefined);
+  private __backing_myBuilderParam?: ((()=> void) | undefined);
 
   public get myBuilderParam(): @Memo() (()=> void) {
     return this.__backing_myBuilderParam!;
@@ -545,7 +545,7 @@ function ParamBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_
     throw new Error("Declare interface");
   }
 
-  private __backing_myBuilderParam?: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
+  private __backing_myBuilderParam?: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined);
   public get myBuilderParam(): @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) {
     return this.__backing_myBuilderParam!;
   }

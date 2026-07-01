@@ -144,11 +144,11 @@ export type CustomComponentInfo = {
     name: string;
     isDecl: boolean;
     isCustomComponentClass: boolean;
-    annotations: CustomComponentAnnotations;
+    annotations: CustomComponentAnontations;
     lastBuilderParam?: string;
 };
 
-export type CustomComponentAnnotations = {
+export type CustomComponentAnontations = {
     component?: arkts.AnnotationUsage;
     componentV2?: arkts.AnnotationUsage;
     entry?: arkts.AnnotationUsage;
@@ -226,7 +226,7 @@ export function collectCustomComponentScopeInfo(
     if (!isStruct && !isCustomComponentClass) {
         return undefined;
     }
-    let annotations: CustomComponentAnnotations = {};
+    let annotations: CustomComponentAnontations = {};
     if (!isCustomComponentClass) {
         let isCustomComponent: boolean = false;
         for (const anno of definition.annotations) {
@@ -253,11 +253,11 @@ export function collectCustomComponentScopeInfo(
         name: definition.ident.name,
         isDecl,
         isCustomComponentClass,
-        annotations: annotations as CustomComponentAnnotations,
+        annotations: annotations as CustomComponentAnontations,
     };
 }
 
-function checkGlobalReuseAnnotation(annotations: CustomComponentAnnotations): void {
+function checkGlobalReuseAnnotation(annotations: CustomComponentAnontations): void {
     const componentAnno = annotations.component ?? annotations.componentV2;
     if (!componentAnno || componentAnno.properties.length === 0) {
         return;
@@ -426,7 +426,7 @@ export function isCustomDialogControllerOptions(
     );
 }
 
-export function getComponentExtendsName(annotations: CustomComponentAnnotations, componentType: ComponentType): string {
+export function getComponentExtendsName(annotations: CustomComponentAnontations, componentType: ComponentType): string {
     if (!!annotations.reusable) {
         componentType.hasReusable ||= true;
     } else if (!!annotations.reusableV2) {

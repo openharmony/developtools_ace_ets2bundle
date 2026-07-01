@@ -42,12 +42,9 @@ export class MemoNodeCache {
     private cacheMap: Map<KNativePointer, AstNodeCacheValue>;
     private static instance: MemoNodeCache;
     static disableMemoNodeCache = false;
-    private _shouldCollectUpdate: boolean = false;
-    private nodesToUpdate: Set<KNativePointer>;
 
     private constructor() {
         this.cacheMap = new Map();
-        this.nodesToUpdate = new Set();
     }
 
     static getInstance(): MemoNodeCache {
@@ -81,9 +78,6 @@ export class MemoNodeCache {
         if (MemoNodeCache.disableMemoNodeCache) {
             return
         }
-        if (this._shouldCollectUpdate) {
-            this._collectNodesToUpdate(node, node.parent);
-        }
         const peer = node.peer;
         const type = global.generatedEs2panda._AstNodeTypeConst(global.context, node.peer);
         let currMetadata: AstNodeCacheValueMetadata | undefined = metadata ?? {};
@@ -97,52 +91,32 @@ export class MemoNodeCache {
     }
 
     refresh(original: AstNode, node: AstNode): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
         let metadata: AstNodeCacheValueMetadata | undefined;
         if (this.has(original)) {
             metadata = this.get(original)?.metadata;
             this.cacheMap.delete(original.peer);
         }
-        this._collectNodesToUpdate(node);
         this.collect(node, metadata);
     }
 
     isCollected(): boolean {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return false
-        }
         return this._isCollected;
     }
 
     has(node: AstNode): boolean {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return false
-        }
         return this.cacheMap.has(node.peer);
     }
 
     get(node: AstNode): AstNodeCacheValue | undefined {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return undefined
-        }
         return this.cacheMap.get(node.peer);
     }
 
     clear(): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
         this.cacheMap.clear();
-        this.nodesToUpdate.clear();
         this._isCollected = false;
     }
 
     visualize(): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
         Array.from(this.cacheMap.values()).forEach(({ peer, type, metadata }) => {
             const src = global.generatedEs2panda._AstNodeDumpEtsSrcConst(global.context, peer)
             console.log(
@@ -150,67 +124,6 @@ export class MemoNodeCache {
                 unpackString(src)
             );
         });
-    }
-
-    shouldUpdate(node: AstNode): boolean {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return false
-        }
-        if (!this._shouldCollectUpdate) {
-            return true;
-        }
-        return this.nodesToUpdate.has(node.peer);
-    }
-
-    refreshUpdate(original: AstNode, node: AstNode): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
-        if (this.shouldUpdate(original)) {
-            this.nodesToUpdate.delete(original.peer);
-        }
-        this._collectNodesToUpdate(node, original.parent);
-    }
-
-    shouldUpdateByPeer(peer: KNativePointer): boolean {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return false
-        }
-        if (!this._shouldCollectUpdate) {
-            return true;
-        }
-        return this.nodesToUpdate.has(peer);
-    }
-
-    addNodeToUpdateByPeer(peer: KNativePointer): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
-        if (!this._isCollected && !this._shouldCollectUpdate) {
-            return;
-        }
-        this.nodesToUpdate.add(peer);
-    }
-
-    shouldCollectUpdate(shouldCollectUpdate: boolean): this {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return this
-        }
-        this._shouldCollectUpdate = shouldCollectUpdate;
-        return this;
-    }
-
-    private _collectNodesToUpdate(node: AstNode, parent?: AstNode): void {
-        if (MemoNodeCache.disableMemoNodeCache) {
-            return
-        }
-        this.nodesToUpdate.add(node.peer);
-        let currParent: AstNode | undefined = parent;
-        while (!!currParent && !this.nodesToUpdate.has(currParent.peer)) {
-            this.nodesToUpdate.add(currParent.peer);
-            currParent = currParent.parent;
-        }
-        this._isCollected = true;
     }
 }
 

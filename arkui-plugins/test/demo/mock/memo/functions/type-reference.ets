@@ -30,7 +30,7 @@ export declare function A<T>(): Attribute<T>
 
 @Memo
 function func<T>(): ItemBuilder<T> {
-  return @Memo (item: Item<T>): void => {};
+  return (item: Item<T>): void => {};
 }
 
 class B {

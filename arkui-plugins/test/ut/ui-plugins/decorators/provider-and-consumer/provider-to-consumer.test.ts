@@ -284,7 +284,7 @@ function main() {}
       ForEachImpl<User>(@Memo() ((instance: ForEachAttribute): void => {
         instance.setForEachOptions<User>((() => {
           return this.users;
-        }), @Memo() ((item: User) => {
+        }), ((item: User) => {
           ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
             instance.setColumnOptions(undefined);
             instance.applyAttributesFinish();

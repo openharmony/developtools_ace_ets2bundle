@@ -71,7 +71,7 @@ function main() {}
 class MyStateSample {
     @Memo() 
     public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type) {
-        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (<some_random_number>)), 0);
+        const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (263357132)), 0);
         if (__memo_scope.unchanged) {
             __memo_scope.cached;
             return;

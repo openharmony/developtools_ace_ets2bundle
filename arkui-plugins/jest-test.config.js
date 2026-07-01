@@ -43,7 +43,6 @@ module.exports = {
         'collectors/**',
         'common/**',
         'memo-plugins/**',
-        'memo-improved/**',
         'ui-plugins/**'
     ],
     transformIgnorePatterns: ['/node_modules/'],

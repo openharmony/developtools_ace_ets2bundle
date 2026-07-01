@@ -171,7 +171,7 @@ function main() {}
   @Memo() 
   public closerBuilder() {}
 
-  private __backing_closer?: (@Memo() (()=> void) | undefined);
+  private __backing_closer?: ((()=> void) | undefined);
 
   public get closer(): @Memo() (()=> void) {
     return this.__backing_closer!;
