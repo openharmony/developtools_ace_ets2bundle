@@ -64,8 +64,8 @@ export const ISPRERENDER: string = 'isPreRender';
 export const RECYCLEFLAG: string = 'recycFlag';
 export const RECYCLENODEELMTID: string = 'recycleNodeElmtId';
 export const CURRENTLY_RENDERED_ELMTIDSTACK: string = 'currentlyRenderedElmtIdStack_';
-export const PUSH_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___pushRecycleElmtIdToRenderStack';
-export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '___popRecycleElmtIdFromRenderStack';
+export const PUSH_RECYCLE_ELMTID_TO_RENDERSTACK: string = '__pushRecycleElmtIdToRenderStack__Internal';
+export const POP_RECYCLE_ELMTID_TO_RENDERSTACK: string = '__popRecycleElmtIdFromRenderStack__Internal';
 export const SHARED: string = 'shared';
 export const PERINSTANCE: string = 'perInstance';
 
@@ -277,8 +277,8 @@ export const CREATE_PROP_METHOD: string = 'createProp';
 export const CREATE_LINK_METHOD: string = 'createLink';
 export const CREATE_OBSERVABLE_OBJECT_METHOD: string = 'createObservableObject';
 
-export const RESET_STATE_VARS_ON_REUSE: string = 'resetStateVarsOnReuse';
-export const RE_INITIALIZE_CONSUME: string = 'reInitializeConsume';
+export const RESET_STATE_VARS_ON_REUSE: string = '__resetStateVarsOnReuse__Internal';
+export const RE_INITIALIZE_CONSUME: string = '__reInitializeConsume__Internal';
 export const OBJECT_KEYWORD: string = 'Object';
 export const RESET_SOURCE: string = 'resetSource';
 export const OWNER: string = 'owner';

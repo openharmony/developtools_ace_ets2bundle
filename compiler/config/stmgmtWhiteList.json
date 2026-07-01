@@ -325,6 +325,12 @@
         "providedVars__",
         "reconnectConsume__",
         "delayedWatchedProps__",
-        "__getOrCreateDelayedWatchedProps__Internal"
+        "__getOrCreateDelayedWatchedProps__Internal",
+          "__resetStateVarsOnReuse__Internal",
+        "__reInitializeConsume__Internal",
+        "__pushRecycleElmtIdToRenderStack__Internal",
+        "__popRecycleElmtIdFromRenderStack__Internal",
+        "__reusePool__Internal",
+        "__ReusePool__Internal"
     ]
 }
