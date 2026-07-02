@@ -15,15 +15,17 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { findAndCollectUINodeInPostOrder, findAndCollectUINodeInPreOrder } from './factory';
+import { CollectFactory as UIFactory } from './factory';
 import { UICollectMetadata } from './shared-types';
 import { CallRecordCollector } from './call-record-collector';
 import { ValidatorBuilder } from './validators';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
 import { LogCollector } from '../../common/log-collector';
-import { matchPrefix } from '../../common/arkts-utils';
+import { isETSGlobalClass, isNamespace, matchPrefix } from '../../common/arkts-utils';
 import { LINTER_EXCLUDE_EXTERNAL_SOURCE_PREFIXES } from '../../common/predefines';
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { RecordBuilder } from './records';
+import { isExportWithinScope, NamespaceCollector } from '../namespace-collector';
 
 export interface UIVisitorOptions extends VisitorOptions {
     shouldIgnoreDecl?: boolean;
@@ -49,6 +51,9 @@ export class UIVisitor extends AbstractVisitor {
     }
 
     get shouldCheckUISyntax(): boolean {
+        if (this.isDeclaration) {
+            return false;
+        }
         return this._shouldCheckUISyntax ?? false;
     }
 
@@ -78,12 +83,84 @@ export class UIVisitor extends AbstractVisitor {
 
     getMetadata(): UICollectMetadata {
         return {
+            isDeclaration: this.isDeclaration,
             isExternal: this.isExternal,
             externalSourceName: this.externalSourceName,
             program: this.program,
             shouldIgnoreDecl: this.shouldIgnoreDecl,
             shouldHandleInsightIntent: this.shouldHandleInsightIntent
         };
+    }
+
+    private preOrderMethodVisitor(node: arkts.MethodDefinition): arkts.MethodDefinition {
+        if (arkts.hasModifierFlag(node, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PRIVATE)) {
+            return node;
+        }
+        node.overloads.forEach((method) => {
+            this.preOrderMethodVisitor(method);
+        });
+        node.function.params.forEach((param) => {
+            if (arkts.isETSParameterExpression(param)) {
+                UIFactory.findAndCollectParameter(param, this.getMetadata());
+            }
+        });
+        return node;
+    }
+
+    private visitETSModule<T extends arkts.ETSModule | arkts.ClassDeclaration>(node: T): T {
+        const isNamespaceAstNode = isNamespace(node);
+        if (isNamespaceAstNode) {
+            NamespaceCollector.getInstance().collect(this.program, node);
+            if (!NamespaceCollector.getInstance().isExported) {
+                NamespaceCollector.getInstance().reset();
+                return node;
+            }
+        }
+        const statements = arkts.isETSModule(node) ? node.statements : node.definition?.body;
+        statements?.forEach((st) => {
+            if (arkts.isClassDeclaration(st) && st.definition?.isEnumTransformed) {
+                return;
+            }
+            findAndCollectUINodeInPreOrder(node, this.getMetadata());
+            if (arkts.isClassDeclaration(st) && isNamespace(st)) {
+                this.visitETSModule(st);
+            } else if (arkts.isClassDeclaration(st)) {
+                const definition = st.definition;
+                const isGlobalClass = isETSGlobalClass(definition);
+                if (isGlobalClass || isExportWithinScope(this.program, st)) {
+                    definition?.body.forEach((it) => {
+                        if (arkts.isMethodDefinition(it)) {
+                            this.preOrderMethodVisitor(it);
+                        } else {
+                            findAndCollectUINodeInPostOrder(it, this.getMetadata());
+                        }
+                    });
+                }
+            } else if (arkts.isTSInterfaceDeclaration(st)) {
+                if (isExportWithinScope(this.program, st)) {
+                    st.body?.body.forEach((it) => {
+                        if (arkts.isMethodDefinition(it)) {
+                            this.preOrderMethodVisitor(it);
+                        } else {
+                            findAndCollectUINodeInPostOrder(it, this.getMetadata());
+                        }
+                    });
+                }
+            } else {
+                findAndCollectUINodeInPostOrder(st, this.getMetadata());
+            }
+        });
+        if (isNamespaceAstNode) {
+            NamespaceCollector.getInstance().reset();
+        }
+        return node;
+    }
+
+    declarationVisitor(node: arkts.AstNode): arkts.AstNode {
+        if (!arkts.isETSModule(node)) {
+            return node;
+        }
+        return this.visitETSModule(node);
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {

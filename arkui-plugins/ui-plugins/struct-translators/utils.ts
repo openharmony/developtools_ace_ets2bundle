@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
 import * as arkts from '@koalaui/libarkts';
 import { CustomComponentInfo, isKnownMethodDefinition } from '../utils';
 import { matchPrefix } from '../../common/arkts-utils';
@@ -36,6 +34,11 @@ import { DeclarationCollector } from '../../common/declaration-collector';
 import { ProjectConfig, ResourceList } from '../../common/plugin-context';
 import { LogCollector } from '../../common/log-collector';
 import { StructAnnotationInfo } from '../../collectors/ui-collectors/records';
+import { MetaDataCollector } from '../../common/metadata-collector';
+import {
+    CustomComponentInfo as CustomComponentRecordInfo,
+    NormalClassInfo,
+} from '../../collectors/ui-collectors/records';
 import { hasDecorator } from '../property-translators/utils';
 
 export enum StructType {
@@ -96,18 +99,6 @@ export function getCustomComponentNameFromInfo(info: CustomComponentScopeInfo): 
 
 export function getResourceParams(id: number, type: number, params: arkts.Expression[]): ResourceParameter {
     return { id, type, params };
-}
-
-/**
- * Determine whether it is ETSGLOBAL class.
- *
- * @param node class declaration node
- */
-export function isEtsGlobalClass(node: arkts.ClassDeclaration): boolean {
-    if (node.definition?.ident?.name === 'ETSGLOBAL') {
-        return true;
-    }
-    return false;
 }
 
 /**
@@ -418,4 +409,12 @@ export function processFromStructInfo(annotationInfo: StructAnnotationInfo | und
         isFromComponentV2: !!annotationInfo?.hasComponentV2 || !!annotationInfo?.hasReusableV2,
         isFromReusable: !!annotationInfo?.hasReusable || !!annotationInfo?.hasReusableV2
     }
+}
+
+export function checkIsDeclFromStructInfo(info: CustomComponentRecordInfo | undefined): boolean {
+    return !!MetaDataCollector.getInstance().isDeclaration || !!info?.isDecl;
+}
+
+export function checkIsDeclFromNormalClassInfo(info: NormalClassInfo | undefined): boolean {
+    return !!MetaDataCollector.getInstance().isDeclaration || !!info?.isDecl;
 }

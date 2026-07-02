@@ -34,6 +34,7 @@ import {
 import { ClassScopeInfo } from '../struct-translators/utils';
 import { factory } from './factory';
 import { factory as uiFactory } from '../ui-factory';
+import { MetaDataCollector } from '../../common/metadata-collector';
 
 export function createAddRef(
     this: IObservedTrackTranslator,
@@ -247,7 +248,8 @@ export class ObservedTrackTranslator extends ObservedPropertyTranslator implemen
     constructor(options: ObservedPropertyTranslatorOptions) {
         super(options);
         this.isStatic = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC);
-        this.isDecl = arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        this.isDecl = MetaDataCollector.getInstance().isDeclaration ||
+ 	        arkts.hasModifierFlag(this.property, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
         this.isTracked = hasDecorator(this.property, this.traceDecorator);
         this.className = this.classScopeInfo.className;
         this.hasMetaField = this.isTracked; // meta field is generated only if property is @Track
@@ -308,9 +310,10 @@ export class ObservedTrackCachedTranslator
 
     constructor(options: ObservedPropertyCachedTranslatorOptions) {
         super(options);
+        this.isDecl = !!MetaDataCollector.getInstance().isDeclaration;
         if (!!this.propertyInfo.modifiers) {
             this.isStatic = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-            this.isDecl = (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+            this.isDecl ||= (this.propertyInfo.modifiers & arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE) === arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         }
         this.isTracked = !!this.propertyInfo.annotationInfo?.hasTrack;
         this.className = this.propertyInfo.classInfo?.name!;

@@ -65,6 +65,7 @@ import {
 } from './memo-cache-factory';
 import { NodeCacheNames } from '../common/predefines';
 import { NodeCacheFactory } from '../common/node-cache';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 interface ScopeInfo extends MemoInfo {
     regardAsSameScope?: boolean;
@@ -103,6 +104,11 @@ export class FunctionTransformer extends AbstractVisitor {
 
     private scopes: ScopeInfo[] = [];
     private stable: number = 0;
+
+    init(): void {
+        MetaDataCollector.getInstance()
+            .setIsDeclaration(this.isDeclaration);
+    }
 
     reset() {
         super.reset();

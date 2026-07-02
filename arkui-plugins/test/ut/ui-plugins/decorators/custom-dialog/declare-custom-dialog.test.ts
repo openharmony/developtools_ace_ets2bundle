@@ -185,7 +185,7 @@ function main() {}
   public __options_has_text?: boolean;
   public hh?: string;
   public __options_has_hh?: boolean;
-  public constructor() {}
+  public constructor()
   
 }
 

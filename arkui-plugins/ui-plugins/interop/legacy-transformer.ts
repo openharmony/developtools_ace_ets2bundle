@@ -16,9 +16,13 @@
 import * as arkts from '@koalaui/libarkts';
 import { AbstractVisitor, VisitorOptions } from '../../common/abstract-visitor';
 import { InteroperAbilityNames, InteropInternalNames } from './predefines';
-import { getCustomComponentOptionsName } from '../utils';
-import { factory } from '../ui-factory';
+import { collectCustomComponentScopeInfo, getCustomComponentOptionsName } from '../utils';
+import { factory as UIFactory } from '../ui-factory';
+import { factory as StructFactory } from '../struct-translators/factory';
+import { factory as EntryFactory } from '../entry-translators/factory';
 import { ImportCollector } from '../../common/import-collector';
+import { MetaDataCollector } from '../../common/metadata-collector';
+import { isExported } from '../../common/arkts-utils';
 
 interface LegacyTransformerOptions extends VisitorOptions {
     structList?: string[];
@@ -26,6 +30,7 @@ interface LegacyTransformerOptions extends VisitorOptions {
 
 type ScopeInfo = {
     name: string;
+    isDecl: boolean;
     isEntry?: boolean;
     isComponent?: boolean;
     isReusable?: boolean;
@@ -33,7 +38,7 @@ type ScopeInfo = {
 
 export class LegacyTransformer extends AbstractVisitor {
     private structList: string[] = [];
-    private componentInterfaceCollection: arkts.TSInterfaceDeclaration[] = [];
+    private structInnerClassCollection: arkts.ClassDeclaration[] = [];
     private scopeInfos: ScopeInfo[] = [];
 
     constructor(options?: LegacyTransformerOptions) {
@@ -42,10 +47,16 @@ export class LegacyTransformer extends AbstractVisitor {
         this.structList = _options.structList ?? [];
     }
 
-    // TODO: check reset
+    init(): void {
+        MetaDataCollector.getInstance()
+            .setAbsName(this.program?.absoluteName)
+            .setExternalSourceName(this.externalSourceName)
+            .setIsDeclaration(this.isDeclaration);
+    }
+
     reset(): void {
         super.reset();
-        this.componentInterfaceCollection = [];
+        this.structInnerClassCollection = [];
         this.scopeInfos = [];
     }
 
@@ -80,78 +91,39 @@ export class LegacyTransformer extends AbstractVisitor {
         return properties;
     }
 
-    generateComponentInterface(
+    generateComponentInnerClass(
         name: string,
-        modifiers: number,
-        map: Map<string, arkts.TypeNode>
-    ): arkts.TSInterfaceDeclaration {
-        const interfaceNode = arkts.factory.createInterfaceDeclaration(
-            [],
-            arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
-            undefined,
-            arkts.factory.createTSInterfaceBody([...(this.generateMember(map) || [])]),
-            false,
-            false
-        );
-        interfaceNode.modifierFlags = modifiers;
-        return interfaceNode;
+        modifiers: arkts.Es2pandaModifierFlags,
+        structMembersMap: Map<string, arkts.TypeNode>,
+        isDecl?: boolean
+    ): arkts.ClassDeclaration {
+        const ctor = EntryFactory.generateConstructor(isDecl);
+        const definition: arkts.ClassDefinition = arkts.factory
+            .createClassDefinition(
+                arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),
+                undefined,
+                undefined,
+                [],
+                undefined,
+                undefined,
+                [...(this.generateMember(structMembersMap) || []), ctor],
+                arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_CLASS_DECL |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_DECLARATION |
+                    arkts.Es2pandaClassDefinitionModifiers.CLASS_DEFINITION_MODIFIERS_ID_REQUIRED,
+                modifiers
+            )
+            .setCtor(ctor);
+        const newClass = arkts.factory.createClassDeclaration(definition);
+        newClass.modifierFlags = modifiers;
+        return newClass;
     }
 
-    createParamsForInstatiate(name: string): arkts.ETSParameterExpression[] {
-        const paramInitializers: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
-            arkts.factory.createIdentifier(
-                InteroperAbilityNames.INITIALIZERS,
-                factory.createTypeReferenceFromString('__Options_' + name)
-            ),
-            true,
-            undefined
-        );
-        const paramStorage: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
-            arkts.factory.createIdentifier(
-                InteroperAbilityNames.STORAGE,
-                factory.createTypeReferenceFromString('LocalStorage')
-            ),
-            true,
-            undefined
-        );
-        const paramContent: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
-            arkts.factory.createIdentifier(InteroperAbilityNames.CONTENT, factory.createLambdaFunctionType()),
-            true,
-            undefined
-        );
-        return [paramInitializers, paramStorage, paramContent];
-    }
-
-    createInstantiateMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
+    createInstantiateMethod(definition: arkts.ClassDefinition, isDecl: boolean): arkts.MethodDefinition {
         const name = definition.ident?.name!;
-        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const modifiers =
-            arkts.classDefinitionFlags(definition) |
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
-        const body = isDecl ? undefined : arkts.factory.createBlockStatement([arkts.factory.createReturnStatement()]);
-        const params = this.createParamsForInstatiate(name);
-        const returnTypeAnnotation = factory.createTypeReferenceFromString('Object');
-        const flags = arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_METHOD;
-        const kind = arkts.Es2pandaMethodDefinitionKind.METHOD_DEFINITION_KIND_METHOD;
-        const key = arkts.factory.createIdentifier(InteroperAbilityNames.INVOKE);
-
-        return factory.createMethodDefinition({
-            key,
-            kind,
-            function: {
-                key,
-                body,
-                params: params,
-                returnTypeAnnotation,
-                flags,
-                modifiers,
-            },
-            modifiers,
-        });
+        return StructFactory.createInvokeMethod(name, isDecl, true);
     }
 
-    processComponent(node: arkts.ETSStructDeclaration | arkts.ClassDeclaration): arkts.ETSStructDeclaration | arkts.ClassDeclaration {
+    processComponent(node: arkts.ETSStructDeclaration, scopeInfo: ScopeInfo): arkts.ClassDeclaration {
         const definition: arkts.ClassDefinition = node.definition!;
         const ident = definition.ident!;
         const hasExportFlag =
@@ -161,7 +133,7 @@ export class LegacyTransformer extends AbstractVisitor {
             this.structList.push(ident.name);
         }
 
-        const instantiate = this.createInstantiateMethod(definition);
+        const instantiate = this.createInstantiateMethod(definition, scopeInfo.isDecl);
 
         const newDefinition = arkts.ClassDefinition.update3ClassDefinition(
             definition,
@@ -178,22 +150,18 @@ export class LegacyTransformer extends AbstractVisitor {
             definition.annotations
         );
 
-        if (arkts.isETSStructDeclaration(node)) {
-            const _node = arkts.factory.createClassDeclaration(newDefinition);
-            _node.modifierFlags = node.modifierFlags;
-            return _node;
-        } else {
-            return arkts.factory.updateClassDeclaration(node, newDefinition);
-        }
+        const _node = arkts.factory.createClassDeclaration(newDefinition);
+        _node.modifierFlags = node.modifierFlags;
+        return _node;
     }
 
     processConstructor(node: arkts.MethodDefinition): arkts.MethodDefinition {
         const valueType = arkts.factory.createETSTypeReference(
             arkts.factory.createETSTypeReferencePart(arkts.factory.createIdentifier('Any'))
         );
-        const script = factory.createScriptFunction({
+        const script = UIFactory.createScriptFunction({
             key: node.id?.clone(),
-            body: arkts.factory.createBlockStatement([]),
+            body: undefined,
             params: [
                 arkts.factory
                     .createETSParameterExpression(
@@ -229,7 +197,8 @@ export class LegacyTransformer extends AbstractVisitor {
                     ),
             ],
             flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_CONSTRUCTOR,
-            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC,
+            modifiers: arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | 
+                arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE,
         });
         const scriptExpr = arkts.factory.createFunctionExpression(node.id?.clone(), script)
         return arkts.factory.updateMethodDefinition(node, node.kind, node.id, scriptExpr, node.modifierFlags, false);
@@ -247,35 +216,47 @@ export class LegacyTransformer extends AbstractVisitor {
         return result;
     }
 
-    processEtsScript(node: arkts.ETSModule): arkts.ETSModule {
+    processETSModule(node: arkts.ETSModule): arkts.ETSModule {
+        let newNode: arkts.ETSModule = node;
         let updateStatements: arkts.Statement[] = [];
-        if (this.componentInterfaceCollection.length > 0) {
-            updateStatements.push(...this.componentInterfaceCollection);
-            return arkts.factory.updateETSModule(node, [...node.statements, ...updateStatements]);
+        if (this.structInnerClassCollection.length > 0) {
+            updateStatements.push(...this.structInnerClassCollection);
+            newNode = arkts.factory.updateETSModule(newNode, [...newNode.statements, ...updateStatements]);
+            this.structInnerClassCollection = [];
         }
-        return node
+        if (ImportCollector.getInstance().importInfos.length > 0) {
+            let imports = ImportCollector.getInstance().getImportStatements();
+            newNode = arkts.factory.updateETSModule(newNode, [...imports, ...newNode.statements]);
+            ImportCollector.getInstance().clearImports();
+        }
+        return newNode;
     }
 
-    enter(node: arkts.AstNode): void {
-        if ((arkts.isETSStructDeclaration(node) || arkts.isClassDeclaration(node)) && !!node.definition.ident) {
-            const isComponent = node.definition.annotations.some(
-                (annotation) =>
-                    annotation.expr instanceof arkts.Identifier &&
-                    (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2')
-            );
-            const scopeInfo: ScopeInfo = { name: node.definition.ident.name, isComponent: isComponent };
-            this.scopeInfos.push(scopeInfo);
+    enterStruct(node: arkts.ETSStructDeclaration): void {
+        const definition = node.definition;
+        if (!definition.ident) {
+            return;
         }
+        const isComponent = node.definition.annotations.some(
+            (annotation) => 
+                annotation.expr instanceof arkts.Identifier &&
+                (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2')
+        );
+        const scopeInfo: ScopeInfo = { 
+            name: definition.ident.name, 
+            isComponent: isComponent,
+            isDecl: MetaDataCollector.getInstance().isDeclaration ||
+                arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE)
+        };
+        this.scopeInfos.push(scopeInfo);
     }
 
-    exit(node: arkts.AstNode): void {
-        if (arkts.isETSStructDeclaration(node) || arkts.isClassDeclaration(node)) {
-            if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) {
-                return;
-            }
-            if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
-                this.scopeInfos.pop();
-            }
+    exitStruct(node: arkts.ETSStructDeclaration): void {
+        if (!node.definition || !node.definition.ident || this.scopeInfos.length === 0) {
+            return;
+        }
+        if (this.scopeInfos[this.scopeInfos.length - 1]?.name === node.definition.ident.name) {
+            this.scopeInfos.pop();
         }
     }
 
@@ -336,28 +317,31 @@ export class LegacyTransformer extends AbstractVisitor {
     }
 
     visitor(node: arkts.AstNode): arkts.AstNode {
-        this.enter(node);
+        if (arkts.isETSStructDeclaration(node)) {
+            this.enterStruct(node);
+        }
         const newNode = this.visitEachChild(node);
         if (arkts.isETSModule(newNode)) {
-            return this.processEtsScript(newNode);
+            return this.processETSModule(newNode);
         }
-        if (arkts.isETSStructDeclaration(newNode) || arkts.isClassDeclaration(newNode)) {
+        if (arkts.isETSStructDeclaration(newNode) && this.scopeInfos.length > 0) {
+            const scopeInfo = this.scopeInfos[this.scopeInfos.length - 1]!;
             const definition = newNode.definition!;
-            const annotations = definition.annotations;
-            if (
-                annotations.some(
-                    (annotation) =>
-                        annotation.expr instanceof arkts.Identifier &&
-                        (annotation.expr.name === 'Component' || annotation.expr.name === 'ComponentV2')
+            if (definition.ident?.name === scopeInfo.name) {
+                const className = scopeInfo.name;
+                const memberMap = this.collectComponentMembers(newNode, className);
+                const innerClass = this.generateComponentInnerClass(
+                    className,
+                    StructFactory.copyStructModifierFlagsToOptionsInnerClass(
+                        newNode.modifierFlags, 
+                        isExported(this.program, newNode)
+                    ),
+                    memberMap,
+                    scopeInfo.isDecl
                 )
-            ) {
-                const className = newNode.definition?.ident?.name!;
-                const memberMap = this.collectComponentMembers(newNode as arkts.ETSStructDeclaration, className);
-                this.componentInterfaceCollection.push(
-                    this.generateComponentInterface(className, node.modifierFlags, memberMap)
-                );
-                const updateNode = this.processComponent(newNode);
-                this.exit(newNode);
+                this.structInnerClassCollection.push(innerClass);
+                const updateNode = this.processComponent(newNode, scopeInfo);
+                this.exitStruct(newNode);
                 return updateNode;
             }
             return newNode;

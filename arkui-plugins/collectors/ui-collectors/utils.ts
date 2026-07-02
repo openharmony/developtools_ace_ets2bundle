@@ -14,7 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { filterDefined, matchPrefix } from '../../common/arkts-utils';
+import { filterDefined, isETSGlobalClass, matchPrefix } from '../../common/arkts-utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
     CustomComponentNames,
@@ -30,6 +30,7 @@ import {
     GetSetTypes,
     CustomDialogNames,
 } from '../../common/predefines';
+ import { isExportWithinScope } from '../namespace-collector';
 import {
     ArrowFunctionInfo,
     CallDeclInfo,
@@ -55,6 +56,7 @@ import {
     StructPropertyAnnotationRecord
 } from './records';
 import { AnnotationInfo, AnnotationRecord, Annotations } from './records/annotations/base';
+import { UICollectMetadata } from './shared-types';
 
 export function checkCanCollectNormalClassFromInfo(info: NormalClassInfo, externalSourceName?: string): boolean {
     if (checkIsObservedClassFromInfo(info)) {
@@ -459,4 +461,24 @@ export function parseStructPropertyAnnotations(
         record.collect(anno);
     });
     return record.toRecord();
+}
+ 
+export function checkIsClassCollectable(
+    node: arkts.ClassDeclaration, 
+    metadata: UICollectMetadata
+): boolean {
+    const definition = node.definition;
+    if (definition?.isEnumTransformed || definition?.isNamespaceTransformed) {
+        return false;
+    }
+    if (metadata.isDeclaration) {
+        if (isETSGlobalClass(definition)) {
+            return true;
+        }
+        if (!!node.definition?.ident?.name.startsWith("__Options_")) {
+            return true;
+        }
+        return isExportWithinScope(metadata.program, node);
+    }
+    return true;
 }

@@ -101,6 +101,7 @@ export class ComponentTransformer extends AbstractVisitor {
     private projectConfig: ProjectConfig | undefined;
     private entryRouteName: arkts.Expression | undefined;
     private componentType: ComponentType = {
+        hasEntry: false,
         hasComponent: false,
         hasComponentV2: false,
         hasCustomDialog: false,
@@ -121,7 +122,8 @@ export class ComponentTransformer extends AbstractVisitor {
         MetaDataCollector.getInstance()
             .setProjectConfig(this.projectConfig)
             .setAbsName(this.program?.absoluteName)
-            .setExternalSourceName(this.externalSourceName);
+            .setExternalSourceName(this.externalSourceName)
+            .setIsDeclaration(this.isDeclaration);
     }
 
     reset(): void {
@@ -133,6 +135,7 @@ export class ComponentTransformer extends AbstractVisitor {
         NamespaceProcessor.getInstance().reset();
         this.structMembersMap = new Map();
         this.componentType = {
+            hasEntry: false,
             hasComponent: false,
             hasComponentV2: false,
             hasCustomDialog: false,
@@ -278,9 +281,11 @@ export class ComponentTransformer extends AbstractVisitor {
         if (this.componentType.hasReusable || this.componentType.hasReusableV2) {
             this._collectImportFromCustomComponentSource(ReusableOptions.REUSABLE_MEM_OPT_STRATEGY);
         }
+        if (this.componentType.hasEntry) {
+            this._collectImportFromCustomComponentSource(CustomComponentNames.PAGE_LIFE_CYCLE);
+        }
         if (this.entryAnnoInfo.length > 0) {
             this._collectImportFromEntrySource(EntryWrapperNames.ENTRY_POINT_CLASS_NAME);
-            this._collectImportFromCustomComponentSource(CustomComponentNames.PAGE_LIFE_CYCLE);
         }
     }
 
@@ -311,11 +316,15 @@ export class ComponentTransformer extends AbstractVisitor {
     }
 
     createStaticMethod(definition: arkts.ClassDefinition): arkts.MethodDefinition {
-        const isDecl: boolean = arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
-        const modifiers =
+        const isDecl: boolean = MetaDataCollector.getInstance().isDeclaration || 
+ 	        arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE);
+        let modifiers =
             arkts.classDefinitionFlags(definition) |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC |
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC;
+        if (isDecl && !arkts.hasModifierFlag(definition, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE)) {
+            modifiers |= arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
+        }
         const body = isDecl ? undefined : arkts.factory.createBlockStatement([arkts.factory.createReturnStatement()]);
         const param: arkts.ETSParameterExpression = arkts.factory.createETSParameterExpression(
             arkts.factory.createIdentifier(
@@ -377,12 +386,13 @@ export class ComponentTransformer extends AbstractVisitor {
         }
         const customComponentInnerClass = this.generateComponentInnerClass(
             className,
-            StructFactory.copyStructModifierFlagsToOptionsInnerClass(node.modifierFlags, isExported(node)),
-            Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone())
+            StructFactory.copyStructModifierFlagsToOptionsInnerClass(node.modifierFlags, isExported(this.program, node)),
+            Object.values(scopeInfo.annotations ?? {}).map((anno) => anno.clone()),
+            scopeInfo.isDecl
         );
         NamespaceProcessor.getInstance().addInnerClassToCurrentNamespace(customComponentInnerClass);
 
-        if (!!scopeInfo.annotations?.entry) {
+        if (!MetaDataCollector.getInstance().isDeclaration && !!scopeInfo.annotations?.entry) {
             this.validateEntryParams(scopeInfo.annotations);
             this.entryAnnoInfo.push({
                 name: className,
@@ -716,9 +726,10 @@ export class ComponentTransformer extends AbstractVisitor {
     generateComponentInnerClass(
         name: string,
         modifiers: arkts.Es2pandaModifierFlags,
-        annotations?: readonly arkts.AnnotationUsage[]
+        annotations?: readonly arkts.AnnotationUsage[],
+        isDecl?: boolean
     ): arkts.ClassDeclaration {
-        const ctor = EntryFactory.generateConstructor();
+        const ctor = EntryFactory.generateConstructor(isDecl);
         const definition: arkts.ClassDefinition = arkts.factory
             .createClassDefinition(
                 arkts.factory.createIdentifier(getCustomComponentOptionsName(name)),

@@ -62,6 +62,13 @@ export class NormalClassRecord extends BaseRecord<arkts.ClassDeclaration, Normal
         this._annotationRecord = new NormalClassAnnotationRecord(options);
     }
 
+    get definition(): arkts.ClassDefinition | undefined {
+        if (!this.definitionPtr) {
+            return undefined;
+        }
+        return arkts.unpackNode<arkts.ClassDefinition>(this.definitionPtr);
+    }
+
     setHasTrackProperty(hasTrackProperty: boolean): this {
         this.hasTrackProperty = hasTrackProperty ?? undefined;
         this.isChanged = true;

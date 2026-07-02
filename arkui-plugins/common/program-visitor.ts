@@ -114,26 +114,34 @@ export class ProgramVisitor extends AbstractVisitor {
         debugDumpAstNode(script, getDumpFileName(this.state, prefixName, undefined, name), cachePath, extensionName);
     }
 
-    private visitLegacyInExternalSource(program: arkts.Program, externalSourceName: string): void {
+    private visitLegacyInExternalSource(
+        currProgram: arkts.Program,
+        externalSourceName: string,
+        extensionName: string,
+        cachePath?: string
+    ): void {
         const transformer = new LegacyTransformer();
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
-        transformer.program = program;
-        const newScript = transformer.visitor(program.ast) as arkts.ETSModule;
-        program?.setAst(newScript)
+        transformer.program = currProgram;
+        this.dumpExternalSource(currProgram.ast, externalSourceName, `${cachePath}/BEFORE`, this.pluginName, extensionName);
+        transformer.init();
+        const newScript = transformer.visitor(currProgram.ast) as arkts.ETSModule;
+        transformer.reset();
+        this.dumpExternalSource(newScript, externalSourceName, `${cachePath}/AFTER`, this.pluginName, extensionName);
+        currProgram?.setAst(newScript)
         arkts.setAllParents(newScript);
     }
 
     private visitNonLegacyInExternalSource(
-        program: arkts.Program,
         currProgram: arkts.Program,
-        name: string,
+        externalSourceName: string,
+        extensionName: string,
         cachePath?: string
     ): void {
-        const extensionName: string = program.fileNameWithExtension;
-        this.dumpExternalSource(currProgram.ast, name, `${cachePath}/BEFORE`, this.pluginName, extensionName);
-        const newScript = this.visitor(currProgram.ast, currProgram, name);
-        this.dumpExternalSource(newScript, name, `${cachePath}/AFTER`, this.pluginName, extensionName);
+        this.dumpExternalSource(currProgram.ast, externalSourceName, `${cachePath}/BEFORE`, this.pluginName, extensionName);
+        const newScript = this.visitor(currProgram.ast, currProgram, externalSourceName);
+        this.dumpExternalSource(newScript, externalSourceName, `${cachePath}/AFTER`, this.pluginName, extensionName);
     }
 
     private visitNextProgramInQueue(
@@ -150,7 +158,8 @@ export class ProgramVisitor extends AbstractVisitor {
         }
     }
 
-    private isLegacyFile(path: string): boolean {
+    private isLegacyFile(currProgram: arkts.Program): boolean {
+        const path = currProgram.absoluteName;
         const fileManager = FileManager.getInstance();
         if (fileManager.getLanguageVersionByFilePath(path) === LANGUAGE_VERSION.ARKTS_1_1) {
             return true;
@@ -159,6 +168,7 @@ export class ProgramVisitor extends AbstractVisitor {
     }
 
     private visitExternalSources(program: arkts.Program, programQueue: arkts.Program[]): void {
+        const extensionName: string = program.fileNameWithExtension;
         const visited: Set<AstNodePointer> = new Set();
         const queue: arkts.Program[] = programQueue;
         while (queue.length > 0) {
@@ -183,11 +193,11 @@ export class ProgramVisitor extends AbstractVisitor {
                     'getFileManager' in this.pluginContext &&
                     this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED &&
                     this.pluginName === 'uiTransform' &&
-                    this.isLegacyFile(currProgram.absoluteName)
+                    this.isLegacyFile(currProgram)
                 ) {
-                    this.visitLegacyInExternalSource(currProgram, name);
+                    this.visitLegacyInExternalSource(currProgram, name, extensionName, cachePath);
                 } else {
-                    this.visitNonLegacyInExternalSource(program, currProgram, name, cachePath);
+                    this.visitNonLegacyInExternalSource(currProgram, name, extensionName, cachePath);
                 }
             }
             visited.add(currProgram.peer);
@@ -293,6 +303,7 @@ export class ProgramVisitor extends AbstractVisitor {
         externalSourceName?: string,
         program?: arkts.Program
     ): arkts.ETSModule {
+        transformer.isDeclaration = !program?.isBuiltSimultaneously;
         transformer.isExternal = !!externalSourceName;
         transformer.externalSourceName = externalSourceName;
         transformer.program = program;

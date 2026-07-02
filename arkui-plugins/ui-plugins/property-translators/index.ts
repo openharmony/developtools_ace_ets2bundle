@@ -92,7 +92,7 @@ import {
     PropRefInnerClassTranslator,
 } from './propRef';
 import { ObservedTrackCachedTranslator, ObservedTrackTranslator } from './observedTrack';
-import { ClassScopeInfo } from '../struct-translators/utils';
+import { checkIsDeclFromStructInfo, ClassScopeInfo } from '../struct-translators/utils';
 import {
     LocalCachedTranslator,
     LocalCachedInnerClassTranslator,
@@ -423,9 +423,6 @@ export function classifyPropertyFromInfo(
     node: arkts.ClassProperty,
     metadata: StructPropertyInfo
 ): PropertyCachedTranslator | undefined {
-    if (!metadata.structInfo || !!metadata.structInfo.isDecl) {
-        return undefined;
-    }
     if (StaticPropertyCachedTranslator.canBeStaticTranslate(node, metadata)) {
         return new StaticPropertyCachedTranslator({ property: node, propertyInfo: metadata });
     }

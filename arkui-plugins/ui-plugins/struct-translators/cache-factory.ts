@@ -74,7 +74,15 @@ import { CacheFactory as PropertyCacheFactory } from '../property-translators/ca
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as StructFactory } from './factory';
-import { FromStructInfo, getResourceParams, processFromStructInfo, StructAnnotationPropertyFields, StructType } from './utils';
+import {
+    checkIsDeclFromNormalClassInfo,
+    checkIsDeclFromStructInfo,
+    FromStructInfo,
+    getResourceParams,
+    processFromStructInfo,
+    StructAnnotationPropertyFields,
+    StructType
+} from './utils';
 import {
     BuilderParamClassPropertyValueCache,
     CustomDialogControllerCache,
@@ -129,11 +137,11 @@ export class CacheFactory {
         const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_INITIALIZE_STRUCT
         );
-
+        const isDecl = checkIsDeclFromStructInfo(metadata);
         let body: arkts.BlockStatement | undefined;
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
-        if (!metadata.isDecl && !!metadata.name) {
+        if (!isDecl && !!metadata.name) {
             body = arkts.factory.createBlockStatement([
                 ...(reusePoolInitStmt ? [reusePoolInitStmt] : []),
                 ...ComputedCache.getInstance().getCachedComputed(metadata.name),
@@ -183,11 +191,11 @@ export class CacheFactory {
         const updateKey: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.COMPONENT_UPDATE_STRUCT
         );
-
+        const isDecl = checkIsDeclFromStructInfo(metadata);
         let body: arkts.BlockStatement | undefined;
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
-        if (!metadata.isDecl) {
+        if (!isDecl) {
             body = arkts.factory.createBlockStatement(PropertyCache.getInstance().getUpdateBody(metadata.name!));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
@@ -261,10 +269,11 @@ export class CacheFactory {
         const resetKey: arkts.Identifier = arkts.factory.createIdentifier(
             CustomComponentNames.RESET_STATE_VARS_ON_REUSE
         );
+        const isDecl = checkIsDeclFromStructInfo(metadata);
         let body: arkts.BlockStatement | undefined;
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
-        if (!metadata.isDecl && !!metadata.name) {
+        if (!isDecl && !!metadata.name) {
             body = arkts.factory.createBlockStatement(PropertyCache.getInstance().getResetStateVars(metadata.name));
             modifiers = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC;
         }
@@ -404,7 +413,8 @@ export class CacheFactory {
             const [_, classOptions] = getTypeParamsFromClassDecl(node);
             optionsTypeName = getTypeNameFromTypeParameter(classOptions);
         }
-        const globalReusePoolInfo = structType === StructType.STRUCT && !metadata.isDecl && !!metadata.name
+        const isDecl: boolean = checkIsDeclFromStructInfo(metadata);
+ 	    const globalReusePoolInfo = structType === StructType.STRUCT && !isDecl && !!metadata.name
             ? this.extractGlobalReusePoolInfoFromMetadata(definition, metadata)
             : undefined;
         const newStatements = this.collectStructPropertyRewriteStatements(
@@ -419,7 +429,7 @@ export class CacheFactory {
             addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             newStatements.push(structInvokeMethod);
         }
-        const newStaticBlock = !metadata.isDecl && !hasStaticBlock ? [UIFactory.createClassStaticBlock()] : [];
+        const newStaticBlock = !isDecl && !hasStaticBlock ? [UIFactory.createClassStaticBlock()] : [];
         const returnNodes: arkts.AstNode[] = collect(newStatements, ...transformedBody, newStaticBlock);
         definition.setBody(returnNodes);
         if (structType === StructType.STRUCT) {
@@ -481,7 +491,8 @@ export class CacheFactory {
         metadata: CustomComponentRecordInfo, 
         propertyFields?: StructAnnotationPropertyFields
     ): arkts.MethodDefinition {
-        const { isDecl, annotationInfo } = metadata;
+        const { annotationInfo } = metadata;
+ 	    const isDecl = checkIsDeclFromStructInfo(metadata);
         const params: arkts.Expression[] = [];
         const isCustomComponent = !!annotationInfo?.hasComponent || !!annotationInfo?.hasComponentV2;
         const isCustomDialog = !!annotationInfo?.hasCustomDialog;
@@ -686,17 +697,18 @@ export class CacheFactory {
         if (!metadata.name) {
             return;
         }
+        const isDecl = checkIsDeclFromStructInfo(metadata);
         if (
             structType === StructType.CUSTOM_COMPONENT_DECL &&
             metadata.name === CustomComponentNames.BASE_CUSTOM_DIALOG_NAME
         ) {
-            definition.addProperties([StructFactory.createCustomDialogMethod(!!metadata.isDecl)]);
+            definition.addProperties([StructFactory.createCustomDialogMethod(!!isDecl)]);
         } else if (structType === StructType.STRUCT && !!metadata.annotationInfo?.hasCustomDialog) {
             const info = CustomDialogControllerPropertyCache.getInstance().getInfo(metadata.name!);
             if (!!info) {
                 definition.addProperties([
                     StructFactory.createCustomDialogMethod(
-                        !!metadata.isDecl,
+                        !!isDecl,
                         info.propertyName,
                         info.controllerTypeName
                     ),
@@ -718,7 +730,7 @@ export class CacheFactory {
         if (!definition || !metadata.name) {
             return node;
         }
-        if (structType === StructType.STRUCT && !!metadata.isDecl) {
+        if (structType === StructType.STRUCT && checkIsDeclFromStructInfo(metadata)) {
             const structInvokeMethod = this.createInvokeImplMethod(metadata.name, metadata);
             addMemoAnnotation(structInvokeMethod.function, MemoNames.MEMO_INTRINSIC_UI);
             const newDefinitionStatements = [...definition.body, structInvokeMethod];
@@ -734,6 +746,9 @@ export class CacheFactory {
         node: arkts.MethodDefinition,
         metadata: FunctionInfo
     ): arkts.MethodDefinition {
+        if (MetaDataCollector.getInstance().isDeclaration || metadata.isDecl) {
+            return node;
+        }
         const name: string | undefined = metadata.name;
         const func: arkts.ScriptFunction = node.function;
         const params = func.params as arkts.ETSParameterExpression[];
@@ -833,7 +848,7 @@ export class CacheFactory {
     }
 
     static createObservedMembers(definition: arkts.ClassDefinition, metadata: NormalClassInfo): arkts.AstNode[] {
-        const isDecl: boolean = !!metadata.isDecl;
+        const isDecl: boolean = checkIsDeclFromNormalClassInfo(metadata);
         const className: string = metadata.name!;
         const classAnnoInfo: NormalClassAnnotationInfo | undefined = metadata.annotationInfo;
         const isObservedV2: boolean = !!classAnnoInfo?.hasObservedV2;

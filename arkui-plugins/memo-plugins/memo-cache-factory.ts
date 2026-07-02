@@ -32,6 +32,7 @@ import {
 } from './utils';
 import { InternalsTransformer } from './internal-transformer';
 import { AstNodeCacheValueMetadata } from '../common/node-cache';
+import { MetaDataCollector } from '../common/metadata-collector';
 
 export interface CachedMetadata extends AstNodeCacheValueMetadata {
     internalsTransformer?: InternalsTransformer;
@@ -39,6 +40,9 @@ export interface CachedMetadata extends AstNodeCacheValueMetadata {
 
 export class RewriteFactory {
     static rewriteTsAsExpression(node: arkts.TSAsExpression, metadata?: CachedMetadata): arkts.TSAsExpression {
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return node;
+        }
         const newExpr = !!node.expr && arkts.isArrowFunctionExpression(node.expr)
             ? RewriteFactory.rewriteArrowFunction(node.expr)
             : node.expr;
@@ -138,6 +142,9 @@ export class RewriteFactory {
     }
 
     static rewriteProperty(node: arkts.Property, metadata?: CachedMetadata): arkts.Property {
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return node;
+        }
         const value: arkts.Expression | undefined = node.value;
         if (!value) {
             return node;
@@ -327,6 +334,9 @@ export class RewriteFactory {
         node: arkts.Identifier,
         metadata?: CachedMetadata
     ): arkts.Identifier | arkts.MemberExpression {
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return node;
+        }
         if (
             !node.name.startsWith(BuiltInNames.GENSYM_INTRINSIC_PREFIX) && 
             !node.name.startsWith(BuiltInNames.GENSYM_UI_PREFIX)
@@ -340,6 +350,9 @@ export class RewriteFactory {
         node: arkts.ReturnStatement,
         metadata?: CachedMetadata
     ): arkts.ReturnStatement | arkts.BlockStatement {
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return node;
+        }
         return factory.createWrappedReturnStatement(factory.createRecacheCall(node.argument), !node.argument);
     }
 
@@ -347,6 +360,9 @@ export class RewriteFactory {
         node: arkts.VariableDeclarator,
         metadata?: CachedMetadata
     ): arkts.VariableDeclarator {
+        if (MetaDataCollector.getInstance().isDeclaration) {
+            return node;
+        }
         const expectReturnType = findLocalReturnTypeFromTypeAnnotation((node.id as arkts.Identifier).typeAnnotation);
         const variableType = RewriteFactory.rewriteType((node.id as arkts.Identifier).typeAnnotation);
         let initializer = node.init;
@@ -431,6 +447,9 @@ function prepareRewriteScriptFunctionBody(
     isGetter?: boolean,
     isSetter?: boolean
 ): arkts.AstNode | undefined {
+    if (MetaDataCollector.getInstance().isDeclaration) {
+        return node.body;
+    }
     if (isGetter || isSetter || isDecl || !node.body || !arkts.isBlockStatement(node.body)) {
         return node.body;
     }

@@ -77,7 +77,8 @@ export class CheckedTransformer extends AbstractVisitor {
         MetaDataCollector.getInstance()
             .setProjectConfig(this.projectConfig)
             .setAbsName(this.program?.absoluteName)
-            .setExternalSourceName(this.externalSourceName);
+            .setExternalSourceName(this.externalSourceName)
+            .setIsDeclaration(this.isDeclaration);
         // 初始化 InsightIntentHandler，收集当前文件的顶层变量
         this.insightIntentHandler.init(this.program);
     }
@@ -142,6 +143,7 @@ export class CheckedTransformer extends AbstractVisitor {
         if (arkts.isETSModule(node) && !node.isNamespace) {
             if (ImportCollector.getInstance().importInfos.length > 0) {
                 let imports = ImportCollector.getInstance().getImportStatements();
+                ImportCollector.getInstance().clearImports();
                 node = arkts.factory.updateETSModule(node, [...imports, ...node.statements]);
             }
             LogCollector.getInstance().shouldIgnoreError(this.projectConfig?.ignoreError);

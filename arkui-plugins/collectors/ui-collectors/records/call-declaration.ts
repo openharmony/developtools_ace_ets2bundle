@@ -19,6 +19,7 @@ import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 import { BuiltInNames, ETSGLOBAL, LANGUAGE_VERSION } from '../../../common/predefines';
 import { FileManager } from '../../../common/file-manager';
+import { removeRelativePathSuffix } from '../../../common/arkts-utils';
 
 export type CallDeclInfo = AnnotationRecord<CallDeclAnnotations, CallDeclAnnotationInfo> & {
     /**
@@ -122,7 +123,7 @@ export class CallDeclRecord extends BaseRecord<arkts.AstNode, CallDeclInfo> {
 
     protected collectFromNode(node: arkts.AstNode): void {
         const sourceProgram = arkts.getProgramFromAstNode(node);
-        this.moduleName = sourceProgram?.moduleName;
+ 	    this.moduleName = sourceProgram?.moduleName;
         if (arkts.isClassProperty(node)) {
             this.collectFromClassProperty(node);
         } else if (arkts.isMethodDefinition(node)) {

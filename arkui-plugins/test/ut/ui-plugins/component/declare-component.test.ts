@@ -128,7 +128,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   @PropRef() public isLoading?: boolean;
   @PropRef() public __backing_isLoading?: boolean;
   public __options_has_isLoading?: boolean;
-  public constructor() {}
+  public constructor()
   
 }
 
@@ -138,7 +138,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __options_has_content?: boolean;
   @BuilderParam() public builderParamContent?: ((()=> void) | undefined);
   public __options_has_builderParamContent?: boolean;
-  public constructor() {}
+  public constructor()
   
 }
 `;
@@ -256,7 +256,7 @@ class __EntryWrapper extends EntryPoint {
   @PropRef() public isLoading?: boolean;
   public __backing_isLoading?: IPropRefDecoratedVariable<boolean>;
   public __options_has_isLoading?: boolean;
-  public constructor() {}
+  public constructor()
   
 }
 
@@ -266,7 +266,7 @@ class __EntryWrapper extends EntryPoint {
   public __options_has_content?: boolean;
   public builderParamContent?: ((()=> void) | undefined);
   public __options_has_builderParamContent?: boolean;
-  public constructor() {}
+  public constructor()
 
 }
 `;

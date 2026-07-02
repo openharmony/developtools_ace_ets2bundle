@@ -18,6 +18,7 @@ import {
     addMemoAnnotation,
     collectMemoFromCallExpression,
     collectMemoFromNewClass,
+    collectMemoFromTSTypeAliasDeclaration,
     findCanAddMemoFromArrowFunction,
     findCanAddMemoFromClassProperty,
     findCanAddMemoFromMethod,
@@ -25,30 +26,38 @@ import {
     findCanAddMemoFromProperty,
     findCanAddMemoFromTypeAlias,
     isArrowFunctionAsValue,
+    MemoNames,
 } from './utils';
 import { coerceToAstNode } from '../../common/arkts-utils';
 import { getPerfName } from '../../common/debug';
+import { VisitorOptions } from '../../common/abstract-visitor';
+import { isExportWithinScope } from '../namespace-collector';
 
 export type RewriteAfterFoundFn<T extends arkts.AstNode = arkts.AstNode> = (
     node: T,
     nodeType: arkts.Es2pandaAstNodeType
 ) => T;
 
-export function findAndCollectMemoableNode(node: arkts.AstNode, rewriteFn?: RewriteAfterFoundFn): arkts.AstNode {
+export function findAndCollectMemoableNode(
+    node: arkts.AstNode, 
+    rewriteFn?: RewriteAfterFoundFn,
+    options?: VisitorOptions
+): arkts.AstNode {
     const type = arkts.nodeType(node);
-    collectMemoableNodeByTypeInPostOrder(type, node, rewriteFn);
+    collectMemoableNodeByTypeInPostOrder(type, node, rewriteFn, options);
     return node;
 }
 
 export function collectMemoableNodeByTypeInPostOrder(
     type: arkts.Es2pandaAstNodeType,
     node: arkts.AstNode,
-    rewriteFn?: RewriteAfterFoundFn
+    rewriteFn?: RewriteAfterFoundFn,
+    options?: VisitorOptions
 ): void {
     if (collectByType.has(type)) {
         const func = collectByType.get(type)!;
         arkts.Performance.getInstance().createDetailedEvent(getPerfName([0, 2, 2], func.name));
-        func(node, rewriteFn);
+        func(node, rewriteFn, options);
         arkts.Performance.getInstance().stopDetailedEvent(getPerfName([0, 2, 2], func.name));
     }
 }
@@ -63,8 +72,12 @@ export class factory {
      */
     static findAndCollectMemoableProperty<T extends arkts.AstNode = arkts.Property>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
+        if (options?.isDeclaration) {
+            return node;
+        }
         const {canAddMemo, hasBuilder} = findCanAddMemoFromProperty(node);
         if (canAddMemo && arkts.isProperty(node)) {
             const value = node.value!;
@@ -89,9 +102,10 @@ export class factory {
      */
     static findAndCollectMemoableClassProperty<T extends arkts.AstNode = arkts.ClassProperty>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
-        const {canAddMemo, hasBuilder} = findCanAddMemoFromClassProperty(node);
+        const {canAddMemo, hasBuilder} = findCanAddMemoFromClassProperty(node, options?.isDeclaration);
         if (canAddMemo && arkts.isClassProperty(node)) {
             addMemoAnnotation(node);
         }
@@ -110,8 +124,12 @@ export class factory {
      */
     static findAndCollectMemoableTypeAlias<T extends arkts.AstNode = arkts.TSTypeAliasDeclaration>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
+        if (options?.isDeclaration && !isExportWithinScope(options.program, node)) {
+            return node;
+        }
         const {canAddMemo, hasBuilder} = findCanAddMemoFromTypeAlias(node);
         if (canAddMemo && arkts.isTSTypeAliasDeclaration(node)) {
             addMemoAnnotation(node);
@@ -131,9 +149,10 @@ export class factory {
      */
     static findAndCollectMemoableParameter<T extends arkts.AstNode = arkts.ETSParameterExpression>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
-        const {canAddMemo, hasBuilder} = findCanAddMemoFromParameter(node);
+        const {canAddMemo, hasBuilder} = findCanAddMemoFromParameter(node, options?.isDeclaration);
         if (canAddMemo && arkts.isETSParameterExpression(node)) {
             addMemoAnnotation(node);
         }
@@ -152,13 +171,14 @@ export class factory {
      */
     static findAndCollectMemoableMethod<T extends arkts.AstNode = arkts.MethodDefinition>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
-        const {canAddMemo, hasBuilder} = findCanAddMemoFromMethod(node);
-        if (canAddMemo && arkts.isMethodDefinition(node)) {
-            addMemoAnnotation(node.function);
+        const memoInfo = findCanAddMemoFromMethod(node, options?.isDeclaration);
+        if (memoInfo.canAddMemo && arkts.isMethodDefinition(node)) {
+            addMemoAnnotation(node.function, MemoNames.MEMO_UI, [MemoNames.MEMO_SKIP, MemoNames.MEMO_SKIP_UI], memoInfo);
         }
-        if ((canAddMemo || hasBuilder) && !!rewriteFn) {
+        if ((memoInfo.canAddMemo || memoInfo.hasBuilder) && !!rewriteFn) {
             return rewriteFn(node, arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION);
         }
         return node;
@@ -173,8 +193,12 @@ export class factory {
      */
     static findAndCollectMemoableArrowFunction<T extends arkts.AstNode = arkts.ArrowFunctionExpression>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
+        if (options?.isDeclaration) {
+            return node;
+        }
         const {canAddMemo, hasBuilder} = findCanAddMemoFromArrowFunction(node);
         if (canAddMemo && arkts.isArrowFunctionExpression(node)) {
             addMemoAnnotation(node.function);
@@ -193,8 +217,12 @@ export class factory {
      */
     static findAndCollectMemoableCallExpression<T extends arkts.AstNode = arkts.CallExpression>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
+        if (options?.isDeclaration) {
+            return node;
+        }
         const _node = coerceToAstNode<arkts.CallExpression>(node);
         const found = collectMemoFromCallExpression(_node);
         if (found && !!rewriteFn) {
@@ -211,15 +239,29 @@ export class factory {
      */
     static findAndCollectMemoableNewClass<T extends arkts.AstNode = arkts.ETSNewClassInstanceExpression>(
         node: T,
-        rewriteFn?: RewriteAfterFoundFn<T>
+        rewriteFn?: RewriteAfterFoundFn<T>,
+ 	    options?: VisitorOptions
     ): T {
+        if (options?.isDeclaration) {
+            return node;
+        }
         const _node = coerceToAstNode<arkts.ETSNewClassInstanceExpression>(node);
         collectMemoFromNewClass(_node);
         return node;
     }
+
+    static findAndCollectMemoableTSTypeAliasDeclaration<T extends arkts.AstNode = arkts.TSTypeAliasDeclaration>(
+        node: T,
+        rewriteFn?: RewriteAfterFoundFn<T>,
+        options?: VisitorOptions
+    ): T {
+        const _node = coerceToAstNode<arkts.TSTypeAliasDeclaration>(node);
+        collectMemoFromTSTypeAliasDeclaration(_node);
+        return node;
+    }
 }
 
-type CollectFactoryFn = <T extends arkts.AstNode>(node: T, rewriteFn?: RewriteAfterFoundFn<T>) => T;
+type CollectFactoryFn = <T extends arkts.AstNode>(node: T, rewriteFn?: RewriteAfterFoundFn<T>, options?: VisitorOptions) => T;
 
 const collectByType = new Map<arkts.Es2pandaAstNodeType, CollectFactoryFn>([
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_PROPERTY, factory.findAndCollectMemoableProperty],
