@@ -1,4 +1,4 @@
-# 需求文档 — UI互操作界面断点调试行列号映射
+# 需求文档 — 互操作断点调试需求
 
 ## 一、原始需求
 
@@ -7,10 +7,10 @@
 | 字段 | 内容 |
 |------|------|
 | 需求ID | REQ-09-02-01-01 |
-| 需求名称 | UI互操作界面断点调试行列号映射 |
+| 需求名称 | 互操作断点调试需求 |
 | 来源 | 需求 Owner 提出 |
-| CodeSpec ID | issue-1-ui-interop-breakpoint-mapping |
-| 关联 Issue | https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1 |
+| CodeSpec ID | issue-4600-ui-interop-breakpoint-mapping |
+| 关联 Issue | https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600 |
 | 目标仓 | `developtools/ace_ets2bundle` |
 | 目标模块 | `arkui-plugins` |
 | 优先级 | P0 |

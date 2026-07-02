@@ -1,4 +1,4 @@
-# UI互操作界面断点调试行列号映射
+# 互操作断点调试需求
 
 > ArkUI 工具链 CodeSpec 规范模板 | 版本: v0.2
 > 规格口径以 `developtools/ace_ets2bundle/arkui-plugins` 当前 Interop 转换链路和本目录 SDD 产物为准。
@@ -10,10 +10,10 @@
 | 字段 | 内容 |
 |------|------|
 | 需求编号 | REQ-09-02-01-01 |
-| 需求名称 | UI互操作界面断点调试行列号映射 |
+| 需求名称 | 互操作断点调试需求 |
 | 特性编号 | FEAT-09-02-01-01 |
-| 需求来源 | GitCode issue 1 |
-| 关联 Issue | https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1 |
+| 需求来源 | GitCode issue 4600 |
+| 关联 Issue | https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600 |
 | 优先级 | P0 |
 | 目标版本 | TBD |
 | SIG归属 | SIG_ArkUI |
@@ -117,7 +117,7 @@
 | NFR-2 | 性能 | 位置继承仅发生在节点创建/替换点，不引入全量 AST 扫描 | 代码审查 + 测试耗时观察 |
 | NFR-3 | 可维护性 | 映射和 no-debug-line 逻辑使用局部 helper 收敛，避免散落复制 | 代码审查 |
 | NFR-4 | 可测试性 | 提供 common helper 单测、Interop range-mapping 单测和非 Interop 回归 | Jest |
-| NFR-5 | 可观测性 | 验证证据归档到 `.codespec/changes/issue-1-ui-interop-breakpoint-mapping/evidence/` | 文档检查 |
+| NFR-5 | 可观测性 | 验证证据归档到 `.codespec/changes/issue-4600-ui-interop-breakpoint-mapping/evidence/` | 文档检查 |
 
 ---
 

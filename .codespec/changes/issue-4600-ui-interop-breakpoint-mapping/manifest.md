@@ -1,7 +1,7 @@
 ---
-id: issue-1-ui-interop-breakpoint-mapping
+id: issue-4600-ui-interop-breakpoint-mapping
 type: feature
-title: "UI互操作界面断点调试行列号映射"
+title: "互操作断点调试需求"
 spec_schema: ohos-sdd/v1
 profile: arkui
 subprofiles: [arkui/toolchain, arkui-plugins/interop, arkui-plugins/ui-plugin]
@@ -12,7 +12,7 @@ complexity: standard
 lineage: new-on-legacy
 status: release
 owner: "@lixingchi1"
-source_issue: "https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1"
+source_issue: "https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600"
 created_at: 2026-06-23
 updated_at: 2026-07-02
 related: []
@@ -33,18 +33,18 @@ code_refs:
 commits: []
 ---
 
-# Manifest — UI互操作界面断点调试行列号映射
+# Manifest — 互操作断点调试需求
 
 ## 需求标识
 
 | 字段 | 内容 |
 |------|------|
 | 需求ID | REQ-09-02-01-01 |
-| 需求名称 | UI互操作界面断点调试行列号映射 |
+| 需求名称 | 互操作断点调试需求 |
 | func_id | 09-02-01 |
 | feat_id | Feat-01 |
-| CodeSpec ID | issue-1-ui-interop-breakpoint-mapping |
-| 关联 Issue | https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1 |
+| CodeSpec ID | issue-4600-ui-interop-breakpoint-mapping |
+| 关联 Issue | https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600 |
 
 ## 功能域路径
 

@@ -1,4 +1,4 @@
-# 执行计划 — UI互操作界面断点调试行列号映射
+# 执行计划 — 互操作断点调试需求
 
 ## 计划元数据
 
@@ -7,8 +7,8 @@
 | 关联需求 | REQ-09-02-01-01 |
 | 关联设计 | design.md (DESIGN-09-02-01-01) |
 | 关联 Spec | spec.md (FEAT-09-02-01-01) |
-| CodeSpec ID | issue-1-ui-interop-breakpoint-mapping |
-| 关联 Issue | https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1 |
+| CodeSpec ID | issue-4600-ui-interop-breakpoint-mapping |
+| 关联 Issue | https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600 |
 | 复杂度 | 标准 |
 | 状态 | Release Ready |
 
@@ -84,7 +84,7 @@
 | Interop 单测 | `npx jest test/ut/interop-plugins/range-mapping.test.ts` | 通过 |
 | 非 Interop 回归 | builder-lambda/debug-line、navigation、wrap-builder 定向用例 | 通过 |
 | 完整测试 | `cd arkui-plugins && npm run test` | 通过 |
-| SDD 证据 | `.codespec/changes/issue-1-ui-interop-breakpoint-mapping/evidence/reviews/*` | 归档 |
+| SDD 证据 | `.codespec/changes/issue-4600-ui-interop-breakpoint-mapping/evidence/reviews/*` | 归档 |
 
 ## 当前验证结果
 

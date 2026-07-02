@@ -1,4 +1,4 @@
-# 架构设计 — UI互操作界面断点调试行列号映射
+# 架构设计 — 互操作断点调试需求
 
 ## 设计元数据
 
@@ -7,8 +7,8 @@
 | Design ID | DESIGN-09-02-01-01 |
 | 关联需求 | proposal.md (REQ-09-02-01-01) |
 | 目标 Feature | Feat-01 |
-| CodeSpec ID | issue-1-ui-interop-breakpoint-mapping |
-| 关联 Issue | https://gitcode.com/lixingchi1/developtools_ace_ets2bundle/issues/1 |
+| CodeSpec ID | issue-4600-ui-interop-breakpoint-mapping |
+| 关联 Issue | https://gitcode.com/openharmony/developtools_ace_ets2bundle/issues/4600 |
 | 复杂度 | 标准 |
 | 目标版本 | TBD |
 | Owner | @lixingchi1 |
