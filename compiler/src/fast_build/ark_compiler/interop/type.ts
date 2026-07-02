@@ -124,3 +124,8 @@ export interface InteropConfig {
   interopModuleInfo: Map<string, InteropInfo>;
   projectConfig: Object;
 }
+
+export interface DeclFileItem {
+  module: ts.ResolvedModuleFull | null | undefined;
+  cnt: number;
+}

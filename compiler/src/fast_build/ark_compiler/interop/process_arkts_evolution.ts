@@ -51,6 +51,7 @@ import {
   red,
   reset
 } from '../common/ark_define';
+import { FileManager } from './interop_manager';
 
 interface DeclFileConfig {
   declPath: string;
@@ -780,4 +781,22 @@ export function redirectToDeclFileForInterop(resolvedFileName: string): ts.Resol
 
 export function resetInteropTransformLog(): void {
   interopTransformLog.errors = [];
+}
+
+export function queryDeclFileForInterop(sourceFilePath: string,
+                                 moduleName: string,
+                                 languageVersion: string,
+                                 resolvedModule: ts.ResolvedModuleFull | undefined,
+                                 interopDeclNotFoundModules: Set<string>): ts.ResolvedModuleFull | null | undefined {
+  // When result has a value and the path parsed is the source code file path of module 1.2,
+  // the parsing result needs to be modified to the decl path of module 1.2
+  const resolvedFileVersion = FileManager.getInstance().getLanguageVersionByFilePath(sourceFilePath)?.languageVersion;
+  let queryResult = redirectToDeclFileForInterop(sourceFilePath);
+  if (queryResult) {
+    return queryResult;
+  } else if (languageVersion === ARKTS_1_1 && resolvedFileVersion === ARKTS_1_2) {
+    interopDeclNotFoundModules.add(moduleName);
+  } else {
+    return resolvedModule;
+  }
 }
