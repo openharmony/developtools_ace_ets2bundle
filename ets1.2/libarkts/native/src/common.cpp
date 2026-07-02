@@ -772,51 +772,11 @@ void impl_MemoryTrackerPrintCurrent(KNativePointer context)
 }
 KOALA_INTEROP_V1(MemoryTrackerPrintCurrent, KNativePointer);
 
-static KNativePointer findPropertyInClassDefinition(KNativePointer context, KNativePointer classInstance, char *keyName)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
-    std::size_t bodySize = 0;
-    const auto _body = GetImpl()->ClassDefinitionBody(_context, _instance, &bodySize);
-    if (_body == nullptr) {
-        return nullptr;
-    }
-    const auto _bodyInstance = reinterpret_cast<es2panda_AstNode**>(_body);
-    for (std::size_t i = 0; i < bodySize; i++) {
-        const auto _member = reinterpret_cast<es2panda_AstNode*>(_bodyInstance[i]);
-        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, _member));
-        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
-            return _member;
-        }
-    }
-    return nullptr;
-}
+static KNativePointer findPropertyInClassDefinition(
+    KNativePointer context, KNativePointer classInstance, char *keyName);
 
 static KNativePointer findPropertyInTSInterfaceDeclaration(
-    KNativePointer context, KNativePointer classInstance, char *keyName)
-{
-    const auto _context = reinterpret_cast<es2panda_Context*>(context);
-    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
-    const auto _body = GetImpl()->TSInterfaceDeclarationBody(_context, _instance);
-    if (_body == nullptr) {
-        return nullptr;
-    }
-    const auto _bodyInstance = reinterpret_cast<es2panda_AstNode*>(_body);
-    std::size_t bodySize = 0;
-    const auto _bodyBody = GetImpl()->TSInterfaceBodyBodyConst(_context, _bodyInstance, &bodySize);
-    if (_bodyBody == nullptr) {
-        return nullptr;
-    }
-    const auto _bodyBodyInstance = reinterpret_cast<es2panda_AstNode**>(_bodyBody);
-    for (std::size_t i = 0; i < bodySize; i++) {
-        const auto _member = reinterpret_cast<es2panda_AstNode*>(_bodyBodyInstance[i]);
-        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, _member));
-        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
-            return _member;
-        }
-    }
-    return nullptr;
-}
+    KNativePointer context, KNativePointer classInstance, char *keyName);
 
 KNativePointer impl_ClassVariableDeclaration(KNativePointer context, KNativePointer classInstance);
 
@@ -2282,3 +2242,63 @@ KNativePointer impl_ClassDefinitionFindSuperClassByName(KNativePointer contextPt
     return nullptr;
 }
 KOALA_INTEROP_3(ClassDefinitionFindSuperClassByName, KNativePointer, KNativePointer, KNativePointer, KStringPtr);
+
+static KNativePointer findPropertyInClassDefinition(KNativePointer context, KNativePointer classInstance, char *keyName)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
+
+    // Use ClassDefinitionResolver struct for safe property collection
+    ClassDefinitionResolver classResolver(_context, _instance);
+
+    // Double-check the struct is valid after construction (defensive programming)
+    if (!classResolver.IsValid()) {
+        return nullptr;
+    }
+
+    // Get collected properties using accessor method
+    const auto& properties = classResolver.GetProperties();
+    for (auto* member : properties) {
+        if (member == nullptr) {
+            continue;
+        }
+        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, member));
+        if (_key == nullptr) {
+            continue;
+        }
+        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
+            return member;
+        }
+    }
+    return nullptr;
+}
+
+static KNativePointer findPropertyInTSInterfaceDeclaration(
+    KNativePointer context, KNativePointer classInstance, char *keyName)
+{
+    const auto _context = reinterpret_cast<es2panda_Context*>(context);
+    const auto _instance = reinterpret_cast<es2panda_AstNode*>(classInstance);
+
+    // Use TSInterfaceDeclarationResolver struct for safe property collection
+    TSInterfaceDeclarationResolver interfaceResolver(_context, _instance);
+
+    if (!interfaceResolver.IsValid()) {
+        return nullptr;
+    }
+
+    // Get collected properties using accessor method
+    const auto& properties = interfaceResolver.GetProperties();
+    for (auto* member : properties) {
+        if (member == nullptr) {
+            continue;
+        }
+        const auto _key = reinterpret_cast<es2panda_AstNode*>(GetImpl()->ClassElementKey(_context, member));
+        if (_key == nullptr) {
+            continue;
+        }
+        if (strcmp(GetImpl()->IdentifierName(_context, _key), keyName) == 0) {
+            return member;
+        }
+    }
+    return nullptr;
+}
