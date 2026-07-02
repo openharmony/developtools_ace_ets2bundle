@@ -70,8 +70,8 @@ export function expectNameInDeclarationAstNode(node: arkts.AstNode): string | un
     if (arkts.isTSInterfaceDeclaration(node)) {
         return node.id?.name;
     }
-    if (arkts.isTSEnumDeclaration(node)) {
-        return node.key?.name;
+    if (arkts.isTSTypeAliasDeclaration(node)) {
+        return node.id?.name;
     }
     return undefined;
 }
