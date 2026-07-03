@@ -1,0 +1,31 @@
+{
+    "deepComputedChain": [],
+    "monitorMulti": [],
+    "complexBuilder": [],
+    "nestedCustomComp": [],
+    "envDecoratorValid": [
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        }
+    ],
+    "animatableParamValid": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ],
+    "extendTextValid": [],
+    "provideConsumeValid": [],
+    "v2CompleteExample": [],
+    "validationSummary": []
+}
