@@ -1,0 +1,133 @@
+{
+    "v1StateInV2": [
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Prop' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Link' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        },
+        {
+            "message": "The '@Provide' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
+    ],
+    "v2LocalInV1": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Param' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Event' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@Computed' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        }
+    ],
+    "multiDecoratorMember": [
+        {
+            "message": "The property 'dualDec' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        },
+        {
+            "message": "The '@State' property 'stateLink' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "decoratorOnStatic": [
+        {
+            "message": "The static variable of struct cannot be used together with built-in decorators.",
+            "type": "ERROR",
+            "code": "10905313"
+        }
+    ],
+    "watchValidation": [
+        {
+            "message": "'@Watch(123)' can not decorate the method.",
+            "type": "ERROR",
+            "code": "10905112"
+        },
+        {
+            "message": "Regular variable 'valueState' can not be decorated with '@Watch'.",
+            "type": "ERROR",
+            "code": "10905310"
+        }
+    ],
+    "customDialogRules": [
+        {
+            "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
+            "type": "ERROR",
+            "code": "10905211"
+        }
+    ],
+    "structInheritance": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'StructExtends'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+            "type": "ERROR",
+            "code": "10905212"
+        }
+    ],
+    "duplicateBuildMethod": [
+        {
+            "message": "The struct 'NoBuildMethod' must have at least and at most one 'build' method.",
+            "type": "ERROR",
+            "code": "10905103",
+            "solutions": [
+                "A structurally modified page must have at least one and no more than one 'build' method."
+            ]
+        }
+    ],
+    "buildWithParams": [
+        {
+            "message": "The 'build' method can not have arguments.",
+            "type": "ERROR",
+            "code": "10905106"
+        }
+    ],
+    "entryValidation": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        }
+    ]
+}
