@@ -1,0 +1,82 @@
+{
+    "resourceTypeDeep": [
+        {
+            "message": "Unknown resource type 'unknown'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource type 'invalid'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        }
+    ],
+    "resourceSourceDeep": [
+        {
+            "message": "Unknown resource source 'wrong'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource source 'bad'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource source 'invalid'.",
+            "type": "ERROR",
+            "code": "10903331"
+        }
+    ],
+    "resourceFormatDeep": [
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        }
+    ],
+    "rawfileDeepValidation": [
+        {
+            "message": "No such 'missing.png' resource in current module.",
+            "type": "ERROR",
+            "code": "10904333"
+        },
+        {
+            "message": "No such 'nonexistent/nested.jpg' resource in current module.",
+            "type": "ERROR",
+            "code": "10904333"
+        }
+    ],
+    "resourceEdgeDeep": [
+        {
+            "message": "Unknown resource type ''.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource source ''.",
+            "type": "ERROR",
+            "code": "10903331"
+        }
+    ],
+    "resourceValidPatterns": [],
+    "resourceConditionalValid": [],
+    "resourceLayoutValid": [],
+    "resourceSummaryValid": [],
+    "resourceStateValid": []
+}
