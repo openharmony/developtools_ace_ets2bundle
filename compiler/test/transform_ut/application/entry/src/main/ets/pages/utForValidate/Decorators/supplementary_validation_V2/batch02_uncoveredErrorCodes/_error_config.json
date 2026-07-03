@@ -1,0 +1,65 @@
+{
+    "builderParamInitError": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "builderParamMustInitError": [],
+    "builderParamV2Error": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function.",
+            "type": "ERROR",
+            "code": "10905107"
+        }
+    ],
+    "componentReuseV2ParamsError": [
+        {
+            "message": "Methods decorated with '@ComponentReuse' in '@ComponentV2' cannot have input parameters.",
+            "type": "ERROR",
+            "code": "10905370"
+        }
+    ],
+    "computedSetterError": [
+        {
+            "message": "A property decorated by '@Computed' cannot define a set method.",
+            "type": "ERROR",
+            "code": "10905130"
+        }
+    ],
+    "extendAnimatableConflictError": [
+        {
+            "message": "A function can only be decorated by one of the '@AnimatableExtend', '@Builder', '@Extend', '@Styles', '@Concurrent' and '@Sendable'.",
+            "type": "ERROR",
+            "code": "10905117"
+        },
+        {
+            "message": "The function can not be decorated by '@Extend' and '@AnimatableExtend' at the same time.",
+            "type": "ERROR",
+            "code": "10905111"
+        }
+    ],
+    "onceWithoutParamError": [
+        {
+            "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905326"
+        }
+    ],
+    "paramUnionTypeError": [],
+    "provideConsumeInitError": [
+        {
+            "message": "The '@Consume' property 'consumedValue' in the custom component 'ConsumeWithoutProvide' cannot be initialized here (forbidden to specify).",
+            "type": "ERROR",
+            "code": "10905317"
+        }
+    ],
+    "stylesFunctionArgsError": [
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        }
+    ]
+}
