@@ -1,0 +1,41 @@
+{
+    "builderReturnError": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "builderNonUIContent": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "builderParamInitError": [
+        {
+            "message": "'@BuilderParam' property can only initialized by '@Builder' function or '@LocalBuilder' method in struct.",
+            "type": "ERROR",
+            "code": "10905101"
+        }
+    ],
+    "extendParamRules": [],
+    "stylesFunctionRules": [
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905110"
+        }
+    ],
+    "builderGlobalValid": [],
+    "localBuilderValid": [],
+    "extendMultiValid": [],
+    "stylesValidDeep": [],
+    "animatableValidUse": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "WARN"
+        }
+    ]
+}
