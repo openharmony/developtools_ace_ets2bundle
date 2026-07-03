@@ -41,7 +41,6 @@ const INCOMPATIBLE_DECORATORS: string[] = [
     DecoratorNames.PROVIDE,
     DecoratorNames.CONSUME,
     DecoratorNames.OBJECT_LINK,
-    DecoratorNames.WATCH,
     DecoratorNames.BUILDER_PARAM,
     DecoratorNames.LOCAL_STORAGE_LINK,
     DecoratorNames.PROP_REF,
