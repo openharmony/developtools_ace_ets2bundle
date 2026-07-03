@@ -1,0 +1,126 @@
+{
+    "invalidResourceSource": [
+        {
+            "message": "Unknown resource source 'wrong'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource source 'bad'.",
+            "type": "ERROR",
+            "code": "10903331"
+        }
+    ],
+    "invalidResourceType": [
+        {
+            "message": "Unknown resource type 'unknown'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource type 'invalid'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "invalidResourceFormat": [
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        }
+    ],
+    "rawfilePatterns": [
+        {
+            "message": "No such 'test.png' resource in current module.",
+            "type": "ERROR",
+            "code": "10904333"
+        },
+        {
+            "message": "No such 'subfolder/nested.gif' resource in current module.",
+            "type": "ERROR",
+            "code": "10904333"
+        }
+    ],
+    "validResourceRefs": [
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "entryWithParam": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        }
+    ],
+    "multipleEntry": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        }
+    ],
+    "entryContainer": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        }
+    ],
+    "resourceStringFormat": [
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource type 'string'.",
+            "type": "ERROR",
+            "code": "10903330"
+        }
+    ],
+    "resourceEdgeCases": [
+        {
+            "message": "Unknown resource type ''.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource source ''.",
+            "type": "ERROR",
+            "code": "10903331"
+        }
+    ]
+}
