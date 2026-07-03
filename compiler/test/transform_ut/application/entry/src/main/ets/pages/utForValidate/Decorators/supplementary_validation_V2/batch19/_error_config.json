@@ -1,0 +1,59 @@
+{
+    "structDeepRules": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'NoDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        }
+    ],
+    "structBuildRules": [
+        {
+            "message": "The struct 'NoBuildMethod' must have at least and at most one 'build' method.",
+            "type": "ERROR",
+            "code": "10905103",
+            "solutions": ["A structurally modified page must have at least one and no more than one 'build' method."]
+        },
+        {
+            "message": "The struct 'DuplicateBuild' must have at least and at most one 'build' method.",
+            "type": "ERROR",
+            "code": "10905103",
+            "solutions": ["A structurally modified page must have at least one and no more than one 'build' method."]
+        }
+    ],
+    "entryValidationDeep": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": ["Please make sure that the splash page has one and only one '@Entry' decorator."]
+        }
+    ],
+    "decoratorTargetRules": [
+        {
+            "message": "'@LocalBuilder' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        }
+    ],
+    "decoratorConflictRules": [
+        {
+            "message": "Regular variable 'trackedCount' can not be decorated with '@Watch'.",
+            "type": "ERROR",
+            "code": "10905310"
+        },
+        {
+            "message": "Duplicate '@Builder' decorators for method are not allowed.",
+            "type": "WARN"
+        }
+    ],
+    "structValidPatterns": [],
+    "entryValidPatterns": [],
+    "structInheritValid": [],
+    "structComplexValid": [],
+    "structSummaryValid": []
+}
