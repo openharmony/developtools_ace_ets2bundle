@@ -4864,5 +4864,391 @@
             "type": "ERROR",
             "code": "10905117"
         }
+    ],
+    "observedInheritanceConflicts": [
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "A class decorated by '@Observed' cannot inherit from a class decorated by '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905224"
+        },
+        {
+            "message": "A class decorated by '@ObservedV2' cannot inherit from a class decorated by '@Observed'.",
+            "type": "ERROR",
+            "code": "10905225"
+        },
+        {
+            "message": "A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.",
+            "type": "ERROR",
+            "code": "10905226"
+        }
+    ],
+    "structValidationErrors": [
+        {
+            "message": "Decorator '@Component', '@ComponentV2', or '@CustomDialog' is missing for struct 'StructWithoutComponentDecorator'.",
+            "type": "ERROR",
+            "code": "10905233"
+        },
+        {
+            "message": "The struct 'StructWithInvalidDecorator' use invalid decorator.",
+            "type": "WARN"
+        }
+    ],
+    "resourceValidationErrors": [
+        {
+            "message": "Unknown resource source 'unknown'.",
+            "type": "ERROR",
+            "code": "10903331"
+        },
+        {
+            "message": "Unknown resource type 'unknown'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Unknown resource type 'color'.",
+            "type": "ERROR",
+            "code": "10903330"
+        },
+        {
+            "message": "Invalid resource file parameter. Enter a value in the format of 'xxx.yyy.zzz'.",
+            "type": "ERROR",
+            "code": "10905332"
+        },
+        {
+            "message": "Unknown resource name 'custom_font'.",
+            "type": "ERROR",
+            "code": "10903329"
+        }
+    ],
+    "decoratorUsageRestrictions": [
+        {
+            "message": "Use the '@Builder' decorator only in the global scope or in a struct.",
+            "type": "ERROR",
+            "code": "10905114"
+        },
+        {
+            "message": "Duplicate '@Monitor' decorators for method are not allowed.",
+            "type": "ERROR",
+            "code": "10905119"
+        },
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@Concurrent' can not be used on 'Generator' function declaration.",
+            "type": "ERROR",
+            "code": "10905122"
+        },
+        {
+            "message": "'@Concurrent' can not be used on method, please use it on function declaration.",
+            "type": "ERROR",
+            "code": "10905123"
+        },
+        {
+            "message": "'@LocalBuilder' can only decorate method.",
+            "type": "ERROR",
+            "code": "10905115"
+        },
+        {
+            "message": "'@State' can not decorate the method.",
+            "type": "ERROR",
+            "code": "10905112"
+        },
+        {
+            "message": "The struct 'MultipleBuildMethods' must have at least and at most one 'build' method.",
+            "type": "ERROR",
+            "code": "10905103",
+            "solutions": [
+                "A structurally modified page must have at least one and no more than one 'build' method."
+            ]
+        },
+        {
+            "message": "Static methods in custom components cannot be decorated by '@LocalBuilder'.",
+            "type": "ERROR",
+            "code": "10905104"
+        },
+        {
+            "message": "'@Styles' decorated functions and methods cannot have arguments.",
+            "type": "ERROR",
+            "code": "10905105"
+        },
+        {
+            "message": "The 'build' method can not have arguments.",
+            "type": "ERROR",
+            "code": "10905106"
+        },
+        {
+            "message": "The property 'function' must specify a type.",
+            "type": "ERROR",
+            "code": "10905305"
+        },
+        {
+            "message": "The property 'message' cannot have multiple state management decorators.",
+            "type": "ERROR",
+            "code": "10905302"
+        }
+    ],
+    "componentMemberErrors": [
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "'@Watch' cannot be used with 'nonExistentMethod'. Apply it only to parameters that correspond to existing methods.",
+            "type": "ERROR",
+            "code": "10905301"
+        },
+        {
+            "message": "The '@State' property 'controller' cannot be a 'CustomDialogController' object.",
+            "type": "ERROR",
+            "code": "10905308"
+        },
+        {
+            "message": "Regular variable 'regularVar' can not be decorated with '@Watch'.",
+            "type": "ERROR",
+            "code": "10905310"
+        },
+        {
+            "message": "'@Watch' cannot be used with '123'. Apply it only to 'string' parameters.",
+            "type": "ERROR",
+            "code": "10905311"
+        },
+        {
+            "message": "The static variable of struct cannot be used together with built-in decorators.",
+            "type": "ERROR",
+            "code": "10905313"
+        }
+    ],
+    "uiBuildErrors": [
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "The 'Blank' component can only be nested in the 'Row,Column,Flex' parent component.",
+            "type": "ERROR",
+            "code": "10905201"
+        },
+        {
+            "message": "The Button component with a label parameter can not have any child.",
+            "type": "ERROR",
+            "code": "10905202"
+        },
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "'console.log(x);' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        },
+        {
+            "message": "In an '@Entry' decorated component, the 'build' method can have only one root node, which must be a container component.",
+            "type": "ERROR",
+            "code": "10905210"
+        },
+        {
+            "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
+            "type": "ERROR",
+            "code": "10905211"
+        },
+        {
+            "message": "Structs are not allowed to inherit from classes or implement interfaces.",
+            "type": "ERROR",
+            "code": "10905212"
+        },
+        {
+            "message": "The component 'Image' can't have any child.",
+            "type": "ERROR",
+            "code": "10905222"
+        },
+        {
+            "message": "The 'Button' component can have only one child component.",
+            "type": "ERROR",
+            "code": "10905220"
+        }
+    ],
+    "structNamingErrors": [
+        {
+            "message": "The struct 'Button' cannot have the same name as the built-in component 'Button'.",
+            "type": "ERROR",
+            "code": "10905227"
+        },
+        {
+            "message": "The struct 'fontSize' cannot have the same name as the built-in attribute 'fontSize'.",
+            "type": "ERROR",
+            "code": "10905228"
+        },
+        {
+            "message": "A page can't contain more than one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905231"
+        },
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Env' decorator can only be used in structs decorated with either '@Component' or '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905250"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@CustomDialog' decorated custom component must contain a property of the CustomDialogController type.",
+            "type": "ERROR",
+            "code": "10905211"
+        }
+    ],
+    "v2SpecificErrors": [
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "'@Local' can only decorate member property.",
+            "type": "ERROR",
+            "code": "10905346"
+        },
+        {
+            "message": "In a struct decorated with '@Component', the function decorated with '@ComponentReuse' has the following input parameter: params: Record<string, Object | null | undefined>",
+            "type": "ERROR",
+            "code": "10905369"
+        },
+        {
+            "message": "The property 'value' must specify a type.",
+            "type": "ERROR",
+            "code": "10905328"
+        },
+        {
+            "message": "The '@Extend' function cannot have the same name as the built-in style attribute 'toolbarConfiguration' of the component 'Navigation'.",
+            "type": "WARN"
+        }
+    ],
+    "envDecoratorErrors": [
+        {
+            "message": "A page configured in 'main_pages.json or build-profile.json5' must have one and only one '@Entry' decorator.",
+            "type": "ERROR",
+            "code": "10905402",
+            "solutions": [
+                "Please make sure that the splash page has one and only one '@Entry' decorator."
+            ]
+        },
+        {
+            "message": "The member property or method can not be decorated by multiple built-in decorators.",
+            "type": "ERROR",
+            "code": "10905121"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        },
+        {
+            "message": "The '@Env' decorator can only decorate 'WindowSizeLayoutBreakpointInfo', 'SizeInVP', 'Size', 'UIEnvWindowAvoidAreaInfoPX', 'UIEnvWindowAvoidAreaInfoVP' classes or their child classes.",
+            "type": "ERROR",
+            "code": "10905251"
+        },
+        {
+            "message": "The '@Env' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": [
+                "Please initialize the rules according to the decorator."
+            ]
+        }
+    ],
+    "v1V2Incompatibility2": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
     ]
 }
