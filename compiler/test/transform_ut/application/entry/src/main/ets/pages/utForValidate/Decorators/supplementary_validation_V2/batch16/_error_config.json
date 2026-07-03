@@ -1,0 +1,39 @@
+{
+    "paramRequireDeep": [
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Param' is not assigned a default value, it must also be decorated with '@Require'.",
+            "type": "ERROR",
+            "code": "10905327"
+        },
+        {
+            "message": "When a variable decorated with '@Once', it must also be decorated with '@Param'.",
+            "type": "ERROR",
+            "code": "10905326"
+        }
+    ],
+    "eventTwoWayBind": [],
+    "computedDeepRules": [
+        {
+            "message": "'@Computed' can only decorate 'GetAccessor'.",
+            "type": "ERROR",
+            "code": "10905116"
+        }
+    ],
+    "monitorDeepRules": [
+        {
+            "message": "The '@Monitor' decorator needs to monitor the state variables that exist.",
+            "type": "WARN"
+        }
+    ],
+    "providerConsumerDeep": [],
+    "paramEventFlow": [],
+    "v2StateSummary": [],
+    "onceRequireValid": [],
+    "computedValidChain": [],
+    "paramDefaultValid": []
+}
