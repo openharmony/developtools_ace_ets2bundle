@@ -1,0 +1,71 @@
+{
+    "invalidExpressions": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        },
+        {
+            "message": "'delete this.prop.x' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildWithSwitch": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "buildWithDebugger": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "buildWithLabeled": [
+        {
+            "message": "Only UI component syntax can be written here.",
+            "type": "ERROR",
+            "code": "10905209"
+        }
+    ],
+    "buildWithVoid": [
+        {
+            "message": "'void(this.count)' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildWithTypeAssertion": [
+        {
+            "message": "'(this.data as string).length' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildWithSpread": [
+        {
+            "message": "'[1, 2, 3]' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildWithComma": [
+        {
+            "message": "'(this.count, this.count)' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildWithConditional": [
+        {
+            "message": "'this.flag ? Text(\"true\") : Text(\"false\")' does not meet UI component syntax.",
+            "type": "ERROR",
+            "code": "10905204"
+        }
+    ],
+    "buildValidPatterns": []
+}
