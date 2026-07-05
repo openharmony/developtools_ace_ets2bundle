@@ -1,0 +1,40 @@
+{
+    "classDecoratorSummary": [],
+    "observedConflictDeep": [
+        {
+            "message": "A class can not be decorated by '@Observed' and '@ObservedV2' at the same time.",
+            "type": "ERROR",
+            "code": "10905226"
+        }
+    ],
+    "observedInheritConflict": [],
+    "observedV2NestingValid": [],
+    "observedV2ValidDeep": [],
+    "sendableValidPatterns": [],
+    "traceComputedValid": [],
+    "traceValidationDeep": [
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        },
+        {
+            "message": "The '@Trace' can decorate only member 'variables' within a 'class' decorated with '@ObservedV2'.",
+            "type": "ERROR",
+            "code": "10905343"
+        }
+    ],
+    "typeObservedValid": [],
+    "v2DecoratorInClass": [
+        {
+            "message": "The '@Param' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        },
+        {
+            "message": "The '@Local' decorator can only be used with 'struct'.",
+            "type": "ERROR",
+            "code": "10905337"
+        }
+    ]
+}
