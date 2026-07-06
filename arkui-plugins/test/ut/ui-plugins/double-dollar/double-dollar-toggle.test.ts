@@ -82,18 +82,18 @@ class BooleanClass {
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_boo = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "boo", ((({let gensym___9142460 = initializers;
-    (((gensym___9142460) == (null)) ? undefined : gensym___9142460.boo)})) ?? ([true, false, true])));
-    this.__backing_booClass = STATE_MGMT_FACTORY.makeState<BooleanClass>(this, "booClass", ((({let gensym___145381365 = initializers;
-    (((gensym___145381365) == (null)) ? undefined : gensym___145381365.booClass)})) ?? (new BooleanClass())));
+    this.__backing_boo = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "boo", (({let gensym___9142460 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_boo)}) ? (initializers!.boo as Array<boolean>) : ([true, false, true] as Array<boolean>)));
+    this.__backing_booClass = STATE_MGMT_FACTORY.makeState<BooleanClass>(this, "booClass", (({let gensym___145381365 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_booClass)}) ? (initializers!.booClass as BooleanClass) : (new BooleanClass() as BooleanClass)));
   }
 
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_boo!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.boo)})) ?? ([true, false, true])));
-    this.__backing_booClass!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.booClass)})) ?? (new BooleanClass())));
+    this.__backing_boo!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.boo)})) ?? ([true, false, true])) as Array<boolean>));
+    this.__backing_booClass!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.booClass)})) ?? (new BooleanClass())) as BooleanClass));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

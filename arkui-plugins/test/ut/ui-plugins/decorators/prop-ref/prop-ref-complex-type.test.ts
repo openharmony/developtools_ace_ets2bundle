@@ -122,30 +122,30 @@ final class PropType extends BaseEnum<int> {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<Per>(this, "propVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? (new Per(6))));
-    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<Array<number>>(this, "propVar2", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<PropType>(this, "propVar3", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (PropType.TYPE3)));
-    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<Set<string>>(this, "propVar4", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<Array<boolean>>(this, "propVar5", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? ([true, false])));
-    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar6", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar7", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_propVar8 = STATE_MGMT_FACTORY.makePropRef<((sr: string)=> void)>(this, "propVar8", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_propVar9 = STATE_MGMT_FACTORY.makePropRef<Date>(this, "propVar9", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_propVar10 = STATE_MGMT_FACTORY.makePropRef<Map<number, Per>>(this, "propVar10", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_propVar11 = STATE_MGMT_FACTORY.makePropRef<(string | number)>(this, "propVar11", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar11)})) ?? (0.0)));
-    this.__backing_propVar12 = STATE_MGMT_FACTORY.makePropRef<(Set<string> | Per)>(this, "propVar12", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar12)})) ?? (new Per(6))));
+    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<Per>(this, "propVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar1)}) ? (initializers!.propVar1 as Per) : (new Per(6) as Per)));
+    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<Array<number>>(this, "propVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar2)}) ? (initializers!.propVar2 as Array<number>) : (new Array<number>(3, 6, 8) as Array<number>)));
+    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<PropType>(this, "propVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar3)}) ? (initializers!.propVar3 as PropType) : PropType.TYPE3));
+    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<Set<string>>(this, "propVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar4)}) ? (initializers!.propVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
+    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<Array<boolean>>(this, "propVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar5)}) ? (initializers!.propVar5 as Array<boolean>) : ([true, false] as Array<boolean>)));
+    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar6", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar6)}) ? (initializers!.propVar6 as Array<Per>) : (new Array<Per>(new Per(7), new Per(11)) as Array<Per>)));
+    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<Array<Per>>(this, "propVar7", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar7)}) ? (initializers!.propVar7 as Array<Per>) : ([new Per(7), new Per(11)] as Array<Per>)));
+    this.__backing_propVar8 = STATE_MGMT_FACTORY.makePropRef<((sr: string)=> void)>(this, "propVar8", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar8)}) ? (initializers!.propVar8 as ((sr: string)=> void)) : (((sr: string) => {}) as ((sr: string)=> void))));
+    this.__backing_propVar9 = STATE_MGMT_FACTORY.makePropRef<Date>(this, "propVar9", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar9)}) ? (initializers!.propVar9 as Date) : (new Date("2025-4-23") as Date)));
+    this.__backing_propVar10 = STATE_MGMT_FACTORY.makePropRef<Map<number, Per>>(this, "propVar10", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar10)}) ? (initializers!.propVar10 as Map<number, Per>) : (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]) as Map<number, Per>)));
+    this.__backing_propVar11 = STATE_MGMT_FACTORY.makePropRef<(string | number)>(this, "propVar11", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar11)}) ? (initializers!.propVar11 as (string | number)) : (0.0 as (string | number))));
+    this.__backing_propVar12 = STATE_MGMT_FACTORY.makePropRef<(Set<string> | Per)>(this, "propVar12", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar12)}) ? (initializers!.propVar12 as (Set<string> | Per)) : (new Per(6) as (Set<string> | Per))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
@@ -200,30 +200,30 @@ final class PropType extends BaseEnum<int> {
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_propVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? (new Per(6))));
-    this.__backing_propVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_propVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? (new Per(6))) as Per));
+    this.__backing_propVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<number>));
     this.__backing_propVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (PropType.TYPE3)));
-    this.__backing_propVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_propVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? ([true, false])));
-    this.__backing_propVar6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_propVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_propVar8!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_propVar9!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_propVar10!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_propVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar11)})) ?? (0.0)));
-    this.__backing_propVar12!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar12)})) ?? (new Per(6))));
+    this.__backing_propVar4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<string>));
+    this.__backing_propVar5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? ([true, false])) as Array<boolean>));
+    this.__backing_propVar6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))) as Array<Per>));
+    this.__backing_propVar7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar7)})) ?? ([new Per(7), new Per(11)])) as Array<Per>));
+    this.__backing_propVar8!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar8)})) ?? (((sr: string) => {}))) as ((sr: string)=> void)));
+    this.__backing_propVar9!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar9)})) ?? (new Date("2025-4-23"))) as Date));
+    this.__backing_propVar10!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<number, Per>));
+    this.__backing_propVar11!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar11)})) ?? (0.0)) as (string | number)));
+    this.__backing_propVar12!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar12)})) ?? (new Per(6))) as (Set<string> | Per)));
   }
 
   @MemoIntrinsic() 

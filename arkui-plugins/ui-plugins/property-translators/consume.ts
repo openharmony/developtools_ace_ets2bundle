@@ -78,14 +78,19 @@ function initializeStructWithConsumeProperty(
             PropertyValueCache.getInstance().collect({ value: defaultValue });
         }
     }
-    const stateManagementCallType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        defaultValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
-    if (this.isMemoShouldUpdate && !!stateManagementCallType) {
-        PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+    if (this.isMemoShouldUpdate && !!stateMgmtCallDefaultType) {
+        PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
     }
     return arkts.factory.createExpressionStatement(assign);
 }
@@ -123,7 +128,8 @@ export class ConsumeTranslator extends PropertyTranslator {
         super(options);
         const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 
@@ -152,7 +158,8 @@ export class ConsumeCachedTranslator extends PropertyCachedTranslator {
         super(options);
         const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 

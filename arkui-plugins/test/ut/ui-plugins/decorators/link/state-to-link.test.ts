@@ -170,15 +170,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry() @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", ((({let gensym___80922148 = initializers;
-    (((gensym___80922148) == (null)) ? undefined : gensym___80922148.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
+    this.__backing_parentSelectedDate = STATE_MGMT_FACTORY.makeState<Date>(this, "parentSelectedDate", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_parentSelectedDate)}) ? (initializers!.parentSelectedDate as Date) : (new Date("2021-08-08") as Date)));
   }
 
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_parentSelectedDate!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentSelectedDate)})) ?? (new Date("2021-08-08"))));
+    this.__backing_parentSelectedDate!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentSelectedDate)})) ?? (new Date("2021-08-08"))) as Date));
   }
 
   @MemoIntrinsic() 
@@ -236,7 +236,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       }));
       DateComponent._invoke(undefined, (() => {
         return {
-          __backing_selectedDate: this.__backing_parentSelectedDate,
+          __backing_selectedDate: (this.__backing_parentSelectedDate as IStateDecoratedVariable<Date>),
           __options_has_selectedDate: true,
         };
       }), undefined, undefined, undefined);

@@ -36,6 +36,7 @@ import {
     PropertyCachedTranslator,
     PropertyCachedTranslatorOptions,
     PropertyTranslator,
+    PropertyTranslatorOptions,
 } from './base';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -62,18 +63,23 @@ function initializeStructWithConsumerProperty(
         ),
         defaultValue,
     ];
-    const stateManagementCallType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        defaultValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!defaultValue) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
         }
-        if (!!stateManagementCallType) {
-            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return arkts.factory.createExpressionStatement(assign);
@@ -93,6 +99,13 @@ export class ConsumerTranslator extends PropertyTranslator {
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
     protected hasResetOnReuse: boolean = true;
+
+    constructor(options: PropertyTranslatorOptions) {
+        super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
+    }
 
     initializeStruct(
         newName: string,
@@ -117,6 +130,9 @@ export class ConsumerCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
     }
 
     initializeStruct(

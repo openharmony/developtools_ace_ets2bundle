@@ -88,13 +88,13 @@ function main() {}
         this.__backing_aaController = undefined
       }
     }
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___217676902 = initializers;
-    (((gensym___217676902) == (null)) ? undefined : gensym___217676902.text)})) ?? ("text")));
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text)}) ? (initializers!.text as string) : ("text" as string)));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
   
-  private __backing_aaController?: (CustomDialogController | undefined);
+  private __backing_aaController?: (CustomDialogController | undefined | undefined);
   public get aaController(): (CustomDialogController | undefined) {
     return (this.__backing_aaController as (CustomDialogController | undefined));
   }
@@ -163,16 +163,16 @@ function main() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___95501822 = initializers;
-    (((gensym___95501822) == (null)) ? undefined : gensym___95501822.dialogController)})) ?? (({let gensym___90667230: Any;
-    gensym___90667230 = new CustomDialogController({
+    this.__backing_dialogController = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_dialogController)}) ? (initializers!.dialogController as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
+    gensym___<some_random_number> = new CustomDialogController({
       builder: @Memo() (() => {
-        CustomDialogExample._invoke(undefined, undefined, (gensym___90667230 as CustomDialogController), undefined);
+        CustomDialogExample._invoke(undefined, undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
       }),
       autoCancel: true,
       baseComponent: this,
     })
-    (gensym___90667230 as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
   
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}

@@ -101,15 +101,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 } as NavInterface));
 @Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", ((({let gensym___117212394 = initializers;
-    (((gensym___117212394) == (null)) ? undefined : gensym___117212394.message)})) ?? ("Hello World")));
+    this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_message)}) ? (initializers!.message as string) : ("Hello World" as string)));
   }
   
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_message!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")));
+    this.__backing_message!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")) as string));
   }
   
   @MemoIntrinsic() 
@@ -281,15 +281,15 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
 
 @Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
     public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-        this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, \"message\", ((({let gensym___<some_random_number> = initializers;
-            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (\"Hello World\")));
+        this.__backing_message = STATE_MGMT_FACTORY.makeState<string>(this, "message", (({let gensym___<some_random_number> = initializers;
+            (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_message)}) ? (initializers!.message as string) : ("Hello World" as string)));
     }
 
     public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
     public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-        this.__backing_message!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")));
+        this.__backing_message!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+        (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")) as string));
     }
 
     @MemoIntrinsic() 

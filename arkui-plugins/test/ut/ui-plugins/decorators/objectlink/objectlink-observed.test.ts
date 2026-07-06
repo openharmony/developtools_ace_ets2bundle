@@ -188,9 +188,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_label = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? ("date"));
-    this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<DateClass>(this, "data", (({let gensym___<some_random_number> = initializers;
+    this.__backing_label = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_label)}) ? (initializers!.label as string) : ("date" as string));
+    this.__backing_data = STATE_MGMT_FACTORY.makeObjectLink<(DateClass | undefined)>(this, "data", (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>!.data)}) as DateClass));
   }
 
@@ -228,10 +228,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_label = value;
   }
 
-  private __backing_data?: IObjectLinkDecoratedVariable<DateClass>;
+  private __backing_data?: IObjectLinkDecoratedVariable<(DateClass | undefined)>;
 
   public get data(): DateClass {
-    return this.__backing_data!.get();
+    return this.__backing_data!.get()!;
   }
 
   @Memo() 
@@ -259,15 +259,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry() @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
+    this.__backing_newData = STATE_MGMT_FACTORY.makeState<NewDate>(this, "newData", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_newData)}) ? (initializers!.newData as NewDate) : (new NewDate(new DateClass("2023-1-1")) as NewDate)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_newData!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))));
+    this.__backing_newData!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newData)})) ?? (new NewDate(new DateClass("2023-1-1")))) as NewDate));
   }
 
   @MemoIntrinsic() 

@@ -181,9 +181,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
 @Entry() @Component() final struct A extends CustomComponent<A, __Options_A> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_A | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", ((({let gensym___94024326 = initializers;
-    (((gensym___94024326) == (null)) ? undefined : gensym___94024326.a)})) ?? ("str")));
-    this.__backing_b = STATE_MGMT_FACTORY.makePropRef<string>(this, "b", (initializers!.b as string));
+    this.__backing_a = STATE_MGMT_FACTORY.makeState<string>(this, "a", (({let gensym___94024326 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_a)}) ? (initializers!.a as string) : ("str" as string)));
+    this.__backing_b = STATE_MGMT_FACTORY.makePropRef<(string | undefined)>(this, "b", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_b)}) ? (initializers!.b as string) : undefined));
   }
 
   public __updateStruct(initializers: (__Options_A | undefined)): void {
@@ -193,8 +194,8 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
   public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {
-    this.__backing_a!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.a)})) ?? ("str")));
+    this.__backing_a!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.a)})) ?? ("str")) as string));
     this.__backing_b!.resetOnReuse((initializers!.b as string));
   }
   @MemoIntrinsic() 
@@ -220,10 +221,10 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_a!.set(value);
   }
 
-  private __backing_b?: IPropRefDecoratedVariable<string>;
+  private __backing_b?: IPropRefDecoratedVariable<(string | undefined)>;
 
   public get b(): string {
-    return this.__backing_b!.get();
+    return this.__backing_b!.get()!;
   }
 
   public set b(value: string) {

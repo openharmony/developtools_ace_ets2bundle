@@ -80,15 +80,15 @@ function main() {}
 
 @Component() final struct CustomDialogUserV1 extends CustomComponent<CustomDialogUserV1, __Options_CustomDialogUserV1> {
   public __initializeStruct(initializers: (__Options_CustomDialogUserV1 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
+    this.__backing_dialogController = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_dialogController)}) ? (initializers!.dialogController as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___<some_random_number> = new CustomDialogController({
       builder: @Memo() (() => {
         CustomDialogExample._invoke(undefined, undefined, (gensym___<some_random_number> as CustomDialogController), undefined);
       }),
       baseComponent: this,
     })
-    (gensym___<some_random_number> as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUserV1 | undefined)): void {}

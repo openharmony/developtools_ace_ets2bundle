@@ -60,8 +60,8 @@ function main() {}
 
 @Component() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_builderArr = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderArr)})) ?? (new Array<@Builder() ((p1: string, p2: number)=> void)>()));
+    this.__backing_builderArr = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_builderArr)}) ? (initializers!.builderArr as Array<@Builder() ((p1: string, p2: number)=> void)>) : (new Array<@Builder() ((p1: string, p2: number)=> void)>() as Array<@Builder() ((p1: string, p2: number)=> void)>));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}

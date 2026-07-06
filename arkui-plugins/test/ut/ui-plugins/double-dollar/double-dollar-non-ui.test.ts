@@ -91,26 +91,26 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 } as NavInterface));
 @Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_str1 = STATE_MGMT_FACTORY.makeState<string>(this, "str1", ((({let gensym___147578113 = initializers;
-    (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("Hello World")));
-    this.__backing_str2 = STATE_MGMT_FACTORY.makeState<string>(this, "str2", ((({let gensym___220149772 = initializers;
-    (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("Hello")));
-    this.__backing_newStr = STATE_MGMT_FACTORY.makeState<Bindable<string>>(this, "newStr", ((({let gensym___85947701 = initializers;
-    (((gensym___85947701) == (null)) ? undefined : gensym___85947701.newStr)})) ?? (makeBindable(this.str1, ((value) => {
+    this.__backing_str1 = STATE_MGMT_FACTORY.makeState<string>(this, "str1", (({let gensym___147578113 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str1)}) ? (initializers!.str1 as string) : ("Hello World" as string)));
+    this.__backing_str2 = STATE_MGMT_FACTORY.makeState<string>(this, "str2", (({let gensym___220149772 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str2)}) ? (initializers!.str2 as string) : ("Hello" as string)));
+    this.__backing_newStr = STATE_MGMT_FACTORY.makeState<Bindable<string>>(this, "newStr", (({let gensym___85947701 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_newStr)}) ? (initializers!.newStr as Bindable<string>) : (makeBindable(this.str1, ((value) => {
       this.str1 = value;
-    })))));
+    })) as Bindable<string>)));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_str1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str1)})) ?? ("Hello World")));
-    this.__backing_str2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str2)})) ?? ("Hello")));
-    this.__backing_newStr!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    this.__backing_str1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str1)})) ?? ("Hello World")) as string));
+    this.__backing_str2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str2)})) ?? ("Hello")) as string));
+    this.__backing_newStr!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.newStr)})) ?? (makeBindable(this.str1, ((value) => {
       this.str1 = value;
-    })))));
+    })))) as Bindable<string>));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

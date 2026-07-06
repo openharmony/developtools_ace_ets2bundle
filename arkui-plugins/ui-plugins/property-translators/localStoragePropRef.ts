@@ -71,19 +71,24 @@ function initializeStructWithLocalStoragePropRefProperty(
         factory.addWatchFunc(args, this.property);
     }
     collectStateManagementTypeImport(this.stateManagementType);
-    const propertyType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        defaultValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     if (this.isMemoShouldUpdate) {
         if (!!defaultValue) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
         }
-        if (!!propertyType) {
-            PropertyValueCache.getInstance().collect({ value: propertyType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return arkts.factory.createExpressionStatement(
         arkts.factory.createAssignmentExpression(
             generateThisBacking(newName),
-            factory.generateStateMgmtFactoryCall(this.makeType, propertyType, args, true, metadata),
+            factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
             arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
         )
     );
@@ -107,7 +112,8 @@ export class LocalStoragePropRefTranslator extends PropertyTranslator {
         super(options);
         const isWatched = hasDecorator(this.property, DecoratorNames.WATCH);
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 
@@ -136,7 +142,8 @@ export class LocalStoragePropRefCachedTranslator extends PropertyCachedTranslato
         super(options);
         const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
-            isWatched
+            isWatched,
+            shouldCheckNonNull: false
         };
     }
 

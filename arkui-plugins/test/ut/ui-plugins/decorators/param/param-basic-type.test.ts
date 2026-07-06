@@ -63,16 +63,16 @@ function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeParam<string>(this, "paramVar1", ((({let gensym___264789668 = initializers;
-    (((gensym___264789668) == (null)) ? undefined : gensym___264789668.paramVar1)})) ?? ("stateVar1")));
-    this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeParam<number>(this, "paramVar2", ((({let gensym___171906071 = initializers;
-    (((gensym___171906071) == (null)) ? undefined : gensym___171906071.paramVar2)})) ?? (50)));
-    this.__backing_paramVar3 = STATE_MGMT_FACTORY.makeParam<boolean>(this, "paramVar3", ((({let gensym___241535547 = initializers;
-    (((gensym___241535547) == (null)) ? undefined : gensym___241535547.paramVar3)})) ?? (true)));
-    this.__backing_paramVar4 = STATE_MGMT_FACTORY.makeParam<undefined>(this, "paramVar4", ((({let gensym___49490075 = initializers;
-    (((gensym___49490075) == (null)) ? undefined : gensym___49490075.paramVar4)})) ?? (undefined)));
-    this.__backing_paramVar5 = STATE_MGMT_FACTORY.makeParam<null>(this, "paramVar5", ((({let gensym___17164613 = initializers;
-    (((gensym___17164613) == (null)) ? undefined : gensym___17164613.paramVar5)})) ?? (null)));
+    this.__backing_paramVar1 = STATE_MGMT_FACTORY.makeParam<string>(this, "paramVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar1)}) ? (initializers!.paramVar1 as string) : ("stateVar1" as string)));
+    this.__backing_paramVar2 = STATE_MGMT_FACTORY.makeParam<number>(this, "paramVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar2)}) ? (initializers!.paramVar2 as number) : (50 as number)));
+    this.__backing_paramVar3 = STATE_MGMT_FACTORY.makeParam<boolean>(this, "paramVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar3)}) ? (initializers!.paramVar3 as boolean) : (true as boolean)));
+    this.__backing_paramVar4 = STATE_MGMT_FACTORY.makeParam<undefined>(this, "paramVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar4)}) ? (initializers!.paramVar4 as undefined) : undefined));
+    this.__backing_paramVar5 = STATE_MGMT_FACTORY.makeParam<null>(this, "paramVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar5)}) ? (initializers!.paramVar5 as null) : null));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {
@@ -99,16 +99,16 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_paramVar1!.resetOnReuse(((({let gensym___157433564 = initializers;
-    (((gensym___157433564) == (null)) ? undefined : gensym___157433564.paramVar1)})) ?? ("stateVar1")));
-    this.__backing_paramVar2!.resetOnReuse(((({let gensym___189311109 = initializers;
-    (((gensym___189311109) == (null)) ? undefined : gensym___189311109.paramVar2)})) ?? (50)));
-    this.__backing_paramVar3!.resetOnReuse(((({let gensym___209027760 = initializers;
-    (((gensym___209027760) == (null)) ? undefined : gensym___209027760.paramVar3)})) ?? (true)));
-    this.__backing_paramVar4!.resetOnReuse(((({let gensym___227583696 = initializers;
-    (((gensym___227583696) == (null)) ? undefined : gensym___227583696.paramVar4)})) ?? (undefined)));
-    this.__backing_paramVar5!.resetOnReuse(((({let gensym___246298707 = initializers;
-    (((gensym___246298707) == (null)) ? undefined : gensym___246298707.paramVar5)})) ?? (null)));
+    this.__backing_paramVar1!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar1)}) ? (initializers!.paramVar1 as string) : ("stateVar1" as string)));
+    this.__backing_paramVar2!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar2)}) ? (initializers!.paramVar2 as number) : (50 as number)));
+    this.__backing_paramVar3!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar3)}) ? (initializers!.paramVar3 as boolean) : (true as boolean)));
+    this.__backing_paramVar4!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar4)}) ? (initializers!.paramVar4 as undefined) : undefined));
+    this.__backing_paramVar5!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_paramVar5)}) ? (initializers!.paramVar5 as null) : null));
   }
 
   @MemoIntrinsic() 

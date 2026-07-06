@@ -89,10 +89,10 @@ function main() {}
         this.__backing_aaController = undefined
       }
     }
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.text)})) ?? ("text")));
-    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hh)})) ?? ("nihao")));
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text)}) ? (initializers!.text as string) : ("text" as string)));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_hh)}) ? (initializers!.hh as string) : ("nihao" as string)));
   }
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
   @MemoIntrinsic() 
@@ -110,7 +110,7 @@ function main() {}
   public static $_invoke(initializers?: __Options_CustomDialogExample, storage?: LocalStorage, @Builder() @Memo() content?: (()=> void)): CustomDialogExample {
     throw new Error("Declare interface");
   }
-  private __backing_aaController?: (CustomDialogController | undefined);
+  private __backing_aaController?: (CustomDialogController | undefined | undefined);
   public get aaController(): (CustomDialogController | undefined) {
     return (this.__backing_aaController as (CustomDialogController | undefined));
   }
@@ -232,10 +232,10 @@ function main() {}
         this.__backing_aaController = undefined
       }
     }
-    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.text)})) ?? ("text")));
-    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.hh)})) ?? ("nihao")));
+    this.__backing_text = STATE_MGMT_FACTORY.makeState<string>(this, "text", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_text)}) ? (initializers!.text as string) : ("text" as string)));
+    this.__backing_hh = STATE_MGMT_FACTORY.makeState<string>(this, "hh", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_hh)}) ? (initializers!.hh as string) : ("nihao" as string)));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
@@ -257,7 +257,7 @@ function main() {}
     throw new Error("Declare interface");
   }
 
-  private __backing_aaController?: (CustomDialogController | undefined);
+  private __backing_aaController?: (CustomDialogController | undefined | undefined);
 
   public get aaController(): (CustomDialogController | undefined) {
     return (this.__backing_aaController as (CustomDialogController | undefined));

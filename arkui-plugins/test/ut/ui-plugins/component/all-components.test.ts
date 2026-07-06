@@ -468,7 +468,7 @@ class ANodeController extends NodeController {
 
 @Entry() @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_controller = ((({let gensym___93787132 = initializers;
+    this.__backing_controller = ({let gensym___93787132 = initializers;
     (((gensym___93787132) == (null)) ? undefined : gensym___93787132.controller)})) ?? (new RichEditorController()));
   }
   

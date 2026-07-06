@@ -88,8 +88,8 @@ class AB {
 
 @Component() final struct ImportStruct extends CustomComponent<ImportStruct, __Options_ImportStruct> {
   public __initializeStruct(initializers: (__Options_ImportStruct | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_arr = ((({let gensym___244068973 = initializers;
-    (((gensym___244068973) == (null)) ? undefined : gensym___244068973.arr)})) ?? (["a", "b", "c"]));
+    this.__backing_arr = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_arr)}) ? (initializers!.arr as Array<string>) : (["a", "b", "c"] as Array<string>));
   }
 
   public __updateStruct(initializers: (__Options_ImportStruct | undefined)): void {}

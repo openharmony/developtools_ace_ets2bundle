@@ -97,6 +97,9 @@ export class EnvTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
     }
 
     initializeStruct(
@@ -121,6 +124,9 @@ export class EnvCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        };
     }
 
     initializeStruct(

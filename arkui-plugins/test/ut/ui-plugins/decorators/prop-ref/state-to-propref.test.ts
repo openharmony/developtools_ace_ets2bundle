@@ -77,20 +77,20 @@ function main() {}
 
 @Component() final struct CountDownComponent extends CustomComponent<CountDownComponent, __Options_CountDownComponent> {
   public __initializeStruct(initializers: (__Options_CountDownComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)));
-    this.__backing_costOfOneAttempt = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.costOfOneAttempt)})) ?? (1));
-    }
+    this.__backing_count = STATE_MGMT_FACTORY.makePropRef<number>(this, "count", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count)}) ? (initializers!.count as number) : (0 as number)));
+    this.__backing_costOfOneAttempt = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_costOfOneAttempt)}) ? (initializers!.costOfOneAttempt as number) : (1 as number));
+  }
   public __updateStruct(initializers: (__Options_CountDownComponent | undefined)): void {
     if (({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count)})) {
       this.__backing_count!.update((initializers!.count as number));
-      }
     }
+  }
   public resetStateVarsOnReuse(initializers: (__Options_CountDownComponent | undefined)): void {
-    this.__backing_count!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)));
+    this.__backing_count!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? (0)) as number));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: CountDownComponent)=> void) | undefined), initializers: ((()=> __Options_CountDownComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
@@ -153,13 +153,13 @@ function main() {}
 
 @Component() final struct ParentComponent extends CustomComponent<ParentComponent, __Options_ParentComponent> {
   public __initializeStruct(initializers: (__Options_ParentComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)));
-    }
+    this.__backing_countDownStartValue = STATE_MGMT_FACTORY.makeState<number>(this, "countDownStartValue", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_countDownStartValue)}) ? (initializers!.countDownStartValue as number) : (10 as number)));
+  }
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_countDownStartValue!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)));
+    this.__backing_countDownStartValue!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)) as number));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

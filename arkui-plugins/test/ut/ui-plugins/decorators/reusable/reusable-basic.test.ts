@@ -101,10 +101,10 @@ function main() {}
 
 @Component() @Reusable() final struct Child extends CustomComponent<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
-    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)));
+    this.__backing_num = STATE_MGMT_FACTORY.makePropRef<number>(this, "num", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_num)}) ? (initializers!.num as number) : (1 as number)));
+    this.__backing_num1 = STATE_MGMT_FACTORY.makeState<number>(this, "num1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_num1)}) ? (initializers!.num1 as number) : (2 as number)));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {
@@ -123,10 +123,10 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_num!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)));
-    this.__backing_num1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)));
+    this.__backing_num!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)) as number));
+    this.__backing_num1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)) as number));
   }
 
   @MemoIntrinsic() 

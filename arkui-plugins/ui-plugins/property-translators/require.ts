@@ -57,8 +57,9 @@ export class RequireTranslator extends RegularPropertyTranslator {
     constructor(options: PropertyTranslatorOptions) {
         super(options);
         this.initializeOptions = {
-            isRequired: true
-        };
+            isRequired: true,
+            shouldCheckNonNull: false
+        }
     }
 }
 
@@ -70,11 +71,12 @@ export class RequireCachedTranslator extends RegularPropertyCachedTranslator {
     protected hasField: boolean = true;
     protected hasGetter: boolean = true;
     protected hasSetter: boolean = true;
-    
+
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
         this.initializeOptions = {
-            isRequired: true
-        };
+            isRequired: true,
+            shouldCheckNonNull: false
+        }
     }
 }

@@ -136,13 +136,20 @@ function main() {}
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));
-    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<(number | undefined)>(this, "propVar2", (initializers!.propVar2 as (number | undefined)));
-    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<boolean>(this, "propVar3", (initializers!.propVar3 as boolean));
-    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<undefined>(this, "propVar4", (initializers!.propVar4 as undefined));
-    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<null>(this, "propVar5", (initializers!.propVar5 as null));
-    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<(Array<number> | null)>(this, "propVar6", (initializers!.propVar6 as (Array<number> | null)));
-    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<(Map<string, number> | undefined)>(this, "propVar7", (initializers!.propVar7 as (Map<string, number> | undefined)));
+    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<(string | undefined)>(this, "propVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar1)}) ? (initializers!.propVar1 as string) : undefined));
+    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<(number | undefined | undefined)>(this, "propVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar2)}) ? (initializers!.propVar2 as (number | undefined)) : undefined));
+    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<(boolean | undefined)>(this, "propVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar3)}) ? (initializers!.propVar3 as boolean) : undefined));
+    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<(undefined | undefined)>(this, "propVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar4)}) ? (initializers!.propVar4 as undefined) : undefined));
+    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<(null | undefined)>(this, "propVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar5)}) ? (initializers!.propVar5 as null) : undefined));
+    this.__backing_propVar6 = STATE_MGMT_FACTORY.makePropRef<(Array<number> | null | undefined)>(this, "propVar6", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar6)}) ? (initializers!.propVar6 as (Array<number> | null)) : undefined));
+    this.__backing_propVar7 = STATE_MGMT_FACTORY.makePropRef<(Map<string, number> | undefined | undefined)>(this, "propVar7", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar7)}) ? (initializers!.propVar7 as (Map<string, number> | undefined)) : undefined));
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {
@@ -199,70 +206,70 @@ function main() {}
     throw new Error("Declare interface");
     }
 
-  private __backing_propVar1?: IPropRefDecoratedVariable<string>;
+  private __backing_propVar1?: IPropRefDecoratedVariable<(string | undefined)>;
 
   public get propVar1(): string {
-    return this.__backing_propVar1!.get();
+    return this.__backing_propVar1!.get()!;
   }
 
   public set propVar1(value: string) {
     this.__backing_propVar1!.set(value);
   }
 
-  private __backing_propVar2?: IPropRefDecoratedVariable<(number | undefined)>;
+  private __backing_propVar2?: IPropRefDecoratedVariable<(number | undefined | undefined)>;
 
   public get propVar2(): (number | undefined) {
-    return this.__backing_propVar2!.get();
+    return this.__backing_propVar2!.get()!;
   }
 
   public set propVar2(value: (number | undefined)) {
     this.__backing_propVar2!.set(value);
   }
 
-  private __backing_propVar3?: IPropRefDecoratedVariable<boolean>;
+  private __backing_propVar3?: IPropRefDecoratedVariable<(boolean | undefined)>;
 
   public get propVar3(): boolean {
-    return this.__backing_propVar3!.get();
+    return this.__backing_propVar3!.get()!;
   }
 
   public set propVar3(value: boolean) {
     this.__backing_propVar3!.set(value);
   }
 
-  private __backing_propVar4?: IPropRefDecoratedVariable<undefined>;
+  private __backing_propVar4?: IPropRefDecoratedVariable<(undefined | undefined)>;
 
   public get propVar4(): undefined {
-    return this.__backing_propVar4!.get();
+    return this.__backing_propVar4!.get()!;
   }
 
   public set propVar4(value: undefined) {
     this.__backing_propVar4!.set(value);
   }
 
-  private __backing_propVar5?: IPropRefDecoratedVariable<null>;
+  private __backing_propVar5?: IPropRefDecoratedVariable<(null | undefined)>;
 
   public get propVar5(): null {
-    return this.__backing_propVar5!.get();
+    return this.__backing_propVar5!.get()!;
   }
 
   public set propVar5(value: null) {
     this.__backing_propVar5!.set(value);
   }
 
-  private __backing_propVar6?: IPropRefDecoratedVariable<(Array<number> | null)>;
+  private __backing_propVar6?: IPropRefDecoratedVariable<(Array<number> | null | undefined)>;
 
   public get propVar6(): (Array<number> | null) {
-    return this.__backing_propVar6!.get();
+    return this.__backing_propVar6!.get()!;
   }
 
   public set propVar6(value: (Array<number> | null)) {
     this.__backing_propVar6!.set(value);
   }
 
-  private __backing_propVar7?: IPropRefDecoratedVariable<(Map<string, number> | undefined)>;
+  private __backing_propVar7?: IPropRefDecoratedVariable<(Map<string, number> | undefined | undefined)>;
 
   public get propVar7(): (Map<string, number> | undefined) {
-    return this.__backing_propVar7!.get();
+    return this.__backing_propVar7!.get()!;
   }
 
   public set propVar7(value: (Map<string, number> | undefined)) {

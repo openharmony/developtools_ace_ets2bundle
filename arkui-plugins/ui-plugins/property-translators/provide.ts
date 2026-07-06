@@ -62,16 +62,28 @@ function initializeStructWithProvideProperty(
     const args: arkts.Expression[] = [
         arkts.factory.createStringLiteral(originalName),
         alias,
-        factory.generateInitializeValue(initializePropertyValue, initializePropertyType, originalName),
+        factory.generateInitializeValue(
+            initializePropertyValue, 
+            initializePropertyType, 
+            originalName, 
+            this.initializeOptions,
+            this.isMemoCached,
+            metadata
+        ),
         allowOverride,
     ];
     if (this.initializeOptions?.isWatched) {
         factory.addWatchFunc(args, this.property);
     }
-    const stateManagementCallType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        initializePropertyValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
@@ -81,8 +93,8 @@ function initializeStructWithProvideProperty(
         if (!!initializePropertyType) {
             PropertyValueCache.getInstance().collect({ value: initializePropertyType });
         }
-        if (!!stateManagementCallType) {
-            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return arkts.factory.createExpressionStatement(assign);
@@ -108,7 +120,8 @@ export class ProvideTranslator extends PropertyTranslator {
         const isRequired = hasDecorator(this.property, DecoratorNames.REQUIRE);
         this.initializeOptions = {
             isWatched,
-            isRequired
+            isRequired,
+            shouldCheckNonNull: true
         };
     }
 
@@ -139,7 +152,8 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
         const isRequired = this.propertyInfo.annotationInfo?.hasRequire;
         this.initializeOptions = {
             isWatched,
-            isRequired
+            isRequired,
+            shouldCheckNonNull: true
         };
     }
 
@@ -151,17 +165,21 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
+    resetOnReuse(
+        newName: string,
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
         const propertyValue = this.property.value?.clone();
         const propertyType = this.propertyType?.clone();
         const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
         if (this.isMemoShouldUpdate) {
             if (!!propertyValue) {
                 const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
-                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue });
+                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
             }
             if (!!propertyType) {
-                PropertyValueCache.getInstance().collect({ value: propertyType });
+                PropertyValueCache.getInstance().collect({ value: propertyType, shouldCache: this.isMemoCached, metadata });
             }
         }
         return factory.createResetOnReuseStmt(newName, arg);

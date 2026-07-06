@@ -164,15 +164,15 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", ((({let gensym___171896504 = initializers;
-    (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? (new Tmp())));
+    this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", (({let gensym___171896504 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_label)}) ? (initializers!.label as Tmp) : (new Tmp() as Tmp)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())));
+    this.__backing_label!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())) as Tmp));
   }
 
   @MemoIntrinsic() 
@@ -403,15 +403,15 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
-    this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", ((({let gensym___171896504 = initializers;
-    (((gensym___171896504) == (null)) ? undefined : gensym___171896504.label)})) ?? (new Tmp())));
+    this.__backing_label = STATE_MGMT_FACTORY.makeState<Tmp>(this, "label", (({let gensym___171896504 = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_label)}) ? (initializers!.label as Tmp) : (new Tmp() as Tmp)));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())));
+    this.__backing_label!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())) as Tmp));
   }
 
   @MemoIntrinsic() 

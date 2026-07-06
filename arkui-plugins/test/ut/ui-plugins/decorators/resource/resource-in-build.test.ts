@@ -85,12 +85,12 @@ function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_str1 = ((({let gensym___147578113 = initializers;
-    (((gensym___147578113) == (null)) ? undefined : gensym___147578113.str1)})) ?? ("app.media.ri"));
-    this.__backing_str2 = ((({let gensym___220149772 = initializers;
-    (((gensym___220149772) == (null)) ? undefined : gensym___220149772.str2)})) ?? ("app.photo2.png"));
-    this.__backing_numbers = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.numbers)})) ?? (["0", "1", "3", "5", "8"]));
+    this.__backing_str1 = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str1)}) ? (initializers!.str1 as string) : ("app.media.ri" as string));
+    this.__backing_str2 = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str2)}) ? (initializers!.str2 as string) : ("app.photo2.png" as string));
+    this.__backing_numbers = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_numbers)}) ? (initializers!.numbers as Array<string>) : (["0", "1", "3", "5", "8"] as Array<string>));
   }
 
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}

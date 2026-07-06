@@ -63,16 +63,16 @@ function main() {}
 
 @Component() final struct PropParent extends CustomComponent<PropParent, __Options_PropParent> {
   public __initializeStruct(initializers: (__Options_PropParent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? ("propVar1")));
-    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<number>(this, "propVar2", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (50)));
-    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<boolean>(this, "propVar3", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (true)));
-    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<undefined>(this, "propVar4", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (undefined)));
-    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<null>(this, "propVar5", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar5)})) ?? (null)));
+    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar1)}) ? (initializers!.propVar1 as string) : ("propVar1" as string)));
+    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<number>(this, "propVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar2)}) ? (initializers!.propVar2 as number) : (50 as number)));
+    this.__backing_propVar3 = STATE_MGMT_FACTORY.makePropRef<boolean>(this, "propVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar3)}) ? (initializers!.propVar3 as boolean) : (true as boolean)));
+    this.__backing_propVar4 = STATE_MGMT_FACTORY.makePropRef<undefined>(this, "propVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar4)}) ? (initializers!.propVar4 as undefined) : undefined));
+    this.__backing_propVar5 = STATE_MGMT_FACTORY.makePropRef<null>(this, "propVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar5)}) ? (initializers!.propVar5 as null) : null));
   }
 
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {
@@ -99,12 +99,12 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
-    this.__backing_propVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? ("propVar1")));
-    this.__backing_propVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (50)));
-    this.__backing_propVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (true)));
+    this.__backing_propVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar1)})) ?? ("propVar1")) as string));
+    this.__backing_propVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? (50)) as number));
+    this.__backing_propVar3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar3)})) ?? (true)) as boolean));
     this.__backing_propVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar4)})) ?? (undefined)));
     this.__backing_propVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;

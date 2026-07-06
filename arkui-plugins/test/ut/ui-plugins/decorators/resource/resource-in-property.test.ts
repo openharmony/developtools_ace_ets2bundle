@@ -75,16 +75,16 @@ function main() {}
 
 @Component() final struct ResourceComponent extends CustomComponent<ResourceComponent, __Options_ResourceComponent> {
   public __initializeStruct(initializers: (__Options_ResourceComponent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_str = ((({let gensym___42103502 = initializers;
-    (((gensym___42103502) == (null)) ? undefined : gensym___42103502.str)})) ?? (_r(16777216, 10003, "com.example.mock", "entry")));
-    this.__backing_icon = ((({let gensym___38135554 = initializers;
-    (((gensym___38135554) == (null)) ? undefined : gensym___38135554.icon)})) ?? (_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")));
-    this.__backing_varOne = ((({let gensym___101675829 = initializers;
-    (((gensym___101675829) == (null)) ? undefined : gensym___101675829.varOne)})) ?? ("default value"));
-    this.__backing_lambdaOne = ((({let gensym___62262103 = initializers;
-    (((gensym___62262103) == (null)) ? undefined : gensym___62262103.lambdaOne)})) ?? ((() => {
+    this.__backing_str = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str)}) ? (initializers!.str as Resource) : (_r(16777216, 10003, "com.example.mock", "entry") as Resource));
+    this.__backing_icon = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_icon)}) ? (initializers!.icon as Resource) : (_rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt") as Resource));
+    this.__backing_varOne = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_varOne)}) ? (initializers!.varOne as (Resource | string)) : ("default value" as (Resource | string)));
+    this.__backing_lambdaOne = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_lambdaOne)}) ? (initializers!.lambdaOne as (()=> void)) : ((() => {
       this.varOne = _r(16777219, 10003, "com.example.mock", "entry");
-    })));
+    }) as (()=> void)));
   }
   public __updateStruct(initializers: (__Options_ResourceComponent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_ResourceComponent | undefined)): void {}

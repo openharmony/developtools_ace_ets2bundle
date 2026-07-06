@@ -79,28 +79,28 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_tt = STATE_MGMT_FACTORY.makeState<string>(this, "tt", ((({let gensym___111800258 = initializers;
-    (((gensym___111800258) == (null)) ? undefined : gensym___111800258.tt)})) ?? ("state var")));
-    this.__backing_index = STATE_MGMT_FACTORY.makeState<int>(this, "index", ((({let gensym___91647805 = initializers;
-    (((gensym___91647805) == (null)) ? undefined : gensym___91647805.index)})) ?? (1)));
-    this.__backing_select = STATE_MGMT_FACTORY.makeState<int>(this, "select", ((({let gensym___90525328 = initializers;
-    (((gensym___90525328) == (null)) ? undefined : gensym___90525328.select)})) ?? (0)));
-    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<int>>(this, "selectArr", ((({let gensym___264591166 = initializers;
-    (((gensym___264591166) == (null)) ? undefined : gensym___264591166.selectArr)})) ?? ([0, 1, 2])));
-    this.__backing_fruits = ((({let gensym___180713065 = initializers;
-    (((gensym___180713065) == (null)) ? undefined : gensym___180713065.fruits)})) ?? (["apple1", "orange2", "peach3", "grape4"]));
+    this.__backing_tt = STATE_MGMT_FACTORY.makeState<string>(this, "tt", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_tt)}) ? (initializers!.tt as string) : ("state var" as string)));
+    this.__backing_index = STATE_MGMT_FACTORY.makeState<int>(this, "index", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_index)}) ? (initializers!.index as int) : (1 as int)));
+    this.__backing_select = STATE_MGMT_FACTORY.makeState<int>(this, "select", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_select)}) ? (initializers!.select as int) : (0 as int)));
+    this.__backing_selectArr = STATE_MGMT_FACTORY.makeState<Array<int>>(this, "selectArr", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_selectArr)}) ? (initializers!.selectArr as Array<int>) : ([0, 1, 2] as Array<int>)));
+    this.__backing_fruits = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_fruits)}) ? (initializers!.fruits as Array<string>) : (["apple1", "orange2", "peach3", "grape4"] as Array<string>));
   }
   
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_tt!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.tt)})) ?? ("state var")));
-    this.__backing_index!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.index)})) ?? (1)));
-    this.__backing_select!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.select)})) ?? (0)));
-    this.__backing_selectArr!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.selectArr)})) ?? ([0, 1, 2])));
+    this.__backing_tt!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.tt)})) ?? ("state var")) as string));
+    this.__backing_index!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.index)})) ?? (1)) as int));
+    this.__backing_select!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.select)})) ?? (0)) as int));
+    this.__backing_selectArr!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.selectArr)})) ?? ([0, 1, 2])) as Array<int>));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

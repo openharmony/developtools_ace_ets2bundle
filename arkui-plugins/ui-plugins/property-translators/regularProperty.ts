@@ -22,6 +22,7 @@ import {
     createSetter2,
     isCustomDialogController,
     findCachedMemoMetadata,
+    canCastTypeFromValue,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -42,25 +43,60 @@ import { optionsHasField } from '../utils';
 import { CustomComponentInnerClassPropertyInfo } from '../../collectors/ui-collectors/records';
 import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collect-cache';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
+import { GenSymGenerator } from '../../common/gensym-generator';
 
 function initializeStructWithRegularProperty(
     this: BasePropertyTranslator,
     newName: string,
-    originalName: string
+    originalName: string,
+    metadata?: arkts.AstNodeCacheValueMetadata
 ): arkts.Statement {
     const propertyValue = this.property.value;
-    const binaryItem = arkts.factory.createBinaryExpression(
-        factory.createBlockStatementForOptionalExpression(
-            arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
-            originalName,
-            { isNonNull: this.initializeOptions?.isRequired }
-        ),
-        propertyValue ?? arkts.factory.createUndefinedLiteral(),
-        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
-    );
+    const propertyType = this.property.typeAnnotation;
+    let right: arkts.Expression;
+    if (this.initializeOptions?.shouldCheckNonNull) {
+        const id: string = GenSymGenerator.getInstance().id(originalName);
+        const optionsType: arkts.TypeNode | undefined = propertyType?.clone();
+        const optionsValue: arkts.Expression = factory.generateDefiniteInitializers(optionsType, originalName);
+        const canCastType: boolean = canCastTypeFromValue(propertyValue);
+        const defaultType: arkts.TypeNode | undefined = canCastType && !!propertyType ? propertyType.clone() : undefined;
+        const defaultRawValue: arkts.Expression = !!propertyValue ? propertyValue : arkts.factory.createUndefinedLiteral();
+        const defaultValue: arkts.Expression = !!defaultType
+            ? arkts.factory.createTSAsExpression(defaultRawValue, defaultType, false)
+            : defaultRawValue;
+        if (this.isMemoCached) {
+            if (!!optionsType) {
+                PropertyValueCache.getInstance().collect({ value: optionsType, shouldCache: this.isMemoCached, metadata });
+            }
+            if (!!defaultType) {
+                PropertyValueCache.getInstance().collect({ value: defaultType, shouldCache: this.isMemoCached, metadata });
+            }
+        }
+        right = arkts.factory.createConditionalExpression(
+            factory.createBlockStatementForOptionsHasMemberExpression(
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                id,
+                originalName
+            ), 
+            optionsValue, 
+            defaultValue
+        );
+    } else if (this.initializeOptions?.isRequired || !propertyType) {
+        right = factory.generateDefiniteInitializers(propertyType, originalName);
+    } else {
+        right = arkts.factory.createBinaryExpression(
+            factory.createBlockStatementForOptionalExpression(
+                arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
+                originalName,
+                { isNonNull: this.initializeOptions?.isRequired }
+            ),
+            propertyValue ?? arkts.factory.createUndefinedLiteral(),
+            arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_NULLISH_COALESCING
+        )
+    }
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        binaryItem,
+        right,
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
@@ -128,7 +164,10 @@ function getterWithRegularProperty(
     originalName: string,
     metadata?: AstNodeCacheValueMetadata
 ): arkts.MethodDefinition {
-    const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+    let thisValue: arkts.Expression = generateThisBacking(newName, false, false);
+    if (this.initializeOptions?.isRequired) {
+        thisValue = arkts.factory.createTSNonNullExpression(thisValue);
+    }
     const getter: arkts.MethodDefinition = createGetter(
         originalName,
         this.propertyType,
@@ -173,11 +212,11 @@ function getGetterReturnValue(
         return thisValue;
     }
     const newType = this.propertyType.clone();
-    const returnVale = arkts.factory.createTSAsExpression(thisValue, newType, false);
+    const returnValue = arkts.factory.createTSAsExpression(thisValue, newType, false);
     if (this.isMemoCached) {
         PropertyFactoryCallTypeCache.getInstance().collect({ node: newType, metadata });
     }
-    return returnVale;
+    return returnValue;
 }
 
 /**
@@ -193,6 +232,9 @@ export class RegularPropertyTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: true
+        }
     }
 
     initializeStruct(
@@ -208,7 +250,7 @@ export class RegularPropertyTranslator extends PropertyTranslator {
         ) {
             initializeStruct = initializeStructWithCustomDialogControllerInit.bind(this)(newName, originalName);
         } else {
-            initializeStruct = initializeStructWithRegularProperty.bind(this)(newName, originalName);
+            initializeStruct = initializeStructWithRegularProperty.bind(this)(newName, originalName, metadata);
         }
         return initializeStruct;
     }
@@ -232,6 +274,9 @@ export class RegularPropertyCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: !this.propertyInfo.structInfo?.annotationInfo?.hasComponentV2
+        }
     }
 
     initializeStruct(
@@ -247,7 +292,7 @@ export class RegularPropertyCachedTranslator extends PropertyCachedTranslator {
         ) {
             initializeStruct = initializeStructWithCustomDialogControllerInit.bind(this)(newName, originalName);
         } else {
-            initializeStruct = initializeStructWithRegularProperty.bind(this)(newName, originalName);
+            initializeStruct = initializeStructWithRegularProperty.bind(this)(newName, originalName, metadata);
         }
         return initializeStruct;
     }

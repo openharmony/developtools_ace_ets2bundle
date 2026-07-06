@@ -195,17 +195,18 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     (((gensym___133282677) == (null)) ? undefined : gensym___133282677.__options_has_linkVar)})) {
       this.__backing_linkVar = STATE_MGMT_FACTORY.makeLink<number>(this, "linkVar", initializers!.__backing_linkVar!);
     }
-    this.__backing_str = STATE_MGMT_FACTORY.makeState<string>(this, "str", ((({let gensym___195569523 = initializers;
-    (((gensym___195569523) == (null)) ? undefined : gensym___195569523.str)})) ?? ("aaa")));
+    this.__backing_str = STATE_MGMT_FACTORY.makeState<string>(this, "str", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_str)}) ? (initializers!.str as string) : ("aaa" as string)));
     this.__backing_prop1 = STATE_MGMT_FACTORY.makeStoragePropRef<string>(this, "appTheme", "prop1", "bbb");
     this.__backing_prop2 = STATE_MGMT_FACTORY.makeLocalStoragePropRef<string>(this, "localTheme", "prop2", "ccc");
-    this.__backing_objLinkVar = STATE_MGMT_FACTORY.makeObjectLink<MyClassB>(this, "objLinkVar", (({let gensym___208007857 = initializers;
+    this.__backing_objLinkVar = STATE_MGMT_FACTORY.makeObjectLink<(MyClassB | undefined)>(this, "objLinkVar", (({let gensym___208007857 = initializers;
     (((gensym___208007857) == (null)) ? undefined : gensym___208007857!.objLinkVar)}) as MyClassB));
-    this.__backing_provideVar = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar", "alias", ((({let gensym___83712361 = initializers;
-    (((gensym___83712361) == (null)) ? undefined : gensym___83712361.provideVar)})) ?? ("ddd")), false);
-    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar1", (initializers!.propVar1 as string));
-    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar2", ((({let gensym___118459291 = initializers;
-    (((gensym___118459291) == (null)) ? undefined : gensym___118459291.propVar2)})) ?? ("eee")));
+    this.__backing_provideVar = STATE_MGMT_FACTORY.makeProvide<string>(this, "provideVar", "alias", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_provideVar)}) ? (initializers!.provideVar as string) : ("ddd" as string)), false);
+    this.__backing_propVar1 = STATE_MGMT_FACTORY.makePropRef<(string | undefined)>(this, "propVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar1)}) ? (initializers!.propVar1 as string) : undefined));
+    this.__backing_propVar2 = STATE_MGMT_FACTORY.makePropRef<string>(this, "propVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_propVar2)}) ? (initializers!.propVar2 as string) : ("eee" as string)));
     this.__backing_consumeVar1 = STATE_MGMT_FACTORY.makeConsume<string>(this, "consumeVar1", "consumeVar1");
     this.__backing_consumeVar2 = STATE_MGMT_FACTORY.makeConsume<string>(this, "consumeVar2", "alias");
     this.__backing_consumeVar3 = STATE_MGMT_FACTORY.makeConsume<string>(this, "consumeVar3", "alias", ((_: string): void => {
@@ -257,16 +258,16 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public resetStateVarsOnReuse(initializers: (__Options_ComA | undefined)): void {
     this.__backing_linkVar!.resetOnReuse(initializers!.__backing_linkVar!);
-    this.__backing_str!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("aaa")));
+    this.__backing_str!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("aaa")) as string));
     this.__backing_prop1!.resetOnReuse();
     this.__backing_prop2!.resetOnReuse();
     this.__backing_objLinkVar!.resetOnReuse((initializers!.objLinkVar as MyClassB));
-    this.__backing_provideVar!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar)})) ?? ("ddd")));
+    this.__backing_provideVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar)})) ?? ("ddd")) as string));
     this.__backing_propVar1!.resetOnReuse((initializers!.propVar1 as string));
-    this.__backing_propVar2!.resetOnReuse(((({let gensym___196553660 = initializers;
-    (((gensym___196553660) == (null)) ? undefined : gensym___196553660.propVar2)})) ?? ("eee")));
+    this.__backing_propVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? ("eee")) as string));
     this.__backing_consumeVar1!.resetOnReuse("consumeVar1");
     this.__backing_consumeVar2!.resetOnReuse("alias");
     this.__backing_consumeVar3!.resetOnReuse("alias", ((_: string): void => {
@@ -331,9 +332,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_prop2!.set(value);
   }
   
-  private __backing_objLinkVar?: IObjectLinkDecoratedVariable<MyClassB>;
+  private __backing_objLinkVar?: IObjectLinkDecoratedVariable<(MyClassB | undefined)>;
   public get objLinkVar(): MyClassB {
-    return this.__backing_objLinkVar!.get();
+    return this.__backing_objLinkVar!.get()!;
   }
   
   private __backing_provideVar?: IProvideDecoratedVariable<string>;
@@ -345,9 +346,9 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_provideVar!.set(value);
   }
   
-  private __backing_propVar1?: IPropRefDecoratedVariable<string>;
+  private __backing_propVar1?: IPropRefDecoratedVariable<(string | undefined)>;
   public get propVar1(): string {
-    return this.__backing_propVar1!.get();
+    return this.__backing_propVar1!.get()!;
   }
   
   public set propVar1(value: string) {

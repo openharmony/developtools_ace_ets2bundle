@@ -50,7 +50,14 @@ function resetOnReuseWithOnceProperty(
 ): arkts.ExpressionStatement {
     const propertyValue = this.property.value?.clone();
     const propertyType = this.propertyType?.clone();
-    const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
+    const arg = factory.generateInitializeValue(
+        propertyValue, 
+        propertyType, 
+        originalName, 
+        this.initializeOptions,
+        this.isMemoCached,
+        metadata
+    );
     if (this.isMemoShouldUpdate) {
         if (!!propertyValue) {
             const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
@@ -80,10 +87,17 @@ export class OnceTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: true
+        };
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithOnceProperty.bind(this)(newName, originalName);
+    resetOnReuse(
+        newName: string, 
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
+        return resetOnReuseWithOnceProperty.bind(this)(newName, originalName, metadata);
     }
 }
 
@@ -101,10 +115,17 @@ export class OnceCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: true
+        };
     }
 
-    resetOnReuse(newName: string, originalName: string): arkts.ExpressionStatement {
-        return resetOnReuseWithOnceProperty.bind(this)(newName, originalName);
+    resetOnReuse(
+        newName: string, 
+        originalName: string,
+        metadata?: arkts.AstNodeCacheValueMetadata
+    ): arkts.ExpressionStatement {
+        return resetOnReuseWithOnceProperty.bind(this)(newName, originalName, metadata);
     }
 }
 

@@ -189,15 +189,15 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 } as NavInterface));
 @Entry() @Component() final struct IDataSourcePrefetchingMethods extends CustomComponent<IDataSourcePrefetchingMethods, __Options_IDataSourcePrefetchingMethods> implements PageLifeCycle {
   public __initializeStruct(initializers: (__Options_IDataSourcePrefetchingMethods | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_loadedCount = STATE_MGMT_FACTORY.makeState<string>(this, "loadedCount", ((({let gensym___153122796 = initializers;
-    (((gensym___153122796) == (null)) ? undefined : gensym___153122796.loadedCount)})) ?? ("0")));
+    this.__backing_loadedCount = STATE_MGMT_FACTORY.makeState<string>(this, "loadedCount", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_loadedCount)}) ? (initializers!.loadedCount as string) : ("0" as string)));
   }
   
   public __updateStruct(initializers: (__Options_IDataSourcePrefetchingMethods | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_IDataSourcePrefetchingMethods | undefined)): void {
-    this.__backing_loadedCount!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.loadedCount)})) ?? ("0")));
+    this.__backing_loadedCount!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.loadedCount)})) ?? ("0")) as string));
   }
 
   @MemoIntrinsic() 
@@ -235,7 +235,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
             return;
         }), (() => {
             return {
-                __backing_loadedCount: this.__backing_loadedCount,
+                __backing_loadedCount: (this.__backing_loadedCount as IStateDecoratedVariable<string>),
                 __options_has_loadedCount: true,
             };
         }), undefined, undefined, undefined);

@@ -145,7 +145,7 @@ function main() {}
 
 @Component() final struct MyStateSample extends CustomComponent<MyStateSample, __Options_MyStateSample> {
   public __initializeStruct(initializers: (__Options_MyStateSample | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<A>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
+    this.__backing_objectlinkvar = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar", (({let gensym___248819442 = initializers;
     (((gensym___248819442) == (null)) ? undefined : gensym___248819442!.objectlinkvar)}) as A));
   }
 
@@ -173,10 +173,10 @@ function main() {}
     throw new Error("Declare interface");
   }
 
-  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<A>;
+  private __backing_objectlinkvar?: IObjectLinkDecoratedVariable<(A | undefined)>;
 
   public get objectlinkvar(): A {
-    return this.__backing_objectlinkvar!.get();
+    return this.__backing_objectlinkvar!.get()!;
   }
 
   @Memo() 
@@ -189,11 +189,11 @@ function main() {}
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
+    this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
     (((gensym___219806589) == (null)) ? undefined : gensym___219806589!.objectlinkvar1)}) as (A | undefined)));
-    this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
+    this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | undefined)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
     (((gensym___217261862) == (null)) ? undefined : gensym___217261862!.objectlinkvar2)}) as (A | B)));
-    this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
+    this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null | undefined)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
     (((gensym___199257778) == (null)) ? undefined : gensym___199257778!.objectlinkvar3)}) as (A | B | null)));
   }
 
@@ -231,22 +231,22 @@ function main() {}
     throw new Error("Declare interface");
   }
 
-  private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined)>;
+  private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined | undefined)>;
 
   public get objectlinkvar1(): (A | undefined) {
-    return this.__backing_objectlinkvar1!.get();
+    return this.__backing_objectlinkvar1!.get()!;
   }
 
-  private __backing_objectlinkvar2?: IObjectLinkDecoratedVariable<(A | B)>;
+  private __backing_objectlinkvar2?: IObjectLinkDecoratedVariable<(A | B | undefined)>;
 
   public get objectlinkvar2(): (A | B) {
-    return this.__backing_objectlinkvar2!.get();
+    return this.__backing_objectlinkvar2!.get()!;
   }
 
-  private __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null)>;
+  private __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null | undefined)>;
 
   public get objectlinkvar3(): (A | B | null) {
-    return this.__backing_objectlinkvar3!.get();
+    return this.__backing_objectlinkvar3!.get()!;
   }
 
   @Memo() 

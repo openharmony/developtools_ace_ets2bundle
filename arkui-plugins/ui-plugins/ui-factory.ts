@@ -554,7 +554,7 @@ export class factory {
     }
 
     /**
-     * generate a ternary expression, e.g. `<testLeft> ? undefined : <alternate>`;
+     * generate a ternary expression, e.g. `<testLeft> == null ? undefined : <alternate>`;
      *
      * @param testLeft the left hand of the test condition.
      * @param alternate the alternate of the ternary expression

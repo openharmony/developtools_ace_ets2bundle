@@ -149,15 +149,15 @@ function builder2() {}
 
 @Component() final struct CustomDialogUser extends CustomComponent<CustomDialogUser, __Options_CustomDialogUser> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
+    this.__backing_dialogController = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_dialogController)}) ? (initializers!.dialogController as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___<some_random_number> = new CustomDialogController({
       builder: @Memo() (() => {
         builder1("nihao");
       }),
       baseComponent: this,
     })
-    (gensym___<some_random_number> as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser | undefined)): void {}
@@ -199,13 +199,13 @@ function builder2() {}
 
 @Component() final struct CustomDialogUser2 extends CustomComponent<CustomDialogUser2, __Options_CustomDialogUser2> {
   public __initializeStruct(initializers: (__Options_CustomDialogUser2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_dialogController = ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.dialogController)})) ?? (({let gensym___<some_random_number>: Any;
+    this.__backing_dialogController = (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_dialogController)}) ? (initializers!.dialogController as (CustomDialogController | null)) : (({let gensym___<some_random_number>: Any;
     gensym___<some_random_number> = new CustomDialogController({
       builder: builder2,
       baseComponent: this,
     })
-    (gensym___<some_random_number> as CustomDialogController)})));
+    (gensym___<some_random_number> as CustomDialogController)}) as (CustomDialogController | null)));
   }
 
   public __updateStruct(initializers: (__Options_CustomDialogUser2 | undefined)): void {}

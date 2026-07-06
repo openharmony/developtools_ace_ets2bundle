@@ -83,6 +83,7 @@ import { BindableFactory } from './bindable-factory';
 // import { BuilderParamPropertyCache, ConditionScopeInfoCache, InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 import { BuilderParamPropertyCache, InitialBuilderLambdaBodyCache } from '../memo-collect-cache';
 import { NodeCacheFactory } from '../../common/node-cache';
+import { findStateManagementFactoryGenericTypeFromProperty, findStateManagementFactoryTypeFromPropertyName } from '../property-translators/utils';
 
 export class CacheFactory {
     /**
@@ -752,22 +753,25 @@ export class CacheFactory {
             BuilderParamPropertyCache.getInstance().collect({ node: newProperty });
         } else if (propertyInfo.isLink && propertyInfo.isNotBacking) {
             let value: arkts.Expression | undefined = prop.value;
-            let valueType: arkts.TypeNode | undefined;
             let memberValue: arkts.MemberExpression | undefined;
             if (!!value) {
                 if (arkts.isTSAsExpression(value)) {
-                    valueType = value.typeAnnotation;
                     memberValue = findThisMemberValueInExpression(value.expr);
                 } else {
                     memberValue = findThisMemberValueInExpression(value);
                 }
             }
             if (!!memberValue && arkts.isIdentifier(memberValue.property)) {
-                const propertyName = memberValue.property.name;
-                memberValue = BuilderLambdaFactory.updateBackingMember(memberValue, propertyName);
-                if (valueType !== undefined) {
-                    valueType = PropertyFactory.wrapInnerClassPropertyTypeInProperty(valueType, StateManagementTypes.STATE_DECORATED);
-                    value = arkts.factory.updateTSAsExpression(value as arkts.TSAsExpression, memberValue, valueType, false);
+                const propertyName = memberValue.property;
+                const valueType: arkts.TypeNode | undefined = findStateManagementFactoryGenericTypeFromProperty(prop);
+                const wrapTypeName = findStateManagementFactoryTypeFromPropertyName(propertyName);
+                memberValue = BuilderLambdaFactory.updateBackingMember(memberValue, propertyName.name);
+                if (valueType !== undefined && wrapTypeName !== undefined) {
+                    value = arkts.factory.createTSAsExpression(
+                        memberValue,
+                        PropertyFactory.wrapInnerClassPropertyTypeInProperty(valueType.clone(), wrapTypeName),
+                        false
+                    );
                 } else {
                     value = memberValue;
                 }

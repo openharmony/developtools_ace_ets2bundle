@@ -63,43 +63,43 @@ function main() {}
 
 @Component() final struct Ancestors extends CustomComponent<Ancestors, __Options_Ancestors> {
   public __initializeStruct(initializers: (__Options_Ancestors | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_count = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count", "count", ((({let gensym___58710805 = initializers;
-    (((gensym___58710805) == (null)) ? undefined : gensym___58710805.count)})) ?? ("Child0")), false);
-    this.__backing_count1 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count1", "prov1", ((({let gensym___84874570 = initializers;
-    (((gensym___84874570) == (null)) ? undefined : gensym___84874570.count1)})) ?? ("Child1")), false);
-    this.__backing_count2 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count2", "prov2", ((({let gensym___124037738 = initializers;
-    (((gensym___124037738) == (null)) ? undefined : gensym___124037738.count2)})) ?? ("Child2")), false);
-    this.__backing_count3 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count3", "prov3", ((({let gensym___199202238 = initializers;
-    (((gensym___199202238) == (null)) ? undefined : gensym___199202238.count3)})) ?? ("Child3")), true);
-    this.__backing_count4 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count4", "count4", ((({let gensym___4359740 = initializers;
-    (((gensym___4359740) == (null)) ? undefined : gensym___4359740.count4)})) ?? ("Child4")), false);
-    this.__backing_count5 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count5", "count5", ((({let gensym___208755050 = initializers;
-    (((gensym___208755050) == (null)) ? undefined : gensym___208755050.count5)})) ?? ("Child5")), true);
-    this.__backing_count6 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count6", "", ((({let gensym___37571585 = initializers;
-    (((gensym___37571585) == (null)) ? undefined : gensym___37571585.count6)})) ?? ("Child6")), true);
-    this.__backing_count7 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count7", "", ((({let gensym___2162781 = initializers;
-    (((gensym___2162781) == (null)) ? undefined : gensym___2162781.count7)})) ?? ("Child7")), false);
+    this.__backing_count = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count", "count", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count)}) ? (initializers!.count as (string | undefined)) : ("Child0" as (string | undefined))), false);
+    this.__backing_count1 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count1", "prov1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count1)}) ? (initializers!.count1 as (string | undefined)) : ("Child1" as (string | undefined))), false);
+    this.__backing_count2 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count2", "prov2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count2)}) ? (initializers!.count2 as (string | undefined)) : ("Child2" as (string | undefined))), false);
+    this.__backing_count3 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count3", "prov3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count3)}) ? (initializers!.count3 as (string | undefined)) : ("Child3" as (string | undefined))), true);
+    this.__backing_count4 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count4", "count4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count4)}) ? (initializers!.count4 as (string | undefined)) : ("Child4" as (string | undefined))), false);
+    this.__backing_count5 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count5", "count5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count5)}) ? (initializers!.count5 as (string | undefined)) : ("Child5" as (string | undefined))), true);
+    this.__backing_count6 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count6", "", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count6)}) ? (initializers!.count6 as (string | undefined)) : ("Child6" as (string | undefined))), true);
+    this.__backing_count7 = STATE_MGMT_FACTORY.makeProvide<(string | undefined)>(this, "count7", "", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_count7)}) ? (initializers!.count7 as (string | undefined)) : ("Child7" as (string | undefined))), false);
   }
 
   public __updateStruct(initializers: (__Options_Ancestors | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Ancestors | undefined)): void {
-    this.__backing_count!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? ("Child0")));
-    this.__backing_count1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count1)})) ?? ("Child1")));
-    this.__backing_count2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count2)})) ?? ("Child2")));
-    this.__backing_count3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count3)})) ?? ("Child3")));
-    this.__backing_count4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count4)})) ?? ("Child4")));
-    this.__backing_count5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count5)})) ?? ("Child5")));
-    this.__backing_count6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count6)})) ?? ("Child6")));
-    this.__backing_count7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count7)})) ?? ("Child7")));
+    this.__backing_count!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count)})) ?? ("Child0")) as (string | undefined)));
+    this.__backing_count1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count1)})) ?? ("Child1")) as (string | undefined)));
+    this.__backing_count2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count2)})) ?? ("Child2")) as (string | undefined)));
+    this.__backing_count3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count3)})) ?? ("Child3")) as (string | undefined)));
+    this.__backing_count4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count4)})) ?? ("Child4")) as (string | undefined)));
+    this.__backing_count5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count5)})) ?? ("Child5")) as (string | undefined)));
+    this.__backing_count6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count6)})) ?? ("Child6")) as (string | undefined)));
+    this.__backing_count7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.count7)})) ?? ("Child7")) as (string | undefined)));
   }
 
   @MemoIntrinsic() 

@@ -231,17 +231,19 @@ function main() {}
 
 @ComponentV2() final struct Child extends CustomComponentV2<Child, __Options_Child> {
   public __initializeStruct(initializers: (__Options_Child | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", ((({let gensym___118919021 = initializers;
-    (((gensym___118919021) == (null)) ? undefined : gensym___118919021.onceParamNum)})) ?? (0)));
-    this.__backing_onceParamInfo = STATE_MGMT_FACTORY.makeParamOnce<Info>(this, "onceParamInfo", (initializers!.onceParamInfo as Info));
+    this.__backing_onceParamNum = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceParamNum", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamNum)}) ? (initializers!.onceParamNum as number) : (0 as number)));
+    this.__backing_onceParamInfo = STATE_MGMT_FACTORY.makeParamOnce<(Info | undefined)>(this, "onceParamInfo", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamInfo)}) ? (initializers!.onceParamInfo as Info) : undefined));
   }
 
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_onceParamNum!.resetOnReuse(((({let gensym___114690967 = initializers;
-    (((gensym___114690967) == (null)) ? undefined : gensym___114690967.onceParamNum)})) ?? (0)));
-    this.__backing_onceParamInfo!.resetOnReuse((initializers!.onceParamInfo as Info));
+    this.__backing_onceParamNum!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamNum)}) ? (initializers!.onceParamNum as number) : (0 as number)));
+    this.__backing_onceParamInfo!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceParamInfo)}) ? (initializers!.onceParamInfo as Info) : undefined));
   }
 
   @MemoIntrinsic() 
@@ -267,10 +269,10 @@ function main() {}
     this.__backing_onceParamNum!.set(value);
   }
 
-  private __backing_onceParamInfo?: IParamOnceDecoratedVariable<Info>;
+  private __backing_onceParamInfo?: IParamOnceDecoratedVariable<(Info | undefined)>;
 
   public get onceParamInfo(): Info {
-    return this.__backing_onceParamInfo!.get();
+    return this.__backing_onceParamInfo!.get()!;
   }
 
   public set onceParamInfo(value: Info) {

@@ -63,31 +63,31 @@ function main() {}
 
 @ComponentV2() final struct Parent extends CustomComponentV2<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar1)})) ?? ("stateVar1")));
-    this.__backing_onceVar2 = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceVar2", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar2)})) ?? (50)));
-    this.__backing_onceVar3 = STATE_MGMT_FACTORY.makeParamOnce<boolean>(this, "onceVar3", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar3)})) ?? (true)));
-    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<undefined>(this, "onceVar4", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar4)})) ?? (undefined)));
-    this.__backing_onceVar5 = STATE_MGMT_FACTORY.makeParamOnce<null>(this, "onceVar5", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar5)})) ?? (null)));
+    this.__backing_onceVar1 = STATE_MGMT_FACTORY.makeParamOnce<string>(this, "onceVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar1)}) ? (initializers!.onceVar1 as string) : ("stateVar1" as string)));
+    this.__backing_onceVar2 = STATE_MGMT_FACTORY.makeParamOnce<number>(this, "onceVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar2)}) ? (initializers!.onceVar2 as number) : (50 as number)));
+    this.__backing_onceVar3 = STATE_MGMT_FACTORY.makeParamOnce<boolean>(this, "onceVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar3)}) ? (initializers!.onceVar3 as boolean) : (true as boolean)));
+    this.__backing_onceVar4 = STATE_MGMT_FACTORY.makeParamOnce<undefined>(this, "onceVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar4)}) ? (initializers!.onceVar4 as undefined) : undefined));
+    this.__backing_onceVar5 = STATE_MGMT_FACTORY.makeParamOnce<null>(this, "onceVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar5)}) ? (initializers!.onceVar5 as null) : null));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_onceVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar1)})) ?? ("stateVar1")));
-    this.__backing_onceVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar2)})) ?? (50)));
-    this.__backing_onceVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar3)})) ?? (true)));
-    this.__backing_onceVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar4)})) ?? (undefined)));
-    this.__backing_onceVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.onceVar5)})) ?? (null)));
+    this.__backing_onceVar1!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar1)}) ? (initializers!.onceVar1 as string) : ("stateVar1" as string)));
+    this.__backing_onceVar2!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar2)}) ? (initializers!.onceVar2 as number) : (50 as number)));
+    this.__backing_onceVar3!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar3)}) ? (initializers!.onceVar3 as boolean) : (true as boolean)));
+    this.__backing_onceVar4!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar4)}) ? (initializers!.onceVar4 as undefined) : undefined));
+    this.__backing_onceVar5!.resetOnReuse((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_onceVar5)}) ? (initializers!.onceVar5 as null) : null));
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: ((()=> string) | undefined), @Memo() content: ((()=> void) | undefined)): void {

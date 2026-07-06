@@ -122,59 +122,59 @@ final class StateType extends BaseEnum<int> {
 
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))));
-    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<Array<number>>(this, "stateVar2", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (new Array<number>(3, 6, 8))));
-    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<StateType>(this, "stateVar3", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<Set<string>>(this, "stateVar4", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "stateVar5", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? ([true, false])));
-    this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar6", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_stateVar7 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar7", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_stateVar8 = STATE_MGMT_FACTORY.makeState<((sr: string)=> void)>(this, "stateVar8", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeState<Date>(this, "stateVar9", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeState<Map<number, Per>>(this, "stateVar10", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<(string | number)>(this, "stateVar11", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar11)})) ?? (0.0)));
-    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<(Set<string> | Per)>(this, "stateVar12", ((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar12)})) ?? (new Per(6))));
+    this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<Per>(this, "stateVar1", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar1)}) ? (initializers!.stateVar1 as Per) : (new Per(6) as Per)));
+    this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<Array<number>>(this, "stateVar2", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar2)}) ? (initializers!.stateVar2 as Array<number>) : (new Array<number>(3, 6, 8) as Array<number>)));
+    this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<StateType>(this, "stateVar3", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar3)}) ? (initializers!.stateVar3 as StateType) : StateType.TYPE3));
+    this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<Set<string>>(this, "stateVar4", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar4)}) ? (initializers!.stateVar4 as Set<string>) : (new Set<string>(new Array<string>("aa", "bb")) as Set<string>)));
+    this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<Array<boolean>>(this, "stateVar5", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar5)}) ? (initializers!.stateVar5 as Array<boolean>) : ([true, false] as Array<boolean>)));
+    this.__backing_stateVar6 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar6", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar6)}) ? (initializers!.stateVar6 as Array<Per>) : (new Array<Per>(new Per(7), new Per(11)) as Array<Per>)));
+    this.__backing_stateVar7 = STATE_MGMT_FACTORY.makeState<Array<Per>>(this, "stateVar7", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar7)}) ? (initializers!.stateVar7 as Array<Per>) : ([new Per(7), new Per(11)] as Array<Per>)));
+    this.__backing_stateVar8 = STATE_MGMT_FACTORY.makeState<((sr: string)=> void)>(this, "stateVar8", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar8)}) ? (initializers!.stateVar8 as ((sr: string)=> void)) : (((sr: string) => {}) as ((sr: string)=> void))));
+    this.__backing_stateVar9 = STATE_MGMT_FACTORY.makeState<Date>(this, "stateVar9", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar9)}) ? (initializers!.stateVar9 as Date) : (new Date("2025-4-23") as Date)));
+    this.__backing_stateVar10 = STATE_MGMT_FACTORY.makeState<Map<number, Per>>(this, "stateVar10", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar10)}) ? (initializers!.stateVar10 as Map<number, Per>) : (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]) as Map<number, Per>)));
+    this.__backing_stateVar11 = STATE_MGMT_FACTORY.makeState<(string | number)>(this, "stateVar11", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar11)}) ? (initializers!.stateVar11 as (string | number)) : (0.0 as (string | number))));
+    this.__backing_stateVar12 = STATE_MGMT_FACTORY.makeState<(Set<string> | Per)>(this, "stateVar12", (({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar12)}) ? (initializers!.stateVar12 as (Set<string> | Per)) : (new Per(6) as (Set<string> | Per))));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_stateVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))));
-    this.__backing_stateVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (new Array<number>(3, 6, 8))));
+    this.__backing_stateVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))) as Per));
+    this.__backing_stateVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<number>));
     this.__backing_stateVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_stateVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))));
-    this.__backing_stateVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? ([true, false])));
-    this.__backing_stateVar6!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))));
-    this.__backing_stateVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar7)})) ?? ([new Per(7), new Per(11)])));
-    this.__backing_stateVar8!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar8)})) ?? (((sr: string) => {}))));
-    this.__backing_stateVar9!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar9)})) ?? (new Date("2025-4-23"))));
-    this.__backing_stateVar10!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))));
-    this.__backing_stateVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar11)})) ?? (0.0)));
-    this.__backing_stateVar12!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar12)})) ?? (new Per(6))));
+    this.__backing_stateVar4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<string>));
+    this.__backing_stateVar5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? ([true, false])) as Array<boolean>));
+    this.__backing_stateVar6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))) as Array<Per>));
+    this.__backing_stateVar7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar7)})) ?? ([new Per(7), new Per(11)])) as Array<Per>));
+    this.__backing_stateVar8!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar8)})) ?? (((sr: string) => {}))) as ((sr: string)=> void)));
+    this.__backing_stateVar9!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
+    this.__backing_stateVar10!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<number, Per>));
+    this.__backing_stateVar11!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar11)})) ?? (0.0)) as (string | number)));
+    this.__backing_stateVar12!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar12)})) ?? (new Per(6))) as (Set<string> | Per)));
   }
 
   @MemoIntrinsic() 

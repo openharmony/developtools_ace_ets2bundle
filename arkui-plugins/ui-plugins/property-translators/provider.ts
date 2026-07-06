@@ -63,18 +63,23 @@ function initializeStructWithProviderProperty(
         ),
         defaultValue,
     ];
-    const stateManagementCallType = this.propertyType?.clone();
+    const stateMgmtCallDefaultType = this.propertyType?.clone();
+    const stateMgmtCallType = factory.createStateManagementFactoryGenericType(
+        defaultValue, 
+        stateMgmtCallDefaultType,
+        this.initializeOptions
+    );
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
-        factory.generateStateMgmtFactoryCall(this.makeType, stateManagementCallType, args, true, metadata),
+        factory.generateStateMgmtFactoryCall(this.makeType, stateMgmtCallType, args, true, metadata),
         arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
     );
     if (this.isMemoShouldUpdate) {
         if (!!defaultValue) {
             PropertyValueCache.getInstance().collect({ value: defaultValue });
         }
-        if (!!stateManagementCallType) {
-            PropertyValueCache.getInstance().collect({ value: stateManagementCallType });
+        if (!!stateMgmtCallDefaultType) {
+            PropertyValueCache.getInstance().collect({ value: stateMgmtCallDefaultType });
         }
     }
     return arkts.factory.createExpressionStatement(assign);
@@ -97,6 +102,9 @@ export class ProviderTranslator extends PropertyTranslator {
 
     constructor(options: PropertyTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        }
     }
 
     initializeStruct(
@@ -122,6 +130,9 @@ export class ProviderCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        this.initializeOptions = {
+            shouldCheckNonNull: false
+        }
     }
 
     initializeStruct(
