@@ -1,0 +1,18 @@
+{
+    "childRestrictionsError": [
+        {
+            "message": "The component 'Grid' can only have the child component 'GridItem'.",
+            "type": "ERROR",
+            "code": "10905219"
+        }
+    ],
+    "complexAppValid": [],
+    "complexLayoutValid": [],
+    "componentShowcaseValid": [],
+    "customNestingValid": [],
+    "deepNestingValid": [],
+    "forEachPatternsValid": [],
+    "listValidDeep": [],
+    "mixedStateValid": [],
+    "tabsNavigationValid": []
+}
