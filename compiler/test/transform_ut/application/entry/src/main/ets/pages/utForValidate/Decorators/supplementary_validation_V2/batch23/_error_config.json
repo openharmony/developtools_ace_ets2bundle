@@ -1,0 +1,23 @@
+{
+    "decoratorComboValid": [],
+    "decoratorMultiDeep": [],
+    "decoratorSummaryValid": [],
+    "extendAnimatableValid": [],
+    "reuseConflictDeep": [],
+    "reuseValidPatterns": [],
+    "traceMonitorDeep": [],
+    "v1v2CoexistValid": [],
+    "v1v2MixinDeep": [
+        {
+            "message": "The '@Local' decorator can only be used in a 'struct' decorated with '@ComponentV2'.",
+            "type": "ERROR",
+            "code": "10905338"
+        },
+        {
+            "message": "The '@State' decorator can only be used in a 'struct' decorated with '@Component'.",
+            "type": "ERROR",
+            "code": "10905339"
+        }
+    ],
+    "v2EventReuseValid": []
+}
