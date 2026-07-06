@@ -126,7 +126,9 @@ export class ProgramVisitor extends AbstractVisitor {
         transformer.program = currProgram;
         this.dumpExternalSource(currProgram.ast, externalSourceName, `${cachePath}/BEFORE`, this.pluginName, extensionName);
         transformer.init();
+        const importStorage = new arkts.ImportStorage(currProgram, true);
         const newScript = transformer.visitor(currProgram.ast) as arkts.ETSModule;
+        importStorage.update();
         transformer.reset();
         this.dumpExternalSource(newScript, externalSourceName, `${cachePath}/AFTER`, this.pluginName, extensionName);
         currProgram?.setAst(newScript)
