@@ -1,0 +1,25 @@
+{
+    "linkValidPatterns": [],
+    "propLinkDeep": [
+        {
+            "message": "The '@Link' property cannot be specified a default value.",
+            "type": "ERROR",
+            "code": "10905304",
+            "solutions": ["Please initialize the rules according to the decorator."]
+        }
+    ],
+    "propValidDeep": [],
+    "provideConsumeDeep": [],
+    "provideConsumeValid": [],
+    "stateInitDeep": [
+        {
+            "message": "The '@State' property 'value' must be specified a default value.",
+            "type": "ERROR",
+            "code": "10905303"
+        }
+    ],
+    "stateValidDeep": [],
+    "storageDeepValidation": [],
+    "storageValidPatterns": [],
+    "watchValidationDeep": []
+}
