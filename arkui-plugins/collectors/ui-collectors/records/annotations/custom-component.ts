@@ -21,6 +21,7 @@ import { MetaDataCollector } from 'common/metadata-collector';
 
 export interface InsightIntentStructAnnotationInfo extends AnnotationInfo {
     hasInsightIntentPage?: boolean;
+    hasInsightIntentLink?: boolean;
 }
 
 export interface StructAnnotationInfo extends AnnotationInfo, InsightIntentStructAnnotationInfo {
@@ -60,7 +61,7 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
         if (name === undefined) {
             return;
         }
-        if (this.shouldHandleInsightIntent && name === InsightIntentDecoratorNames.PAGE) {
+        if (this.shouldHandleInsightIntent && (name === InsightIntentDecoratorNames.PAGE || name === InsightIntentDecoratorNames.LINK)) {
             this.updateAnnotationInfo(name);
             return;
         }
@@ -71,7 +72,7 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
         if (name === undefined) {
             return;
         }
-        if (this.shouldHandleInsightIntent && name === InsightIntentDecoratorNames.PAGE) {
+        if (this.shouldHandleInsightIntent && (name === InsightIntentDecoratorNames.PAGE || name === InsightIntentDecoratorNames.LINK)) {
             this.updateAnnotations(anno, name);
             return;
         }
@@ -107,6 +108,8 @@ export class CustomComponentAnnotationRecord extends BaseAnnotationRecord<
             case InsightIntentDecoratorNames.PAGE:
                 info.hasInsightIntentPage = true;
                 break;
+            case InsightIntentDecoratorNames.LINK:
+                info.hasInsightIntentLink = true;
             default:
                 return info;
         }
