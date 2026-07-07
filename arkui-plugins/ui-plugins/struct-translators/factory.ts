@@ -1977,15 +1977,10 @@ export class factory {
     /**
      * create `storage?: LocalStorage` in `$_invoke` static method.
      */
-    static createStorageParamInInvoke(isFromLegacy?: boolean): arkts.ETSParameterExpression {
-        let localStorageType: arkts.TypeNode;
-        if (!isFromLegacy) {
-            ImportCollector.getInstance().collectSource(UIClass.LOCAL_STORAGE, ARKUI_LOCAL_STORAGE_SOURCE_NAME);
-            ImportCollector.getInstance().collectImport(UIClass.LOCAL_STORAGE);
-            localStorageType = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
-        } else {
-            localStorageType = UIFactory.createTypeReferenceFromString(TypeNames.ANY);
-        }
+    static createStorageParamInInvoke(): arkts.ETSParameterExpression {
+        ImportCollector.getInstance().collectSource(UIClass.LOCAL_STORAGE, ARKUI_LOCAL_STORAGE_SOURCE_NAME);
+        ImportCollector.getInstance().collectImport(UIClass.LOCAL_STORAGE);
+        const localStorageType: arkts.TypeNode = UIFactory.createTypeReferenceFromString(UIClass.LOCAL_STORAGE);
         return UIFactory.createParameterWithType(BuilderLambdaNames.STORAGE_PARAM_NAME, localStorageType, true);
     }
 
@@ -2031,7 +2026,7 @@ export class factory {
         }
         const annotations = !isFromLegacy ? [annotation(BuilderLambdaNames.ANNOTATION_NAME)] : [];
         const initializerParam = this.createInitializerParamInInvoke(structName);
-        const storageParam = this.createStorageParamInInvoke(isFromLegacy);
+        const storageParam = this.createStorageParamInInvoke();
         const contentParam = this.createContentParamInInvoke();
         const body = isDecl
             ? undefined
