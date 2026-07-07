@@ -59,9 +59,20 @@ import {
 import { readFirstLineSync } from './utils';
 import { logger } from '../../../compile_info';
 
-export let entryFileLanguageInfo = new Map();
+export const entryFileLanguageInfo = new Map();
 export let workerFile = null;
 export let mixCompile = undefined;
+
+type LanguageVersionInfo = {
+  languageVersion: string,
+  pkgName: string
+};
+
+type SDKPathMatcher = {
+  root: string,
+  rootWithSlash: string,
+  languageVersion: string
+};
 
 export function setEntryFileLanguage(filePath: string, language: string): void {
   entryFileLanguageInfo.set(filePath, language);
@@ -78,6 +89,11 @@ export class FileManager {
   static mixCompile: boolean = false;
   static glueCodeFileInfos: Map<string, FileInfo> = new Map();
   static isInteropSDKEnabled: boolean = false;
+  static dynamicFileVersionMap: Map<string, string> = new Map();
+  static staticFileVersionMap: Map<string, string> = new Map();
+  private static sdkPathMatchers: SDKPathMatcher[] = [];
+  private static sdkPathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
+  private static modulePathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
   interopConfig: InteropConfig | undefined = undefined;
 
   private constructor() { }
@@ -92,6 +108,7 @@ export class FileManager {
     if (FileManager.instance === undefined) {
       FileManager.instance = new FileManager();
       FileManager.initLanguageVersionFromDependentModuleMap(dependentModuleMap);
+      FileManager.initFileVersionMap();
       FileManager.initAliasConfig(aliasPaths);
       FileManager.initSDK(dynamicSDKPath, staticSDKDeclPath, staticSDKGlueCodePath);
     }
@@ -119,6 +136,7 @@ export class FileManager {
         }
       }
       FileManager.initLanguageVersionFromDependentModuleMap(dependentModuleMap);
+      FileManager.initFileVersionMap();
       FileManager.initAliasConfig(aliasPaths);
       FileManager.initSDK(dynamicSDKPath, staticSDKDeclPath, staticSDKGlueCodePath, false);
     }
@@ -163,6 +181,20 @@ export class FileManager {
     }
 
     this.arkTSModuleMap = convertedMap;
+  }
+
+  private static initFileVersionMap(): void {
+    FileManager.dynamicFileVersionMap.clear();
+    FileManager.staticFileVersionMap.clear();
+    for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
+      const pkgName = moduleInfo.packageName;
+      for (const dynamicFile of moduleInfo.dynamicFiles ?? []) {
+        FileManager.dynamicFileVersionMap.set(toUnixPath(dynamicFile), pkgName);
+      }
+      for (const staticFile of moduleInfo.staticFiles ?? []) {
+        FileManager.staticFileVersionMap.set(toUnixPath(staticFile), pkgName);
+      }
+    }
   }
 
   private static initAliasConfig(aliasPaths: Map<string, string>): void {
@@ -225,6 +257,7 @@ export class FileManager {
     const isGlueCodeValid = !staticSDKGlueCodePaths || hasExistingPaths(staticSDKGlueCodePaths);
     FileManager.isInteropSDKEnabled = isStaticBaseValid && isGlueCodeValid;
     if (!FileManager.isInteropSDKEnabled && checkFileExist) {
+      FileManager.buildSDKPathMatchers();
       return;
     }
     if (staticSDKBaseUrl) {
@@ -236,6 +269,28 @@ export class FileManager {
       for (const path of staticSDKGlueCodePaths) {
         FileManager.staticSDKGlueCodePath.add(toUnixPath(path));
       }
+    }
+    FileManager.buildSDKPathMatchers();
+  }
+
+  private static addSDKPathMatcher(rootPath: string, languageVersion: string): void {
+    const root = toUnixPath(path.resolve(rootPath));
+    FileManager.sdkPathMatchers.push({
+      root,
+      rootWithSlash: root + '/',
+      languageVersion
+    });
+  }
+
+  private static buildSDKPathMatchers(): void {
+    for (const path of FileManager.dynamicLibPath) {
+      FileManager.addSDKPathMatcher(path, ARKTS_1_1);
+    }
+    for (const path of FileManager.staticSDKDeclPath) {
+      FileManager.addSDKPathMatcher(path, ARKTS_1_2);
+    }
+    for (const path of FileManager.staticSDKGlueCodePath) {
+      FileManager.addSDKPathMatcher(path, ARKTS_1_2);
     }
   }
 
@@ -250,6 +305,11 @@ export class FileManager {
     FileManager.staticSDKGlueCodePath?.clear();
     FileManager.glueCodeFileInfos?.clear();
     FileManager.aliasConfig?.clear();
+    FileManager.dynamicFileVersionMap?.clear();
+    FileManager.staticFileVersionMap?.clear();
+    FileManager.sdkPathMatchers = [];
+    FileManager.sdkPathMatchCache?.clear();
+    FileManager.modulePathMatchCache?.clear();
     FileManager.mixCompile = false;
   }
 
@@ -264,10 +324,6 @@ export class FileManager {
       return moduleMatch;
     }
 
-    const sdkMatch = FileManager.matchSDKPath(path);
-    if (sdkMatch) {
-      return sdkMatch;
-    }
     const firstLine = readFirstLineSync(filePath);
     if (firstLine.includes('use static')) {
       return {
@@ -332,72 +388,100 @@ export class FileManager {
     return undefined;
   }
 
-  private static matchModulePath(path: string): {
-    languageVersion: string,
-    pkgName: string
-  } | undefined {
-    let matchedModuleInfo = this.matchModulePathByPrefix(path) || this.matchModulePathByDeclgenPath(path);
+  private static cacheModulePathMatch(path: string, matchResult: LanguageVersionInfo | undefined):
+    LanguageVersionInfo | undefined {
+    FileManager.modulePathMatchCache.set(path, matchResult);
+    return matchResult;
+  }
 
-    if (!matchedModuleInfo) {
-      return undefined;
-    }
-
-    const isHybrid = matchedModuleInfo.language === ARKTS_HYBRID;
-    const pkgName = matchedModuleInfo.packageName;
-
-    if (!isHybrid) {
-      return {
-        languageVersion: matchedModuleInfo.language,
-        pkgName
-      };
-    }
-
-    const isDynamic =
-      matchedModuleInfo.dynamicFiles.includes(path) ||
-      (matchedModuleInfo.declgenV2OutPath && isSubPathOf(path, matchedModuleInfo.declgenV2OutPath));
-
-    if (isDynamic) {
+  private static matchFileVersionMap(path: string): LanguageVersionInfo | undefined {
+    const dynamicPkgName = FileManager.dynamicFileVersionMap.get(path);
+    if (dynamicPkgName) {
       return {
         languageVersion: ARKTS_1_1,
-        pkgName
+        pkgName: dynamicPkgName
       };
+    }
+
+    const staticPkgName = FileManager.staticFileVersionMap.get(path);
+    if (staticPkgName) {
+      return {
+        languageVersion: ARKTS_1_2,
+        pkgName: staticPkgName
+      };
+    }
+    return undefined;
+  }
+
+  private static getHybridModuleLanguageVersion(path: string, moduleInfo: ArkTSEvolutionModule): string | undefined {
+    const isDynamic =
+      moduleInfo.dynamicFiles.includes(path) ||
+      (moduleInfo.declgenV2OutPath && isSubPathOf(path, moduleInfo.declgenV2OutPath));
+
+    if (isDynamic) {
+      return ARKTS_1_1;
     }
 
     const isStatic =
-      matchedModuleInfo.staticFiles.includes(path) ||
-      (matchedModuleInfo.declgenV1OutPath && isSubPathOf(path, matchedModuleInfo.declgenV1OutPath)) ||
-      (matchedModuleInfo.declgenBridgeCodePath && isSubPathOf(path, matchedModuleInfo.declgenBridgeCodePath));
+      moduleInfo.staticFiles.includes(path) ||
+      (moduleInfo.declgenV1OutPath && isSubPathOf(path, moduleInfo.declgenV1OutPath)) ||
+      (moduleInfo.declgenBridgeCodePath && isSubPathOf(path, moduleInfo.declgenBridgeCodePath));
 
-    if (isStatic) {
-      return {
-        languageVersion: ARKTS_1_2,
-        pkgName
-      };
+    return isStatic ? ARKTS_1_2 : undefined;
+  }
+
+  private static matchModulePath(path: string): LanguageVersionInfo | undefined {
+    const fileVersionMapMatch = FileManager.matchFileVersionMap(path);
+    if (fileVersionMapMatch) {
+      return fileVersionMapMatch;
     }
 
-    return undefined;
+    const sdkMatch = FileManager.matchSDKPath(path);
+    if (sdkMatch) {
+      return sdkMatch;
+    }
+
+    if (FileManager.modulePathMatchCache.has(path)) {
+      return FileManager.modulePathMatchCache.get(path);
+    }
+
+    const matchedModuleInfo = this.matchModulePathByPrefix(path) || this.matchModulePathByDeclgenPath(path);
+    if (!matchedModuleInfo) {
+      return FileManager.cacheModulePathMatch(path, undefined);
+    }
+
+    const languageVersion = matchedModuleInfo.language === ARKTS_HYBRID ?
+      FileManager.getHybridModuleLanguageVersion(path, matchedModuleInfo) : matchedModuleInfo.language;
+    const matchResult = languageVersion ?
+      {
+        languageVersion,
+        pkgName: matchedModuleInfo.packageName
+      } : undefined;
+
+    return FileManager.cacheModulePathMatch(path, matchResult);
   }
 
   private static logError(error: LogData): void {
     console.error(error.toString());
   }
 
-  private static matchSDKPath(path: string): {
+  private static matchSDKPath(filePath: string): {
     languageVersion: string,
     pkgName: string
   } | undefined {
-    const sdkMatches: [Set<string> | undefined, string][] = [
-      [FileManager.dynamicLibPath, ARKTS_1_1],
-      [FileManager.staticSDKDeclPath, ARKTS_1_2],
-      [FileManager.staticSDKGlueCodePath, ARKTS_1_2],
-    ];
+    if (FileManager.sdkPathMatchCache.has(filePath)) {
+      return FileManager.sdkPathMatchCache.get(filePath);
+    }
 
-    for (const [paths, version] of sdkMatches) {
-      const isMatch = paths && Array.from(paths).some(
-        p => p && (isSubPathOf(path, p))
-      );
-      if (isMatch) {
-        return { languageVersion: version, pkgName: 'SDK' };
+    const resolvedPath = toUnixPath(path.resolve(filePath));
+    for (const matcher of FileManager.sdkPathMatchers) {
+      if (resolvedPath === matcher.root || resolvedPath.startsWith(matcher.rootWithSlash)) {
+        const matchResult = {
+          languageVersion: matcher.languageVersion,
+          pkgName: 'SDK'
+        };
+        FileManager.sdkPathMatchCache.set(filePath, matchResult);
+        return matchResult;
       }
     }
     return undefined;
@@ -493,13 +577,13 @@ export function collectSDKInfo(share: Object): {
   const staticSDKInteropDecl: Set<string> = new Set([
     path.resolve(staticInteroSDKBasePath, './declaration/kits'),
     path.resolve(staticInteroSDKBasePath, './declaration/api'),
-    path.resolve(staticInteroSDKBasePath, './declaration/arkts'),
+    path.resolve(staticInteroSDKBasePath, './declaration/arkts')
   ].map(toUnixPath));
 
   const staticSDKGlueCodePath: Set<string> = new Set([
     path.resolve(staticInteroSDKBasePath, './bridge/kits'),
     path.resolve(staticInteroSDKBasePath, './bridge/api'),
-    path.resolve(staticInteroSDKBasePath, './bridge/arkts'),
+    path.resolve(staticInteroSDKBasePath, './bridge/arkts')
   ].map(toUnixPath));
 
   const declarationsPath: string = path.resolve(share.projectConfig.etsLoaderPath, './declarations').replace(/\\/g, '/');
@@ -580,7 +664,6 @@ export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): 
   }
 }
 
-
 export function transformAbilityPages(projectConfig: Object, abilityPath: string): boolean {
   const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
   const entryBridgeCodePath = getBrdigeCodeRootPath(moduleJson?.module?.name, FileManager.getInstance().getInteropConfig());
@@ -628,7 +711,6 @@ export function transformModuleNameToRelativePath(filePath: string): string {
   const relativePath = normalizedModuleName.slice(rootIndex + normalizedRoot.length + 1).replace(/^\/+/, '');
   return './' + relativePath;
 }
-
 
 export function getApiPathForInterop(apiDirs: string[], languageVersion: string): void {
   if (languageVersion !== ARKTS_1_2) {
@@ -685,7 +767,6 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
   }, {} as Record<string, string>);
 }
 
-
 /**
  * corresponds to compiler/src/fast_build/common/init_config.ts - initConfig()
  * As the entry  for mix compile,so mixCompile status will be set true
@@ -739,5 +820,5 @@ export function getBrdigeCodeRootPath(moduleName: string, interopConfig: Interop
 export function destroyInterop(): void {
   FileManager.cleanFileManagerObject();
   entryFileLanguageInfo.clear();
-  mixCompile = false;
+  mixCompile = undefined;
 }
