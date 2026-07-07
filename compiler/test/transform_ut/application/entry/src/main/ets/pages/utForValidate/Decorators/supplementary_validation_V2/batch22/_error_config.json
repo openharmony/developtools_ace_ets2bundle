@@ -1,0 +1,18 @@
+{
+    "buildComplexValid": [],
+    "buildContentRules": [
+        {
+            "message": "In an '@Entry' decorated component, the 'build' method can have only one root node, which must be a container component.",
+            "type": "ERROR",
+            "code": "10905210"
+        }
+    ],
+    "buildErrorCases": [],
+    "buildInteractiveValid": [],
+    "buildNestedValid": [],
+    "buildPatternsSummary": [],
+    "buildValidDeep": [],
+    "buildValidForEach": [],
+    "buildValidIfElse": [],
+    "builderContentValid": []
+}
