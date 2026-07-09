@@ -62,6 +62,17 @@ export interface InitializeValueOptions {
     shouldCheckNonNull?: boolean;
     isRequired?: boolean;
     isWatched?: boolean;
+    canDefinitelyBeNonNull?: boolean;
+}
+
+export function checkIsPropertyCanBeNonNull(
+    property: arkts.ClassProperty,
+    initializeOptions: InitializeValueOptions | undefined
+): boolean {
+    if (!!initializeOptions?.isRequired || !initializeOptions?.shouldCheckNonNull || !!property.value) {
+        return false;
+    }
+    return !!property.typeAnnotation?.tsType?.definitelyNotETSNullish;
 }
 
 export function findStateManagementFactoryTypeFromPropertyName(

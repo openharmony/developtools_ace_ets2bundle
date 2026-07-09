@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, NodeCacheNames, StateManagementTypes } from '../../common/predefines';
-import { hasDecorator, findCachedMemoMetadata, checkIsNameStartWithBackingField } from './utils';
+import { hasDecorator, findCachedMemoMetadata, checkIsNameStartWithBackingField, checkIsPropertyCanBeNonNull } from './utils';
 import {
     InnerClassPropertyCachedTranslator,
     InnerClassPropertyTranslator,
@@ -79,6 +79,10 @@ export class StateCachedTranslator extends PropertyCachedTranslator {
             isRequired,
             shouldCheckNonNull: !isRequired
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     resetOnReuse(

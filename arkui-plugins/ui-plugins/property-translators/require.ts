@@ -24,6 +24,7 @@ import {
     createSetter2,
     isCustomDialogController,
     findCachedMemoMetadata,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -78,5 +79,9 @@ export class RequireCachedTranslator extends RegularPropertyCachedTranslator {
             isRequired: true,
             shouldCheckNonNull: false
         }
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 }

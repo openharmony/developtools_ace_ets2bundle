@@ -32,6 +32,7 @@ import {
     hasDecorator,
     getValueInAnnotation,
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -135,6 +136,10 @@ export class StorageLinkCachedTranslator extends PropertyCachedTranslator {
             isWatched,
             shouldCheckNonNull: false
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

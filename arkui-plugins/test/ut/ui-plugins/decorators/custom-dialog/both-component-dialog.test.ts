@@ -94,7 +94,7 @@ function main() {}
   
   public __updateStruct(initializers: (__Options_CustomDialogExample | undefined)): void {}
   
-  private __backing_aaController?: (CustomDialogController | undefined | undefined);
+  private __backing_aaController?: (CustomDialogController | undefined);
   public get aaController(): (CustomDialogController | undefined) {
     return (this.__backing_aaController as (CustomDialogController | undefined));
   }

@@ -38,6 +38,7 @@ import {
     getValueInAnnotation,
     findCachedMemoMetadata,
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import { factory } from './factory';
 import { PropertyCache } from './cache/propertyCache';
@@ -145,6 +146,10 @@ export class LocalStoragePropRefCachedTranslator extends PropertyCachedTranslato
             isWatched,
             shouldCheckNonNull: false
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

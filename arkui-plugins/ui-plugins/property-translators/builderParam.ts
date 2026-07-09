@@ -17,7 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { backingField, coerceToAstNode, expectName, flatVisitMethodWithOverloads } from '../../common/arkts-utils';
 import { DecoratorNames, NodeCacheNames } from '../../common/predefines';
-import { createGetter, createSetter, generateThisBacking, hasDecorator, removeDecorator } from './utils';
+import { checkIsPropertyCanBeNonNull, createGetter, createSetter, generateThisBacking, hasDecorator, removeDecorator } from './utils';
 import {
     BasePropertyTranslator,
     InnerClassPropertyCachedTranslator,
@@ -240,6 +240,10 @@ export class BuilderParamCachedTranslator extends PropertyCachedTranslator {
             isRequired,
             shouldCheckNonNull: !isRequired
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

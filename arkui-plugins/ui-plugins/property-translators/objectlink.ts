@@ -20,6 +20,7 @@ import { CustomComponentNames, DecoratorNames, GetSetTypes, NodeCacheNames, Stat
 // import { CustomComponentNames } from '../utils';
 import {
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
     createGetter,
     findCachedMemoMetadata,
     generateGetOrSetCall,
@@ -140,6 +141,10 @@ export class ObjectLinkCachedTranslator extends PropertyCachedTranslator {
             isWatched,
             shouldCheckNonNull: true
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

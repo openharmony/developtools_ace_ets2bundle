@@ -17,6 +17,7 @@ import * as arkts from '@koalaui/libarkts';
 
 import { DecoratorNames, StateManagementTypes } from '../../common/predefines';
 import {
+    checkIsPropertyCanBeNonNull,
     generateThisBacking,
 } from './utils';
 import {
@@ -98,6 +99,10 @@ export class CustomEnvCachedTranslator extends PropertyCachedTranslator {
             shouldCheckNonNull: false,
             isWatched
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

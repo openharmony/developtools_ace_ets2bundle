@@ -28,6 +28,7 @@ import {
     hasDecorator,
     findCachedMemoMetadata,
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -155,6 +156,10 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
             isRequired,
             shouldCheckNonNull: true
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(
