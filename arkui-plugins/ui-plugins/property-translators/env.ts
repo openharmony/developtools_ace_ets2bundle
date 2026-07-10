@@ -27,7 +27,8 @@ import {
     findCachedMemoMetadata,
     getValueInEnvAnnotation,
     EnvOptions,
-    checkIsNameStartWithBackingField
+    checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull
 } from './utils';
 import { 
     BasePropertyTranslator, 
@@ -127,6 +128,10 @@ export class EnvCachedTranslator extends PropertyCachedTranslator {
         this.initializeOptions = {
             shouldCheckNonNull: false
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(

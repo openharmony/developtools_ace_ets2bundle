@@ -189,11 +189,11 @@ function main() {}
 
 @Component() final struct MyStateSample2 extends CustomComponent<MyStateSample2, __Options_MyStateSample2> {
   public __initializeStruct(initializers: (__Options_MyStateSample2 | undefined), @Memo() content: ((()=> void) | undefined)): void {
-    this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
+    this.__backing_objectlinkvar1 = STATE_MGMT_FACTORY.makeObjectLink<(A | undefined)>(this, "objectlinkvar1", (({let gensym___219806589 = initializers;
     (((gensym___219806589) == (null)) ? undefined : gensym___219806589!.objectlinkvar1)}) as (A | undefined)));
     this.__backing_objectlinkvar2 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | undefined)>(this, "objectlinkvar2", (({let gensym___217261862 = initializers;
     (((gensym___217261862) == (null)) ? undefined : gensym___217261862!.objectlinkvar2)}) as (A | B)));
-    this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null | undefined)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
+    this.__backing_objectlinkvar3 = STATE_MGMT_FACTORY.makeObjectLink<(A | B | null)>(this, "objectlinkvar3", (({let gensym___199257778 = initializers;
     (((gensym___199257778) == (null)) ? undefined : gensym___199257778!.objectlinkvar3)}) as (A | B | null)));
   }
 
@@ -231,10 +231,10 @@ function main() {}
     throw new Error("Declare interface");
   }
 
-  private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined | undefined)>;
+  private __backing_objectlinkvar1?: IObjectLinkDecoratedVariable<(A | undefined)>;
 
   public get objectlinkvar1(): (A | undefined) {
-    return this.__backing_objectlinkvar1!.get()!;
+    return this.__backing_objectlinkvar1!.get();
   }
 
   private __backing_objectlinkvar2?: IObjectLinkDecoratedVariable<(A | B | undefined)>;
@@ -243,10 +243,10 @@ function main() {}
     return this.__backing_objectlinkvar2!.get()!;
   }
 
-  private __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null | undefined)>;
+  private __backing_objectlinkvar3?: IObjectLinkDecoratedVariable<(A | B | null)>;
 
   public get objectlinkvar3(): (A | B | null) {
-    return this.__backing_objectlinkvar3!.get()!;
+    return this.__backing_objectlinkvar3!.get();
   }
 
   @Memo() 

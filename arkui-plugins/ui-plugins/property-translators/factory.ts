@@ -59,11 +59,7 @@ export class factory {
         if (!propertyType) {
             return undefined;
         }
-        if (
-            !propertyValue &&
-            !initializeValueOptions?.isRequired &&
-            !!initializeValueOptions?.shouldCheckNonNull 
-        ) {
+        if (!!initializeValueOptions?.canDefinitelyBeNonNull) {
             if (arkts.isETSUnionType(propertyType)) {
                 propertyType.setTypes([...propertyType.types, arkts.factory.createETSUndefinedType()]);
                 return propertyType;

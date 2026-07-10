@@ -26,6 +26,7 @@ import {
     collectStateManagementTypeImport,
     findCachedMemoMetadata,
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -122,6 +123,10 @@ export class ParamCachedTranslator extends PropertyCachedTranslator {
             isRequired,
             shouldCheckNonNull: !isRequired
         }
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     resetOnReuse(

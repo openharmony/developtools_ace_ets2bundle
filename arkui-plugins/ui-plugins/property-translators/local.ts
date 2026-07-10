@@ -26,6 +26,7 @@ import {
     collectStateManagementTypeImport,
     findCachedMemoMetadata,
     checkIsNameStartWithBackingField,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -146,7 +147,7 @@ function getterWithStaticLocalProperty(
     );
     const thisGetCall: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
     let thisGet: arkts.Expression = thisGetCall;
-    if (!this.property.value && !this.initializeOptions?.isRequired && !!this.initializeOptions?.shouldCheckNonNull) {
+    if (this.initializeOptions?.canDefinitelyBeNonNull) {
         thisGet = arkts.factory.createTSNonNullExpression(thisGet);
     }
     const getter: arkts.MethodDefinition = createGetter(
@@ -273,6 +274,10 @@ export class LocalCachedTranslator extends PropertyCachedTranslator {
         this.initializeOptions = {
             shouldCheckNonNull: false
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     field(newName: string, originalName?: string, metadata?: AstNodeCacheValueMetadata): arkts.ClassProperty {

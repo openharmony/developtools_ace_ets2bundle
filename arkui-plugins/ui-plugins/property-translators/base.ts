@@ -135,7 +135,7 @@ export abstract class BasePropertyTranslator {
         }
         const thisGetCall: arkts.CallExpression = generateGetOrSetCall(thisValue, GetSetTypes.GET);
         let thisGet: arkts.Expression = thisGetCall;
-        if (!this.property.value && !this.initializeOptions?.isRequired && !!this.initializeOptions?.shouldCheckNonNull) {
+        if (this.initializeOptions?.canDefinitelyBeNonNull) {
             thisGet = arkts.factory.createTSNonNullExpression(thisGet);
         }
         const getter: arkts.MethodDefinition = createGetter(

@@ -24,6 +24,7 @@ import {
     createSetter2,
     isCustomDialogController,
     findCachedMemoMetadata,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -119,6 +120,10 @@ export class EventCachedTranslator extends RegularPropertyCachedTranslator {
         this.initializeOptions = {
             shouldCheckNonNull: true
         };
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     resetOnReuse(newName: string, originalName: string, metadata?: arkts.AstNodeCacheValueMetadata): arkts.ExpressionStatement {

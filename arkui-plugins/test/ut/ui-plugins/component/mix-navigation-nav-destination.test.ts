@@ -144,7 +144,7 @@ function main() {}
     this.__backing_displayMode!.set(value);
   }
 
-  private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined | undefined);
+  private __backing_navDestination?: (((name: String, param: (Object | undefined))=> void) | undefined);
 
   public get navDestination(): (@Memo() ((name: String, param: (Object | undefined))=> void) | undefined) {
     return this.__backing_navDestination;
@@ -247,24 +247,27 @@ export final class SplitPolicy extends BaseEnum<int> {
 
   private static <cctor>() {}
   
-  private constructor(ordinal: int, value: int, name: String) {
-    super(value, name);
+  private constructor(ordinal: int, value: int) {
+    super(value);
     this.#ordinal = ordinal;
   }
   
-  public static readonly HOME_PAGE: SplitPolicy = new SplitPolicy(0, 0, "HOME_PAGE");
-  
-  public static readonly DETAIL_PAGE: SplitPolicy = new SplitPolicy(1, 1, "DETAIL_PAGE");
-  
-  public static readonly FULL_PAGE: SplitPolicy = new SplitPolicy(2, 2, "FULL_PAGE");
-  
-  public static readonly PlACE_HOLDER_PAGE: SplitPolicy = new SplitPolicy(3, 3, "PlACE_HOLDER_PAGE");
-  
+  public static readonly HOME_PAGE: SplitPolicy = new SplitPolicy(0, 0);
+  public static readonly DETAIL_PAGE: SplitPolicy = new SplitPolicy(1, 1);
+  public static readonly FULL_PAGE: SplitPolicy = new SplitPolicy(2, 2);
+  public static readonly PlACE_HOLDER_PAGE: SplitPolicy = new SplitPolicy(3, 3);
+  private static readonly #NamesArray: String[] = ["HOME_PAGE", "DETAIL_PAGE", "FULL_PAGE", "PlACE_HOLDER_PAGE"];
+  private static readonly #ValuesArray: int[] = [0, 1, 2, 3];
+  private static readonly #StringValuesArray: String[] = ["0", "1", "2", "3"];
   private static readonly #ItemsArray: SplitPolicy[] = [SplitPolicy.HOME_PAGE, SplitPolicy.DETAIL_PAGE, SplitPolicy.FULL_PAGE, SplitPolicy.PlACE_HOLDER_PAGE];
-  
+
+  public getName(): String {
+    return SplitPolicy.#NamesArray[this.#ordinal];
+  }
+
   public static getValueOf(name: String): SplitPolicy {
-    for (let i = ((SplitPolicy.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
-      if (((name) == (SplitPolicy.#ItemsArray[i].getName()))) {
+    for (let i = ((SplitPolicy.#NamesArray.length) - (1));((i) >= (0));(--i)) {
+      if (((name) == (SplitPolicy.#NamesArray[i]))) {
         return SplitPolicy.#ItemsArray[i];
       }
     }
@@ -272,14 +275,22 @@ export final class SplitPolicy extends BaseEnum<int> {
   }
 
   public static fromValue(value: int): SplitPolicy {
-    for (let i = ((SplitPolicy.#ItemsArray.length) - (1));((i) >= (0));(--i)) {
-      if (((SplitPolicy.#ItemsArray[i].valueOf()) == (value))) {
+    for (let i = ((SplitPolicy.#ValuesArray.length) - (1));((i) >= (0));(--i)) {
+      if (((value) == (SplitPolicy.#ValuesArray[i]))) {
         return SplitPolicy.#ItemsArray[i];
       }
     }
     throw new Error((("No enum SplitPolicy with value ") + (value)));
   }
   
+  public valueOf(): int {
+    return SplitPolicy.#ValuesArray[this.#ordinal];
+  }
+
+  public toString(): String {
+    return SplitPolicy.#StringValuesArray[this.#ordinal];
+  }
+
   public static values(): SplitPolicy[] {
     return SplitPolicy.#ItemsArray;
   }

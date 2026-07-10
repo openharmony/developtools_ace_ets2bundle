@@ -23,6 +23,7 @@ import {
     isCustomDialogController,
     findCachedMemoMetadata,
     canCastTypeFromValue,
+    checkIsPropertyCanBeNonNull,
 } from './utils';
 import {
     BasePropertyTranslator,
@@ -277,6 +278,10 @@ export class RegularPropertyCachedTranslator extends PropertyCachedTranslator {
         this.initializeOptions = {
             shouldCheckNonNull: !this.propertyInfo.structInfo?.annotationInfo?.hasComponentV2
         }
+        this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
+            this.property,
+            this.initializeOptions
+        );
     }
 
     initializeStruct(
