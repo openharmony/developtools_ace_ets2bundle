@@ -265,7 +265,7 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_TS_FILE_ERROR, { code: '11706015', description: 'apiAvailable cannot be used in .ts files.', solutions: ['Use .ets files instead of .ts files for apiAvailable calls.'] }],
+  [APIAVAILABLE_CHECK_ERROR, { code: '11706015', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [AVAILABLE_VERSION_FORMAT_ERROR_PREFIX, { code: '11706016', description: 'Invalid version format in @Available decorator.', solutions: ['Change the version number to an integer between 1 and 999, or use the standardized M.S.F format.'] }],
   [AVAILABLE_OSNAME_ERROR, { code: '11706017', description: 'Invalid OS name in @Available decorator.', solutions: ['Use the correct OS name matching the project runtime OS.'] }]
 ])

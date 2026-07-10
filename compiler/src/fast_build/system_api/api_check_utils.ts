@@ -2586,8 +2586,8 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   if (ts.isStringLiteral(node.arguments[0]) ||
     ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
     isnumericLiteral(node.arguments[0])) {
-    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
-    const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`;
+    const compatibileReg: RegExp = /^(?:[1-9]\d*|[1-9]\d*\.\d+\.\d+(?:\(\d+\))?)$/;
     const sinceValue: string = node.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
     const sincePoint: string[] = sinceFormat.split('.');
@@ -2597,11 +2597,12 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
       return result;
     }
     const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
+    const diagnosticOHMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
     if (isSinceVersionType) {
-      result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
+      result = checkCharScene(sincePoint, sinceFormat, diagnosticOHMessage);
     } else {
       if (!checkIntegerMoreVersion(sinceFormat)) {
-        result.message = diagnosticMessage;
+        result.message = diagnosticOHMessage;
         result.valid = false;
       }
     }
@@ -2693,13 +2694,13 @@ function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticMes
       result.valid = false;
     }
   } else {
-    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticMessage);
+    result = checkCharDistributionOSScene(sinceFormat, result);
   }
   
   return result;
 }
 
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticMessage: string): ApiAvailableResult {
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
   const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
   if (!msfResult.valid) {
     if (msfResult.needDistCheck) {
@@ -2710,6 +2711,7 @@ function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableR
         result.valid = false;
       }
     } else {
+      const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`;
       result.message = diagnosticMessage;
       result.valid = false;
     }
