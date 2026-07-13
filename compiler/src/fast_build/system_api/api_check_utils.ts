@@ -2588,7 +2588,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   if (ts.isStringLiteral(node.arguments[0]) ||
     ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
     isNumericLiteral(node.arguments[0]) ||
-    isNullOrUndefined(node.arguments[0])
+    isNullOrUndefinedScene(node.arguments[0])
   ) {
     const typeMessageInfo: string = isNumericLiteral(node.arguments[0]) ? APIAVAILABLE_NUMBER_ERROR : APIAVAILABLE_STRING_ERROR;
     const errorMessageInfo: Map<string, string> = new Map([
@@ -2600,7 +2600,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     const sinceValue: string = node.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
     const sincePoint: string[] = sinceFormat.split('.');
-    if (isNullOrUndefined(node.arguments[0])) {
+    if (isNullOrUndefinedScene(node.arguments[0])) {
       result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_ERROR);
       result.valid = false;
       return result;
@@ -2624,7 +2624,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   return result;
 }
 
-function isNullOrUndefined(node: ts.Node): boolean {
+function isNullOrUndefinedScene(node: ts.Node): boolean {
   const nodeValue: string = node.getText();
   return nodeValue === 'null' || nodeValue === 'undefined';
 }
