@@ -102,12 +102,13 @@ import {
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
   APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
-  APIAVAILABLE_TS_FILE_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
   ApiAvailableResult,
   MSFVersionCheckResult,
-  MSF_SANDF_VERSION
+  MSF_SANDF_VERSION,
+  APIAVAILABLE_NUMBER_ERROR,
+  APIAVAILABLE_STRING_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -2585,8 +2586,9 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
 
   if (ts.isStringLiteral(node.arguments[0]) ||
     ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
-    isnumericLiteral(node.arguments[0])) {
-    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`;
+    isNumericLiteral(node.arguments[0])) {
+    const typeMessageInfo: string = isNumericLiteral(node.arguments[0]) ? APIAVAILABLE_NUMBER_ERROR : APIAVAILABLE_STRING_ERROR;
+    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}${typeMessageInfo}`;
     const compatibileReg: RegExp = /^(?:[1-9]\d*|[1-9]\d*\.\d+\.\d+(?:\(\d+\))?)$/;
     const sinceValue: string = node.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
@@ -2599,7 +2601,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
     const diagnosticOHMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
     if (isSinceVersionType) {
-      result = checkCharScene(sincePoint, sinceFormat, diagnosticOHMessage);
+      result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
     } else {
       if (!checkIntegerMoreVersion(sinceFormat)) {
         result.message = diagnosticOHMessage;
@@ -2611,7 +2613,7 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   return result;
 }
 
-function isnumericLiteral(node: ts.Node): boolean {
+function isNumericLiteral(node: ts.Node): boolean {
   if (ts.isNumericLiteral(node)) {
     return true;
   }
@@ -2682,25 +2684,26 @@ function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticMes
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
+  const diagnosticOHMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
   if (sincePoint.length === 1) {
-    result.message = diagnosticMessage;
+    result.message = diagnosticOHMessage;
     result.valid = false;
     return result;
   }
   if (isOpenHarmonyRuntime()) {
     const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
     if (!msfResult.valid) {
-      result.message = diagnosticMessage;
+      result.message = diagnosticOHMessage;
       result.valid = false;
     }
   } else {
-    result = checkCharDistributionOSScene(sinceFormat, result);
+    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticMessage);
   }
   
   return result;
 }
 
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult): ApiAvailableResult {
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticMessage: string): ApiAvailableResult {
   const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
   if (!msfResult.valid) {
     if (msfResult.needDistCheck) {
@@ -2711,7 +2714,6 @@ function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableR
         result.valid = false;
       }
     } else {
-      const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`;
       result.message = diagnosticMessage;
       result.valid = false;
     }
