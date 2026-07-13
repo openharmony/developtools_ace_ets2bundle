@@ -56,7 +56,7 @@ export const AVAILABLE_SCOPE_ERROR: string = 'Unnecessary. The outer annotation 
 export const AVAILABLE_VERSION_FORMAT_ERROR: string = `The OpenHarmony version must be an integer between 1 and 999,
  and when the OpenHarmony version is greater than or equal to 26, the version number format also supports the M.S.F format.`;
 export const APIAVAILABLE_CHECK_ERROR: string = 'Invalid parameters for apiAvailable.';
-export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The OpenHarmony api version must be a decimal integer between 1 and 25.
+export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The api version must be a decimal integer between 1 and 25.
  The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be decimal integers between 0 and 99.`;
 export const APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR: string = 'Invalid $RUNTIMEOS version.';
 export const APIAVAILABLE_NUMBER_ERROR: string = 'Only decimal digits are allowed.';
