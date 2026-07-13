@@ -276,7 +276,7 @@ function collectIdentifiers(node: ts.Node, names: Set<string>): void {
  *     : 'string' == typeof t &&
  *         !!(t = t.match(/^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/)) &&
  *         ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
- *         e.distributionOSApiVersion > i;
+ *         e.distributionOSApiVersion >= i;
  *   }
  */
 export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
@@ -287,7 +287,7 @@ export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
       : 'string' == typeof t &&
           !!(t = t.match(/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/)) &&
           ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
-          e.distributionOSApiVersion > i;
+          e.distributionOSApiVersion >= i;
   }`;
   const sourceFile = ts.createSourceFile('', content, ts.ScriptTarget.Latest, true);
   stripRanges(sourceFile);
