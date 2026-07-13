@@ -60,7 +60,7 @@ export const APIAVAILABLE_OPENHARMONY_CHECK_ERROR: string = `The api version mus
  The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be decimal integers between 0 and 99.`;
 export const APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR: string = 'Invalid $RUNTIMEOS version.';
 export const APIAVAILABLE_NUMBER_ERROR: string = 'Only decimal digits are allowed.';
-export const APIAVAILABLE_STRING_ERROR: string = 'Only digits,dots,and left and right parentheses are allowed.';
+export const APIAVAILABLE_STRING_ERROR: string = 'Only digits, dots, and left and right parentheses are allowed.';
 export const APIAVAILABLE_CHECK_NUMBER_STRING_ERROR = 'numberOrStringFormat';
 export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
   ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']],
