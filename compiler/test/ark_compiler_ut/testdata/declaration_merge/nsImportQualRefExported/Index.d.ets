@@ -12,10 +12,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type AnyAlias = any;
-
-export type UnknownAlias = unknown;
-
-export declare function useAny(value: any): any;
-
-export declare function useUnknown(value: unknown): unknown;
+export * from './2';

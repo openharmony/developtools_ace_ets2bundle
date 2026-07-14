@@ -789,6 +789,93 @@ mocha.describe('test declaration file merging', function () {
     });
   });
 
+  mocha.describe('import * as NS with target also exported (nsImportQualRefExported)', function () {
+    const opts = () => makeOptions('nsImportQualRefExported');
+
+    mocha.it('rewrites NS.A to bare A when target is an exported entity', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/let\s+a:\s*A\b/);
+      expect(merged).to.not.match(/\bNS\.A\b/);
+    });
+
+    mocha.it('no NS prefix leaks into output', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.not.match(/\bNS\b/);
+    });
+
+    mocha.it('declares class A and exports it as B', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/\bdeclare\s+class\s+A\b/);
+      expect(merged).to.include('export { A as B }');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      expectSelfContained(performMerge(opts()));
+    });
+  });
+
+  mocha.describe('system API import routed to companion (sysApiCrossExtRef)', function () {
+    const SYSTEM_MODULES = ['@ohos.util.ArrayList.d.ts'];
+    const opts = () => ({ ...makeOptions('sysApiCrossExtRef'), systemModules: SYSTEM_MODULES });
+
+    mocha.it('routes system API import to companion, not primary', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(companion).to.include('import ArrayList from "@ohos.util.ArrayList"');
+      expect(companion).to.include('ArrayList<string>');
+      expect(primary).to.not.include('ArrayList');
+      expect(primary).to.not.include('@ohos.util.ArrayList');
+    });
+
+    mocha.it('primary only re-exports a from companion', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include("export { a } from './Index-declarations'");
+    });
+  });
+
+  mocha.describe('SDK global type not inlined when transitively loaded (sdkGlobalTypeRef)', function () {
+    const SYSTEM_MODULES = ['@ohos.web.webview.d.ts'];
+    const opts = () => ({
+      ...makeOptions('sdkGlobalTypeRef'),
+      systemModules: SYSTEM_MODULES,
+      sdkPath: SDK_DIR
+    });
+
+    mocha.it('keeps NavPathStack as bare reference, not inlined', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.match(/let\s+a:\s*NavPathStack\b/);
+      expect(merged).to.not.include('_navigation');
+      expect(merged).to.not.include('declare namespace _navigation');
+    });
+
+    mocha.it('preserves system API import and type reference', function () {
+      skipIfMissing(opts().entryFile, this);
+      const merged = performMerge(opts());
+
+      expect(merged).to.include('import webview from "@ohos.web.webview"');
+      expect(merged).to.include('webview.WebviewController');
+    });
+
+    mocha.it('does not create companion file', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { companion } = performMergeFull(opts());
+
+      expect(companion.trim().length === 0 || companion === '(none)').to.be.true;
+    });
+  });
+
   mocha.describe('enum value reference in const initializer', function () {
     const opts = () => makeOptions('enumValueRef');
 
@@ -1525,7 +1612,7 @@ mocha.describe('test declaration file merging', function () {
       }
       expect(foundTopLevelExport).to.not.be.null;
       expect(foundTopLevelExport!).to.include('NS');
-      expect(foundTopLevelExport!).to.match(/\ba\b/);
+      expect(foundTopLevelExport!).to.not.match(/\ba\b/);
     });
   });
 
@@ -1611,6 +1698,113 @@ mocha.describe('test declaration file merging', function () {
       const { primary, companion } = performMergeFull(opts());
 
       expect(primary).to.include("export { TsUtils }");
+      expectSelfContained(primary, companion);
+    });
+  });
+
+  mocha.describe('mixed-extension namespace members (nsMixedExtMembers)', function () {
+    const opts = () => makeOptions('nsMixedExtMembers');
+
+    mocha.it('keeps .d.ets member in primary namespace block', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('declare namespace NS');
+      expect(primary).to.match(/export\s+let\s+a:\s*number/);
+    });
+
+    mocha.it('moves .d.ts member to companion as top-level export', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(companion).to.include('export declare class StringUtils');
+      expect(companion).to.include('any');
+      expect(primary).to.not.include('any');
+      expect(primary).to.not.match(/class\s+StringUtils/);
+    });
+
+    mocha.it('aliases companion member into namespace via export { }', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('export { StringUtils };');
+      expect(primary).to.include("import { StringUtils } from './Index-declarations'");
+    });
+
+    mocha.it('exports only NS at top level', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('export { NS };');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expectSelfContained(primary, companion);
+    });
+
+    mocha.it('is order-independent (reverse export order yields same structure)', function () {
+      skipIfMissing(opts().entryFile, this);
+      const revOpts = () => makeOptions('nsMixedExtMembersRev');
+      skipIfMissing(revOpts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+      const { primary: revPrimary, companion: revCompanion } = performMergeFull(revOpts());
+
+      expect(revPrimary).to.include('declare namespace NS');
+      expect(revPrimary).to.match(/export\s+let\s+a:\s*number/);
+      expect(revPrimary).to.include('export { StringUtils };');
+      expect(revPrimary).to.include("import { StringUtils } from './Index-declarations'");
+      expect(revCompanion).to.include('export declare class StringUtils');
+      expect(revCompanion).to.include('any');
+      expect(revPrimary).to.not.include('any');
+    });
+  });
+
+  mocha.describe('mixed-extension namespace with type-only members (nsMixedExtTypeOnly)', function () {
+    const opts = () => makeOptions('nsMixedExtTypeOnly');
+
+    mocha.it('keeps .d.ets value member in primary namespace block', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('declare namespace NS');
+      expect(primary).to.match(/export\s+let\s+a:\s*number/);
+    });
+
+    mocha.it('moves interface and type alias to companion as top-level exports', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
+      expect(companion).to.include('export declare interface MyInterface');
+      expect(companion).to.include('export type MyType');
+      expect(companion).to.include('any');
+      expect(primary).to.not.include('any');
+      expect(primary).to.not.match(/interface\s+MyInterface/);
+      expect(primary).to.not.match(/type\s+MyType\b/);
+    });
+
+    mocha.it('imports and aliases type-only members into namespace', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('export { MyInterface };');
+      expect(primary).to.include('export { MyType };');
+      expect(primary).to.match(/import\s*\{\s*MyInterface,\s*MyType\s*\}\s*from\s*'\.\/Index-declarations'/);
+    });
+
+    mocha.it('exports only NS at top level', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary } = performMergeFull(opts());
+
+      expect(primary).to.include('export { NS };');
+    });
+
+    mocha.it('is self-contained', function () {
+      skipIfMissing(opts().entryFile, this);
+      const { primary, companion } = performMergeFull(opts());
+
       expectSelfContained(primary, companion);
     });
   });
