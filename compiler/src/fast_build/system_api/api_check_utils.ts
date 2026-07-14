@@ -102,12 +102,14 @@ import {
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
   APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
-  APIAVAILABLE_TS_FILE_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
   ApiAvailableResult,
   MSFVersionCheckResult,
-  MSF_SANDF_VERSION
+  MSF_SANDF_VERSION,
+  APIAVAILABLE_NUMBER_ERROR,
+  APIAVAILABLE_STRING_ERROR,
+  APIAVAILABLE_CHECK_NUMBER_STRING_ERROR
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -2585,23 +2587,35 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
 
   if (ts.isStringLiteral(node.arguments[0]) ||
     ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
-    isnumericLiteral(node.arguments[0])) {
-    const diagnosticMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`;
-    const compatibileReg: RegExp = /^(?:[1-9]\d?|[1-9]\d?\.\d{1,2}\.\d{1,2}|[1-9]\d?\.\d{1,2}\.\d{1,2}\(\d+\))$/;
+    isNumericLiteral(node.arguments[0]) ||
+    isNullOrUndefinedScene(node.arguments[0])
+  ) {
+    const typeMessageInfo: string = isNumericLiteral(node.arguments[0]) ? APIAVAILABLE_NUMBER_ERROR : APIAVAILABLE_STRING_ERROR;
+    const errorMessageInfo: Map<string, string> = new Map([
+      [APIAVAILABLE_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`],
+      [APIAVAILABLE_CHECK_NUMBER_STRING_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}${typeMessageInfo}`],
+      [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`]
+    ]);
+    const compatibileReg: RegExp = /^(?:[1-9]\d*|[1-9]\d*\.\d+\.\d+(?:\(\d+\))?)$/;
     const sinceValue: string = node.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
     const sincePoint: string[] = sinceFormat.split('.');
+    if (isNullOrUndefinedScene(node.arguments[0])) {
+      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_ERROR);
+      result.valid = false;
+      return result;
+    }
     if (!compatibileReg.test(sinceFormat)) {
-      result.message = diagnosticMessage;
+      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_NUMBER_STRING_ERROR);
       result.valid = false;
       return result;
     }
     const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
     if (isSinceVersionType) {
-      result = checkCharScene(sincePoint, sinceFormat, diagnosticMessage);
+      result = checkCharScene(sincePoint, sinceFormat, errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR));
     } else {
       if (!checkIntegerMoreVersion(sinceFormat)) {
-        result.message = diagnosticMessage;
+        result.message = errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR);
         result.valid = false;
       }
     }
@@ -2610,7 +2624,12 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
   return result;
 }
 
-function isnumericLiteral(node: ts.Node): boolean {
+function isNullOrUndefinedScene(node: ts.Node): boolean {
+  const nodeValue: string = node.getText();
+  return nodeValue === 'null' || nodeValue === 'undefined';
+}
+
+function isNumericLiteral(node: ts.Node): boolean {
   if (ts.isNumericLiteral(node)) {
     return true;
   }
@@ -2675,31 +2694,31 @@ function checkApiAvailableCache(node: ts.Node): boolean {
  * @param sinceFormat del quotation mark version
  * @returns standardized results
  */
-function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticMessage: string): ApiAvailableResult {
+function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticOHMessage: string): ApiAvailableResult {
   let result: ApiAvailableResult = {
     valid: true,
     message: APIAVAILABLE_CHECK_ERROR,
     type: ts.DiagnosticCategory.Error
   }
   if (sincePoint.length === 1) {
-    result.message = diagnosticMessage;
+    result.message = diagnosticOHMessage;
     result.valid = false;
     return result;
   }
   if (isOpenHarmonyRuntime()) {
     const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
     if (!msfResult.valid) {
-      result.message = diagnosticMessage;
+      result.message = diagnosticOHMessage;
       result.valid = false;
     }
   } else {
-    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticMessage);
+    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticOHMessage);
   }
   
   return result;
 }
 
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticMessage: string): ApiAvailableResult {
+function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticOHMessage: string): ApiAvailableResult {
   const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
   if (!msfResult.valid) {
     if (msfResult.needDistCheck) {
@@ -2710,7 +2729,7 @@ function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableR
         result.valid = false;
       }
     } else {
-      result.message = diagnosticMessage;
+      result.message = diagnosticOHMessage;
       result.valid = false;
     }
   }
