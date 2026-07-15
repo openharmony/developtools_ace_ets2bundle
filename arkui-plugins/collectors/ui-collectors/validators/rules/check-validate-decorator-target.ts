@@ -113,6 +113,14 @@ const propertyOnlyAnnotations = [
     DecoratorNames.WATCH,
     DecoratorNames.REQUIRE,
     DecoratorNames.OBJECT_LINK,
+    DecoratorNames.ONCE,
+    DecoratorNames.CONSUMER,
+    DecoratorNames.PROVIDER,
+    DecoratorNames.ENV,
+    DecoratorNames.CUSTOM_ENV,
+    DecoratorNames.LOCAL,
+    DecoratorNames.PARAM,
+    DecoratorNames.EVENT,
 ];
 
 /**
@@ -405,5 +413,10 @@ function reportInvalidPropertyAnnotation<T extends arkts.AstNode>(
         node: errorNode,
         level: LogType.ERROR,
         message: `'@${annotationName}' can only decorate member property.`,
+        suggestions: [createSuggestion(
+            ``,
+            ...getPositionRangeFromAnnotation(errorNode),
+            `Remove the annotation`
+        )],
     });
 }

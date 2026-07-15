@@ -18,7 +18,7 @@ import { BaseValidator } from '../base';
 import type { ExtendedValidatorFunction, IntrinsicValidatorFunction } from '../safe-types';
 import { NormalClassMethodInfo, NormalClassPropertyInfo, StructMethodInfo, StructPropertyInfo } from '../../records';
 import { DecoratorNames, LogType } from '../../../../common/predefines';
-import { createSuggestion, getPositionRangeFromAnnotation } from '../../../../common/log-collector';
+import { createSuggestion } from '../../../../common/log-collector';
 import {
     checkIsNormalClassMethodFromInfo,
     checkIsNormalClassPropertyFromInfo,
@@ -33,10 +33,8 @@ export const checkOnceDecorator = performanceLog(
     getPerfName([0, 0, 0, 0, 0], 'checkOnceDecorator')
 );
 
-const INVALID_MEMBER_DECORATE = `'@Once' can only decorate member property.`;
 const INVALID_WITHOUT_PARAM = `When a variable decorated with '@Once', it must also be decorated with '@Param'.`;
 
-const REMOVE_ANNOTATION = `Remove the annotation`;
 const ADD_PARAM_ANNOTATION = `Add @Param annotation`;
 
 function hasRawParamAnnotation(node: arkts.AstNode): boolean {
@@ -52,7 +50,7 @@ function hasRawParamAnnotation(node: arkts.AstNode): boolean {
 /**
  * 校验规则：用于验证`@Once` 装饰器时需要遵循的具体约束和条件
  * 1.`@Once` 装饰器用在使用了 `@ComponentV2` 装饰的 `struct` 中(已由check-old-new-decorator-mix-use校验)
- * 2.`@Once` 只能装饰成员属性
+ * 2.`@Once` 只能装饰成员属性(已由validate-decorator-target校验)
  * 3.使用 `@Once` 必须同时使用 `@Param`
  * 4.`@Once` 只能在 `struct` 中使用(已由validate-decorator-target校验)
  *
@@ -101,9 +99,6 @@ function checkOnceInStructMethod<T extends arkts.AstNode = arkts.MethodDefinitio
             return;
         }
         reportOnceWithoutParam.bind(this)(onceAnnotation);
-    } else {
-        // `@Once` 只能装饰成员属性
-        reportErrorWithDeleteFix.bind(this)(onceAnnotation, INVALID_MEMBER_DECORATE);
     }
 }
 
@@ -196,15 +191,3 @@ function reportOnceWithoutParam<T extends arkts.AstNode>(
     });
 }
 
-function reportErrorWithDeleteFix<T extends arkts.AstNode>(
-    this: BaseValidator<T, StructMethodInfo>,
-    onceAnnotation: arkts.AnnotationUsage,
-    message: string
-): void {
-    this.report({
-        node: onceAnnotation,
-        message: message,
-        level: LogType.ERROR,
-        suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(onceAnnotation), REMOVE_ANNOTATION)],
-    });
-}

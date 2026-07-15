@@ -21,9 +21,6 @@ import {
     CallInfo,
     StructMethodInfo,
     StructPropertyInfo,
-    FunctionInfo,
-    NormalClassMethodInfo,
-    NormalClassInfo,
     CustomComponentInnerClassPropertyInfo,
 } from '../../records';
 import { AstNodePointer } from '../../../../common/safe-types';
@@ -43,8 +40,7 @@ export const checkComponentV2StateUsage = performanceLog(
  *  1. 确保成员属性或方法不能同时被多个内置装饰器（`@Local`, `@Param`, `@Event`）装饰；
  *  2. 当用`@Param`装饰的变量没有被分配默认值时，它也必须用`@Require`装饰；
  *  3. 在被`@ComponentV2`装饰的结构体中，`@Require`只能与`@Param`一起使用；
- *  4. 检查`@ComponentV2`自定义组件中的`@Local`属性和无装饰器属性是否尝试在外部初始化；
- *  5. 确保`@Local`，`@Param`，`@Event`装饰器只能用于成员属性，而不能用于方法。
+ *  4. 检查`@ComponentV2`自定义组件中的`@Local`属性和无装饰器属性是否尝试在外部初始化。
  *
  * 校验等级：error
  */
@@ -164,56 +160,9 @@ function getReportDecoratorName(propertyInfo: CustomComponentInnerClassPropertyI
     return undefined;
 }
 
-function checkComponentV2StateUsageInMethodDefinition<T extends arkts.AstNode = arkts.MethodDefinition>(
-    this: BaseValidator<T, StructMethodInfo | FunctionInfo | NormalClassMethodInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    const decorators = findInvalidBuiltInDecoratorUsage(metadata);
-    // 确保`@Local`，`@Param`，`@Event`装饰器只能用于成员属性，而不能用于方法
-    if (decorators.length <= 0) {
-        return;
-    }
-    for (const decorator of decorators) {
-        let startPosition = decorator.annotation.startPosition;
-        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
-        let endPosition = decorator.annotation.endPosition;
-        this.report({
-            node: decorator.annotation,
-            message: `'@${decorator.name}' can only decorate member property.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', startPosition, endPosition, `Remove the annotation`)],
-        })
-    }
-}
-
-function checkComponentV2StateUsageInClass<T extends arkts.AstNode = arkts.ClassDeclaration>(
-    this: BaseValidator<T, NormalClassInfo>,
-    node: T
-): void {
-    const metadata = this.context ?? {};
-    const decorators = findInvalidBuiltInDecoratorUsage(metadata);
-    if (decorators.length <= 0) {
-        return;
-    }
-    for (const decorator of decorators) {
-        let startPosition = decorator.annotation.startPosition;
-        startPosition = arkts.createSourcePosition(startPosition.getIndex() - 1, startPosition.getLine());
-        let endPosition = decorator.annotation.endPosition;
-        this.report({
-            node: decorator.annotation,
-            message: `'@${decorator.name}' can only decorate member property.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', startPosition, endPosition, `Remove the annotation`)],
-        })
-    }
-}
-
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction>([
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkComponentV2StateUsageInClassProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkComponentV2StateUsageInStructCall],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkComponentV2StateUsageInMethodDefinition],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_DECLARATION, checkComponentV2StateUsageInClass],
 ]);
 
 interface DecoratorInfo {
@@ -236,18 +185,6 @@ function findStructAttributeBuiltInDecoratorsFromInfo(info: StructPropertyInfo |
         .map((name) => ({
             name,
             annotation: info.annotations?.[name]!,
-        }));
-}
-
-function findInvalidBuiltInDecoratorUsage(info: StructMethodInfo | FunctionInfo): DecoratorInfo[] {
-    if (!info.ignoredAnnotationInfo || !info.ignoredAnnotations) {
-        return [];
-    }
-    return builtInDecorators
-        .filter((name) => !!info.ignoredAnnotationInfo?.[`has${name}`])
-        .map((name) => ({
-            name,
-            annotation: info.ignoredAnnotations?.[name]!,
         }));
 }
 
