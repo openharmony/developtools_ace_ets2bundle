@@ -238,7 +238,7 @@ function processResourceArr(
         if (resourceData.length === 3 && !isNaN(Number(resourceData[2]))) {
             rescordResourceNameAndIdMap(resourceMap, resourceData);
         } else {
-            console.warn(`ArkTS:WARN The format of file '${resourcePath}' is incorrect.`);
+            console.warn(`ArkTS:WARN The format of resource file is incorrect.`);
             break;
         }
     }
