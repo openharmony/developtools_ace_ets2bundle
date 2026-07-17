@@ -74,6 +74,12 @@ function initializeStructWithEnvProperty(
         envValue!,
         arkts.factory.createStringLiteral(originalName)
     ];
+    if (this.initializeOptions?.isWatched) {
+        const watchFuncProperty = factory.addWatchFuncProperty('watchFunc', this.property);
+        if (watchFuncProperty) {
+            args.push(arkts.factory.createObjectExpression([watchFuncProperty]));
+        }
+    }
     const assign: arkts.AssignmentExpression = arkts.factory.createAssignmentExpression(
         generateThisBacking(newName),
         factory.generateStateMgmtFactoryCall(this.makeType, this.propertyType?.clone(), args, true, metadata),
@@ -125,8 +131,10 @@ export class EnvCachedTranslator extends PropertyCachedTranslator {
 
     constructor(options: PropertyCachedTranslatorOptions) {
         super(options);
+        const isWatched = this.propertyInfo.annotationInfo?.hasWatch;
         this.initializeOptions = {
-            shouldCheckNonNull: false
+            shouldCheckNonNull: false,
+            isWatched
         };
         this.initializeOptions.canDefinitelyBeNonNull = checkIsPropertyCanBeNonNull(
             this.property,
