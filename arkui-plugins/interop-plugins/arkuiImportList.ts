@@ -178,5 +178,6 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'UnionEffectContainer',
   'DistortionComponent',
   'Monitor',
-  'IMonitor'
+  'IMonitor',
+  'PixelMap'
 ]);
