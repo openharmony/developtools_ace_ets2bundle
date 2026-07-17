@@ -38,7 +38,7 @@ export const checkConsumerProviderDecorator = performanceLog(
 
 /**
  * 校验规则：
- *  1. `@Provider`/`@Consumer`只能用来修饰类成员属性（不能修饰方法、参数等）；
+ *  1. `@Provider`/`@Consumer`只能用来修饰类成员属性（不能修饰方法、参数等）(已由validate-decorator-target校验)；
  *  2. 结构体成员变量不能被多个内置装饰器修饰；
  *  3. 自定义组件中的`@Provider`/`@Consumer`装饰的属性不能在父组件初始化（禁止指定初始值）。
  *
@@ -52,32 +52,6 @@ function _checkConsumerProviderDecorator(
     const nodeType = arkts.nodeType(node);
     if (checkByType.has(nodeType)) {
         checkByType.get(nodeType)!.bind(this)(node, other);
-    }
-}
-
-function checkConsumerProviderDecoratorOnNonProperty<T extends arkts.AstNode = arkts.AstNode>(
-    this: BaseValidator<T, Object>,
-    node: T
-): void {
-    const metadata: any = this.context ?? {};
-    // `@Provider`/`@Consumer`只能用来修饰类成员属性（不能修饰方法、参数等）；
-    if (metadata.ignoredAnnotationInfo?.hasConsumer) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.CONSUMER]!;
-        this.report({
-            node: annotation,
-            message: `'@${DecoratorNames.CONSUMER}' can only decorate member property.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
-    }
-    if (metadata.ignoredAnnotationInfo?.hasProvider) {
-        const annotation = metadata.ignoredAnnotations?.[DecoratorNames.PROVIDER]!;
-        this.report({
-            node: annotation,
-            message: `'@${DecoratorNames.PROVIDER}' can only decorate member property.`,
-            level: LogType.ERROR,
-            suggestions: [createSuggestion('', ...getPositionRangeFromAnnotation(annotation), `Remove the annotation`)],
-        });
     }
 }
 
@@ -145,11 +119,6 @@ function checkConsumerProviderDecoratorInStructCall<T extends arkts.AstNode = ar
 }
 
 const checkByType = new Map<arkts.Es2pandaAstNodeType, IntrinsicValidatorFunction | ExtendedValidatorFunction>([
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_METHOD_DEFINITION, checkConsumerProviderDecoratorOnNonProperty],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_SCRIPT_FUNCTION, checkConsumerProviderDecoratorOnNonProperty],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_VARIABLE_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_INTERFACE_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
-    [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_TS_TYPE_ALIAS_DECLARATION, checkConsumerProviderDecoratorOnNonProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CLASS_PROPERTY, checkConsumerProviderDecoratorInProperty],
     [arkts.Es2pandaAstNodeType.AST_NODE_TYPE_CALL_EXPRESSION, checkConsumerProviderDecoratorInStructCall],
 ]);
