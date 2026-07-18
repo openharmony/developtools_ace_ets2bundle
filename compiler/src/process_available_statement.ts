@@ -272,7 +272,7 @@ function collectIdentifiers(node: ts.Node, names: Set<string>): void {
  *   function __mockApiAvailable(e, t) {
  *   var r, i;
  *   return 'number' == typeof t
- *     ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
+ *     ? !(t < 1 || 99 < t || !Number.isInteger(t) || !e) && e.sdkApiVersion >= t
  *     : 'string' == typeof t &&
  *         !!(t = t.match(/^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/)) &&
  *         ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
@@ -283,7 +283,7 @@ export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
   const content: string = `function ${MOCK_FUNCTION_NAME}(e, t) {
     var r, i;
     return 'number' == typeof t
-      ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
+      ? !(t < 1 || 99 < t || !Number.isInteger(t) || !e) && e.sdkApiVersion >= t
       : 'string' == typeof t &&
           !!(t = t.match(/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/)) &&
           ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
