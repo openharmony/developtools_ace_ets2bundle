@@ -575,6 +575,8 @@ export function generateBuilderCompatible<T extends arkts.CallExpression | arkts
     const initializer = createBuilderInitializer(callName, functionName, param, node);
     const updater: arkts.ArrowFunctionExpression = createBuilderUpdate(node);
     let result: T;
+    const callExprMetaData = { callName: InteroperAbilityNames.ARKUICOMPATIBLE, hasReceiver: false };
+    const memoCache = NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO);
     if (arkts.isProperty(node)) {
         const callExpr = arkts.factory.createCallExpression(
             arkts.factory.createIdentifier(InteroperAbilityNames.ARKUICOMPATIBLE),
@@ -594,6 +596,8 @@ export function generateBuilderCompatible<T extends arkts.CallExpression | arkts
         );
         newValue.setNoDebugLineFlag();
         result = arkts.factory.updateProperty(node, node.kind, node.key, newValue, node.isMethod, node.isComputed) as T;
+        memoCache.collect(callExpr, callExprMetaData);
+        memoCache.collect(result);
     } else {
         result = arkts.factory.updateCallExpression(
             node,
@@ -604,10 +608,10 @@ export function generateBuilderCompatible<T extends arkts.CallExpression | arkts
             node.hasTrailingComma,
             node.trailingBlock
         ) as T;
+        memoCache.collect(result, callExprMetaData);
     }
     result.startPosition = node.startPosition;
     result.endPosition = node.endPosition;
-    NodeCacheFactory.getInstance().getCache(NodeCacheNames.MEMO).collect(result);
     return result;
 }
 
