@@ -12,16 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare namespace _ts_declarations {
-export namespace _Index {
- export class A {
- }
-}
-}
-
-export declare namespace _ts_declarations_1 {
-export namespace _Index {
- export class A {
- }
-}
-}
+export { StringUtils } from './1';
+export { a } from './2';

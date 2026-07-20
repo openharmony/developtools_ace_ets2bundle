@@ -12,9 +12,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@Component
-export declare struct TsComp {
- @Prop
- count: number;
- build(): void;
-}
+import ArrayList from "@ohos.util.ArrayList";
+export declare let a: ArrayList<string>;

@@ -12,6 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare namespace _testTs {
-export type a = any;
+export declare class NavPathStack {
+  push(name: string): void;
 }

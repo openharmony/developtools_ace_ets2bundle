@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export declare namespace TsUtils {
-export function processAny(val: any): void;
-export type AnyMapper = (input: any) => string;
-}
+import webview from "@ohos.web.webview";
+export declare let b: webview.WebviewController;
+export declare let a: NavPathStack;
