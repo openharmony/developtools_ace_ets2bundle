@@ -34,15 +34,27 @@
 
 在规划或编辑之前，先分类任务并阅读匹配文档。
 
+### 知识库索引
+- 知识库入口 -> `docs/kb/README.md`
+- 架构概述 -> `docs/kb/01-架构.md`
+- 装饰器速查 -> `docs/kb/02-装饰器速查.md`
+- 校验规则速查 -> `docs/kb/03-校验规则速查.md`
+- 组件速查 -> `docs/kb/04-组件速查.md`
+- 常见任务导航 -> `docs/kb/05-常见任务导航.md`
+- 工具链能力总览 -> `docs/specs/README.md`
+
 ### 任务路由
-- 编译器或转换逻辑变更 -> 阅读 `compiler/AGENTS.md`
-- ArkUI 插件或 AST 级转换变更 -> 阅读 `arkui-plugins/AGENTS.md`
+- 编译器或转换逻辑变更 -> 阅读 `compiler/AGENTS.md`；规格 `docs/kb/02-装饰器速查.md` → `docs/specs/01-XX`
+- ArkUI 插件或 AST 级转换变更 -> 阅读 `arkui-plugins/AGENTS.md`；规格 `docs/kb/02-装饰器速查.md` → `docs/specs/01-XX`
+- 校验规则变更 -> 阅读 `arkui-plugins/AGENTS.md`；规格 `docs/kb/03-校验规则速查.md` → `docs/specs/02-XX`
+- 组件定义或属性变更 -> 阅读 `compiler/如何新增或修改组件指导规范.md`；规格 `docs/kb/04-组件速查.md` → `docs/specs/01-09`
 - ArkTS 1.2 / libarkts / es2panda 绑定变更 -> 阅读 `ets1.2/libarkts/` 源码和 `koala-wrapper/src/arkts-api/`
-- 组件定义或属性变更 -> 阅读 `compiler/如何新增或修改组件指导规范.md`
 - 构建系统或 GN 配置变更 -> 阅读 `BUILD.gn` 和 `koala_integration.gni`
 - 系统资源或 ID 变更 -> 阅读 `generateSysResource.py` 和 `id_defined.json`
 
 ### 路径路由
+- `docs/specs/` -> 阅读 `docs/specs/README.md`（工具链能力总览）
+- `docs/kb/` -> 阅读 `docs/kb/README.md`（知识库入口）
 - `compiler/src/` -> 阅读 `compiler/AGENTS.md`
 - `compiler/components/` -> 阅读 `compiler/如何新增或修改组件指导规范.md`
 - `arkui-plugins/ui-plugins/` -> 阅读 `arkui-plugins/AGENTS.md`
@@ -54,24 +66,24 @@
 
 当任务、issue、日志、API 或变更文件涉及以下术语时，在规划前阅读对应文档：
 
-| 术语 | 风险提示 | 阅读 |
-|---|---|---|
-| ArkTS | 带声明式 UI 的 TypeScript 超集，不是标准 TypeScript | `compiler/AGENTS.md`；关键源文件：`compiler/src/pre_define.ts` |
-| ABC / Ark Bytecode | Ark VM 的最终输出格式；生成流水线复杂 | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` |
-| @Component / @State / @Link / @Prop | 状态管理装饰器，有严格的转换规则 | `compiler/AGENTS.md`（动态类型工具链）或 `arkui-plugins/AGENTS.md`（静态类型工具链），取决于修改哪个模块；关键源文件：`compiler/src/pre_define.ts`、`arkui-plugins/common/predefines.ts` |
-| es2panda | C++ 编译器前端；插件在其 AST 上操作，不是 TypeScript AST | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/common/abstract-visitor.ts` |
-| Koala / libarkts / arkoala | es2panda AST 的 TypeScript 绑定；存在两个版本（koala-wrapper 和 ets1.2/libarkts），koala-wrapper 后续将由 ets1.2/libarkts 逐渐替代 | `arkui-plugins/AGENTS.md` 或 `ets1.2/libarkts/` 源码；关键源文件：`arkui-plugins/path.ts` |
-| ESMODULE / JSBUNDLE | 两种编译模式，输出结构不同；不可混淆 | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` |
-| Partial Update | 渲染优化模式；影响组件转换逻辑 | `compiler/AGENTS.md`；关键源文件：`compiler/src/process_component_build.ts` |
-| @Reusable / @ReusableV2 | 组件复用装饰器；影响生命周期和内存管理转换 | `compiler/AGENTS.md` 或 `arkui-plugins/AGENTS.md`；关键源文件：`compiler/src/process_custom_component.ts` |
-| HAR / HSP | 包格式；决定编译模式（ESMODULE） | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` |
-| @Memo | 缓存注解；unmemoize 插件在转换后必须重新检查子树 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/memo-plugins/function-transformer.ts` |
-| @ComponentV2 / @Local / @Param / @Once / @Event | V2 状态管理装饰器；不可与 V1 装饰器混用 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/ui-plugins/property-translators/local.ts`、`param.ts` |
-| @Builder / @BuilderParam | 自定义构建函数装饰器；生成静态方法和 lambda 包装器 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/ui-plugins/builder-lambda-translators/` |
-| interop | ArkTS 组件的 struct 到 class 桥接；有独立插件流水线 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/interop-plugins/decl_transformer.ts` |
-| component_map / component JSON | JSON 格式的内置组件注册表；必须遵循严格 schema | `compiler/如何新增或修改组件指导规范.md` |
-| arkguard | JS 混淆工具；通过安装脚本安装，不是 npm install | `install_arkguard_tsc_declgen.py` |
-| declgen | 声明生成器；通过安装脚本安装 | `install_arkguard_tsc_declgen.py` |
+| 术语 | 风险提示 | 阅读 | 规格文档 |
+|---|---|---|---|
+| ArkTS | 带声明式 UI 的 TypeScript 超集，不是标准 TypeScript | `compiler/AGENTS.md`；关键源文件：`compiler/src/pre_define.ts` | — |
+| ABC / Ark Bytecode | Ark VM 的最终输出格式；生成流水线复杂 | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` | — |
+| @Component / @State / @Link / @Prop | 状态管理装饰器，有严格的转换规则 | `compiler/AGENTS.md`（动态类型工具链）或 `arkui-plugins/AGENTS.md`（静态类型工具链），取决于修改哪个模块；关键源文件：`compiler/src/pre_define.ts`、`arkui-plugins/common/predefines.ts` | `docs/kb/02-装饰器速查.md` |
+| es2panda | C++ 编译器前端；插件在其 AST 上操作，不是 TypeScript AST | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/common/abstract-visitor.ts` | — |
+| Koala / libarkts / arkoala | es2panda AST 的 TypeScript 绑定；存在两个版本（koala-wrapper 和 ets1.2/libarkts），koala-wrapper 后续将由 ets1.2/libarkts 逐渐替代 | `arkui-plugins/AGENTS.md` 或 `ets1.2/libarkts/` 源码；关键源文件：`arkui-plugins/path.ts` | — |
+| ESMODULE / JSBUNDLE | 两种编译模式，输出结构不同；不可混淆 | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` | — |
+| Partial Update | 渲染优化模式；影响组件转换逻辑 | `compiler/AGENTS.md`；关键源文件：`compiler/src/process_component_build.ts` | — |
+| @Reusable / @ReusableV2 | 组件复用装饰器；影响生命周期和内存管理转换 | `compiler/AGENTS.md` 或 `arkui-plugins/AGENTS.md`；关键源文件：`compiler/src/process_custom_component.ts` | `docs/kb/02-装饰器速查.md` |
+| HAR / HSP | 包格式；决定编译模式（ESMODULE） | `compiler/AGENTS.md`；关键源文件：`compiler/src/fast_build/ark_compiler/common/ark_define.ts` | — |
+| @Memo | 缓存注解；unmemoize 插件在转换后必须重新检查子树 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/memo-plugins/function-transformer.ts` | `docs/kb/02-装饰器速查.md` |
+| @ComponentV2 / @Local / @Param / @Once / @Event | V2 状态管理装饰器；不可与 V1 装饰器混用 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/ui-plugins/property-translators/local.ts`、`param.ts` | `docs/kb/02-装饰器速查.md` |
+| @Builder / @BuilderParam | 自定义构建函数装饰器；生成静态方法和 lambda 包装器 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/ui-plugins/builder-lambda-translators/` | `docs/kb/02-装饰器速查.md` |
+| interop | ArkTS 组件的 struct 到 class 桥接；有独立插件流水线 | `arkui-plugins/AGENTS.md`；关键源文件：`arkui-plugins/interop-plugins/decl_transformer.ts` | — |
+| component_map / component JSON | JSON 格式的内置组件注册表；必须遵循严格 schema | `compiler/如何新增或修改组件指导规范.md` | `docs/kb/04-组件速查.md` |
+| arkguard | JS 混淆工具；通过安装脚本安装，不是 npm install | `install_arkguard_tsc_declgen.py` | — |
+| declgen | 声明生成器；通过安装脚本安装 | `install_arkguard_tsc_declgen.py` | — |
 
 在计划中声明：
 - 任务类别（哪个模块/子系统）
