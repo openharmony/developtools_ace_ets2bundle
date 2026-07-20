@@ -14,6 +14,7 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
+import JSON5 from 'json5';
 
 export interface AstNodeCacheValue {
     peer: arkts.KNativePointer;
@@ -231,7 +232,7 @@ export class NodeCache {
             const src = arkts.arktsGlobal.generatedEs2panda._AstNodeDumpEtsSrcConst(arkts.arktsGlobal.context, peer)
             const shouldUpdate = this.nodesToUpdate.has(peer);
             console.log(
-                `[NODE CACHE] ptr ${peer}, type: ${type}, shouldUpdate: ${shouldUpdate}, metadata: ${JSON.stringify(metadata)}, node: `,
+                `[NODE CACHE] ptr ${peer}, type: ${type}, shouldUpdate: ${shouldUpdate}, metadata: ${JSON5.stringify(metadata)}, node: `,
                 arkts.unpackString(src)
             );
         });
