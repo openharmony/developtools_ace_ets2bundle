@@ -1193,7 +1193,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
         const attrSet: ts.CallExpression = node.body.statements[0].expression;
         const changeCompName: ts.ExpressionStatement = ts.factory.createExpressionStatement(processExtendBody(attrSet));
         bindComponentAttr(changeCompName as ts.ExpressionStatement,
-          ts.factory.createIdentifier(componentName), statementArray, log);
+          ts.factory.createIdentifier(componentName), statementArray, log,
+          true, false, null, false, null, false, false);
       } else {
         bodynode = ts.visitEachChild(node.body, traverseExtendExpression, contextGlobal);
       }
@@ -1219,7 +1220,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
       const changeCompName: ts.ExpressionStatement =
         ts.factory.createExpressionStatement(processExtendBody(node.expression, componentName));
       const statementArray: ts.Statement[] = [];
-      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, []);
+      bindComponentAttr(changeCompName, ts.factory.createIdentifier(componentName), statementArray, [],
+        true, false, null, false, null, false, false);
       return ts.factory.createBlock(statementArray, true);
     }
     return ts.visitEachChild(node, traverseExtendExpression, contextGlobal);
@@ -1231,7 +1233,8 @@ function processExtend(node: ts.FunctionDeclaration, log: LogInfo[],
 function processAnimatableExtend(node: ts.FunctionDeclaration, statementArray: ts.Statement[], componentName: string, log: LogInfo[]): ts.FunctionDeclaration {
     if (node.body.statements.length) {
       bindComponentAttr(node.body.statements[0],
-        ts.factory.createIdentifier(componentName), statementArray, log);
+        ts.factory.createIdentifier(componentName), statementArray, log,
+        true, false, null, false, null, false, false);
     }
     return ts.factory.updateFunctionDeclaration(node, ts.getModifiers(node), node.asteriskToken,
       node.name, node.typeParameters,
