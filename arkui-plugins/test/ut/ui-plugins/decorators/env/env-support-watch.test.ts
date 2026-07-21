@@ -1,0 +1,479 @@
+/*
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from 'path';
+import { PluginTester } from '../../../../utils/plugin-tester';
+import { mockBuildConfig } from '../../../../utils/artkts-config';
+import { getRootPath, MOCK_ENTRY_DIR_PATH } from '../../../../utils/path-config';
+import { parseDumpSrc } from '../../../../utils/parse-string';
+import { beforeUINoRecheck, recheck, uiNoRecheck } from '../../../../utils/plugins';
+import { BuildConfig, PluginTestContext } from '../../../../utils/shared-types';
+import { dumpAnnotation, dumpGetterSetter, GetSetDumper, ignoreNewLines } from '../../../../utils/simplify-dump';
+import { uiTransform } from '../../../../../ui-plugins';
+import { Plugins } from '../../../../../common/plugin-context';
+
+const STATE_DIR_PATH: string = 'decorators/env';
+
+const buildConfig: BuildConfig = mockBuildConfig();
+buildConfig.compileFiles = [
+    path.resolve(getRootPath(), MOCK_ENTRY_DIR_PATH, STATE_DIR_PATH, 'env-support-watch.ets'),
+];
+
+const pluginTester = new PluginTester('test @Env with @Watch decorated variables transformation', buildConfig);
+
+const parsedTransform: Plugins = {
+    name: 'parsedTrans',
+    parsed: uiTransform().parsed
+};
+
+const expectedParsedScript: string = `
+import { ComponentBuilder } from "arkui.component.builder";
+
+import { LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { Builder } from "arkui.component.builder";
+
+import { CustomComponent } from "arkui.component.customComponent";
+
+import { ReusePoolOwnership } from "arkui.component.customComponent";
+
+import { PageLifeCycle } from "arkui.component.customComponent";
+
+import { EntryPoint } from "arkui.component.customComponent";
+
+import { NavInterface } from "arkui.component.customComponent";
+
+import { Entry, Text, Column, Component } from "@ohos.arkui.component";
+
+import { Env, Watch } from "@ohos.arkui.stateManagement";
+
+import uiObserver from "@ohos.arkui.observer";
+
+import { SystemProperties } from "@kit.ArkUI";
+
+import window from "@ohos.window";
+
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+  
+  @Env({value:SystemProperties.BREAK_POINT}) @Watch({value:"onChange"}) public readonly breakpoint: uiObserver.WindowSizeLayoutBreakpointInfo;
+  @Env({value:SystemProperties.WINDOW_SIZE}) @Watch({value:"onChange"}) public readonly sizeInVP: window.SizeInVP;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) @Watch({value:"onChange"}) public readonly sizeInPX: window.Size;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) @Watch({value:"onChange"}) public readonly windowAvoidAreaVP: window.UIEnvWindowAvoidAreaInfoVP;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) @Watch({value:"onChange"}) public readonly windowAvoidAreaPX: window.UIEnvWindowAvoidAreaInfoPX;
+  public onChange(propName: string) {
+    console.info(\`[Env], the value of this.\${propName} has changed!\`);
+  }
+  
+  public build() {
+    Column(){
+      Text(\`Index breakpoint width: \${this.breakpoint.widthBreakpoint}\`);
+      Text(\`Index breakpoint height: \${this.breakpoint.heightBreakpoint}\`);
+      Text(\`Index SizeInVP width: \${this.sizeInVP.width}\`);
+      Text(\`Index SizeInVP height: \${this.sizeInVP.height}\`);
+      Text(\`Index SizeInPX width: \${this.sizeInPX.width}\`);
+      Text(\`Index SizeInPX height: \${this.sizeInPX.height}\`);
+      Text(\`Index windowAvoidAreaVP statusBar visible: \${this.windowAvoidAreaVP.statusBar.visible}\`);
+      Text(\`Index windowAvoidAreaVP statusBar leftRect left: \${this.windowAvoidAreaVP.statusBar.leftRect.left}\`);
+      Text(\`Index windowAvoidAreaVP statusBar leftRect width: \${this.windowAvoidAreaVP.statusBar.leftRect.width}\`);
+      Text(\`Index windowAvoidAreaVP statusBar topRect left: \${this.windowAvoidAreaVP.statusBar.topRect.left}\`);
+      Text(\`Index windowAvoidAreaVP statusBar topRect width: \${this.windowAvoidAreaVP.statusBar.topRect.width}\`);
+      Text(\`Index windowAvoidAreaVP statusBar rightRect left: \${this.windowAvoidAreaVP.statusBar.rightRect.left}\`);
+      Text(\`Index windowAvoidAreaVP statusBar rightRect width: \${this.windowAvoidAreaVP.statusBar.rightRect.width}\`);
+      Text(\`Index windowAvoidAreaVP statusBar bottomRect left: \${this.windowAvoidAreaVP.statusBar.bottomRect.left}\`);
+      Text(\`Index windowAvoidAreaVP statusBar bottomRect width: \${this.windowAvoidAreaVP.statusBar.bottomRect.width}\`);
+      Text(\`Index windowAvoidAreaPX statusBar visible: \${this.windowAvoidAreaPX.statusBar.visible}\`);
+      Text(\`Index windowAvoidAreaPX statusBar leftRect left: \${this.windowAvoidAreaPX.statusBar.leftRect.left}\`);
+      Text(\`Index windowAvoidAreaPX statusBar leftRect width: \${this.windowAvoidAreaPX.statusBar.leftRect.width}\`);
+      Text(\`Index windowAvoidAreaPX statusBar topRect left: \${this.windowAvoidAreaPX.statusBar.topRect.left}\`);
+      Text(\`Index windowAvoidAreaPX statusBar topRect width: \${this.windowAvoidAreaPX.statusBar.topRect.width}\`);
+      Text(\`Index windowAvoidAreaPX statusBar rightRect left: \${this.windowAvoidAreaPX.statusBar.rightRect.left}\`);
+      Text(\`Index windowAvoidAreaPX statusBar rightRect width: \${this.windowAvoidAreaPX.statusBar.rightRect.width}\`);
+      Text(\`Index windowAvoidAreaPX statusBar bottomRect left: \${this.windowAvoidAreaPX.statusBar.bottomRect.left}\`);
+      Text(\`Index windowAvoidAreaPX statusBar bottomRect width: \${this.windowAvoidAreaPX.statusBar.bottomRect.width}\`);
+    };
+  }
+  
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  
+}
+
+class __EntryWrapper extends EntryPoint {
+  public entry(): void {
+    Index();
+  }
+  
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+  
+  public constructor() {}
+  
+}
+
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/env/env-support-watch",
+  pageFullPath: "test/demo/mock/decorators/env/env-support-watch",
+  integratedHsp: "false",
+} as NavInterface))
+@Entry() @Component() class __Options_Index {
+  @Env({value:SystemProperties.BREAK_POINT}) @Watch({value:"onChange"}) public breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
+  @Env({value:SystemProperties.BREAK_POINT}) public __backing_breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
+  public __options_has_breakpoint?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE}) @Watch({value:"onChange"}) public sizeInVP?: window.SizeInVP;
+  @Env({value:SystemProperties.WINDOW_SIZE}) public __backing_sizeInVP?: window.SizeInVP;
+  public __options_has_sizeInVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) @Watch({value:"onChange"}) public sizeInPX?: window.Size;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) public __backing_sizeInPX?: window.Size;
+  public __options_has_sizeInPX?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) @Watch({value:"onChange"}) public windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) public __backing_windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;
+  public __options_has_windowAvoidAreaVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) @Watch({value:"onChange"}) public windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) public __backing_windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;
+  public __options_has_windowAvoidAreaPX?: boolean;
+  public constructor() {}
+  
+}
+`;
+
+const expectedCheckedScript: string = `
+
+import { __memo_context_type, __memo_id_type } from "arkui.incremental.runtime.state";
+
+import { STATE_MGMT_FACTORY } from "arkui.component.customComponent";
+
+import { IEnvDecoratedVariable } from "arkui.stateManagement.decorator";
+
+import { TextImpl } from "arkui.component.text";
+
+import { TextAttribute } from "arkui.component.text";
+
+import { Memo } from "arkui.incremental.annotation";
+
+import { ColumnImpl } from "arkui.component.column";
+
+import { ColumnAttribute } from "arkui.component.column";
+
+import { MemoIntrinsic } from "arkui.incremental.annotation";
+
+import { Memo } from "arkui.incremental.annotation";
+
+import { ComponentBuilder } from "arkui.component.builder";
+
+import { LocalStorage } from "arkui.stateManagement.storage.localStorage";
+
+import { Builder } from "arkui.component.builder";
+
+import { CustomComponent } from "arkui.component.customComponent";
+
+import { ReusePoolOwnership } from "arkui.component.customComponent";
+
+import { PageLifeCycle } from "arkui.component.customComponent";
+
+import { EntryPoint } from "arkui.component.customComponent";
+
+import { NavInterface } from "arkui.component.customComponent";
+
+import { Entry, Text, Column, Component } from "@ohos.arkui.component";
+
+import { Env, Watch } from "@ohos.arkui.stateManagement";
+
+import uiObserver from "@ohos.arkui.observer";
+
+import { SystemProperties } from "@kit.ArkUI";
+
+import window from "@ohos.window";
+
+function main() {}
+__EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
+  bundleName: "com.example.mock",
+  moduleName: "entry",
+  pagePath: "../../../decorators/env/env-support-watch",
+  pageFullPath: "test/demo/mock/decorators/env/env-support-watch",
+  integratedHsp: "false",
+} as NavInterface));
+@Entry() @Component() final struct Index extends CustomComponent<Index, __Options_Index> implements PageLifeCycle {
+  public __initializeStruct(initializers: (__Options_Index | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    this.__backing_breakpoint = STATE_MGMT_FACTORY.makeEnv<uiObserver.WindowSizeLayoutBreakpointInfo>(this, SystemProperties.BREAK_POINT, "breakpoint", {
+      watchFunc: ((_: string): void => {
+        this.onChange(_);
+      }),
+    });
+    this.__backing_sizeInVP = STATE_MGMT_FACTORY.makeEnv<window.SizeInVP>(this, SystemProperties.WINDOW_SIZE, "sizeInVP", {
+      watchFunc: ((_: string): void => {
+        this.onChange(_);
+      }),
+    });
+    this.__backing_sizeInPX = STATE_MGMT_FACTORY.makeEnv<window.Size>(this, SystemProperties.WINDOW_SIZE_PX, "sizeInPX", {
+      watchFunc: ((_: string): void => {
+        this.onChange(_);
+      }),
+    });
+    this.__backing_windowAvoidAreaVP = STATE_MGMT_FACTORY.makeEnv<window.UIEnvWindowAvoidAreaInfoVP>(this, SystemProperties.WINDOW_AVOID_AREA, "windowAvoidAreaVP", {
+      watchFunc: ((_: string): void => {
+        this.onChange(_);
+      }),
+    });
+    this.__backing_windowAvoidAreaPX = STATE_MGMT_FACTORY.makeEnv<window.UIEnvWindowAvoidAreaInfoPX>(this, SystemProperties.WINDOW_AVOID_AREA_PX, "windowAvoidAreaPX", {
+      watchFunc: ((_: string): void => {
+        this.onChange(_);
+      }),
+    });
+  }
+  
+  public __updateStruct(initializers: (__Options_Index | undefined)): void {}
+  
+  public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {}
+  
+  @MemoIntrinsic() 
+  public static _invoke(style: (@Memo() ((instance: Index)=> void) | undefined), initializers: ((()=> __Options_Index) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {
+    CustomComponent._invokeImpl<Index, __Options_Index>(style, ((): Index => {
+  return new Index(false, ({let gensym___<some_random_number> = storage;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>())}));
+  }), initializers, reuseId, content);
+  }
+  
+  @ComponentBuilder() 
+  public static $_invoke(initializers?: __Options_Index, storage?: LocalStorage, @Builder() content?: (()=> void)): Index {
+    throw new Error("Declare interface");
+  }
+  
+  private __backing_breakpoint?: IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo>;
+  public get breakpoint(): uiObserver.WindowSizeLayoutBreakpointInfo {
+    return this.__backing_breakpoint!.get();
+  }
+  
+  private __backing_sizeInVP?: IEnvDecoratedVariable<window.SizeInVP>;
+  public get sizeInVP(): window.SizeInVP {
+    return this.__backing_sizeInVP!.get();
+  }
+  
+  private __backing_sizeInPX?: IEnvDecoratedVariable<window.Size>;
+  public get sizeInPX(): window.Size {
+    return this.__backing_sizeInPX!.get();
+  }
+  
+  private __backing_windowAvoidAreaVP?: IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoVP>;
+  public get windowAvoidAreaVP(): window.UIEnvWindowAvoidAreaInfoVP {
+    return this.__backing_windowAvoidAreaVP!.get();
+  }
+  
+  private __backing_windowAvoidAreaPX?: IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoPX>;
+  public get windowAvoidAreaPX(): window.UIEnvWindowAvoidAreaInfoPX {
+    return this.__backing_windowAvoidAreaPX!.get();
+  }
+  
+  public onChange(propName: string) {
+    console.info(\`[Env], the value of this.\${propName} has changed!\`);
+  }
+  
+  @Memo() 
+  public build() {
+    ColumnImpl(@Memo() ((instance: ColumnAttribute): void => {
+      instance.setColumnOptions(undefined);
+      instance.applyAttributesFinish();
+      return;
+    }), @Memo() (() => {
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index breakpoint width: \${this.breakpoint.widthBreakpoint}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index breakpoint height: \${this.breakpoint.heightBreakpoint}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index SizeInVP width: \${this.sizeInVP.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index SizeInVP height: \${this.sizeInVP.height}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index SizeInPX width: \${this.sizeInPX.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index SizeInPX height: \${this.sizeInPX.height}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar visible: \${this.windowAvoidAreaVP.statusBar.visible}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar leftRect left: \${this.windowAvoidAreaVP.statusBar.leftRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar leftRect width: \${this.windowAvoidAreaVP.statusBar.leftRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar topRect left: \${this.windowAvoidAreaVP.statusBar.topRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar topRect width: \${this.windowAvoidAreaVP.statusBar.topRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar rightRect left: \${this.windowAvoidAreaVP.statusBar.rightRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar rightRect width: \${this.windowAvoidAreaVP.statusBar.rightRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar bottomRect left: \${this.windowAvoidAreaVP.statusBar.bottomRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaVP statusBar bottomRect width: \${this.windowAvoidAreaVP.statusBar.bottomRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar visible: \${this.windowAvoidAreaPX.statusBar.visible}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar leftRect left: \${this.windowAvoidAreaPX.statusBar.leftRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar leftRect width: \${this.windowAvoidAreaPX.statusBar.leftRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar topRect left: \${this.windowAvoidAreaPX.statusBar.topRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar topRect width: \${this.windowAvoidAreaPX.statusBar.topRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar rightRect left: \${this.windowAvoidAreaPX.statusBar.rightRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar rightRect width: \${this.windowAvoidAreaPX.statusBar.rightRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar bottomRect left: \${this.windowAvoidAreaPX.statusBar.bottomRect.left}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+      TextImpl(@Memo() ((instance: TextAttribute): void => {
+        instance.setTextOptions(\`Index windowAvoidAreaPX statusBar bottomRect width: \${this.windowAvoidAreaPX.statusBar.bottomRect.width}\`, undefined);
+        instance.applyAttributesFinish();
+        return;
+      }), undefined);
+    }));
+  }
+  
+  protected constructor(useSharedStorage?: boolean, storage?: LocalStorage) {
+    super(useSharedStorage, storage);
+  }
+  
+  static {
+  }
+}
+
+class __EntryWrapper extends EntryPoint {
+  @Memo() 
+  public entry(): void {
+    Index._invoke(undefined, undefined, undefined, undefined, undefined);
+  }
+  public static RegisterNamedRouter(routerName: string, instance: EntryPoint, param: NavInterface): void {
+    EntryPoint.RegisterNamedRouter(routerName, instance, param);
+  }
+  public constructor() {}
+  
+}
+
+@Entry() @Component() class __Options_Index {
+  @Env({value:SystemProperties.BREAK_POINT}) @Watch({value:"onChange"}) public breakpoint?: uiObserver.WindowSizeLayoutBreakpointInfo;
+  public __backing_breakpoint?: IEnvDecoratedVariable<uiObserver.WindowSizeLayoutBreakpointInfo>;
+  public __options_has_breakpoint?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE}) @Watch({value:"onChange"}) public sizeInVP?: window.SizeInVP;
+  public __backing_sizeInVP?: IEnvDecoratedVariable<window.SizeInVP>;
+  public __options_has_sizeInVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_SIZE_PX}) @Watch({value:"onChange"}) public sizeInPX?: window.Size;
+  public __backing_sizeInPX?: IEnvDecoratedVariable<window.Size>;
+  public __options_has_sizeInPX?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA}) @Watch({value:"onChange"}) public windowAvoidAreaVP?: window.UIEnvWindowAvoidAreaInfoVP;
+  public __backing_windowAvoidAreaVP?: IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoVP>;
+  public __options_has_windowAvoidAreaVP?: boolean;
+  @Env({value:SystemProperties.WINDOW_AVOID_AREA_PX}) @Watch({value:"onChange"}) public windowAvoidAreaPX?: window.UIEnvWindowAvoidAreaInfoPX;
+  public __backing_windowAvoidAreaPX?: IEnvDecoratedVariable<window.UIEnvWindowAvoidAreaInfoPX>;
+  public __options_has_windowAvoidAreaPX?: boolean;
+  public constructor() {}
+  
+}
+`;
+
+function testParsedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedParsedScript));
+}
+
+function testCheckedTransformer(this: PluginTestContext): void {
+    expect(parseDumpSrc(this.scriptSnapshot ?? '')).toBe(parseDumpSrc(expectedCheckedScript));
+}
+
+pluginTester.run(
+    'test @Env with @Watch decorated variables transformation',
+    [parsedTransform, beforeUINoRecheck, uiNoRecheck, recheck],
+    {
+        'parsed': [testParsedTransformer],
+        'checked:ui-no-recheck': [testCheckedTransformer],
+    },
+    {
+        stopAfter: 'checked',
+    }
+);
