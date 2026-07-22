@@ -163,30 +163,18 @@ final class StateType extends BaseEnum<int> {
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_stateVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (new Per(6))) as Per));
-    this.__backing_stateVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<number>));
-    this.__backing_stateVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (StateType.TYPE3)));
-    this.__backing_stateVar4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<string>));
-    this.__backing_stateVar5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? ([true, false])) as Array<boolean>));
-    this.__backing_stateVar6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))) as Array<Per>));
-    this.__backing_stateVar7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar7)})) ?? ([new Per(7), new Per(11)])) as Array<Per>));
-    this.__backing_stateVar8!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar8)})) ?? (((sr: string) => {}))) as ((sr: string)=> void)));
-    this.__backing_stateVar9!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar9)})) ?? (new Date("2025-4-23"))) as Date));
-    this.__backing_stateVar10!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<number, Per>));
-    this.__backing_stateVar11!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar11)})) ?? (0.0)) as (string | number)));
-    this.__backing_stateVar12!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar12)})) ?? (new Per(6))) as (Set<string> | Per)));
+    this.__backing_stateVar1!.resetOnReuse(new Per(6));
+    this.__backing_stateVar2!.resetOnReuse(new Array<number>(3, 6, 8));
+    this.__backing_stateVar3!.resetOnReuse(StateType.TYPE3);
+    this.__backing_stateVar4!.resetOnReuse(new Set<string>(new Array<string>("aa", "bb")));
+    this.__backing_stateVar5!.resetOnReuse([true, false]);
+    this.__backing_stateVar6!.resetOnReuse(new Array<Per>(new Per(7), new Per(11)));
+    this.__backing_stateVar7!.resetOnReuse([new Per(7), new Per(11)]);
+    this.__backing_stateVar8!.resetOnReuse(((sr: string) => {}));
+    this.__backing_stateVar9!.resetOnReuse(new Date("2025-4-23"));
+    this.__backing_stateVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
+    this.__backing_stateVar11!.resetOnReuse(0.0);
+    this.__backing_stateVar12!.resetOnReuse(new Per(6));
   }
 
   @MemoIntrinsic() 

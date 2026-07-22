@@ -107,8 +107,7 @@ function aBuilder(): void {
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 
@@ -414,8 +413,7 @@ function aBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_type
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_aNumber!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.aNumber)})) ?? (1)) as number));
+    this.__backing_aNumber!.resetOnReuse(1);
   }
   
   @MemoIntrinsic() 

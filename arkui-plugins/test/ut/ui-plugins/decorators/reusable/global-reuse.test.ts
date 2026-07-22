@@ -258,13 +258,11 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   
   public resetStateVarsOnReuse(initializers: (__Options_ComA | undefined)): void {
     this.__backing_linkVar!.resetOnReuse(initializers!.__backing_linkVar!);
-    this.__backing_str!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("aaa")) as string));
+    this.__backing_str!.resetOnReuse("aaa");
     this.__backing_prop1!.resetOnReuse();
     this.__backing_prop2!.resetOnReuse();
     this.__backing_objLinkVar!.resetOnReuse((initializers!.objLinkVar as MyClassB));
-    this.__backing_provideVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar)})) ?? ("ddd")) as string));
+    this.__backing_provideVar!.resetOnReuse("ddd");
     this.__backing_propVar1!.resetOnReuse((initializers!.propVar1 as string));
     this.__backing_propVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propVar2)})) ?? ("eee")) as string));

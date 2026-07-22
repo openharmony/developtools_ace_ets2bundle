@@ -540,12 +540,9 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_builderState!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
-    this.__backing_builderState2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState2)})) ?? (wrapBuilder(MyBuilder))) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
-    this.__backing_builderState3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderState3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])) as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
+    this.__backing_builderState!.resetOnReuse(MyBuilder);
+    this.__backing_builderState2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderState3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
     this.__backing_builderPropRef!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderPropRef)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
     this.__backing_builderPropRef2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
@@ -555,12 +552,9 @@ function YourBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
     this.__backing_builderLink!.resetOnReuse(initializers!.__backing_builderLink!);
     this.__backing_builderLink2!.resetOnReuse(initializers!.__backing_builderLink2!);
     this.__backing_builderLink3!.resetOnReuse(initializers!.__backing_builderLink3!);
-    this.__backing_builderProvide!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide)})) ?? (MyBuilder)) as @Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)));
-    this.__backing_builderProvide2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide2)})) ?? (wrapBuilder(MyBuilder))) as WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>));
-    this.__backing_builderProvide3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.builderProvide3)})) ?? ([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)])) as Array<WrappedBuilder<@Builder() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, value: string, size: number)=> void)>>));
+    this.__backing_builderProvide!.resetOnReuse(MyBuilder);
+    this.__backing_builderProvide2!.resetOnReuse(wrapBuilder(MyBuilder));
+    this.__backing_builderProvide3!.resetOnReuse([wrapBuilder(MyBuilder), wrapBuilder(YourBuilder)]);
     this.__backing_builderConsume!.resetOnReuse("builderConsume");
     this.__backing_builderConsume2!.resetOnReuse("builderConsume2");
     this.__backing_builderConsume3!.resetOnReuse("builderConsume3");

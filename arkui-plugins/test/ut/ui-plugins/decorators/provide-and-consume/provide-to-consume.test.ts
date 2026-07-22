@@ -236,10 +236,8 @@ function main() {}
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_num!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (10)) as number));
-    this.__backing_str!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.str)})) ?? ("hello")) as string));
+    this.__backing_num!.resetOnReuse(10);
+    this.__backing_str!.resetOnReuse("hello");
   }
 
   @MemoIntrinsic() 

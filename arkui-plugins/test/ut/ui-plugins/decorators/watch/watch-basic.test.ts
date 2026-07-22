@@ -198,15 +198,13 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_statevar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.statevar)})) ?? ("Hello World")) as string));
+    this.__backing_statevar!.resetOnReuse("Hello World");
     this.__backing_propvar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.propvar)})) ?? ("Hello World")) as string));
     this.__backing_linkvar!.resetOnReuse(initializers!.__backing_linkvar!);
     this.__backing_storagepropvar!.resetOnReuse();
     this.__backing_objectlinkvar!.resetOnReuse((initializers!.objectlinkvar as A));
-    this.__backing_providevar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.providevar)})) ?? ("Hello World")) as string));
+    this.__backing_providevar!.resetOnReuse("Hello World");
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

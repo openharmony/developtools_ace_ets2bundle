@@ -64,30 +64,25 @@ function main() {}
 @Component() final struct Parent extends CustomComponent<Parent, __Options_Parent> {
   public __initializeStruct(initializers: (__Options_Parent | undefined), @Memo() content: ((()=> void) | undefined)): void {
     this.__backing_stateVar1 = STATE_MGMT_FACTORY.makeState<string>(this, "stateVar1", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar1)}) ? (initializers!.stateVar1 as string) : ("stateVar1" as string)));
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar1)}) ? (initializers!.stateVar1 as string) : ("stateVar1" as string)));
     this.__backing_stateVar2 = STATE_MGMT_FACTORY.makeState<number>(this, "stateVar2", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar2)}) ? (initializers!.stateVar2 as number) : (50 as number)));
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar2)}) ? (initializers!.stateVar2 as number) : (50 as number)));
     this.__backing_stateVar3 = STATE_MGMT_FACTORY.makeState<boolean>(this, "stateVar3", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar3)}) ? (initializers!.stateVar3 as boolean) : (true as boolean)));
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar3)}) ? (initializers!.stateVar3 as boolean) : (true as boolean)));
     this.__backing_stateVar4 = STATE_MGMT_FACTORY.makeState<undefined>(this, "stateVar4", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar4)}) ? (initializers!.stateVar4 as undefined) : undefined));
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar4)}) ? (initializers!.stateVar4 as undefined) : undefined));
     this.__backing_stateVar5 = STATE_MGMT_FACTORY.makeState<null>(this, "stateVar5", (({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar5)}) ? (initializers!.stateVar5 as null) : null));
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.__options_has_stateVar5)}) ? (initializers!.stateVar5 as null) : null));
   }
 
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_stateVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? ("stateVar1")) as string));
-    this.__backing_stateVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (50)) as number));
-    this.__backing_stateVar3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (true)) as boolean));
-    this.__backing_stateVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (undefined)));
-    this.__backing_stateVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar5)})) ?? (null)));
+    this.__backing_stateVar1!.resetOnReuse("stateVar1");
+    this.__backing_stateVar2!.resetOnReuse(50);
+    this.__backing_stateVar3!.resetOnReuse(true);
+    this.__backing_stateVar4!.resetOnReuse(undefined);
+    this.__backing_stateVar5!.resetOnReuse(null);
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

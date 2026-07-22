@@ -200,14 +200,13 @@ function main() {}
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_state1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.state1)})) ?? (false)) as boolean));
-    this.__backing_select0!.resetOnReuse((initializers!.select0 as number));
-    this.__backing_select3!.resetOnReuse((initializers!.select3 as (number | null)));
-    this.__backing_select4!.resetOnReuse((initializers!.select4 as undefined));
+    this.__backing_state1!.resetOnReuse(false);
+    this.__backing_select0!.resetOnReuse(undefined);
+    this.__backing_select3!.resetOnReuse(undefined);
+    this.__backing_select4!.resetOnReuse(undefined);
     this.__backing_select1!.resetOnReuse((initializers!.select1 as string));
-    this.__backing_select2!.resetOnReuse((initializers!.select2 as Array<string>));
-    this.__backing_select6!.resetOnReuse((initializers!.select6 as (Array<string> | undefined | string)));
+    this.__backing_select2!.resetOnReuse(undefined);
+    this.__backing_select6!.resetOnReuse(undefined);
   }
 
   @MemoIntrinsic() 

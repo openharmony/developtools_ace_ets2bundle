@@ -177,8 +177,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_parentSelectedDate!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentSelectedDate)})) ?? (new Date("2021-08-08"))) as Date));
+    this.__backing_parentSelectedDate!.resetOnReuse(new Date("2021-08-08"));
   }
 
   @MemoIntrinsic() 

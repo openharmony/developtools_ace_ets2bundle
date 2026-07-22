@@ -194,8 +194,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }
   }
   public resetStateVarsOnReuse(initializers: (__Options_A | undefined)): void {
-    this.__backing_a!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.a)})) ?? ("str")) as string));
+    this.__backing_a!.resetOnReuse("str");
     this.__backing_b!.resetOnReuse((initializers!.b as string));
   }
   @MemoIntrinsic() 

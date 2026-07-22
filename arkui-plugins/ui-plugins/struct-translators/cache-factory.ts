@@ -130,6 +130,7 @@ export class CacheFactory {
      * create `__initializeStruct` method.
      */
     static createInitializeStruct(
+        node: arkts.ClassDeclaration,
         optionsTypeName: string,
         metadata: CustomComponentRecordInfo,
         reusePoolInitStmt: arkts.ExpressionStatement | undefined
@@ -142,12 +143,13 @@ export class CacheFactory {
         let modifiers: arkts.Es2pandaModifierFlags =
             arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE;
         if (!isDecl && !!metadata.name) {
+            const definition = node.definition;
             body = arkts.factory.createBlockStatement([
                 ...(reusePoolInitStmt ? [reusePoolInitStmt] : []),
                 ...ComputedCache.getInstance().getCachedComputed(metadata.name),
                 ...PropertyCache.getInstance().getInitializeBody(metadata.name),
-                ...MonitorCache.getInstance().getCachedMonitors(metadata.name),
-                ...SyncMonitorCache.getInstance().getCachedSyncMonitors(metadata.name),
+                ...MonitorCache.getInstance().getCachedMonitors(metadata.name, definition),
+                ...SyncMonitorCache.getInstance().getCachedSyncMonitors(metadata.name, definition),
                 ...ComponentLifecycleCache.getInstance().getCachedInitMethodCalls(metadata.name),
                 ...ComponentLifecycleCache.getInstance().getCachedLifecycleObserverCalls(
                     metadata.name,
@@ -335,6 +337,7 @@ export class CacheFactory {
     }
 
     static collectStructPropertyRewriteStatements(
+        node: arkts.ClassDeclaration,
         optionsTypeName: string,
         metadata: CustomComponentRecordInfo,
         scope: RewritedStructMethodInfo,
@@ -349,7 +352,7 @@ export class CacheFactory {
                 globalReusePoolInfo.reusePoolValue,
                 globalReusePoolInfo.poolAcceptsValue
             ) : undefined;
-            collections.push(this.createInitializeStruct(optionsTypeName, metadata, reusePoolInitStmt));
+            collections.push(this.createInitializeStruct(node, optionsTypeName, metadata, reusePoolInitStmt));
         }
         if (!scope.hasUpdateStruct) {
             collections.push(this.createUpdateStruct(optionsTypeName, metadata));
@@ -384,30 +387,13 @@ export class CacheFactory {
         const body: readonly arkts.AstNode[] = definition.body;
         let scopeInfo: RewritedStructMethodInfo = {};
         let hasStaticBlock: boolean = false;
-        const transformedBody = body.map((child: arkts.AstNode) => {
-            scopeInfo = collectRewritedStructMethodInfo(child, scopeInfo);
-            if (structType === StructType.CUSTOM_COMPONENT_DECL) {
-                return [child];
-            }
-            if (arkts.isMethodDefinition(child) &&
-                child.id?.name === CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD &&
-                arkts.hasModifierFlag(child, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC)) {
-                return [];
-            }
-            hasStaticBlock = arkts.isClassStaticBlock(child);
-            if (!arkts.isClassElement(child) || !child.key || !arkts.isIdentifier(child.key)) {
-                return [child];
-            }
-            const key: string = getPropertyRewriteKey(child, child.key.name);
-            if (PropertyRewriteCache.getInstance().isReleased(key)) {
-                return [];
-            }
-            const nodes = PropertyRewriteCache.getInstance().release(key).getRewriteNodes(key);
-            if (nodes.length > 0) {
-                return nodes;
-            }
-            return [child];
-        });
+        const scopeInfoRef = { value: scopeInfo };
+        const hasStaticBlockRef = { value: false };
+        const transformedBody = body.map((child: arkts.AstNode) =>
+            this.transformBodyElement(child, structType, scopeInfoRef, hasStaticBlockRef)
+        );
+        scopeInfo = scopeInfoRef.value;
+        hasStaticBlock = hasStaticBlockRef.value;
         let optionsTypeName: string | undefined;
         if (structType === StructType.CUSTOM_COMPONENT_DECL) {
             const [_, classOptions] = getTypeParamsFromClassDecl(node);
@@ -418,6 +404,7 @@ export class CacheFactory {
             ? this.extractGlobalReusePoolInfoFromMetadata(definition, metadata)
             : undefined;
         const newStatements = this.collectStructPropertyRewriteStatements(
+            node,
             optionsTypeName ?? getCustomComponentOptionsName(metadata.name),
             metadata,
             scopeInfo,
@@ -436,6 +423,37 @@ export class CacheFactory {
             PropertyRewriteCache.getInstance().reset();
         }
     }
+
+    private static transformBodyElement(
+        child: arkts.AstNode,
+        structType: StructType,
+        scopeInfoRef: { value: RewritedStructMethodInfo },
+        hasStaticBlockRef: { value: boolean }
+    ): arkts.AstNode[] {
+        scopeInfoRef.value = collectRewritedStructMethodInfo(child, scopeInfoRef.value);
+        if (structType === StructType.CUSTOM_COMPONENT_DECL) {
+            return [child];
+        }
+        if (arkts.isMethodDefinition(child) &&
+            child.id?.name === CustomComponentNames.RESOLVE_DECORATOR_SYMBOLS_METHOD &&
+            arkts.hasModifierFlag(child, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_STATIC)) {
+            return [];
+        }
+        hasStaticBlockRef.value = arkts.isClassStaticBlock(child);
+        if (!arkts.isClassElement(child) || !child.key || !arkts.isIdentifier(child.key)) {
+            return [child];
+        }
+        const key: string = getPropertyRewriteKey(child, child.key.name);
+        if (PropertyRewriteCache.getInstance().isReleased(key)) {
+            return [];
+        }
+        const nodes = PropertyRewriteCache.getInstance().release(key).getRewriteNodes(key);
+        if (nodes.length > 0) {
+            return nodes;
+        }
+        return [child];
+    }
+
 
     /**
      * collect struct annotation properties' value
@@ -872,7 +890,7 @@ export class CacheFactory {
                 isKnownMethodDefinition(child, CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI)
             ) {
                 hasConstructorToRewrite = true;
-                return [this.rewriteObservedV2Constuctor(child, className)];
+                return [this.rewriteObservedV2Constuctor(child, className, definition)];
             }
             if (!arkts.isClassElement(child) || !child.key || !arkts.isIdentifier(child.key)) {
                 return [child];
@@ -887,8 +905,8 @@ export class CacheFactory {
             }
             return [child];
         });
-        const newConstructor = !isDecl && isObservedV2 && !hasConstructorToRewrite 
-            ? [this.createNewObservedV2Constuctor(className, isDecl)] 
+        const newConstructor = !isDecl && isObservedV2 && !hasConstructorToRewrite
+            ? [this.createNewObservedV2Constuctor(className, isDecl, definition)]
             : [];
         const newStaticBlock = !isDecl && !hasStaticBlock 
             ? [UIFactory.createClassStaticBlock()] 
@@ -910,10 +928,14 @@ export class CacheFactory {
         return returnNodes;
     }
 
-    static rewriteObservedV2Constuctor(ctor: arkts.MethodDefinition, className: string): arkts.MethodDefinition {
+    static rewriteObservedV2Constuctor(
+        ctor: arkts.MethodDefinition,
+        className: string,
+        definition: arkts.ClassDefinition
+    ): arkts.MethodDefinition {
         const addConstructorNodes: arkts.Statement[] = [
-            ...MonitorCache.getInstance().getCachedMonitors(className),
-            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
+            ...MonitorCache.getInstance().getCachedMonitors(className, definition),
+            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className, definition),
         ] as arkts.Statement[];
         const scriptFunc: arkts.ScriptFunction = ctor.function;
         const originBody = scriptFunc.body as arkts.BlockStatement | undefined;
@@ -927,10 +949,14 @@ export class CacheFactory {
         return ctor;
     }
 
-    static createNewObservedV2Constuctor(className: string, isDecl: boolean): arkts.MethodDefinition {
+    static createNewObservedV2Constuctor(
+        className: string,
+        isDecl: boolean,
+        definition: arkts.ClassDefinition
+    ): arkts.MethodDefinition {
         const addConstructorNodes: arkts.Statement[] = [
-            ...MonitorCache.getInstance().getCachedMonitors(className),
-            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className),
+            ...MonitorCache.getInstance().getCachedMonitors(className, definition),
+            ...SyncMonitorCache.getInstance().getCachedSyncMonitors(className, definition),
         ];
         return UIFactory.createMethodDefinition({
             key: arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_CONSTRUCTOR_ORI),
