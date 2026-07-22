@@ -38,7 +38,7 @@ function isDecimalInteger(since: string): boolean {
 }
 
 function isCanonicalDecimalInteger(since: string): boolean {
-  return /^[+-]?[1-9][0-9]*$/.test(since);
+  return /^[+-]?(0|[1-9][0-9]*)$/.test(since);
 }
 
 function isNumericLiteral(node: ts.Node): boolean {
