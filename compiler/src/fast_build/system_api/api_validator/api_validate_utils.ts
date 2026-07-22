@@ -21,8 +21,10 @@ import {
   comparePointVersion,
   isCheckDistributionOSVersion,
   checkMSFVersionMajor,
-  checkIntegerMoreVersion
+  checkIntegerMoreVersion,
+  isOpenHarmonyRuntime
 } from '../api_check_utils';
+import { validateApiAvailableArgument } from './apiAvailable_validate_utils';
 import {
   SINCE_TAG_NAME,
   ComparisonSenario,
@@ -149,8 +151,26 @@ export class SdkComparisonHelper {
       return false;
     }
 
-    const [matchedApi, validPackagePath] = matchedEntry;
+    const [matchedApi] = matchedEntry;
     if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
+      return false;
+    }
+
+    const typeOfNodeFunc = (node: ts.Node): ts.Type | ts.Type[] => {
+      if (this.typeChecker) {
+        return this.typeChecker.getTypeAtLocation(node);
+      }
+      return [];
+    };
+
+    const validationResult = validateApiAvailableArgument({
+      node: expression,
+      typeOfNodeFunc,
+      isOpenHarmonyRuntime,
+      isCheckDistributionOSVersion
+    });
+
+    if (!validationResult.valid) {
       return false;
     }
 
