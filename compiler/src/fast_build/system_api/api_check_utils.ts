@@ -100,16 +100,9 @@ import {
   DeviceDiffType,
   SINCE_LEVEL_CONFIG,
   APIAVAILABLE_CHECK_ERROR,
-  APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
-  APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
   MSF_INTEGER_VERSION,
-  ApiAvailableResult,
-  MSFVersionCheckResult,
-  MSF_SANDF_VERSION,
-  APIAVAILABLE_NUMBER_ERROR,
-  APIAVAILABLE_STRING_ERROR,
-  APIAVAILABLE_CHECK_NUMBER_STRING_ERROR
+  ApiAvailableResult
 } from './api_check_define';
 import { JsDocCheckService } from './api_check_permission';
 import { SinceJSDocChecker } from './api_checker/since_version_checker';
@@ -119,6 +112,7 @@ import { AvailableWarningSuppressor } from './api_validator/available_warning_su
 import { SyscapWarningSuppressor } from './api_validator/syscap_warning_suppressor';
 import { SDK_CONSTANTS } from './api_validator/api_validate_node';
 import { PermissionWarningSuppressor } from './api_validator/permission_warning_suppressor';
+import { validateApiAvailableArgument } from './api_validator/apiAvailable_validate_utils';
 
 /**
  * bundle info
@@ -1355,54 +1349,12 @@ export function checkMSFVersionMajor(since: string): boolean {
 }
 
 /**
- * Check whether the MSF version number format is correct. The Integer field was not checked.
- * @param since - Version string to validate
- * @returns When the MSF does not conform to the standard format, false is returned, and the integer is not evaluated.
- */
-export function checkMSFVersionMajorError(since: string): MSFVersionCheckResult {
-  const noParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)$/;
-  const withParenthesesReg: RegExp = /^[1-9]\d?\.(?:0|[1-9]\d?)\.(?:0|[1-9]\d?)\(\d+\)$/;
-
-  const hasParentheses: boolean = withParenthesesReg.test(since);
-  const noParentheses: boolean = noParenthesesReg.test(since);
-
-  if (!hasParentheses && !noParentheses) {
-    return { valid: false, needDistCheck: false };
-  }
-
-  const parts: string[] = since.split('.');
-  const mValue: number = parseInt(parts[0]);
-  const sValue: number = parseInt(parts[1]);
-  const fValue: number = hasParentheses ? parseInt(parts[2].split('(')[0]) : parseInt(parts[2]);
-
-  if (sValue > MSF_SANDF_VERSION || fValue > MSF_SANDF_VERSION) {
-    return { valid: false, needDistCheck: false };
-  }
-
-  if (isOpenHarmonyRuntime()) {
-    if (hasParentheses || mValue < MSF_INTEGER_VERSION) {
-      return { valid: false, needDistCheck: false };
-    }
-    return { valid: true, needDistCheck: false };
-  }
-
-  if (mValue >= MSF_INTEGER_VERSION) {
-    if (hasParentheses) {
-      return { valid: false, needDistCheck: false };
-    }
-    return { valid: true, needDistCheck: false };
-  }
-
-  return { valid: false, needDistCheck: true };
-}
-
-/**
  * Determine if the Integer version is more than 26.
  * @param since - Version string to validate
  * @returns When Integer is more than 26, return false
  */
 export function checkIntegerMoreVersion(since: string): boolean {
-  const IntVersionReg: RegExp = /^(?:[1-9]\d{0,2})$/;
+  const IntVersionReg: RegExp = /^(?:[1-9]\d*)$/;
   if (IntVersionReg.test(since)) {
     if (Number(since) >= MSF_INTEGER_VERSION) {
       return false;
@@ -2585,61 +2537,12 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
     return result;
   }
 
-  if (ts.isStringLiteral(node.arguments[0]) ||
-    ts.isNoSubstitutionTemplateLiteral(node.arguments[0]) ||
-    isNumericLiteral(node.arguments[0]) ||
-    isNullOrUndefinedScene(node.arguments[0])
-  ) {
-    const typeMessageInfo: string = isNumericLiteral(node.arguments[0]) ? APIAVAILABLE_NUMBER_ERROR : APIAVAILABLE_STRING_ERROR;
-    const errorMessageInfo: Map<string, string> = new Map([
-      [APIAVAILABLE_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}`],
-      [APIAVAILABLE_CHECK_NUMBER_STRING_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_CHECK_ERROR)?.code}#${APIAVAILABLE_CHECK_ERROR}${typeMessageInfo}`],
-      [APIAVAILABLE_OPENHARMONY_CHECK_ERROR, `${ERROR_CODE_INFO.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR)?.code}#${APIAVAILABLE_OPENHARMONY_CHECK_ERROR}`]
-    ]);
-    const compatibileReg: RegExp = /^(?:[1-9]\d*|[1-9]\d*\.\d+\.\d+(?:\(\d+\))?)$/;
-    const sinceValue: string = node.arguments[0].getText().trim();
-    const sinceFormat: string = sinceValue.replace(/^['"`]|['"`]$/g, '');
-    const sincePoint: string[] = sinceFormat.split('.');
-    if (isNullOrUndefinedScene(node.arguments[0])) {
-      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_ERROR);
-      result.valid = false;
-      return result;
-    }
-    if (!compatibileReg.test(sinceFormat)) {
-      result.message = errorMessageInfo.get(APIAVAILABLE_CHECK_NUMBER_STRING_ERROR);
-      result.valid = false;
-      return result;
-    }
-    const isSinceVersionType: boolean = /^(['"`])([^'"`]*)\1$/.test(sinceValue);
-    if (isSinceVersionType) {
-      result = checkCharScene(sincePoint, sinceFormat, errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR));
-    } else {
-      if (!checkIntegerMoreVersion(sinceFormat)) {
-        result.message = errorMessageInfo.get(APIAVAILABLE_OPENHARMONY_CHECK_ERROR);
-        result.valid = false;
-      }
-    }
-  }
-
-  return result;
-}
-
-function isNullOrUndefinedScene(node: ts.Node): boolean {
-  const nodeValue: string = node.getText();
-  return nodeValue === 'null' || nodeValue === 'undefined';
-}
-
-function isNumericLiteral(node: ts.Node): boolean {
-  if (ts.isNumericLiteral(node)) {
-    return true;
-  }
-
-  if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
-    return node.operator === ts.SyntaxKind.MinusToken ||
-      node.operator === ts.SyntaxKind.PlusToken;
-  }
-
-  return false;
+  return validateApiAvailableArgument({
+    node,
+    typeOfNodeFunc,
+    isOpenHarmonyRuntime,
+    isCheckDistributionOSVersion
+  });
 }
 
 function checkApiAvailableCache(node: ts.Node): boolean {
@@ -2668,72 +2571,6 @@ function checkApiAvailableCache(node: ts.Node): boolean {
   }
 
   return true;
-}
-
-/**
- * Determine whether the string scenario complies with the specifications.
- * 
- * OpenHarmony project
- * valid sample
- * apiAvailable('26.0.0')
- * 
- * Invalid sample
- * apiAvailable('26')
- * apiAvailable('25.0.0')
- * 
- * distributionOS project
- * valid sample
- * apiAvailable('6.1.1')
- * apiAvailable('6.1.1(24)')
- * 
- * Invalid sample
- * apiAvailable('6.8.8')
- * apiAvailable('25.0.0')
- * 
- * @param sincePoint MSF version
- * @param sinceFormat del quotation mark version
- * @returns standardized results
- */
-function checkCharScene(sincePoint: string[], sinceFormat: string, diagnosticOHMessage: string): ApiAvailableResult {
-  let result: ApiAvailableResult = {
-    valid: true,
-    message: APIAVAILABLE_CHECK_ERROR,
-    type: ts.DiagnosticCategory.Error
-  }
-  if (sincePoint.length === 1) {
-    result.message = diagnosticOHMessage;
-    result.valid = false;
-    return result;
-  }
-  if (isOpenHarmonyRuntime()) {
-    const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
-    if (!msfResult.valid) {
-      result.message = diagnosticOHMessage;
-      result.valid = false;
-    }
-  } else {
-    result = checkCharDistributionOSScene(sinceFormat, result, diagnosticOHMessage);
-  }
-  
-  return result;
-}
-
-function checkCharDistributionOSScene(sinceFormat: string, result: ApiAvailableResult, diagnosticOHMessage: string): ApiAvailableResult {
-  const msfResult: MSFVersionCheckResult = checkMSFVersionMajorError(sinceFormat);
-  if (!msfResult.valid) {
-    if (msfResult.needDistCheck) {
-      const distributionOSCheck = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
-      if (!distributionOSCheck.valid) {
-        const distributionOSMessage: string = `${ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code}#${distributionOSCheck.message}`;
-        result.message = distributionOSMessage;
-        result.valid = false;
-      }
-    } else {
-      result.message = diagnosticOHMessage;
-      result.valid = false;
-    }
-  }
-  return result;
 }
 
 export const isAvailableDecorator = (decorator: ts.Decorator): boolean => {
