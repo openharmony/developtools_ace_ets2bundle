@@ -17,12 +17,13 @@ import ts from 'typescript';
 import {
   ApiAvailableResult,
   APIAVAILABLE_CHECK_ERROR,
-  APIAVAILABLE_NUMBER_ERROR,
-  APIAVAILABLE_OPENHARMONY_CHECK_ERROR,
+  APIAVAILABLE_NUMBER_FORMAT_ERROR,
+  APIAVAILABLE_OPENHARMONY_CONTENT_ERROR,
   MSF_INTEGER_VERSION,
-  APIAVAILABLE_STRING_ERROR,
+  APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR,
   ERROR_CODE_INFO,
-  APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR,
+  APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR,
+  APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR,
   DistributionOSApiAvailableVersionResult,
   SINCE_TAG_NAME
 } from '../api_check_define';
@@ -75,7 +76,7 @@ function checkStringOpenHarmony(content: string): ApiAvailableResult {
   if (!/^[0-9.]+$/.test(content)) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -83,7 +84,7 @@ function checkStringOpenHarmony(content: string): ApiAvailableResult {
   if (!msf || msf.major < MSF_INTEGER_VERSION) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CHECK_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -101,7 +102,7 @@ function checkStringDistributionOS(
   if (!/^[0-9.()]+$/.test(content)) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -109,7 +110,7 @@ function checkStringDistributionOS(
   if (!msf) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CHECK_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -117,7 +118,7 @@ function checkStringDistributionOS(
     if (msf.hasParentheses) {
       return { 
         valid: false,
-        message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CHECK_ERROR),
+        message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
         type: ts.DiagnosticCategory.Error
       };
     }
@@ -129,7 +130,7 @@ function checkStringDistributionOS(
   }
   const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, content);
   if (!distributionOSCheck.valid) {
-    const distCode: string = ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CHECK_ERROR)?.code ?? '';
+    const distCode: string = ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR)?.code ?? '';
     return {
       valid: false,
       message: `${distCode}#${distributionOSCheck.message}`,
@@ -161,10 +162,6 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
     type: ts.DiagnosticCategory.Error
   };
 
-  if (!node.arguments || node.arguments.length !== 1) {
-    return result;
-  }
-
   const arg: ts.Node = node.arguments[0];
   const isNumber: boolean = isNumericLiteral(arg);
   const isStringLiteralNode: boolean = ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg);
@@ -184,10 +181,10 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
     const numText: string = arg.getText().trim();
     if (!isDecimalInteger(numText)) {
       result.valid = false;
-      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_NUMBER_ERROR);
+      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_NUMBER_FORMAT_ERROR);
     } else if (!isCanonicalDecimalInteger(numText) || Number(numText) < 1 || Number(numText) >= MSF_INTEGER_VERSION) {
       result.valid = false;
-      result.message = buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CHECK_ERROR);
+      result.message = buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR);
     }
     return result;
   }
