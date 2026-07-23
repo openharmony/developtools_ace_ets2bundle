@@ -1326,8 +1326,10 @@ KNativePointer impl_FilterNodes3(KNativePointer context, KNativePointer node, KI
     auto _node = reinterpret_cast<es2panda_AstNode*>(node);
     auto _context = reinterpret_cast<es2panda_Context*>(context);
     std::bitset<AST_NODE_TYPE_LIMIT> typesMask;
-    for (int i = 0; i < typesSize; i++) {
-        typesMask.set(types[i]);
+    if (types != nullptr) {
+        for (int i = 0; i < typesSize; i++) {
+            typesMask.set(types[i]);
+        }
     }
     std::vector<es2panda_AstNode *> result;
     FilterArgs args = { GetImpl(), _context, &typesMask, &result };
