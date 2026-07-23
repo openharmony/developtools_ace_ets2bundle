@@ -265,8 +265,8 @@ export class BuilderParamCachedTranslator extends PropertyCachedTranslator {
 
     getter(newName: string, originalName: string, metadata?: AstNodeCacheValueMetadata): arkts.MethodDefinition {
         return getterWithBuilderLambdaProperty.bind(this)(
-            newName, 
-            originalName, 
+            newName,
+            originalName,
             this.initializeOptions?.isRequired || this.property.typeAnnotation?.tsType?.definitelyNotETSNullish
         );
     }
