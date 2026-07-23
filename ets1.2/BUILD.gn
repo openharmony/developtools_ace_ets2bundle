@@ -28,9 +28,13 @@ ohos_static_library("libarkts_package") {
 
 ohos_copy("ets2panda_libarkts") {
   deps = [ "${koala_mr.libarkts_path}:libarkts_sdk_copy" ]
-  sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
-  outputs = [ target_out_dir + "/$target_name" ]
-  module_source_dir = target_out_dir + "/$target_name"
+
+  _libarkts_dir = rebase_path("$target_gen_dir") + "/libarkts"
+  _libarkts_output_dir = target_out_dir + "/$target_name"
+
+  sources = [ _libarkts_dir ]
+  outputs = [ _libarkts_output_dir ]
+  module_source_dir = _libarkts_output_dir
   module_install_name = ""
   subsystem_name = "developtools"
   part_name = "ace_ets2bundle"
@@ -58,7 +62,10 @@ ohos_copy("ohos_ets_libarkts") {
     "${koala_mr.libarkts_path}:libarkts_sdk_copy",
     ":ohos_ets_libarkts_pack_prebuilt",
   ]
-  sources = [ rebase_path("$target_gen_dir") + "/libarkts" ]
+
+  _libarkts_dir = rebase_path("$target_gen_dir") + "/libarkts"
+
+  sources = [ _libarkts_dir ]
   outputs = [ ohos_ets_libarkts_path ]
   subsystem_name = "developtools"
   part_name = "ace_ets2bundle"

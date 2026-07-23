@@ -15,8 +15,10 @@
 
 import argparse
 import os
+from sre_parse import parse
 import subprocess
 import sys
+import time
 
 from copy_libs import copy_files
 
@@ -44,11 +46,17 @@ def copy_output(options):
 
     copy_files(os.path.join(from_path, f'libes2panda_lib.{library_extention}'),
             os.path.join(to_path, 'build/native/build/es2panda.node'), True, True)
+    # Update output path timestamp for incremental build
+    current_time = time.time()
+    if not os.path.exists(options.output_path):
+        open(options.output_path, 'w').close()
+    os.utime(options.output_path, (current_time, current_time))
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--from-path', help='path to output')
     parser.add_argument('--to-path', help='path to root out')
+    parser.add_argument('--output-path', help='path for incremental build')
     parser.add_argument('--current-os', help='current OS')
     parser.add_argument('--current-cpu', help='current CPU')
 
