@@ -1592,10 +1592,12 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
   let innerDecorator: ts.Decorator;
   for (let i = 0; i < decorators.length; i++) {
     const decorator: ts.Decorator = decorators[i];
-    let decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
-    const astDecoratorName: string = getDecoratorNameFromAst(decorator);
-    if (isCompatibleVersionOverTarget(26) && astDecoratorName) {
-      decoratorName = astDecoratorName;
+    const decoratorRaw: string = decorator.getText();
+    const hasLine: boolean = /\r?\n|\r/.test(decoratorRaw);
+    let decoratorName: string = decoratorRaw.replace(/\(.*\)$/, '').trim();
+    if (hasLine && decoratorRaw.length === decoratorName.length) {
+      const astDecoratorName: string = getDecoratorNameFromAst(decorator);
+      !!astDecoratorName && (decoratorName = astDecoratorName);
     }
     if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       hasInnerDecorator = true;
