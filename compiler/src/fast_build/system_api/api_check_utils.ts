@@ -376,6 +376,7 @@ const jsDocNodeCheckConfigCache: Map<string, Map<string, ts.JsDocNodeCheckConfig
 const availableNodeCheckConfigCache: Map<string, string> = new Map<string, string>();
 let permissionsArray: string[] = [];
 
+
 /**
 * Parse the version number string and return an integer representing the version value.
 *
@@ -425,6 +426,7 @@ function parseVersion(versionStr): number {
  * @param {string} rangeEnd2 - End of second version range
  * @returns {boolean} True if ranges intersect, false otherwise
  */
+
 function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2): boolean {
   // Convert version strings to numeric representations
   const range1StartNum = parseVersion(rangeStart1);
@@ -451,6 +453,7 @@ function isVersionRangeIntersect(rangeStart1, rangeEnd1, rangeStart2, rangeEnd2)
 * @returns {{start: string, end: string}|undefined} Object with start/end versions if extracted, undefined otherwise
 */
 function extractVersionRange(commentText): {start: string, end: string} | undefined {
+
   if (typeof commentText !== 'string' || !commentText) {
     return undefined;
   }
@@ -1592,6 +1595,7 @@ export function isCheckDistributionOSVersion(tag: string, version: string): Dist
   return distributionOSCheck;
 }
 
+
 /**
  * Gets the build version regex.
  * @param tag - The tag name.
@@ -1712,12 +1716,12 @@ function getNameFromArray(array: Array<{ name: string }>): string[] {
 }
 
 /**
- *  Determine the necessity of permission check
- *
- * @param {ts.JSDocTag[]} jsDocTags
- * @param {ts.JsDocNodeCheckConfigItem} config
- * @param {ts.Node} node
- * @returns {boolean}
+ * Checks the permission values in JSDoc tags and updates the config message.
+ * @param jsDocTags - The JSDoc tags to check.
+ * @param config - The configuration item to update with the result.
+ * @param node - The optional TypeScript node for context.
+ * @param declaration - The optional TypeScript declaration for context.
+ * @returns A boolean indicating if any invalid permissions were found.
  */
 export function checkPermissionValue(
   jsDocTags: readonly ts.JSDocTag[],
@@ -1740,7 +1744,9 @@ export function checkPermissionValue(
     if (comment === '') {
       continue;
     }
+
     const versionRange = extractVersionRange(permissionTag.comment);
+
     if (versionRange) {
       if (checkVersionRangeIntersection(versionRange)) {
         comment = comment.replace(/\[since (.*?)\]/, '').trim();
@@ -1756,6 +1762,7 @@ export function checkPermissionValue(
     if (suppressor.isApiVersionHandled(node)) {
       continue;
     }
+
     commentAll += `${comment} and `;
   }
 
@@ -1766,6 +1773,8 @@ export function checkPermissionValue(
   }
   return false;
 }
+
+
 
 /**
  * Checks the system API value based on JSDoc tags and configuration.
