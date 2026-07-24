@@ -59,9 +59,11 @@ export const APIAVAILABLE_CHECK_ERROR: string = 'Invalid parameters for apiAvail
 export const APIAVAILABLE_OPENHARMONY_CONTENT_ERROR: string = `The api version must be a decimal integer between 1 and 25.
  The M.S.F format must meet the following requirements: The value must be in the three decimal format, M must be greater than or equal to 26, and S and F must be decimal integers between 0 and 99.`;
 export const APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR: string = 'Invalid $RUNTIMEOS version.';
-export const APIAVAILABLE_NUMBER_FORMAT_ERROR: string = 'Only decimal digits are allowed.';
-export const APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR: string = 'Only digits and dots are allowed.';
-export const APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR: string = 'Only digits, dots, and left and right parentheses are allowed.';
+export const APIAVAILABLE_TS_FILE_ERROR: string = 'apiAvailable cannot be used in .ts files. Please use .ets files instead.';
+export const APIAVAILABLE_NUMBER_FORMAT_ERROR: string = 'Invalid parameters for apiAvailable. Only decimal digits are allowed.';
+export const APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR: string = 'Invalid parameters for apiAvailable. Only digits and dots are allowed.';
+export const APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR: string = 'Invalid parameters for apiAvailable. Only digits, dots, and left and right parentheses are allowed.';
+export const APIAVAILABLE_NULLORUNDEFINED_FORMAT_ERROR: string = 'Invalid parameters for apiAvailable. Null and undefined are not allowed for parameters.';
 export const API_INTERFACE_WHITE_LIST: Map<string, string[]> = new Map([
   ['@arkts.lang.d.ets', ['RetentionPolicy','Retention','SOURCE','BYTECODE']],
   ['@ohos.deviceInfo.d.ts', ['apiAvailable']]
@@ -267,9 +269,13 @@ export const ERROR_CODE_INFO: Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'posi
   [AVAILABLE_DECORATOR_WARNING, { code: '11706012', description: 'The API is only available in $ApiVersion or newer.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_OPENHARMONY_CONTENT_ERROR, { code: '11706013', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
   [APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR, { code: '11706014', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
-  [APIAVAILABLE_CHECK_ERROR, { code: '11706015', description: 'Invalid parameters for apiAvailable.', solutions: ['Check the official API reference documentation, and switch to the supported interfaces.'] }],
+  [APIAVAILABLE_TS_FILE_ERROR, { code: '11706015', description: 'apiAvailable cannot be used in .ts files.', solutions: ['Use .ets files instead of .ts files for apiAvailable calls.'] }],
   [AVAILABLE_VERSION_FORMAT_ERROR_PREFIX, { code: '11706016', description: 'Invalid version format in @Available decorator.', solutions: ['Change the version number to an integer between 1 and 999, or use the standardized M.S.F format.'] }],
-  [AVAILABLE_OSNAME_ERROR, { code: '11706017', description: 'Invalid OS name in @Available decorator.', solutions: ['Use the correct OS name matching the project runtime OS.'] }]
+  [AVAILABLE_OSNAME_ERROR, { code: '11706017', description: 'Invalid OS name in @Available decorator.', solutions: ['Use the correct OS name matching the project runtime OS.'] }],
+  [APIAVAILABLE_NUMBER_FORMAT_ERROR, { code: '11706018', description: 'Invalid parameters for apiAvailable.', solutions: ['Use the correct version number format.'] }],
+  [APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR, { code: '11706019', description: 'Invalid parameters for apiAvailable.', solutions: ['Use the correct version number format.'] }],
+  [APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR, { code: '11706020', description: 'Invalid parameters for apiAvailable.', solutions: ['Use the correct version number format.'] }],
+  [APIAVAILABLE_NULLORUNDEFINED_FORMAT_ERROR, { code: '11706021', description: 'Invalid parameters for apiAvailable.', solutions: ['Use the correct version number format.'] }]
 ])
 
 export const DIAGNOSTIC_SDK_CODE_MAP: Map<string, Map<string, Omit<SdkHvigorLogInfo, 'cause' | 'position'>>> = new Map([
