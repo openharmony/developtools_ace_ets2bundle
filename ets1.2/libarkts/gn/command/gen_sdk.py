@@ -35,8 +35,12 @@ def get_compiler_type(os_name, cpu_name):
         return 'clang_x64'
 
 
-def replace_out_root(value, out_root, compiler_type):
+def replace_out_root(value, out_root, compiler_type, use_compiler_subdir):
     """Replace $out_root in the string with the actual value."""
+    compiler_out_root = out_root
+    if use_compiler_subdir:
+        compiler_out_root = os.path.join(out_root, compiler_type)
+    value = value.replace("$out_root/$compiler_type", compiler_out_root)
     return value.replace("$out_root", out_root).replace("$compiler_type", compiler_type)
 
 
@@ -47,12 +51,15 @@ def validate_out_root(out_root, compiler_type):
     return out_root
 
 
-def copy_files(config, src_base, dist_base, out_root, compiler_type, substitutions):
+def copy_files(config, src_base, dist_base, out_root, compiler_type, substitutions,
+               use_compiler_subdir):
     """Copy files or directories based on the configuration."""
     for mapping in config['file_mappings']:
         # Replace $out_root
-        source = replace_out_root(mapping['source'], out_root, compiler_type)
-        destination = replace_out_root(mapping['destination'], out_root, compiler_type)
+        source = replace_out_root(mapping['source'], out_root, compiler_type,
+                                  use_compiler_subdir)
+        destination = replace_out_root(mapping['destination'], out_root, compiler_type,
+                                       use_compiler_subdir)
 
         if substitutions:
             for key, val in substitutions.items():
@@ -97,6 +104,8 @@ def main():
     parser.add_argument('--current-os', required=True, help='current OS')
     parser.add_argument('--current-cpu', required=True, help='current CPU')
     parser.add_argument('--output', required=True, help='Output directory for panda_sdk.tgz')
+    parser.add_argument('--host-product', action='store_true',
+                        help='Read compiler outputs from the default output directory')
     args = parser.parse_args()
 
     print(f"gen_sdk: current-cpu={args.current_cpu} current-os={args.current_os} out-root={args.out_root}")
@@ -116,7 +125,8 @@ def main():
             raise Exception(f'Substitutions not found for current_os "{args.current_os}".')
 
     # Copy files or directories
-    copy_files(config, args.src, args.dist, out_root, compiler_type, substitutions)
+    copy_files(config, args.src, args.dist, out_root, compiler_type, substitutions,
+               not args.host_product)
 
     # Create package.json to pass SDK validation
     content = """{

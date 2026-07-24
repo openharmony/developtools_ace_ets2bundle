@@ -56,6 +56,9 @@ if (!koala_mr.is_rri) {
       "--output",
       rebase_path(_panda_sdk_dir),
     ]
+    if (is_host_product) {
+      args += [ "--host-product" ]
+    }
   }
 
   ohos_prebuilt_etc("panda_sdk") {
@@ -348,6 +351,9 @@ action("libarkts_sdk_copy") {
     "--rri",
     "${koala_mr.is_rri}",
   ]
+  if (!koala_mr.is_rri && is_host_product) {
+    args += [ "--host-product" ]
+  }
   outputs = [ "$target_gen_dir" ]
   deps = [
     ":libarkts",

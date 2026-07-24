@@ -84,7 +84,7 @@ def copy_output(options):
                os.path.join(to_path, 'lib'))
 
     libes2panda_path = f'{compiler}/libarkts/libes2panda_lib.{library_extention}'
-    if options.rri.lower() == "true":
+    if options.rri.lower() == "true" or options.host_product:
         libes2panda_path = "libarkts/libes2panda_lib.node"
     copy_files(os.path.join(from_path, libes2panda_path),
                os.path.join(to_path, 'build/native/build/es2panda.node'), True)
@@ -102,6 +102,8 @@ def parse_args():
     parser.add_argument('--current-os', help='current OS')
     parser.add_argument('--current-cpu', help='current CPU')
     parser.add_argument('--rri', help='building in RRI', default="false")
+    parser.add_argument('--host-product', action='store_true',
+                        help='Read libraries from the default output directory')
 
     options = parser.parse_args()
     return options
