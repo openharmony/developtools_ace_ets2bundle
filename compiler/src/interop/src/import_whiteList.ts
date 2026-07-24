@@ -1620,6 +1620,7 @@ export const whiteList: Set<string> = new Set([
   'setAppBgColor',
   'sharedTransitionOptions',
   'vp2px',
+  'ReusePoolOwnership'
 ]);
 
 export const stateManagementWhiteList: string[] = [
@@ -1671,4 +1672,7 @@ export const decoratorsV2WhiteList: string[] = [
   'Trace',
   'ReusableV2',
   'ComponentV2',
+  'IMonitor',
+  'IMonitorValue',
+  'ReusePoolOwnership'
 ];
