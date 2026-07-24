@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+/**
+ * Copyright (c) 2023-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,7 @@ import {
   EventList,
   getRelativeSourcePath,
   handleUniversalPathInObf,
+  handleUniversalUncompactPathInObf,
   mangleFilePath,
   MemoryUtils,
   nameCacheMap,
@@ -90,6 +91,7 @@ export {
   getRelativeSourcePath,
   handleObfuscatedFilePath,
   handleUniversalPathInObf,
+  handleUniversalUncompactPathInObf,
   mangleFilePath,
   MergedConfig,
   nameCacheMap,
@@ -190,6 +192,21 @@ function collectAllKeepFiles(startPaths: string[], excludePathSet: Set<string>):
     }
   });
   return allKeepFiles;
+}
+
+function handleUncompactPathsForArkguard(mergedObConfig: MergedConfig, arkObfuscator: ArkObfuscator | undefined): void {
+  if (!arkObfuscator) {
+    return;
+  }
+  if (mergedObConfig === undefined || mergedObConfig.keepUncompactSourceOfPaths.length === 0) {
+    arkObfuscator.setKeepUncompactPaths(new Set());
+    return;
+  }
+  const allUncompact: Set<string> = collectAllKeepFiles(
+    mergedObConfig.keepUncompactSourceOfPaths,
+    mergedObConfig.excludeUncompactPathSet
+  );
+  arkObfuscator.setKeepUncompactPaths(allUncompact);
 }
 
 // Collect all keep files and then collect their dependency files.
@@ -447,6 +464,7 @@ export function collectSourcesWhiteList(rollupObject: Object, allSourceFilePaths
   if (compileToolIsRollUp()) {
     const obfuscationConfig = sourceProjectConfig.obfuscationMergedObConfig;
     handleUniversalPathInObf(obfuscationConfig, allSourceFilePaths);
+    handleUniversalUncompactPathInObf(obfuscationConfig, allSourceFilePaths);
     if (sourceProjectConfig.resourceTableTs) {
       obfuscationConfig?.keepSourceOfPaths?.push(toUnixPath(sourceProjectConfig.resourceTableTs));
     }
@@ -455,6 +473,7 @@ export function collectSourcesWhiteList(rollupObject: Object, allSourceFilePaths
       sourceProjectConfig.arkObfuscator,
       sourceProjectConfig
     );
+    handleUncompactPathsForArkguard(obfuscationConfig, sourceProjectConfig.arkObfuscator);
     obfuscationPreprocess(
       sourceProjectConfig,
       obfuscationConfig,
