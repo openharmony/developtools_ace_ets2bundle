@@ -136,13 +136,26 @@ export class SdkComparisonHelper {
 
   public isApiAvailableHelper(expression: ts.Expression): boolean {
     const expressionText = expression.getText();
-    const runtimeType = projectConfig.runtimeOS;
     const matchedEntry = Array.from(this.deviceInfoChecker.entries())
       .find(([api]) => expressionText.includes(api));
     if (!matchedEntry) {
       return false;
     }
 
+    const [matchedApi] = matchedEntry;
+    if (!this.validateApiAvailablePreCheck(expression, matchedApi)) {
+      return false;
+    }
+
+    if (!this.validateApiAvailableArgument(expression)) {
+      return false;
+    }
+
+    return this.compareApiAvailableVersion(expression as ts.CallExpression, matchedApi);
+  }
+
+  private validateApiAvailablePreCheck(expression: ts.Expression, matchedApi: string): boolean {
+    const runtimeType = projectConfig.runtimeOS;
     if (!ts.isCallExpression(expression)) {
       return false;
     }
@@ -151,11 +164,14 @@ export class SdkComparisonHelper {
       return false;
     }
 
-    const [matchedApi] = matchedEntry;
     if (runtimeType === this.openSourceRuntime && matchedApi === this.otherSourceDeviceInfo) {
       return false;
     }
 
+    return true;
+  }
+
+  private validateApiAvailableArgument(expression: ts.Expression): boolean {
     const typeOfNodeFunc = (node: ts.Node): ts.Type | ts.Type[] => {
       if (this.typeChecker) {
         return this.typeChecker.getTypeAtLocation(node);
@@ -164,40 +180,47 @@ export class SdkComparisonHelper {
     };
 
     const validationResult = validateApiAvailableArgument({
-      node: expression,
+      node: expression as ts.CallExpression,
       typeOfNodeFunc,
       isOpenHarmonyRuntime,
       isCheckDistributionOSVersion
     });
 
-    if (!validationResult.valid) {
-      return false;
-    }
+    return validationResult.valid;
+  }
 
+  private compareApiAvailableVersion(expression: ts.CallExpression, matchedApi: string): boolean {
+    const runtimeType = projectConfig.runtimeOS;
     const distributeResult: DistributionOSApiAvailableVersionResult = this.distributionVersionFormat();
     const sinceValue: string = expression.arguments[0].getText().trim();
     const sinceFormat: string = sinceValue.replace(/[\'|\"|\`]/g, '');
     const sincePointVersion: string[] = sinceFormat.split('.');
+
     if (sincePointVersion.length === 1 || runtimeType === this.openSourceRuntime) {
       return this.checkMajorNumberVersion(sinceFormat, sincePointVersion, distributeResult);
     }
+
     if (!checkMSFVersionMajor(sinceFormat)) {
-      let distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
-      if (!distributionOSCheck.valid) {
-        return false;
-      } else {
-        const scenario = matchedApi === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO
-          ? ComparisonSenario.SuppressByOHVersion
-          : ComparisonSenario.SuppressByOtherOSVersion;
-        const distributionOSResult: VersionValidationResult = this.valueChecker(this.minRequiredVersion, sinceFormat, scenario);
-        return distributionOSResult.result;
-      }
+      return this.checkDistributionOSVersion(sinceFormat, matchedApi);
     }
 
     if (!checkIntegerMoreVersion(sinceFormat)) {
       return false;
     }
-    return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less
+
+    return comparePointVersion(sinceFormat, distributeResult.version) !== ComparisonResult.Less;
+  }
+
+  private checkDistributionOSVersion(sinceFormat: string, matchedApi: string): boolean {
+    const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, sinceFormat);
+    if (!distributionOSCheck.valid) {
+      return false;
+    }
+    const scenario = matchedApi === SDK_CONSTANTS.OPEN_SOURCE_APIAVAILABLE_INFO
+      ? ComparisonSenario.SuppressByOHVersion
+      : ComparisonSenario.SuppressByOtherOSVersion;
+    const distributionOSResult: VersionValidationResult = this.valueChecker(this.minRequiredVersion, sinceFormat, scenario);
+    return distributionOSResult.result;
   }
 
   private checkMajorNumberVersion(sinceFormat: string, sincePointVersion: string[], distributeResult: DistributionOSApiAvailableVersionResult): boolean {

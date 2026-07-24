@@ -70,7 +70,7 @@ function parseMSFVersion(since: string): { major: number; hasParentheses: boolea
   if (!match) {
     return null;
   }
-  return { major: parseInt(match[1], 10), hasParentheses: match[4] !== undefined };
+  return { major: parseInt(match[1]), hasParentheses: match[4] !== undefined };
 }
 
 function checkStringOpenHarmony(content: string): ApiAvailableResult {
