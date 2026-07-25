@@ -77,7 +77,7 @@ function checkStringOpenHarmony(content: string): ApiAvailableResult {
   if (!/^[0-9.]+$/.test(content)) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -85,7 +85,7 @@ function checkStringOpenHarmony(content: string): ApiAvailableResult {
   if (!msf || msf.major < MSF_INTEGER_VERSION) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -103,7 +103,7 @@ function checkStringDistributionOS(
   if (!/^[0-9.()]+$/.test(content)) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -111,7 +111,7 @@ function checkStringDistributionOS(
   if (!msf) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -119,7 +119,7 @@ function checkStringDistributionOS(
     if (msf.hasParentheses) {
       return { 
         valid: false,
-        message: buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
+        message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
         type: ts.DiagnosticCategory.Error
       };
     }
@@ -174,7 +174,7 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
 
   if (isNullish) {
     result.valid = false;
-    result.message = buildApiAvailableMessage(APIAVAILABLE_NULLORUNDEFINED_FORMAT_ERROR);
+    result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_NULLORUNDEFINED_FORMAT_ERROR);
     return result;
   }
 
@@ -182,10 +182,10 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
     const numText: string = arg.getText().trim();
     if (!isDecimalInteger(numText)) {
       result.valid = false;
-      result.message = buildApiAvailableMessage(APIAVAILABLE_NUMBER_FORMAT_ERROR);
+      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_NUMBER_FORMAT_ERROR);
     } else if (!isCanonicalDecimalInteger(numText) || Number(numText) < 1 || Number(numText) >= MSF_INTEGER_VERSION) {
       result.valid = false;
-      result.message = buildApiAvailableMessage(APIAVAILABLE_OPENHARMONY_CONTENT_ERROR);
+      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR);
     }
     return result;
   }
