@@ -163,7 +163,11 @@ export class RewriteFactory {
             !!node.value && arkts.isArrowFunctionExpression(node.value)
                 ? RewriteFactory.rewriteArrowFunction(node.value, metadata)
                 : node.value;
-        return arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifierFlags, node.isComputed, node.annotations);
+        const newProperty = arkts.factory.updateClassProperty(node, node.key, newValue, newType, node.modifierFlags, node.isComputed, node.annotations);
+        if (!node.value && node.isImmediateInit) {
+            newProperty.setIsImmediateInit();
+        }
+        return newProperty;
     }
 
     static rewriteArrowFunction(
