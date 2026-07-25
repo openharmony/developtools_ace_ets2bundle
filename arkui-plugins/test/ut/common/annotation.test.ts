@@ -161,11 +161,11 @@ import { Component as Component, ResourceStr as ResourceStr, Builder as Builder 
 @TestAnno() (() => {})
 @TestAnno() class A {
     @TestAnno() public prop: number = 1;
-    @TestAnno() 
+    ${dumpAnnotation('TestAnno')}
     public method(@TestAnno() arg1: number): void {
         @TestAnno() const a: number = arg1;
     }
-    @TestAnno() 
+    ${dumpAnnotation('TestAnno')}
     public constructor() {}
 }
 @TestAnno() interface __A {
@@ -179,22 +179,25 @@ function testParseAnnotation(this: PluginTestContext): void {
 
 const expectedCheckSnapshot: string = `
 import { Component as Component, ResourceStr as ResourceStr, Builder as Builder } from "@ohos.arkui.component";
-@TestAnno() 
+${dumpAnnotation('TestAnno')}
 function main() {}
 @TestAnno() (() => {});
 @Retention({policy:\"SOURCE\"}) @interface TestAnno {}
 @TestAnno() type TestType = number;
 @TestAnno() class A {
     @TestAnno() public prop: number = 1;
-    @TestAnno() 
+    ${dumpAnnotation('TestAnno')}
     public method(@TestAnno() arg1: number): void {
         @TestAnno() const a: number = arg1;
     }
-    @TestAnno() 
+    ${dumpAnnotation('TestAnno')}
     public constructor() {}
 }
 @TestAnno() interface __A {
-    ${dumpGetterSetter(GetSetDumper.BOTH, 'prop', 'number', [dumpAnnotation('TestAnno')], [dumpAnnotation('TestAnno')], false)}
+  ${dumpAnnotation('TestAnno')}
+  get prop(): number
+  ${dumpAnnotation('TestAnno')}
+  set prop(${dumpAnnotation('TestAnno')}prop: number)
 }
 `;
 
