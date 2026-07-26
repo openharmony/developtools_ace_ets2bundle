@@ -171,8 +171,7 @@ function overBuilder(@MemoSkip() param: (()=> Tmp)) {
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())) as Tmp));
+    this.__backing_label!.resetOnReuse(new Tmp());
   }
 
   @MemoIntrinsic() 
@@ -410,8 +409,7 @@ function overBuilder(__memo_context: __memo_context_type, __memo_id: __memo_id_t
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_label!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.label)})) ?? (new Tmp())) as Tmp));
+    this.__backing_label!.resetOnReuse(new Tmp());
   }
 
   @MemoIntrinsic() 

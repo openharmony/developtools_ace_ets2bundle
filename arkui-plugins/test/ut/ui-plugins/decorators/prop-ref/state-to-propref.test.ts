@@ -158,8 +158,7 @@ function main() {}
   }
   public __updateStruct(initializers: (__Options_ParentComponent | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_ParentComponent | undefined)): void {
-    this.__backing_countDownStartValue!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.countDownStartValue)})) ?? (10)) as number));
+    this.__backing_countDownStartValue!.resetOnReuse(10);
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: ParentComponent)=> void) | undefined), initializers: ((()=> __Options_ParentComponent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

@@ -78,8 +78,8 @@ function initializeStructWithRegularProperty(
                 arkts.factory.createIdentifier(CustomComponentNames.COMPONENT_INITIALIZERS_NAME),
                 id,
                 originalName
-            ), 
-            optionsValue, 
+            ),
+            optionsValue,
             defaultValue
         );
     } else if (this.initializeOptions?.isRequired || !propertyType) {

@@ -169,26 +169,6 @@ export class ProvideCachedTranslator extends PropertyCachedTranslator {
     ): arkts.Statement | undefined {
         return initializeStructWithProvideProperty.bind(this)(newName, originalName, metadata);
     }
-
-    resetOnReuse(
-        newName: string,
-        originalName: string,
-        metadata?: arkts.AstNodeCacheValueMetadata
-    ): arkts.ExpressionStatement {
-        const propertyValue = this.property.value?.clone();
-        const propertyType = this.propertyType?.clone();
-        const arg = factory.generateInitializeValue(propertyValue, propertyType, originalName);
-        if (this.isMemoShouldUpdate) {
-            if (!!propertyValue) {
-                const isFunctionValue = arkts.isArrowFunctionExpression(propertyValue);
-                PropertyValueCache.getInstance().collect({ value: propertyValue, shouldCache: this.isMemoCached && isFunctionValue, metadata });
-            }
-            if (!!propertyType) {
-                PropertyValueCache.getInstance().collect({ value: propertyType, shouldCache: this.isMemoCached, metadata });
-            }
-        }
-        return factory.createResetOnReuseStmt(newName, arg);
-    }
 }
 
 /**

@@ -122,9 +122,7 @@ import {
   createFunction,
   getRealNodePos,
   isWrappedBuilder,
-  isMutableBuilder,
-  isStaticBuilder,
-  transferCompatibleBuilder
+  isMutableBuilder
 } from './process_component_build';
 import {
   CUSTOM_BUILDER_METHOD,
@@ -171,10 +169,8 @@ export const setUpdateParamsDecorators: Set<string> =
 
 export const setStateVarsDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR]);
 
-export const immutableDecorators: Set<string> =
-  new Set([COMPONENT_OBJECT_LINK_DECORATOR, COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR,
-    COMPONENT_CUSTOM_ENV_DECORATOR
-  ]);
+export const immutableDecorators: Set<string> = new Set([COMPONENT_OBJECT_LINK_DECORATOR,
+  COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR, COMPONENT_CUSTOM_ENV_DECORATOR]);
 
 export const simpleTypes: Set<ts.SyntaxKind> = new Set([ts.SyntaxKind.StringKeyword,
   ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.EnumDeclaration]);
@@ -326,7 +322,8 @@ export class PropMapManager {
 export function processMemberVariableDecorators(parentName: ts.Identifier,
   item: ts.PropertyDeclaration, ctorNode: ts.ConstructorDeclaration, watchMap: Map<string, ts.Node>,
   checkController: ControllerType, log: LogInfo[], program: ts.Program, context: ts.TransformationContext,
-  hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1?: ts.Statement[]): UpdateResult {
+  hasPreview: boolean, interfaceNode: ts.InterfaceDeclaration,
+  addStatementsInResetOnReuseV1?: ts.Statement[]): UpdateResult {
   const updateResult: UpdateResult = new UpdateResult();
   const name: ts.Identifier = item.name as ts.Identifier;
   const decorators: readonly ts.Decorator[] = ts.getAllDecorators(item);
@@ -578,21 +575,20 @@ function validateRequireDecorator(propertyDecorators: string[]): boolean {
 function processStateDecorators(node: ts.PropertyDeclaration, decorator: string,
   updateResult: UpdateResult, ctorNode: ts.ConstructorDeclaration, log: LogInfo[],
   program: ts.Program, context: ts.TransformationContext, hasPreview: boolean,
-  interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1?: ts.Statement[]): void {
+  interfaceNode: ts.InterfaceDeclaration,
+  addStatementsInResetOnReuseV1?: ts.Statement[]): void {
   const name: ts.Identifier = node.name as ts.Identifier;
   updateResult.setProperity(undefined);
   const updateState: ts.Statement[] = [];
   const variableInitStatement: ts.Statement =
-    createVariableInitStatement(node, decorator, log, program, context, hasPreview, interfaceNode,
-      addStatementsInResetOnReuseV1
-    );
+    createVariableInitStatement(node, decorator, log, program, context,
+      hasPreview, interfaceNode, addStatementsInResetOnReuseV1);
   if (variableInitStatement) {
     updateState.push(variableInitStatement);
   }
   addAddProvidedVar(node, name, decorator, updateState);
   updateResult.setCtor(updateConstructor(ctorNode, [], [...updateState], [], false));
-  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR,
-    COMPONENT_CUSTOM_ENV_DECORATOR].includes(decorator)) {
+  if (![COMPONENT_BUILDERPARAM_DECORATOR, COMPONENT_ENV_DECORATOR, COMPONENT_CUSTOM_ENV_DECORATOR].includes(decorator)) {
     updateResult.setVariableGet(createGetAccessor(name, CREATE_GET_METHOD));
     updateResult.setDeleteParams(true);
   }
@@ -678,7 +674,8 @@ function getClassMethod(node: ts.PropertyDeclaration): Set<string> {
 
 function createVariableInitStatement(node: ts.PropertyDeclaration, decorator: string,
   log: LogInfo[], program: ts.Program, context: ts.TransformationContext, hasPreview: boolean,
-  interfaceNode: ts.InterfaceDeclaration, addStatementsInResetOnReuseV1 ?: ts.Statement[]): ts.Statement {
+  interfaceNode: ts.InterfaceDeclaration,
+  addStatementsInResetOnReuseV1?: ts.Statement[]): ts.Statement {
   const name: ts.Identifier = node.name as ts.Identifier;
   let type: ts.TypeNode;
   let updateState: ts.ExpressionStatement;
@@ -993,6 +990,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
       [
         propertyAndStringKey.length === 0 ? ts.factory.createStringLiteral(propertyOrAliasName) :
           propertyAndStringKey.length === 4 && propertyAndStringKey[2] as ts.Expression, ts.factory.createStringLiteral(name)];
+  
   if (addStatementsInResetOnReuseV1 && isCompatibleVersionOverTarget(26)) {
     addStatementsInResetOnReuseV1.push(
       ts.factory.createExpressionStatement(
@@ -1007,6 +1005,7 @@ function updateConsumeProperty(node: ts.PropertyDeclaration,
       )
     );
   }
+  
   return ts.factory.createExpressionStatement(ts.factory.createBinaryExpression(
     createPropertyAccessExpressionWithThis(`__${name}`),
     ts.factory.createToken(ts.SyntaxKind.EqualsToken), ts.factory.createCallExpression(
@@ -1058,29 +1057,6 @@ export function createCustomComponentNewExpression(node: ts.CallExpression, name
   return addCustomComponentId(newNode, node, name, isBuilder, isGlobalBuilder, isCutomDialog);
 }
 
-function wrapInteropBuilderArg(initializer: ts.Expression): ts.Expression {
-  const compatBuilder: ts.CallExpression = transferCompatibleBuilder(initializer, true);
-  return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(compatBuilder, ts.factory.createIdentifier('bind')),
-    undefined,
-    [ts.factory.createThis()]
-  );
-}
-
-function rewriteInteropBuilderObjectLiteral(argument: ts.Expression): ts.Expression {
-  if (!ts.isObjectLiteralExpression(argument) || !argument.properties) {
-    return argument;
-  }
-  const properties: ts.ObjectLiteralElementLike[] = argument.properties.map((property) => {
-    if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.name) &&
-      isStaticBuilder(property.initializer)) {
-      return ts.factory.updatePropertyAssignment(property, property.name,
-        wrapInteropBuilderArg(property.initializer));
-    }
-    return property;
-  });
-  return ts.factory.updateObjectLiteralExpression(argument, properties);
-}
 function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
   isCutomDialog: boolean = false): ts.NewExpression {
@@ -1099,9 +1075,6 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
       }
     }
     if (componentName === name) {
-      if (argumentsArray && argumentsArray.length > 0) {
-        argumentsArray[0] = rewriteInteropBuilderObjectLiteral(argumentsArray[0]);
-      }
       if (!argumentsArray) {
         argumentsArray = [ts.factory.createObjectLiteralExpression([], true)];
         if (partialUpdateConfig.partialUpdateMode) {
@@ -1592,10 +1565,12 @@ function validateCustomDecorator(decorators: readonly ts.Decorator[], log: LogIn
   let innerDecorator: ts.Decorator;
   for (let i = 0; i < decorators.length; i++) {
     const decorator: ts.Decorator = decorators[i];
-    let decoratorName: string = decorator.getText().replace(/\(.*\)$/, '').trim();
-    const astDecoratorName: string = getDecoratorNameFromAst(decorator);
-    if (isCompatibleVersionOverTarget(26) && astDecoratorName) {
-      decoratorName = astDecoratorName;
+    const decoratorRaw: string = decorator.getText();
+    const hasLine: boolean = /\r?\n|\r/.test(decoratorRaw);
+    let decoratorName: string = decoratorRaw.replace(/\(.*\)$/, '').trim();
+    if (hasLine && decoratorRaw.length === decoratorName.length) {
+      const astDecoratorName: string = getDecoratorNameFromAst(decorator);
+      !!astDecoratorName && (decoratorName = astDecoratorName);
     }
     if (INNER_COMPONENT_MEMBER_DECORATORS.has(decoratorName)) {
       hasInnerDecorator = true;

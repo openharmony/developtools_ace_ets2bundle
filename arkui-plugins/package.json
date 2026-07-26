@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@koalaui/libarkts": "../ets1.2/libarkts",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "json5": "^2.2.3"
   }
 }

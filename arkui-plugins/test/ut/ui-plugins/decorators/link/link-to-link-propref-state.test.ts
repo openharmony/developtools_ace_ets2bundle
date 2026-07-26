@@ -166,8 +166,7 @@ function main() {}
     }
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
     this.__backing_childText!.resetOnReuse(initializers!.__backing_childText!);
-    this.__backing_childText2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText2)})) ?? ("sss")) as string));
+    this.__backing_childText2!.resetOnReuse("sss");
     this.__backing_childText3!.resetOnReuse((initializers!.childText3 as string));
     this.__backing_childText4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childText4)})) ?? ("cc")) as string));

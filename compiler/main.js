@@ -45,26 +45,9 @@ const {
   getLogger
 } = require('log4js');
 
-const {
-  setEntryFileLanguage,
-  isMixCompile,
-  processAbilityPagesFullPath,
-  transformAbilityPages
-} = require('./lib/fast_build/ark_compiler/interop/interop_manager');
-
-const {
-  ARKTS_MODE
-} = require('./lib/fast_build/ark_compiler/interop/pre_define');
-
-const arkLogger = require('./lib/fast_build/ark_compiler/logger');
-const errCode = require('./lib/fast_build/ark_compiler/error_code');
-
-let runDeclgenStandaloneModule = undefined;
-let runInteropContextModule = undefined;
-
 configure({
-  appenders: { 'ETS': { type: 'stderr', layout: {type: 'messagePassThrough' } } },
-  categories: {'default': { appenders: ['ETS'], level: 'info' } }
+  appenders: { 'ETS': { type: 'stderr', layout: { type: 'messagePassThrough' } } },
+  categories: { 'default': { appenders: ['ETS'], level: 'info' } }
 });
 const logger = getLogger('ETS');
 
@@ -139,14 +122,12 @@ function initProjectConfig(projectConfig) {
   projectConfig.optTryCatchFunc = true;
   // All files which dependent on bytecode har, and should be added to compilation entries.
   projectConfig.otherCompileFiles = {};
-  // Packages which need to update version in bytecode har 
+  // Packages which need to update version in bytecode har
   projectConfig.updateVersionInfo = undefined;
   projectConfig.allowEmptyBundleName = false;
   projectConfig.uiTransformOptimization = false;
   projectConfig.ignoreCrossplatformCheck = false;
   projectConfig.strictCheckerOnly = false;
-  projectConfig.isolatedDeclarations = false;
-  projectConfig.noCheck = false;
   projectConfig.tsImportSoCheck = false;
 }
 
@@ -175,7 +156,7 @@ function loadMemoryTrackingConfig(projectConfig) {
   projectConfig.memoryDottingPath = path.resolve(projectConfig.buildPath, '../', '../', 'dottingfile');
   // recordInterval config, unit is ms
   projectConfig.memoryDottingRecordInterval = process.env.memoryDottingRecordInterval || 100;
-  // records the config interval for writing files， unit is ms. 
+  // records the config interval for writing files， unit is ms.
   projectConfig.memoryDottingWriteFileInterval = process.env.memoryDottingWriteFileInterval || 1000;
 }
 
@@ -241,9 +222,6 @@ function loadEntryObj(projectConfig) {
           '. \u001b[39m').message;
       }
     }
-  }
-  if (isMixCompile()) {
-    processAbilityPagesFullPath(abilityPagesFullPath);
   }
 }
 
@@ -485,11 +463,10 @@ function setIntentEntryPages(projectConfig) {
 
 function setAbilityPages(projectConfig) {
   let abilityPages = [];
-  let extensionAbilityPages = [];
   if (projectConfig.aceModuleJsonPath && fs.existsSync(projectConfig.aceModuleJsonPath)) {
     const moduleJson = JSON.parse(fs.readFileSync(projectConfig.aceModuleJsonPath).toString());
-    [abilityPages, extensionAbilityPages] = readAbilityEntrance(moduleJson);
-    setAbilityFile(projectConfig, abilityPages, extensionAbilityPages);
+    abilityPages = readAbilityEntrance(moduleJson);
+    setAbilityFile(projectConfig, abilityPages);
     setBundleModuleInfo(projectConfig, moduleJson);
   }
 }
@@ -556,10 +533,9 @@ function setBundleModuleInfo(projectConfig, moduleJson) {
   }
 }
 
-function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
-  const extensionAbilitySet = new Set(extensionAbilityPages);
+function setAbilityFile(projectConfig, abilityPages) {
   abilityPages.forEach(abilityPath => {
-    if (extensionAbilitySet.has(abilityPath) && abilityPath.endsWith('.so')) {
+    if (abilityPath.endsWith('.so')) {
       return;
     }
     const projectAbilityPath = path.resolve(projectConfig.projectPath, '../', abilityPath);
@@ -576,17 +552,6 @@ function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
       if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
         return;
       }
-      if (isMixCompile()) {
-        if (transformAbilityPages(projectConfig, abilityPath)) {
-          return;
-        }
-        const errInfo = arkLogger.LogDataFactory.newInstance(
-          errCode.ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
-          errCode.ArkTSErrorDescription,
-          'Failed to find srcEntry bridge code. To compile an interop project, please generate interop declarations and bridge codes manually.'
-        );
-        throw Error(errInfo.toString());
-      }
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;
@@ -596,55 +561,35 @@ function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
 
 function readAbilityEntrance(moduleJson) {
   const abilityPages = [];
-  const extensionAbilityPages = [];
   if (moduleJson.module) {
     const moduleSrcEntrance = moduleJson.module.srcEntrance;
     const moduleSrcEntry = moduleJson.module.srcEntry;
-    const isStatic = moduleJson.module?.arkTSMode === ARKTS_MODE.STATIC;
     if (moduleSrcEntry) {
       abilityPages.push(moduleSrcEntry);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntry));
-      setEntryFileLanguage(moduleSrcEntry, isStatic);
     } else if (moduleSrcEntrance) {
       abilityPages.push(moduleSrcEntrance);
       abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, moduleSrcEntrance));
-      setEntryFileLanguage(moduleSrcEntrance, isStatic);
     }
     if (moduleJson.module.abilities && moduleJson.module.abilities.length > 0) {
       setEntrance(moduleJson.module.abilities, abilityPages);
     }
     if (moduleJson.module.extensionAbilities && moduleJson.module.extensionAbilities.length > 0) {
       setEntrance(moduleJson.module.extensionAbilities, abilityPages);
-      setExtension(moduleJson.module.extensionAbilities, extensionAbilityPages);
       setCardPages(moduleJson.module.extensionAbilities);
     }
   }
-  return [abilityPages, extensionAbilityPages];
-}
-
-function setExtension(abilityConfig, extensionPages) {
-  if (abilityConfig && abilityConfig.length > 0) {
-    abilityConfig.forEach(ability => {
-      if (ability.srcEntry) {
-        extensionPages.push(ability.srcEntry);
-      } else if (ability.srcEntrance) {
-        extensionPages.push(ability.srcEntrance);
-      }
-    });
-  }
+  return abilityPages;
 }
 
 function setEntrance(abilityConfig, abilityPages) {
   if (abilityConfig && abilityConfig.length > 0) {
     abilityConfig.forEach(ability => {
-      const isStatic = ability.arkTSMode === ARKTS_MODE.STATIC;
       if (ability.srcEntry) {
         abilityPages.push(ability.srcEntry);
-        setEntryFileLanguage(ability.srcEntry, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntry));
       } else if (ability.srcEntrance) {
         abilityPages.push(ability.srcEntrance);
-        setEntryFileLanguage(ability.srcEntrance, isStatic);
         abilityPagesFullPath.add(getAbilityFullPath(projectConfig.projectPath, ability.srcEntrance));
       }
     });
@@ -902,6 +847,25 @@ function filterWorker(workerPath) {
   sdkConfigs = [...defaultSdkConfigs, ...extendSdkConfigs];
 })();
 
+/**
+ * Plugin configuration object structure.
+ * @typedef {Object} PluginConfig
+ * @property {string} tag - Plugin tag (e.g., "since", "available")
+ * @property {string} type - Plugin type (e.g., "CompatibilityCheck", "FormatValidation")
+ * @property {string} path - Absolute path to plugin file
+ * @property {string} functionName - Function name to load from plugin
+ */
+
+/**
+ * Collects external API check plugins from SDK config.
+ * Loads plugins and stores them with keys: {osName}/{tag}/{type}
+ *
+ * Plugin key format: {osName}/{tag}/{type}
+ * Example: "since/CompatibilityCheck"
+ *
+ * @param {Object} sdkConfig - SDK configuration object
+ * @param {string} sdkPath - Base SDK path for resolving plugin paths
+ */
 function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
   const osName = sdkConfig.osName;
   if (!osName) {
@@ -917,6 +881,7 @@ function collectExternalApiCheckPlugin(sdkConfig, sdkPath) {
 
     for (const config of pluginGroup) {
       let pluginKey = '';
+
       if (config.type) {
         // New format: has type field
         // Key: {osName}/{tag}/{type}
@@ -1026,7 +991,7 @@ function collectExternalModules(sdkPaths) {
 
 /**
  * collect crossplatform external module
- * @param {string} configPath 
+ * @param {string} configPath
  */
 function collectCrossplatformDeps(configPath) {
   let depsConfigMap = new Map();
@@ -1419,20 +1384,6 @@ function initMain() {
   abilityConfig.abilityType = process.env.abilityType || 'page';
 }
 
-async function runInteropContext(params) {
-  if (runInteropContextModule === undefined) {
-    runInteropContextModule = require('./lib/fast_build/ark_compiler/interop/run_interop_context');
-  }
-  return runInteropContextModule.run(params);
-}
-
-async function runDeclgenStandalone(params) {
-  if (runDeclgenStandaloneModule === undefined) {
-    runDeclgenStandaloneModule = require('./lib/fast_build/ark_compiler/interop/run_declgen_standalone');
-  }
-  return runDeclgenStandaloneModule.run(params);
-}
-
 exports.globalProgram = globalProgram;
 exports.projectConfig = projectConfig;
 exports.loadEntryObj = loadEntryObj;
@@ -1475,6 +1426,4 @@ exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
 exports.crossplatformDepsConfig = crossplatformDepsConfig;
 exports.crossplatformExternalModule = crossplatformExternalModule;
-exports.runInteropContext = runInteropContext;
-exports.runDeclgenTs2Ets = runDeclgenStandalone;
 exports.isInitialRender = isInitialRender;

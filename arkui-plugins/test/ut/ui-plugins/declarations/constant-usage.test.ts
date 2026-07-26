@@ -88,8 +88,7 @@ EXPORT_RAWFILE = _rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (EXPORT_RESOURCE)) as Resource));
+    this.__backing_stateVar!.resetOnReuse(EXPORT_RESOURCE);
   }
   
   @MemoIntrinsic() 
@@ -223,8 +222,7 @@ EXPORT_RAWFILE = _rawfile(0, 30000, "com.example.mock", "entry", "app.mock.txt")
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_stateVar!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar)})) ?? (EXPORT_RESOURCE)) as Resource));
+    this.__backing_stateVar!.resetOnReuse(EXPORT_RESOURCE);
   }
   
   @MemoIntrinsic() 

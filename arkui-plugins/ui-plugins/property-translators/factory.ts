@@ -45,6 +45,7 @@ import { PropertyFactoryCallTypeCache, PropertyValueCache } from '../memo-collec
 import { MetaDataCollector } from '../../common/metadata-collector';
 import { AstNodeCacheValueMetadata, NodeCacheFactory } from '../../common/node-cache';
 import { CustomComponentInnerClassPropertyInfo } from 'collectors/ui-collectors/records';
+import { PropertyPathNode, PropertyPathResult, resolvePropertyPath } from '../../common/path-resolvers';
 
 const MONITOR_WILDCARD_SUFFIX = '.*';
 const MONITOR_WILDCARD_MIN_VERSION = 26;
@@ -931,14 +932,17 @@ export class factory {
         originalName: string,
         newName: string,
         isFromStruct: boolean,
-        paramsLength: number
+        paramsLength: number,
+        definition?: arkts.ClassDefinition
     ): arkts.ExpressionStatement {
         if (paramsLength === 0) {
             collectStateManagementTypeImport(StateManagementTypes.I_MONITOR);
         }
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
         collectStateManagementTypeImport(StateManagementTypes.IMONITOR_PATH_INFO);
-        const args: arkts.Expression[] = [this.generatePathArg(monitorItem), this.generateLambdaArg(originalName, paramsLength)];
+        const args: arkts.Expression[] = [
+            this.generatePathArg(definition, monitorItem),
+            this.generateLambdaArg(originalName, paramsLength)];
         const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
         if (compatibleVersion !== undefined && compatibleVersion >= 24) {
             const makeMonitorOptions = arkts.factory.createObjectExpression(
@@ -981,13 +985,13 @@ export class factory {
         );
     }
 
-    static generatePathArg(monitorItem: string[] | undefined): arkts.ArrayExpression {
+    static generatePathArg(definition?: arkts.ClassDefinition, monitorItem?: string[]): arkts.ArrayExpression {
         if (!monitorItem || monitorItem.length <= 0) {
             return arkts.factory.createArrayExpression([]);
         }
         const params = monitorItem.map((itemName: string) => {
             return arkts.factory.createTSAsExpression(
-                factory.createMonitorPathsInfoParameter(itemName),
+                factory.createMonitorPathsInfoParameter(itemName, definition),
                 UIFactory.createTypeReferenceFromString(StateManagementTypes.IMONITOR_PATH_INFO),
                 false
             );
@@ -1043,22 +1047,86 @@ export class factory {
     }
 
     /**
+     * Check if property path contains union types (nodes with multiple branches).
+     * Returns the PropertyPathResult if union types are found, undefined otherwise.
+     *
+     * @param definition Class definition for property resolution.
+     * @param monitorItem Property path to check.
+     * @param hasWildcard Whether wildcard support is enabled.
+     */
+    private static findUnionTypesInPropertyPath(
+        definition: arkts.ClassDefinition,
+        monitorItem: string,
+        hasWildcard: boolean
+    ): PropertyPathResult | undefined {
+        const propertyPathResult = resolvePropertyPath(definition, monitorItem, { enableWildcard: hasWildcard });
+        // Check if any node in the path has multiple branches (indicating union types)
+        let current: PropertyPathNode | null = propertyPathResult.root;
+        while (current) {
+            if (current.branchCount > 1) {
+                return propertyPathResult;
+            }
+            current = current.branchCount === 1 ? current.branches[0].next : null;
+        }
+        return undefined;
+    }
+
+    /**
+     * Generate blocks for handling union types in property paths.
+     * Creates instanceof checks and nested if-else statements to navigate union type branches.
+     *
+     * @param propertyPathResult Resolved property path containing union type information.
+     * @param itemNameSplit Split property path segments.
+     * @returns Array of statements for union type path handling.
+     */
+    private static generateUnionTypePathBlocks(
+        propertyPathResult: PropertyPathResult,
+        itemNameSplit: string[]
+    ): arkts.Statement[] {
+        const blocks: arkts.Statement[] = [];
+        blocks.push(
+            UIFactory.generateLetVariableDecl(
+                arkts.factory.createIdentifier('x', UIFactory.createTypeReferenceFromString('Any')),
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createThisExpression(),
+                    arkts.factory.createIdentifier(itemNameSplit[0]),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS, false, false
+                )
+            )
+        );
+
+        const resultPaths = propertyPathResult.getAllResultPaths();
+        for (let varIdx = 1; varIdx < resultPaths[0].length; varIdx++) {
+            let elseBranch: arkts.Statement = arkts.factory.createReturnStatement(
+                arkts.factory.createUndefinedLiteral()
+            );
+            for (let pathIdx = 0; pathIdx < resultPaths.length; pathIdx++) {
+                const currentType = resultPaths[pathIdx][varIdx - 1].type;
+                let currentTypeName: string = '';
+                if (currentType) {
+                    currentTypeName = ((currentType as arkts.ETSTypeReference).part.name as arkts.Identifier).name;
+                }
+                if (currentType && currentTypeName !== 'String') {
+                    const assignementRightExpr = factory.createUnionTypeAssignmentExpr(resultPaths[pathIdx][varIdx].segment);
+                    elseBranch = factory.createInstanceOfBranch(currentTypeName, assignementRightExpr, elseBranch);
+                }
+            }
+            blocks.push(elseBranch);
+        }
+        blocks.push(arkts.factory.createReturnStatement(arkts.factory.createIdentifier('x')));
+        return blocks;
+    }
+
+    /**
      * create IMonitorPathsInfo type parameter `{ path: "<monitorItem>", lambda: () => { return this.<monitorItem> } }`.
      *
      * @param monitorItem monitored property name.
      */
-    static createMonitorPathsInfoParameter(monitorItem: string): arkts.ObjectExpression {
-        const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
-        const hasWildcard: boolean = monitorItem.endsWith(MONITOR_WILDCARD_SUFFIX) &&
-            compatibleVersion !== undefined && compatibleVersion >= MONITOR_WILDCARD_MIN_VERSION;
-        const valueCallbackPath: string = hasWildcard
-            ? monitorItem.substring(0, monitorItem.length - MONITOR_WILDCARD_SUFFIX.length)
-            : monitorItem;
-        const itemNameSplit: string[] = valueCallbackPath.split('.');
-        let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
-        if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
-            monitorVariable = this.generateMonitorVariable(itemNameSplit);
-        }
+    private static createMonitorPathProperties(
+        monitorItem: string,
+        hasWildcard: boolean,
+        blocks: arkts.Statement[]
+    ): arkts.Property[] {
         const properties: arkts.Property[] = [
             arkts.factory.createProperty(
                 arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
@@ -1083,14 +1151,81 @@ export class factory {
             arkts.factory.createArrowFunctionExpression(
                 UIFactory.createScriptFunction({
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                    body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(monitorVariable)]),
+                    body: arkts.factory.createBlockStatement(blocks),
                     returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
                 })
             ),
             false,
             false
         ));
-        return arkts.factory.createObjectExpression(properties);
+        return properties;
+    }
+
+    static createMonitorPathsInfoParameter(
+        monitorItem: string,
+        definition?: arkts.ClassDefinition
+    ): arkts.ObjectExpression {
+        const compatibleVersion = MetaDataCollector.getInstance().projectConfig?.compatibleSdkVersion;
+        const hasWildcard: boolean = monitorItem.endsWith(MONITOR_WILDCARD_SUFFIX) &&
+            compatibleVersion !== undefined && compatibleVersion >= MONITOR_WILDCARD_MIN_VERSION;
+        const propertyPathResult = definition ? 
+            factory.findUnionTypesInPropertyPath(definition, monitorItem, hasWildcard) : undefined;
+        const valueCallbackPath: string = hasWildcard
+            ? monitorItem.substring(0, monitorItem.length - MONITOR_WILDCARD_SUFFIX.length)
+            : monitorItem;
+        const itemNameSplit: string[] = valueCallbackPath.split('.');
+        let blocks: arkts.Statement[] = []; 
+        if (propertyPathResult === undefined) {
+            let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
+            if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
+                monitorVariable = this.generateMonitorVariable(itemNameSplit);
+            }
+            blocks.push(arkts.factory.createReturnStatement(monitorVariable));
+        } else {
+            blocks.push(...factory.generateUnionTypePathBlocks(propertyPathResult, itemNameSplit));
+        }
+        return arkts.factory.createObjectExpression(
+            this.createMonitorPathProperties(monitorItem, hasWildcard, blocks)
+        );
+    }
+
+    private static createUnionTypeAssignmentExpr(segment: string): arkts.Expression {
+        if (isNumeric(segment)) {
+            return arkts.factory.createCallExpression(
+                arkts.factory.createMemberExpression(
+                    arkts.factory.createIdentifier('x'),
+                    arkts.factory.createIdentifier('$_get'),
+                    arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS, false, false),
+                [arkts.factory.createNumberLiteral(Number(segment))], undefined, false, false);
+        }
+        return arkts.factory.createMemberExpression(
+            arkts.factory.createIdentifier('x'),
+            arkts.factory.createIdentifier(segment),
+            arkts.Es2pandaMemberExpressionKind.MEMBER_EXPRESSION_KIND_PROPERTY_ACCESS, false, false);
+    }
+
+    private static createInstanceOfBranch(
+        currentTypeName: string,
+        assignementRightExpr: arkts.Expression,
+        elseBranch: arkts.Statement
+    ): arkts.IfStatement {
+        return arkts.factory.createIfStatement(
+            arkts.factory.createBinaryExpression(
+                arkts.factory.createIdentifier('x'),
+                UIFactory.createTypeReferenceFromString(currentTypeName),
+                arkts.Es2pandaTokenType.TOKEN_TYPE_KEYW_INSTANCEOF
+            ),
+            arkts.factory.createBlockStatement([
+                arkts.factory.createExpressionStatement(
+                    arkts.factory.createAssignmentExpression(
+                        arkts.factory.createIdentifier('x'),
+                        assignementRightExpr,
+                        arkts.Es2pandaTokenType.TOKEN_TYPE_PUNCTUATOR_SUBSTITUTION
+                    )
+                )
+            ]),
+            elseBranch
+        );
     }
 
     static generateComputedOwnerAssignment(newName: string): arkts.ExpressionStatement {
@@ -1142,13 +1277,14 @@ export class factory {
         originalName: string,
         newName: string,
         isFromStruct: boolean,
-        paramsLength: number
+        paramsLength: number,
+        definition?: arkts.ClassDefinition
     ): arkts.ExpressionStatement {
         if (paramsLength === 0) {
             collectStateManagementTypeImport(StateManagementTypes.I_MONITOR);
         }
         const thisValue: arkts.Expression = generateThisBacking(newName, false, false);
-        const args: arkts.Expression[] = [this.generateSyncMonitorPathArg(monitorItem), this.generateLambdaArg(originalName, paramsLength)];
+        const args: arkts.Expression[] = [this.generateSyncMonitorPathArg(monitorItem, definition), this.generateLambdaArg(originalName, paramsLength)];
         const makeSyncMonitorOptions = arkts.factory.createObjectExpression([
             arkts.factory.createProperty(
                 arkts.Es2pandaPropertyKind.PROPERTY_KIND_INIT,
@@ -1181,25 +1317,37 @@ export class factory {
         );
     }
 
-    static generateSyncMonitorPathArg(monitorItem: string[] | undefined): arkts.ArrayExpression {
+    static generateSyncMonitorPathArg(monitorItem: string[] | undefined,
+        definition?: arkts.ClassDefinition): arkts.ArrayExpression {
         if (!monitorItem || monitorItem.length <= 0) {
             return arkts.factory.createArrayExpression([]);
         }
         const params = monitorItem.map((itemName: string) => {
-            return factory.createSyncMonitorPathsInfoParameter(itemName);
+            return factory.createSyncMonitorPathsInfoParameter(itemName, definition);
         });
         return arkts.factory.createArrayExpression(params);
     }
 
-    static createSyncMonitorPathsInfoParameter(monitorItem: string): arkts.ObjectExpression {
+    static createSyncMonitorPathsInfoParameter(
+        monitorItem: string,
+        definition?: arkts.ClassDefinition
+    ): arkts.ObjectExpression {
         const hasWildcard: boolean = monitorItem.endsWith(MONITOR_WILDCARD_SUFFIX);
         const valueCallbackPath: string = hasWildcard
             ? monitorItem.substring(0, monitorItem.length - MONITOR_WILDCARD_SUFFIX.length)
             : monitorItem;
         const itemNameSplit: string[] = valueCallbackPath.split('.');
-        let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
-        if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
-            monitorVariable = this.generateMonitorVariable(itemNameSplit);
+        const propertyPathResult = definition ?
+            factory.findUnionTypesInPropertyPath(definition, monitorItem, hasWildcard) : undefined;
+        let blocks: arkts.Statement[] = [];
+        if (propertyPathResult === undefined) {
+            let monitorVariable: arkts.Expression = arkts.factory.createUndefinedLiteral();
+            if (itemNameSplit.length > 0 && itemNameSplit[0] !== '') {
+                monitorVariable = this.generateMonitorVariable(itemNameSplit);
+            }
+            blocks.push(arkts.factory.createReturnStatement(monitorVariable));
+        } else {
+            blocks.push(...factory.generateUnionTypePathBlocks(propertyPathResult, itemNameSplit));
         }
         const properties: arkts.Property[] = [
             arkts.factory.createProperty(
@@ -1225,7 +1373,7 @@ export class factory {
             arkts.factory.createArrowFunctionExpression(
                 UIFactory.createScriptFunction({
                     flags: arkts.Es2pandaScriptFunctionFlags.SCRIPT_FUNCTION_FLAGS_ARROW,
-                    body: arkts.factory.createBlockStatement([arkts.factory.createReturnStatement(monitorVariable)]),
+                    body: arkts.factory.createBlockStatement(blocks),
                     returnTypeAnnotation: UIFactory.createTypeReferenceFromString(TypeNames.ANY),
                 })
             ),

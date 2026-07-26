@@ -49,6 +49,12 @@ def run_cmd(cmd, execution_ath=None):
         raise Exception(stderr.decode())
 
 
+def remove_unexpected_files(node_modules_path):
+    coveralls_file = os.path.join(node_modules_path, 'reusify', '.coveralls.yml')
+    if os.path.exists(coveralls_file):
+        os.remove(coveralls_file)
+
+
 def run(args):
     tsc_path = args[0]
     arkguard_path = args[1]
@@ -59,6 +65,7 @@ def run(args):
     extract(tsc_path, node_modules_path, 'typescript', current_os)
     extract(arkguard_path, node_modules_path, 'arkguard', current_os)
     extract(declgen_path, node_modules_path, 'declgen', current_os)
+    remove_unexpected_files(node_modules_path)
 
 if __name__ == "__main__":
     run(sys.argv[1:])

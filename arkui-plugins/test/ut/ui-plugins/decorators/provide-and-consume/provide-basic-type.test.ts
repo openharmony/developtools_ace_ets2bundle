@@ -102,40 +102,23 @@ function main() {}
   public __updateStruct(initializers: (__Options_PropParent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_PropParent | undefined)): void {
-    this.__backing_provideVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar1)})) ?? ("propVar1")) as string));
-    this.__backing_provideVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar2)})) ?? (50)) as number));
-    this.__backing_provideVar3!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar3)})) ?? (true)) as boolean));
-    this.__backing_provideVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar4)})) ?? (undefined)));
-    this.__backing_provideVar5!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar5)})) ?? (null)));
-    this.__backing_provideVar6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar6)})) ?? ("hello")) as (string | undefined)));
-    this.__backing_provideVar7!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar7)})) ?? (null)));
-    this.__backing_provideVar8!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar8)})) ?? (10)) as number));
-    this.__backing_provideVar9!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar9)})) ?? ("hello")) as (string | undefined)));
-    this.__backing_provideVar10!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar10)})) ?? (10)) as number));
-    this.__backing_provideVar11!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar11)})) ?? (undefined)));
-    this.__backing_provideVar12!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar12)})) ?? (15)) as number));
-    this.__backing_provideVar13!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar13)})) ?? ("prop13")) as (string | undefined)));
-    this.__backing_provideVar14!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar14)})) ?? (false)) as (boolean | undefined)));
-    this.__backing_provideVar15!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar15)})) ?? (undefined)));
-    this.__backing_provideVar16!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar16)})) ?? (20)) as (number | undefined)));
-    this.__backing_provideVar17!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar17)})) ?? (true)) as (boolean | undefined)));
+    this.__backing_provideVar1!.resetOnReuse("propVar1");
+    this.__backing_provideVar2!.resetOnReuse(50);
+    this.__backing_provideVar3!.resetOnReuse(true);
+    this.__backing_provideVar4!.resetOnReuse(undefined);
+    this.__backing_provideVar5!.resetOnReuse(null);
+    this.__backing_provideVar6!.resetOnReuse("hello");
+    this.__backing_provideVar7!.resetOnReuse(null);
+    this.__backing_provideVar8!.resetOnReuse(10);
+    this.__backing_provideVar9!.resetOnReuse("hello");
+    this.__backing_provideVar10!.resetOnReuse(10);
+    this.__backing_provideVar11!.resetOnReuse(undefined);
+    this.__backing_provideVar12!.resetOnReuse(15);
+    this.__backing_provideVar13!.resetOnReuse("prop13");
+    this.__backing_provideVar14!.resetOnReuse(false);
+    this.__backing_provideVar15!.resetOnReuse(undefined);
+    this.__backing_provideVar16!.resetOnReuse(20);
+    this.__backing_provideVar17!.resetOnReuse(true);
   }
 
   @MemoIntrinsic() 

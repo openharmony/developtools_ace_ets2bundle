@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 
 def get_compiler_name(os_name, cpu_name):
@@ -87,6 +88,10 @@ def copy_output(options):
         libes2panda_path = "libarkts/libes2panda_lib.node"
     copy_files(os.path.join(from_path, libes2panda_path),
                os.path.join(to_path, 'build/native/build/es2panda.node'), True)
+
+    # Update output path timestamp for incremental build
+    current_time = time.time()
+    os.utime(to_path, (current_time, current_time))
 
 
 def parse_args():

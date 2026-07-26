@@ -23,7 +23,7 @@ function dumpAnnotations(annotations: string[]): string {
     if (annotations.length === 0) {
         return '';
     }
-    return annotations.join(' \n') + ' \n';
+    return annotations.join('\n') + '\n';
 }
 
 function dumpGetterSetter(
@@ -65,7 +65,7 @@ function stringifyWithoutKeyQuotes(obj: Record<string, unknown>): string {
 
 function dumpAnnotation(annotationName: string, properties: Record<string, unknown> = {}): string {
     const propertyStr: string = Object.keys(properties).length > 0 ? stringifyWithoutKeyQuotes(properties) : '';
-    return `@${annotationName}(${propertyStr})`;
+    return `@${annotationName}(${propertyStr}) `;
 }
 
 function ignoreNewLines(dumpStr: string): string {

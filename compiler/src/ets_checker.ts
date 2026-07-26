@@ -110,24 +110,10 @@ import {
 } from './hvigor_error_code/hvigor_error_info';
 import { ErrorCodeModule } from './hvigor_error_code/const/error_code_module';
 import { buildErrorInfoFromDiagnostic } from './hvigor_error_code/utils';
+import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
 import { ATOMICSERVICE_BUNDLE_TYPE } from './fast_build/system_api/api_check_define';
 import { sdkBuildErrorInfoFromDiagnostic } from './fast_build/system_api/api_check_utils';
 import { DIAGNOSTIC_SDK_CODE_MAP, SdkHvigorErrorInfo } from './fast_build/system_api/api_check_define';
-import { concatenateEtsOptions, getExternalComponentPaths } from './external_component_map';
-import {
-  getArkTSEvoDeclFilePath,
-  queryDeclFileForInterop,
-} from './fast_build/ark_compiler/interop/process_arkts_evolution';
-import {
-  FileManager,
-  getApiPathForInterop,
-  isMixCompile
-} from './fast_build/ark_compiler/interop/interop_manager';
-import {
-  ARKTS_1_1,
-  ARKTS_1_2
-} from './fast_build/ark_compiler/interop/pre_define';
-import { DeclFileItem } from './fast_build/ark_compiler/interop/type';
 
 export interface LanguageServiceCache {
   service?: ts.LanguageService;
@@ -214,9 +200,6 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
       allPath.push('../*');
     }
   }
-  if (isMixCompile()) {
-    compilerOptions.preserveValueImports = true;
-  }
   const suffix: string = projectConfig?.hotReload ? HOT_RELOAD_BUILD_INFO_SUFFIX :
     `${TS_BUILD_INFO_SUFFIX}${projectConfig?.widgetCompile === 'true' ? '_widget' : ''}`;
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', suffix);
@@ -251,8 +234,8 @@ function setCompilerOptions(resolveModulePaths: string[]): void {
     'skipPathsInKeyForCompilationSettings': reuseLanguageServiceForDepChange,
     'skipBaseUrlInKeyForCompilationSettings': shareDocumentRegistryCache,
     'compatibleSdkVersionStage': projectConfig.compatibleSdkVersionStage,
-    'compileSdkVersion': projectConfig.compileSdkVersion,
     'compatibleSdkVersion': projectConfig.compatibleSdkVersion,
+    'compileSdkVersion': projectConfig.compileSdkVersion,
     'skipOhModulesLint': skipOhModulesLint,
     'enableStrictCheckOHModule': enableStrictCheckOHModule,
     'disableStrictCheckPaths': disableStrictCheckPaths,
@@ -485,10 +468,6 @@ export function createLanguageService(rootFileNames: string[], resolveModulePath
     clearFileCache: function () {
       fileCache.clear();
     },
-    isStaticSourceFile: (fileName: string): boolean => {
-      const languageVersion = FileManager.getInstance().getLanguageVersionByFilePath(fileName);
-      return languageVersion?.languageVersion === ARKTS_1_2;
-    },
     // true: SourceCode; false: ExternalCode, External Code is oh_modules/sdk-api/sdk-components
     isSourceOrExternalCode: rollupShareObject?.projectConfig?.isSourceOrExternalCode,
   };
@@ -518,7 +497,7 @@ function getOrCreateLanguageService(servicesHost: ts.LanguageServiceHost, rootFi
   const currentTargetESVersion: ts.ScriptTarget = compilerOptions.target;
   const currentTypes: string[] | undefined = compilerOptions.types;
   const currentMaxFlowDepth: number | undefined = compilerOptions.maxFlowDepth;
-  const currentAutoLazyImport: boolean = rollupShareObject?.projectConfig?.autoLazyImport;
+  const currentAutoLazyImport: boolean = rollupShareObject?.projectConfig?.autoLazyImport === true;
   const currentAutoLazyFilterInclude: string[] | undefined = Array.isArray(rollupShareObject?.projectConfig?.autoLazyFilter?.include) ?
     rollupShareObject.projectConfig.autoLazyFilter.include : undefined;
   const currentAutoLazyFilterExclude: string[] | undefined = Array.isArray(rollupShareObject?.projectConfig?.autoLazyFilter?.exclude) ?
@@ -1108,7 +1087,7 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
   globalProgram.program.getResolvedTypeReferenceDirectives().forEach(
     (elem: ts.ResolvedTypeReferenceDirective | undefined) => {
       elem && elem.resolvedFileName && resolvedTypeReferenceDirectivesFiles.add(elem.resolvedFileName);
-  });
+    });
 
   const ignoreDiagnosticsRecordInfo = MemoryMonitor.recordStage(MemoryDefine.FILE_TO_IGNORE_DIAGNOSTICS);
   fileToIgnoreDiagnostics = new Set<string>();
@@ -1116,9 +1095,9 @@ export function collectFileToIgnoreDiagnostics(rootFileNames: string[]): void {
     // Previous projects had js libraries that were available through SDK, so need to filter js-file in SDK,
     // like: hypium library
     sourceFile.fileName &&
-    (!isInSDK(sourceFile.fileName) || (/\.(c|m)?js$/).test(sourceFile.fileName)) &&
-    !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
-    fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
+      (!isInSDK(sourceFile.fileName) || (/\.(c|m)?js$/).test(sourceFile.fileName)) &&
+      !resolvedTypeReferenceDirectivesFiles.has(sourceFile.fileName) &&
+      fileToIgnoreDiagnostics.add(toUnixPath(sourceFile.fileName));
   });
 
   fileToThrowDiagnostics.forEach(file => {
@@ -1144,33 +1123,6 @@ interface MessageCollection {
   logMessage: string
 }
 
-function hackInteropDiagnostic(diagnostic: ts.Diagnostic): void {
-  if (isMixCompile() && diagnostic.code === 2307) {
-    const rawMessage: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-    const moduleMatch: RegExpMatchArray | null = rawMessage.match(/Cannot find module '([^']+)'/);
-    if (moduleMatch && interopDeclNotFoundModules.has(moduleMatch[1])) {
-      // Keep the original message as the top-level chain entry and append the hint as next[],
-      // consistent with how tsc chains "did you mean ..." style supplementary messages.
-      const hintChain: ts.DiagnosticMessageChain = {
-        messageText: 'To use static sources in dynamic, please generate interop declarations or use STValue.',
-        category: diagnostic.category,
-        code: diagnostic.code,
-      };
-      if (typeof diagnostic.messageText === 'string') {
-        diagnostic.messageText = {
-          messageText: diagnostic.messageText,
-          category: diagnostic.category,
-          code: diagnostic.code,
-          next: [hintChain],
-        };
-      } else {
-        // Already a chain — append hint to the leaf's next array.
-        diagnostic.messageText.next = [...(diagnostic.messageText.next ?? []), hintChain];
-      }
-    }
-  }
-}
-
 export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModule, errorCodeLogger?: Object | undefined): void {
   if (projectConfig.ignoreWarning) {
     return;
@@ -1186,12 +1138,8 @@ export function printDiagnostic(diagnostic: ts.Diagnostic, flag?: ErrorCodeModul
     isAtomicJsFile(diagnostic.file.fileName) && !matchJSGrammarErrorMessage(diagnostic.messageText)) {
     return;
   }
-
-  // When a module couldn't be resolved because its ArkTS 1.2 declgen output is missing,
-  // append an actionable hint as a sub-chain after the original "Cannot find module" message.
-  hackInteropDiagnostic(diagnostic);  
-
   const message: string = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+
   if (validateError(message)) {
     if (process.env.watchMode !== 'true' && !projectConfig.xtsMode) {
       updateErrorFileCache(diagnostic);
@@ -1475,9 +1423,6 @@ export function resolveTypeReferenceDirectives(typeDirectiveNames: string[] | ts
 
 // resolvedModulesCache records the files and their dependencies of program.
 export const resolvedModulesCache: Map<string, ts.ResolvedModuleFull[]> = new Map();
-// Records module names whose ArkTS 1.2 source file has no corresponding declgen output (.d.ets),
-// used to emit a targeted error in printDiagnostic instead of the generic "Cannot find module" message.
-const interopDeclNotFoundModules: Set<string> = new Set();
 
 export function isOhExport(packageName: string | undefined, resolvedFileName: string | undefined): boolean {
   if (packageName === undefined || resolvedFileName === undefined) {
@@ -1494,11 +1439,8 @@ export function isOhExport(packageName: string | undefined, resolvedFileName: st
   return exportPaths.has(resolvedFileName);
 }
 
-export const declFilesCache: Map<string, DeclFileItem> = new Map();
-
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
-  const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;
   const resolvedModules: ts.ResolvedModuleFull[] = [];
   const cacheFileContent: ts.ResolvedModuleFull[] = resolvedModulesCache.get(path.resolve(containingFile));
   if (![...shouldResolvedFiles].length || shouldResolvedFiles.has(path.resolve(containingFile)) ||
@@ -1519,41 +1461,23 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           } else {
             resolvedModules.push(result.resolvedModule);
           }
-        } else if (isMixCompile() && result.resolvedModule.resolvedFileName && /\.ets$/.test(result.resolvedModule.resolvedFileName)) {
-          const sourceFilePath = result.resolvedModule.resolvedFileName;
-          let moduleItem: ts.ResolvedModuleFull | null | undefined;
-          let cacheItem: DeclFileItem | undefined = declFilesCache.get(sourceFilePath);
-          if (cacheItem) {
-            // hit cache
-            cacheItem.cnt += 1;
-            moduleItem = cacheItem.module;
-          } else {
-            // query sourceFilePath first time
-            let queryResult = queryDeclFileForInterop(sourceFilePath, moduleName, languageVersion, result.resolvedModule, interopDeclNotFoundModules);
-            moduleItem = queryResult;
-            declFilesCache.set(sourceFilePath, {
-              module: moduleItem,
-              cnt: 1
-            });
-          }
-
-          resolvedModules.push(moduleItem);
         } else {
           resolvedModules.push(result.resolvedModule);
         }
       } else if (new RegExp(`^@(${sdkConfigPrefix})\\.`, 'i').test(moduleName.trim())) {
-        const apiPaths = sdkConfigs.flatMap(config => config.apiPath);
-        isMixCompile() && getApiPathForInterop(apiPaths, languageVersion);
-        const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(apiPaths, moduleName, ['.d.ts', '.d.ets']);
-        const modulePath = resolveModuleInfo.modulePath;
-        const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
-        const fullModuleName = moduleName + extension;
-
-        if (systemModules.includes(fullModuleName) && ts.sys.fileExists(modulePath)) {
-          resolvedModules.push(getResolveModule(modulePath, extension));
-        } else if (languageVersion === ARKTS_1_2) {
-          resolvedModules.push(getResolveModule(modulePath, extension));
-        } else {
+        let apiFileExist: boolean = false;
+        for (let i = 0; i < sdkConfigs.length; i++) {
+          const sdkConfig = sdkConfigs[i];
+          const resolveModuleInfo: ResolveModuleInfo = getRealModulePath(sdkConfig.apiPath, moduleName, ['.d.ts', '.d.ets']);
+          const modulePath: string = resolveModuleInfo.modulePath;
+          const isDETS: boolean = resolveModuleInfo.isEts;
+          if (systemModules.includes(moduleName + (isDETS ? '.d.ets' : '.d.ts')) && ts.sys.fileExists(modulePath)) {
+            resolvedModules.push(getResolveModule(modulePath, isDETS ? '.d.ets' : '.d.ts'));
+            apiFileExist = true;
+            break;
+          }
+        }
+        if (!apiFileExist) {
           resolvedModules.push(null);
         }
       } else if (/\.ets$/.test(moduleName) && !/\.d\.ets$/.test(moduleName)) {
@@ -1571,58 +1495,46 @@ export function resolveModuleNames(moduleNames: string[], containingFile: string
           resolvedModules.push(null);
         }
       } else {
-        const aliasConfig = FileManager.getInstance().queryOriginApiName(moduleName, containingFile);
-        if (aliasConfig) {
-          const searchPaths = aliasConfig.isStatic
-            ? Array.from(FileManager.staticSDKDeclPath)
-            : [...new Set(sdkConfigs.flatMap(config => config.apiPath))];
-          const resolveModuleInfo = getRealModulePath(searchPaths, aliasConfig.originalAPIName, ['.d.ts', '.d.ets']);
-          const modulePath = resolveModuleInfo.modulePath;
-          const extension = resolveModuleInfo.isEts ? '.d.ets' : '.d.ts';
-          resolvedModules.push(getResolveModule(modulePath, extension));
+        const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
+        const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
+        const kitModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
+        const kitSystemDETSModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ets');
+        const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
+        const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
+        const fileModulePath: string =
+          path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
+        const DETSModulePath: string = path.resolve(path.dirname(containingFile),
+          /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
+        if (ts.sys.fileExists(modulePath)) {
+          resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(systemDETSModulePath)) {
+          resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
+        } else if (ts.sys.fileExists(kitModulePath)) {
+          resolvedModules.push(getResolveModule(kitModulePath, '.d.ts'));
+        } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
+          resolvedModules.push(getResolveModule(kitSystemDETSModulePath, '.d.ets'));
+        } else if (ts.sys.fileExists(jsModulePath)) {
+          resolvedModules.push(getResolveModule(jsModulePath, '.js'));
+        } else if (ts.sys.fileExists(fileModulePath)) {
+          resolvedModules.push(getResolveModule(fileModulePath, '.js'));
+        } else if (ts.sys.fileExists(DETSModulePath)) {
+          resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
         } else {
-          const modulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ts');
-          const systemDETSModulePath: string = path.resolve(__dirname, '../../../api', moduleName + '.d.ets');
-          const kitModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ts');
-          const kitSystemDETSModulePath: string = path.resolve(__dirname, '../../../kits', moduleName + '.d.ets');
-          const suffix: string = /\.js$/.test(moduleName) ? '' : '.js';
-          const jsModulePath: string = path.resolve(__dirname, '../node_modules', moduleName + suffix);
-          const fileModulePath: string =
-            path.resolve(__dirname, '../node_modules', moduleName + '/index.js');
-          const DETSModulePath: string = path.resolve(path.dirname(containingFile),
-            /\.d\.ets$/.test(moduleName) ? moduleName : moduleName + EXTNAME_D_ETS);
-          const arktsEvoDeclFilePath: string = isMixCompile() ?
-            getArkTSEvoDeclFilePath({ moduleRequest: moduleName, resolvedFileName: '' }) : '';
-          if (ts.sys.fileExists(modulePath)) {
-            resolvedModules.push(getResolveModule(modulePath, '.d.ts'));
-          } else if (ts.sys.fileExists(systemDETSModulePath)) {
-            resolvedModules.push(getResolveModule(systemDETSModulePath, '.d.ets'));
-          } else if (ts.sys.fileExists(kitModulePath)) {
-            resolvedModules.push(getResolveModule(kitModulePath, '.d.ts'));
-          } else if (ts.sys.fileExists(kitSystemDETSModulePath)) {
-            resolvedModules.push(getResolveModule(kitSystemDETSModulePath, '.d.ets'));
-          } else if (ts.sys.fileExists(jsModulePath)) {
-            resolvedModules.push(getResolveModule(jsModulePath, '.js'));
-          } else if (ts.sys.fileExists(fileModulePath)) {
-            resolvedModules.push(getResolveModule(fileModulePath, '.js'));
-          } else if (ts.sys.fileExists(DETSModulePath)) {
-            resolvedModules.push(getResolveModule(DETSModulePath, '.d.ets'));
-          } else if (isMixCompile() && ts.sys.fileExists(arktsEvoDeclFilePath)) {
-            resolvedModules.push(getResolveModule(arktsEvoDeclFilePath, '.d.ets'));
-          } else {
-            const srcIndex: number = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
-            let DETSModulePathFromModule: string;
-            if (srcIndex > 0) {
-              DETSModulePathFromModule = path.resolve(
-                projectConfig.projectPath.substring(0, srcIndex), moduleName + path.sep + 'index' + EXTNAME_D_ETS);
-              if (DETSModulePathFromModule && ts.sys.fileExists(DETSModulePathFromModule)) {
-                resolvedModules.push(getResolveModule(DETSModulePathFromModule, '.d.ets'));
-              } else {
-                resolvedModules.push(null);
-              }
+          let srcIndex: number = 0;
+          if (!!projectConfig.projectPath) {
+            srcIndex = projectConfig.projectPath.indexOf('src' + path.sep + 'main');
+          }
+          let DETSModulePathFromModule: string;
+          if (srcIndex > 0) {
+            DETSModulePathFromModule = path.resolve(
+              projectConfig.projectPath.substring(0, srcIndex), moduleName + path.sep + 'index' + EXTNAME_D_ETS);
+            if (DETSModulePathFromModule && ts.sys.fileExists(DETSModulePathFromModule)) {
+              resolvedModules.push(getResolveModule(DETSModulePathFromModule, '.d.ets'));
             } else {
               resolvedModules.push(null);
             }
+          } else {
+            resolvedModules.push(null);
           }
         }
       }
@@ -1699,7 +1611,7 @@ export function createWatchCompilerHost(rootFileNames: string[],
   }
   // Change the buildInfo file path, or it will cover the buildInfo file created before.
   const buildInfoPath: string = path.resolve(projectConfig.cachePath, '..', WATCH_COMPILER_BUILD_INFO_SUFFIX);
-  const watchCompilerOptions = {...compilerOptions, tsBuildInfoFile: buildInfoPath};
+  const watchCompilerOptions = { ...compilerOptions, tsBuildInfoFile: buildInfoPath };
   const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
   const host = ts.createWatchCompilerHost(
     [...rootFileNames, ...readDeaclareFiles()], watchCompilerOptions,
@@ -2289,8 +2201,6 @@ export function resetEtsCheck(): void {
   checkerResult.count = 0;
   warnCheckerResult.count = 0;
   resolvedModulesCache.clear();
-  interopDeclNotFoundModules.clear();
-  declFilesCache.clear();
   dollarCollection.clear();
   extendCollection.clear();
   newExtendCollection.clear();

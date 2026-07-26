@@ -1,0 +1,46 @@
+{
+  "bin": {
+    "arktscgen": "cli.cjs"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "## Description",
+  "devDependencies": {
+    "@idlizer/core": "2.2.2+devel",
+    "@idlizer/rimraf": "2.2.2+devel",
+    "@types/json5": "^2.2.0",
+    "@types/node": "^18.19.127",
+    "commander": "^10.0.0",
+    "esbuild": "^0.27.3",
+    "json5": "^2.2.3",
+    "typescript": "^4.9.5"
+  },
+  "exports": {
+    ".": "./cli.cjs",
+    "./package.json": "./package.json"
+  },
+  "keywords": [],
+  "license": "Apache-2.0",
+  "main": "cli.cjs",
+  "name": "@idlizer/arktscgen",
+  "scripts": {
+    "all": "npm run compile && npm run external:download && npm run external:clean && npm run external:generate && npm run external:test",
+    "bundle": "esbuild src/main.ts --bundle --outfile=lib/cli.cjs --platform=node --target=es2017 --format=cjs --sourcemap --log-override:empty-import-meta=silent && chmod +x lib/cli.cjs",
+    "clean": "rimraf lib build",
+    "compile": "npm run compile:core && npm run compile:self && npm run bundle",
+    "compile:core": "npm run --prefix ../core compile",
+    "compile:self": "tsc -b .",
+    "external:clean": "rimraf ../external/koala_projects/libarkts/generated",
+    "external:download": "npm run download:koala_projects -C ../external",
+    "external:generate": "npm run compile && node . --panda-sdk-path ../external/koala_projects/incremental/tools/panda/node_modules/@panda/sdk/ --output-dir ../external/koala_projects/ui2abc/ --options-file ../external/koala_projects/libarkts/generator/options.json5 --debug --no-initialize",
+    "external:test": "npm run --prefix ../external/koala_projects/libarkts run:current",
+    "prepack": "npm run compile",
+    "release:major": "npm run external:download && node ./tools/main.mjs release major",
+    "release:minor": "npm run external:download && node ./tools/main.mjs release minor",
+    "release:patch": "npm run external:download && node ./tools/main.mjs release patch",
+    "test:all": "npm run all && npm run test:pack",
+    "test:pack": "node ./tools/main.mjs test-pack"
+  },
+  "type": "module",
+  "version": "2.2.2-arktscgen-2"
+}

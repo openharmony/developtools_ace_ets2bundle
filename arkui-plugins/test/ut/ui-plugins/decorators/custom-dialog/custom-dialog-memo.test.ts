@@ -108,8 +108,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
+    this.__backing_controller!.resetOnReuse(({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() (() => {
         customDialogExample._invoke((() => {
@@ -127,7 +126,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___<some_random_number> as CustomDialogController)}))) as (CustomDialogController | null)));
+    (gensym___<some_random_number> as CustomDialogController)}));
   }
   
   @MemoIntrinsic() 
@@ -348,8 +347,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
   public __updateStruct(initializers: (__Options_MyStateSample | undefined)): void {}
   
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {
-    this.__backing_controller!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.controller)})) ?? (({let gensym___<some_random_number>: Any;
+    this.__backing_controller!.resetOnReuse(({let gensym___<some_random_number>: Any;
     gensym___203542966 = new CustomDialogController({
       builder: @Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type) => {
         const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (137225318)), 0);
@@ -376,7 +374,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
       },
       baseComponent: this,
     })
-    (gensym___<some_random_number> as CustomDialogController)}))) as (CustomDialogController | null)));
+    (gensym___<some_random_number> as CustomDialogController)}));
   }
   
   @MemoIntrinsic() 

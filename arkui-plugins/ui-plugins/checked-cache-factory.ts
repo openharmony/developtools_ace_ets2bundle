@@ -101,7 +101,7 @@ import {
     classifyPropertyInInnerClassFromInfo,
 } from './property-translators';
 import { getPropertyRewriteKey, PropertyRewriteCache } from './property-translators/cache/propertyRewriteCache';
-import { generateBuilderCompatible, insertCompatibleImport } from './interop/builder-interop';
+import { generateBuilderCompatible, insertCompatibleImport, isFromBuilder1_1 } from './interop/builder-interop';
 import { insertInteropComponentImports } from './interop/utils';
 import { generateArkUICompatible } from './interop/interop';
 import { InsightIntentHandler } from './insight-intent/insight-intent-handler';
@@ -569,6 +569,13 @@ export class RewriteFactory {
             return _node;
         }
         const _metadata = metadata as PropertyRecordInfo;
+        if (_metadata?.isDeclFromLegacy) {
+            const value = _node.value;
+            if (arkts.isIdentifier(value) && isFromBuilder1_1(arkts.getDecl(value))) {
+                insertCompatibleImport();
+                return generateBuilderCompatible(_node, value.name) as arkts.Property;
+            }
+        }
         if (checkIsBuilderFromInfo(_metadata)) {
             return BuilderFactory.rewriteBuilderProperty(_node);
         }

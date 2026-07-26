@@ -179,46 +179,26 @@ final class PropType extends BaseEnum<int> {
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_provideVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar1)})) ?? (new Per(6))) as Per));
-    this.__backing_provideVar2!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar2)})) ?? (new Array<number>(3, 6, 8))) as Array<number>));
-    this.__backing_provideVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar3)})) ?? (PropType.TYPE3)));
-    this.__backing_provideVar4!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar4)})) ?? (new Set<string>(new Array<string>("aa", "bb")))) as Set<string>));
-    this.__backing_provideVar5!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar5)})) ?? ([true, false])) as Array<boolean>));
-    this.__backing_provideVar6!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar6)})) ?? (new Array<Per>(new Per(7), new Per(11)))) as Array<Per>));
-    this.__backing_provideVar7!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar7)})) ?? ([new Per(7), new Per(11)])) as Array<Per>));
-    this.__backing_provideVar8!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar8)})) ?? (((sr: string) => {}))) as ((sr: string)=> void)));
-    this.__backing_provideVar9!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar9)})) ?? (new Date("2025-4-23"))) as Date));
-    this.__backing_provideVar10!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar10)})) ?? (new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]))) as Map<number, Per>));
-    this.__backing_provideVar11!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar11)})) ?? (0.0)) as (string | number)));
-    this.__backing_provideVar12!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar12)})) ?? (new Per(6))) as (Set<string> | Per)));
-    this.__backing_provideVar13!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar13)})) ?? (new Array<string>("1", "1", "2"))) as (Array<string> | undefined)));
-    this.__backing_provideVar14!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar14)})) ?? (new Per(6))) as (Set<string> | Per)));
-    this.__backing_provideVar15!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar15)})) ?? (new Date("2026-02-09"))) as Date));
-    this.__backing_provideVar16!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar16)})) ?? (new Set<string>(new Array<string>("a", "b", "c")))) as (Set<string> | null)));
-    this.__backing_provideVar17!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar17)})) ?? ([new Per(1), new Per(2)])) as Array<Per>));
-    this.__backing_provideVar18!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar18)})) ?? (new Array<Per>(new Per(3), new Per(4)))) as Array<Per>));
-    this.__backing_provideVar19!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar19)})) ?? (new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]))) as Map<string, Per>));
-    this.__backing_provideVar20!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.provideVar20)})) ?? ([true, false, true, true])) as Array<boolean>));
+    this.__backing_provideVar1!.resetOnReuse(new Per(6));
+    this.__backing_provideVar2!.resetOnReuse(new Array<number>(3, 6, 8));
+    this.__backing_provideVar3!.resetOnReuse(PropType.TYPE3);
+    this.__backing_provideVar4!.resetOnReuse(new Set<string>(new Array<string>("aa", "bb")));
+    this.__backing_provideVar5!.resetOnReuse([true, false]);
+    this.__backing_provideVar6!.resetOnReuse(new Array<Per>(new Per(7), new Per(11)));
+    this.__backing_provideVar7!.resetOnReuse([new Per(7), new Per(11)]);
+    this.__backing_provideVar8!.resetOnReuse(((sr: string) => {}));
+    this.__backing_provideVar9!.resetOnReuse(new Date("2025-4-23"));
+    this.__backing_provideVar10!.resetOnReuse(new Map<number, Per>([[0, new Per(7)], [1, new Per(10)]]));
+    this.__backing_provideVar11!.resetOnReuse(0.0);
+    this.__backing_provideVar12!.resetOnReuse(new Per(6));
+    this.__backing_provideVar13!.resetOnReuse(new Array<string>("1", "1", "2"));
+    this.__backing_provideVar14!.resetOnReuse(new Per(6));
+    this.__backing_provideVar15!.resetOnReuse(new Date("2026-02-09"));
+    this.__backing_provideVar16!.resetOnReuse(new Set<string>(new Array<string>("a", "b", "c")));
+    this.__backing_provideVar17!.resetOnReuse([new Per(1), new Per(2)]);
+    this.__backing_provideVar18!.resetOnReuse(new Array<Per>(new Per(3), new Per(4)));
+    this.__backing_provideVar19!.resetOnReuse(new Map<string, Per>([["1", new Per(1)], ["2", new Per(2)]]));
+    this.__backing_provideVar20!.resetOnReuse([true, false, true, true]);
   }
   @MemoIntrinsic() 
   public static _invoke(style: (@Memo() ((instance: Parent)=> void) | undefined), initializers: ((()=> __Options_Parent) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: ((()=> void) | undefined)): void {

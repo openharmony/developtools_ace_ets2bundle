@@ -901,26 +901,7 @@ export class PropertyPathTreeBuilder {
         const arrayIndex = pathSegments[segmentIndex];
 
         // Use the unified resolution logic that handles ObservedArray correctly
-        let elementTypes: arkts.TypeNode[];
-        let isExtendedArray = false;
-
-        // First, check if it's a direct ObservedArray<T> type reference
-        const observedArrayElementTypes = PropertyPathTreeBuilder.extractElementTypesFromObservedArray(type);
-        if (observedArrayElementTypes.length > 0) {
-            elementTypes = observedArrayElementTypes;
-            // ObservedArray is treated like an extended array for tracking purposes
-            isExtendedArray = true;
-        } else {
-            // Check if it's a direct array type (T[] or Array<T>)
-            const directResolver = arkts.ArrayTypeResolver.resolve(type);
-            if (directResolver) {
-                elementTypes = directResolver.resolvedElementTypes;
-            } else {
-                // Not a direct array type - check if it's a class extending Array/ObservedArray
-                elementTypes = getArrayElementTypesFromExtendingClass(type);
-                isExtendedArray = elementTypes.length > 0;
-            }
-        }
+        const { elementTypes, isExtendedArray } = this.resolveElementTypes(type);
 
         // Mark the result as "possibly resolved" if we used an extended Array type
         if (isExtendedArray) {
@@ -975,24 +956,50 @@ export class PropertyPathTreeBuilder {
         // create placeholder nodes with null types for remaining segments
         // This allows the path to be marked as fullyResolved even when types can't be resolved
         if (isExtendedArray && node.branchCount > 0 && !isLastSegment) {
-            // Check if any branch can continue - if not, add placeholder branches
-            let canContinue = false;
-            for (const branch of node.branches) {
-                if (!branch.isTerminal && branch.next) {
-                    canContinue = true;
-                    break;
-                }
-            }
-
-            if (!canContinue) {
-                // Create a placeholder branch with null type that continues with placeholder nodes
-                const placeholderBranch = new TypePathBranch(null, null, false);
-                placeholderBranch.setNext(this.createPlaceholderNodes(pathSegments, segmentIndex + 1));
-                node.addBranch(placeholderBranch);
-            }
+            this.addPlaceholderBranchIfNeeded(node, pathSegments, segmentIndex);
         }
 
         return node;
+    }
+
+    private resolveElementTypes(type: arkts.TypeNode): { elementTypes: arkts.TypeNode[], isExtendedArray: boolean } {
+        const observedArrayElementTypes = PropertyPathTreeBuilder.extractElementTypesFromObservedArray(type);
+        // First, check if it's a direct ObservedArray<T> type reference
+        if (observedArrayElementTypes.length > 0) {
+            const elementTypes = observedArrayElementTypes[0] instanceof arkts.ETSUnionType
+                ? [...observedArrayElementTypes[0].types]
+                : observedArrayElementTypes;
+            // ObservedArray is treated like an extended array for tracking purposes
+            return { elementTypes, isExtendedArray: true };
+        }
+        // Check if it's a direct array type (T[] or Array<T>)
+        const directResolver = arkts.ArrayTypeResolver.resolve(type);
+        if (directResolver) {
+            return { elementTypes: directResolver.resolvedElementTypes, isExtendedArray: false };
+        }
+        // Not a direct array type - check if it's a class extending Array/ObservedArray
+        const elementTypes = getArrayElementTypesFromExtendingClass(type);
+        return { elementTypes, isExtendedArray: elementTypes.length > 0 };
+    }
+
+    private addPlaceholderBranchIfNeeded(
+        node: PropertyPathNode,
+        pathSegments: string[],
+        segmentIndex: number
+    ): void {
+        // Check if any branch can continue - if not, add placeholder branches
+        let canContinue = false;
+        for (const branch of node.branches) {
+            if (!branch.isTerminal && branch.next) {
+                canContinue = true;
+                break;
+            }
+        }
+        if (!canContinue) {
+            const placeholderBranch = new TypePathBranch(null, null, false);
+            placeholderBranch.setNext(this.createPlaceholderNodes(pathSegments, segmentIndex + 1));
+            node.addBranch(placeholderBranch);
+        }
     }
 
     /**

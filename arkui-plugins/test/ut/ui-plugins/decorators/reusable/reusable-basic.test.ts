@@ -125,8 +125,7 @@ function main() {}
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
     this.__backing_num!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
     (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num)})) ?? (1)) as number));
-    this.__backing_num1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.num1)})) ?? (2)) as number));
+    this.__backing_num1!.resetOnReuse(2);
   }
 
   @MemoIntrinsic() 

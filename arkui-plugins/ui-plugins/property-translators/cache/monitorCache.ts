@@ -43,13 +43,14 @@ export class MonitorCache {
         this._cache.clear();
     }
 
-    getCachedMonitors(className: string): arkts.Statement[] {
+    getCachedMonitors(className: string, definition?: arkts.ClassDefinition): arkts.Statement[] {
         if (!this._cache.has(className)) {
             return [];
         }
         return Object.entries(this._cache.get(className)!).map((item: [string, MonitorInfo]) => {
             const { monitorItem, originalName, newName, isFromStruct, paramsLength } = item[1];
-            return factory.generateinitAssignment(monitorItem, originalName, newName, isFromStruct, paramsLength);
+            return factory.generateinitAssignment(monitorItem, originalName, newName, isFromStruct, paramsLength,
+                definition);
         });
     }
 

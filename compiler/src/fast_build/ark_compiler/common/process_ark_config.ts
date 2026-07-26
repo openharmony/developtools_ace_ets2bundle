@@ -55,7 +55,6 @@ import { MemoryMonitor } from '../../meomry_monitor/rollup-plugin-memory-monitor
 import { MemoryDefine } from '../../meomry_monitor/memory_define';
 import { initObfLogger, printObfLogger } from './ob_config_resolver';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
-import { filterStaticObfuscationConfig } from '../interop/process_obfuscation_config';
 
 type ArkConfig = {
   arkRootPath: string;
@@ -201,7 +200,6 @@ export function initArkProjectConfig(share: Object): Object {
     const recordInfo = MemoryMonitor.recordStage(MemoryDefine.INIT_ARK_PROJECT_CONFIG);
     MemoryMonitor.stopRecordStage(recordInfo);
     initObfLogger(share);
-    filterStaticObfuscationConfig(projectConfig, printObfLogger);
     arkProjectConfig.getCachedFileInfo = share.getCachedFileInfo;
     initObfuscationConfig(projectConfig, arkProjectConfig, printObfLogger);
     endFilesEvent(EventList.OBFUSCATION_INITIALIZATION, performancePrinter.timeSumPrinter);

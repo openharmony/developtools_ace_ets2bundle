@@ -118,14 +118,10 @@ function main() {}
   public __updateStruct(initializers: (__Options_ComponentV1Struct | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_ComponentV1Struct | undefined)): void {
-    this.__backing_stateVar1!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar1)})) ?? (AEnumStr.A)));
-    this.__backing_stateVar2!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar2)})) ?? (AEnumStr.B)));
-    this.__backing_stateVar3!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar3)})) ?? (AEnumNum.C)));
-    this.__backing_stateVar4!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
-    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.stateVar4)})) ?? (AEnumNum.D)));
+    this.__backing_stateVar1!.resetOnReuse(AEnumStr.A);
+    this.__backing_stateVar2!.resetOnReuse(AEnumStr.B);
+    this.__backing_stateVar3!.resetOnReuse(AEnumNum.C);
+    this.__backing_stateVar4!.resetOnReuse(AEnumNum.D);
     this.__backing_consumeVar1!.resetOnReuse("consumeVar1", undefined, {
       defaultValue: AEnumStr.A,
     });
