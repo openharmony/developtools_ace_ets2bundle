@@ -1042,9 +1042,7 @@ export function configureSyscapInfo(config: SystemConfig): void {
   config.deviceTypes.forEach((deviceType: string) => {
     collectOhSyscapInfos(deviceType, deviceDir, deviceInfoMap);
   });
-  if (config.runtimeOS !== RUNTIME_OS_OH) {
-    collectExternalSyscapInfos(config.externalApiPaths, config.deviceTypes, deviceInfoMap);
-  }
+  collectExternalSyscapInfos(config.externalApiPaths, config.deviceTypes, deviceInfoMap);
   deviceInfoMap.forEach((value: string[]) => {
     syscaps.push(value);
     allSyscaps = allSyscaps.concat(value);
