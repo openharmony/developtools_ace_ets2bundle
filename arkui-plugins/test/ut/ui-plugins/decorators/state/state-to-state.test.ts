@@ -87,7 +87,8 @@ class Per {
   public __updateStruct(initializers: (__Options_Parent | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Parent | undefined)): void {
-    this.__backing_parentVar1!.resetOnReuse(new Per("hello"));
+    this.__backing_parentVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.parentVar1)})) ?? (new Per("hello"))) as Per));
   }
 
   @MemoIntrinsic() 
@@ -145,7 +146,8 @@ class Per {
   public __updateStruct(initializers: (__Options_Child | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_childVar1!.resetOnReuse(new Per("ccc"));
+    this.__backing_childVar1!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.childVar1)})) ?? (new Per("ccc"))) as Per));
   }
 
   @MemoIntrinsic() 
