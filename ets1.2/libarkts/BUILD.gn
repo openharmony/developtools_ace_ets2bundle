@@ -29,9 +29,11 @@ if (!koala_mr.is_rri) {
     script = "gn/command/gen_sdk.py"
 
     _panda_sdk_dir = "$target_out_dir/panda-sdk"
+    _panda_sdk_tgz_file = "$target_out_dir/panda-sdk/panda_sdk.tgz"
     _sdk_dir = "$target_out_dir/sdk"
 
     outputs = [
+      _panda_sdk_tgz_file,
       _sdk_dir,
       _panda_sdk_dir
     ]
