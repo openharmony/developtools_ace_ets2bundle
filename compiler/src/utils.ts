@@ -23,7 +23,8 @@ import { fileInfoCache } from './file_info_cache';
 import {
   partialUpdateConfig,
   projectConfig,
-  globalProgram
+  globalProgram,
+  isInitialRender
 } from '../main';
 import { createHash } from 'crypto';
 import type { Hash } from 'crypto';
@@ -1577,4 +1578,19 @@ export function isArrayEqualIgnoreOrder<T extends string | number>(
   const sortA = [...a].sort();
   const sortB = [...b].sort();
   return sortA.every((v, i) => v === sortB[i]);
+}
+
+export const hasInitialRenderCondition = (): boolean => {
+  return isCompatibleVersionOverTarget(26) && (isInitialRender?.reuse === true);
+};
+
+function isCompatibleVersionOverTarget(apiNum: number): boolean {
+  const COMPATIBLE_SDK_VERSION: number = apiNum;
+  if (projectConfig &&
+    projectConfig.compatibleSdkVersion &&
+    projectConfig.compatibleSdkVersion >= COMPATIBLE_SDK_VERSION
+  ) {
+    return true;
+  }
+  return false;
 }

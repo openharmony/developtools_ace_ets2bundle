@@ -177,6 +177,7 @@ function loadEntryObj(projectConfig) {
     setAbilityPages(projectConfig);
     setStageTestRunnerFile(projectConfig);
     loadNavigationConfig(aceBuildJson);
+    readModuleInitialRender();
   }
 
   if (staticPreviewPage) {
@@ -251,6 +252,23 @@ function setStartupPagesForObf(projectConfig) {
         setEntryArrayForObf(task.srcEntry);
       }
     });
+  }
+}
+
+const isInitialRender = {
+  reuse: false,
+};
+
+function readModuleInitialRender() {
+  const moduleJson = readJsonFile(projectConfig.aceModuleJsonPath);
+  if (moduleJson && moduleJson.module && moduleJson.module.metadata && projectConfig.moduleName) {
+    const item = moduleJson.module.metadata.find((item) => {
+      return item.name === `@Ohos__ArkUI__ToolChain__Internal__ReuseAttribute__${projectConfig.moduleName}`;
+    });
+    if (!item) {
+      return;
+    }
+    item.value === 'true' && (isInitialRender.reuse = true);
   }
 }
 
@@ -1305,6 +1323,7 @@ function resetMain() {
   externalApiCheckerMap = new Map();
   crossplatformDepsConfig = new Map();
   crossplatformExternalModule = new Map();
+  isInitialRender.reuse = false;
 }
 
 function resetAbilityConfig() {
@@ -1407,3 +1426,4 @@ exports.suppressWarningsCheckPlugin = suppressWarningsCheckPlugin;
 exports.externalApiCheckerMap = externalApiCheckerMap;
 exports.crossplatformDepsConfig = crossplatformDepsConfig;
 exports.crossplatformExternalModule = crossplatformExternalModule;
+exports.isInitialRender = isInitialRender;
