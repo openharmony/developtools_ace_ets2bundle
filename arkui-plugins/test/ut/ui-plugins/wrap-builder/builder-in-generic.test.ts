@@ -95,7 +95,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
   }
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_message!.resetOnReuse("Hello World");
+    this.__backing_message!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")) as string));
   }
 
   @MemoIntrinsic() 
@@ -259,7 +260,8 @@ __EntryWrapper.RegisterNamedRouter(\"\", new __EntryWrapper(), ({
     }
     public __updateStruct(initializers: (__Options_Index | undefined)): void {}
     public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-      this.__backing_message!.resetOnReuse("Hello World");
+      this.__backing_message!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+      (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? ("Hello World")) as string));
     }
 
     @MemoIntrinsic() 

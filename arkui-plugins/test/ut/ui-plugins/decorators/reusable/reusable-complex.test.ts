@@ -107,7 +107,8 @@ class Message {
   public __updateStruct(initializers: (__Options_Index | undefined)): void {}
 
   public resetStateVarsOnReuse(initializers: (__Options_Index | undefined)): void {
-    this.__backing_display!.resetOnReuse(true);
+    this.__backing_display!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.display)})) ?? (true)) as boolean));
   }
 
   @MemoIntrinsic() 
@@ -190,7 +191,8 @@ class Message {
   }
 
   public resetStateVarsOnReuse(initializers: (__Options_Child | undefined)): void {
-    this.__backing_message!.resetOnReuse(new Message("AboutToReuse"));
+    this.__backing_message!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.message)})) ?? (new Message("AboutToReuse"))) as Message));
   }
 
   @MemoIntrinsic() 

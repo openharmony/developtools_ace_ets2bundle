@@ -1345,18 +1345,27 @@ class EnvironmentCallbackEntry implements EnvironmentCallback {
     this.__backing_minFontScale!.resetOnReuse((initializers!.minFontScale as (number | Resource | undefined)));
     this.__backing_chipPadding!.resetOnReuse((initializers!.chipPadding as (LocalizedPadding | undefined)));
     this.__backing_chipFontSize!.resetOnReuse((initializers!.chipFontSize as (Dimension | undefined)));
-    this.__backing_isChipExist!.resetOnReuse(true);
-    this.__backing_chipScale!.resetOnReuse(({
+    this.__backing_isChipExist!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.isChipExist)})) ?? (true)) as boolean));
+    this.__backing_chipScale!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.chipScale)})) ?? (({
       x: 1,
       y: 1,
-    } as ScaleOptions));
-    this.__backing_chipOpacity!.resetOnReuse(1);
-    this.__backing_suffixSymbolHeight!.resetOnReuse(0);
-    this.__backing_suffixSymbolWidth!.resetOnReuse(0);
-    this.__backing_breakPoint!.resetOnReuse(BreakPointsType.SM);
-    this.__backing_fontSizeScale!.resetOnReuse(1);
-    this.__backing_useAdaptiveLineHeight!.resetOnReuse(false);
-    this.__backing_chipNodeInFocus!.resetOnReuse(false);
+    } as ScaleOptions))));
+    this.__backing_chipOpacity!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.chipOpacity)})) ?? (1)) as number));
+    this.__backing_suffixSymbolHeight!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.suffixSymbolHeight)})) ?? (0)) as number));
+    this.__backing_suffixSymbolWidth!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.suffixSymbolWidth)})) ?? (0)) as number));
+    this.__backing_breakPoint!.resetOnReuse(((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.breakPoint)})) ?? (BreakPointsType.SM)));
+    this.__backing_fontSizeScale!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.fontSizeScale)})) ?? (1)) as number));
+    this.__backing_useAdaptiveLineHeight!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.useAdaptiveLineHeight)})) ?? (false)) as boolean));
+    this.__backing_chipNodeInFocus!.resetOnReuse((((({let gensym___<some_random_number> = initializers;
+    (((gensym___<some_random_number>) == (null)) ? undefined : gensym___<some_random_number>.chipNodeInFocus)})) ?? (false)) as boolean));
   }
 
   ${dumpAnnotation('MemoIntrinsic')}
