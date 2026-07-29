@@ -1048,7 +1048,7 @@ function containFormError(message: string): boolean {
 }
 
 function matchJSGrammarErrorMessage(message: string): boolean {
-  const regex = /^'.*?' can't support atomicservice application\.$/;
+  const regex = /'.*?' can't support atomicservice application\./;
   return regex.test(message);
 }
 
