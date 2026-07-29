@@ -752,8 +752,6 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     // 'ListItem',
     // 'ListItemGroup',
     // 'FlowItem',
-    'LazyVColumn',
-    'LazyVWaterflow',
     // 'Refresh',
     // 'Scroll',
     // 'ScrollBar',
@@ -795,5 +793,8 @@ export const INNER_COMPONENT_NON_SKIP_DECL_NAMES: string[] = [
     'Screen',
     'SecurityUIExtensionComponent',
     'WindowScene',
-    'Web'
+    'Web',
+    // 'LazyColumnLayout',
+    // 'LazyVWaterFlowLayout',
+    // 'LazyDynamicLayout'
 ]
