@@ -28,6 +28,11 @@ interface LegacyTransformerOptions extends VisitorOptions {
     structList?: string[];
 }
 
+type ComponentMemberInfo = {
+    type: arkts.TypeNode;
+    annotations: readonly arkts.AnnotationUsage[];
+};
+
 type ScopeInfo = {
     name: string;
     isDecl: boolean;
@@ -73,17 +78,18 @@ export class LegacyTransformer extends AbstractVisitor {
         );
     }
 
-    generateMember(map: Map<string, arkts.TypeNode>): arkts.ClassProperty[] {
+    generateMember(map: Map<string, ComponentMemberInfo>): arkts.ClassProperty[] {
         const properties: arkts.ClassProperty[] = [];
 
         map.forEach((value, key) => {
             const property = arkts.factory.createClassProperty(
                 arkts.factory.createIdentifier(key),
                 undefined,
-                value,
+                value.type,
                 arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_PUBLIC | arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_OPTIONAL,
                 false
             );
+            property.setAnnotations(value.annotations);
 
             properties.push(property);
         });
@@ -94,7 +100,7 @@ export class LegacyTransformer extends AbstractVisitor {
     generateComponentInnerClass(
         name: string,
         modifiers: arkts.Es2pandaModifierFlags,
-        structMembersMap: Map<string, arkts.TypeNode>,
+        structMembersMap: Map<string, ComponentMemberInfo>,
         isDecl?: boolean
     ): arkts.ClassDeclaration {
         const ctor = EntryFactory.generateConstructor(isDecl);
@@ -145,7 +151,7 @@ export class LegacyTransformer extends AbstractVisitor {
             definition.super,
             [...definition.body, instantiate],
             definition.modifiers,
-            arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_NONE,
+            definition.modifierFlags,
             arkts.Es2pandaLanguage.LANGUAGE_JS,
             definition.annotations
         );
@@ -204,13 +210,15 @@ export class LegacyTransformer extends AbstractVisitor {
         return arkts.factory.updateMethodDefinition(node, node.kind, node.id, scriptExpr, node.modifierFlags, false);
     }
 
-    collectComponentMembers(node: arkts.ETSStructDeclaration, className: string): Map<string, arkts.TypeNode> {
-        const result: Map<string, arkts.TypeNode> = new Map();
+    collectComponentMembers(node: arkts.ETSStructDeclaration, className: string): Map<string, ComponentMemberInfo> {
+        const result: Map<string, ComponentMemberInfo> = new Map();
         node.definition?.body.map((it) => {
             if (arkts.isClassProperty(it)) {
                 const name = (it.key as arkts.Identifier).name;
-                const type = it.typeAnnotation!;
-                result.set(name, type);
+                result.set(name, {
+                    type: it.typeAnnotation!,
+                    annotations: it.annotations,
+                });
             }
         });
         return result;
