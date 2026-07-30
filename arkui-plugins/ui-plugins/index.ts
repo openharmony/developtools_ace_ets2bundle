@@ -30,7 +30,7 @@ import { DeclarationCollector } from '../common/declaration-collector';
 import { LogCollector } from '../common/log-collector';
 import { AbstractVisitor } from '../common/abstract-visitor';
 import { Collector } from '../collectors/collector';
-import { getSystemResourcePath } from './utils';
+import { getSystemResourcePath, getExternalSystemResourcePaths } from './utils';
 import { ResourceSourceCache } from './insight-intent/resource-source-cache';
 import { NodeCacheFactory } from '../common/node-cache';
 
@@ -85,7 +85,7 @@ function parsedProgramVisit(
         debugLog('[CANT SKIP PHASE] phase: ui-parsed, moduleName: ', program.moduleName);
         const projectConfig = context.getProjectConfig();
         const aceBuildJson = loadBuildJson(projectConfig);
-        const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, getSystemResourcePath());
+        const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, getSystemResourcePath(), getExternalSystemResourcePaths(projectConfig));
         MetaDataCollector.getInstance()
             .setProjectConfig(projectConfig)
             .setRouterInfo(initRouterInfo(aceBuildJson))
@@ -149,7 +149,7 @@ function checkedProgramVisit(
             projectConfig.ignoreError = true;
         }
         const aceBuildJson = loadBuildJson(projectConfig);
-        const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, getSystemResourcePath());
+        const resourceInfo = initResourceInfo(projectConfig, aceBuildJson, getSystemResourcePath(), getExternalSystemResourcePaths(projectConfig));
         MetaDataCollector.getInstance()
             .setProjectConfig(projectConfig)
             .setRouterInfo(initRouterInfo(aceBuildJson))

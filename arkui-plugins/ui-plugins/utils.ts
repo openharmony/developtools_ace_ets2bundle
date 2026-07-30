@@ -30,6 +30,7 @@ import { MetaDataCollector } from '../common/metadata-collector';
 import { hasDecorator } from './property-translators/utils';
 import { ImportCollector } from '../common/import-collector';
 import { getDeclOriPath } from './interop/utils';
+import { ProjectConfig } from '../common/plugin-context';
 
 export type EntryAnnoInfo = {
     startPosition: arkts.SourcePosition;
@@ -46,6 +47,29 @@ export type LocalImportInfo = {
 
 export function getSystemResourcePath(): string {
     return path.resolve(__dirname, './sysResource.js');
+}
+
+export function getExternalSystemResourcePaths(projectConfig: ProjectConfig | undefined): string[] {
+    if (!projectConfig || !projectConfig.externalApiPaths) {
+        return [];
+    }
+    const candidates = ['sysResource.js', '../../sysResource.js'];
+    const result: string[] = [];
+    const seen = new Set<string>();
+    for (const p of projectConfig.externalApiPaths) {
+        if (typeof p !== 'string' || p.length === 0) {
+            continue;
+        }
+        for (const candidate of candidates) {
+            const fullPath = path.resolve(p, candidate);
+            if (seen.has(fullPath)) {
+                continue;
+            }
+            seen.add(fullPath);
+            result.push(fullPath);
+        }
+    }
+    return result;
 }
 
 // IMPORT

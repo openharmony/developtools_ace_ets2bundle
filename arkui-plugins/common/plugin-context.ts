@@ -145,7 +145,8 @@ export function initRouterInfo(aceBuildJson: Partial<LoaderJson>): Map<string, R
 export function initResourceInfo(
     projectConfig: ProjectConfig | undefined, 
     aceBuildJson: Partial<LoaderJson>,
-    sysResourcePath: string
+    sysResourcePath: string,
+    externalSysResourcePaths: string[] = []
 ): ResourceInfo {
     let resourcesList: ResourceList = {
         app: new Map<string, Record<string, number>>(),
@@ -153,7 +154,7 @@ export function initResourceInfo(
     };
     let rawfile: Set<string> = new Set<string>();
     if (!!projectConfig && !!aceBuildJson) {
-        readAppResource(sysResourcePath, resourcesList, projectConfig, aceBuildJson, rawfile);
+        readAppResource(sysResourcePath, externalSysResourcePaths, resourcesList, projectConfig, aceBuildJson, rawfile);
     }
     return { resourcesList, rawfile };
 }
@@ -168,6 +169,7 @@ export function initResourceInfo(
  */
 function readAppResource(
     sysResourcePath: string,
+    externalSysResourcePaths: string[],
     resourcesList: ResourceList,
     projectConfig: ProjectConfig,
     aceBuildJson: Partial<LoaderJson>,
@@ -176,7 +178,7 @@ function readAppResource(
     if ('hspResourcesMap' in aceBuildJson && aceBuildJson.hspResourcesMap) {
         readHspResource(aceBuildJson, projectConfig, resourcesList);
     }
-    readSystemResource(resourcesList, sysResourcePath);
+    readSystemResource(resourcesList, sysResourcePath, externalSysResourcePaths);
     if (!!projectConfig.appResource && fs.existsSync(projectConfig.appResource)) {
         const appResource: string = fs.readFileSync(projectConfig.appResource, 'utf-8');
         const resourceArr: string[] = appResource.split(/\n/);
@@ -196,12 +198,33 @@ function readAppResource(
  *
  * @param resourcesList resources including app, sys and hsp.
  */
-export function readSystemResource(resourcesList: ResourceList, resourcePath: string): void {
+export function readSystemResource(
+    resourcesList: ResourceList,
+    resourcePath: string,
+    externalResourcePaths: string[] = []
+): void {
     const sysResourcePath = resourcePath;
     if (fs.existsSync(sysResourcePath)) {
         const sysObj: Record<string, Record<string, number>> = require(sysResourcePath).sys;
         Object.keys(sysObj).forEach((key: string) => {
             resourcesList.sys.set(key, sysObj[key]);
+        });
+    }
+    for (const extPath of externalResourcePaths) {
+        if (!fs.existsSync(extPath)) {
+            continue;
+        }
+        let extSysObj: Record<string, Record<string, number>>;
+        try {
+            extSysObj = require(extPath).sys;
+        } catch (e) {
+            console.warn(`Failed to load extension sysResource: ${extPath}`);
+            continue;
+        }
+        Object.entries(extSysObj).forEach(([type, nameToIdMap]) => {
+            if (resourcesList.sys.has(type)) {
+                Object.assign(resourcesList.sys.get(type)!, nameToIdMap);
+            }
         });
     }
 }
