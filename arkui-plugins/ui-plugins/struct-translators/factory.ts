@@ -26,7 +26,7 @@ import {
     isKnownMethodDefinition,
     isStatic,
 } from '../utils';
-import { withAPIVersion, expectName, isETSGlobalClass } from '../../common/arkts-utils';
+import { expectName, isETSGlobalClass } from '../../common/arkts-utils';
 import { factory as UIFactory } from '../ui-factory';
 import { factory as PropertyFactory } from '../property-translators/factory';
 import { factory as BuilderLambdaFactory } from '../builder-lambda-translators/factory';
@@ -93,8 +93,6 @@ import {
     CustomDialogNames,
     ObservedNames,
     APIVersions,
-    APIComparison,
-    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     GlobalReusePoolNames,
 } from '../../common/predefines';
 import { BaseObservedPropertyTranslator } from '../property-translators/index';
@@ -629,7 +627,7 @@ export class factory {
      * add following declared methods in `CommonMethod` interface:
      * - `animationStart` and `animationStop` for `Animation` component;
      * - `__createOrSetAnimatableProperty` for `@AnimatableExtend` function with receiver;
-     * - `applyAttributesFinish` for component's style set options method (deprecated at API 26).
+     * - `applyAttributesFinish` for component's style set options method.
      */
     static modifyExternalComponentCommon(node: arkts.TSInterfaceDeclaration): arkts.TSInterfaceDeclaration {
         if (!node.body) {
@@ -638,25 +636,14 @@ export class factory {
         const animationStart = factory.createAnimationMethod(AnimationNames.ANIMATION_START);
         const animationStop = factory.createAnimationMethod(AnimationNames.ANIMATION_STOP);
         const createOrSetAniProperty = factory.createOrSetAniProperty();
-        let applyAttributesFinish: arkts.AstNode[] = [];
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                const foundDecl = node.body?.body.find((st) => 
-                    arkts.isMethodDefinition(st) && st.id?.name === BuilderLambdaNames.APPLY_ATTRIBUTES_FINISH_METHOD
-                );
-                if (!foundDecl) {
-                    applyAttributesFinish.push(BuilderLambdaFactory.createDeclaredApplyAttributesFinish());
-                }
-            }
-        );
-        const updatedBody = arkts.factory.updateInterfaceBody(node.body!, collect([
-            ...applyAttributesFinish,
+        const applyAttributesFinish = BuilderLambdaFactory.createDeclaredApplyAttributesFinish();
+        const updatedBody = arkts.factory.updateInterfaceBody(node.body!, [
+            applyAttributesFinish,
             animationStart,
             animationStop,
             createOrSetAniProperty,
             ...node.body!.body,
-        ]));
+        ]);
         return arkts.factory.updateInterfaceDeclaration(
             node,
             node.extends,
@@ -1227,30 +1214,24 @@ export class factory {
         if (!node.id || !node.body) {
             return node;
         }
-        let newNode = factory.tranformInterfaceBuildMember(node);
+        const newNode = factory.tranformInterfaceBuildMember(node);
         if (externalSourceName === ARKUI_COMPONENT_COMMON_SOURCE_NAME && newNode.id!.name === 'CommonMethod') {
             return factory.modifyExternalComponentCommon(newNode);
         }
         if (isCustomDialogControllerOptions(node, externalSourceName)) {
             return factory.transformControllerInterfaceType(node);
         }
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                let attributeName: string | undefined;
-                if (
-                    ComponentAttributeCache.getInstance().isCollected() &&
-                    !!(attributeName = findComponentAttributeInInterface(node))
-                ) {
-                    const componentName = attributeName.replace(/Attribute$/, '');
-                    if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
-                        return;
-                    }
-                    newNode = BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
-                }
-            },
-            { ignoreCompare: ComponentAttributeCache.getInstance().isCollected() }
-        );
+        let attributeName: string | undefined;
+        if (
+            ComponentAttributeCache.getInstance().isCollected() &&
+            !!(attributeName = findComponentAttributeInInterface(node))
+        ) {
+            const componentName = attributeName.replace(/Attribute$/, '');
+            if (!ComponentAttributeCache.getInstance().hasComponentName(componentName)) {
+                return newNode;
+            }
+            return BuilderLambdaFactory.addDeclaredSetMethodsInAttributeInterface(newNode, componentName);
+        }
         return newNode;
     }
 
@@ -1302,19 +1283,12 @@ export class factory {
         const existingImplNames: Set<string> = new Set();
         const updatedBody = node.definition.body.map((member: arkts.AstNode) => {
             if (arkts.isMethodDefinition(member)) {
-                const _member = member;
-                PropertyFactory.addMemoToBuilderClassMethod(_member);
-                withAPIVersion(
-                    { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-                    (sdkVersion: APIVersions) => {
-                        const methodName = _member.id?.name;
-                        if (methodName && methodName.endsWith('Impl')) {
-                            const componentName = methodName.slice(0, -'Impl'.length);
-                            existingImplNames.add(componentName);
-                        }
-                    },
-                    { ignoreCompare: ComponentAttributeCache.getInstance().isCollected() }
-                );
+                PropertyFactory.addMemoToBuilderClassMethod(member);
+                const methodName = member.id?.name;
+                if (methodName && methodName.endsWith('Impl')) {
+                    const componentName = methodName.slice(0, -'Impl'.length);
+                    existingImplNames.add(componentName);
+                }
             }
             if (arkts.isMethodDefinition(member) && hasDecorator(member, DecoratorNames.ANIMATABLE_EXTEND)) {
                 member = arkts.factory.updateMethodDefinition(
@@ -1329,24 +1303,12 @@ export class factory {
             }
             return member;
         });
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                if (ComponentAttributeCache.getInstance().isCollected()) {
-                    const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
-                    const names = attributeCache.getAllComponentNames().filter(name => !existingImplNames.has(name));
-                    const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
-                    updatedBody.push(...methods);
-                }
-            },
-            { 
-                ignoreCompare: 
-                    ComponentAttributeCache.getInstance().isCollected() && 
-                    ComponentAttributeCache.getInstance().getAllComponentNames().filter(
-                        name => !existingImplNames.has(name) && INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(name)
-                    ).length > 0
-            }
-        );
+        if (ComponentAttributeCache.getInstance().isCollected()) {
+            const attributeCache: ComponentAttributeCache = ComponentAttributeCache.getInstance();
+            const names = attributeCache.getAllComponentNames().filter(name => !existingImplNames.has(name));
+            const methods = BuilderLambdaFactory.createAllUniqueDeclaredComponentFunctions(names);
+            updatedBody.push(...methods);
+        }
         return arkts.factory.updateClassDeclaration(
             node,
             arkts.factory.updateClassDefinition(

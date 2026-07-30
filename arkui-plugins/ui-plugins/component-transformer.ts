@@ -34,12 +34,11 @@ import {
     filterDefined,
     collect,
     isDecoratorAnnotation,
-    withAPIVersion,
     expectNameInTypeReference,
     isExported,
 } from '../common/arkts-utils';
 import { ProjectConfig } from '../common/plugin-context';
-import { findNavigationModuleInfo, getEntryRouteParam } from './entry-translators/utils';
+import { getEntryRouteParam } from './entry-translators/utils';
 import { factory as EntryFactory } from './entry-translators/factory';
 import { hasDecoratorName, checkIsRequiredPropertyFromAnnotationInfo, collectAnnotationsFromInfo, collectAnnotationForBackingFromInfo } from './property-translators/utils';
 import { factory as UIFactory } from './ui-factory';
@@ -59,7 +58,6 @@ import {
     LogType,
     ReusableOptions,
     APIVersions,
-    APIComparison,
     StateManagementTypes,
     ARKUI_STATE_MANAGEMENT_DECORATOR_SOURCE_NAME,
 } from '../common/predefines';
@@ -204,28 +202,14 @@ export class ComponentTransformer extends AbstractVisitor {
             navInterface.modifierFlags = arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_EXPORT;
             return arkts.factory.updateETSModule(node, [...node.statements, navInterface]);
         }
-        let _newNode: arkts.ETSModule | undefined;
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                if (
-                    this.externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME ||
-                    this.externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME
-                ) {
-                    const statements = node.statements;
-                    const foundDecl = findNavigationModuleInfo(statements, this.externalSourceName);
-                    if (!foundDecl) {
-                        _newNode = arkts.factory.updateETSModule(node, [
-                            ...node.statements,
-                            EntryFactory.createNavigationModuleInfo(this.externalSourceName),
-                        ]);
-                    }
-                }
-            },
-            { ignoreCompare: true }
-        );
-        if (_newNode !== undefined) {
-            return _newNode;
+        if (
+            this.externalSourceName === ARKUI_NAVIGATION_SOURCE_NAME ||
+            this.externalSourceName === ARKUI_NAV_DESTINATION_SOURCE_NAME
+        ) {
+            return arkts.factory.updateETSModule(node, [
+                ...node.statements,
+                EntryFactory.createNavigationModuleInfo(this.externalSourceName),
+            ]);
         }
         if (
             this.isExternal &&
@@ -827,41 +811,12 @@ export class ComponentTransformer extends AbstractVisitor {
                 ) {
                     return this.updateEntryPoint(st);
                 }
-                let _newSt: arkts.Statement | undefined;
-                withAPIVersion(
-                    { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-                    (sdkVersion: APIVersions) => {
-                        if (
-                            arkts.isTSInterfaceDeclaration(st) &&
-                            isCustomDialogControllerOptions(st, this.externalSourceName)
-                        ) {
-                            _newSt = UIFactory.updateCustomDialogOptionsInterface(st);
-                        }
-                    },
-                    { ignoreCompare: true }
-                );
-                if (_newSt !== undefined) {
-                    return _newSt;
+                if (
+                    arkts.isTSInterfaceDeclaration(st) &&
+                    isCustomDialogControllerOptions(st, this.externalSourceName)
+                ) {
+                    return UIFactory.updateCustomDialogOptionsInterface(st);
                 }
-                withAPIVersion(
-                    { version: APIVersions.API_24, compare: APIComparison.GREATER_THAN },
-                    (sdkVersion: APIVersions) => {
-                        if (
-                            arkts.isFunctionDeclaration(st) 
-                                && arkts.hasModifierFlag(st, arkts.Es2pandaModifierFlags.MODIFIER_FLAGS_DECLARE)
-                                && hasDecoratorName(st, DecoratorNames.BUILDER)
-                        ) {
-                            const functionName = st.function!.id?.name;
-                            const returnType = st.function!.returnTypeAnnotation;
-                            const returnTypeName = expectNameInTypeReference(returnType);
-                            if (!!functionName && !!returnTypeName && returnTypeName.name === `${functionName}Attribute`) {
-                                st.function!.setReturnTypeAnnotation(
-                                    arkts.factory.createETSPrimitiveType(arkts.Es2pandaPrimitiveType.PRIMITIVE_TYPE_VOID)
-                                );
-                            }
-                        }
-                    }
-                );
             }
             return st;
         });

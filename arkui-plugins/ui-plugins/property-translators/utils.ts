@@ -106,7 +106,7 @@ export function getGetterReturnType(method: arkts.MethodDefinition): arkts.TypeN
  * regardless where the annotation's declaration is from arkui declaration files.
  */
 export function hasDecoratorName(
-    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition | arkts.FunctionDeclaration,
+    property: arkts.ClassProperty | arkts.ClassDefinition | arkts.MethodDefinition,
     decoratorName: DecoratorNames
 ): boolean {
     if (arkts.isMethodDefinition(property)) {

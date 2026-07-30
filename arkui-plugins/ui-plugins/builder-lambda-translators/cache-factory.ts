@@ -29,10 +29,7 @@ import {
 } from '../../collectors/ui-collectors/utils';
 import {
     AnimationNames,
-    APIComparison,
-    APIVersions,
     BuilderLambdaNames,
-    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     InnerComponentNames,
     NodeCacheNames,
     StateManagementTypes,
@@ -41,7 +38,6 @@ import {
     annotation,
     backingField,
     collect,
-    withAPIVersion,
     filterDefined,
     forEachArgWithParam,
     removeAnnotationByName,
@@ -206,14 +202,7 @@ export class CacheFactory {
                 && checkIsFunctionMethodDeclFromInfo(metadata) 
                 && !checkIsCustomFunctionMethodDeclFromInfo(metadata)
         ) {
-            withAPIVersion(
-                { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-                (sdkVersion: APIVersions) => {
-                    InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
-                },
-                { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(metadata.name!) }
-            );
-            return node;
+            InnerComponentInfoCache.getInstance().collect(metadata.name, metadata.innerComponentInfo);
         }
         const func: arkts.ScriptFunction = node.function;
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, checkIsFunctionMethodDeclFromInfo(metadata));

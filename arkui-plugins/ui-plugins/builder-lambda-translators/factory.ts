@@ -24,7 +24,6 @@ import {
     forEachArgWithParam,
     annotation,
     collect,
-    withAPIVersion,
 } from '../../common/arkts-utils';
 import {
     BuilderLambdaDeclInfo,
@@ -75,9 +74,6 @@ import {
     TypeNames,
     NodeCacheNames,
     BuilderLambdaNames,
-    APIVersions,
-    APIComparison,
-    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
 } from '../../common/predefines';
 import { ImportCollector } from '../../common/import-collector';
 import { GenSymGenerator } from '../../common/gensym-generator';
@@ -415,15 +411,7 @@ export class factory {
         }
         collectComponentAttributeImport(typeNode, moduleName);
         const safeType: arkts.TypeNode | undefined = isSafeType(typeNode) ? typeNode : undefined;
-        let shouldApplyAttribute: boolean = true;
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                shouldApplyAttribute = !!isFromCommonMethod
-            },
-            { ignoreCompare: true }
-        );
-        return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute }, sourceNode);
+        return this.createStyleLambdaArgument(lambdaBody, safeType, { shouldApplyAttribute: isFromCommonMethod }, sourceNode);
     }
 
     /**
@@ -1028,15 +1016,9 @@ export class factory {
         const func: arkts.ScriptFunction = node.function!;
         const isFunctionCall: boolean = isBuilderLambdaFunctionCall(nameNode);
         const isCustomFunctionCall: boolean = isCustomBuilderLambdaFunctionCall(nameNode);
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                if (isFunctionCall && !isCustomFunctionCall) {
-                    ComponentAttributeCache.getInstance().collect(node);
-                }
-            },
-            { ignoreCompare: !!nameNode?.name && INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(nameNode?.name) }
-        )
+        if (isFunctionCall && !isCustomFunctionCall) {
+            ComponentAttributeCache.getInstance().collect(node);
+        }
         const typeNode: arkts.TypeNode | undefined = builderLambdaMethodDeclType(node, isFunctionCall);
         const newNode = this.updateBuilderLambdaMethodDecl(
             node,

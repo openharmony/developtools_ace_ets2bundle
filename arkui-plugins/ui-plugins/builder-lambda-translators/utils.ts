@@ -14,14 +14,13 @@
  */
 
 import * as arkts from '@koalaui/libarkts';
-import { coerceToAstNode, withAPIVersion, expectNameInTypeReference, isAnnotation, isDecoratorAnnotation, matchPrefix } from '../../common/arkts-utils';
+import { coerceToAstNode, expectNameInTypeReference, isAnnotation, isDecoratorAnnotation, matchPrefix } from '../../common/arkts-utils';
 import {
     getValueInObjectAnnotation,
     isCustomComponentAnnotation,
 } from '../utils';
 import { DeclarationCollector } from '../../common/declaration-collector';
 import {
-    APIComparison,
     APIVersions,
     ARKUI_FOREACH_SOURCE_NAME,
     ARKUI_IMPORT_PREFIX_NAMES,
@@ -30,7 +29,6 @@ import {
     BuilderLambdaNames,
     DecoratorNames,
     Dollars,
-    INNER_COMPONENT_NON_SKIP_DECL_NAMES,
     InnerComponentAttributes,
     InnerComponentNames,
     StructDecoratorNames,
@@ -737,15 +735,7 @@ export function builderLambdaFunctionName(node: arkts.CallExpression): string | 
         return undefined;
     }
     if (arkts.isIdentifier(node.callee)) {
-        let _builderLambdaFunctionName: string = node.callee.name;
-        withAPIVersion(
-            { version: APIVersions.API_24, compare: APIComparison.LESS_THAN_OR_EQUAL },
-            (sdkVersion: APIVersions) => {
-                _builderLambdaFunctionName = getTransformedComponentName(_builderLambdaFunctionName);
-            },
-            { ignoreCompare: INNER_COMPONENT_NON_SKIP_DECL_NAMES.includes(_builderLambdaFunctionName) }
-        );
-        return _builderLambdaFunctionName;
+        return getTransformedComponentName(node.callee.name);
     }
     if (
         arkts.isMemberExpression(node.callee) &&
