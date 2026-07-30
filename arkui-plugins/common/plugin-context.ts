@@ -16,6 +16,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as arkts from '@koalaui/libarkts';
+import JSON5 from 'json5';
 import { FileManager } from './file-manager';
 
 // This is the same plugin-context in the build-system.
@@ -106,10 +107,10 @@ export function loadBuildJson(projectConfig: ProjectConfig | undefined): Partial
     if (!!projectConfig && projectConfig.buildLoaderJson && fs.existsSync(projectConfig.buildLoaderJson)) {
         try {
             const content = fs.readFileSync(projectConfig.buildLoaderJson, 'utf-8');
-            const parsedContent = JSON.parse(content);
+            const parsedContent = JSON5.parse(content);
             return parsedContent;
         } catch (error) {
-            throw new Error('Error: The file is not a valid JSON format.');
+            throw new Error('Error: The file is not a valid JSON5 format.');
         }
     }
     return {};

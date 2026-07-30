@@ -92,6 +92,7 @@ def copy_output(options):
         'fast-uri',  # ajv dependency
         'json-schema-traverse',  # ajv dependency
         'require-from-string',  # ajv dependency
+        'json5',  # JSON5 parser used by plugin source
     ]
     copy_runtime_deps(options.source_path, options.output_path, runtime_deps)
 
