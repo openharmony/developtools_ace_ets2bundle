@@ -19,6 +19,7 @@ import sys
 import subprocess
 import shutil
 import tarfile
+from pathlib import Path
 
 
 def extract(package_path, dest_path, package_name, current_os):
@@ -61,11 +62,14 @@ def run(args):
     source_path = args[2]
     current_os = args[3]
     declgen_path = args[4]
+    stamp_path = args[5]
     node_modules_path = os.path.join(source_path, "node_modules")
     extract(tsc_path, node_modules_path, 'typescript', current_os)
     extract(arkguard_path, node_modules_path, 'arkguard', current_os)
     extract(declgen_path, node_modules_path, 'declgen', current_os)
     remove_unexpected_files(node_modules_path)
+    Path(stamp_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(stamp_path).touch()
 
 if __name__ == "__main__":
     run(sys.argv[1:])

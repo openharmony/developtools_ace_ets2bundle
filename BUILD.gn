@@ -419,6 +419,7 @@ action("install_arkguard_tsc_declgen") {
     current_os,
     rebase_path(
         "${root_out_dir}/obj/arkcompiler/runtime_core/static_core/plugins/ets/tools/declgen_ts2sts/panda-declgen-1.0.0.tgz"),
+    rebase_path("${target_out_dir}/${target_name}.stamp", root_build_dir),
   ]
   outputs = [ "${target_out_dir}/${target_name}.stamp" ]
 }
