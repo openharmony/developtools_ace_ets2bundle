@@ -16,6 +16,7 @@
 import * as arkts from '@koalaui/libarkts';
 import * as fs from 'fs';
 import * as path from 'path';
+import JSON5 from 'json5';
 import { DeclarationCollector } from './declaration-collector';
 import {
     APPLICATION_MAIN_BASE_RESOURCE_PATH,
@@ -306,7 +307,7 @@ export function readJSON<T>(path: string): T | null {
     if (!content) {
         return null;
     }
-    return JSON.parse(content) as T;
+    return JSON5.parse(content) as T;
 }
 
 const EXTERNAL_COMPONENT_PATH_EDIT    = 'build-tools/ets-loader/components';
@@ -348,7 +349,7 @@ function extractComponentInfo(componentsInfo: UIComponents, componentPath: strin
             const fileContent = fs.readFileSync(filePath, 'utf-8');
             let componentJson: ComponentJson;
             try {
-                componentJson = JSON.parse(fileContent);
+                componentJson = JSON5.parse(fileContent);
             } catch (error) {
                 console.error(`Invalid JSON: ${filePath}`, (error as Error).message);
                 return;
