@@ -179,5 +179,15 @@ export const ARKUI_DECLARE_LIST: Set<string> = new Set([
   'DistortionComponent',
   'Monitor',
   'IMonitor',
-  'PixelMap'
+  'PixelMap',
+  'AppStorage',
+  'LocalStorage',
+  'PersistentStorage',
+  'Environment',
+  'SubscribedAbstractProperty',
+  'AbstractProperty',
+  'PersistPropsOptions',
+  'EnvPropsOptions',
+  'IMonitorValue',
+  'SyncMonitor'
 ]);
