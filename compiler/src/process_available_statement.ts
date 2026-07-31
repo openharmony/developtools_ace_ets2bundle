@@ -353,7 +353,7 @@ export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
   const postMatch = isOH ?
     '!!(t = t.match(/' + regexOH + '/)) && ((r = Number(t[1])), (s = Number(t[2])), (t = Number(t[3])),' +
     ' e.distributionOSApiVersion >= 1e4 * r + 100 * s + t)' :
-    '(t = t.match(/' + regexOH + '/)) && ((r = Number(t[1])), (s = Number(t[2])), (i = Number(t[3])),' +
+    '!!(t = t.match(/' + regexOH + '/)) && ((r = Number(t[1])), (s = Number(t[2])), (i = Number(t[3])),' +
     ' (r < 26 || !t[4])) && e.distributionOSApiVersion >= 1e4 * r + 100 * s + i';
   const content = `function ${MOCK_FUNCTION_NAME}(e, t) {
     var ${varDecl};
