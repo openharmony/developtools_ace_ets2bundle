@@ -18,11 +18,16 @@ import { ArrowFunctionAnnotationInfo, ArrowFunctionAnnotationRecord, ArrowFuncti
 import { AnnotationRecord } from './annotations/base';
 import { BaseRecord, RecordOptions } from './base';
 import { RecordCache } from './cache';
+import { FileManager } from '../../../common/file-manager';
+import { LANGUAGE_VERSION } from '../../../common/predefines';
 
-export type PropertyInfo = AnnotationRecord<ArrowFunctionAnnotations, ArrowFunctionAnnotationInfo> & {};
+export type PropertyInfo = AnnotationRecord<ArrowFunctionAnnotations, ArrowFunctionAnnotationInfo> & {
+    isDeclFromLegacy?: boolean;
+};
 
 export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
     private _annotationRecord?: ArrowFunctionAnnotationRecord;
+    private _isDeclFromLegacy?: boolean;
 
     constructor(options: RecordOptions) {
         super(options);
@@ -31,15 +36,46 @@ export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
 
     collectFromNode(node: arkts.Property): void {
         const value = node.value;
-        if (!value || !arkts.isArrowFunctionExpression(value)) {
+        if (!value) {
             return;
         }
-        // If arrow function property value is already collected, then we don't need to collect property.
-        if (RecordCache.getInstance().has(value.peer)) {
+        if (arkts.isArrowFunctionExpression(value)) {
+            // If arrow function property value is already collected, then we don't need to collect property.
+            if (RecordCache.getInstance().has(value.peer)) {
+                return;
+            }
+            for (const anno of value.annotations) {
+                this._annotationRecord?.collect(anno);
+            }
+        } else if (arkts.isIdentifier(value)) {
+            this.collectFromIdentifierValue(value);
+        } 
+    }
+
+    private collectFromIdentifierValue(value: arkts.Identifier): void {
+        const decl = arkts.getDecl(value);
+        if (!decl || !arkts.isMethodDefinition(decl)) {
             return;
         }
-        for (const anno of value.annotations) {
-            this._annotationRecord?.collect(anno);
+        const path = arkts.getProgramFromAstNode(decl)?.absoluteName;
+        const fileManager = FileManager.getInstance();
+        if (!path || fileManager.getLanguageVersionByFilePath(path) !== LANGUAGE_VERSION.ARKTS_1_1) {
+            return;
+        }
+        const annotations = decl.function?.annotations;
+        if (!annotations) {
+            return;
+        }
+        for (const annotation of annotations) {
+            const expr = annotation.expr;
+            if (arkts.isIdentifier(expr)) {
+                const name = expr.name;
+                if (name === 'Builder' || name === 'Memo' || name === 'memo') {
+                    this._isDeclFromLegacy = true;
+                    this._annotationRecord?.collect(annotation);
+                    break;
+                }
+            }
         }
     }
 
@@ -48,6 +84,7 @@ export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
         const annotationRecord = this._annotationRecord?.toRecord();
         currInfo = {
             ...currInfo,
+            ...(this._isDeclFromLegacy && { isDeclFromLegacy: this._isDeclFromLegacy }),
             ...(annotationRecord && { ...annotationRecord }),
         };
         this.info = currInfo;
@@ -56,6 +93,7 @@ export class PropertyRecord extends BaseRecord<arkts.Property, PropertyInfo> {
     toJSON(): PropertyInfo {
         this.refresh();
         return {
+            ...(this.info?.isDeclFromLegacy && { isDeclFromLegacy: this.info.isDeclFromLegacy }),
             ...(this.info?.annotationInfo && { annotationInfo: this.info.annotationInfo }),
         };
     }

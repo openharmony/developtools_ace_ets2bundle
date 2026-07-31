@@ -15,7 +15,7 @@
 
 import * as arkts from '@koalaui/libarkts';
 import { annotation, backingField, expectName } from '../../common/arkts-utils';
-import { DecoratorNames, ObservedNames, StateManagementTypes } from '../../common/predefines';
+import { DecoratorNames, ObservedNames, StateManagementTypes, LANGUAGE_VERSION } from '../../common/predefines';
 import {
     BaseObservedPropertyTranslator,
     IBaseObservedPropertyTranslator,
@@ -37,6 +37,33 @@ import { factory } from './factory';
 import { factory as uiFactory } from '../ui-factory';
 import { ImportCollector } from '../../common/import-collector';
 import { MetaDataCollector } from '../../common/metadata-collector';
+import { FileManager } from '../../common/file-manager';
+
+function isObservedTypeDynamic(typeNode: arkts.TypeNode | undefined): boolean {
+    if (!typeNode) {
+        return false;
+    }
+    let ident: arkts.Identifier | undefined;
+    if (arkts.isETSTypeReference(typeNode) &&
+        typeNode.part &&
+        typeNode.part.name &&
+        arkts.isIdentifier(typeNode.part.name)) {
+        ident = typeNode.part.name;
+    }
+    if (!ident) {
+        return false;
+    }
+    const typeDecl = arkts.getDecl(ident);
+    if (!typeDecl) {
+        return false;
+    }
+    const program = arkts.getProgramFromAstNode(typeDecl);
+    if (!program) {
+        return false;
+    }
+    const fileManager = FileManager.getInstance();
+    return fileManager.getLanguageVersionByFilePath(program.absoluteName) === LANGUAGE_VERSION.ARKTS_1_1;
+}
 
 export function getterBodyWithObservedV2TraceProperty(
     this: IObservedV2TraceTranslator,
@@ -48,22 +75,30 @@ export function getterBodyWithObservedV2TraceProperty(
     const observedMember: arkts.Expression = this.isStatic
         ? uiFactory.generateMemberExpression(classIdent.clone(), newName)
         : generateThisBacking(newName);
-    const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(
-        arkts.factory.createCallExpression(
-            uiFactory.generateMemberExpression(
-                arkts.factory.createIdentifier(StateManagementTypes.UI_UTILS),
-                StateManagementTypes.MAKE_OBSERVED
-            ),
-            [
-                !this.property || this.property.value
-                    ? observedMember
-                    : arkts.factory.createTSAsExpression(observedMember, this.propertyType, false),
-            ],
-            undefined,
-            false,
+    const isTypeDynamic: boolean = isObservedTypeDynamic(this.propertyType);
+    let makeObservedArg: arkts.Expression = observedMember;
+    if (isTypeDynamic) {
+        makeObservedArg = arkts.factory.createTSAsExpression(
+            arkts.factory.createTSAsExpression(observedMember, uiFactory.createTypeReferenceFromString('Any'), false),
+            uiFactory.createTypeReferenceFromString('object'),
             false
-        )
+        );
+    } else if (this.property && !this.property.value) {
+        makeObservedArg = arkts.factory.createTSAsExpression(observedMember, this.propertyType, false);
+    }
+    const makeObservedCall: arkts.CallExpression = arkts.factory.createCallExpression(
+        uiFactory.generateMemberExpression(
+            arkts.factory.createIdentifier(StateManagementTypes.UI_UTILS),
+            StateManagementTypes.MAKE_OBSERVED
+        ),
+        [makeObservedArg],
+        undefined,
+        false,
+        false
     );
+    const returnMember: arkts.ReturnStatement = isTypeDynamic
+        ? arkts.factory.createReturnStatement(arkts.factory.createTSAsExpression(makeObservedCall, this.propertyType, false))
+        : arkts.factory.createReturnStatement(makeObservedCall);
     return arkts.factory.createBlockStatement([createAddRef.bind(this)(originalName, classIdent), returnMember]);
 }
 

@@ -253,7 +253,7 @@ export class CollectFactory {
         const propertyRecord = new PropertyRecord(metadata);
         propertyRecord.collect(node);
         const propertyInfo = propertyRecord.toRecord();
-        if (propertyInfo?.annotationInfo?.hasBuilder) {
+        if (propertyInfo?.annotationInfo?.hasBuilder || propertyInfo?.isDeclFromLegacy) {
             NodeCacheFactory.getInstance().getCache(NodeCacheNames.UI).collect(node, propertyRecord.toJSON());
         } else {
             propertyRecord.release(node);
