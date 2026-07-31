@@ -124,7 +124,7 @@ interface trackInterface {
 
   public get propF(): number {
     this.conditionalAddRef(this.__meta_propF);
-    return UIUtils.makeObserved(this.__backing_propF);
+    return UIUtils.makeObserved(this.__backing_propF!);
   }
 
   public set propF(newValue: number) {

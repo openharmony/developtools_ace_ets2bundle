@@ -111,7 +111,7 @@ class F implements PropInterface, trackInterface, IObservedObject, ISubscribedWa
   
   public get trackF(): number {
     this.conditionalAddRef(this.__meta_trackF);
-    return this.__backing_trackF;
+    return this.__backing_trackF!;
   }
   public set trackF(newValue: number) {
     if (((this.__backing_trackF) !== (newValue))) {
