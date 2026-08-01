@@ -16,6 +16,8 @@
 import fs from 'fs';
 import path from 'path';
 
+const JSON5 = require('json5');
+
 import {
   globalModulePaths,
   initBuildInfo,
@@ -31,33 +33,32 @@ import {
 import { toUnixPath } from '../../../utils';
 import {
   ArkTSEvolutionModule,
+  DeclFilesConfig,
   FileInfo,
   AliasConfig,
   InteropConfig,
-  InteropInfo
+  InteropInfo,
+  StaticInteropFileMetadata,
+  StaticInteropMetadata,
+  StaticInteropSymbol
 } from './type';
 import {
   hasExistingPaths,
   isSubPathOf
 } from '../utils';
-import {
-  CommonLogger,
-  LogData,
-  LogDataFactory
-} from '../logger';
+import { LogData, LogDataFactory } from '../logger';
+import { logger } from '../../../compile_info';
 import {
   ArkTSErrorDescription,
   ArkTSInternalErrorDescription,
   ErrorCode
 } from '../error_code';
-import { EXTNAME_TS } from '../common/ark_define';
 import {
   ARKTS_1_1,
   ARKTS_1_2,
   ARKTS_HYBRID
 } from './pre_define';
 import { readFirstLineSync } from './utils';
-import { logger } from '../../../compile_info';
 
 export const entryFileLanguageInfo = new Map();
 export let workerFile = null;
@@ -78,6 +79,15 @@ export function setEntryFileLanguage(filePath: string, language: string): void {
   entryFileLanguageInfo.set(filePath, language);
 }
 
+export function addEntryForInterop(entryKey: string, filePath: string): void {
+  projectConfig.entryObj[entryKey] = filePath;
+  FileManager.interopDynamicEntryFileCache.set(path.resolve(filePath), entryKey);
+}
+
+export function shouldSkipInteropEntryValidation(filePath: string): boolean {
+  return FileManager.interopDynamicEntryFileCache.has(path.resolve(filePath));
+}
+
 export class FileManager {
   private static instance: FileManager | undefined = undefined;
 
@@ -91,9 +101,12 @@ export class FileManager {
   static isInteropSDKEnabled: boolean = false;
   static dynamicFileVersionMap: Map<string, string> = new Map();
   static staticFileVersionMap: Map<string, string> = new Map();
+  static interopDynamicEntryFileCache: Map<string, string> = new Map<string, string>();
+  private static byteCodeHarDeclarationEntryCache: Set<string> = new Set();
   private static sdkPathMatchers: SDKPathMatcher[] = [];
   private static sdkPathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
   private static modulePathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
+  private static staticInteropMetadata: StaticInteropMetadata | undefined = undefined;
   interopConfig: InteropConfig | undefined = undefined;
 
   private constructor() { }
@@ -153,12 +166,77 @@ export class FileManager {
     FileManager.mixCompile = mixCompile;
   }
 
+  public static initStaticInteropMetadata(interopConfig: InteropConfig): void {
+    const metadataFilePath: string | undefined = interopConfig?.projectConfig?.declgenBridgeConfigPath;
+
+    FileManager.staticInteropMetadata = undefined;
+    if (!metadataFilePath) {
+      logger.debug('skip metadata initialization because declgenBridgeConfigPath was not found');
+      return;
+    }
+    if (!fs.existsSync(metadataFilePath)) {
+      logger.debug('skip metadata initialization because metadata file does not exist', {
+        metadataFilePath
+      });
+      return;
+    }
+
+    try {
+      const metadata: StaticInteropMetadata = JSON.parse(fs.readFileSync(metadataFilePath, 'utf-8'));
+      if (!metadata || typeof metadata.files !== 'object' || metadata.files === null) {
+        return;
+      }
+      logger.info('metadata initialized successfully', {
+        metadataFilePath,
+        entryCount: Object.keys(metadata.files).length
+      });
+      FileManager.staticInteropMetadata = metadata;
+    } catch (e) {
+      logger.info('failed to parse metadata', {
+        metadataFilePath,
+        error: String(e)
+      });
+    }
+  }
+
   public setInteropConfig(interopConfig: InteropConfig): void {
     this.interopConfig = interopConfig;
   }
 
   public getInteropConfig(): InteropConfig {
     return this.interopConfig;
+  }
+
+  public addByteCodeHarDeclarationEntries(declarationEntries: Iterable<string>): void {
+    for (const declarationEntry of declarationEntries) {
+      FileManager.byteCodeHarDeclarationEntryCache.add(declarationEntry);
+    }
+  }
+
+  public getByteCodeHarDeclarationEntries(): string[] {
+    return Array.from(FileManager.byteCodeHarDeclarationEntryCache);
+  }
+
+  public getStaticInteropSymbols(targetFilePath: string): Record<string, StaticInteropSymbol> | undefined {
+    const normalizedTargetFilePath: string = toUnixPath(path.resolve(targetFilePath));
+    const metadata: StaticInteropMetadata | undefined = FileManager.staticInteropMetadata;
+    if (!metadata) {
+      logger.debug('skip symbol lookup because metadata is unavailable', {
+        targetFilePath: normalizedTargetFilePath
+      });
+      return undefined;
+    }
+
+    const fileMetadata: StaticInteropFileMetadata | undefined = metadata.files[normalizedTargetFilePath];
+    const entry: Record<string, StaticInteropSymbol> | undefined = fileMetadata &&
+      typeof fileMetadata.root === 'object' && fileMetadata.root !== null ? fileMetadata.root : undefined;
+    if (!entry) {
+      logger.debug('skip symbol lookup because target entry was not found', {
+        targetFilePath: normalizedTargetFilePath
+      });
+      return undefined;
+    }
+    return entry;
   }
 
   private static initLanguageVersionFromDependentModuleMap(
@@ -174,8 +252,7 @@ export class FileManager {
         modulePath: toUnixPath(module.modulePath),
         declgenV1OutPath: module.declgenV1OutPath ? toUnixPath(module.declgenV1OutPath) : undefined,
         declgenV2OutPath: module.declgenV2OutPath ? toUnixPath(module.declgenV2OutPath) : undefined,
-        declgenBridgeCodePath: module.declgenBridgeCodePath ? toUnixPath(module.declgenBridgeCodePath) : undefined,
-        declFilesPath: module.declFilesPath ? toUnixPath(module.declFilesPath) : undefined,
+        declFilesPath: module.declFilesPath ? toUnixPath(module.declFilesPath) : undefined
       };
       convertedMap.set(key, convertedModule);
     }
@@ -307,9 +384,12 @@ export class FileManager {
     FileManager.aliasConfig?.clear();
     FileManager.dynamicFileVersionMap?.clear();
     FileManager.staticFileVersionMap?.clear();
+    FileManager.byteCodeHarDeclarationEntryCache?.clear();
     FileManager.sdkPathMatchers = [];
     FileManager.sdkPathMatchCache?.clear();
     FileManager.modulePathMatchCache?.clear();
+    FileManager.interopDynamicEntryFileCache.clear();
+    FileManager.staticInteropMetadata = undefined;
     FileManager.mixCompile = false;
   }
 
@@ -347,8 +427,7 @@ export class FileManager {
     for (const [, moduleInfo] of FileManager.arkTSModuleMap) {
       const declgenOutPaths = [
         moduleInfo.declgenV1OutPath,
-        moduleInfo.declgenV2OutPath,
-        moduleInfo.declgenBridgeCodePath
+        moduleInfo.declgenV2OutPath
       ];
       if (declgenOutPaths.some(declgenOutPath => declgenOutPath && isSubPathOf(sourcePath, declgenOutPath))) {
         return moduleInfo;
@@ -424,8 +503,7 @@ export class FileManager {
 
     const isStatic =
       moduleInfo.staticFiles.includes(path) ||
-      (moduleInfo.declgenV1OutPath && isSubPathOf(path, moduleInfo.declgenV1OutPath)) ||
-      (moduleInfo.declgenBridgeCodePath && isSubPathOf(path, moduleInfo.declgenBridgeCodePath));
+      (moduleInfo.declgenV1OutPath && isSubPathOf(path, moduleInfo.declgenV1OutPath));
 
     return isStatic ? ARKTS_1_2 : undefined;
   }
@@ -612,18 +690,6 @@ export function collectSDKInfo(share: Object): {
   };
 }
 
-export function isBridgeCode(filePath: string, projectConfig: Object): boolean {
-  if (!projectConfig?.mixCompile) {
-    return false;
-  }
-  for (const [pkgName, dependentModuleInfo] of projectConfig.dependentModuleMap) {
-    if (isSubPathOf(filePath, dependentModuleInfo.declgenBridgeCodePath)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export function isMixCompile(): boolean {
   if (typeof mixCompile === 'boolean') {
     return mixCompile;
@@ -664,31 +730,6 @@ export function processAbilityPagesFullPath(abilityPagesFullPath: Set<string>): 
   }
 }
 
-export function transformAbilityPages(projectConfig: Object, abilityPath: string): boolean {
-  const moduleJson = JSON.parse(fs.readFileSync(projectConfig?.aceModuleJsonPath).toString());
-  const entryBridgeCodePath = getBrdigeCodeRootPath(moduleJson?.module?.name, FileManager.getInstance().getInteropConfig());
-  if (!entryBridgeCodePath) {
-    const errInfo = LogDataFactory.newInstance(
-      ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
-      ArkTSInternalErrorDescription,
-      `Missing entryBridgeCodePath`
-    );
-    throw Error(errInfo.toString());
-  }
-  if (!entryFileLanguageInfo?.get(abilityPath)) {
-    return false;
-  }
-  if (abilityPath.includes(':')) {
-    abilityPath = abilityPath.substring(0, abilityPath.lastIndexOf(':'));
-  }
-  const bridgeCodePath = path.join(entryBridgeCodePath.declgenBridgeCodePath, abilityPath + EXTNAME_TS);
-  if (fs.existsSync(bridgeCodePath)) {
-    projectConfig.entryObj[transformModuleNameToRelativePath(abilityPath)] = bridgeCodePath;
-    return true;
-  }
-  return false;
-}
-
 export function transformModuleNameToRelativePath(filePath: string): string {
   let defaultSourceRoot = 'src/main';
   if (FileManager.getInstance().getInteropConfig()?.projectConfig?.isOhosTest) {
@@ -721,10 +762,8 @@ export function getApiPathForInterop(apiDirs: string[], languageVersion: string)
   apiDirs.unshift(...staticPaths);
 }
 
-export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropConfig): void {
+export function rebuildEntryObj(projectConfig: Object): void {
   const entryObj = projectConfig.entryObj;
-
-  const removeExt = (p: string): string => p.replace(/\.[^/.]+$/, '');
 
   projectConfig.entryObj = Object.keys(entryObj).reduce((newEntry, key) => {
     const newKey = key.replace(/^\.\//, '');
@@ -733,38 +772,292 @@ export function rebuildEntryObj(projectConfig: Object, interopConfig: InteropCon
       return newEntry;
     }
 
-    const firstLine = fs.readFileSync(rawPath, 'utf-8').split('\n')[0];
-
-    if (!firstLine.includes('use static')) {
-      newEntry[newKey] = rawPath;
-    } else if (rawPath.startsWith(projectConfig.projectRootPath)) {
-      const interopInfo = getBrdigeCodeRootPath(rawPath, interopConfig);
-      if (!interopInfo) {
-        const errInfo = LogDataFactory.newInstance(
-          ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
-          ArkTSInternalErrorDescription,
-          `Missing entryBridgeCodePath`
-        );
-        throw Error(errInfo.toString());
-      }
-
-      const relativePath = path.relative(interopInfo.moduleRootPath, rawPath);
-      const withoutExt = removeExt(relativePath);
-      const bridgeCodePath = path.join(interopInfo.declgenBridgeCodePath, interopInfo.packageName, withoutExt + '.ts');
-      if (!fs.existsSync(bridgeCodePath)) {
-        const errInfo = LogDataFactory.newInstance(
-          ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
-          ArkTSErrorDescription,
-          `failed to find bridge code '${toUnixPath(bridgeCodePath)}' for entry '${toUnixPath(rawPath)}'. ` +
-          `To compile an interop project with static entry, please generate interop declarations and bridge code.`
-        );
-        throw Error(errInfo.toString());
-      }
-      newEntry[newKey] = bridgeCodePath;
-    }
+    newEntry[newKey] = rawPath;
 
     return newEntry;
   }, {} as Record<string, string>);
+}
+
+export function removeArkTS12EntriesFromEntryObj(projectConfig: Object): void {
+  const entryObj = projectConfig.entryObj as Record<string, string>;
+  const newEntryObj: Record<string, string> = {};
+  for (const [entryKey, entryPath] of Object.entries(entryObj)) {
+    const languageInfo = FileManager.getInstance().getLanguageVersionByFilePath(entryPath);
+    if (languageInfo?.languageVersion === ARKTS_1_2) {
+      logger.debug('remove ArkTS 1.2 entry from dynamic entry object', {
+        entryKey,
+        entryPath
+      });
+      continue;
+    }
+    newEntryObj[entryKey] = entryPath;
+  }
+  projectConfig.entryObj = newEntryObj;
+}
+
+type InteropEntriesConfig = {
+  dynamic?: string[];
+  dependency?: {
+    source?: Record<string, {
+      dynamic?: string[];
+    }>;
+    package?: string[];
+  };
+};
+
+function getInteropEntryKey(filePath: string, moduleName?: string): string {
+  const normalizedPath = toUnixPath(filePath).replace(/^\.\//, '');
+  const relativePath = normalizedPath.replace(/^src\/(?:main|ohosTest)\/ets\//, '');
+  const entryKey = relativePath.replace(/\.[^/.]+$/, '');
+  return moduleName ? `${moduleName}/${entryKey}` : entryKey;
+}
+
+function getInteropDependentModuleMap(): Map<string, ArkTSEvolutionModule> {
+  const interopConfig = FileManager.getInstance().getInteropConfig();
+  const interopProjectConfig = interopConfig && interopConfig.projectConfig;
+  if (interopProjectConfig && interopProjectConfig.dependentModuleMap) {
+    return interopProjectConfig.dependentModuleMap;
+  }
+  if (projectConfig.dependentModuleMap) {
+    return projectConfig.dependentModuleMap;
+  }
+  return FileManager.arkTSModuleMap;
+}
+
+function resolveInteropEntryPath(moduleRoot: string, entry: string): string {
+  if (path.isAbsolute(entry)) {
+    return path.resolve(entry);
+  }
+  return path.resolve(moduleRoot, entry);
+}
+
+function getRelativePathInModule(filePath: string, moduleRoot: string): string {
+  const normalizedFilePath = toUnixPath(filePath);
+  const normalizedModuleRoot = toUnixPath(moduleRoot);
+  if (normalizedFilePath.startsWith(`${normalizedModuleRoot}/`)) {
+    return normalizedFilePath.slice(normalizedModuleRoot.length + 1);
+  }
+  return normalizedFilePath;
+}
+
+function isSharedModule(moduleInfo: ArkTSEvolutionModule | undefined): boolean {
+  const interopProjectConfig = FileManager.getInstance().getInteropConfig()?.projectConfig;
+  const entryPackageName = interopProjectConfig?.entryPackageName;
+  return moduleInfo?.moduleType === 'shared' && moduleInfo.packageName !== entryPackageName;
+}
+
+function addDynamicEntryFromModule(dependentModuleMap: Map<string, ArkTSEvolutionModule>, packageName: string,
+  dynamicEntry: string, currentModuleName: string): void {
+  const moduleInfo = dependentModuleMap.get(packageName);
+  if (!moduleInfo?.modulePath) {
+    logger.debug('skip dependency dynamic entry because module is not present', {
+      packageName,
+      currentModuleName
+    });
+    return;
+  }
+
+  if (isSharedModule(moduleInfo)) {
+    logger.debug('skip dependency dynamic entry because moduleType is shared', {
+      packageName,
+      currentModuleName
+    });
+    return;
+  }
+
+  const entryPath = resolveInteropEntryPath(moduleInfo.modulePath, dynamicEntry);
+  const relativeEntry = getRelativePathInModule(entryPath, moduleInfo.modulePath);
+  const entryKey = getInteropEntryKey(relativeEntry, moduleInfo.moduleName || packageName);
+  logger.info('add dependency dynamic entry', {
+    entryKey,
+    currentModuleName,
+    entryPath
+  });
+  addEntryForInterop(
+    entryKey,
+    entryPath
+  );
+}
+
+function addConfigDynamicEntries(currentPackageName: string, currentModuleName: string, currentModuleRoot: string,
+  dynamicEntries: string[]): void {
+  for (const dynamicEntry of dynamicEntries) {
+    const entryKey = getInteropEntryKey(dynamicEntry, currentModuleName);
+    const entryPath = resolveInteropEntryPath(currentModuleRoot, dynamicEntry);
+    logger.info('add dynamic entry', {
+      entryKey,
+      currentPackageName,
+      entryPath
+    });
+    addEntryForInterop(
+      entryKey,
+      entryPath
+    );
+  }
+}
+
+function addDependencySourceEntries(dependentModuleMap: Map<string, ArkTSEvolutionModule>, currentPackageName: string,
+  sourceEntries: Record<string, { dynamic?: string[] }>): void {
+  for (const [dependencyPackageName, dependencyEntries] of Object.entries(sourceEntries)) {
+    for (const dynamicEntry of dependencyEntries.dynamic ?? []) {
+      addDynamicEntryFromModule(dependentModuleMap, dependencyPackageName, dynamicEntry, currentPackageName);
+    }
+  }
+}
+
+function addDependencyPackageEntries(dependentModuleMap: Map<string, ArkTSEvolutionModule>, currentPackageName: string,
+  dependencyPackages: string[]): void {
+  for (const dependencyPackageName of dependencyPackages) {
+    const dependencyModuleInfo = dependentModuleMap.get(dependencyPackageName);
+    if (!dependencyModuleInfo) {
+      logger.debug('skip dependency package because module is not present', {
+        dependencyPackageName,
+        currentPackageName
+      });
+      continue;
+    }
+    if (isSharedModule(dependencyModuleInfo)) {
+      logger.debug('skip dependency package because moduleType is shared', {
+        dependencyPackageName,
+        currentPackageName
+      });
+      continue;
+    }
+    if (dependencyModuleInfo.byteCodeHar) {
+      addByteCodeHarDeclarationEntries(dependencyPackageName, dependencyModuleInfo);
+      logger.debug('skip dependency package because module is byteCodeHar', {
+        dependencyPackageName,
+        currentPackageName
+      });
+      continue;
+    }
+    for (const dynamicEntry of dependencyModuleInfo.dynamicFiles ?? []) {
+      if (dynamicEntry.endsWith('.d') || dynamicEntry.endsWith('.d.ets')) {
+        continue;
+      }
+      addDynamicEntryFromModule(dependentModuleMap, dependencyPackageName, dynamicEntry, currentPackageName);
+    }
+  }
+}
+
+function writeByteCodeHarInteropEntryFile(interopConfig: InteropConfig): void {
+  const interopProjectConfig = interopConfig.projectConfig;
+  if (!interopProjectConfig.byteCodeHar) {
+    return;
+  }
+
+  const currentPackageName = interopProjectConfig.entryPackageName;
+  const currentModuleInfo = currentPackageName ? getInteropDependentModuleMap().get(currentPackageName) : undefined;
+  const configPath = currentModuleInfo?.interopConfigPath;
+  if (!configPath || !fs.existsSync(configPath)) {
+    logger.debug('skip writing byteCodeHar interop entry file because config path is unavailable', {
+      configPath
+    });
+    return;
+  }
+  const config = JSON5.parse(fs.readFileSync(configPath, 'utf-8'));
+  const interopEntries: InteropEntriesConfig | undefined = config?.interopEntries;
+  const interopEntryFileContent = { declarationEntry: interopEntries?.dynamic ?? [] };
+  logger.debug('byteCodeHar interop entry file content prepared', interopEntryFileContent);
+  if (!interopProjectConfig.bytecodeInteropEntryFileJson) {
+    return;
+  }
+  const interopEntryFilePath = interopProjectConfig.bytecodeInteropEntryFileJson;
+  fs.mkdirSync(path.dirname(interopEntryFilePath), { recursive: true });
+  fs.writeFileSync(
+    interopEntryFilePath,
+    JSON.stringify(interopEntryFileContent, null, 2),
+    'utf-8'
+  );
+}
+
+function addByteCodeHarDeclarationEntries(currentPackageName: string, currentModuleInfo: ArkTSEvolutionModule): void {
+  const declFilesPath = currentModuleInfo.declFilesPath;
+  logger.debug('start adding byteCodeHar declaration entries', { currentPackageName });
+  if (!declFilesPath) {
+    logger.debug('skip byteCodeHar declaration entries because declFilesPath is not configured', {
+      currentPackageName
+    });
+    return;
+  }
+  if (!fs.existsSync(declFilesPath)) {
+    logger.debug('skip byteCodeHar declaration entries because declFilesPath does not exist', {
+      currentPackageName,
+      declFilesPath
+    });
+    return;
+  }
+
+  logger.debug('read byteCodeHar declaration file config', { currentPackageName, declFilesPath });
+  const declFilesConfig: DeclFilesConfig = JSON5.parse(fs.readFileSync(declFilesPath, 'utf-8'));
+  const declFiles = declFilesConfig?.files ?? {};
+  const declFileInfos = Object.values(declFiles);
+  logger.debug('loaded byteCodeHar declaration file config', {
+    currentPackageName,
+    declarationFileCount: declFileInfos.length,
+    packageName: declFilesConfig?.packageName
+  });
+  const declarationEntrySet: Set<string> = new Set();
+  for (const declFileInfo of declFileInfos) {
+    if (!declFileInfo?.ohmUrl) {
+      logger.debug('skip declaration entry because ohmUrl is not configured', {
+        currentPackageName,
+        filePath: declFileInfo?.declPath || declFileInfo?.filePath
+      });
+      continue;
+    }
+    const declarationEntry = `${declFileInfo.ohmUrl}1.0.0`;
+    if (declarationEntrySet.has(declarationEntry)) {
+      logger.debug('skip duplicate declaration entry', { currentPackageName, declarationEntry });
+      continue;
+    }
+    declarationEntrySet.add(declarationEntry);
+    logger.debug('add declaration entry', { currentPackageName, declarationEntry });
+  }
+  FileManager.getInstance().addByteCodeHarDeclarationEntries(declarationEntrySet);
+  logger.info('complete byteCodeHar declaration entries', {
+    currentPackageName,
+    addedDeclarationEntryCount: declarationEntrySet.size,
+    cachedDeclarationEntryCount: FileManager.getInstance().getByteCodeHarDeclarationEntries().length
+  });
+}
+
+export function addEntriesFromInteropConfig(): void {
+  const dependentModuleMap = getInteropDependentModuleMap();
+  logger.info('start scanning interop entry config', { moduleCount: dependentModuleMap.size });
+
+  for (const [currentPackageName, currentModuleInfo] of dependentModuleMap) {
+    if (currentModuleInfo.byteCodeHar) {
+      logger.debug('skip module because module is byteCodeHar', { currentPackageName });
+      continue;
+    }
+    if (isSharedModule(currentModuleInfo)) {
+      logger.debug('skip module because moduleType is shared', { currentPackageName });
+      continue;
+    }
+    const currentModuleName = currentModuleInfo.moduleName || currentPackageName;
+    const currentModuleRoot = currentModuleInfo.modulePath;
+    const configPath = currentModuleInfo.interopConfigPath;
+    if (!configPath) {
+      logger.debug('skip module because interopConfigPath is not configured', { currentPackageName });
+      continue;
+    }
+    if (!fs.existsSync(configPath)) {
+      logger.debug('skip module because interop config file does not exist', {
+        currentPackageName,
+        configPath
+      });
+      continue;
+    }
+
+    logger.debug('read interop entry config', { currentPackageName, configPath });
+    const config = JSON5.parse(fs.readFileSync(configPath, 'utf-8'));
+    const interopEntries: InteropEntriesConfig | undefined = config?.interopEntries;
+
+    addConfigDynamicEntries(currentPackageName, currentModuleName, currentModuleRoot, interopEntries?.dynamic ?? []);
+    addDependencySourceEntries(dependentModuleMap, currentPackageName, interopEntries?.dependency?.source ?? {});
+    addDependencyPackageEntries(dependentModuleMap, currentPackageName, interopEntries?.dependency?.package ?? []);
+  }
 }
 
 /**
@@ -785,7 +1078,11 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
       loadWorker(projectConfig, workerFile);
     }
     if (isMixCompile()) {
-      rebuildEntryObj(projectConfig, interopConfig);
+      rebuildEntryObj(projectConfig);
+      writeByteCodeHarInteropEntryFile(interopConfig);
+      addEntriesFromInteropConfig();
+      removeArkTS12EntriesFromEntryObj(projectConfig);
+      FileManager.initStaticInteropMetadata(interopConfig);
       return;
     }
     projectConfig.entryObj = Object.keys(projectConfig.entryObj).reduce((newEntry, key) => {
@@ -804,17 +1101,6 @@ export function initConfigForInterop(interopConfig: InteropConfig): Object {
     workerFile: workerFile,
     globalModulePaths: globalModulePaths
   };
-}
-
-export function getBrdigeCodeRootPath(moduleName: string, interopConfig: InteropConfig): InteropInfo | undefined {
-  for (const [moduleRootPath, interopInfo] of interopConfig.interopModuleInfo) {
-    if (moduleName === interopInfo.moduleName || isSubPathOf(moduleName, moduleRootPath)) {
-      interopInfo.moduleRootPath = moduleRootPath;
-      return interopInfo;
-    }
-  }
-
-  return undefined;
 }
 
 export function destroyInterop(): void {

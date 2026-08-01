@@ -1496,6 +1496,11 @@ export function isOhExport(packageName: string | undefined, resolvedFileName: st
 
 export const declFilesCache: Map<string, DeclFileItem> = new Map();
 
+export function resolveModuleName(moduleName: string, containingFile: string): ts.ResolvedModuleWithFailedLookupLocations {
+  return ts.resolveModuleName(moduleName, containingFile, compilerOptions, moduleResolutionHost,
+    moduleResolutionCache);
+}
+
 export function resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModuleFull[] {
   ts.PerformanceDotting?.startAdvanced('resolveModuleNames');
   const languageVersion = FileManager.mixCompile ? FileManager.getInstance().getLanguageVersionByFilePath(containingFile).languageVersion : ARKTS_1_1;

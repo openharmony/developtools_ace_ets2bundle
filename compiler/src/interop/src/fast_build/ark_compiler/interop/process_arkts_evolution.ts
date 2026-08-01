@@ -27,14 +27,12 @@ import {
 import {
   IFileLog,
   LogType,
-  mkdirsSync,
   toUnixPath
 } from '../../../utils';
 import { getPkgInfo } from '../../../ark_utils';
 import {
   EXTNAME_D_ETS,
   EXTNAME_ETS,
-  EXTNAME_TS,
   SUPER_ARGS
 } from '../../../pre_define';
 import {
@@ -73,8 +71,8 @@ export interface ArkTSEvolutionModule {
   modulePath: string;
   declgenV1OutPath?: string;
   declgenV2OutPath?: string;
-  declgenBridgeCodePath?: string;
   declFilesPath?: string;
+  byteCodeHar?: boolean;
   staticFiles: string[];
   sourceRoots?: string[]; 
 }
@@ -225,14 +223,14 @@ export function collectArkTSEvolutionModuleInfo(share: Object): void {
   for (const [pkgName, dependentModuleInfo] of share.projectConfig.dependentModuleMap) {
     switch (dependentModuleInfo.language) {
       case ARKTS_1_2:
-        if (dependentModuleInfo.declgenV1OutPath && dependentModuleInfo.declgenBridgeCodePath) {
+        if (dependentModuleInfo.declgenV1OutPath) {
           arkTSEvolutionModuleMap.set(pkgName, dependentModuleInfo);
         } else {
           throwCollectionError(pkgName);
         }
         break;
       case ARKTS_HYBRID:
-        if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath && dependentModuleInfo.declgenBridgeCodePath) {
+        if (dependentModuleInfo.declgenV2OutPath && dependentModuleInfo.declFilesPath) {
           arkTSHybridModuleMap.set(pkgName, dependentModuleInfo);
         } else {
           throwCollectionError(pkgName);
@@ -258,42 +256,6 @@ export function cleanUpProcessArkTSEvolutionObj(): void {
   arkTSEvoFileOHMUrlMap = new Map();
   arkTSEvoPkgNameOHMUrlMap = new Map;
   interopTransformLog.cleanUp();
-}
-
-export async function writeBridgeCodeFileSyncByNode(node: ts.SourceFile, moduleId: string,
-  metaInfo: Object): Promise<void> {
-  const printer: ts.Printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const writer: ts.EmitTextWriter = ts.createTextWriter(
-    // @ts-ignore
-    ts.getNewLineCharacter({ newLine: ts.NewLineKind.LineFeed, removeComments: false }));
-    printer.writeFile(node, writer, undefined);
-  const cacheFilePath: string = genCachePathForBridgeCode(moduleId, metaInfo);
-  mkdirsSync(path.dirname(cacheFilePath));
-  fs.writeFileSync(cacheFilePath, writer.getText());
-}
-
-export function genCachePathForBridgeCode(moduleId: string, metaInfo: Object, cachePath?: string): string {
-  const bridgeCodePath: string = getDeclgenBridgeCodePath(metaInfo.pkgName);
-  const filePath: string = toUnixPath(moduleId);
-  // adapt third party package do not has moduleName
-  let relativeFilePath: string = filePath;
-  if (metaInfo.isLocalDependency) {
-    relativeFilePath = filePath.replace(toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), metaInfo.moduleName);
-  } else {
-    relativeFilePath = filePath.replace(toUnixPath(path.join(bridgeCodePath, metaInfo.pkgName)), toUnixPath(metaInfo.belongModulePath));
-    relativeFilePath = relativeFilePath.replace(toUnixPath(metaInfo.belongProjectPath), '');
-  }
-  const cacheFilePath: string = path.join(cachePath ? cachePath : process.env.cachePath, relativeFilePath);
-  return cacheFilePath;
-}
-
-export function getDeclgenBridgeCodePath(pkgName: string): string {
-  const combinedMap = new Map([...arkTSEvolutionModuleMap, ...arkTSHybridModuleMap]);
-  if (combinedMap.size && combinedMap.get(pkgName)) {
-    const arkTSEvolutionModuleInfo: ArkTSEvolutionModule = combinedMap.get(pkgName);
-    return arkTSEvolutionModuleInfo.declgenBridgeCodePath;
-  }
-  return '';
 }
 
 function getDeclgenV2OutPath(pkgName: string): string {
@@ -326,19 +288,7 @@ export function isArkTSEvolutionFile(filePath: string, metaInfo: Object): boolea
       return false;
     }
 
-    // Concatenate the corresponding source code path based on the bridge code path.
-    const declgenCodeBrigdePath = toUnixPath(path.join(toUnixPath(hybridModule.declgenBridgeCodePath), metaInfo.pkgName));
-    if (normalizedFilePath.startsWith(toUnixPath(hybridModule.declgenBridgeCodePath) + '/')) {
-      if (fs.existsSync(normalizedFilePath)) {
-        return true;
-      }
-      // Bridge code file does not exist yet; verify via reverse-mapping to the source file.
-      const moduleId = normalizedFilePath.replace(declgenCodeBrigdePath, toUnixPath(metaInfo.pkgPath));
-      const arktsEvolutionFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_ETS);
-      const arktsEvolutionDeclFile = moduleId.replace(new RegExp(`\\${EXTNAME_TS}$`), EXTNAME_D_ETS);
-      return new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionFile) || new Set(staticFileList.map(toUnixPath)).has(arktsEvolutionDeclFile);
-    }
-    return false;
+    return new Set(staticFileList.map(toUnixPath)).has(normalizedFilePath);
   }
 
   return false;

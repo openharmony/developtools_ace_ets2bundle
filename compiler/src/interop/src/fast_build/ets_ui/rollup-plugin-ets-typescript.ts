@@ -124,7 +124,15 @@ import {
   interopTransform,
   resetInteropTransformLog
 } from '../ark_compiler/interop/process_arkts_evolution';
-import { FileManager, isMixCompile } from '../ark_compiler/interop/interop_manager';
+import {
+  FileManager,
+  isMixCompile,
+  shouldSkipInteropEntryValidation
+} from '../ark_compiler/interop/interop_manager';
+import {
+  resetStaticInteropTransformLog,
+  staticInteropTransformLog
+} from '../ark_compiler/interop/process_static_interop_imports';
 import { ARKTS_1_2 } from '../ark_compiler/interop/pre_define';
 
 let switchTsAst: boolean = true;
@@ -597,14 +605,18 @@ async function transform(code: string, id: string) {
   ts.MemoryUtils.tryGC();
   resetCollection();
   processStructComponentV2.resetStructMapInEts();
-  if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length)) &&
+  if (((transformLog && transformLog.errors.length) || (kitTransformLog && kitTransformLog.errors.length) ||
+    (interopTransformLog && interopTransformLog.errors.length) ||
+    (staticInteropTransformLog && staticInteropTransformLog.errors.length)) &&
     !projectConfig.ignoreWarning) {
     emitLogInfo(logger, getTransformLog(interopTransformLog), true, id);
+    emitLogInfo(logger, getTransformLog(staticInteropTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(kitTransformLog), true, id);
     emitLogInfo(logger, getTransformLog(transformLog), true, id, hvigorLogger);
     resetInteropTransformLog();
     resetLog();
     resetKitImportLog();
+    resetStaticInteropTransformLog();
   }
 
   const result = shouldEmitJsFlag ? {
@@ -704,11 +716,11 @@ function setPkgNameForFile(moduleInfo: Object): void {
 
 function validateEts(code: string, id: string, isEntry: boolean, logger: Object, sourceFile: ts.SourceFile, 
   hvigorLogger: Object | undefined = undefined): void {
-  const isArkTS1_2Declaration = isMixCompile() &&
-    FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2;
-  if (/\.ets$/.test(id) || isArkTS1_2Declaration) {
+  const needFileQuery = isMixCompile() && (shouldSkipInteropEntryValidation(id) ||
+    FileManager.getInstance().getLanguageVersionByFilePath(id).languageVersion === ARKTS_1_2);
+  if (/\.ets$/.test(id) || needFileQuery) {
     clearCollection();
-    const fileQuery: string = !isArkTS1_2Declaration && isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
+    const fileQuery: string = !needFileQuery && isEntry && !abilityPagesFullPath.has(path.resolve(id).toLowerCase()) ? '?entry' : '';
     const log: LogInfo[] = validateUISyntax(code, code, id, fileQuery, sourceFile);
     if (log.length && !projectConfig.ignoreWarning) {
       emitLogInfo(logger, log, true, id, hvigorLogger);

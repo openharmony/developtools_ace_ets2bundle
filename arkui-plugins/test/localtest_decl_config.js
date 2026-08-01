@@ -41,9 +41,6 @@ try {
     jsonData.declgenV1OutPath = jsonData.declgenV1OutPath.replace(/workspace/g, workSpace);
   }
 
-  if (jsonData.declgenBridgeCodePath) {
-    jsonData.declgenBridgeCodePath = jsonData.declgenBridgeCodePath.replace(/workspace/g, workSpace);
-  }
 
   fs.writeFileSync(outJsonFilePath, JSON.stringify(jsonData, null, 2), 'utf8');
 } catch (error) {

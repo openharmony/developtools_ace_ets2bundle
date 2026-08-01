@@ -15,7 +15,6 @@
 
 import { expect } from 'chai';
 import mocha from 'mocha';
-import sinon from 'sinon';
 import ts from 'typescript';
 import path from 'path';
 import {
@@ -25,7 +24,6 @@ import {
   arkTSModuleMap,
   cleanUpProcessArkTSEvolutionObj,
   collectArkTSEvolutionModuleInfo,
-  genCachePathForBridgeCode,
   getArkTSEvoDeclFilePath,
   interopTransform,
   interopTransformLog,
@@ -46,6 +44,56 @@ import {
 } from '../../../lib/fast_build/ark_compiler/error_code';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { CommonLogger } from '../../../lib/fast_build/ark_compiler/logger';
+
+type StubCall = { args: any[] };
+type TestStub = Function & {
+  callsFake(fake: Function): TestStub;
+  getCall(index: number): StubCall;
+  onCall(index: number): { returns(value: any): TestStub };
+  restore(): void;
+  returns(value: any): TestStub;
+};
+
+function stub(target: any, methodName: string): TestStub {
+  const original = target[methodName];
+  const calls: StubCall[] = [];
+  const returnValues: Map<number, any> = new Map();
+  let fake: Function | undefined;
+  let defaultReturnValue: any;
+  let hasDefaultReturnValue: boolean = false;
+  const stubFunction = function(...args: any[]): any {
+    calls.push({ args });
+    const callIndex = calls.length - 1;
+    if (returnValues.has(callIndex)) {
+      return returnValues.get(callIndex);
+    }
+    if (fake) {
+      return fake.apply(this, args);
+    }
+    return hasDefaultReturnValue ? defaultReturnValue : undefined;
+  } as TestStub;
+  stubFunction.callsFake = (nextFake: Function): TestStub => {
+    fake = nextFake;
+    return stubFunction;
+  };
+  stubFunction.getCall = (index: number): StubCall => calls[index];
+  stubFunction.onCall = (index: number): { returns(value: any): TestStub } => ({
+    returns(value: any): TestStub {
+      returnValues.set(index, value);
+      return stubFunction;
+    }
+  });
+  stubFunction.restore = (): void => {
+    target[methodName] = original;
+  };
+  stubFunction.returns = (value: any): TestStub => {
+    defaultReturnValue = value;
+    hasDefaultReturnValue = true;
+    return stubFunction;
+  };
+  target[methodName] = stubFunction;
+  return stubFunction;
+}
 
 const testFileName: string = '/TestProject/entry/test.ets';
 
@@ -579,7 +627,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = false;
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
-    const throwArkTsCompilerErrorStub = sinon.stub(CommonLogger.getInstance(this.rollup), 'printErrorAndExit');
+    const throwArkTsCompilerErrorStub = stub(CommonLogger.getInstance(this.rollup), 'printErrorAndExit');
     try {
       collectArkTSEvolutionModuleInfo(this.rollup.share);
     } catch (e) {
@@ -592,7 +640,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
     this.rollup.share.projectConfig.dependentModuleMap.set('evohar', { language: '1.2' });
-    const throwArkTsCompilerErrorStub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    const throwArkTsCompilerErrorStub = stub(this.rollup.share, 'throwArkTsCompilerError');
     try {
       collectArkTSEvolutionModuleInfo(this.rollup.share);
     } catch (e) {
@@ -607,7 +655,7 @@ mocha.describe('process arkts evolution tests', function () {
     this.rollup.build();
     this.rollup.share.projectConfig.useNormalizedOHMUrl = true;
     this.rollup.share.projectConfig.dependentModuleMap.set('har', { language: '1.1' });
-    const throwArkTsCompilerErrorStub = sinon.stub(this.rollup.share, 'throwArkTsCompilerError');
+    const throwArkTsCompilerErrorStub = stub(this.rollup.share, 'throwArkTsCompilerError');
     try {
       collectArkTSEvolutionModuleInfo(this.rollup.share);
     } catch (e) {
@@ -616,43 +664,6 @@ mocha.describe('process arkts evolution tests', function () {
       `Error Message: Failed to collect arkTs evolution module "har" info from rollup.`;
     expect(throwArkTsCompilerErrorStub.getCall(0).args[1] === errMsg).to.be.true;
     throwArkTsCompilerErrorStub.restore();
-  });
-
-  mocha.it('1-4 test cacheFilePath of genCachePathForBridgeCode: hap1 depend on har2 of third party package', function() {
-    const cachePath = 'D:/ProjectName/hap1_har2/build/default'
-    const moduleId = 'D:/ProjectName/build/declgen/har2/declgenBridgeCode/har2/Index.ts';
-    arkTSHybridModuleMap.set('hap1_har2', {
-      language: 'hybrid',
-      packageName: 'hap1_har2',
-      moduleName: 'hap1_har2',
-      declgenBridgeCodePath: 'D:/ProjectName/hap1_har2/build/default/intermediates/declgen/default/declgenBridgeCode',
-      dynamicFiles: [
-        'D:/ProjectName/hap1_har2/src/main/ets/pages/Index.ets'
-      ],
-      staticFiles: [],
-    });
-    arkTSEvolutionModuleMap.set('har2', {
-      language: '1.2',
-      packageName: 'har2',
-      moduleName: 'har2',
-      declgenBridgeCodePath: 'D:/ProjectName/build/declgen/har2/declgenBridgeCode',
-      dynamicFiles: [],
-      staticFiles: [
-        'D:/ProjectName/oh_modules/.ohpm/har2@xxx=/oh_modules/har2/Index.d.ets'
-      ],
-    });
-    const metaInfo = {
-      isLocalDependency: false,
-      pkgName: 'har2',
-      belongProjectPath: 'D:/ProjectName',
-      belongModulePath: 'D:/ProjectName/oh_modules/.ohpm/har2@xxx=/oh_modules/har2'
-    }
-    const expectCacheFilePath = 'D:/ProjectName/hap1_har2/build/default/oh_modules/.ohpm/har2@xxx=/oh_modules/har2/Index.ts';
-    let cacheFilePath = '';
-    cacheFilePath = genCachePathForBridgeCode(moduleId, metaInfo, cachePath);
-    arkTSHybridModuleMap.delete('hap1_har2');
-    arkTSEvolutionModuleMap.delete('har2');
-    expect(cacheFilePath === expectCacheFilePath).to.be.true;
   });
 
   mocha.it('2-1: test generate declFilesInfo in mixed compilation', function () {
@@ -689,7 +700,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-2: test resolveTargetsPath with empty sourceRoots', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       'testModule/SubModule',
@@ -704,7 +715,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-3: test resolveTargetsPath with single sourceRoot (length < 2)', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       'testModule/SubModule',
@@ -719,7 +730,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-4: test resolveTargetsPath with multiple sourceRoots (second path exists)', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync');
+    const existsSyncStub = stub(fs, 'existsSync');
     existsSyncStub.onCall(0).returns(true);
     
     const result = resolveTargetsPath(
@@ -735,7 +746,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-5: test resolveTargetsPath with multiple sourceRoots (first path exists)', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync');
+    const existsSyncStub = stub(fs, 'existsSync');
     existsSyncStub.onCall(0).returns(false);
     existsSyncStub.onCall(1).returns(true);
     
@@ -752,7 +763,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-6: test resolveTargetsPath with no existing path', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       'testModule/SubModule',
@@ -767,7 +778,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-7: test resolveTargetsPath with moduleRequest not starting with pkgName', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       'otherModule/SubModule',
@@ -782,7 +793,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-8: test resolveTargetsPath with empty moduleRequest', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       '',
@@ -797,7 +808,7 @@ mocha.describe('process arkts evolution tests', function () {
 
   mocha.it('2-9: test resolveTargetsPath with null sourceRoots', function () {
     const fs = require('fs');
-    const existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsSyncStub = stub(fs, 'existsSync').returns(false);
     
     const result = resolveTargetsPath(
       'testModule/SubModule',
