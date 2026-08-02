@@ -100,10 +100,27 @@ export class EmitTransformer extends AbstractVisitor {
             );
             const updatedPoolAcceptsProp = this.transformPoolAccepts(poolAcceptsProp);
             anno.setProperties([
-                ...anno.properties.map((p) => p === reusePoolProp ? updatedReusePoolProp : p === poolAcceptsProp ? updatedPoolAcceptsProp : p),
+                ...anno.properties.map((p) => this.replaceReusePoolProp(p, updatedReusePoolProp, updatedPoolAcceptsProp)),
                 freezeProp
             ]);
         }
+    }
+
+    private replaceReusePoolProp(
+        p: arkts.AstNode,
+        updatedReusePoolProp: arkts.ClassProperty,
+        updatedPoolAcceptsProp: arkts.ClassProperty
+    ): arkts.AstNode {
+        if (!arkts.isClassProperty(p) || !arkts.isIdentifier(p.key)) {
+            return p;
+        }
+        if (p.key.name === GlobalReusePoolNames.REUSE_POOL) {
+            return updatedReusePoolProp;
+        }
+        if (p.key.name === GlobalReusePoolNames.POOL_ACCEPTS) {
+            return updatedPoolAcceptsProp;
+        }
+        return p;
     }
 
     private transformPoolAccepts(poolAcceptsProp: arkts.ClassProperty): arkts.ClassProperty {

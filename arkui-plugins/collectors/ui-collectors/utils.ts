@@ -19,6 +19,7 @@ import { DeclarationCollector } from '../../common/declaration-collector';
 import {
     CustomComponentNames,
     ARKUI_IMPORT_PREFIX_NAMES,
+    DYNAMIC_ARKUI_GLOBAL_ANNOTATION,
     BuiltInNames,
     BuilderLambdaNames,
     Dollars,
@@ -120,7 +121,14 @@ export function getAnnotationName(anno: arkts.AnnotationUsage, ignoreDecl?: bool
         return name;
     }
     const decl = arkts.getPeerIdentifierDecl(expr.peer);
-    return !!decl && isDeclFromArkUI(decl) ? name : undefined;
+    if (!decl) {
+        return undefined;
+    }
+    const declProgram = arkts.getProgramFromAstNode(decl);
+    if (declProgram?.isDeclForDynamicStaticInterop && declProgram?.moduleName === DYNAMIC_ARKUI_GLOBAL_ANNOTATION) {
+        return name;
+    }
+    return isDeclFromArkUI(decl) ? name : undefined;
 }
 
 export function getBuiltInAnnotationWhiteList(): string[] {
