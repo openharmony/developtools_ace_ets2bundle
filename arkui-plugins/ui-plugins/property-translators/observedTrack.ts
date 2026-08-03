@@ -90,11 +90,17 @@ export function getterBodyWithObservedTrackProperty(
     const backingMember: arkts.Expression = this.isStatic
             ? uiFactory.generateMemberExpression(classIdent.clone(), newName)
             : generateThisBacking(newName);
-    const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(
-        !this.property || this.property.value
-            ? backingMember
-            : arkts.factory.createTSAsExpression(backingMember, this.propertyType, false)
-    );
+    const hasPropertyValue: boolean = !!this.property?.value;
+    let makeObservedArg: arkts.Expression;
+    if (this.property && !hasPropertyValue) {
+        makeObservedArg = arkts.factory.createTSAsExpression(backingMember, this.propertyType, false);
+    } else {
+        const isDefinitelyNonNull: boolean = this.isDefinitelyNonNull ?? !!this.property?.tsType?.definitelyNotETSNullish;
+        makeObservedArg = isDefinitelyNonNull && !this.isStatic && !hasPropertyValue
+            ? arkts.factory.createTSNonNullExpression(backingMember)
+            : backingMember;
+    }
+    const returnMember: arkts.ReturnStatement = arkts.factory.createReturnStatement(makeObservedArg);
     return arkts.factory.createBlockStatement([createAddRef.bind(this)(originalName, classIdent), returnMember]);
 }
 
@@ -228,6 +234,7 @@ export interface IObservedTrackTranslator extends IBaseObservedPropertyTranslato
     isTracked?: boolean;
     isStatic?: boolean;
     isDecl?: boolean;
+    isDefinitelyNonNull?: boolean;
 }
 
 /**

@@ -76,15 +76,21 @@ export function getterBodyWithObservedV2TraceProperty(
         ? uiFactory.generateMemberExpression(classIdent.clone(), newName)
         : generateThisBacking(newName);
     const isTypeDynamic: boolean = isObservedTypeDynamic(this.propertyType);
-    let makeObservedArg: arkts.Expression = observedMember;
+    const hasPropertyValue: boolean = !!this.property?.value;
+    let makeObservedArg: arkts.Expression;
     if (isTypeDynamic) {
         makeObservedArg = arkts.factory.createTSAsExpression(
             arkts.factory.createTSAsExpression(observedMember, uiFactory.createTypeReferenceFromString('Any'), false),
             uiFactory.createTypeReferenceFromString('object'),
             false
         );
-    } else if (this.property && !this.property.value) {
+    } else if (this.property && !hasPropertyValue) {
         makeObservedArg = arkts.factory.createTSAsExpression(observedMember, this.propertyType, false);
+    } else {
+        const isDefinitelyNonNull: boolean = this.isDefinitelyNonNull ?? !!this.property?.tsType?.definitelyNotETSNullish;
+        makeObservedArg = isDefinitelyNonNull && !this.isStatic && !hasPropertyValue 
+            ? arkts.factory.createTSNonNullExpression(observedMember)
+            : observedMember;
     }
     const makeObservedCall: arkts.CallExpression = arkts.factory.createCallExpression(
         uiFactory.generateMemberExpression(
@@ -257,6 +263,7 @@ export interface IObservedV2TraceTranslator extends IBaseObservedPropertyTransla
     isTraced?: boolean;
     isStatic?: boolean;
     isDecl?: boolean;
+    isDefinitelyNonNull?: boolean;
 }
 
 /**

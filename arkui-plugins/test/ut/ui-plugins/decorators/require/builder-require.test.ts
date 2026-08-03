@@ -167,9 +167,9 @@ class __EntryWrapper extends EntryPoint {
 @Entry() @Component() class __Options_MyStateSample {
   @Memo() public closer?: ((()=> void) | undefined);
   public __options_has_closer?: boolean;
-  @Require() @Memo() public closer1?: (()=> void);
+  @Require() @Memo() public closer1: (()=> void);
   public __options_has_closer1?: boolean;
-  @Require() @Memo() public closer2?: @Builder() (()=> void);
+  @Require() @Memo() public closer2: @Builder() (()=> void);
   public __options_has_closer2?: boolean;
   public constructor() {}
 
@@ -234,7 +234,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 
   public resetStateVarsOnReuse(initializers: (__Options_MyStateSample | undefined)): void {}
 
-  @MemoIntrinsic 
+  @MemoIntrinsic() 
   public static _invoke(__memo_context: __memo_context_type, __memo_id: __memo_id_type, style: (@Memo() ((__memo_context: __memo_context_type, __memo_id: __memo_id_type, instance: MyStateSample)=> void) | undefined), initializers: ((()=> __Options_MyStateSample) | undefined), storage: ((()=> LocalStorage) | undefined), reuseId: (string | undefined), @Memo() content: (((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void) | undefined)): void {
     CustomComponent._invokeImpl<MyStateSample, __Options_MyStateSample>(__memo_context, ((__memo_id) + (209113580)), style, ((): MyStateSample => {
       return new MyStateSample(false, ({let gensym___46528967 = storage;
@@ -242,7 +242,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     }), initializers, reuseId, content);
   }
 
-  @ComponentBuilder 
+  @ComponentBuilder() 
   public static $_invoke(initializers?: __Options_MyStateSample, storage?: LocalStorage, @Builder() @Memo() content?: ((__memo_context: __memo_context_type, __memo_id: __memo_id_type)=> void)): MyStateSample {
     throw new Error("Declare interface");
   }
@@ -274,7 +274,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
     this.__backing_closer2 = value;
   }
 
-  @Memo 
+  @Memo() 
   public build(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (267547561)), 0);
     if (__memo_scope.unchanged) {
@@ -321,7 +321,7 @@ __EntryWrapper.RegisterNamedRouter("", new __EntryWrapper(), ({
 }
 
 class __EntryWrapper extends EntryPoint {
-  @Memo 
+  @Memo() 
   public entry(__memo_context: __memo_context_type, __memo_id: __memo_id_type): void {
     const __memo_scope = __memo_context.scope<undefined>(((__memo_id) + (226419449)), 0);
     if (__memo_scope.unchanged) {

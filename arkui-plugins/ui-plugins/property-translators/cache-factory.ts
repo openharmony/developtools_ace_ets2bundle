@@ -68,6 +68,7 @@ export class CacheFactory {
             className: metadata.name,
             traceDecorator: DecoratorNames.TRACK,
             isTracked: !!metadata.inheritPorpertyInfo?.annotationInfo?.hasTrack,
+            isDefinitelyNonNull: !!node.function.returnTypeAnnotation?.tsType?.definitelyNotETSNullish
         };
         if (getterSetterType === GetSetTypes.GET) {
             return this.createTrackGet(node, metadata, rewriteOptions);
@@ -136,6 +137,7 @@ export class CacheFactory {
             className: metadata.classInfo.name,
             traceDecorator: DecoratorNames.TRACE,
             isTraced: !!metadata.inheritPorpertyInfo?.annotationInfo?.hasTrace,
+            isDefinitelyNonNull: !!node.function.returnTypeAnnotation?.tsType?.definitelyNotETSNullish
         };
         if (getterSetterType === GetSetTypes.GET) {
             return this.createTraceGet(node, metadata, rewriteOptions);

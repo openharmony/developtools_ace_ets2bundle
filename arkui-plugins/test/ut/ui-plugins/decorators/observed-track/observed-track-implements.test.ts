@@ -104,7 +104,7 @@ interface trackInterface {
 
   public get propF(): number {
     this.conditionalAddRef(this.__meta);
-    return this.__backing_propF;
+    return this.__backing_propF!;
   }
 
   public set propF(newValue: number) {
@@ -117,7 +117,7 @@ interface trackInterface {
 
   public get trackF(): number {
     this.conditionalAddRef(this.__meta);
-    return this.__backing_trackF;
+    return this.__backing_trackF!;
   }
 
   public set trackF(newValue: number) {
