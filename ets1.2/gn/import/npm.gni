@@ -47,6 +47,8 @@ template("npm_cmd") {
     args = [
       "--project-path",
       invoker.project_path,
+      "--stamp",
+      rebase_path(outputs[0], root_build_dir),
     ]
     if (defined(invoker.panda_sdk_path)) {
       args += [

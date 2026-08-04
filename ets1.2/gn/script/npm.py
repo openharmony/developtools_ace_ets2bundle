@@ -36,6 +36,7 @@ def prepare():
     parser.add_argument("--panda-sdk-path", help="panda sdk path")
     parser.add_argument("--pack", action='store_true', help="pack package on project-path")
     parser.add_argument("--pack-destination", help="where to place packed .tgz archive")
+    parser.add_argument("--stamp", help="stamp file to create after successful execution")
 
     args = parser.parse_args()
 
@@ -57,7 +58,14 @@ def prepare():
     if args.panda_sdk_path:
         os.environ["PANDA_SDK_PATH"] = args.panda_sdk_path
 
-    return args, project_path
+    # Resolve the stamp path to an absolute path now, while the cwd is still
+    # the ninja build dir (before any os.chdir in run()/pack()). This keeps the
+    # path valid regardless of later working-directory changes.
+    stamp_abs = None
+    if args.stamp:
+        stamp_abs = os.path.abspath(args.stamp)
+
+    return args, project_path, stamp_abs
 
 def run(args_list, project_path, dir = None):
     os.chdir(dir or project_path)
@@ -113,7 +121,27 @@ def copy_target(args):
         sys.exit(1)
     shutil.copy(args.built_file_path, args.target_out_path)
 
-def main(args, project_path):
+
+def stamp(stamp_abs):
+    # Create the stamp file declared as the action's output so that ninja sees
+    # it on the next incremental build and skips rerunning this action.
+    if not stamp_abs:
+        return
+    # When the stamp path coincides with a real output produced by a prior step
+    # (e.g. pack() writes the .tgz to outputs[0], or copy_target() copies a real
+    # file to outputs[0]), the file already exists with real content. Truncating
+    # it here would destroy that output (observed: libarkts.tgz reduced to 0
+    # bytes, breaking downstream `npm install`). Skip stamping in that case.
+    if os.path.exists(stamp_abs) and os.path.getsize(stamp_abs) > 0:
+        return
+    stamp_dir = os.path.dirname(stamp_abs)
+    if stamp_dir and not os.path.isdir(stamp_dir):
+        os.makedirs(stamp_dir, exist_ok=True)
+    with open(stamp_abs, "w") as f:
+        f.write("")
+
+
+def main(args, project_path, stamp_abs):
     if args.install:
         install(project_path, args.install_path)
     if args.run_tasks:
@@ -123,8 +151,10 @@ def main(args, project_path):
         copy_target(args)
     if args.pack and args.pack_destination:
         pack(args.project_path, args.pack_destination)
+    # Only stamp after every requested operation has succeeded.
+    stamp(stamp_abs)
 
 if __name__ == '__main__':
-    args, project_path = prepare()
-    main(args, project_path)
+    args, project_path, stamp_abs = prepare()
+    main(args, project_path, stamp_abs)
 
