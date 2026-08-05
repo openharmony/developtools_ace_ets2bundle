@@ -125,13 +125,9 @@ import {
  } from '../../../performance';
 import { BytecodeObfuscator } from '../bytecode_obfuscator';
 import {
-  addDeclFilesConfig,
   ArkTSEvolutionModule,
-  getDeclgenBridgeCodePath,
   pkgDeclFilesConfig,
-  arkTSModuleMap,
-  isArkTSEvolutionFile,
-  genCachePathForBridgeCode,
+  arkTSModuleMap
 } from '../interop/process_arkts_evolution';
 import {
   FileManager,
@@ -284,13 +280,10 @@ export class ModuleMode extends CommonMode {
         );
         this.logger.printErrorAndExit(errInfo);
       }
-      let pkgPath: string = metaInfo.pkgPath;
-      if (isMixCompile() && isArkTSEvolutionFile(moduleId, metaInfo)) {
-        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
-      }
+      const pkgPath: string = metaInfo.pkgPath;
       const pkgParams = {
         pkgName: metaInfo.pkgName,
-        pkgPath,
+        pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
       let recordName: string = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(moduleId, this.projectConfig, this.logger, pkgParams,
@@ -335,10 +328,14 @@ export class ModuleMode extends CommonMode {
       // by es2abc for dependency resolution.
       this.collectRouterMapEntries(compileEntries, hspPkgNames);
     }
-    if (this.projectConfig.declarationEntry) {
+    const declarationEntries: string[] = Array.from(new Set([
+      ...(this.projectConfig.declarationEntry ?? []),
+      ...(isMixCompile() ? FileManager.getInstance().getByteCodeHarDeclarationEntries() : [])
+    ]));
+    if (declarationEntries.length > 0) {
       // Collect bytecode har's declaration files entries include dynamic import and workers, use
       // by es2abc for dependency resolution.
-      this.projectConfig.declarationEntry.forEach((ohmurl) => {
+      declarationEntries.forEach((ohmurl) => {
         let pkgName: string = transformOhmurlToPkgName(ohmurl);
         if (!hspPkgNames.includes(pkgName)) {
           let recordName: string = transformOhmurlToRecordName(ohmurl);
@@ -580,20 +577,15 @@ export class ModuleMode extends CommonMode {
 
     let moduleName: string = metaInfo.moduleName;
     let recordName: string = '';
-    let cacheFilePath: string = isArkTSEvolutionFile(filePath, metaInfo) ?
-      genCachePathForBridgeCode(originalFilePath, metaInfo, this.projectConfig.cachePath) :
-      this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
+    let cacheFilePath: string =
+        this.genFileCachePath(filePath, this.projectConfig.projectRootPath, this.projectConfig.cachePath, metaInfo);
     let packageName: string = '';
 
     if (this.useNormalizedOHMUrl) {
       packageName = metaInfo.pkgName;
-      let pkgPath: string = metaInfo.pkgPath;
-      if (isMixCompile() && isArkTSEvolutionFile(filePath, metaInfo)) {
-        pkgPath = path.join(getDeclgenBridgeCodePath(metaInfo.pkgName), metaInfo.pkgName);
-      }
       const pkgParams = {
         pkgName: packageName,
-        pkgPath,
+        pkgPath: metaInfo.pkgPath,
         isRecordName: true,
       };
       recordName = metaInfo.ohmurl ? metaInfo.ohmurl : getNormalizedOhmUrlByFilepath(filePath, this.projectConfig, this.logger, pkgParams, undefined);

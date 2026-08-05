@@ -48,16 +48,12 @@ const {
 const {
   setEntryFileLanguage,
   isMixCompile,
-  processAbilityPagesFullPath,
-  transformAbilityPages
+  processAbilityPagesFullPath
 } = require('./lib/fast_build/ark_compiler/interop/interop_manager');
 
 const {
   ARKTS_MODE
 } = require('./lib/fast_build/ark_compiler/interop/pre_define');
-
-const arkLogger = require('./lib/fast_build/ark_compiler/logger');
-const errCode = require('./lib/fast_build/ark_compiler/error_code');
 
 let runDeclgenStandaloneModule = undefined;
 let runInteropContextModule = undefined;
@@ -558,17 +554,12 @@ function setAbilityFile(projectConfig, abilityPages, extensionAbilityPages) {
       if (projectConfig.customizedHar && fs.existsSync(projectAbilityDeclFilePath)) {
         return;
       }
-      if (isMixCompile()) {
-        if (transformAbilityPages(projectConfig, abilityPath)) {
-          return;
-        }
-        const errInfo = arkLogger.LogDataFactory.newInstance(
-          errCode.ErrorCode.ETS2BUNDLE_INTERNAL_FAILED_TO_FIND_GLUD_CODE,
-          errCode.ArkTSErrorDescription,
-          'Failed to find srcEntry bridge code. To compile an interop project, please generate interop declarations and bridge codes manually.'
-        );
-        throw Error(errInfo.toString());
+
+      if (isMixCompile) {
+        // skip static entry path
+        return;
       }
+
       throw Error(
         `\u001b[31m ERROR: srcEntry file '${projectAbilityPath.replace(/\\/g, '/')}' does not exist. \u001b[39m`
       ).message;

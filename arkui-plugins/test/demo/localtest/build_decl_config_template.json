@@ -24,6 +24,5 @@
     "isIDE": "false",
     "enableDeclgenEts2Ts": true,
 
-    "declgenV1OutPath": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/demo/hello_world/declgenV1OutPath",
-    "declgenBridgeCodePath": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/demo/hello_world/declgenBridgeCodePath"
+    "declgenV1OutPath": "workspace/developtools/ace_ets2bundle/arkui-plugins/test/demo/hello_world/declgenV1OutPath"
 }

@@ -35,6 +35,7 @@ import {
 import createAstNodeUtils from './create_ast_node_utils';
 import { MemoryMonitor } from './fast_build/meomry_monitor/rollup-plugin-memory-monitor';
 import { MemoryDefine } from './fast_build/meomry_monitor/memory_define';
+import { processStaticInteropImports } from './fast_build/ark_compiler/interop/process_static_interop_imports';
 import {
   CompileEvent,
   createAndStartEvent,
@@ -145,6 +146,7 @@ export function processKitImport(id: string, metaInfo: Object, parentEvent: Comp
           ts.visitEachChild(ts.getTypeExportImportAndConstEnumTransformer(context)(node), visitor, context);
         processedNode = <ts.SourceFile> (autoLazyImport ? transformLazyImport(metaInfo, processedNode, autoLazyFilter, resolver,
           eventProcessKitImport) : processedNode);
+        processedNode = processStaticInteropImports(processedNode, id, context);
         lazyImportReExportCheck(processedNode, reExportCheckMode, eventProcessKitImport);
         ModuleSourceFile.newSourceFile(id, processedNode, metaInfo, projectConfig.singleFileEmit);
         MemoryMonitor.stopRecordStage(newSourceFileRecordInfo);

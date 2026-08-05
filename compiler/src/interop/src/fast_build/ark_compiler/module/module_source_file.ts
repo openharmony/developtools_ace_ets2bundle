@@ -81,11 +81,7 @@ import {
   stopEvent
 } from '../../../performance';
 import { PreloadFileModules } from './module_preload_file_utils';
-import {
-  getDeclgenBridgeCodePath,
-  isArkTSEvolutionFile,
-  writeBridgeCodeFileSyncByNode
-} from '../interop/process_arkts_evolution';
+import { isArkTSEvolutionFile } from '../interop/process_arkts_evolution';
 import {
   FileManager,
   isMixCompile
@@ -456,10 +452,6 @@ export class ModuleSourceFile {
   }
 
   private async writeSourceFile(parentEvent: Object): Promise<void> {
-    if (isMixCompile() && this.isArkTSEvolution) {
-      await writeBridgeCodeFileSyncByNode(<ts.SourceFile> this.source, this.moduleId, this.metaInfo);
-      return;
-    }
     if (this.isSourceNode && !isJsSourceFile(this.moduleId)) {
       await writeFileSyncByNode(<ts.SourceFile> this.source, ModuleSourceFile.projectConfig, this.metaInfo,
         this.moduleId, parentEvent, printObfLogger);
@@ -584,13 +576,9 @@ export class ModuleSourceFile {
   }
 
   private static spliceNormalizedOhmurl(moduleInfo: Object, filePath: string, importerFile?: string): string {
-    let pkgPath: string = moduleInfo.meta.pkgPath;
-    if (isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta)) {
-      pkgPath = path.join(getDeclgenBridgeCodePath(moduleInfo.meta.pkgName), moduleInfo.meta.pkgName);
-    }
     const pkgParams = {
       pkgName: moduleInfo.meta.pkgName,
-      pkgPath,
+      pkgPath: moduleInfo.meta.pkgPath,
       isRecordName: false,
       omitModuleName: isMixCompile() && isArkTSEvolutionFile(filePath, moduleInfo.meta),
       moduleName: ((): string => {

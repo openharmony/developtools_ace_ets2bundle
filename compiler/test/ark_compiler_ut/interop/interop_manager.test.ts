@@ -23,17 +23,16 @@ import os from 'os';
 import {
   FileManager,
   collectSDKInfo,
-  isBridgeCode,
-  getBrdigeCodeRootPath,
+  addEntriesFromInteropConfig,
   isMixCompile,
   initConfigForInterop,
   destroyInterop,
   transformModuleNameToRelativePath,
   getApiPathForInterop,
   processAbilityPagesFullPath
- } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
+} from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 import { ARKTS_1_1, ARKTS_1_2, ARKTS_HYBRID } from '../../../lib/fast_build/ark_compiler/interop/pre_define';
-import { sdkConfigs } from '../../../main';
+import { sdkConfigs, projectConfig as mainProjectConfig } from '../../../main';
 import { toUnixPath } from '../../../lib/utils';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 
@@ -44,7 +43,6 @@ export interface ArkTSEvolutionModule {
   modulePath: string;
   declgenV1OutPath?: string;
   declgenV2OutPath?: string;
-  declgenBridgeCodePath?: string;
   declFilesPath?: string;
   dynamicFiles: string[];
   staticFiles: string[];
@@ -81,7 +79,6 @@ mocha.describe('test interop_manager file api', function () {
       modulePath: '/MyApplication16/application',
       declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: [],
       staticFiles: [],
@@ -96,7 +93,6 @@ mocha.describe('test interop_manager file api', function () {
       modulePath: '/MyApplication16/harv2',
       declgenV1OutPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/harv2/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: [],
       staticFiles: [],
@@ -111,7 +107,6 @@ mocha.describe('test interop_manager file api', function () {
       modulePath: '/MyApplication16/dynamic1',
       declgenV1OutPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/dynamic1/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: [],
       staticFiles: [],
@@ -126,7 +121,6 @@ mocha.describe('test interop_manager file api', function () {
       modulePath: '/MyApplication16/hybrid',
       declgenV1OutPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/hybrid/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: ['/MyApplication16/hybrid/fileV1.ets'],
       staticFiles: ['/MyApplication16/hybrid/fileV2.ets'],
@@ -141,7 +135,6 @@ mocha.describe('test interop_manager file api', function () {
       modulePath: '/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar',
       declgenV1OutPath: '/MyApplication16/build/declgen/remoteHar/declgenV1',
       declgenV2OutPath: '/MyApplication16/build/declgen/remoteHar/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/build/declgen/remoteHar/declgenBridgeCode',
       declFilesPath: undefined,
       dynamicFiles: [],
       staticFiles: ['/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar/Index.d.ets'],
@@ -208,7 +201,7 @@ mocha.describe('test interop_manager file api', function () {
   });
 
   mocha.it('1-7: test glue code file from 1.2 module', function() {
-    const filePath = '/MyApplication16/harv2/build/default/intermediates/declgen/default/declgenBridgeCode/sourceCode.ets';
+    const filePath = '/MyApplication16/harv2/src/main/ets/sourceCode.ets';
     const result = FileManager.getInstance().getLanguageVersionByFilePath(filePath);
     expect(result?.languageVersion).to.equal(ARKTS_1_2);
     expect(result?.pkgName).to.equal('harv2');
@@ -325,114 +318,6 @@ mocha.describe('test interop_manager file api', function () {
   });
 });
 
-mocha.describe('isBridgeCode', function () {
-  const mockConfig = {
-    mixCompile: true,
-    dependentModuleMap: new Map([
-      ['pkgA', { declgenBridgeCodePath: path.resolve('project/bridge/pkgA') }],
-      ['pkgB', { declgenBridgeCodePath: path.resolve('project/bridge/pkgB') }],
-    ]),
-  };
-
-  mocha.it('1-1: should return true when filePath is inside a declgenBridgeCodePath', function () {
-    const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
-    expect(isBridgeCode(filePath, mockConfig)).to.be.true;
-  });
-
-  mocha.it('1-2: should return false when filePath is outside all bridge code paths', function () {
-    const filePath = path.resolve('project/otherpkg/index.ts');
-    expect(isBridgeCode(filePath, mockConfig)).to.be.false;
-  });
-
-  mocha.it('1-3: should return false when mixCompile is false', function () {
-    const config = { ...mockConfig, mixCompile: false };
-    const filePath = path.resolve('project/bridge/pkgA/utils/helper.ts');
-    expect(isBridgeCode(filePath, config)).to.be.false;
-  });
-
-  mocha.it('1-4: should return false when dependentModuleMap is empty', function () {
-    const config = { mixCompile: true, dependentModuleMap: new Map() };
-    const filePath = path.resolve('project/bridge/pkgA/file.ts');
-    expect(isBridgeCode(filePath, config)).to.be.false;
-  });
-
-  mocha.it('1-5: should return true for multiple matches, stop at first match', function () {
-    const config = {
-      mixCompile: true,
-      dependentModuleMap: new Map([
-        ['pkg1', { declgenBridgeCodePath: path.resolve('path/one') }],
-        ['pkg2', { declgenBridgeCodePath: path.resolve('path/two') }],
-      ]),
-    };
-    const filePath = path.resolve('path/one/module.ts');
-    expect(isBridgeCode(filePath, config)).to.be.true;
-  });
-});
-
-mocha.describe('test getBrdigeCodeRootPath api', function () {
-  mocha.it('1-1: should return bridgeCodePath from interopConfig when moduleName matches the moduleName in interopModuleInfo', function () {
-      const moduleName = 'name';
-      const mockConfig: InteropConfig = {
-        mixCompile: false,
-        interopModuleInfo: new Map([
-          ['/a/b', {
-            declgenBridgeCodePath: '/bridge/a/b',
-            declgenV1OutPath: '/v1',
-            moduleName: 'name'
-          }]
-        ])
-      };
-  
-      const result = getBrdigeCodeRootPath(moduleName, mockConfig);
-      expect(result.moduleName).to.equal(moduleName);
-    });
-  
-    mocha.it('1-2: should return undefined when moduleName does not match any moduleNames in interopModuleInfo', function () {
-      const moduleName = 'name';
-      const mockConfig: InteropConfig = {
-        mixCompile: false,
-        interopModuleInfo: new Map([
-          ['/a/b', {
-            declgenBridgeCodePath: '/bridge/a/b',
-            declgenV1OutPath: '/v1',
-            moduleName: 'another_name'
-          }]
-        ])
-      };
-  
-      const result = getBrdigeCodeRootPath(moduleName, mockConfig);
-      expect(result).to.be.undefined;
-    });
-  
-    mocha.it('1-3: should return declgenBridgeCodePath when interopConfig is provided', function () {
-    const moduleName = 'name';
-    this.rollup = new RollUpPluginMock();
-    this.rollup.build();
-    this.rollup.share.projectConfig.mixCompile = true;
-
-    initConfigForInterop(this.rollup.share);
-
-    const interopInfo = {
-      declgenBridgeCodePath: '/some/bridge/path',
-      declgenV1OutPath: '/some/v1/out/path',
-      packageName: 'test-package',
-      moduleName: 'name',
-      moduleRootPath: ''
-    };
-    const fakeConfig = {
-      interopModuleInfo: new Map<string, typeof interopInfo>([
-        ['/any', { ...interopInfo }]
-      ]),
-      projectConfig: {}
-    };
-
-    const result = getBrdigeCodeRootPath(moduleName, fakeConfig as any);
-    destroyInterop();
-
-    expect(result?.moduleName).to.equal(moduleName);
-  });
-});
-
 mocha.describe('test mixCompile', function () {
   mocha.it('1-1 test mixCompile is false', function () {
     expect(isMixCompile()).to.be.false;
@@ -511,7 +396,6 @@ mocha.describe('test queryOriginApiName api', function () {
       modulePath: '/MyApplication16/application',
       declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: [],
       staticFiles: [],
@@ -1139,7 +1023,6 @@ mocha.describe('test getLanguageVersionByFilePath edge cases', function () {
       modulePath: '/MyApplication16/application',
       declgenV1OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV1',
       declgenV2OutPath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenV2',
-      declgenBridgeCodePath: '/MyApplication16/application/build/default/intermediates/declgen/default/declgenBridgeCode',
       declFilesPath: '/MyApplication16/application/build/default/intermediates/declgen/default/decl-fileInfo.json',
       dynamicFiles: [],
       staticFiles: [],
@@ -1218,6 +1101,203 @@ mocha.describe('test getLanguageVersionByFilePath edge cases', function () {
   });
 });
 
+mocha.describe('test addEntriesFromInteropConfig api', function () {
+  let tempDir: string;
+  let originalEntryObj: Object;
+
+  mocha.beforeEach(function () {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'interop-config-test-'));
+    originalEntryObj = mainProjectConfig.entryObj;
+    mainProjectConfig.entryObj = {};
+    FileManager.cleanFileManagerObject();
+  });
+
+  mocha.afterEach(function () {
+    mainProjectConfig.entryObj = originalEntryObj;
+    FileManager.cleanFileManagerObject();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  mocha.it('9-1: should add dependency package dynamic files by package name', function () {
+    const appRoot = path.join(tempDir, 'app');
+    const staRoot = path.join(tempDir, 'staticModule');
+    const dynRoot = path.join(tempDir, 'dynamicModule');
+    fs.mkdirSync(appRoot, { recursive: true });
+    fs.mkdirSync(staRoot, { recursive: true });
+    fs.mkdirSync(dynRoot, { recursive: true });
+
+    const dynEntry = path.join(dynRoot, 'src/main/ets/ArrayBar.ets');
+    const dynNestedEntry = path.join(dynRoot, 'src/main/ets/nested/Other.ets');
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    dependentModuleMap.set('appPkg', {
+      language: ARKTS_1_1,
+      packageName: 'appPkg',
+      moduleName: 'appModule',
+      modulePath: appRoot,
+      interopConfigPath: path.join(appRoot, 'interopConfig.json5'),
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(appRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
+    dependentModuleMap.set('sta', {
+      language: ARKTS_1_2,
+      packageName: 'sta',
+      moduleName: 'staticModule',
+      modulePath: staRoot,
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(staRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
+    dependentModuleMap.set('dynpkg', {
+      language: ARKTS_HYBRID,
+      packageName: 'dynpkg',
+      moduleName: 'dynamicModule',
+      modulePath: dynRoot,
+      dynamicFiles: [dynEntry, dynNestedEntry],
+      staticFiles: [],
+      cachePath: path.join(dynRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
+
+    fs.writeFileSync(path.join(appRoot, 'interopConfig.json5'), `{
+      interopEntries: {
+        dynamic: ['src/main/ets/pages/local.ets'],
+        dependency: {
+          source: {
+            sta: {
+              static: [],
+              dynamic: ['src/main/ets/staDyn.ets']
+            }
+          },
+          package: ['dynpkg']
+        }
+      }
+    }`, 'utf-8');
+
+    FileManager.initForTest(dependentModuleMap, undefined, undefined, undefined, undefined, tempDir);
+    FileManager.getInstance().setInteropConfig({
+      interopModuleInfo: new Map(),
+      projectConfig: {
+        dependentModuleMap
+      }
+    });
+
+    addEntriesFromInteropConfig();
+
+    expect(mainProjectConfig.entryObj['appModule/pages/local']).to.equal(path.resolve(appRoot, 'src/main/ets/pages/local.ets'));
+    expect(mainProjectConfig.entryObj['staticModule/staDyn']).to.equal(path.resolve(staRoot, 'src/main/ets/staDyn.ets'));
+    expect(mainProjectConfig.entryObj['dynamicModule/ArrayBar']).to.equal(path.resolve(dynEntry));
+    expect(mainProjectConfig.entryObj['dynamicModule/nested/Other']).to.equal(path.resolve(dynNestedEntry));
+  });
+
+  mocha.it('9-2: should process entry shared module and skip shared dependencies', function () {
+    const appRoot = path.join(tempDir, 'app');
+    const sharedCurrentRoot = path.join(tempDir, 'sharedCurrent');
+    const sourceRoot = path.join(tempDir, 'sourceModule');
+    const packageRoot = path.join(tempDir, 'packageModule');
+    fs.mkdirSync(appRoot, { recursive: true });
+    fs.mkdirSync(sharedCurrentRoot, { recursive: true });
+    fs.mkdirSync(sourceRoot, { recursive: true });
+    fs.mkdirSync(packageRoot, { recursive: true });
+
+    const currentPackageDynamicEntry = path.join(sharedCurrentRoot, 'src/main/ets/PackageSelf.ets');
+    const packageDynamicEntry = path.join(packageRoot, 'src/main/ets/PackageDyn.ets');
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    dependentModuleMap.set('appPkg', {
+      language: ARKTS_1_1,
+      packageName: 'appPkg',
+      moduleName: 'appModule',
+      modulePath: appRoot,
+      interopConfigPath: path.join(appRoot, 'interopConfig.json5'),
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(appRoot, 'build/cache'),
+      byteCodeHarInfo: {},
+      moduleType: 'entry'
+    });
+    dependentModuleMap.set('sharedCurrent', {
+      language: ARKTS_1_1,
+      packageName: 'sharedCurrent',
+      moduleName: 'sharedCurrentModule',
+      modulePath: sharedCurrentRoot,
+      interopConfigPath: path.join(sharedCurrentRoot, 'interopConfig.json5'),
+      dynamicFiles: [currentPackageDynamicEntry],
+      staticFiles: [],
+      cachePath: path.join(sharedCurrentRoot, 'build/cache'),
+      byteCodeHarInfo: {},
+      moduleType: 'shared'
+    });
+    dependentModuleMap.set('sharedSource', {
+      language: ARKTS_1_2,
+      packageName: 'sharedSource',
+      moduleName: 'sharedSourceModule',
+      modulePath: sourceRoot,
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(sourceRoot, 'build/cache'),
+      byteCodeHarInfo: {},
+      moduleType: 'shared'
+    });
+    dependentModuleMap.set('sharedPackage', {
+      language: ARKTS_HYBRID,
+      packageName: 'sharedPackage',
+      moduleName: 'sharedPackageModule',
+      modulePath: packageRoot,
+      dynamicFiles: [packageDynamicEntry],
+      staticFiles: [],
+      cachePath: path.join(packageRoot, 'build/cache'),
+      byteCodeHarInfo: {},
+      moduleType: 'shared'
+    });
+
+    fs.writeFileSync(path.join(appRoot, 'interopConfig.json5'), `{
+      interopEntries: {
+        dynamic: ['src/main/ets/pages/local.ets'],
+        dependency: {
+          source: {
+            sharedCurrent: {
+              dynamic: ['src/main/ets/SourceSelf.ets']
+            },
+            sharedSource: {
+              dynamic: ['src/main/ets/SourceDyn.ets']
+            }
+          },
+          package: ['sharedCurrent', 'sharedPackage']
+        }
+      }
+    }`, 'utf-8');
+    fs.writeFileSync(path.join(sharedCurrentRoot, 'interopConfig.json5'), `{
+      interopEntries: {
+        dynamic: ['src/main/ets/pages/sharedLocal.ets']
+      }
+    }`, 'utf-8');
+
+    FileManager.initForTest(dependentModuleMap, undefined, undefined, undefined, undefined, tempDir);
+    FileManager.getInstance().setInteropConfig({
+      interopModuleInfo: new Map(),
+      projectConfig: {
+        dependentModuleMap,
+        entryPackageName: 'sharedCurrent'
+      }
+    });
+
+    addEntriesFromInteropConfig();
+
+    expect(mainProjectConfig.entryObj['appModule/pages/local']).to.equal(path.resolve(appRoot, 'src/main/ets/pages/local.ets'));
+    expect(mainProjectConfig.entryObj['sharedCurrentModule/pages/sharedLocal']).to.equal(
+      path.resolve(path.join(sharedCurrentRoot, 'src/main/ets/pages/sharedLocal.ets'))
+    );
+    expect(mainProjectConfig.entryObj['sharedCurrentModule/SourceSelf']).to.equal(
+      path.resolve(path.join(sharedCurrentRoot, 'src/main/ets/SourceSelf.ets'))
+    );
+    expect(mainProjectConfig.entryObj['sharedCurrentModule/PackageSelf']).to.equal(path.resolve(currentPackageDynamicEntry));
+    expect(mainProjectConfig.entryObj['sharedSourceModule/SourceDyn']).to.be.undefined;
+    expect(mainProjectConfig.entryObj['sharedPackageModule/PackageDyn']).to.be.undefined;
+  });
+});
+
 mocha.describe('test matchModulePathByDeclgenPath edge cases', function () {
   mocha.it('12-1: should return undefined when interopConfig is not set', function () {
     FileManager.cleanFileManagerObject();
@@ -1292,7 +1372,6 @@ mocha.describe('test matchModulePathByDeclgenPath edge cases', function () {
       modulePath: '/MyApplication16/oh_modules/.ohpm/har2@asdf==/oh_modules/remoteHar',
       declgenV1OutPath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenV1',
       declgenV2OutPath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenV2',
-      declgenBridgeCodePath: '/test/MyApplication16/application/build/declgen/remoteHar/declgenBridgeCode',
       dynamicFiles: [],
       staticFiles: [],
       cachePath: '/test/MyApplication16/application/build/declgen/remoteHar/cache',

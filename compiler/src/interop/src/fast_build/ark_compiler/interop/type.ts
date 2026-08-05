@@ -17,16 +17,17 @@ import * as ts from 'typescript';
 
 export interface ArkTSEvolutionModule {
   language: string;
+  interopConfigPath: string;
   packageName: string;
   moduleName: string;
   modulePath: string;
   declgenV1OutPath?: string;
   declgenV2OutPath?: string;
-  declgenBridgeCodePath?: string;
   declFilesPath?: string;
   dynamicFiles: string[];
   staticFiles: string[];
   cachePath: string;
+  byteCodeHar?: boolean;
   byteCodeHarInfo?: Object;
   packageVersion: string;
   isNative?: boolean;
@@ -116,7 +117,6 @@ export interface FileInfo {
 export interface InteropInfo {
   moduleName: string;
   moduleRootPath: string;
-  declgenBridgeCodePath: string;
   declgenV1OutPath: string;
 }
 
@@ -129,3 +129,20 @@ export interface DeclFileItem {
   module: ts.ResolvedModuleFull | null | undefined;
   cnt: number;
 }
+
+/**
+ * Describes one runtime symbol. Namespace children use a name-keyed map, for example
+ * `{ children: { Foo: { kind: 'class', name: 'Foo', runtimeName: 'LFoo;' } } }`.
+ */
+export interface StaticInteropSymbol {
+  kind: string;
+  name: string;
+  runtimeName?: string;
+  children?: Record<string, StaticInteropSymbol>;
+}
+
+/** Metadata for one static source file. Root is keyed by each exported symbol name. */
+export interface StaticInteropFileMetadata { root: Record<string, StaticInteropSymbol>; }
+
+/** Top-level metadata shape: absolute static source path -> exported symbols. */
+export interface StaticInteropMetadata { files: Record<string, StaticInteropFileMetadata>; }

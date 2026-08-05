@@ -28,7 +28,6 @@ export interface ArkTSEvolutionModule {
     modulePath: string;
     declgenV1OutPath?: string;
     declgenV2OutPath?: string;
-    declgenBridgeCodePath?: string;
     declFilesPath?: string;
     dynamicFiles: string[];
     staticFiles: string[];
@@ -51,7 +50,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/entry',
             declgenV1OutPath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/entry/src/ets/dynamic1.ets'],
             staticFiles: ['/path/to/project/entry/src/ets/index.ets'],
             cachePath: '/path/to/project/entry/build/default/cache',
@@ -66,7 +64,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/har1',
             declgenV1OutPath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/har1/src/ets/dynamic2.js'],
             staticFiles: ['/path/to/project/har1/src/ets/index.ets'],
             cachePath: '/path/to/project/har1/build/default/cache',
@@ -81,7 +78,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/hsp1',
             declgenV1OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/hsp1/src/ets/dynamic3.ets'],
             staticFiles: ['/path/to/project/hsp1/src/ets/index.ets'],
             cachePath: '/path/to/project/hsp1/build/default/cache',
@@ -116,7 +112,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/entry',
             declgenV1OutPath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/entry/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/entry/src/ets/dynamic1.ets'],
             staticFiles: ['/path/to/project/entry/src/ets/index.ets'],
             cachePath: '/path/to/project/entry/build/default/cache',
@@ -145,7 +140,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/har1',
             declgenV1OutPath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/har1/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/har1/src/ets/dynamic2.js'],
             staticFiles: ['/path/to/project/har1/src/ets/index.ets'],
             cachePath: '/path/to/project/har1/build/default/cache',
@@ -174,7 +168,6 @@ mocha.describe('InteropContext', () => {
             modulePath: '/path/to/project/hsp1',
             declgenV1OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV1',
             declgenV2OutPath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenV2',
-            declgenBridgeCodePath: '/path/to/project/hsp1/build/default/intermediates/declgen/default/declgenBridgeCode',
             dynamicFiles: ['/path/to/project/hsp1/src/ets/dynamic3.ets'],
             staticFiles: ['/path/to/project/hsp1/src/ets/index.ets'],
             cachePath: '/path/to/project/hsp1/build/default/cache',
