@@ -72,13 +72,13 @@ struct InteropTypeConverter<KNativePointer> {
 
 template<>
 struct InteropTypeConverter<KInt*> {
-    using InteropType = ani_fixedarray_int;
+    using InteropType = ani_valuearray_int;
     static KInt* convertFrom(ani_env* env, InteropType value) {
       if (!value) return nullptr;
       ani_size length = 0;
-      env->FixedArray_GetLength(value, &length);
+      env->ValueArray_GetLength(value, &length);
       KInt* result = new KInt[length];
-      env->FixedArray_GetRegion_Int(value, 0, length, result);
+      env->ValueArray_GetRegion_Int(value, 0, length, result);
       return result;
     }
     static InteropType convertTo(ani_env* env, KInt* value) = delete;
@@ -89,13 +89,13 @@ struct InteropTypeConverter<KInt*> {
 
 template<>
 struct InteropTypeConverter<KFloat*> {
-    using InteropType = ani_fixedarray_float;
+    using InteropType = ani_valuearray_float;
     static KFloat* convertFrom(ani_env* env, InteropType value) {
       if (!value) return nullptr;
       ani_size length = 0;
-      env->FixedArray_GetLength(value, &length);
+      env->ValueArray_GetLength(value, &length);
       KFloat* result = new KFloat[length];
-      env->FixedArray_GetRegion_Float(value, 0, length, result);
+      env->ValueArray_GetRegion_Float(value, 0, length, result);
       return result;
     }
     static InteropType convertTo(ani_env* env, KFloat* value) = delete;
@@ -106,13 +106,13 @@ struct InteropTypeConverter<KFloat*> {
 
 template<>
 struct InteropTypeConverter<KByte*> {
-    using InteropType = ani_fixedarray_byte;
+    using InteropType = ani_valuearray_byte;
     static KByte* convertFrom(ani_env* env, InteropType value) {
       if (!value) return nullptr;
       ani_size length = 0;
-      env->FixedArray_GetLength(value, &length);
+      env->ValueArray_GetLength(value, &length);
       KByte* result = new KByte[length];
-      env->FixedArray_GetRegion_Byte(value, 0, length, (ani_byte*)result);
+      env->ValueArray_GetRegion_Byte(value, 0, length, (ani_byte*)result);
       return result;
     }
     static InteropType convertTo(ani_env* env, KByte* value) = delete;
