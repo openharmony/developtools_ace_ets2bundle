@@ -49,7 +49,8 @@ def copy_output(options):
     # Update output path timestamp for incremental build
     current_time = time.time()
     if not os.path.exists(options.output_path):
-        open(options.output_path, 'w').close()
+        with open(options.output_path, 'w'):
+            pass
     os.utime(options.output_path, (current_time, current_time))
 
 def parse_args():
