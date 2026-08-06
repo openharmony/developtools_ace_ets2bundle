@@ -186,13 +186,13 @@ export class FileManager {
       if (!metadata || typeof metadata.files !== 'object' || metadata.files === null) {
         return;
       }
-      logger.info('metadata initialized successfully', {
+      logger.debug('metadata initialized successfully', {
         metadataFilePath,
         entryCount: Object.keys(metadata.files).length
       });
       FileManager.staticInteropMetadata = metadata;
     } catch (e) {
-      logger.info('failed to parse metadata', {
+      logger.debug('failed to parse metadata', {
         metadataFilePath,
         error: String(e)
       });
@@ -846,6 +846,10 @@ function isSharedModule(moduleInfo: ArkTSEvolutionModule | undefined): boolean {
   return moduleInfo?.moduleType === 'shared' && moduleInfo.packageName !== entryPackageName;
 }
 
+function isDirectDependency(packageName: string, pkgContextInfo: Object | undefined): boolean {
+  return !!pkgContextInfo && !!pkgContextInfo[packageName];
+}
+
 function addDynamicEntryFromModule(dependentModuleMap: Map<string, ArkTSEvolutionModule>, packageName: string,
   dynamicEntry: string, currentModuleName: string): void {
   const moduleInfo = dependentModuleMap.get(packageName);
@@ -868,7 +872,7 @@ function addDynamicEntryFromModule(dependentModuleMap: Map<string, ArkTSEvolutio
   const entryPath = resolveInteropEntryPath(moduleInfo.modulePath, dynamicEntry);
   const relativeEntry = getRelativePathInModule(entryPath, moduleInfo.modulePath);
   const entryKey = getInteropEntryKey(relativeEntry, moduleInfo.moduleName || packageName);
-  logger.info('add dependency dynamic entry', {
+  logger.debug('add dependency dynamic entry', {
     entryKey,
     currentModuleName,
     entryPath
@@ -884,7 +888,7 @@ function addConfigDynamicEntries(currentPackageName: string, currentModuleName: 
   for (const dynamicEntry of dynamicEntries) {
     const entryKey = getInteropEntryKey(dynamicEntry, currentModuleName);
     const entryPath = resolveInteropEntryPath(currentModuleRoot, dynamicEntry);
-    logger.info('add dynamic entry', {
+    logger.debug('add dynamic entry', {
       entryKey,
       currentPackageName,
       entryPath
@@ -1015,7 +1019,7 @@ function addByteCodeHarDeclarationEntries(currentPackageName: string, currentMod
     logger.debug('add declaration entry', { currentPackageName, declarationEntry });
   }
   FileManager.getInstance().addByteCodeHarDeclarationEntries(declarationEntrySet);
-  logger.info('complete byteCodeHar declaration entries', {
+  logger.debug('complete byteCodeHar declaration entries', {
     currentPackageName,
     addedDeclarationEntryCount: declarationEntrySet.size,
     cachedDeclarationEntryCount: FileManager.getInstance().getByteCodeHarDeclarationEntries().length
@@ -1024,9 +1028,15 @@ function addByteCodeHarDeclarationEntries(currentPackageName: string, currentMod
 
 export function addEntriesFromInteropConfig(): void {
   const dependentModuleMap = getInteropDependentModuleMap();
-  logger.info('start scanning interop entry config', { moduleCount: dependentModuleMap.size });
+  const interopProjectConfig = FileManager.getInstance().getInteropConfig()?.projectConfig;
+  const pkgContextInfo = interopProjectConfig?.pkgContextInfo;
+  logger.debug('start scanning interop entry config', { moduleCount: dependentModuleMap.size });
 
   for (const [currentPackageName, currentModuleInfo] of dependentModuleMap) {
+    if (!isDirectDependency(currentPackageName, pkgContextInfo)) {
+      logger.debug('skip module because module is not a direct dependency', { currentPackageName });
+      continue;
+    }
     if (currentModuleInfo.byteCodeHar) {
       logger.debug('skip module because module is byteCodeHar', { currentPackageName });
       continue;

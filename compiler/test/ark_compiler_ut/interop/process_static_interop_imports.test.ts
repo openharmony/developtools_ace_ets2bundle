@@ -121,19 +121,19 @@ mocha.describe('process static interop imports tests', function() {
   mocha.it('removes an import that resolves to the configured file', function() {
     const result: string = transform('import { test } from "./teststatic";\nconst value = 1;\n');
     expect(result).not.to.include('import { test } from "./teststatic";');
-    expect(result).to.include('function createLazy<T>(loader: () => T, label?: string): T');
+    expect(result).to.include('function __createLazy__<T>(loader: () => T, label?: string): T');
     expect(result).to.include('Panda.getFunction(\'Lentry/src/main/ets/pages/teststatic/ETSGLOBAL;\'');
-    expect(result).to.include('function createUnsupportedObject(reason: unknown, label = \'object\'): any');
-    expect(result).to.include('export const aa = createLazy(');
-    expect(result).to.include('export const message = createLazy(');
-    expect(result).to.include('export const bb = createLazy(');
+    expect(result).to.include('function __createUnsupportedObject__(reason: unknown, label = \'object\'): any');
+    expect(result).to.include('export const aa = __createLazy__(');
+    expect(result).to.include('export const message = __createLazy__(');
+    expect(result).to.include('export const bb = __createLazy__(');
     expect(result).to.include('const value = 1;');
   });
 
   mocha.it('supports a configurable target file', function() {
     const result: string = transform('import value from "./custom.ets";\nvalue();\n');
     expect(result).not.to.include('import value from "./custom.ets";');
-    expect(result).to.include('function createLazy<T>');
+    expect(result).to.include('function __createLazy__<T>');
     expect(result).to.include('custom/ETSGLOBAL');
     expect(result).to.include('value();');
   });
@@ -149,21 +149,21 @@ mocha.describe('process static interop imports tests', function() {
   mocha.it('matches a package alias by its resolved reference path', function() {
     const result: string = transform('import { test } from "@static/test";\nconst value = 1;\n');
     expect(result).not.to.include('import { test } from "@static/test";');
-    expect(result).to.include('function createLazy<T>');
+    expect(result).to.include('function __createLazy__<T>');
     expect(result).to.include('const value = 1;');
   });
 
   mocha.it('drops type-only imports that resolve to a static target', function() {
     const result: string = transform('import type { test } from "./teststatic";\nconst value = 1;\n');
     expect(result).not.to.include('import type { test } from "./teststatic";');
-    expect(result).not.to.include('function createLazy<T>');
+    expect(result).not.to.include('function __createLazy__<T>');
     expect(result).to.include('const value = 1;');
   });
 
   mocha.it('drops named type-only imports that resolve to a static target', function() {
     const result: string = transform('import { type test } from "./teststatic";\nconst value = 1;\n');
     expect(result).not.to.include('import { type test } from "./teststatic";');
-    expect(result).not.to.include('function createLazy<T>');
+    expect(result).not.to.include('function __createLazy__<T>');
     expect(result).to.include('const value = 1;');
   });
 
@@ -176,7 +176,7 @@ mocha.describe('process static interop imports tests', function() {
     const result: string = transform(
       'import { test } from "./teststatic";\nimport { test as alias } from "@static/test";\n');
     expect(result).not.to.include('import ');
-    expect(result.match(/function createLazy<T>/g)).to.have.lengthOf(1);
+    expect(result.match(/function __createLazy__<T>/g)).to.have.lengthOf(1);
   });
 
   mocha.it('keeps unresolved imports even when their text resembles the target path', function() {

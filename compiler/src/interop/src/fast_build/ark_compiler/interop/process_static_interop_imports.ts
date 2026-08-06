@@ -53,7 +53,7 @@ export function resetStaticInteropTransformLog(): void {
 
 /**
  * Replaces supported imports from ArkTS 1.2 files with runtime Panda lookups. All successful
- * replacements in one source file share a single createLazy/createUnsupportedObject helper pair.
+ * replacements in one source file share a single __createLazy__/__createUnsupportedObject__ helper pair.
  */
 export function processStaticInteropImports(sourceFile: ts.SourceFile, id: string,
   context: ts.TransformationContext): ts.SourceFile {
@@ -83,7 +83,7 @@ export function processStaticInteropImports(sourceFile: ts.SourceFile, id: strin
   const updatedSourceFile: ts.SourceFile =
     replacementCount > 0 ? createSourceFileWithStaticInteropHelpers(sourceFile, replacementStatements, context) :
       ts.factory.updateSourceFile(sourceFile, replacementStatements);
-  logger.info('processStaticInteropImports complete with source changes',
+  logger.debug('processStaticInteropImports complete with source changes',
     { sourceFileName: sourceFile.fileName, replacementCount, finalStatementCount: updatedSourceFile.statements.length });
   return updatedSourceFile;
 }
@@ -117,7 +117,7 @@ function processStaticInteropImportStatement(sourceFileName: string, containingF
     logger.debug('keep import declaration because replacement is empty');
     return { statements: [statement], replaced: false };
   }
-  logger.info('static import matched', {
+  logger.debug('static import matched', {
     targetFilePath: staticImportPath,
     replacementStatementCount: replacement.length
   });
@@ -270,11 +270,12 @@ function createStaticInteropReplacement(sourceFileName: string, targetFilePath: 
   const symbols: Record<string, StaticInteropSymbol> | undefined =
     FileManager.getInstance().getStaticInteropSymbols(targetFilePath);
   if (!symbols) {
-    recordMissingStaticInteropSymbolError(targetFilePath, errorPos);
+    recordMissingStaticInteropSymbolError(sourceFileName, targetFilePath, errorPos);
     return [];
   }
   logger.debug('resolved static interop symbols', { symbols });
-  const boundSymbols: BoundStaticInteropSymbol[] = bindStaticInteropSymbols(symbols, bindings, targetFilePath, errorPos);
+  const boundSymbols: BoundStaticInteropSymbol[] =
+    bindStaticInteropSymbols(symbols, bindings, sourceFileName, targetFilePath, errorPos);
   if (boundSymbols.length === 0) {
     return [];
   }
@@ -293,7 +294,8 @@ function createStaticInteropReplacement(sourceFileName: string, targetFilePath: 
 }
 
 function bindStaticInteropSymbols(symbols: Record<string, StaticInteropSymbol>,
-  bindings: StaticInteropImportBinding[], targetFilePath: string, errorPos?: number): BoundStaticInteropSymbol[] {
+  bindings: StaticInteropImportBinding[], sourceFileName: string, targetFilePath: string,
+  errorPos?: number): BoundStaticInteropSymbol[] {
   const boundSymbols: BoundStaticInteropSymbol[] = [];
   for (const binding of bindings) {
     if (binding.isNamespaceImport) {
@@ -312,7 +314,7 @@ function bindStaticInteropSymbols(symbols: Record<string, StaticInteropSymbol>,
     }
     const symbol: StaticInteropSymbol | undefined = symbols[binding.importedName];
     if (!symbol) {
-      recordMissingStaticInteropSymbolError(targetFilePath, errorPos, binding.importedName);
+      recordMissingStaticInteropSymbolError(sourceFileName, targetFilePath, errorPos, binding.importedName);
       return [];
     }
     boundSymbols.push({ symbol, localName: binding.localName });
@@ -320,13 +322,15 @@ function bindStaticInteropSymbols(symbols: Record<string, StaticInteropSymbol>,
   return boundSymbols;
 }
 
-function recordMissingStaticInteropSymbolError(targetFilePath: string, errorPos: number = 0,
-  importedName?: string): void {
+function recordMissingStaticInteropSymbolError(sourceFileName: string, targetFilePath: string,
+  errorPos: number = 0, importedName?: string): void {
   const symbolInfo: string = importedName ? ` for symbol '${importedName}'` : '';
+  const moduleName: string = FileManager.getInstance().getLanguageVersionByFilePath(sourceFileName)?.pkgName || 'unknown';
   const errInfo = LogDataFactory.newInstance(
     ErrorCode.ETS2BUNDLE_INTERNAL_MISSING_BRIDGECODE_PATH_INFO,
     ArkTSInternalErrorDescription,
-    `Missing static interop metadata${symbolInfo} when processing static import '${normalizeFilePath(targetFilePath)}'.`
+    `Missing static interop metadata${symbolInfo} when processing static import '${normalizeFilePath(targetFilePath)}'. ` +
+    `Current module is '${moduleName}'. Please check interop-config.json5 in the current file module.`
   );
   staticInteropTransformLog.errors.push({
     type: LogType.ERROR,
@@ -421,7 +425,7 @@ function createStaticInteropDeclaration(symbol: StaticInteropSymbol, declaration
     default:
       return '';
   }
-  return `${prefix}const ${declarationName} = createLazy(() => ${expression}, ${JSON.stringify(declarationName)});`;
+  return `${prefix}const ${declarationName} = __createLazy__(() => ${expression}, ${JSON.stringify(declarationName)});`;
 }
 
 /** Marks a generated node as synthetic and prevents original or nested source comments from being emitted. */
@@ -445,15 +449,15 @@ function cloneTemplateMiddleOrTail(node: ts.TemplateMiddle | ts.TemplateTail): t
 
 /** Runtime fallback helpers inserted once whenever the source file contains at least one replacement. */
 const STATIC_INTEROP_REPLACEMENT_HELPERS: string = `
-function createLazy<T>(loader: () => T, label?: string): T {
+function __createLazy__<T>(loader: () => T, label?: string): T {
   try {
     return loader();
   } catch (e) {
     console.error(\`Interop: Load target \${label} failed, use fallback placeholder object\`);
-    return createUnsupportedObject(e, label) as T;
+    return __createUnsupportedObject__(e, label) as T;
   }
 }
-function createUnsupportedObject(reason: unknown, label = 'object'): any {
+function __createUnsupportedObject__(reason: unknown, label = 'object'): any {
   const make = (op: string) => (): never => {
     throw new Error(\`Interop: Access failed on '\${label}' (\${op}) : \${
       reason instanceof Error ? reason.message : String(reason)}\`, { cause: reason });
