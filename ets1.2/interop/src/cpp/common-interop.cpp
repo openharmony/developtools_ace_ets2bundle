@@ -400,16 +400,14 @@ constexpr uint64_t KOALA_MALLOC_MAX = 2ULL * 1024 * 1024 * 1024;  // 2 GiB
 KNativePointer impl_Malloc(KLong length)
 {
     if (length <= 0) {
-        INTEROP_FATAL("Zero allocation size. Memory allocation failed!")
+        LOGE("Malloc: invalid size %ld", length);
+        return nullptr;
     }
     if (static_cast<uint64_t>(length) >= KOALA_MALLOC_MAX) {
-        INTEROP_FATAL("Requested allocation chunk is too large. Memory allocation failed!")
+        LOGE("Malloc: requested size %lu exceeds max %lu", length, KOALA_MALLOC_MAX);
+        return nullptr;
     }
-    const auto ptr = static_cast<char*>(malloc(length));
-    if (ptr == nullptr) {
-        INTEROP_FATAL("Memory allocation failed!")
-    }
-    return ptr;
+    return malloc(length);
 }
 KOALA_INTEROP_DIRECT_1(Malloc, KNativePointer, KLong)
 
