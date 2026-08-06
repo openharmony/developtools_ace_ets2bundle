@@ -344,7 +344,14 @@ function transformBuilderParam(initializer: ts.Expression): ts.Expression {
   const transferFnName = getTransferDynamicBuilderFnName(builderParamCount);
 
   const transferCall = ts.isIdentifier(initializer) && STATIC_BUILDER.has(initializer.escapedText.toString())
-    ? initializer
+    ? ts.factory.createArrowFunction(
+      undefined,
+      undefined,
+      [ts.factory.createParameterDeclaration(undefined, ts.factory.createToken(ts.SyntaxKind.DotDotDotToken), ts.factory.createIdentifier('args'))],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createCallExpression(cloneExpressionClean(initializer), undefined, [ts.factory.createSpreadElement(ts.factory.createIdentifier('args'))])
+    )
     : ts.factory.createCallExpression(
       ts.factory.createIdentifier(transferFnName),
       undefined,
@@ -520,7 +527,7 @@ export function createStaticTuple(name: string): ts.VariableStatement {
       ],
       ts.NodeFlags.Let
     )
-  )
+  );
 }
 
 export function validateInteropProperty(node: ts.CallExpression,
