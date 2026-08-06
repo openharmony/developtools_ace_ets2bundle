@@ -173,7 +173,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
       ts.isPropertyAccessExpression(componentNode.parent);
     let ischangeNode: boolean = false;
     let customComponentNewExpression: ts.NewExpression = createCustomComponentNewExpression(
-      componentNode, name, isBuilder, isGlobalBuilder);
+      componentNode, name, isBuilder, isGlobalBuilder, false, isArkoala);
     let argumentsArray: ts.PropertyAssignment[];
     const componentAttrInfo: ComponentAttrInfo = { reuseId: null, hasIdAttr: false, attrCount: 0, reuse: '' };
     if (isHasChild(componentNode)) {
@@ -192,7 +192,7 @@ export function processCustomComponent(node: ts.ExpressionStatement, newStatemen
           ts.factory.createNewExpression(componentNode.expression, componentNode.typeArguments,
             [ts.factory.createObjectLiteralExpression(argumentsArray, true)]));
         customComponentNewExpression = createCustomComponentNewExpression(
-          newNode.expression as ts.CallExpression, name, isBuilder);
+          newNode.expression as ts.CallExpression, name, isBuilder, false, false, isArkoala);
       }
     }
     let judgeIdStart: number;

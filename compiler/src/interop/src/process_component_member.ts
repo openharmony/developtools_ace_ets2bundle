@@ -1052,10 +1052,10 @@ export function createViewCreate(node: ts.NewExpression | ts.Identifier): ts.Cal
 
 export function createCustomComponentNewExpression(node: ts.CallExpression, name: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  isCutomDialog: boolean = false): ts.NewExpression {
+  isCutomDialog: boolean = false, isArkoala: boolean = false): ts.NewExpression {
   const newNode: ts.NewExpression = ts.factory.createNewExpression(node.expression,
     node.typeArguments, node.arguments.length ? node.arguments : []);
-  return addCustomComponentId(newNode, node, name, isBuilder, isGlobalBuilder, isCutomDialog);
+  return addCustomComponentId(newNode, node, name, isBuilder, isGlobalBuilder, isCutomDialog, isArkoala);
 }
 
 function wrapInteropBuilderArg(initializer: ts.Expression): ts.Expression {
@@ -1083,7 +1083,7 @@ function rewriteInteropBuilderObjectLiteral(argument: ts.Expression): ts.Express
 }
 function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression, componentName: string,
   isBuilder: boolean = false, isGlobalBuilder: boolean = false,
-  isCutomDialog: boolean = false): ts.NewExpression {
+  isCutomDialog: boolean = false, isArkoala: boolean = false): ts.NewExpression {
   const posOfNode = transformLog.sourceFile.getLineAndCharacterOfPosition(getRealNodePos(node));
   const line: number = posOfNode.line + 1;
   const col: number = posOfNode.character + 1;
@@ -1099,7 +1099,7 @@ function addCustomComponentId(node: ts.NewExpression, oldNode: ts.CallExpression
       }
     }
     if (componentName === name) {
-      if (argumentsArray && argumentsArray.length > 0) {
+      if (argumentsArray && argumentsArray.length > 0 && !isArkoala) {
         argumentsArray[0] = rewriteInteropBuilderObjectLiteral(argumentsArray[0]);
       }
       if (!argumentsArray) {
