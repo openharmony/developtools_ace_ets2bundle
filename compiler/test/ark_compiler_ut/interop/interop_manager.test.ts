@@ -1180,7 +1180,10 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     FileManager.getInstance().setInteropConfig({
       interopModuleInfo: new Map(),
       projectConfig: {
-        dependentModuleMap
+        dependentModuleMap,
+        pkgContextInfo: {
+          appPkg: {}
+        }
       }
     });
 
@@ -1279,7 +1282,11 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
       interopModuleInfo: new Map(),
       projectConfig: {
         dependentModuleMap,
-        entryPackageName: 'sharedCurrent'
+        entryPackageName: 'sharedCurrent',
+        pkgContextInfo: {
+          appPkg: {},
+          sharedCurrent: {}
+        }
       }
     });
 
@@ -1295,6 +1302,66 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     expect(mainProjectConfig.entryObj['sharedCurrentModule/PackageSelf']).to.equal(path.resolve(currentPackageDynamicEntry));
     expect(mainProjectConfig.entryObj['sharedSourceModule/SourceDyn']).to.be.undefined;
     expect(mainProjectConfig.entryObj['sharedPackageModule/PackageDyn']).to.be.undefined;
+  });
+
+  mocha.it('9-3: should skip parsing interop config for modules that are not direct dependencies', function () {
+    const appRoot = path.join(tempDir, 'app');
+    const transitiveRoot = path.join(tempDir, 'transitiveModule');
+    fs.mkdirSync(appRoot, { recursive: true });
+    fs.mkdirSync(transitiveRoot, { recursive: true });
+
+    const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
+    dependentModuleMap.set('appPkg', {
+      language: ARKTS_1_1,
+      packageName: 'appPkg',
+      moduleName: 'appModule',
+      modulePath: appRoot,
+      interopConfigPath: path.join(appRoot, 'interopConfig.json5'),
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(appRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
+    dependentModuleMap.set('transitivePkg', {
+      language: ARKTS_1_1,
+      packageName: 'transitivePkg',
+      moduleName: 'transitiveModule',
+      modulePath: transitiveRoot,
+      interopConfigPath: path.join(transitiveRoot, 'interopConfig.json5'),
+      dynamicFiles: [],
+      staticFiles: [],
+      cachePath: path.join(transitiveRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
+
+    fs.writeFileSync(path.join(appRoot, 'interopConfig.json5'), `{
+      interopEntries: {
+        dynamic: ['src/main/ets/pages/direct.ets']
+      }
+    }`, 'utf-8');
+    fs.writeFileSync(path.join(transitiveRoot, 'interopConfig.json5'), `{
+      interopEntries: {
+        dynamic: ['src/main/ets/pages/transitive.ets']
+      }
+    }`, 'utf-8');
+
+    FileManager.initForTest(dependentModuleMap, undefined, undefined, undefined, undefined, tempDir);
+    FileManager.getInstance().setInteropConfig({
+      interopModuleInfo: new Map(),
+      projectConfig: {
+        dependentModuleMap,
+        pkgContextInfo: {
+          appPkg: {}
+        }
+      }
+    });
+
+    addEntriesFromInteropConfig();
+
+    expect(mainProjectConfig.entryObj['appModule/pages/direct']).to.equal(
+      path.resolve(appRoot, 'src/main/ets/pages/direct.ets')
+    );
+    expect(mainProjectConfig.entryObj['transitiveModule/pages/transitive']).to.be.undefined;
   });
 });
 
