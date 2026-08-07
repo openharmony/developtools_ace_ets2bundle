@@ -23,33 +23,231 @@ import { ChildAndParentComponentInfo } from './process_custom_component';
 import { isMixCompile } from './fast_build/ark_compiler/interop/interop_manager';
 import { globalProgram } from '../main';
 
+interface OptionsPathFragments {
+  instanceName: string;
+  classPath: string;
+  interfacePath: string;
+}
+
+const LOADER_PARAM_NAME: string = 'loader';
+
+const FALLBACK_PARAM_NAME: string = 'fallback';
+
+const LABEL_PARAM_NAME: string = 'label';
+
+const LOADER_FUNC_NAME: string = 'loaderFunc';
+
+const GET_CLASS_FALLBACK_FUNC_NAME: string = 'createGetClassWithFallback';
+
+function generateCreateGetClassCall(options: OptionsPathFragments): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createIdentifier(GET_CLASS_FALLBACK_FUNC_NAME),
+    undefined,
+    [
+      generateGetClassLambdaCall(options.classPath),
+      generateGetClassLambdaCall(options.interfacePath),
+      ts.factory.createStringLiteral(options.instanceName)
+    ]
+  );
+}
+
+function generateGetClassLambdaCall(stringLiteralStr: string): ts.ArrowFunction {
+  return ts.factory.createArrowFunction(
+    undefined,
+    undefined,
+    [],
+    undefined,
+    ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+    ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createParenthesizedExpression(ts.factory.createAsExpression(
+            ts.factory.createIdentifier(GLOBAL_THIS),
+            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
+          )),
+          ts.factory.createIdentifier('Panda')
+        ),
+        ts.factory.createIdentifier('getClass')
+      ),
+      undefined,
+      [ts.factory.createStringLiteral(stringLiteralStr)]
+    ),
+  );
+}
+
+function generateLoaderFuncLoggerCall(): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(
+      ts.factory.createIdentifier('console'),
+      ts.factory.createIdentifier('error')
+    ),
+    undefined,
+    [ts.factory.createTemplateExpression(
+      ts.factory.createTemplateHead(
+        'Object ',
+        'Object '
+      ),
+      [ts.factory.createTemplateSpan(ts.factory.createIdentifier('label'),
+        ts.factory.createTemplateTail(
+          ' are not supported for interop, It will returns an unsupported object',
+          ' are not supported for interop, It will returns an unsupported object'
+        )
+      )]
+    )]
+  );
+}
+
+function generateLoaderFuncBody(): ts.Statement {
+  return ts.factory.createTryStatement(
+    ts.factory.createBlock(
+      [ts.factory.createReturnStatement(ts.factory.createCallExpression(
+        ts.factory.createIdentifier(LOADER_PARAM_NAME),
+        undefined,
+        []
+      ))],
+      true
+    ),
+    ts.factory.createCatchClause(
+      ts.factory.createVariableDeclaration(ts.factory.createIdentifier('e')),
+      ts.factory.createBlock(
+        [ts.factory.createExpressionStatement(generateLoaderFuncLoggerCall()),
+          ts.factory.createThrowStatement(ts.factory.createIdentifier('e'))],
+        true
+      )
+    ),
+    undefined
+  );
+}
+
+function generateLoaderParamWithName(name: string): ts.ParameterDeclaration {
+  return ts.factory.createParameterDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createIdentifier(name),
+    undefined,
+    ts.factory.createFunctionTypeNode(
+      undefined,
+      [],
+      ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('T'), undefined)
+    ),
+    undefined
+  );
+}
+
+function generateLoaderLabelParam(): ts.ParameterDeclaration {
+  return ts.factory.createParameterDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createIdentifier(LABEL_PARAM_NAME),
+    ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+    undefined
+  );
+}
+
+function generateLoaderFunc(): ts.FunctionDeclaration {
+  return ts.factory.createFunctionDeclaration(
+    [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+    undefined,
+    ts.factory.createIdentifier(LOADER_FUNC_NAME),
+    [ts.factory.createTypeParameterDeclaration(
+      undefined,
+      ts.factory.createIdentifier('T'),
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword),
+      undefined
+    )],
+    [generateLoaderParamWithName(LOADER_PARAM_NAME), generateLoaderLabelParam()],
+    ts.factory.createTypeReferenceNode(
+      ts.factory.createIdentifier('T'),
+      undefined
+    ),
+    ts.factory.createBlock(
+      [generateLoaderFuncBody()],
+      true
+    )
+  );
+}
+
+function generateCreateGetClassFuncBody(): ts.Statement {
+  return ts.factory.createTryStatement(
+    ts.factory.createBlock(
+      [ts.factory.createReturnStatement(ts.factory.createCallExpression(
+        ts.factory.createIdentifier(LOADER_PARAM_NAME),
+        undefined,
+        []
+      ))],
+      true
+    ),
+    ts.factory.createCatchClause(
+      ts.factory.createVariableDeclaration(
+        ts.factory.createIdentifier('e'),
+        undefined,
+        undefined,
+        undefined
+      ),
+      ts.factory.createBlock(
+        [ts.factory.createReturnStatement(ts.factory.createCallExpression(
+          ts.factory.createIdentifier(LOADER_FUNC_NAME),
+          undefined,
+          [
+            ts.factory.createIdentifier(FALLBACK_PARAM_NAME),
+            ts.factory.createIdentifier(LABEL_PARAM_NAME)
+          ]
+        ))],
+        true
+      )
+    ),
+    undefined
+  );
+}
+
+function generateCreateGetClassFunc(): ts.FunctionDeclaration {
+  return ts.factory.createFunctionDeclaration(
+    [ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
+    undefined,
+    ts.factory.createIdentifier(GET_CLASS_FALLBACK_FUNC_NAME),
+    [ts.factory.createTypeParameterDeclaration(
+      undefined,
+      ts.factory.createIdentifier('T'),
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword),
+      undefined
+    )],
+    [
+      generateLoaderParamWithName(LOADER_PARAM_NAME),
+      generateLoaderParamWithName(FALLBACK_PARAM_NAME),
+      generateLoaderLabelParam()
+    ],
+    ts.factory.createTypeReferenceNode(
+      ts.factory.createIdentifier('T'),
+      undefined
+    ),
+    ts.factory.createBlock([generateCreateGetClassFuncBody()], true)
+  );
+
+}
+
 function generateGetClassStatements(): ts.Statement[] {
   const statements: ts.Statement[] = [];
+  let changed: boolean = false;
   for (const element of componentCollection.arkoalaComponents) {
-    const byteCodePath = generateBytecodePathFragement(element[0], element[1][0], element[1][1]);
-    const optionsVariable = ts.factory.createVariableDeclaration(
-      ts.factory.createIdentifier(`__Options_${element[0]}`),
-      undefined,
-      undefined,
-      ts.factory.createCallExpression(
-          ts.factory.createPropertyAccessExpression(
-              ts.factory.createAsExpression(
-                  ts.factory.createIdentifier(GLOBAL_THIS),
-                  ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
-              ),
-              ts.factory.createIdentifier('Panda.getClass')
-          ),
-          undefined,
-          [ts.factory.createStringLiteral(byteCodePath)]
-        )
-      );
-
+    const byteCodePaths = generateBytecodePathFragement(element[0], element[1][0], element[1][1]);
     const optionsVariableStatement = ts.factory.createVariableStatement(
-        [],
-        ts.factory.createVariableDeclarationList([optionsVariable], ts.NodeFlags.Const)
+      undefined,
+      ts.factory.createVariableDeclarationList(
+        [ts.factory.createVariableDeclaration(
+          ts.factory.createIdentifier(byteCodePaths.instanceName),
+          undefined,
+          undefined,
+          generateCreateGetClassCall(byteCodePaths)
+        )],
+        ts.NodeFlags.Const
+      )
     );
-
     statements.push(optionsVariableStatement);
+    changed = true;
+  }
+  if (changed) {
+    statements.push(...[generateLoaderFunc(), generateCreateGetClassFunc()]);
   }
   return statements;
 }
@@ -65,8 +263,11 @@ export function insertGetOptionsAtTop(sourceFile: ts.SourceFile): ts.SourceFile 
     return ts.factory.updateSourceFile(sourceFile, newStatements);
 }
 
-export function generateBytecodePathFragement(className: string, filePath: string,
-    moduleSpecifier: string): string {
+export function generateBytecodePathFragement(
+  className: string, 
+  filePath: string,
+  moduleSpecifier: string
+): OptionsPathFragments {
     const regex = /.*declgenV1\/(.*?)\.d\.ets$/;
     const match = filePath.match(regex);
 
@@ -86,7 +287,11 @@ export function generateBytecodePathFragement(className: string, filePath: strin
     }
 
     const targetPathWithDollar: string = packageName + targetPath.slice(packageName.length).replace(/\//g, '$');
-    return `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`;
+    return {
+      instanceName: `__Options_${className}`,
+      classPath: `L${targetPath}/__Options_${className};`,
+      interfacePath: `L${targetPath}/${targetPathWithDollar}$__Options_${className}$ObjectLiteral;`
+    };
 }
 
 // create block in this.observeComponentCreation2
@@ -100,7 +305,7 @@ export function createStaticArrowBlock(
     setInteropRenderingFlag(),
     createIfStaticComponent(newNode, componentParameter, name, componentNode),
     resetInteropRenderingFlag()
-  ]
+  ];
 }
 
 // isInitialRender
@@ -422,7 +627,7 @@ function transformLink(initializer: ts.Expression): ts.CallExpression {
   return ts.factory.createCallExpression(
     ts.factory.createIdentifier('__Interop_createCompatibleStaticState_Internal'),
     undefined,
-    [ getStateVar(initializer) ]
+    [getStateVar(initializer)]
   );
 }
 
@@ -436,7 +641,7 @@ function getStateVar(node: ts.Expression): ts.Expression {
     return ts.factory.createPropertyAccessExpression(
       ts.factory.createThis(),
       ts.factory.createIdentifier(`__${node.name.getText()}`)
-    )
+    );
   }
   return node;
 }
