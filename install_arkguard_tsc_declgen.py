@@ -63,13 +63,35 @@ def run(args):
     current_os = args[3]
     declgen_path = args[4]
     stamp_path = args[5]
+    depfile_path = args[6]
     node_modules_path = os.path.join(source_path, "node_modules")
     extract(tsc_path, node_modules_path, 'typescript', current_os)
     extract(arkguard_path, node_modules_path, 'arkguard', current_os)
     extract(declgen_path, node_modules_path, 'declgen', current_os)
     remove_unexpected_files(node_modules_path)
-    Path(stamp_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(stamp_path).touch()
+
+    # Write depfile so ninja can detect if installed files are deleted
+    # (e.g. by npm install in ets_loader_ark clearing node_modules)
+    build_dir = os.getcwd()
+    installed_files = [
+        os.path.join(node_modules_path, 'typescript', 'package.json'),
+        os.path.join(node_modules_path, 'arkguard', 'package.json'),
+        os.path.join(node_modules_path, 'declgen', 'package.json'),
+    ]
+    dep_entries = []
+    for f in installed_files:
+        if os.path.exists(f):
+            dep_entries.append(os.path.relpath(f, build_dir))
+    if depfile_path:
+        depfile = Path(depfile_path)
+        depfile.parent.mkdir(parents=True, exist_ok=True)
+        depfile.write_text(f"{stamp_path}: {' '.join(dep_entries)}\n")
+
+    # Create stamp file
+    if stamp_path:
+        Path(stamp_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(stamp_path).touch()
+
 
 if __name__ == "__main__":
     run(sys.argv[1:])
