@@ -172,16 +172,8 @@ export class SdkComparisonHelper {
   }
 
   private validateApiAvailableArgument(expression: ts.Expression): boolean {
-    const typeOfNodeFunc = (node: ts.Node): ts.Type | ts.Type[] => {
-      if (this.typeChecker) {
-        return this.typeChecker.getTypeAtLocation(node);
-      }
-      return [];
-    };
-
     const validationResult = validateApiAvailableArgument({
       node: expression as ts.CallExpression,
-      typeOfNodeFunc,
       isOpenHarmonyRuntime,
       isCheckDistributionOSVersion
     });
