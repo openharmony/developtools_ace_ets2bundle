@@ -14,6 +14,8 @@
  */
 
 import ts from 'typescript';
+import { projectConfig } from '../main';
+import { RUNTIME_OS_OH } from './fast_build/system_api/api_check_define';
 
 const MOCK_FUNCTION_NAME = '__mockApiAvailable';
 const TARGET_FUNCTION_NAME = 'apiAvailable';
@@ -268,26 +270,95 @@ function collectIdentifiers(node: ts.Node, names: Set<string>): void {
 
 /**
  * Create the __mockApiAvailable helper function declaration.
+ *
+ * param e - sdkModule, must be truthy otherwise return false
+ * param t - version, supports number or string format
+ *
+ * Number version:
+ *   - Range: [1, 25], must be integer
+ *   - Compare: e.sdkApiVersion >= t
+ *
+ * String version (semantic versioning "major.minor.patch" or "major.minor.patch(OHVersion)"):
+ *   - When isOH = true (OpenHarmony):
+ *     * Major version must be >= 26
+ *     * OHVersion number is not allowed
+ *     * Regex: /^(2[6-9]|[3-9]\d)\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})$/
+ *   - When isOH = false (non-OpenHarmony):
+ *     * Major version: [1, 99]
+ *     * OHVersion number is optional, but rejected when major >= 26
+ *     * Regex: /^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/
+ *   - Parsed as numeric version: 10000 * major + 100 * minor + patch
+ *   - Compare: e.distributionOSApiVersion >= parsed version
  * Generates:
- *   function __mockApiAvailable(e, t) {
- *   var r, i;
- *   return 'number' == typeof t
- *     ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
- *     : 'string' == typeof t &&
- *         !!(t = t.match(/^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/)) &&
- *         ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
- *         e.distributionOSApiVersion >= i;
- *   }
+ * (isOH = true )
+ *  function __mockApiAvailable(sdkModule, version) {
+ *    if (!sdkModule) {
+ *        return false;
+ *    }
+ *    if (typeof version === 'number') {
+ *        if (version < 1 || version > 25 || !Number.isInteger(version)) {
+ *            return false;
+ *        }
+ *        return sdkModule.sdkApiVersion >= version;
+ *    }
+ *    if (typeof version === 'string') {
+ *        var match = version.match(/^(2[6-9]|[3-9]\d)\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})$/);
+ *        if (!match) {
+ *            return false;
+ *        }
+ *        var major = Number(match[1]);
+ *        var minor = Number(match[2]);
+ *        var patch = Number(match[3]);
+ *        var build = 10000 * major + 100 * minor + patch;
+ *        return sdkModule.distributionOSApiVersion >= build;
+ *    }
+ *    return false;
+ *  }
+ *
+ * (isOH = false )
+ *  function __mockApiAvailable(sdkModule, version) {
+ *    if (!sdkModule) {
+ *        return false;
+ *    }
+ *    if (typeof version === 'number') {
+ *        if (version < 1 || version > 25 || !Number.isInteger(version)) {
+ *            return false;
+ *        }
+ *        return sdkModule.sdkApiVersion >= version;
+ *    }
+ *    if (typeof version === 'string') {
+ *        var match = version.match(/^([1-9]\d{0,1})\.(0|[1-9]\d{0,1})\.(0|[1-9]\d{0,1})(\(([1-9]\d{0,1})\))?$/);
+ *        if (!match) {
+ *            return false;
+ *        }
+ *        var major = Number(match[1]);
+ *        var minor = Number(match[2]);
+ *        var patch = Number(match[3]);
+ *        // 主版本号 >= 26 时不允许带构建号
+ *        if (major >= 26 && match[4]) {
+ *            return false;
+ *        }
+ *        var build = 10000 * major + 100 * minor + patch;
+ *        return sdkModule.distributionOSApiVersion >= build;
+ *    }
+ *    return false;
+ *  }
  */
 export function createHelperFunctionDeclaration(): ts.FunctionDeclaration {
-  const content: string = `function ${MOCK_FUNCTION_NAME}(e, t) {
-    var r, i;
-    return 'number' == typeof t
-      ? !(t < 1 || 99 < t || !e) && e.sdkApiVersion >= t
-      : 'string' == typeof t &&
-          !!(t = t.match(/^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$/)) &&
-          ((i = t[1]), (r = t[2]), (t = t[3]), (i = 1e4 * Number(i) + 100 * Number(r) + Number(t)), !!e) &&
-          e.distributionOSApiVersion >= i;
+  const isOH = projectConfig.runtimeOS === RUNTIME_OS_OH;
+  const varDecl = isOH ? 'r, s' : 'r, s, i';
+  const regexOH = isOH ?
+    '^(2[6-9]|[3-9]\\d)\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})$' :
+    '^([1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})\\.(0|[1-9]\\d{0,1})(\\(([1-9]\\d{0,1})\\))?$';
+  const postMatch = isOH ?
+    '!!(t = t.match(/' + regexOH + '/)) && ((r = Number(t[1])), (s = Number(t[2])), (t = Number(t[3])),' +
+    ' e.distributionOSApiVersion >= 1e4 * r + 100 * s + t)' :
+    '!!(t = t.match(/' + regexOH + '/)) && ((r = Number(t[1])), (s = Number(t[2])), (i = Number(t[3])),' +
+    ' (r < 26 || !t[4])) && e.distributionOSApiVersion >= 1e4 * r + 100 * s + i';
+  const content = `function ${MOCK_FUNCTION_NAME}(e, t) {
+    var ${varDecl};
+    return (!!e && ('number' == typeof t ? !(t < 1 || 25 < t || !Number.isInteger(t)) && e.sdkApiVersion >= t
+        : 'string' == typeof t && ${postMatch}));
   }`;
   const sourceFile = ts.createSourceFile('', content, ts.ScriptTarget.Latest, true);
   stripRanges(sourceFile);
