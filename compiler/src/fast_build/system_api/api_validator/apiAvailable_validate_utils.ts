@@ -19,11 +19,12 @@ import {
   APIAVAILABLE_CHECK_ERROR,
   APIAVAILABLE_NUMBER_FORMAT_ERROR,
   APIAVAILABLE_OPENHARMONY_CONTENT_ERROR,
+    APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR,
   MSF_INTEGER_VERSION,
   APIAVAILABLE_STRING_DISTRIBUTIONOS_FORMAT_ERROR,
   ERROR_CODE_INFO,
   APIAVAILABLE_STRING_OPENHARMONY_FORMAT_ERROR,
-  APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR,
+  APIAVAILABLE_DISTRIBUTIONOS_CONTENT_CHECK_ERROR,
   DistributionOSApiAvailableVersionResult,
   SINCE_TAG_NAME,
   APIAVAILABLE_NULLORUNDEFINED_FORMAT_ERROR
@@ -55,13 +56,7 @@ function isNumericLiteral(node: ts.Node): boolean {
   return false;
 }
 
-function isNullOrUndefinedScene(node: ts.Node, typeOfNodeFunc: Function): boolean {
-  if (typeOfNodeFunc) {
-    const type: ts.Type | ts.Type[] = typeOfNodeFunc(node);
-    if (type && !Array.isArray(type) && (type.flags & ts.TypeFlags.Nullable)) {
-      return true;
-    }
-  }
+function isNullOrUndefinedScene(node: ts.Node): boolean {
   return node.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(node) && node.text === 'undefined');
 }
 
@@ -111,7 +106,7 @@ function checkStringDistributionOS(
   if (!msf) {
     return {
       valid: false,
-      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
+      message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR),
       type: ts.DiagnosticCategory.Error
     };
   }
@@ -119,7 +114,7 @@ function checkStringDistributionOS(
     if (msf.hasParentheses) {
       return { 
         valid: false,
-        message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR),
+        message: buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR),
         type: ts.DiagnosticCategory.Error
       };
     }
@@ -131,7 +126,7 @@ function checkStringDistributionOS(
   }
   const distributionOSCheck: DistributionOSApiAvailableVersionResult = isCheckDistributionOSVersion(SINCE_TAG_NAME, content);
   if (!distributionOSCheck.valid) {
-    const distCode: string = ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR)?.code ?? '';
+    const distCode: string = ERROR_CODE_INFO.get(APIAVAILABLE_DISTRIBUTIONOS_CONTENT_CHECK_ERROR)?.code ?? '';
     return {
       valid: false,
       message: `${distCode}#${distributionOSCheck.message}`,
@@ -149,13 +144,12 @@ export type TypeOfNodeFunc = (node: ts.Node) => ts.Type | ts.Type[];
 
 export interface ValidateApiAvailableArgumentOptions {
   node: ts.CallExpression;
-  typeOfNodeFunc: TypeOfNodeFunc;
   isOpenHarmonyRuntime: () => boolean;
   isCheckDistributionOSVersion: (tag: string, version: string) => DistributionOSApiAvailableVersionResult;
 }
 
 export function validateApiAvailableArgument(options: ValidateApiAvailableArgumentOptions): ApiAvailableResult {
-  const { node, typeOfNodeFunc, isOpenHarmonyRuntime, isCheckDistributionOSVersion } = options;
+  const { node, isOpenHarmonyRuntime, isCheckDistributionOSVersion } = options;
 
   const result: ApiAvailableResult = {
     valid: true,
@@ -166,7 +160,7 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
   const arg: ts.Node = node.arguments[0];
   const isNumber: boolean = isNumericLiteral(arg);
   const isStringLiteralNode: boolean = ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg);
-  const isNullish: boolean = isNullOrUndefinedScene(arg, typeOfNodeFunc);
+  const isNullish: boolean = isNullOrUndefinedScene(arg);
 
   if (!(isNumber || isStringLiteralNode || isNullish)) {
     return result;
@@ -185,7 +179,8 @@ export function validateApiAvailableArgument(options: ValidateApiAvailableArgume
       result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_NUMBER_FORMAT_ERROR);
     } else if (!isCanonicalDecimalInteger(numText) || Number(numText) < 1 || Number(numText) >= MSF_INTEGER_VERSION) {
       result.valid = false;
-      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR, APIAVAILABLE_OPENHARMONY_CONTENT_ERROR);
+      result.message = buildApiAvailableMessage(APIAVAILABLE_CHECK_ERROR,
+        isOpenHarmonyRuntime() ? APIAVAILABLE_OPENHARMONY_CONTENT_ERROR : APIAVAILABLE_DISTRIBUTIONOS_CONTENT_ERROR);
     }
     return result;
   }
