@@ -2558,7 +2558,6 @@ export function isApiAvailableVersionSpecifications(node: ts.CallExpression, typ
 
   return validateApiAvailableArgument({
     node,
-    typeOfNodeFunc,
     isOpenHarmonyRuntime,
     isCheckDistributionOSVersion
   });
