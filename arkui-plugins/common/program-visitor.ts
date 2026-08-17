@@ -209,11 +209,18 @@ export class ProgramVisitor extends AbstractVisitor {
 
     programVisitor(program: arkts.Program): arkts.Program {
         if (this.shouldVisitExternal) {
-            if (!this.isFrameworkMode && this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
-                ProgramSkipper.initialize(
-                    program,
-                    program.getExternalSources().flatMap((external) => external.programs)
-                );
+            if (!this.isFrameworkMode) {
+                if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_PARSED) {
+                    ProgramSkipper.canSkipPreAnalyze(
+                        program,
+                        program.getExternalSources().flatMap((external) => external.programs)
+                    );
+                } else if (this.state === arkts.Es2pandaContextState.ES2PANDA_STATE_CHECKED) {
+                    ProgramSkipper.initialize(
+                        program,
+                        program.getExternalSources().flatMap((external) => external.programs)
+                    );
+                }
             }
             this.visitExternalSources(program, [program]);
         }

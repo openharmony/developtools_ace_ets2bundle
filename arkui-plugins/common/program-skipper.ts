@@ -201,6 +201,7 @@ class ResourceValidator extends ArkUISymbolValidator {
 export class ProgramSkipper {
     static enableSkipBySymbol: boolean = true;
  	static enableSkipByPath: boolean = false;
+    private static _canSkipPreAnalysis: Set<AstNodePointer> = new Set();
     private static _absName2programs: Map<string, arkts.Program[]> = new Map();
     private static _uiPathProgramSet: Set<AstNodePointer> = new Set();
     private static _uiSymbolProgramSet: Set<AstNodePointer> = new Set();
@@ -340,6 +341,7 @@ export class ProgramSkipper {
     }
 
     public static clear(): void {
+        this._canSkipPreAnalysis.clear();
         this._uiSymbolProgramSet.clear();
         this._uiPathProgramSet.clear();
         this._intentSymbolProgramSet.clear();
@@ -347,6 +349,9 @@ export class ProgramSkipper {
     }
 
     public static canSkipProgram(program: arkts.Program | undefined): boolean {
+        if (!!program && this._canSkipPreAnalysis.has(program.peer)) {
+            return true;
+        }
         if (!this.enableSkipBySymbol && !this.enableSkipByPath) {
             return false;
         }
@@ -372,6 +377,24 @@ export class ProgramSkipper {
             ? !this._uiPathProgramSet.has(program.peer) 
             : false;
         return canSkipBySymbol || canSkipByPath;
+    }
+
+    public static canSkipPreAnalyze(sourceProgram: arkts.Program, externalPrograms: arkts.Program[]): void {
+        const programs = collect(externalPrograms, sourceProgram);
+        const cannotSkipModuleNames = [
+            CUSTOM_COMPONENT_IMPORT_SOURCE_NAME,
+            CUSTOM_DIALOG_CONTROLLER_SOURCE_NAME,
+            ARKUI_COMPONENT_COMMON_SOURCE_NAME,
+            ARKUI_BUILDER_SOURCE_NAME,
+        ];
+        programs.forEach((p) => {
+            if (
+                !cannotSkipModuleNames.includes(p.moduleName) &&
+                !p.ast.statements.find((st) => arkts.isETSImportDeclaration(st))
+            ) {
+                this._canSkipPreAnalysis.add(p.peer);
+            }
+        });
     }
  	 
     public static initialize(sourceProgram: arkts.Program, externalPrograms: arkts.Program[]): void {
