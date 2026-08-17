@@ -1122,12 +1122,15 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     const appRoot = path.join(tempDir, 'app');
     const staRoot = path.join(tempDir, 'staticModule');
     const dynRoot = path.join(tempDir, 'dynamicModule');
+    const excludedRoot = path.join(tempDir, 'excludedModule');
     fs.mkdirSync(appRoot, { recursive: true });
     fs.mkdirSync(staRoot, { recursive: true });
     fs.mkdirSync(dynRoot, { recursive: true });
+    fs.mkdirSync(excludedRoot, { recursive: true });
 
     const dynEntry = path.join(dynRoot, 'src/main/ets/ArrayBar.ets');
     const dynNestedEntry = path.join(dynRoot, 'src/main/ets/nested/Other.ets');
+    const excludedEntry = path.join(excludedRoot, 'src/main/ets/Excluded.ets');
     const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
     dependentModuleMap.set('appPkg', {
       language: ARKTS_1_1,
@@ -1160,6 +1163,16 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
       cachePath: path.join(dynRoot, 'build/cache'),
       byteCodeHarInfo: {}
     });
+    dependentModuleMap.set('excludedPkg', {
+      language: ARKTS_HYBRID,
+      packageName: 'excludedPkg',
+      moduleName: 'excludedModule',
+      modulePath: excludedRoot,
+      dynamicFiles: [excludedEntry],
+      staticFiles: [],
+      cachePath: path.join(excludedRoot, 'build/cache'),
+      byteCodeHarInfo: {}
+    });
 
     fs.writeFileSync(path.join(appRoot, 'interopConfig.json5'), `{
       interopEntries: {
@@ -1169,9 +1182,12 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
             sta: {
               static: [],
               dynamic: ['src/main/ets/staDyn.ets']
+            },
+            excludedPkg: {
+              dynamic: ['src/main/ets/ExcludedSource.ets']
             }
           },
-          package: ['dynpkg']
+          package: ['dynpkg', 'excludedPkg']
         }
       }
     }`, 'utf-8');
@@ -1182,7 +1198,9 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
       projectConfig: {
         dependentModuleMap,
         pkgContextInfo: {
-          appPkg: {}
+          appPkg: {},
+          sta: {},
+          dynpkg: {}
         }
       }
     });
@@ -1193,6 +1211,8 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     expect(mainProjectConfig.entryObj['staticModule/staDyn']).to.equal(path.resolve(staRoot, 'src/main/ets/staDyn.ets'));
     expect(mainProjectConfig.entryObj['dynamicModule/ArrayBar']).to.equal(path.resolve(dynEntry));
     expect(mainProjectConfig.entryObj['dynamicModule/nested/Other']).to.equal(path.resolve(dynNestedEntry));
+    expect(mainProjectConfig.entryObj['excludedModule/Excluded']).to.be.undefined;
+    expect(mainProjectConfig.entryObj['excludedModule/ExcludedSource']).to.be.undefined;
   });
 
   mocha.it('9-2: should process entry shared module and skip shared dependencies', function () {
@@ -1304,11 +1324,11 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     expect(mainProjectConfig.entryObj['sharedPackageModule/PackageDyn']).to.be.undefined;
   });
 
-  mocha.it('9-3: should skip parsing interop config for modules that are not direct dependencies', function () {
+  mocha.it('9-3: should skip parsing interop config for packages that do not participate in compilation', function () {
     const appRoot = path.join(tempDir, 'app');
-    const transitiveRoot = path.join(tempDir, 'transitiveModule');
+    const excludedRoot = path.join(tempDir, 'excludedModule');
     fs.mkdirSync(appRoot, { recursive: true });
-    fs.mkdirSync(transitiveRoot, { recursive: true });
+    fs.mkdirSync(excludedRoot, { recursive: true });
 
     const dependentModuleMap: Map<string, ArkTSEvolutionModule> = new Map();
     dependentModuleMap.set('appPkg', {
@@ -1322,15 +1342,15 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
       cachePath: path.join(appRoot, 'build/cache'),
       byteCodeHarInfo: {}
     });
-    dependentModuleMap.set('transitivePkg', {
+    dependentModuleMap.set('excludedPkg', {
       language: ARKTS_1_1,
-      packageName: 'transitivePkg',
-      moduleName: 'transitiveModule',
-      modulePath: transitiveRoot,
-      interopConfigPath: path.join(transitiveRoot, 'interopConfig.json5'),
+      packageName: 'excludedPkg',
+      moduleName: 'excludedModule',
+      modulePath: excludedRoot,
+      interopConfigPath: path.join(excludedRoot, 'interopConfig.json5'),
       dynamicFiles: [],
       staticFiles: [],
-      cachePath: path.join(transitiveRoot, 'build/cache'),
+      cachePath: path.join(excludedRoot, 'build/cache'),
       byteCodeHarInfo: {}
     });
 
@@ -1339,9 +1359,9 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
         dynamic: ['src/main/ets/pages/direct.ets']
       }
     }`, 'utf-8');
-    fs.writeFileSync(path.join(transitiveRoot, 'interopConfig.json5'), `{
+    fs.writeFileSync(path.join(excludedRoot, 'interopConfig.json5'), `{
       interopEntries: {
-        dynamic: ['src/main/ets/pages/transitive.ets']
+        dynamic: ['src/main/ets/pages/excluded.ets']
       }
     }`, 'utf-8');
 
@@ -1361,7 +1381,7 @@ mocha.describe('test addEntriesFromInteropConfig api', function () {
     expect(mainProjectConfig.entryObj['appModule/pages/direct']).to.equal(
       path.resolve(appRoot, 'src/main/ets/pages/direct.ets')
     );
-    expect(mainProjectConfig.entryObj['transitiveModule/pages/transitive']).to.be.undefined;
+    expect(mainProjectConfig.entryObj['excludedModule/pages/excluded']).to.be.undefined;
   });
 });
 

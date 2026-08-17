@@ -44,6 +44,7 @@ import {
 } from '../../../lib/fast_build/ark_compiler/error_code';
 import RollUpPluginMock from '../mock/rollup_mock/rollup_plugin_mock';
 import { CommonLogger } from '../../../lib/fast_build/ark_compiler/logger';
+import { FileManager } from '../../../lib/fast_build/ark_compiler/interop/interop_manager';
 
 type StubCall = { args: any[] };
 type TestStub = Function & {
@@ -822,6 +823,22 @@ mocha.describe('process arkts evolution tests', function () {
   });
 
   mocha.describe('3: process arkts evolution tests: interop transform', function () {
+    mocha.it('3-1-0: caches files containing a static dynamic import', function () {
+      const code: string = 'async function load() { return import("arkTSEvo"); }';
+      const { program, testSourceFile } = createDualSourceProgram(code);
+      const etsChecker = require('../../../lib/ets_checker');
+      const resolveModuleNameStub = stub(etsChecker, 'resolveModuleName').returns({
+        resolvedModule: { resolvedFileName: '/TestProject/arkTSEvo/Index.ets' }
+      });
+      const languageVersionStub = stub(FileManager.getInstance(), 'getLanguageVersionByFilePath')
+        .returns({ languageVersion: '1.2', pkgName: 'arkTSEvo' });
+      ts.transform(testSourceFile, [interopTransform(program, testFileName, true)]);
+      expect(FileManager.hasStaticInteropDynamicImport(testFileName)).to.be.true;
+      resolveModuleNameStub.restore();
+      languageVersionStub.restore();
+      cleanUpProcessArkTSEvolutionObj();
+    });
+
     mocha.it('3-1-1: test mixCompile is false', function () {
       const sourceFile: ts.SourceFile = ts.createSourceFile('a.ts', 'let x = 1;', ts.ScriptTarget.ESNext);
       const program: ts.Program = ts.createProgram({ rootNames: ['a.ts'], options: {}, host: ts.createCompilerHost({}) });

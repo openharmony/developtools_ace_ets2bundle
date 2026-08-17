@@ -183,4 +183,33 @@ mocha.describe('process static interop imports tests', function() {
     expect(transform('import value from "entry/src/main/ets/pages/teststatic.ets";\n'))
       .to.equal('import value from "entry/src/main/ets/pages/teststatic.ets";\n');
   });
+
+  mocha.it('replaces await import from a static target with a cached module promise', function() {
+    const code: string = 'async function load() { return await import("./teststatic"); }\n';
+    FileManager.setStaticInteropDynamicImport(importerId);
+    const result: string = transform(code);
+    expect(result).not.to.include('import("./teststatic")');
+    expect(result).to.include('await Promise.resolve(__loadStaticInteropModule__(');
+    expect(result).to.include('const __staticInteropModuleCache__ = new Map<string, object>();');
+    expect(result).to.include('Object.freeze({');
+    expect(result).to.match(/Object\.freeze\(\{\n\s+['"]test['"]:/);
+    expect(result).to.include('Panda.getFunction(');
+    const { staticInteropTransformLog } = require(
+      '../../../lib/fast_build/ark_compiler/interop/process_static_interop_imports');
+    expect(staticInteropTransformLog.errors).to.be.empty;
+  });
+
+  mocha.it('replaces a non-awaited dynamic import from a static target', function() {
+    const code: string = 'function load() { return import("./teststatic").then(value => value.test); }\n';
+    FileManager.setStaticInteropDynamicImport(importerId);
+    const result: string = transform(code);
+    expect(result).not.to.include('import("./teststatic")');
+    expect(result).to.include('Promise.resolve(__loadStaticInteropModule__(');
+  });
+
+  mocha.it('does not replace dynamic import from a dynamic target', function() {
+    const code: string = 'async function load() { return await import("./other"); }\n';
+    FileManager.setStaticInteropDynamicImport(importerId);
+    expect(transform(code)).to.equal(code);
+  });
 });
