@@ -22,6 +22,10 @@ import { getPerfName, performanceLog } from '../../../../common/debug';
 
 const BUILD_NAME = 'build';
 const REMEMBER_VARIABLE = 'rememberVariable';
+const ASYNC_GLOBAL_FUNCTIONS = new Set<string>([
+    'setTimeout',
+    'setInterval',
+]);
 const VALUE = 'value';
 const TYPE_UNION = 'union';
 const TYPE_ARRAY = 'Array';
@@ -370,19 +374,30 @@ function isRememberVariableInit(init: arkts.AstNode | undefined): boolean {
     );
 }
 
-// ===== SECTION: Utility functions =====
-
 function isInEventHandlerCallback(node: arkts.AstNode): boolean {
     type AstNodeWithParent = arkts.AstNode & { parent?: arkts.AstNode };
-    let arrowCount = 0;
     let current: AstNodeWithParent | undefined = node as AstNodeWithParent;
     while (current) {
-        if (arkts.isArrowFunctionExpression(current)) {
-            arrowCount++;
+        if (arkts.isArrowFunctionExpression(current) && isUserCallbackArrow(current)) {
+            return true;
         }
         current = current.parent;
     }
-    return arrowCount >= 1;
+    return false;
+}
+
+function isUserCallbackArrow(arrow: arkts.AstNode): boolean {
+    const parent = arrow.parent;
+    if (!parent) {
+        return true;
+    }
+    if (!arkts.isCallExpression(parent)) {
+        return true;
+    }
+    if (arkts.isMemberExpression(parent.callee)) {
+        return true;
+    }
+    return arkts.isIdentifier(parent.callee) && ASYNC_GLOBAL_FUNCTIONS.has(parent.callee.name);
 }
 
 function getLeftSide(node: arkts.AstNode): arkts.AstNode | undefined {
