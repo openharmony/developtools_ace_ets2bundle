@@ -212,4 +212,37 @@ mocha.describe('process static interop imports tests', function() {
     FileManager.setStaticInteropDynamicImport(importerId);
     expect(transform(code)).to.equal(code);
   });
+
+  mocha.it('does not process concurrent usage when the file has no static import', function() {
+    FileManager.setStaticInteropConcurrentImport(importerId);
+    expect(transform('function task() { "use concurrent"; localValue(); }\n'))
+      .to.equal('function task() {\n    "use concurrent";\n    localValue();\n}\n');
+  });
+
+  mocha.it('does not create a self import when Concurrent does not use a static binding', function() {
+    FileManager.setStaticInteropConcurrentImport(importerId);
+    const code: string =
+      'import { test } from "./teststatic";\nfunction task() { "use concurrent"; localValue(); }\n';
+    const result: string = transform(code);
+    expect(result).not.to.include('from "./index"');
+    expect(result).not.to.include('__staticInteropConcurrent_test');
+  });
+
+  mocha.it('creates a self import when Concurrent uses a static binding', function() {
+    FileManager.setStaticInteropConcurrentImport(importerId);
+    const code: string =
+      'import { test } from "./teststatic";\nfunction task() { "use concurrent"; test.aa(); }\n';
+    const result: string = transform(code);
+    expect(result).to.include('import { __staticInteropConcurrent_test as test } from "./index";');
+    expect(result).to.include('export namespace __staticInteropConcurrent_test');
+  });
+
+  mocha.it('creates a self import for a Concurrent static function binding', function() {
+    FileManager.setStaticInteropConcurrentImport(importerId);
+    const code: string =
+      'import custom from "./custom.ets";\nfunction task() { "use concurrent"; custom(); }\n';
+    const result: string = transform(code);
+    expect(result).to.include('import { __staticInteropConcurrent_custom as custom } from "./index";');
+    expect(result).to.include('export const __staticInteropConcurrent_custom');
+  });
 });

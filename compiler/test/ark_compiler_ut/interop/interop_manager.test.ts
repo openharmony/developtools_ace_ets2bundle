@@ -1625,3 +1625,63 @@ mocha.describe('test parseAliasJson with invalid config', function () {
     expect(resultWithMix?.isStatic).to.be.true;
   });
 });
+
+mocha.describe('test glue code file info cache', function () {
+  let tempDir: string;
+
+  mocha.beforeEach(function () {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'glue-code-file-info-'));
+    FileManager.cleanFileManagerObject();
+  });
+
+  mocha.afterEach(function () {
+    FileManager.cleanFileManagerObject();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  mocha.it('15-1: should persist and restore glue code file infos', function () {
+    const fileInfo = {
+      recordName: '@bundle:com.example/entry/ets/sdk',
+      baseUrl: '/sdk/bridge',
+      abstractPath: '/sdk/bridge/sdk.ts'
+    };
+    FileManager.initGlueCodeFileInfos(tempDir);
+    FileManager.setGlueCodeFileInfo('@ohos.sdk', fileInfo);
+    FileManager.persistGlueCodeFileInfos();
+
+    FileManager.cleanFileManagerObject();
+    FileManager.initGlueCodeFileInfos(tempDir);
+
+    expect(FileManager.getGlueCodeFileInfos().get('@ohos.sdk')).to.deep.equal(fileInfo);
+  });
+
+  mocha.it('15-2: should throw for an invalid glue code file info cache', function () {
+    fs.writeFileSync(path.join(tempDir, 'gluesdk_filesinfo.json'), '{invalid json', 'utf-8');
+
+    expect(() => FileManager.initGlueCodeFileInfos(tempDir)).to.throw(SyntaxError);
+    expect(FileManager.getGlueCodeFileInfos()).to.be.empty;
+  });
+
+  mocha.it('15-3: should clear cached glue code file infos when cache path is empty', function () {
+    FileManager.initGlueCodeFileInfos(tempDir);
+    FileManager.setGlueCodeFileInfo('@ohos.sdk', {
+      recordName: 'recordName',
+      baseUrl: '/sdk/bridge',
+      abstractPath: '/sdk/bridge/sdk.ts'
+    });
+
+    FileManager.initGlueCodeFileInfos('');
+    FileManager.persistGlueCodeFileInfos();
+
+    expect(FileManager.getGlueCodeFileInfos()).to.be.empty;
+    expect(fs.existsSync(path.join(tempDir, 'gluesdk_filesinfo.json'))).to.be.false;
+  });
+
+  mocha.it('15-4: should throw when glue code file infos cannot be persisted', function () {
+    const invalidCachePath = path.join(tempDir, 'cache-file');
+    fs.writeFileSync(invalidCachePath, '', 'utf-8');
+    FileManager.initGlueCodeFileInfos(invalidCachePath);
+
+    expect(() => FileManager.persistGlueCodeFileInfos()).to.throw();
+  });
+});

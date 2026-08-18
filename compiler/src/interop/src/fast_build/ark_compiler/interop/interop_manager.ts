@@ -30,7 +30,7 @@ import {
   readWorkerFile,
   sdkConfigs
 } from '../../../../main';
-import { toUnixPath } from '../../../utils';
+import { mkdirsSync, toUnixPath } from '../../../utils';
 import {
   ArkTSEvolutionModule,
   DeclFilesConfig,
@@ -103,7 +103,9 @@ export class FileManager {
   static staticFileVersionMap: Map<string, string> = new Map();
   static interopDynamicEntryFileCache: Map<string, string> = new Map<string, string>();
   private static staticInteropDynamicImportFileCache: Set<string> = new Set<string>();
+  private static staticInteropConcurrentImportFileCache: Set<string> = new Set<string>();
   private static byteCodeHarDeclarationEntryCache: Set<string> = new Set();
+  private static glueCodeFileInfosPath: string = '';
   private static sdkPathMatchers: SDKPathMatcher[] = [];
   private static sdkPathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
   private static modulePathMatchCache: Map<string, LanguageVersionInfo | undefined> = new Map();
@@ -167,12 +169,28 @@ export class FileManager {
     FileManager.mixCompile = mixCompile;
   }
 
+  public static setGlueCodeFileInfo(originalAPIName: string, fileInfo: FileInfo): void {
+    FileManager.glueCodeFileInfos.set(originalAPIName, fileInfo);
+  }
+
+  public static getGlueCodeFileInfos(): Map<string, FileInfo> {
+    return FileManager.glueCodeFileInfos;
+  }
+
   public static setStaticInteropDynamicImport(filePath: string): void {
     FileManager.staticInteropDynamicImportFileCache.add(path.resolve(filePath));
   }
 
   public static hasStaticInteropDynamicImport(filePath: string): boolean {
     return FileManager.staticInteropDynamicImportFileCache.has(path.resolve(filePath));
+  }
+
+  public static setStaticInteropConcurrentImport(filePath: string): void {
+    FileManager.staticInteropConcurrentImportFileCache.add(path.resolve(filePath));
+  }
+
+  public static hasStaticInteropConcurrentImport(filePath: string): boolean {
+    return FileManager.staticInteropConcurrentImportFileCache.has(path.resolve(filePath));
   }
 
   public static initStaticInteropMetadata(interopConfig: InteropConfig): void {
@@ -399,8 +417,41 @@ export class FileManager {
     FileManager.modulePathMatchCache?.clear();
     FileManager.interopDynamicEntryFileCache.clear();
     FileManager.staticInteropDynamicImportFileCache.clear();
+    FileManager.staticInteropConcurrentImportFileCache.clear();
     FileManager.staticInteropMetadata = undefined;
     FileManager.mixCompile = false;
+    FileManager.glueCodeFileInfosPath = '';
+  }
+
+  public static initGlueCodeFileInfos(cachePath: string): void {
+    FileManager.glueCodeFileInfos.clear();
+    if (!cachePath) {
+      FileManager.glueCodeFileInfosPath = '';
+      return;
+    }
+    FileManager.glueCodeFileInfosPath = path.join(cachePath, 'gluesdk_filesinfo.json');
+    if (!fs.existsSync(FileManager.glueCodeFileInfosPath)) {
+      return;
+    }
+    const content: string = fs.readFileSync(FileManager.glueCodeFileInfosPath, 'utf-8');
+    if (!content.trim()) {
+      return;
+    }
+    const parsed: Record<string, FileInfo> = JSON.parse(content);
+    Object.entries(parsed).forEach(([originalAPIName, fileInfo]) => {
+      if (fileInfo && typeof fileInfo === 'object') {
+        FileManager.glueCodeFileInfos.set(originalAPIName, fileInfo as FileInfo);
+      }
+    });
+  }
+
+  public static persistGlueCodeFileInfos(): void {
+    if (!FileManager.glueCodeFileInfosPath) {
+      return;
+    }
+    mkdirsSync(path.dirname(FileManager.glueCodeFileInfosPath));
+    const content = JSON.stringify(Object.fromEntries(FileManager.glueCodeFileInfos), null, 2);
+    fs.writeFileSync(FileManager.glueCodeFileInfosPath, content, 'utf-8');
   }
 
   getLanguageVersionByFilePath(filePath: string): {
@@ -652,6 +703,7 @@ export function initFileManagerInRollup(InteropConfig: InteropConfig): void {
     sdkInfo.staticSDKGlueCodePath
   );
   FileManager.getInstance().setInteropConfig(InteropConfig);
+  FileManager.initGlueCodeFileInfos(toUnixPath(InteropConfig.projectConfig?.cachePath ?? ''));
 }
 
 export function collectSDKInfo(share: Object): {
